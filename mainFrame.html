@@ -969,12 +969,6 @@
         0 2px 4px rgba(15, 23, 42, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.75);
       transform: translateY(2px);
-      transition:
-        background 0.18s ease,
-        box-shadow 0.18s ease,
-        color 0.18s ease,
-        transform 0.18s ease,
-        border-color 0.18s ease;
     }
     .tab:hover:not(.active) {
       color: #1e293b;
@@ -1024,7 +1018,6 @@
       border-radius: 6px;
       opacity: 0.55;
       color: inherit;
-      transition: opacity 0.15s, background 0.15s;
     }
     .tab:hover .close { opacity: 0.85; }
     .tab .close:hover {
@@ -1059,8 +1052,46 @@
       z-index: 4;
     }
     .content-wrap {
+      position: relative;
       flex: 1 1 auto; overflow: auto; min-height: 0;
       padding: 1.25rem 1.5rem 2rem;
+    }
+    /** 임베드 iframe 은 이 스택에만 두고 부모를 옮기지 않음(reparent 시 문서가 다시 로드되는 브라우저 대응) */
+    .content-embed-stack {
+      display: none;
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      align-self: stretch;
+    }
+    .content-embed-stack.is-active {
+      display: flex;
+      flex-direction: column;
+    }
+    .content-embed-stack.is-active .app-embed-frame {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      flex: none;
+      align-self: stretch;
+      border: 0;
+      background: #fff;
+    }
+    .content-embed-stack.is-active .app-embed-frame.is-embed-hidden {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .content-embed-stack.is-active .app-embed-frame.is-embed-visible {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 2;
     }
     .content-wrap.content-wrap--embed {
       padding: 0;
@@ -1300,6 +1331,7 @@
         </div>
         <div class="content-wrap" id="contentWrap">
           <div class="empty-state" id="emptyState"></div>
+          <div id="embedStack" class="content-embed-stack" hidden aria-hidden="true"></div>
           <div id="content" class="markdown-body" style="display:none;"></div>
         </div>
       </div>
@@ -1742,7 +1774,7 @@
           tab.loading = false;
           tab.error = null;
           if (activeId === docId) {
-            var ifrReload = document.querySelector('#content iframe.content-html-embed');
+            var ifrReload = tab._embedFrame;
             if (ifrReload) {
               ifrReload.src = absoluteHrefForRepoRelative(resolveEmbedHtmlFile(doc.file)) + '?t=' + Date.now();
             } else {
@@ -1941,6 +1973,7 @@
         }
         syncTopNav();
 
+        for (var zi = 0; zi < tabs.length; zi++) disposeTabEmbedFrame(tabs[zi]);
         tabs = [];
         for (var j = 0; j < ids.length; j++) {
           var did = ids[j];
@@ -2024,6 +2057,7 @@
         var idx = -1;
         for (var i = 0; i < tabs.length; i++) if (tabs[i].id === docId) idx = i;
         if (idx < 0) return;
+        disposeTabEmbedFrame(tabs[idx]);
         tabs.splice(idx, 1);
         if (activeId === docId) activeId = tabs.length ? tabs[Math.min(idx, tabs.length - 1)].id : null;
         if (activeId && history.replaceState) history.replaceState(null, '', '#' + activeId);
@@ -2044,6 +2078,9 @@
           }
         }
         if (!kept) return;
+        for (var ci = 0; ci < tabs.length; ci++) {
+          if (tabs[ci].id !== keepId) disposeTabEmbedFrame(tabs[ci]);
+        }
         tabs = [kept];
         activeId = keepId;
         if (history.replaceState) history.replaceState(null, '', '#' + keepId);
@@ -2053,6 +2090,7 @@
       }
 
       function closeAllTabs() {
+        for (var ai = 0; ai < tabs.length; ai++) disposeTabEmbedFrame(tabs[ai]);
         tabs = [];
         activeId = null;
         if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
@@ -2129,7 +2167,6 @@
         if (idx < 0) idx = 0;
         idx = (idx + delta + tabs.length) % tabs.length;
         activeId = tabs[idx].id;
-        if (history.replaceState) history.replaceState(null, '', '#' + activeId);
         syncSidebarModeFromActiveTab();
         renderTabs();
         showContent();
@@ -2407,7 +2444,6 @@
             }
             if (t.id === activeId) return;
             activeId = t.id;
-            if (history.replaceState) history.replaceState(null, '', '#' + t.id);
             syncSidebarModeFromActiveTab();
             renderTabs();
             showContent();
@@ -2473,7 +2509,6 @@
           }
           if (!id || id === activeId) return;
           activeId = id;
-          if (history.replaceState) history.replaceState(null, '', '#' + id);
           syncSidebarModeFromActiveTab();
           renderTabs();
           showContent();
@@ -2569,8 +2604,8 @@
               openDocStandalonePopout(t.id);
               return;
             }
+            if (t.id === activeId) return;
             activeId = t.id;
-            if (history.replaceState) history.replaceState(null, '', '#' + t.id);
             syncSidebarModeFromActiveTab();
             renderTabs();
             showContent();
@@ -2629,6 +2664,7 @@
 
       function showLoading() {
         document.getElementById('emptyState').style.display = 'none';
+        hideEmbedStackVisually();
         var c = document.getElementById('content');
         var wrap = document.getElementById('contentWrap');
         if (wrap) wrap.classList.remove('content-wrap--embed');
@@ -2746,30 +2782,81 @@
         applySourceExplainSectionVisibility(container, tab);
       }
 
+      function normalizeEmbedPageUrl(u) {
+        try {
+          return new URL(u, window.location.href).href.replace(/\/$/, '');
+        } catch (e1) {
+          return String(u || '');
+        }
+      }
+
+      function getEmbedStack() {
+        return document.getElementById('embedStack');
+      }
+
+      function hideEmbedStackVisually() {
+        var stack = getEmbedStack();
+        if (!stack) return;
+        stack.hidden = true;
+        stack.classList.remove('is-active');
+        stack.setAttribute('aria-hidden', 'true');
+      }
+
+      /** 스택 안 iframe 은 부모를 바꾸지 않고, 활성 탭 것만 보이게 함 */
+      function syncEmbedStackVisibility(activeEmbedTab) {
+        var stack = getEmbedStack();
+        if (!stack) return;
+        var k;
+        for (k = 0; k < tabs.length; k++) {
+          var tb = tabs[k];
+          if (!tb.htmlEmbed || !tb._embedFrame) continue;
+          var fr = tb._embedFrame;
+          if (fr.parentNode !== stack) stack.appendChild(fr);
+          var isOn = activeEmbedTab && tb.id === activeEmbedTab.id;
+          fr.classList.toggle('is-embed-visible', isOn);
+          fr.classList.toggle('is-embed-hidden', !isOn);
+        }
+      }
+
+      function disposeTabEmbedFrame(tab) {
+        if (!tab || !tab._embedFrame) return;
+        var el = tab._embedFrame;
+        try {
+          el.src = 'about:blank';
+        } catch (eDis) {}
+        if (el.parentNode) el.parentNode.removeChild(el);
+        tab._embedFrame = null;
+      }
+
       function showContent() {
         var empty = document.getElementById('emptyState');
         var c = document.getElementById('content');
         var wrap = document.getElementById('contentWrap');
+        var stack = getEmbedStack();
         if (!activeId || !tabs.length) {
           empty.style.display = 'block';
           c.style.display = 'none';
-          c.innerHTML = '';
+          hideEmbedStackVisually();
+          while (c.firstChild) c.removeChild(c.firstChild);
           if (wrap) wrap.classList.remove('content-wrap--embed');
           c.classList.remove('markdown-body--embed');
           return;
         }
         empty.style.display = 'none';
-        c.style.display = 'block';
         var tab = null;
         for (var i = 0; i < tabs.length; i++) if (tabs[i].id === activeId) tab = tabs[i];
         if (!tab) return;
         if (wrap) wrap.classList.remove('content-wrap--embed');
         c.classList.remove('markdown-body--embed');
         if (tab.loading) {
+          hideEmbedStackVisually();
+          c.style.display = 'block';
           c.innerHTML = '<div class="loading">불러오는 중…</div>';
           return;
         }
         if (tab.error) {
+          hideEmbedStackVisually();
+          c.style.display = 'block';
           c.innerHTML = '<div class="error"><strong>로드 실패</strong><br/>' + escapeHtml(tab.error) +
             '<div class="hint"><strong>로컬에서 file:// 로 열면</strong> 브라우저가 다른 파일을 읽지 못합니다. ' +
             '이 폴더에서 HTTP 서버를 띄운 뒤 viewer.html 을 여세요.<br/>' +
@@ -2778,17 +2865,33 @@
         }
         if (tab.htmlEmbed && tab.doc && tab.doc.file) {
           if (wrap) wrap.classList.add('content-wrap--embed');
-          c.classList.add('markdown-body--embed');
+          c.style.display = 'none';
+          if (stack) {
+            stack.hidden = false;
+            stack.classList.add('is-active');
+            stack.setAttribute('aria-hidden', 'false');
+          }
           var srcHtml = absoluteHrefForRepoRelative(resolveEmbedHtmlFile(tab.doc.file));
-          c.innerHTML =
-            '<iframe class="app-embed-frame content-html-embed" src="' +
-            escapeHtml(srcHtml) +
-            '" title="' +
-            escapeHtml(tab.doc.label || '') +
-            '"></iframe>';
-          scrollContentWrapToTop();
+          var wantNorm = normalizeEmbedPageUrl(srcHtml);
+          if (tab._embedFrame) {
+            var fr = tab._embedFrame;
+            var curNorm = normalizeEmbedPageUrl(fr.getAttribute('src') || fr.src || '');
+            if (curNorm !== wantNorm) disposeTabEmbedFrame(tab);
+          }
+          if (!tab._embedFrame && stack) {
+            var ifr = document.createElement('iframe');
+            ifr.className = 'app-embed-frame content-html-embed is-embed-hidden';
+            ifr.setAttribute('src', srcHtml);
+            ifr.setAttribute('title', tab.doc.label || '');
+            tab._embedFrame = ifr;
+            stack.appendChild(ifr);
+            scrollContentWrapToTop();
+          }
+          syncEmbedStackVisibility(tab);
           return;
         }
+        hideEmbedStackVisually();
+        c.style.display = 'block';
         c.innerHTML = tab.html;
         if (isSourceExplainDoc(tab.doc)) {
           var blocks = collectSourceFileBlocks(Array.prototype.slice.call(c.children));
