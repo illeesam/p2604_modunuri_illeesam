@@ -10,7 +10,6 @@
     home_v260329: { mode: 'home_v260329', docId: 'hm_index' },
     docs_v260329: { mode: 'docs_v260329', docId: 'docs_index' },
     anynuri_v260329: { mode: 'anynuri_v260329', docId: 'any_index' },
-    dangoeul_v260329: { mode: 'dangoeul_v260329', docId: 'dg_plan' },
     dangoeul_v260330: { mode: 'dangoeul_v260330', docId: 'dg330_index' },
     modunuri_v260329: { mode: 'modunuri_v260329', docId: 'md_index' },
     partyroom_v260329: { mode: 'partyroom_v260329', docId: 'pr_index' },
@@ -22,7 +21,7 @@
   global.MAIN_FRAME_SEARCH_GROUPS = [
     { key: '회사제품', apps: ['docs_v260329', 'home_v260329'] },
     { key: '준비중', apps: ['anynuri_v260329'] },
-    { key: '작업중', apps: ['dangoeul_v260329', 'dangoeul_v260330', 'modunuri_v260329', 'partyroom_v260329', 'artLeaseSale_v260330', 'careMate_v260330'] },
+    { key: '작업중', apps: ['dangoeul_v260330', 'modunuri_v260329', 'partyroom_v260329', 'artLeaseSale_v260330', 'careMate_v260330'] },
     { key: '서비스중', apps: [] }
   ];
 
@@ -55,7 +54,6 @@
       ariaLabel: '작업중 앱 선택',
       emptyLabel: '선택…',
       options: [
-        { value: 'dangoeul_v260329', label: 'dangoeul_v260329' },
         { value: 'dangoeul_v260330', label: 'dangoeul_v260330' },
         { value: 'modunuri_v260329', label: 'modunuri_v260329' },
         { value: 'partyroom_v260329', label: 'partyroom_v260329' },
@@ -90,7 +88,6 @@
     { value: 'docs_v260329', label: 'docs_v260329' },
     { value: 'modunuri_v260329', label: 'modunuri_v260329' },
     { value: 'partyroom_v260329', label: 'partyroom_v260329' },
-    { value: 'dangoeul_v260329', label: 'dangoeul_v260329' },
     { value: 'dangoeul_v260330', label: 'dangoeul_v260330' },
     { value: 'anynuri_v260329', label: 'anynuri_v260329' },
     { value: 'artLeaseSale_v260330', label: 'artLeaseSale_v260330' },
@@ -134,63 +131,6 @@
   global.MAIN_FRAME_DOCS = [
     { id: 'hm_index', file: 'home_v260329', label: 'home_v260329', group: '진입', app: 'home_v260329', groupOrder: 5 },
     {
-      id: 'dg_plan',
-      file: 'dangoeul_v260329/ocs/design_v1.260328.md',
-      label: 'design_v1.260328',
-      group: 'ocs',
-      app: 'dangoeul_v260329',
-      groupOrder: 10
-    },
-    {
-      id: 'dg_doc_idx',
-      file: 'dangoeul_v260329/docs/help/home.html',
-      label: 'home',
-      group: 'docs',
-      app: 'dangoeul_v260329',
-      groupOrder: 18
-    },
-    {
-      id: 'dg_doc_p0100',
-      file: 'dangoeul_v260329/docs/help/page01/page0100.html',
-      label: 'page0100',
-      group: 'docs/page01',
-      app: 'dangoeul_v260329',
-      groupOrder: 18
-    },
-    {
-      id: 'dg_doc_p0200',
-      file: 'dangoeul_v260329/docs/help/page02/page0200.html',
-      label: 'page0200',
-      group: 'docs/page02',
-      app: 'dangoeul_v260329',
-      groupOrder: 18
-    },
-    {
-      id: 'dg_doc_p0300',
-      file: 'dangoeul_v260329/docs/help/page03/page0300.html',
-      label: 'page0300',
-      group: 'docs/page03',
-      app: 'dangoeul_v260329',
-      groupOrder: 18
-    },
-    {
-      id: 'dg_doc_p0400',
-      file: 'dangoeul_v260329/docs/help/page04/page0400.html',
-      label: 'page0400',
-      group: 'docs/page04',
-      app: 'dangoeul_v260329',
-      groupOrder: 18
-    },
-    {
-      id: 'dg_doc_p0500',
-      file: 'dangoeul_v260329/docs/help/page05/page0500.html',
-      label: 'page0500',
-      group: 'docs/page05',
-      app: 'dangoeul_v260329',
-      groupOrder: 18
-    },
-    { id: 'dg_index', file: 'dangoeul_v260329', label: 'dangoeul_v260329', group: '진입', app: 'dangoeul_v260329', groupOrder: 5 },
-    {
       id: 'dg330_index',
       file: 'dangoeul_v260330',
       label: 'dangoeul_v260330',
@@ -223,7 +163,7 @@
   /** 예전 해시·북마크 호환 */
   global.MAIN_FRAME_DOC_HASH_LEGACY = {
     hm_idx: 'hm_index',
-    dg_idx: 'dg_index',
+    dg_idx: 'dg330_index',
     md_idx: 'md_index',
     pr_idx: 'pr_index',
     docs_idx: 'docs_index',
@@ -249,15 +189,15 @@
     pr_tem02: 'pr_index',
     pr_tem11: 'pr_index',
     pr_tem12: 'pr_index',
-    embedDangoeul: 'dg_plan',
-    dg_tem01: 'dg_index',
-    dg_tem02: 'dg_index',
-    dg_tem11: 'dg_index',
-    dg_tem12: 'dg_index',
-    dg_res_log: 'dg_doc_idx',
-    dg_res_blog: 'dg_doc_idx',
-    dg_res_goods: 'dg_doc_idx',
-    dg_res_prod: 'dg_doc_idx',
+    embedDangoeul: 'dg330_index',
+    dg_tem01: 'dg330_index',
+    dg_tem02: 'dg330_index',
+    dg_tem11: 'dg330_index',
+    dg_tem12: 'dg330_index',
+    dg_res_log: 'dg330_index',
+    dg_res_blog: 'dg330_index',
+    dg_res_goods: 'dg330_index',
+    dg_res_prod: 'dg330_index',
     embedModunuri: 'md_index',
     embedPartyroom: 'pr_index',
     d01: 'hm_index',
@@ -268,12 +208,12 @@
     d06: 'hm_index',
     env11: 'hm_index',
     env12: 'hm_index',
-    dg_p0100: 'dg_index',
-    dg_p0200: 'dg_index',
-    dg_p0300: 'dg_index',
-    dg_p0400: 'dg_index',
-    dg_p0500: 'dg_index',
-    dg_p0600: 'dg_index',
+    dg_p0100: 'dg330_index',
+    dg_p0200: 'dg330_index',
+    dg_p0300: 'dg330_index',
+    dg_p0400: 'dg330_index',
+    dg_p0500: 'dg330_index',
+    dg_p0600: 'dg330_index',
     hm_p0100: 'hm_index',
     hm_p0200: 'hm_index',
     hm_p0300: 'hm_index',

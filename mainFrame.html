@@ -642,7 +642,7 @@
       outline: 2px solid rgba(147, 197, 253, 0.9);
       outline-offset: -2px;
     }
-    /* dangoeul_v260329: docs · 페이지 — 각각 접이식 트리 */
+    /* 접이식 사이드바: docs · 페이지 중첩 그룹 */
     .sidebar-tree-node--nested { margin: 0; border-top: none; }
     .sidebar-tree-node--nested .sidebar-group-toggle {
       padding-left: 1.5rem;
@@ -3569,35 +3569,7 @@
         nav.appendChild(host);
         appendSidebarTreeToolbar(nav);
         var buckets = buildMainSidebarBucketsForApp(appKey);
-        if (appKey === 'dangoeul_v260329') {
-          var pageRootBucket = null;
-          var pageSubBuckets = [];
-          var docsRootBucket = null;
-          var docsSubBuckets = [];
-          buckets.forEach(function (b) {
-            if (b.key === '페이지') pageRootBucket = b;
-            else if (b.key.indexOf('페이지/') === 0) pageSubBuckets.push(b);
-            else if (b.key === 'docs') docsRootBucket = b;
-            else if (b.key.indexOf('docs/') === 0) docsSubBuckets.push(b);
-          });
-          pageSubBuckets.sort(function (a, b) {
-            return a.key.localeCompare(b.key, 'en', { numeric: true, sensitivity: 'base' });
-          });
-          docsSubBuckets.sort(function (a, b) {
-            return a.key.localeCompare(b.key, 'en', { numeric: true, sensitivity: 'base' });
-          });
-          buckets.forEach(function (bucket) {
-            if (bucket.key === '페이지' || bucket.key.indexOf('페이지/') === 0) return;
-            if (bucket.key === 'docs' || bucket.key.indexOf('docs/') === 0) return;
-            appendTreeNodeForBucket(nav, bucket, true);
-          });
-          if (docsRootBucket || docsSubBuckets.length) {
-            appendGroupedTree(nav, docsRootBucket, docsSubBuckets, 'docs', 'docs');
-          }
-          if (pageRootBucket || pageSubBuckets.length) {
-            appendGroupedTree(nav, pageRootBucket, pageSubBuckets, '페이지', '페이지');
-          }
-        } else if (appKey === HOME_APP_KEY || appKey === 'modunuri_v260329' || appKey === 'partyroom_v260329' || appKey === 'docs_v260329' || appKey === 'anynuri_v260329' || appKey === 'dangoeul_v260330' || appKey === 'artLeaseSale_v260330') {
+        if (appKey === HOME_APP_KEY || appKey === 'modunuri_v260329' || appKey === 'partyroom_v260329' || appKey === 'docs_v260329' || appKey === 'anynuri_v260329' || appKey === 'dangoeul_v260330' || appKey === 'artLeaseSale_v260330') {
           var pageRootBucket2 = null;
           var pageSubBuckets2 = [];
           buckets.forEach(function (b) {
