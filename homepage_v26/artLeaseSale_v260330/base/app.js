@@ -63,6 +63,7 @@
       }
       page.value = id;
       window.scrollTo(0, 0);
+      try { sessionStorage.setItem('artgallery_page', id); } catch (e) {}
     };
     window.addEventListener('resize', () => {
       if (window.innerWidth < 1024) mobileOpen.value = false;
@@ -105,6 +106,11 @@
           if (found) selectedArtwork.value = found;
         }
       } else {
+        try {
+          const sp = sessionStorage.getItem('artgallery_page');
+          const validPages = ['home', 'about', 'gallery', 'detail', 'lease', 'contact', 'location'];
+          if (sp && validPages.includes(sp)) page.value = sp;
+        } catch (e) {}
         const saved = Number(sessionStorage.getItem('artgallery_aid'));
         if (!Number.isNaN(saved)) {
           const found = artworks.find(a => Number(a.id) === saved);
@@ -156,6 +162,18 @@
     watch(selectedArtwork, a => {
       if (!syncingFromHash && a && a.id != null) sessionStorage.setItem('artgallery_aid', String(a.id));
     });
+
+    try {
+      const raw = String(window.location.hash || '').replace(/^#/, '');
+      if (!raw || !raw.includes('page=')) {
+        const pr = new URLSearchParams();
+        pr.set('page', page.value);
+        if (page.value === 'detail' && selectedArtwork.value?.id != null) {
+          pr.set('aid', String(selectedArtwork.value.id));
+        }
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
+      }
+    } catch (e) {}
 
     onBeforeUnmount(() => {
       window.removeEventListener('hashchange', onHashChange);

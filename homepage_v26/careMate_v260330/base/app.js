@@ -60,6 +60,7 @@
       }
       page.value = id;
       window.scrollTo(0, 0);
+      try { sessionStorage.setItem('caremate_page', id); } catch (e) {}
     };
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) mobileOpen.value = false; });
 
@@ -93,6 +94,11 @@
         const hpid = p.get('pid'); const pid = hpid!==null&&hpid!==''?Number(hpid):NaN;
         if (!Number.isNaN(pid)) { const f = products.find(x=>Number(x.id)===pid); if(f) selectedProduct.value=f; }
       } else {
+        try {
+          const sp = sessionStorage.getItem('caremate_page');
+          const validPages = ['home','about','products','detail','booking','order','faq','contact','location'];
+          if (sp && validPages.includes(sp)) page.value = sp;
+        } catch (e) {}
         const s = Number(sessionStorage.getItem('caremate_pid'));
         if(!Number.isNaN(s)){const f=products.find(x=>Number(x.id)===s);if(f)selectedProduct.value=f;}
       }
@@ -118,7 +124,10 @@
     watch(page, id => {
       if(restoring||syncingFromHash) return;
       const p = new URLSearchParams(); p.set('page', page.value);
-      if(id==='detail'){p.set('pid',selectedProduct.value?.id??'');if(selectedProduct.value?.id!=null)sessionStorage.setItem('caremate_pid',String(selectedProduct.value.id));}
+      if(id==='detail'||id==='booking'||id==='order'){
+        p.set('pid',selectedProduct.value?.id??'');
+        if(selectedProduct.value?.id!=null)sessionStorage.setItem('caremate_pid',String(selectedProduct.value.id));
+      }
       const hash = p.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
       if (replaceNextHash) {
@@ -129,6 +138,18 @@
       }
     });
     watch(selectedProduct, p=>{if(!syncingFromHash&&p&&p.id!=null)sessionStorage.setItem('caremate_pid',String(p.id));});
+
+    try {
+      const raw = String(window.location.hash || '').replace(/^#/, '');
+      if (!raw || !raw.includes('page=')) {
+        const pr = new URLSearchParams();
+        pr.set('page', page.value);
+        if (page.value === 'detail' || page.value === 'booking' || page.value === 'order') {
+          pr.set('pid', String(selectedProduct.value?.id ?? ''));
+        }
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
+      }
+    } catch (e) {}
 
     onBeforeUnmount(() => {
       window.removeEventListener('popstate', onMobilePopState);

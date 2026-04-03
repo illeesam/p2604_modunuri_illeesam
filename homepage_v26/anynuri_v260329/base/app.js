@@ -128,13 +128,14 @@
     /* ── Preserve works list state on refresh ── */
     let restoring = true;
     let restoringWorkPid = null;
+    const validPagesWorks = ['home', 'works', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
     try {
       const raw = String(window.location.hash || '').replace(/^#/, '');
-      if (raw && raw.includes('page=')) {
+      const hasPageParam = raw && raw.includes('page=');
+      if (hasPageParam) {
         const params = new URLSearchParams(raw);
         const hPage = params.get('page');
-        const validPages = ['home', 'works', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
-        if (hPage && validPages.includes(hPage)) page.value = hPage;
+        if (hPage && validPagesWorks.includes(hPage)) page.value = hPage;
 
         const hCat = params.get('cat');
         if (hCat && cats.includes(hCat)) activeCat.value = hCat;
@@ -147,6 +148,11 @@
 
         const hPid = params.get('pid') || params.get('workId');
         if (hPid !== null) restoringWorkPid = hPid;
+      } else {
+        try {
+          const sp = sessionStorage.getItem('anynuri_page');
+          if (sp && validPagesWorks.includes(sp)) page.value = sp;
+        } catch (e) {}
       }
     } catch (e) {}
     restoring = false;
@@ -154,14 +160,6 @@
     // watch가 다시 hash를 덮어쓰지 않도록 플래그를 둡니다.
     let syncingFromHash = false;
 
-    // If refresh URL/hash overwrote `page`, prefer the last-viewed page from sessionStorage.
-    try {
-      const savedPage = sessionStorage.getItem('anynuri_page');
-      if (savedPage === 'detail' && sessionStorage.getItem('anynuri_pid')) page.value = 'detail';
-      if (savedPage === 'blogDetail' && sessionStorage.getItem('anynuri_blog_post')) page.value = 'blogDetail';
-    } catch (e) {}
-
-    // Ensure blogDetail content is restored too.
     try {
       const savedBlog = sessionStorage.getItem('anynuri_blog_post');
       if (savedBlog && page.value === 'blogDetail') blogModal.post = JSON.parse(savedBlog);
@@ -180,6 +178,22 @@
     const displayedWorks = computed(() => filteredWorks.value.slice(0, visibleCount.value));
     const hasMore = computed(() => visibleCount.value < filteredWorks.value.length);
 
+    const selectedWork = ref(works[0]);
+    const selectWork = w => {
+      selectedWork.value = w;
+      if (w && w.id != null) sessionStorage.setItem('anynuri_pid', String(w.id));
+      navigate('detail');
+    };
+
+    try {
+      const savedPid = restoringWorkPid ?? sessionStorage.getItem('anynuri_pid');
+      const pidNum = savedPid !== null && savedPid !== '' ? Number(savedPid) : NaN;
+      if (!Number.isNaN(pidNum)) {
+        const found = works.find(w => Number(w.id) === pidNum);
+        if (found) selectedWork.value = found;
+      }
+    } catch (e) {}
+
     function resetPagination() {
       visibleCount.value = PAGE_SIZE;
     }
@@ -196,7 +210,7 @@
     });
 
     watch(
-      [page, activeCat, searchText, visibleCount],
+      [page, activeCat, searchText, visibleCount, selectedWork],
       function () {
         if (restoring || syncingFromHash) return;
         const params = new URLSearchParams();
@@ -205,6 +219,10 @@
           params.set('cat', activeCat.value);
           params.set('q', searchText.value);
           params.set('v', String(visibleCount.value));
+        }
+        if ((page.value === 'detail' || page.value === 'order') && selectedWork.value?.id != null) {
+          params.set('pid', String(selectedWork.value.id));
+          try { sessionStorage.setItem('anynuri_pid', String(selectedWork.value.id)); } catch (e) {}
         }
         const hash = params.toString();
         const url = window.location.pathname + window.location.search + '#' + hash;
@@ -235,20 +253,21 @@
       if (worksObserver) worksObserver.disconnect();
       worksObserver = null;
     });
-    const selectedWork = ref(works[0]);
-    const selectWork = w => {
-      selectedWork.value = w;
-      if (w && w.id != null) sessionStorage.setItem('anynuri_pid', String(w.id));
-      navigate('detail');
-    };
 
-    // Restore selected work for detail page refresh.
     try {
-      const savedPid = restoringWorkPid ?? sessionStorage.getItem('anynuri_pid');
-      const pidNum = savedPid !== null && savedPid !== '' ? Number(savedPid) : NaN;
-      if (!Number.isNaN(pidNum)) {
-        const found = works.find(w => Number(w.id) === pidNum);
-        if (found) selectedWork.value = found;
+      const raw = String(window.location.hash || '').replace(/^#/, '');
+      if (!raw || !raw.includes('page=')) {
+        const params = new URLSearchParams();
+        params.set('page', page.value);
+        if (page.value === 'works') {
+          params.set('cat', activeCat.value);
+          params.set('q', searchText.value);
+          params.set('v', String(visibleCount.value));
+        }
+        if ((page.value === 'detail' || page.value === 'order') && selectedWork.value?.id != null) {
+          params.set('pid', String(selectedWork.value.id));
+        }
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + params.toString());
       }
     } catch (e) {}
 

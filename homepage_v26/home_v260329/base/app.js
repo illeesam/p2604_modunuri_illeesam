@@ -141,7 +141,7 @@
       if (raw && raw.includes('page=')) {
         const params = new URLSearchParams(raw);
         const hPage = params.get('page');
-        const validPages = ['home', 'about', 'services', 'portfolio', 'blog', 'contact', 'faq', 'order', 'detail', 'blogDetail'];
+        const validPages = ['home', 'about', 'services', 'portfolio', 'blog', 'contact', 'faq', 'order', 'detail', 'blogDetail', 'location'];
         if (hPage && validPages.includes(hPage)) page.value = hPage;
 
         const hCat = params.get('cat');
@@ -329,6 +329,20 @@
     ];
 
     /* ── Blog posts ── */
+    try {
+      const raw = String(window.location.hash || '').replace(/^#/, '');
+      if (!raw || !raw.includes('page=')) {
+        const params = new URLSearchParams();
+        params.set('page', page.value);
+        if (page.value === 'portfolio') {
+          params.set('cat', activeCat.value);
+          params.set('q', searchText.value);
+          params.set('v', String(visibleCount.value));
+        }
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + params.toString());
+      }
+    } catch (e) {}
+
     const posts = [
       { id: 1, emoji: '🎨', title: '좋은 UI가 비즈니스에 미치는 영향', excerpt: '사용자 경험이 전환율에 미치는 실제 데이터 분석', cat: '디자인', date: '2026.03.20', bg: '#1a2a1a' },
       { id: 2, emoji: '⚡', title: '웹사이트 성능 최적화 완전 가이드', excerpt: 'Core Web Vitals 점수를 95점 이상으로 올리는 방법', cat: '개발', date: '2026.03.15', bg: '#1a1a2a' },

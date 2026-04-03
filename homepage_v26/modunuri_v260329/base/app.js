@@ -62,6 +62,7 @@
       }
       page.value = id;
       window.scrollTo(0, 0);
+      try { sessionStorage.setItem('modunuri_page', id); } catch (e) {}
     };
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) mobileOpen.value = false; });
 
@@ -89,8 +90,16 @@
     /* ── Products ── */
     const products = window.SITE_CONFIG.products;
     const selectedProduct = ref(products[0]);
-    const selectProduct = p => { selectedProduct.value = p; navigate('detail'); };
-    const orderProduct = p => { selectedProduct.value = p; navigate('order'); };
+    const selectProduct = p => {
+      selectedProduct.value = p;
+      if (p && p.id != null) try { sessionStorage.setItem('modunuri_pid', String(p.id)); } catch (e) {}
+      navigate('detail');
+    };
+    const orderProduct = p => {
+      selectedProduct.value = p;
+      if (p && p.id != null) try { sessionStorage.setItem('modunuri_pid', String(p.id)); } catch (e) {}
+      navigate('order');
+    };
 
     /* ── Demo ── */
     const openDemo = p => {
@@ -107,13 +116,21 @@
 
     /* ── URL state preserve ── */
     let restoring = true;
+    const validPages = ['home','about','solution','products','detail','blog','blogDetail','location','contact','faq','order'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
-      const params = new URLSearchParams(rawHash);
-      const hPage = params.get('page');
-      const validPages = ['home','about','solution','products','detail','blog','blogDetail','location','contact','faq','order'];
-      if (hPage && validPages.includes(hPage)) page.value = hPage;
-      const hpid = params.get('pid');
+      const hasPageParam = rawHash.includes('page=');
+      const params = hasPageParam ? new URLSearchParams(rawHash) : null;
+      if (hasPageParam) {
+        const hPage = params.get('page');
+        if (hPage && validPages.includes(hPage)) page.value = hPage;
+      } else {
+        try {
+          const sp = sessionStorage.getItem('modunuri_page');
+          if (sp && validPages.includes(sp)) page.value = sp;
+        } catch (e) {}
+      }
+      const hpid = hasPageParam ? params.get('pid') : null;
       const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
       if (!Number.isNaN(pid)) {
         const f = products.find(x => Number(x.id) === pid);
@@ -169,6 +186,18 @@
     watch(selectedProduct, p => {
       if (!syncingFromHash && p && p.id != null) sessionStorage.setItem('modunuri_pid', String(p.id));
     });
+
+    try {
+      const raw = String(window.location.hash || '').replace(/^#/, '');
+      if (!raw || !raw.includes('page=')) {
+        const pr = new URLSearchParams();
+        pr.set('page', page.value);
+        if (page.value === 'detail' || page.value === 'order') {
+          pr.set('pid', String(selectedProduct.value?.id ?? ''));
+        }
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
+      }
+    } catch (e) {}
 
     onBeforeUnmount(() => {
       window.removeEventListener('hashchange', onHashChange);

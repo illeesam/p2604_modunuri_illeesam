@@ -141,7 +141,7 @@
       if (raw && raw.includes('page=')) {
         const params = new URLSearchParams(raw);
         const hPage = params.get('page');
-        const validPages = ['home', 'products', 'detail', 'booking', 'blog', 'location', 'contact', 'faq', 'blogDetail', 'order'];
+        const validPages = ['home', 'products', 'detail', 'booking', 'blog', 'blogDetail', 'space', 'location', 'contact', 'faq', 'order'];
         if (hPage && validPages.includes(hPage)) page.value = hPage;
 
         const tagPool = ['전체', ...new Set(rooms.flatMap(r => r.tags))];
@@ -162,13 +162,6 @@
     // Browser back/forward 시 hash가 바뀔 때 Vue 상태를 동기화할 때
     // watch가 다시 URL을 덮어쓰지 않도록 막는 플래그입니다.
     let syncingFromHash = false;
-
-    // If refresh URL/hash overwrote `page`, prefer the last-viewed page from sessionStorage.
-    try {
-      const savedPage = sessionStorage.getItem('partyroom_page');
-      if (savedPage === 'detail' && sessionStorage.getItem('partyroom_pid')) page.value = 'detail';
-      if (savedPage === 'blogDetail' && sessionStorage.getItem('partyroom_blog_post')) page.value = 'blogDetail';
-    } catch (e) {}
 
     // Ensure blogDetail content is restored too.
     try {
@@ -268,6 +261,32 @@
       if (!Number.isNaN(pidNum)) {
         const found = rooms.find(rm => Number(rm.id) === pidNum);
         if (found) selectedRoom.value = found;
+      }
+    } catch (e) {}
+
+    try {
+      const raw = String(window.location.hash || '').replace(/^#/, '');
+      if (!raw || !raw.includes('page=')) {
+        const params = new URLSearchParams();
+        params.set('page', page.value);
+        if (page.value === 'products') {
+          params.set('cat', activeTag.value);
+          params.set('q', searchText.value);
+          params.set('v', String(visibleCount.value));
+        }
+        if (page.value === 'detail') {
+          const pid = selectedRoom.value?.id;
+          if (pid != null) params.set('pid', String(pid));
+        }
+        if (page.value === 'booking') {
+          const pid = selectedRoom.value?.id;
+          if (pid != null) {
+            params.set('pid', String(pid));
+            if (booking.room != null && booking.room !== '') params.set('room', String(booking.room));
+          }
+        }
+        const hash = params.toString();
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + hash);
       }
     } catch (e) {}
 
