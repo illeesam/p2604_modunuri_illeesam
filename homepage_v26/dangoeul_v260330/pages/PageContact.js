@@ -37,7 +37,7 @@ window.DangoeulPages.PageContact = {
           <label class="form-label">관심 서비스</label>
           <select v-model="form.service" class="form-input">
             <option value="">선택 (선택사항)</option>
-            <option v-for="s in config.solutions" :key="s.id" :value="s.title">{{ s.title }}</option>
+            <option v-for="c in interestServiceCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
           </select>
         </div>
         <div style="margin-bottom:22px;">
@@ -69,4 +69,11 @@ window.DangoeulPages.PageContact = {
     </div>
   </div>
   `,
+  setup(props) {
+    const { computed } = Vue;
+    const interestServiceCodes = computed(function () {
+      return window.cmUtil.codesByGroupOrSolutionTitles(props.config || {}, 'dangoeul_contact_service');
+    });
+    return { interestServiceCodes };
+  },
 };

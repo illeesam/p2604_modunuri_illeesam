@@ -48,14 +48,14 @@ window.PageBooking = {
                 <label class="form-label">시작 시간</label>
                 <select v-model="form.startTime" class="form-input">
                   <option value="">선택</option>
-                  <option v-for="t in times" :key="t" :value="t">{{ t }}</option>
+                  <option v-for="c in timeSlotCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
                 </select>
               </div>
               <div>
                 <label class="form-label">종료 시간</label>
                 <select v-model="form.endTime" class="form-input">
                   <option value="">선택</option>
-                  <option v-for="t in times" :key="t" :value="t">{{ t }}</option>
+                  <option v-for="c in timeSlotCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
                 </select>
               </div>
               <div class="sm:col-span-2">
@@ -114,9 +114,15 @@ window.PageBooking = {
     </div>
   `,
   setup() {
-    const { ref } = Vue;
+    const { ref, computed } = Vue;
     const rooms = window.SITE_CONFIG.rooms;
-    const times = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
+    const PR_DEFAULT_TIMES = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
+    const timeSlotCodes = computed(function () {
+      var fb = PR_DEFAULT_TIMES.map(function (t, i) {
+        return { code_id: i + 1, code_value: t, code_label: t };
+      });
+      return window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'partyroom_booking_time', fb);
+    });
     const form = ref({ name:'', tel:'', email:'', room:'', startDate:'', endDate:'', startTime:'', endTime:'', purpose:'', headcount:'', memo:'' });
     const submit = () => {
       if (!form.value.name || !form.value.room || !form.value.startDate) {
@@ -124,6 +130,6 @@ window.PageBooking = {
       }
       alert('예약 신청이 완료되었습니다!\n담당자가 확인 후 연락드리겠습니다.\n기업은행 123-456789-01-234로 입금해주세요.');
     };
-    return { rooms, times, form, submit };
+    return { rooms, timeSlotCodes, form, submit };
   }
 };

@@ -30,15 +30,13 @@ window.PageContact = {
               <div><label class="form-label">서비스 종류</label>
                 <select v-model="form.service" class="form-input">
                   <option value="">선택하세요</option>
-                  <option>웹 개발</option><option>모바일 앱</option><option>UI/UX 디자인</option>
-                  <option>데이터 분석</option><option>클라우드</option><option>컨설팅</option>
+                  <option v-for="c in contactServiceRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
                 </select>
               </div>
               <div><label class="form-label">예산 범위</label>
                 <select v-model="form.budget" class="form-input">
                   <option value="">선택하세요</option>
-                  <option>500만원 미만</option><option>500~1000만원</option>
-                  <option>1000~3000만원</option><option>3000만원 이상</option>
+                  <option v-for="c in contactBudgetRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
                 </select>
               </div>
               <div class="sm:col-span-2"><label class="form-label">프로젝트 내용</label><textarea v-model="form.desc" rows="4" class="form-input resize-none" placeholder="프로젝트 요구사항을 간략히 설명해주세요"></textarea></div>
@@ -66,15 +64,33 @@ window.PageContact = {
     </div>
   `,
   setup() {
-    const { ref } = Vue;
+    const { ref, computed } = Vue;
     const faqs = window.SITE_CONFIG.faqs;
     const open = ref(null);
     const form = ref({ name:'', email:'', service:'', budget:'', desc:'' });
+    const contactServiceRows = computed(() =>
+      window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'home_contact_service', [
+        { code_id: 1, code_value: 'web', code_label: '웹 개발' },
+        { code_id: 2, code_value: 'mobile', code_label: '모바일 앱' },
+        { code_id: 3, code_value: 'uiux', code_label: 'UI/UX 디자인' },
+        { code_id: 4, code_value: 'data', code_label: '데이터 분석' },
+        { code_id: 5, code_value: 'cloud', code_label: '클라우드' },
+        { code_id: 6, code_value: 'consulting', code_label: '컨설팅' },
+      ])
+    );
+    const contactBudgetRows = computed(() =>
+      window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'home_contact_budget', [
+        { code_id: 1, code_value: 'lt500', code_label: '500만원 미만' },
+        { code_id: 2, code_value: '500_1000', code_label: '500~1000만원' },
+        { code_id: 3, code_value: '1000_3000', code_label: '1000~3000만원' },
+        { code_id: 4, code_value: 'gt3000', code_label: '3000만원 이상' },
+      ])
+    );
     const submit = () => {
       if (!form.value.name || !form.value.desc) return alert('이름과 프로젝트 내용을 입력해주세요.');
       alert('상담 신청이 완료되었습니다!\n24시간 이내에 연락드리겠습니다.');
       form.value = { name:'', email:'', service:'', budget:'', desc:'' };
     };
-    return { faqs, open, form, submit };
+    return { faqs, open, form, submit, contactServiceRows, contactBudgetRows };
   }
 };

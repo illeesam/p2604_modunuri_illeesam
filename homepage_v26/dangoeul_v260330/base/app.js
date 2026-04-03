@@ -430,7 +430,7 @@ const dangoeulApp = createApp({
   `,
 });
 dangoeulApp.config.globalProperties.$listImg = function (src) {
-  return typeof window.imageThumbnailSrc === 'function' ? window.imageThumbnailSrc(src) : src;
+  return window.cmUtil.listImgSrc(src);
 };
 dangoeulApp.mount('#app');
 (function dismissVueLoading() {

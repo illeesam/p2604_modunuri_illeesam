@@ -98,8 +98,49 @@
       .then(function (res) {
         var d = res.data;
         if (!d) return;
-        if (d.html) el.innerHTML = d.html;
-        else if (d.text) el.textContent = d.text;
+        if (d.html) {
+          el.innerHTML = d.html;
+          return;
+        }
+        el.textContent = "";
+        if (d.text) {
+          var p = document.createElement("p");
+          p.className = "lead";
+          p.style.marginTop = "0";
+          p.textContent = d.text;
+          el.appendChild(p);
+        }
+        var list =
+          window.cmUtil && window.cmUtil.codesByGroup
+            ? window.cmUtil.codesByGroup({ codes: d.codes || [] }, "docs_view_filter")
+            : [];
+        if (!list.length) return;
+        var wrap = document.createElement("div");
+        wrap.style.marginTop = "0.75rem";
+        var lab = document.createElement("label");
+        lab.style.display = "inline-flex";
+        lab.style.alignItems = "center";
+        lab.style.gap = "0.5rem";
+        lab.style.flexWrap = "wrap";
+        var span = document.createElement("span");
+        span.textContent = "문서 분류";
+        var sel = document.createElement("select");
+        sel.className = "form-select";
+        sel.style.maxWidth = "220px";
+        sel.style.padding = "6px 10px";
+        sel.style.borderRadius = "6px";
+        sel.style.border = "1px solid #ccc";
+        sel.setAttribute("aria-label", "문서 분류");
+        list.forEach(function (c) {
+          var opt = document.createElement("option");
+          opt.value = c.code_value;
+          opt.textContent = c.code_label;
+          sel.appendChild(opt);
+        });
+        lab.appendChild(span);
+        lab.appendChild(sel);
+        wrap.appendChild(lab);
+        el.appendChild(wrap);
       })
       .catch(function () {});
   }

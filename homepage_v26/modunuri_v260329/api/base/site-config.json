@@ -361,5 +361,14 @@
       "q": "데이터 보안은 어떻게 관리되나요?",
       "a": "ISO 27001 인증 데이터센터를 사용하며, AES-256 암호화 및 정기 보안 감사를 실시합니다."
     }
+  ],
+  "codes": [
+    { "code_id": 1, "code_grp": "modunuri_contact_service", "code_value": "AI 분석 엔진", "code_label": "AI 분석 엔진" },
+    { "code_id": 2, "code_grp": "modunuri_contact_service", "code_value": "ERP 시스템", "code_label": "ERP 시스템" },
+    { "code_id": 3, "code_grp": "modunuri_contact_service", "code_value": "이커머스 플랫폼", "code_label": "이커머스 플랫폼" },
+    { "code_id": 4, "code_grp": "modunuri_contact_service", "code_value": "모바일 앱 개발", "code_label": "모바일 앱 개발" },
+    { "code_id": 5, "code_grp": "modunuri_contact_service", "code_value": "보안 솔루션", "code_label": "보안 솔루션" },
+    { "code_id": 6, "code_grp": "modunuri_contact_service", "code_value": "클라우드 인프라", "code_label": "클라우드 인프라" },
+    { "code_id": 7, "code_grp": "modunuri_contact_service", "code_value": "기타·복합 문의", "code_label": "기타·복합 문의" }
   ]
 }

@@ -39,7 +39,7 @@ window.PageContact = {
         <label class="form-label">관심 서비스</label>
         <select v-model="form.service" class="form-input">
           <option value="">선택 (선택사항)</option>
-          <option v-for="s in config.solutions" :key="s.id" :value="s.title">{{ s.title }}</option>
+          <option v-for="c in contactServiceCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
         </select>
       </div>
       <div style="margin-bottom:22px;">
@@ -74,7 +74,11 @@ window.PageContact = {
 </div>
   `,
   setup(props) {
-    const { reactive, ref } = Vue;
+    const { reactive, ref, computed } = Vue;
+
+    const contactServiceCodes = computed(function () {
+      return window.cmUtil.codesByGroupOrSolutionTitles(props.config || {}, 'modunuri_contact_service');
+    });
 
     const form = reactive({ name: '', email: '', company: '', tel: '', service: '', desc: '' });
     const formErrors = reactive({});
@@ -131,6 +135,6 @@ window.PageContact = {
       }
     };
 
-    return { form, formErrors, openFaq, clearFormError, submitForm };
+    return { form, formErrors, openFaq, clearFormError, submitForm, contactServiceCodes };
   }
 };

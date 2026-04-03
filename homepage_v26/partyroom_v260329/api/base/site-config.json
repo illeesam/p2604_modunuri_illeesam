@@ -318,5 +318,21 @@
       "q": "주차 공간이 있나요?",
       "a": "건물 지하 1~2층에 주차 가능합니다. 2시간 무료, 이후 시간당 2,000원입니다."
     }
+  ],
+  "codes": [
+    { "code_id": 1, "code_grp": "partyroom_booking_time", "code_value": "09:00", "code_label": "09:00" },
+    { "code_id": 2, "code_grp": "partyroom_booking_time", "code_value": "10:00", "code_label": "10:00" },
+    { "code_id": 3, "code_grp": "partyroom_booking_time", "code_value": "11:00", "code_label": "11:00" },
+    { "code_id": 4, "code_grp": "partyroom_booking_time", "code_value": "12:00", "code_label": "12:00" },
+    { "code_id": 5, "code_grp": "partyroom_booking_time", "code_value": "13:00", "code_label": "13:00" },
+    { "code_id": 6, "code_grp": "partyroom_booking_time", "code_value": "14:00", "code_label": "14:00" },
+    { "code_id": 7, "code_grp": "partyroom_booking_time", "code_value": "15:00", "code_label": "15:00" },
+    { "code_id": 8, "code_grp": "partyroom_booking_time", "code_value": "16:00", "code_label": "16:00" },
+    { "code_id": 9, "code_grp": "partyroom_booking_time", "code_value": "17:00", "code_label": "17:00" },
+    { "code_id": 10, "code_grp": "partyroom_booking_time", "code_value": "18:00", "code_label": "18:00" },
+    { "code_id": 11, "code_grp": "partyroom_booking_time", "code_value": "19:00", "code_label": "19:00" },
+    { "code_id": 12, "code_grp": "partyroom_booking_time", "code_value": "20:00", "code_label": "20:00" },
+    { "code_id": 13, "code_grp": "partyroom_booking_time", "code_value": "21:00", "code_label": "21:00" },
+    { "code_id": 14, "code_grp": "partyroom_booking_time", "code_value": "22:00", "code_label": "22:00" }
   ]
 }

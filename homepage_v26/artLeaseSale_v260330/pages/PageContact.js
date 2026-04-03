@@ -52,17 +52,9 @@ window.PageContact = {
         <div>
           <label class="form-label">문의 유형</label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
-              <input type="radio" v-model="form.type" value="lease" style="accent-color:var(--gold);">
-              <span>대여 문의</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
-              <input type="radio" v-model="form.type" value="purchase" style="accent-color:var(--gold);">
-              <span>구매 상담</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
-              <input type="radio" v-model="form.type" value="other" style="accent-color:var(--gold);">
-              <span>기타</span>
+            <label v-for="c in inquiryTypeCodes" :key="c.code_id + '-' + c.code_value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
+              <input type="radio" v-model="form.type" :value="c.code_value" style="accent-color:var(--gold);">
+              <span>{{ c.code_label }}</span>
             </label>
           </div>
         </div>
@@ -96,7 +88,15 @@ window.PageContact = {
 </div>
 `,
   setup(props) {
-    const { reactive } = Vue;
+    const { reactive, computed } = Vue;
+
+    const inquiryTypeCodes = computed(function () {
+      return window.cmUtil.codesByGroupOrRows(props.config || {}, 'artgallery_inquiry_type', [
+        { code_id: 1, code_value: 'lease', code_label: '대여 문의' },
+        { code_id: 2, code_value: 'purchase', code_label: '구매 상담' },
+        { code_id: 3, code_value: 'other', code_label: '기타' },
+      ]);
+    });
 
     const form = reactive({ name: '', email: '', tel: '', type: 'lease', artwork: '', desc: '' });
     const formErrors = reactive({});
@@ -138,6 +138,6 @@ window.PageContact = {
       }
     };
 
-    return { form, formErrors, submitForm, clearFormError };
+    return { form, formErrors, submitForm, clearFormError, inquiryTypeCodes };
   }
 };

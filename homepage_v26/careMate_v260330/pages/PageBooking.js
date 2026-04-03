@@ -44,7 +44,7 @@ window.PageBooking = {
             <label class="form-label">병원 선택 <span class="form-required">*</span></label>
             <select v-model="booking.hospital" @change="clearBookingError('hospital')" class="form-input">
               <option value="">병원을 선택하세요</option>
-              <option v-for="h in config.hospitals" :key="h" :value="h">{{ h }}</option>
+              <option v-for="c in hospitalCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
             </select>
             <div v-if="bookingErrors.hospital" class="form-error">{{ bookingErrors.hospital }}</div>
           </div>
@@ -56,7 +56,7 @@ window.PageBooking = {
             <label class="form-label">진료과목 <span class="form-required">*</span></label>
             <select v-model="booking.department" @change="clearBookingError('department')" class="form-input">
               <option value="">진료과목을 선택하세요</option>
-              <option v-for="d in config.departments" :key="d" :value="d">{{ d }}</option>
+              <option v-for="c in departmentCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
             </select>
             <div v-if="bookingErrors.department" class="form-error">{{ bookingErrors.department }}</div>
           </div>
@@ -75,11 +75,7 @@ window.PageBooking = {
           <div>
             <label class="form-label">진료 예상 시간</label>
             <select v-model="booking.expectedDuration" class="form-input">
-              <option value="0.5">30분 이내</option>
-              <option value="1">1시간 내외</option>
-              <option value="2">2시간 내외</option>
-              <option value="3">3시간 이상</option>
-              <option value="unknown">예측 불가</option>
+              <option v-for="c in durationCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
             </select>
           </div>
         </div>
@@ -257,6 +253,22 @@ window.PageBooking = {
 
     const hospitalProducts = computed(() => products.filter(p => p.category === 'hospital'));
 
+    const hospitalCodes = computed(() =>
+      window.cmUtil.codesByGroupOrStringList(props.config, 'caremate_hospital', props.config.hospitals)
+    );
+    const departmentCodes = computed(() =>
+      window.cmUtil.codesByGroupOrStringList(props.config, 'caremate_department', props.config.departments)
+    );
+    const durationCodes = computed(() =>
+      window.cmUtil.codesByGroupOrRows(props.config, 'caremate_visit_duration', [
+        { code_id: 1, code_value: '0.5', code_label: '30분 이내' },
+        { code_id: 2, code_value: '1', code_label: '1시간 내외' },
+        { code_id: 3, code_value: '2', code_label: '2시간 내외' },
+        { code_id: 4, code_value: '3', code_label: '3시간 이상' },
+        { code_id: 5, code_value: 'unknown', code_label: '예측 불가' },
+      ])
+    );
+
     let bookingSchemaPromise = null;
     const getBookingSchema = () => {
       if (!bookingSchemaPromise) {
@@ -298,6 +310,7 @@ window.PageBooking = {
     return {
       booking, bookingErrors, clearBookingError, submitBooking,
       selectedHospital, recommendedProductId, hospitalProducts,
+      hospitalCodes, departmentCodes, durationCodes,
     };
   }
 };

@@ -466,12 +466,7 @@
                     <label class="form-label">서비스 종류</label>
                     <select v-model="form.service" class="form-input">
                       <option value="">선택하세요</option>
-                      <option>웹 개발</option>
-                      <option>모바일 앱</option>
-                      <option>UI/UX 디자인</option>
-                      <option>데이터 분석</option>
-                      <option>클라우드</option>
-                      <option>컨설팅</option>
+                      <option v-for="c in contactServiceRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
                     </select>
                   </div>
                   <!-- Budget -->
@@ -479,10 +474,7 @@
                     <label class="form-label">예산 범위</label>
                     <select v-model="form.budget" class="form-input">
                       <option value="">선택하세요</option>
-                      <option>500만원 미만</option>
-                      <option>500~1000만원</option>
-                      <option>1000~3000만원</option>
-                      <option>3000만원 이상</option>
+                      <option v-for="c in contactBudgetRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
                     </select>
                   </div>
                   <!-- Description -->
@@ -578,6 +570,7 @@
   </div>
 </div>
 
+<script src="utils/cmUtil.js"></script>
 <script src="base/config.js"></script>
 <script src="js/index.js"></script>
 <script src="base/app.js"></script>

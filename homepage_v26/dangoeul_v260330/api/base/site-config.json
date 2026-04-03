@@ -483,5 +483,14 @@
       "q": "불만족 시 환불은?",
       "a": "수령 후 24시간 이내 사진 첨부 시 신선도 기준에 따라 전액 또는 부분 환불을 도와드립니다."
     }
+  ],
+  "codes": [
+    { "code_id": 1, "code_grp": "dangoeul_contact_service", "code_value": "새벽 배송", "code_label": "새벽 배송" },
+    { "code_id": 2, "code_grp": "dangoeul_contact_service", "code_value": "정기 구독 박스", "code_label": "정기 구독 박스" },
+    { "code_id": 3, "code_grp": "dangoeul_contact_service", "code_value": "농장 픽업", "code_label": "농장 픽업" },
+    { "code_id": 4, "code_grp": "dangoeul_contact_service", "code_value": "지역 협동조합 연계", "code_label": "지역 협동조합 연계" },
+    { "code_id": 5, "code_grp": "dangoeul_contact_service", "code_value": "생산 과정 공개", "code_label": "생산 과정 공개" },
+    { "code_id": 6, "code_grp": "dangoeul_contact_service", "code_value": "친환경 포장", "code_label": "친환경 포장" },
+    { "code_id": 7, "code_grp": "dangoeul_contact_service", "code_value": "기타 문의", "code_label": "기타 문의" }
   ]
 }

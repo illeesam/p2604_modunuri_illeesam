@@ -275,7 +275,7 @@
     .component('PageLocation',window.PageLocation);
 
   artGalleryApp.config.globalProperties.$listImg = function (src) {
-    return typeof window.imageThumbnailSrc === 'function' ? window.imageThumbnailSrc(src) : src;
+    return window.cmUtil.listImgSrc(src);
   };
   artGalleryApp.mount('#app');
 })();

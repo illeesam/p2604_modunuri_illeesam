@@ -1,3 +1,9 @@
 {
-  "text": "이 문구는 docs_v260329/api/base/site-notice.json 에서 axiosApi.get 으로 불러옵니다."
+  "text": "이 문구는 docs_v260329/api/base/site-notice.json 에서 axiosApi.get 으로 불러옵니다. 아래 셀렉트는 codes(code_grp: docs_view_filter) 데모입니다.",
+  "codes": [
+    { "code_id": 1, "code_grp": "docs_view_filter", "code_value": "all", "code_label": "전체 문서" },
+    { "code_id": 2, "code_grp": "docs_view_filter", "code_value": "guide", "code_label": "가이드" },
+    { "code_id": 3, "code_grp": "docs_view_filter", "code_value": "api", "code_label": "API 참고" },
+    { "code_id": 4, "code_grp": "docs_view_filter", "code_value": "release", "code_label": "배포·릴리스" }
+  ]
 }

@@ -294,6 +294,25 @@
       }
       return contactSchemaPromise;
     };
+    const contactServiceRows = computed(() =>
+      window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'home_contact_service', [
+        { code_id: 1, code_value: 'web', code_label: '웹 개발' },
+        { code_id: 2, code_value: 'mobile', code_label: '모바일 앱' },
+        { code_id: 3, code_value: 'uiux', code_label: 'UI/UX 디자인' },
+        { code_id: 4, code_value: 'data', code_label: '데이터 분석' },
+        { code_id: 5, code_value: 'cloud', code_label: '클라우드' },
+        { code_id: 6, code_value: 'consulting', code_label: '컨설팅' },
+      ])
+    );
+    const contactBudgetRows = computed(() =>
+      window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'home_contact_budget', [
+        { code_id: 1, code_value: 'lt500', code_label: '500만원 미만' },
+        { code_id: 2, code_value: '500_1000', code_label: '500~1000만원' },
+        { code_id: 3, code_value: '1000_3000', code_label: '1000~3000만원' },
+        { code_id: 4, code_value: 'gt3000', code_label: '3000만원 이상' },
+      ])
+    );
+
     const submitForm = async () => {
       Object.keys(formErrors).forEach(k => delete formErrors[k]);
       try {
@@ -362,7 +381,7 @@
       portfolio, activeCat, cats, filteredPortfolio,
       searchText, displayedPortfolio, hasMore, resetPagination,
       openFaq,
-      form, formErrors, submitForm, clearFormError,
+      form, formErrors, submitForm, clearFormError, contactServiceRows, contactBudgetRows,
       values, team, posts,
       heroStats,
       config: window.SITE_CONFIG,
