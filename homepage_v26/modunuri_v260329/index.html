@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모두누리 MODUNURI - 소프트웨어 개발 &amp; 솔루션</title>
+  <meta name="description" content="AI, ERP, 클라우드, 모바일 앱 개발 솔루션 전문 기업. 30일 무료 데모 체험.">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <!-- yup: v1 npm UMD 없음 → base/app.js에서 ESM 동적 import -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vue-loading.css">
+  <style>:root { --vue-loading-accent: #0099cc; --vue-loading-glow: rgba(0, 153, 204, 0.22); }</style>
+  <style>
+    /* Responsive overrides for detail/contact two-column layouts */
+    @media (max-width: 767px) {
+      .detail-grid   { grid-template-columns: 1fr !important; }
+      .contact-grid  { grid-template-columns: 1fr !important; }
+      .location-grid { grid-template-columns: 1fr !important; }
+    }
+    /* Hide desktop-only sidebar toggle on small screens */
+    @media (max-width: 1023px) { .hidden-sm { display: none !important; } }
+    @media (min-width: 1024px) {
+      .hidden-sm { display: flex !important; }
+      .lg\:hidden { display: none !important; }
+    }
+    /* Smooth transition for page switches */
+    [v-show] { transition: opacity 0.15s ease; }
+  </style>
+</head>
+<body>
+  <div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
+    <div class="vue-app-loading-inner">
+      <div class="vue-app-loading-spinner" aria-hidden="true"></div>
+      <p class="vue-app-loading-text">로딩 중…</p>
+    </div>
+  </div>
+  <div id="app"></div>
+  <script src="assets/cdn/axios.js"></script>
+  <script src="utils/axiosUtil.js"></script>
+  <script src="base/config.js"></script>
+  <script src="js/index.js"></script>
+  <script src="layout/AppHeader.js"></script>
+  <script src="layout/AppSidebar.js"></script>
+  <script src="layout/AppFooter.js"></script>
+  <script src="pages/PageHome.js"></script>
+  <script src="pages/PageAbout.js"></script>
+  <script src="pages/PageSolution.js"></script>
+  <script src="pages/PageProducts.js"></script>
+  <script src="pages/PageDetail.js"></script>
+  <script src="pages/PageOrder.js"></script>
+  <script src="pages/PageBlog.js"></script>
+  <script src="pages/PageFaq.js"></script>
+  <script src="pages/PageContact.js"></script>
+  <script src="pages/PageLocation.js"></script>
+  <script src="base/app.js"></script>
+</body>
+</html>

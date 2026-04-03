@@ -1,0 +1,132 @@
+/* MODUNURI - PageProducts */
+window.PageProducts = {
+  name: 'PageProducts',
+  props: ['navigate', 'config', 'products', 'selectProduct', 'orderProduct', 'openDemo'],
+  emits: [],
+  template: /* html */ `
+<div class="page-wrap">
+  <div style="margin-bottom:28px;">
+    <div style="display:inline-block;padding:4px 14px;border-radius:20px;background:var(--purple-dim);color:var(--purple);font-size:0.75rem;font-weight:700;margin-bottom:14px;">상품 목록</div>
+    <h1 class="section-title" style="font-size:2rem;margin-bottom:10px;"><span class="gradient-text">SaaS 상품</span> 라인업</h1>
+    <p class="section-subtitle">바로 도입 가능한 클라우드 기반 상품들을 만나보세요.</p>
+  </div>
+  <!-- Category Filter -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">
+    <button v-for="cat in productCats" :key="cat" class="cat-btn"
+      :class="{active: activeCat===cat}"
+      @click="activeCat=cat">{{ cat }}</button>
+  </div>
+  <!-- Search -->
+  <div style="margin-bottom:28px;">
+    <input
+      v-model="searchText"
+      type="text"
+      class="form-input w-full md:w-72"
+      placeholder="상품명 검색"
+    />
+  </div>
+  <!-- Skeleton Cards -->
+  <div v-if="!skeletonDone" class="grid-3">
+    <div v-for="i in 6" :key="'sk'+i" class="product-card" style="overflow:hidden;">
+      <div style="padding:24px 24px 0;">
+        <div class="skeleton-line" style="width:52px;height:52px;border-radius:10px;margin-bottom:14px;"></div>
+        <div class="skeleton-line" style="height:14px;width:70%;margin-bottom:8px;"></div>
+        <div class="skeleton-line" style="height:11px;width:90%;margin-bottom:6px;"></div>
+        <div class="skeleton-line" style="height:11px;width:60%;margin-bottom:14px;"></div>
+        <div class="skeleton-line" style="height:18px;width:38%;margin-bottom:18px;"></div>
+      </div>
+      <div style="padding:0 24px 24px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:8px;">
+          <div class="skeleton-line" style="flex:1;height:32px;border-radius:6px;"></div>
+          <div class="skeleton-line" style="flex:1;height:32px;border-radius:6px;"></div>
+        </div>
+        <div class="skeleton-line" style="height:32px;border-radius:6px;"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Product Grid -->
+  <div v-else class="grid-3">
+    <div v-for="p in displayedProducts" :key="p.id" class="product-card">
+      <div style="padding:24px 24px 0;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <span style="font-size:2.8rem;">{{ p.emoji }}</span>
+          <span class="badge badge-cat">{{ p.category }}</span>
+        </div>
+        <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">{{ p.name }}</div>
+        <p style="font-size:0.825rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">{{ p.desc }}</p>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--blue);margin-bottom:18px;">{{ p.price }}</div>
+      </div>
+      <div style="padding:0 24px 24px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:8px;">
+          <button class="btn-blue btn-sm" style="flex:1;" @click="openDemo(p)">데모 보기</button>
+          <button class="btn-outline btn-sm" style="flex:1;" @click="selectProduct(p)">상세보기</button>
+        </div>
+        <button class="btn-outline btn-sm" style="width:100%;" @click="orderProduct(p)">주문하기</button>
+      </div>
+    </div>
+  </div>
+  <div v-if="filteredProducts.length===0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+    해당 조건의 상품이 없습니다.
+  </div>
+  <div id="modunuri-products-sentinel" v-show="hasMore" style="height:1px;"></div>
+</div>
+  `,
+  setup(props) {
+    const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
+
+    const PAGE_SIZE = 6;
+    const activeCat = ref('전체');
+    const searchText = ref('');
+    const visibleCount = ref(PAGE_SIZE);
+    const skeletonDone = ref(false);
+
+    const productCats = computed(() => ['전체', ...new Set(props.products.map(p => p.category))]);
+
+    const filteredProducts = computed(() => {
+      var q = String(searchText.value || '').trim().toLowerCase();
+      var byCat = activeCat.value === '전체'
+        ? props.products
+        : props.products.filter(p => p.category === activeCat.value);
+      if (!q) return byCat;
+      return byCat.filter(p => (p.name || '').toLowerCase().includes(q));
+    });
+
+    const displayedProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value));
+    const hasMore = computed(() => visibleCount.value < filteredProducts.value.length);
+
+    function resetPagination() {
+      visibleCount.value = PAGE_SIZE;
+    }
+
+    watch([activeCat, searchText], resetPagination);
+
+    var productsObserver = null;
+    onMounted(function () {
+      setTimeout(function () {
+        skeletonDone.value = true;
+        var el = document.getElementById('modunuri-products-sentinel');
+        if (!el || !('IntersectionObserver' in window)) return;
+        productsObserver = new IntersectionObserver(function (entries) {
+          if (!entries || !entries.length) return;
+          if (entries[0].isIntersecting && hasMore.value) {
+            visibleCount.value = Math.min(filteredProducts.value.length, visibleCount.value + PAGE_SIZE);
+          }
+        }, { rootMargin: '250px' });
+        productsObserver.observe(el);
+      }, 400);
+    });
+
+    onBeforeUnmount(function () {
+      if (productsObserver) productsObserver.disconnect();
+      productsObserver = null;
+    });
+
+    return {
+      activeCat, productCats,
+      searchText,
+      filteredProducts, displayedProducts, hasMore,
+      skeletonDone,
+      resetPagination,
+    };
+  }
+};

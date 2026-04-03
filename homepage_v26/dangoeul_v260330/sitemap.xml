@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Vue SPA: 실제 공개 URL은 index.html 한 경로입니다. 도메인은 배포 시 config.js seo.siteUrl 과 맞출 것 -->
+  <url>
+    <loc>https://www.dangoeul.kr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

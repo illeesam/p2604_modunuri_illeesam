@@ -1,0 +1,6 @@
+# 단고을 DANGOEUL — 검색 로봇
+# 실제 서비스 도메인으로 배포 시 아래 Sitemap URL을 수정하세요 (config.js seo.siteUrl 과 동일)
+User-agent: *
+Allow: /
+
+Sitemap: https://www.dangoeul.kr/sitemap.xml

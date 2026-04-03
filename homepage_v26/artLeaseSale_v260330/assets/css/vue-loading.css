@@ -1,0 +1,72 @@
+/* Vue CDN 초기 구동 전 전체 화면 로딩 */
+:root {
+  --vue-loading-accent: #c9a059;
+  --vue-loading-glow: rgba(201, 160, 89, 0.28);
+}
+
+.vue-app-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(155deg, #1a0f08 0%, #2e1a0e 48%, #1a0f08 100%);
+  transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
+.vue-app-loading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  background: radial-gradient(ellipse 90% 55% at 50% -10%, var(--vue-loading-glow), transparent 65%);
+  pointer-events: none;
+}
+
+.vue-app-loading--done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.vue-app-loading-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 1.75rem 2.25rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(201, 160, 89, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+}
+
+.vue-app-loading-spinner {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--vue-loading-accent);
+  animation: vue-app-loading-spin 0.75s linear infinite;
+}
+
+@keyframes vue-app-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+.vue-app-loading-text {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(241, 235, 220, 0.92);
+  animation: vue-app-loading-pulse 1.35s ease-in-out infinite;
+}
+
+@keyframes vue-app-loading-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}

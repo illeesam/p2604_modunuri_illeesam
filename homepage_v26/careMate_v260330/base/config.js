@@ -1,0 +1,227 @@
+/* ============================================
+   케어메이트 CareMate - Site Configuration
+   병원동행 & 돌봄 서비스
+   ============================================ */
+window.SITE_CONFIG = {
+  name: '케어메이트',
+  nameEn: 'CareMate',
+  tagline: '병원동행 & 돌봄 서비스',
+  tel: '010-9998-0857',
+  email: 'korea98781@gmail.com',
+  kakao: 'caremate',
+  address: '경기도 성남시 중원구 성남대로 997번길 49-14 201호',
+  bankName: '국민은행',
+  bankAccount: '123-456-789012',
+  bankHolder: '케어메이트(주)',
+
+  topMenu: [
+    { id:'home',     label:'홈',         icon:'🏠' },
+    { id:'about',    label:'서비스소개', icon:'ℹ️' },
+    { id:'products', label:'서비스목록', icon:'🗂️' },
+    { id:'detail',   label:'서비스상세', icon:'🔍' },
+    { id:'booking',  label:'병원동행예약', icon:'🏥' },
+    { id:'order',    label:'서비스신청', icon:'📋' },
+    { id:'faq',      label:'FAQ',        icon:'❓' },
+    { id:'contact',  label:'고객센터',   icon:'📞' },
+    { id:'location', label:'오시는 길',  icon:'📍' },
+  ],
+
+  sidebarMenu: [
+    {
+      section: '서비스',
+      items: [
+        { id:'home',     label:'홈',         icon:'🏠' },
+        { id:'products', label:'서비스목록', icon:'🗂️' },
+        { id:'detail',   label:'서비스상세', icon:'🔍' },
+      ]
+    },
+    {
+      section: '예약/신청',
+      items: [
+        { id:'booking', label:'병원동행 예약', icon:'🏥' },
+        { id:'order',   label:'서비스 신청',   icon:'📋' },
+      ]
+    },
+    {
+      section: '안내',
+      items: [
+        { id:'about',    label:'서비스소개',  icon:'ℹ️' },
+        { id:'faq',      label:'FAQ',         icon:'❓' },
+        { id:'contact',  label:'고객센터',    icon:'📞' },
+        { id:'location', label:'오시는 길',   icon:'📍' },
+      ]
+    }
+  ],
+
+  /* ── 서비스 카테고리 ── */
+  categories: [
+    { id:'hospital', label:'병원동행',       icon:'🏥', color:'blue',  desc:'병원 방문부터 귀가까지 전 과정 동행' },
+    { id:'daily',    label:'일상생활지원',   icon:'🏠', color:'teal',  desc:'가사, 외출, 일상적인 활동 지원' },
+    { id:'disabled', label:'장애인활동지원', icon:'♿', color:'amber', desc:'장애인 이동·일상·사회참여 활동지원' },
+    { id:'care',     label:'요양보호사',     icon:'🤝', color:'blue',  desc:'전문 요양보호사 방문요양 서비스' },
+  ],
+
+  /* ── 상품목록 ── */
+  products: [
+    /* ── 병원동행 ── */
+    {
+      id:1, category:'hospital', categoryLabel:'병원동행',
+      emoji:'🚶', name:'병원동행 BASIC',
+      badge:'', color:'blue',
+      tags:['자가보행가능','비매니저','3시간이내'],
+      desc:'자가보행 가능한 환자분의 가벼운 외래진료 동행. 접수·대기·귀가 지원.',
+      features:['외래 접수 및 대기 동행','진료 후 귀가 동행','3시간 이내 기준'],
+      price:'30,000원/시간', priceNote:'기본 2시간, 이후 시간당 추가',
+      includes:{ vehicle:false, manager:false, wheelchair:false }
+    },
+    {
+      id:2, category:'hospital', categoryLabel:'병원동행',
+      emoji:'🧑‍⚕️', name:'병원동행 STANDARD',
+      badge:'추천', color:'blue',
+      tags:['자가보행가능','매니저역할','차량미포함'],
+      desc:'자가보행 가능 환자 동행 + 매니저 역할(의사 소통 보조, 처방전 수령, 약국 동행 등).',
+      features:['접수·대기·귀가 동행','의료진 소통 보조','처방전·약 수령 대행','진료과목 사전 안내'],
+      price:'50,000원/시간', priceNote:'기본 2시간, 이후 시간당 추가',
+      includes:{ vehicle:false, manager:true, wheelchair:false }
+    },
+    {
+      id:3, category:'hospital', categoryLabel:'병원동행',
+      emoji:'🦽', name:'병원동행 PLUS',
+      badge:'', color:'blue',
+      tags:['휠체어이용','매니저역할','이동보조'],
+      desc:'휠체어 이용 환자 전담 동행. 휠체어 이동 보조 및 매니저 역할 수행.',
+      features:['휠체어 이동 전 과정 보조','병원 내 이동 지원','매니저 역할 수행','필요 시 리프트 차량 연결'],
+      price:'70,000원/시간', priceNote:'기본 2시간, 이후 시간당 추가',
+      includes:{ vehicle:false, manager:true, wheelchair:true }
+    },
+    {
+      id:4, category:'hospital', categoryLabel:'병원동행',
+      emoji:'🚑', name:'병원동행 PREMIUM',
+      badge:'전문', color:'blue',
+      tags:['침대·의료기기','차량포함','매니저역할'],
+      desc:'침대 이동 필요 환자 또는 의료기기(산소통 등) 사용 환자를 위한 리프트 차량 포함 풀케어 서비스.',
+      features:['리프트 차량 픽업·드롭','침대 이동 전담 보조','의료기기 관리 지원','전문 매니저 동행','진료과목 사전 협의'],
+      price:'100,000원/시간', priceNote:'기본 3시간, 차량비 포함',
+      includes:{ vehicle:true, manager:true, wheelchair:true }
+    },
+
+    /* ── 일상생활지원 ── */
+    {
+      id:5, category:'daily', categoryLabel:'일상생활지원',
+      emoji:'🧹', name:'일상지원 BASIC',
+      badge:'', color:'teal',
+      tags:['가사지원','2시간'],
+      desc:'청소, 설거지, 세탁 등 기본 가사활동 지원 (2시간 기준).',
+      features:['청소 및 정리정돈','설거지','세탁물 처리','2시간 기본'],
+      price:'30,000원/2시간', priceNote:'추가 30분당 8,000원',
+      includes:{}
+    },
+    {
+      id:6, category:'daily', categoryLabel:'일상생활지원',
+      emoji:'🛒', name:'일상지원 STANDARD',
+      badge:'인기', color:'teal',
+      tags:['가사+외출동행','3시간'],
+      desc:'가사활동 + 마트·약국·은행 등 외출 동행 지원 (3시간 기준).',
+      features:['기본 가사활동','마트·약국 동행','관공서 업무 보조','3시간 기본'],
+      price:'45,000원/3시간', priceNote:'추가 30분당 8,000원',
+      includes:{}
+    },
+    {
+      id:7, category:'daily', categoryLabel:'일상생활지원',
+      emoji:'🌟', name:'일상지원 PREMIUM',
+      badge:'', color:'teal',
+      tags:['종합일상지원','5시간'],
+      desc:'가사 전반 + 외출동행 + 말벗 및 심리지원 등 종합 일상생활 지원 (5시간).',
+      features:['전반적인 가사 지원','외출 전 과정 동행','식사 준비 보조','말벗 및 정서 지원','5시간 기본'],
+      price:'70,000원/5시간', priceNote:'추가 30분당 8,000원',
+      includes:{}
+    },
+
+    /* ── 장애인활동지원 ── */
+    {
+      id:8, category:'disabled', categoryLabel:'장애인활동지원',
+      emoji:'♿', name:'활동지원 BASIC',
+      badge:'', color:'amber',
+      tags:['이동지원','2시간'],
+      desc:'장애인 이동 지원 서비스 (대중교통 이용, 보행 보조) 2시간 기준.',
+      features:['이동 보조 지원','대중교통 이용 안내','안전 보행 동행','2시간 기본'],
+      price:'35,000원/2시간', priceNote:'장애인활동지원 바우처 병행 가능',
+      includes:{}
+    },
+    {
+      id:9, category:'disabled', categoryLabel:'장애인활동지원',
+      emoji:'🙌', name:'활동지원 STANDARD',
+      badge:'추천', color:'amber',
+      tags:['이동+일상지원','4시간'],
+      desc:'이동 지원 + 일상생활 지원 복합 서비스 (4시간). 사회참여 활동 포함.',
+      features:['이동 보조','일상생활 지원','사회참여 동행','4시간 기본'],
+      price:'65,000원/4시간', priceNote:'장애인활동지원 바우처 병행 가능',
+      includes:{}
+    },
+    {
+      id:10, category:'disabled', categoryLabel:'장애인활동지원',
+      emoji:'💪', name:'활동지원 PREMIUM',
+      badge:'', color:'amber',
+      tags:['전일지원','8시간'],
+      desc:'이동·일상·사회참여 종합 지원 전일 서비스 (8시간). 취업활동·문화생활 동반 포함.',
+      features:['전일 이동 지원','일상생활 전반 보조','사회·문화 활동 동반','취업 활동 보조 가능','8시간 기본'],
+      price:'120,000원/8시간', priceNote:'장애인활동지원 바우처 병행 가능',
+      includes:{}
+    },
+
+    /* ── 요양보호사 ── */
+    {
+      id:11, category:'care', categoryLabel:'요양보호사',
+      emoji:'🤝', name:'방문요양 LIGHT',
+      badge:'', color:'blue',
+      tags:['방문요양','2시간'],
+      desc:'전문 요양보호사의 방문요양 서비스 (신체활동 + 가사 지원 2시간).',
+      features:['신체활동 지원 (세면·식사)','가사 지원','건강상태 확인','2시간 기본'],
+      price:'40,000원/2시간', priceNote:'장기요양 급여 병행 가능',
+      includes:{}
+    },
+    {
+      id:12, category:'care', categoryLabel:'요양보호사',
+      emoji:'🏥', name:'방문요양 STANDARD',
+      badge:'인기', color:'blue',
+      tags:['방문요양','4시간'],
+      desc:'신체활동·인지활동·가사 지원 종합 방문요양 서비스 (4시간).',
+      features:['신체활동 전반 지원','인지활동 프로그램','가사 지원','건강·복약 관리 보조','4시간 기본'],
+      price:'75,000원/4시간', priceNote:'장기요양 급여 병행 가능',
+      includes:{}
+    },
+    {
+      id:13, category:'care', categoryLabel:'요양보호사',
+      emoji:'🌙', name:'방문요양 FULL',
+      badge:'', color:'blue',
+      tags:['종일방문요양','8시간'],
+      desc:'종일 방문요양 서비스 (8시간). 신체·인지·가사·정서 지원 전반.',
+      features:['종일 신체활동 지원','인지·정서 케어','가사 전반 지원','긴급 상황 대응 보고','8시간 기본'],
+      price:'140,000원/8시간', priceNote:'장기요양 급여 병행 가능',
+      includes:{}
+    },
+  ],
+
+  /* ── 병원 목록 ── */
+  hospitals: [
+    '서울대학교병원','세브란스병원','삼성서울병원','서울성모병원','아산병원',
+    '분당서울대학교병원','분당차병원','성남중앙병원','분당제생병원','국군수도병원',
+    '동네 의원 (직접입력)',
+  ],
+
+  /* ── 진료과목 ── */
+  departments: [
+    '내과','외과','정형외과','신경과','신경외과','심장내과','소화기내과',
+    '호흡기내과','내분비내과','안과','이비인후과','피부과','비뇨의학과',
+    '재활의학과','정신건강의학과','산부인과','소아청소년과','응급의학과','기타',
+  ],
+
+  faqs: [
+    { q:'예약 취소·변경은 언제까지 가능한가요?', a:'서비스 시작 24시간 전까지 취소·변경이 가능합니다. 24시간 이내 취소는 서비스 요금의 50%가 위약금으로 부과될 수 있습니다.' },
+    { q:'매니저는 어떤 분들인가요?', a:'케어메이트 매니저는 사회복지사, 간호조무사, 요양보호사 자격 보유자 등 전문 케어 인력으로 구성됩니다. 채용 시 신원조회 및 교육 이수를 필수로 합니다.' },
+    { q:'병원동행 서비스 비용에 보험 적용이 되나요?', a:'현재 병원동행 서비스는 건강보험 급여 적용 대상이 아닙니다. 단, 장애인활동지원 및 요양보호사 서비스는 바우처/장기요양급여 병행 이용이 가능합니다.' },
+    { q:'서비스 지역은 어디까지인가요?', a:'현재 수도권(서울·경기·인천) 전 지역에서 서비스를 제공합니다. 지방 서비스는 별도 문의 바랍니다.' },
+    { q:'급하게 당일 예약도 가능한가요?', a:'당일 예약은 오전 9시 이전 연락 시 매니저 배정이 가능합니다. 다만, 매니저 상황에 따라 배정이 어려울 수 있으니 최소 하루 전 예약을 권장합니다.' },
+    { q:'계좌이체 외 다른 결제 방법은 없나요?', a:'현재는 계좌이체(선불)로만 서비스가 진행됩니다. 서비스 확정 후 안내드리는 계좌로 이체해 주시면 됩니다.' },
+  ],
+};

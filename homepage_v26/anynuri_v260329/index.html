@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnyNuri - 애니메이션 스튜디오</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <!-- yup: 브라우저 UMD는 버전별 경로가 달라 base/app.js에서 ESM 동적 import 사용 -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vue-loading.css">
+  <style>:root { --vue-loading-accent: #ff6b9d; --vue-loading-glow: rgba(255, 107, 157, 0.22); }</style>
+</head>
+<body>
+<div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
+  <div class="vue-app-loading-inner">
+    <div class="vue-app-loading-spinner" aria-hidden="true"></div>
+    <p class="vue-app-loading-text">로딩 중…</p>
+  </div>
+</div>
+<div id="app">
+
+  <!-- ══ TOAST ══════════════════════════════════════════════ -->
+  <transition name="fade">
+    <div v-if="toast.show" class="toast-wrap" :class="'toast-' + toast.type">
+      <span v-if="toast.type==='success'">✅</span>
+      <span v-else-if="toast.type==='error'">❌</span>
+      <span v-else-if="toast.type==='warning'">⚠️</span>
+      <span v-else>ℹ️</span>
+      <span>{{ toast.msg }}</span>
+    </div>
+  </transition>
+
+  <!-- ══ ALERT MODAL ════════════════════════════════════════ -->
+  <transition name="fade">
+    <div v-if="alertState.show" class="modal-overlay" @click.self="closeAlert">
+      <div class="modal-box">
+        <div class="modal-icon" :class="'icon-' + alertState.type">
+          <span v-if="alertState.type==='success'">✓</span>
+          <span v-else-if="alertState.type==='error'">✕</span>
+          <span v-else-if="alertState.type==='warning'">!</span>
+          <span v-else>i</span>
+        </div>
+        <div class="modal-title">{{ alertState.title }}</div>
+        <div class="modal-msg" style="white-space:pre-line">{{ alertState.msg }}</div>
+        <button @click="closeAlert" class="btn-sakura w-full py-2 rounded-xl">확인</button>
+      </div>
+    </div>
+  </transition>
+
+  <!-- ══ CONFIRM MODAL ══════════════════════════════════════ -->
+  <transition name="fade">
+    <div v-if="confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
+      <div class="modal-box">
+        <div class="modal-icon" :class="'icon-' + confirmState.type">
+          <span v-if="confirmState.type==='warning'">!</span>
+          <span v-else>?</span>
+        </div>
+        <div class="modal-title">{{ confirmState.title }}</div>
+        <div class="modal-msg" style="white-space:pre-line">{{ confirmState.msg }}</div>
+        <div class="flex gap-3">
+          <button @click="closeConfirm(false)" class="btn-outline flex-1 py-2 rounded-xl">취소</button>
+          <button @click="closeConfirm(true)" class="btn-sakura flex-1 py-2 rounded-xl">확인</button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- (blog detail is shown as a dedicated page, not a popup modal) -->
+
+  <!-- ══ MOBILE SIDEBAR OVERLAY ═════════════════════════════ -->
+  <div class="mobile-overlay" :class="{ active: mobileOpen }" @click="closeMobileMenu"></div>
+
+  <!-- ══ OUTER SHELL ════════════════════════════════════════ -->
+  <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);color:var(--text-primary)">
+
+    <!-- ── HEADER ─────────────────────────────────────────── -->
+    <header id="header">
+      <!-- Hamburger (mobile) -->
+      <button @click="toggleMobileMenu"
+        class="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-pink-50 dark:hover:bg-white/5 transition-colors"
+        style="color:var(--text-secondary)">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path v-if="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <!-- Sidebar toggle (desktop) -->
+      <button @click="sidebarOpen=!sidebarOpen"
+        class="hidden lg:flex items-center justify-center w-9 h-9 rounded-lg transition-colors"
+        style="color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            :d="sidebarOpen ? 'M11 19l-7-7 7-7' : 'M13 5l7 7-7 7'"/>
+        </svg>
+      </button>
+
+      <!-- Logo -->
+      <div class="flex items-center gap-2.5 cursor-pointer select-none flex-1" @click="navigate('home')">
+        <div class="w-9 h-9 rounded-2xl gradient-bg flex items-center justify-center text-lg font-black flex-shrink-0">✨</div>
+        <div>
+          <div class="text-base font-black gradient-text leading-none">AnyNuri</div>
+          <div class="text-xs leading-none" style="color:var(--text-muted)">애니메이션 스튜디오</div>
+        </div>
+      </div>
+
+      <!-- Desktop nav links (top bar quick access) -->
+      <nav class="hidden xl:flex items-center gap-1 mr-2">
+        <button v-for="m in config.menus.slice(0,5)" :key="m.id"
+          @click="navigate(m.id)"
+          class="nav-link px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+          :class="page===m.id ? 'active' : ''"
+          style="color:var(--text-secondary)">
+          {{ m.label }}
+        </button>
+      </nav>
+
+      <!-- CTA + theme toggle -->
+      <div class="flex items-center gap-2">
+        <button @click="navigate('contact')"
+          class="hidden md:block btn-sakura px-4 py-2 rounded-full text-sm">
+          의뢰하기
+        </button>
+        <button @click="toggleTheme"
+          class="w-9 h-9 rounded-lg flex items-center justify-center text-base transition-colors"
+          style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary)"
+          :title="theme==='light' ? '다크 모드' : '라이트 모드'">
+          <span v-if="theme==='light'">🌙</span>
+          <span v-else>☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── BODY ROW ────────────────────────────────────────── -->
+    <div style="display:flex;flex:1;overflow:hidden;position:relative">
+
+      <!-- ── SIDEBAR ─────────────────────────────────────── -->
+      <aside id="sidebar" :class="{ collapsed: !sidebarOpen, open: mobileOpen }">
+        <!-- Sidebar header -->
+        <div style="height:48px;display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--border);flex-shrink:0">
+          <span v-if="sidebarOpen" class="text-xs font-bold uppercase tracking-widest" style="color:var(--text-muted)">메뉴</span>
+          <span v-else class="text-xs" style="color:var(--text-muted)">≡</span>
+        </div>
+
+        <!-- Nav items -->
+        <nav style="flex:1;overflow-y:auto;padding:0.75rem 0.5rem">
+          <button v-for="m in config.menus" :key="m.id"
+            @click="navigate(m.id, { replace: true })"
+            class="sidebar-link w-full"
+            :class="{ active: page===m.id }">
+            <span class="text-base flex-shrink-0">{{ m.icon }}</span>
+            <span v-if="sidebarOpen" class="truncate">{{ m.label }}</span>
+          </button>
+        </nav>
+
+        <!-- Sidebar footer CTA -->
+        <div v-if="sidebarOpen" style="padding:0.75rem;border-top:1px solid var(--border);flex-shrink:0">
+          <button @click="navigate('contact', { replace: true })" class="btn-sakura w-full py-2 rounded-xl text-sm">
+            ✨ 작품 의뢰하기
+          </button>
+        </div>
+      </aside>
+
+      <!-- ── MAIN CONTENT ────────────────────────────────── -->
+      <main style="flex:1;overflow-y:auto;min-width:0">
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: HOME                                       -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='home'" class="p-6 lg:p-8 max-w-5xl mx-auto">
+
+          <!-- Hero -->
+          <section class="card rainbow-border p-10 mb-8 text-center relative overflow-hidden" style="border-radius:24px">
+            <div class="absolute inset-0 opacity-5 gradient-bg"></div>
+            <div class="relative z-10">
+              <div class="flex justify-center gap-8 mb-6">
+                <span class="float-1 text-5xl select-none">🌸</span>
+                <span class="float-2 text-5xl select-none">⭐</span>
+                <span class="float-3 text-5xl select-none">🎬</span>
+              </div>
+              <h1 class="text-4xl lg:text-5xl font-black mb-3 gradient-text leading-tight">
+                {{ config.site.name }}
+              </h1>
+              <p class="text-lg font-semibold mb-2" style="color:var(--text-secondary)">
+                {{ config.site.tagline }}
+              </p>
+              <p class="text-sm mb-8" style="color:var(--text-muted)">
+                감성과 기술이 만나 탄생하는 특별한 애니메이션의 세계
+              </p>
+              <div class="flex flex-wrap gap-3 justify-center">
+                <button @click="navigate('works')" class="btn-sakura px-8 py-3 rounded-full">
+                  🎬 작품보기
+                </button>
+                <button @click="navigate('contact')" class="btn-outline px-8 py-3 rounded-full">
+                  ✉️ 의뢰하기
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Stats -->
+          <section class="mb-8">
+            <h2 class="text-lg font-black mb-4" style="color:var(--text-primary)">스튜디오 현황</h2>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div v-for="(s, i) in config.stats" :key="i" class="stat-card">
+                <div class="stat-value gradient-text">{{ s.value }}</div>
+                <div class="stat-label">{{ s.label }}</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Featured Works -->
+          <section class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-black" style="color:var(--text-primary)">주요 작품</h2>
+              <button @click="navigate('works')" class="text-sm font-semibold" style="color:var(--sakura)">전체 보기 →</button>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5">
+              <div v-for="w in works.slice(0,3)" :key="w.id" class="work-card cursor-pointer" @click="selectWork(w)">
+                <div class="flex items-center justify-center h-36 text-6xl"
+                  :style="{ background: w.bg }">{{ w.emoji }}</div>
+                <div class="p-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="tag-pill">{{ w.genre }}</span>
+                    <span class="text-xs" style="color:var(--text-muted)">{{ w.year }}</span>
+                  </div>
+                  <h3 class="font-black text-sm mb-1" style="color:var(--text-primary)">{{ w.title }}</h3>
+                  <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">{{ w.desc }}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- CTA Card -->
+          <section class="card p-8 text-center" style="background:linear-gradient(135deg,var(--sakura-dim),var(--sky-dim))">
+            <div class="text-3xl mb-3">🎨</div>
+            <h2 class="text-xl font-black mb-2" style="color:var(--text-primary)">함께 만들어가는 애니메이션</h2>
+            <p class="text-sm mb-5" style="color:var(--text-secondary)">
+              당신의 이야기를 아름다운 애니메이션으로 만들어 드립니다.<br>
+              지금 바로 의뢰 상담을 시작해보세요.
+            </p>
+            <div class="flex flex-wrap gap-3 justify-center">
+              <button @click="navigate('contact')" class="btn-sakura px-6 py-2.5 rounded-full">상담 신청하기</button>
+              <button @click="navigate('faq')" class="btn-outline px-6 py-2.5 rounded-full">자주 묻는 질문</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: ABOUT                                      -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='about'" class="p-6 lg:p-8 max-w-4xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-black gradient-text mb-1">회사 소개</h1>
+            <p class="section-subtitle">AnyNuri Animation Studio</p>
+          </div>
+
+          <!-- Description -->
+          <div class="card p-6 mb-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center text-xl">✨</div>
+              <div>
+                <h2 class="font-black" style="color:var(--text-primary)">AnyNuri</h2>
+                <p class="text-xs" style="color:var(--text-muted)">2016년 설립 · 서울 마포구</p>
+              </div>
+            </div>
+            <p class="text-sm leading-relaxed mb-4" style="color:var(--text-secondary)">
+              AnyNuri는 2016년에 설립된 독립 애니메이션 스튜디오입니다. "세상 모든 누리를 애니메이션으로"라는 비전 아래
+              감성적인 2D 애니메이션부터 스펙터클한 3D CG 작품까지 다양한 장르와 스타일을 아우릅니다.
+              국내외 15개 이상의 작품을 제작하였으며, 12회의 국내외 수상 경력을 보유하고 있습니다.
+            </p>
+            <p class="text-sm leading-relaxed" style="color:var(--text-secondary)">
+              일본·미국·유럽 배급사와의 파트너십을 통해 5개국에 작품을 배급하고 있으며,
+              OTT 플랫폼 오리지널 콘텐츠 제작에도 적극 참여하고 있습니다.
+            </p>
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div v-for="(s, i) in config.stats" :key="i" class="stat-card">
+              <div class="stat-value gradient-text">{{ s.value }}</div>
+              <div class="stat-label">{{ s.label }}</div>
+            </div>
+          </div>
+
+          <!-- Values -->
+          <h2 class="text-lg font-black mb-4" style="color:var(--text-primary)">핵심 가치</h2>
+          <div class="grid md:grid-cols-3 gap-4 mb-8">
+            <div class="card p-5 text-center">
+              <div class="text-3xl mb-3">🌸</div>
+              <h3 class="font-black mb-2" style="color:var(--sakura)">감성</h3>
+              <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                보는 이의 마음을 움직이는 진심 어린 스토리텔링과 섬세한 감정 표현
+              </p>
+            </div>
+            <div class="card p-5 text-center">
+              <div class="text-3xl mb-3">⚡</div>
+              <h3 class="font-black mb-2" style="color:var(--sky)">혁신</h3>
+              <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                최신 기술과 창의적 발상으로 애니메이션의 경계를 끊임없이 확장
+              </p>
+            </div>
+            <div class="card p-5 text-center">
+              <div class="text-3xl mb-3">🤝</div>
+              <h3 class="font-black mb-2" style="color:var(--mint)">협력</h3>
+              <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                클라이언트와의 긴밀한 소통으로 비전을 현실로 만드는 파트너십
+              </p>
+            </div>
+          </div>
+
+          <!-- Team -->
+          <h2 class="text-lg font-black mb-4" style="color:var(--text-primary)">팀 소개</h2>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="team-card">
+              <div class="team-avatar">👩‍🎨</div>
+              <div class="font-black text-sm mb-0.5" style="color:var(--text-primary)">김아영</div>
+              <div class="text-xs" style="color:var(--sakura)">대표감독</div>
+              <p class="text-xs mt-2 leading-relaxed" style="color:var(--text-muted)">10년 경력 애니메이션 감독</p>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">🎨</div>
+              <div class="font-black text-sm mb-0.5" style="color:var(--text-primary)">박지훈</div>
+              <div class="text-xs" style="color:var(--sky)">아트디렉터</div>
+              <p class="text-xs mt-2 leading-relaxed" style="color:var(--text-muted)">독창적 세계관 구축 전문</p>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">✍️</div>
+              <div class="font-black text-sm mb-0.5" style="color:var(--text-primary)">이서연</div>
+              <div class="text-xs" style="color:var(--mint)">시나리오작가</div>
+              <p class="text-xs mt-2 leading-relaxed" style="color:var(--text-muted)">다수의 수상작 집필 경력</p>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">🎵</div>
+              <div class="font-black text-sm mb-0.5" style="color:var(--text-primary)">최민준</div>
+              <div class="text-xs" style="color:var(--gold)">음악감독</div>
+              <p class="text-xs mt-2 leading-relaxed" style="color:var(--text-muted)">감성 사운드트랙 제작 전문</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: WORKS                                      -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='works'" class="p-6 lg:p-8 max-w-5xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-black gradient-text mb-1">작품 소개</h1>
+            <p class="section-subtitle">AnyNuri의 대표 애니메이션 작품들</p>
+          </div>
+
+          <!-- Filter -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            <button v-for="cat in cats" :key="cat"
+              @click="activeCat = cat"
+              class="filter-btn"
+              :class="{ active: activeCat === cat }">
+              {{ cat }}
+            </button>
+          </div>
+
+          <!-- Search -->
+          <div style="margin-bottom:28px;">
+            <input
+              v-model="searchText"
+              type="text"
+              class="form-input w-full md:w-72"
+              placeholder="작품명 검색"
+              @input="resetPagination"
+            />
+          </div>
+
+          <!-- Grid -->
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div v-for="w in displayedWorks" :key="w.id" class="work-card cursor-pointer" @click="selectWork(w)">
+              <div class="flex items-center justify-center h-44 text-6xl relative"
+                :style="{ background: w.bg }">
+                <span>{{ w.emoji }}</span>
+                <div class="absolute top-3 right-3">
+                  <span class="tag-pill" style="background:rgba(0,0,0,0.4);border-color:rgba(255,255,255,0.2);color:#fff">
+                    {{ w.genre }}
+                  </span>
+                </div>
+              </div>
+              <div class="p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-black text-sm" style="color:var(--text-primary)">{{ w.title }}</h3>
+                  <span class="text-xs" style="color:var(--text-muted)">{{ w.year }}</span>
+                </div>
+                <p class="text-xs leading-relaxed mb-3" style="color:var(--text-secondary)">{{ w.desc }}</p>
+                <div class="flex flex-wrap gap-1 mb-2">
+                  <span v-for="tag in w.tags" :key="tag" class="tag-pill text-xs">{{ tag }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs" style="color:var(--text-muted)">⏱ {{ w.duration }}</span>
+                  <span v-if="w.awards.length" class="text-xs" style="color:var(--gold)">🏆 수상작</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="anynuri-works-sentinel" v-show="hasMore" style="height:1px;"></div>
+          <div v-if="filteredWorks.length === 0" class="text-center py-16" style="color:var(--text-muted)">
+            <div class="text-4xl mb-3">🔍</div>
+            <p class="text-sm">해당 조건의 작품이 없습니다.</p>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: PORTFOLIO                                  -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='portfolio'" class="p-6 lg:p-8 max-w-5xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-black gradient-text mb-1">작품 목록</h1>
+            <p class="section-subtitle">전체 포트폴리오 — {{ works.length }}개 작품</p>
+          </div>
+
+          <!-- Desktop table -->
+          <div class="card hidden md:block overflow-hidden mb-4">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>작품</th>
+                  <th>장르</th>
+                  <th>연도</th>
+                  <th>상영 시간</th>
+                  <th>수상</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="w in works" :key="w.id">
+                  <td>
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                        :style="{ background: w.bg }">{{ w.emoji }}</div>
+                      <div>
+                        <div class="font-bold text-sm" style="color:var(--text-primary)">{{ w.title }}</div>
+                        <div class="flex gap-1 mt-0.5">
+                          <span v-for="tag in w.tags.slice(0,2)" :key="tag" class="tag-pill" style="font-size:0.65rem">{{ tag }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="tag-pill">{{ w.genre }}</span></td>
+                  <td style="color:var(--text-secondary)">{{ w.year }}</td>
+                  <td style="color:var(--text-secondary)">{{ w.duration }}</td>
+                  <td>
+                    <span v-if="w.awards.length" class="text-xs font-semibold" style="color:var(--gold)">🏆 {{ w.awards.length }}건</span>
+                    <span v-else class="text-xs" style="color:var(--text-muted)">—</span>
+                  </td>
+                  <td>
+                    <button @click="selectWork(w)" class="btn-sakura px-3 py-1.5 rounded-lg text-xs">상세보기</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile cards -->
+          <div class="md:hidden grid gap-4">
+            <div v-for="w in works" :key="w.id" class="card p-4">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+                  :style="{ background: w.bg }">{{ w.emoji }}</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-black text-sm truncate" style="color:var(--text-primary)">{{ w.title }}</div>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="tag-pill" style="font-size:0.65rem">{{ w.genre }}</span>
+                    <span class="text-xs" style="color:var(--text-muted)">{{ w.year }}</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs leading-relaxed mb-3" style="color:var(--text-secondary)">{{ w.desc }}</p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs" style="color:var(--text-muted)">⏱ {{ w.duration }}</span>
+                <button @click="selectWork(w)" class="btn-sakura px-3 py-1.5 rounded-lg text-xs">상세보기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: DETAIL                                     -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='detail'" class="p-6 lg:p-8 max-w-4xl mx-auto">
+          <div class="mb-4">
+            <button @click="navigate('works')" class="btn-outline px-3 py-1.5 rounded-lg text-xs mb-4">← 목록으로</button>
+          </div>
+          <div v-if="selectedWork" class="grid lg:grid-cols-3 gap-6">
+            <!-- Main -->
+            <div class="lg:col-span-2">
+              <!-- Hero image area -->
+              <div class="detail-hero mb-5" :style="{ background: selectedWork.bg }">
+                <span>{{ selectedWork.emoji }}</span>
+              </div>
+              <!-- Title + tags -->
+              <div class="flex flex-wrap items-start gap-2 mb-3">
+                <h1 class="text-2xl font-black flex-1" style="color:var(--text-primary)">{{ selectedWork.title }}</h1>
+                <span v-if="selectedWork.awards.length" class="tag-pill" style="background:var(--gold-dim);border-color:rgba(224,144,0,0.3);color:var(--gold)">🏆 수상작</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 mb-4">
+                <span v-for="tag in selectedWork.tags" :key="tag" class="tag-pill">{{ tag }}</span>
+              </div>
+              <p class="text-sm leading-relaxed mb-5" style="color:var(--text-secondary)">{{ selectedWork.desc }}</p>
+              <!-- Buttons -->
+              <div class="flex flex-wrap gap-3 mb-6">
+                <button @click="openDemo(selectedWork)" class="btn-sky px-5 py-2.5 rounded-full">
+                  ▶ 미리보기 / 데모 보기
+                </button>
+                <button @click="navigate('contact')" class="btn-sakura px-5 py-2.5 rounded-full">
+                  ✉️ 유사 작품 의뢰하기
+                </button>
+              </div>
+              <!-- Awards -->
+              <div v-if="selectedWork.awards.length" class="card p-4">
+                <h3 class="font-black text-sm mb-3" style="color:var(--text-primary)">🏆 수상 내역</h3>
+                <ul class="space-y-2">
+                  <li v-for="award in selectedWork.awards" :key="award"
+                    class="flex items-center gap-2 text-sm" style="color:var(--text-secondary)">
+                    <span style="color:var(--gold)">★</span>{{ award }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Sidebar info -->
+            <div class="space-y-4">
+              <div class="card p-4">
+                <h3 class="font-black text-sm mb-3" style="color:var(--text-primary)">작품 정보</h3>
+                <dl class="space-y-3">
+                  <div>
+                    <dt class="form-label">장르</dt>
+                    <dd class="text-sm font-semibold" style="color:var(--text-primary)">{{ selectedWork.genre }}</dd>
+                  </div>
+                  <div>
+                    <dt class="form-label">상영 시간</dt>
+                    <dd class="text-sm font-semibold" style="color:var(--text-primary)">{{ selectedWork.duration }}</dd>
+                  </div>
+                  <div>
+                    <dt class="form-label">제작 연도</dt>
+                    <dd class="text-sm font-semibold" style="color:var(--text-primary)">{{ selectedWork.year }}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="card p-4" style="background:linear-gradient(135deg,var(--sakura-dim),var(--sky-dim))">
+                <div class="text-2xl mb-2 text-center">🎨</div>
+                <p class="text-xs text-center mb-3" style="color:var(--text-secondary)">이런 작품을 만들고 싶으신가요?</p>
+                <button @click="navigate('contact')" class="btn-sakura w-full py-2 rounded-xl text-xs">의뢰 상담 신청</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: BLOG                                       -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='blog'" class="p-6 lg:p-8 max-w-5xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-black gradient-text mb-1">블로그</h1>
+            <p class="section-subtitle">애니메이션 업계 인사이트 & 스튜디오 소식</p>
+          </div>
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="blog-card"
+              @click="openBlogDetail({ emoji:'🎨', tag:'스토리텔링', date:'2026.03.10', title:'애니메이션 스토리텔링의 힘', content:'왜 좋은 이야기가 애니메이션의 성패를 결정하는가. 감정이입과 서사 구조의 중요성.' })">
+              <div class="flex items-center justify-center h-36 text-5xl"
+                style="background:linear-gradient(135deg,#1a0020,#2a1040)">🎨</div>
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="tag-pill">스토리텔링</span>
+                  <span class="text-xs" style="color:var(--text-muted)">2026.03.10</span>
+                </div>
+                <h3 class="font-black text-sm mb-1.5" style="color:var(--text-primary)">애니메이션 스토리텔링의 힘</h3>
+                <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                  왜 좋은 이야기가 애니메이션의 성패를 결정하는가. 감정이입과 서사 구조의 중요성.
+                </p>
+              </div>
+            </div>
+            <div class="blog-card"
+              @click="openBlogDetail({ emoji:'⚡', tag:'제작기술', date:'2026.02.25', title:'2D vs 3D 어떤 걸 선택할까', content:'프로젝트 성격에 따른 2D·3D 선택 기준과 비용·기간 비교 완전 가이드.' })">
+              <div class="flex items-center justify-center h-36 text-5xl"
+                style="background:linear-gradient(135deg,#001a20,#002a30)">⚡</div>
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="tag-pill" style="background:var(--sky-dim);border-color:rgba(77,150,255,0.3);color:var(--sky)">제작기술</span>
+                  <span class="text-xs" style="color:var(--text-muted)">2026.02.25</span>
+                </div>
+                <h3 class="font-black text-sm mb-1.5" style="color:var(--text-primary)">2D vs 3D 어떤 걸 선택할까</h3>
+                <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                  프로젝트 성격에 따른 2D·3D 선택 기준과 비용·기간 비교 완전 가이드.
+                </p>
+              </div>
+            </div>
+            <div class="blog-card"
+              @click="openBlogDetail({ emoji:'📱', tag:'트렌드', date:'2026.02.10', title:'OTT 시대의 애니메이션 전략', content:'넷플릭스·디즈니+ 등 글로벌 OTT 플랫폼이 바꾸는 애니메이션 산업의 지형.' })">
+              <div class="flex items-center justify-center h-36 text-5xl"
+                style="background:linear-gradient(135deg,#1a1000,#2a2000)">📱</div>
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="tag-pill" style="background:var(--gold-dim);border-color:rgba(224,144,0,0.3);color:var(--gold)">트렌드</span>
+                  <span class="text-xs" style="color:var(--text-muted)">2026.02.10</span>
+                </div>
+                <h3 class="font-black text-sm mb-1.5" style="color:var(--text-primary)">OTT 시대의 애니메이션 전략</h3>
+                <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                  넷플릭스·디즈니+ 등 글로벌 OTT 플랫폼이 바꾸는 애니메이션 산업의 지형.
+                </p>
+              </div>
+            </div>
+            <div class="blog-card"
+              @click="openBlogDetail({ emoji:'📊', tag:'캐릭터디자인', date:'2026.01.28', title:'캐릭터 디자인 프로세스 공개', content:'AnyNuri 아트팀이 실제로 사용하는 캐릭터 디자인 워크플로우를 상세히 공개합니다.' })">
+              <div class="flex items-center justify-center h-36 text-5xl"
+                style="background:linear-gradient(135deg,#0a1a00,#1a2a00)">📊</div>
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="tag-pill" style="background:var(--mint-dim);border-color:rgba(40,167,69,0.3);color:var(--mint)">캐릭터디자인</span>
+                  <span class="text-xs" style="color:var(--text-muted)">2026.01.28</span>
+                </div>
+                <h3 class="font-black text-sm mb-1.5" style="color:var(--text-primary)">캐릭터 디자인 프로세스 공개</h3>
+                <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                  AnyNuri 아트팀이 실제로 사용하는 캐릭터 디자인 워크플로우를 상세히 공개합니다.
+                </p>
+              </div>
+            </div>
+            <div class="blog-card"
+              @click="openBlogDetail({ emoji:'🔐', tag:'저작권', date:'2026.01.15', title:'IP 개발과 저작권 관리', content:'애니메이션 IP의 가치를 극대화하는 전략과 저작권 보호의 실전 노하우.' })">
+              <div class="flex items-center justify-center h-36 text-5xl"
+                style="background:linear-gradient(135deg,#1a0a00,#2a1500)">🔐</div>
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="tag-pill">저작권</span>
+                  <span class="text-xs" style="color:var(--text-muted)">2026.01.15</span>
+                </div>
+                <h3 class="font-black text-sm mb-1.5" style="color:var(--text-primary)">IP 개발과 저작권 관리</h3>
+                <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                  애니메이션 IP의 가치를 극대화하는 전략과 저작권 보호의 실전 노하우.
+                </p>
+              </div>
+            </div>
+            <div class="blog-card"
+              @click="openBlogDetail({ emoji:'🚀', tag:'제작기', date:'2025.12.20', title:'단편 애니메이션 제작기', content:`'마녀의 제과점' 제작 뒷이야기. 기획부터 완성까지 6개월간의 기록.` })">
+              <div class="flex items-center justify-center h-36 text-5xl"
+                style="background:linear-gradient(135deg,#001a1a,#002a2a)">🚀</div>
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="tag-pill" style="background:var(--sky-dim);border-color:rgba(77,150,255,0.3);color:var(--sky)">제작기</span>
+                  <span class="text-xs" style="color:var(--text-muted)">2025.12.20</span>
+                </div>
+                <h3 class="font-black text-sm mb-1.5" style="color:var(--text-primary)">단편 애니메이션 제작기</h3>
+                <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                  '마녀의 제과점' 제작 뒷이야기. 기획부터 완성까지 6개월간의 기록.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: BLOG DETAIL                                -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='blogDetail'" class="p-6 lg:p-8 max-w-5xl mx-auto">
+          <div class="mb-6 flex items-center gap-3">
+            <button @click="closeBlogDetail"
+              class="btn-outline px-4 py-2 rounded-full text-xs"
+              style="background:transparent;border:1px solid var(--border);color:var(--text-secondary);">
+              ← 블로그로
+            </button>
+            <div class="flex-1"></div>
+          </div>
+
+          <div v-if="blogModal.post" class="card p-6 lg:p-7">
+            <div class="mb-4">
+              <div class="text-3xl mb-2" style="line-height:1;">{{ blogModal.post.emoji }}</div>
+              <div class="text-xl font-black" style="color:var(--text-primary);margin-bottom:8px;">{{ blogModal.post.title }}</div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="tag-pill" style="background:var(--blue-dim);border-color:rgba(0,153,204,0.2);color:var(--blue);">{{ blogModal.post.tag }}</span>
+                <span class="text-xs" style="color:var(--text-muted);">{{ blogModal.post.date }}</span>
+              </div>
+              <div class="text-sm leading-relaxed" style="color:var(--text-secondary);white-space:pre-line;">
+                {{ blogModal.post.content }}
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="card p-6">
+            <div class="text-sm" style="color:var(--text-muted);">선택된 글이 없습니다.</div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: LOCATION                                   -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='location'" class="p-6 lg:p-8 max-w-4xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-black gradient-text mb-1">위치 안내</h1>
+            <p class="section-subtitle">AnyNuri 스튜디오 오시는 길</p>
+          </div>
+          <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Map placeholder -->
+            <div class="lg:col-span-2">
+              <div class="map-placeholder mb-4">
+                <span style="font-size:3rem">📍</span>
+                <span class="font-bold" style="color:var(--text-secondary)">지도 영역</span>
+                <iframe
+                  title="Google Map"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  allowfullscreen
+                  style="width:100%;height:210px;border:0;border-radius:14px;overflow:hidden;background:rgba(0,0,0,0.02);"
+                  src="https://www.google.com/maps?q=%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EC%84%B1%EB%82%A8%EC%8B%9C%20%EC%A4%91%EC%9B%90%EA%B5%AC%20%EC%84%B1%EB%82%A8%EB%8C%80%EB%A1%9C%20997%EB%B2%88%EA%B8%B8%2049-14%20201%ED%98%B8&output=embed"
+                ></iframe>
+                <span class="text-xs" style="color:var(--text-muted);text-align:center;">경기도 성남시 중원구 성남대로 997번길 49-14<br>201호</span>
+              </div>
+              <!-- Transit -->
+              <div class="card p-5">
+                <h3 class="font-black text-sm mb-4" style="color:var(--text-primary)">교통 안내</h3>
+                <div class="space-y-3">
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0">🚇</span>
+                    <div>
+                      <div class="text-sm font-bold mb-0.5" style="color:var(--text-primary)">지하철</div>
+                      <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                        수인분당선 야탑역 4번 출구 (600m) 인근에서 도보 또는 버스로 이동<br>
+                        성남시청(전면) 정류장 하차 도보 5분 (240m)
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0">🚌</span>
+                    <div>
+                      <div class="text-sm font-bold mb-0.5" style="color:var(--text-primary)">버스</div>
+                      <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                        성남시청(전면) 정류장 하차 (240m)
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0">🚗</span>
+                    <div>
+                      <div class="text-sm font-bold mb-0.5" style="color:var(--text-primary)">자가용</div>
+                      <p class="text-xs leading-relaxed" style="color:var(--text-secondary)">
+                        인근 공영/유료 주차장 이용<br>
+                        내비: "성남대로 997번길 49-14" 검색
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info sidebar -->
+            <div class="space-y-4">
+              <div class="card p-5">
+                <h3 class="font-black text-sm mb-4" style="color:var(--text-primary)">스튜디오 정보</h3>
+                <dl class="space-y-3 text-sm">
+                  <div>
+                    <dt class="form-label">주소</dt>
+                    <dd style="color:var(--text-primary);font-weight:600">경기도 성남시 중원구 성남대로 997번길 49-14<br>201호</dd>
+                  </div>
+                  <div>
+                    <dt class="form-label">전화</dt>
+                    <dd style="color:var(--text-primary);font-weight:600">{{ config.site.tel }}</dd>
+                  </div>
+                  <div>
+                    <dt class="form-label">이메일</dt>
+                    <dd style="color:var(--text-primary);font-weight:600">{{ config.site.email }}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-black text-sm mb-4" style="color:var(--text-primary)">운영 시간</h3>
+                <dl class="space-y-2 text-xs">
+                  <div class="flex justify-between">
+                    <dt style="color:var(--text-muted)">월 – 금</dt>
+                    <dd class="font-semibold" style="color:var(--text-primary)">09:00 – 18:00</dd>
+                  </div>
+                  <div class="flex justify-between">
+                    <dt style="color:var(--text-muted)">토요일</dt>
+                    <dd class="font-semibold" style="color:var(--text-primary)">10:00 – 15:00</dd>
+                  </div>
+                  <div class="flex justify-between">
+                    <dt style="color:var(--text-muted)">일 / 공휴일</dt>
+                    <dd class="font-semibold" style="color: #ef4444">휴무</dd>
+                  </div>
+                  <div class="pt-2 border-t" style="border-color:var(--border)">
+                    <p style="color:var(--text-muted)">
+                      ※ 방문 상담은 사전 예약 후 가능합니다.
+                    </p>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: CONTACT                                    -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='contact'" class="p-6 lg:p-8 max-w-4xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-black gradient-text mb-1">고객 센터</h1>
+            <p class="section-subtitle">작품 의뢰 및 제작 문의</p>
+          </div>
+          <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Form -->
+            <div class="lg:col-span-2">
+              <div class="card p-6">
+                <h2 class="font-black text-sm mb-5" style="color:var(--text-primary)">의뢰 양식</h2>
+                <form @submit.prevent="submitForm" class="space-y-4">
+                  <!-- Name -->
+                  <div>
+                    <label class="form-label">이름<span class="form-required">*</span></label>
+                    <input v-model="form.name" type="text" class="form-input" placeholder="홍길동" @input="clearFormError('name')">
+                    <p v-if="formErrors.name" class="form-error">{{ formErrors.name }}</p>
+                  </div>
+                  <!-- Email -->
+                  <div>
+                    <label class="form-label">이메일<span class="form-required">*</span></label>
+                    <input v-model="form.email" type="email" class="form-input" placeholder="example@email.com" @input="clearFormError('email')">
+                    <p v-if="formErrors.email" class="form-error">{{ formErrors.email }}</p>
+                  </div>
+                  <!-- Type -->
+                  <div>
+                    <label class="form-label">의뢰 유형</label>
+                    <select v-model="form.type" class="form-input">
+                      <option value="">선택해주세요 (선택)</option>
+                      <option value="2d">2D 셀 애니메이션</option>
+                      <option value="3d">3D CG 애니메이션</option>
+                      <option value="25d">2.5D 애니메이션</option>
+                      <option value="short">단편 애니메이션</option>
+                      <option value="series">시리즈 / OTT</option>
+                      <option value="other">기타</option>
+                    </select>
+                  </div>
+                  <!-- Desc -->
+                  <div>
+                    <label class="form-label">의뢰 내용<span class="form-required">*</span></label>
+                    <textarea v-model="form.desc" class="form-input" rows="5"
+                      placeholder="작품 기획 내용, 예산, 일정 등을 자유롭게 작성해주세요 (최소 10자)" @input="clearFormError('desc')"></textarea>
+                    <p v-if="formErrors.desc" class="form-error">{{ formErrors.desc }}</p>
+                  </div>
+                  <button type="submit" class="btn-sakura w-full py-3 rounded-xl text-sm">
+                    ✉️ 의뢰 접수하기
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Contact info -->
+            <div class="space-y-4">
+              <div class="card p-5">
+                <h3 class="font-black text-sm mb-4" style="color:var(--text-primary)">연락처</h3>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg">📞</span>
+                    <div>
+                      <div class="text-xs" style="color:var(--text-muted)">전화</div>
+                      <div class="text-sm font-bold" style="color:var(--text-primary)">{{ config.site.tel }}</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg">✉️</span>
+                    <div>
+                      <div class="text-xs" style="color:var(--text-muted)">이메일</div>
+                      <div class="text-sm font-bold" style="color:var(--text-primary)">{{ config.site.email }}</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg">⏰</span>
+                    <div>
+                      <div class="text-xs" style="color:var(--text-muted)">답변 시간</div>
+                      <div class="text-sm font-bold" style="color:var(--text-primary)">48시간 이내</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5" style="background:var(--sakura-dim);border-color:rgba(255,107,157,0.2)">
+                <div class="text-2xl text-center mb-2">💬</div>
+                <p class="text-xs text-center leading-relaxed" style="color:var(--text-secondary)">
+                  초기 상담은 무료입니다.<br>부담 없이 연락주세요!
+                </p>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-black text-sm mb-3" style="color:var(--text-primary)">자주 묻는 질문</h3>
+                <p class="text-xs mb-3" style="color:var(--text-secondary)">의뢰 전에 FAQ를 먼저 확인해보세요.</p>
+                <button @click="navigate('faq')" class="btn-outline w-full py-2 rounded-xl text-xs">FAQ 보기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════ -->
+        <!-- PAGE: FAQ                                        -->
+        <!-- ════════════════════════════════════════════════ -->
+        <div v-show="page==='faq'" class="p-6 lg:p-8 max-w-2xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-black gradient-text mb-1">자주 묻는 질문</h1>
+            <p class="section-subtitle">FAQ — 의뢰 전 꼭 확인해보세요</p>
+          </div>
+
+          <div class="card p-2">
+            <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
+              <button class="faq-question" @click="toggleFaq(idx)">
+                <span class="flex items-center gap-2">
+                  <span style="color:var(--sakura)">Q</span>
+                  {{ faq.q }}
+                </span>
+                <span class="flex-shrink-0 transition-transform duration-200"
+                  :style="{ transform: openFaq===idx ? 'rotate(180deg)' : 'rotate(0deg)', color: 'var(--text-muted)' }">
+                  ▾
+                </span>
+              </button>
+              <div v-show="openFaq === idx"
+                class="pb-4 text-xs leading-relaxed"
+                style="color:var(--text-secondary);padding-left:1.5rem">
+                <span style="color:var(--sky);font-weight:700;margin-right:0.5rem">A</span>{{ faq.a }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Still need help -->
+          <div class="card p-6 mt-6 text-center" style="background:linear-gradient(135deg,var(--sakura-dim),var(--sky-dim))">
+            <div class="text-2xl mb-2">🙋</div>
+            <h3 class="font-black text-sm mb-2" style="color:var(--text-primary)">원하는 답변을 찾지 못하셨나요?</h3>
+            <p class="text-xs mb-4" style="color:var(--text-secondary)">직접 문의해 주시면 48시간 이내에 답변 드립니다.</p>
+            <button @click="navigate('contact')" class="btn-sakura px-6 py-2.5 rounded-full text-sm">문의하기</button>
+          </div>
+        </div>
+
+      </main><!-- /main -->
+    </div><!-- /body row -->
+
+    <!-- ── FOOTER ──────────────────────────────────────────── -->
+    <footer style="background:var(--bg-header);border-top:1px solid var(--border);padding:1.5rem 2rem">
+      <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-xl gradient-bg flex items-center justify-center text-sm font-black">✨</div>
+          <span class="font-black gradient-text text-sm">AnyNuri</span>
+          <span class="text-xs" style="color:var(--text-muted)">— 애니메이션으로 세상을 물들이다</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs" style="color:var(--text-muted)">
+          <span>{{ config.site.email }}</span>
+          <span>{{ config.site.tel }}</span>
+          <span>© 2026 AnyNuri. All rights reserved.</span>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /outer shell -->
+</div><!-- /app -->
+
+<style>
+/* Vue fade transition */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
+
+<script src="assets/cdn/axios.js"></script>
+<script src="utils/axiosUtil.js"></script>
+<script src="base/config.js"></script>
+<script src="js/index.js"></script>
+<script src="base/app.js"></script>
+</body>
+</html>

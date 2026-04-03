@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <base href="../" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>단고을 구조 — 도움말</title>
+    <link rel="stylesheet" href="layout/site.css" />
+  </head>
+  <body data-page="0200" data-layout-base="layout/">
+    <div class="site-shell">
+      <div id="slot-top"></div>
+      <div class="site-body">
+        <aside id="slot-left" class="site-sidebar" aria-label="도움말 메뉴"></aside>
+        <main class="site-main">
+          <div class="main-inner">
+            <section class="page-hero" aria-labelledby="p-title">
+              <div class="page-hero-inner">
+                <h1 id="p-title">단고을 폴더 구조</h1>
+                <p>데모 사이트와 문서가 섞여 있지 않도록 역할을 나눴습니다.</p>
+              </div>
+            </section>
+
+            <table class="data-table" role="table">
+              <thead>
+                <tr>
+                  <th scope="col">경로</th>
+                  <th scope="col">역할</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>dangoeul_v260329/layout/</code></td>
+                  <td>헤더·사이드·푸터 조각, 공통 CSS, <code>load-fragments.js</code></td>
+                </tr>
+                <tr>
+                  <td><code>dangoeul_v260329/page0100.html</code> … <code>page0600.html</code>, <code>product-detail.html</code></td>
+                  <td>본문 화면(브랜드, 상품, 생산 등) HTML — 앱 루트에 둠</td>
+                </tr>
+                <tr>
+                  <td><code>dangoeul_v260329/ocs/</code></td>
+                  <td>기획·설계 Markdown</td>
+                </tr>
+                <tr>
+                  <td><code>dangoeul_v260329/docs/help/</code></td>
+                  <td>이 도움말 사이트(정적 HTML)</td>
+                </tr>
+                <tr>
+                  <td><code>dangoeul_v260329/docs/logo|blog|prod|manufact</code></td>
+                  <td>데모용 이미지 에셋(본문 HTML에서 참조)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+      <div id="slot-bottom"></div>
+    </div>
+    <script src="layout/load-fragments.js"></script>
+  </body>
+</html>

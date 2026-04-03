@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <base href="../" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>에셋 폴더 — 도움말</title>
+    <link rel="stylesheet" href="layout/site.css" />
+  </head>
+  <body data-page="0300" data-layout-base="layout/">
+    <div class="site-shell">
+      <div id="slot-top"></div>
+      <div class="site-body">
+        <aside id="slot-left" class="site-sidebar" aria-label="도움말 메뉴"></aside>
+        <main class="site-main">
+          <div class="main-inner">
+            <section class="page-hero" aria-labelledby="p-title">
+              <div class="page-hero-inner">
+                <h1 id="p-title">에셋 폴더 (<code>docs</code> 하위)</h1>
+                <p><code>dangoeul_v260329/docs/help</code>는 도움말 전용이며, 그 외 하위 폴더는 <strong>이미지 리소스</strong>입니다.</p>
+              </div>
+            </section>
+
+            <ul class="list-check">
+              <li><strong>logo</strong> — 헤더·브랜드 페이지에서 사용하는 로고 파일</li>
+              <li><strong>blog</strong> — 소식·블로그 레이아웃 참고용 PNG</li>
+              <li><strong>prod</strong> — 상품 갤러리·상세 화면의 사진</li>
+              <li><strong>manufact</strong> — 생산·현장 스토리용 사진</li>
+            </ul>
+
+            <p class="figure-note">HTML에서는 <code>docs/prod/prod1.jpg</code>처럼, 사이트 루트(<code>dangoeul_v260329/</code>) 기준 상대 경로로 연결합니다.</p>
+          </div>
+        </main>
+      </div>
+      <div id="slot-bottom"></div>
+    </div>
+    <script src="layout/load-fragments.js"></script>
+  </body>
+</html>

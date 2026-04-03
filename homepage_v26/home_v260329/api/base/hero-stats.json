@@ -1,0 +1,8 @@
+{
+  "items": [
+    { "value": "50+", "label": "완료 프로젝트" },
+    { "value": "98%", "label": "고객 만족도" },
+    { "value": "5년+", "label": "업계 경력" },
+    { "cta": true, "emoji": "🚀", "label": "지금 시작하기" }
+  ]
+}

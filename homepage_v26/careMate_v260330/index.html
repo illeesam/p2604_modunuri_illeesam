@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>케어메이트 CareMate - 병원동행 & 돌봄 서비스</title>
+  <meta name="description" content="병원동행, 일상생활지원, 장애인활동지원, 요양보호사 전문 케어 서비스. 믿을 수 있는 동행 파트너.">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vue-loading.css">
+  <style>:root { --vue-loading-accent: #1a73e8; --vue-loading-glow: rgba(26,115,232,0.25); }</style>
+  <style>
+    @media (max-width: 767px) {
+      .order-grid  { grid-template-columns: 1fr !important; }
+      .contact-grid { grid-template-columns: 1fr !important; }
+      .detail-grid  { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 1023px) { .hidden-sm { display: none !important; } }
+    @media (min-width: 1024px) {
+      .hidden-sm { display: flex !important; }
+      .lg\:hidden { display: none !important; }
+    }
+    [v-show] { transition: opacity 0.15s ease; }
+  </style>
+</head>
+<body>
+  <div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
+    <div class="vue-app-loading-inner">
+      <div class="vue-app-loading-spinner" aria-hidden="true"></div>
+      <p class="vue-app-loading-text">케어메이트 로딩 중…</p>
+    </div>
+  </div>
+  <div id="app"></div>
+  <script src="assets/cdn/axios.js"></script>
+  <script src="utils/axiosUtil.js"></script>
+  <script src="base/config.js"></script>
+  <script src="js/index.js"></script>
+  <script src="layout/AppHeader.js"></script>
+  <script src="layout/AppSidebar.js"></script>
+  <script src="layout/AppFooter.js"></script>
+  <script src="pages/PageHome.js"></script>
+  <script src="pages/PageAbout.js"></script>
+  <script src="pages/PageProducts.js"></script>
+  <script src="pages/PageDetail.js"></script>
+  <script src="pages/PageBooking.js"></script>
+  <script src="pages/PageOrder.js"></script>
+  <script src="pages/PageFaq.js"></script>
+  <script src="pages/PageContact.js"></script>
+  <script src="pages/PageLocation.js"></script>
+  <script src="base/app.js"></script>
+</body>
+</html>

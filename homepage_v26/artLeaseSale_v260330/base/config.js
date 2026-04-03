@@ -1,0 +1,140 @@
+/* ============================================
+   송진현 아트갤러리 - Site Configuration
+   그림 대여 & 판매
+   ============================================ */
+window.SITE_CONFIG = {
+  name: '송진현 갤러리',
+  nameEn: 'SONG Gallery',
+  tagline: '그림 대여 & 판매',
+  artist: '송진현',
+  tel: '010-9998-0857',
+  email: 'korea98781@gmail.com',
+  address: '경기도 성남시 중원구 성남대로 997번길 49-14 201호',
+  kakao: 'songjinhyun_art',
+
+  topMenu: [
+    { id:'home',     label:'홈',        icon:'🏠' },
+    { id:'about',    label:'작가소개',  icon:'🎨' },
+    { id:'gallery',  label:'갤러리',    icon:'🖼️' },
+    { id:'detail',   label:'작품상세',  icon:'🔍' },
+    { id:'lease',    label:'대여안내',  icon:'📋' },
+    { id:'contact',  label:'구매상담',  icon:'📞' },
+    { id:'location', label:'오시는 길', icon:'📍' },
+  ],
+
+  sidebarMenu: [
+    {
+      section: '갤러리',
+      items: [
+        { id:'home',    label:'홈',       icon:'🏠' },
+        { id:'gallery', label:'갤러리',   icon:'🖼️' },
+        { id:'detail',  label:'작품상세', icon:'🔍' },
+      ]
+    },
+    {
+      section: '작가',
+      items: [
+        { id:'about', label:'작가소개', icon:'🎨' },
+      ]
+    },
+    {
+      section: '서비스',
+      items: [
+        { id:'lease',    label:'대여안내',  icon:'📋' },
+        { id:'contact',  label:'구매상담',  icon:'📞' },
+        { id:'location', label:'오시는 길', icon:'📍' },
+      ]
+    }
+  ],
+
+  artworks: [
+    {
+      id:1, emoji:'🌸', name:'꽃분홍',
+      category:'꽃', material:'acrylic on canvas',
+      size:'15호', year:2025,
+      desc:'꽃색에 최고는 꽃분홍. 화병에 담긴 분홍빛 꽃들이 생동감 있게 피어나는 작품입니다.',
+      image:'assets/artworks/01.png',
+      leasePrice:'월 70,000원', salePrice:'800,000원~', badge:'신작'
+    },
+    {
+      id:2, emoji:'🌊', name:'동해바다',
+      category:'풍경', material:'acrylic on canvas',
+      size:'10호 (53×45.5cm)', year:2025,
+      desc:'해가 떠오르는 동해. 새벽빛이 물드는 동해의 장엄한 일출을 담은 작품입니다.',
+      image:'assets/artworks/02.png',
+      leasePrice:'월 50,000원', salePrice:'500,000원~', badge:''
+    },
+    {
+      id:3, emoji:'🎄', name:'성탄의 기쁨',
+      category:'정물', material:'acrylic on canvas',
+      size:'20호 (72.7×60.6cm)', year:2024,
+      desc:'눈내린 성탄절의 포근함. 촛불과 포인세티아가 어우러진 따뜻한 크리스마스 정경입니다.',
+      image:'assets/artworks/03.png',
+      leasePrice:'월 100,000원', salePrice:'1,200,000원~', badge:'인기'
+    },
+    {
+      id:4, emoji:'🌼', name:'봄을 여는 꽃 수선화',
+      category:'꽃', material:'acrylic on canvas',
+      size:'20호 (72.7×60.6cm)', year:2024,
+      desc:'따뜻한 봄이 찾아왔어요. 싱그러운 수선화와 노란 빛이 봄의 기운을 전하는 작품입니다.',
+      image:'assets/artworks/04.png',
+      leasePrice:'월 100,000원', salePrice:'1,200,000원~', badge:''
+    },
+    {
+      id:5, emoji:'🦜', name:'앵무새',
+      category:'동물', material:'acrylic on canvas',
+      size:'30호 (90.9×72.7cm)', year:2025,
+      desc:'말하는 앵무새. 생동감 넘치는 앵무새의 깃털과 눈빛을 섬세하게 표현한 대형 작품입니다.',
+      image:'assets/artworks/05.png',
+      leasePrice:'월 150,000원', salePrice:'2,000,000원~', badge:'신작'
+    },
+    {
+      id:6, emoji:'🦆', name:'오리떼',
+      category:'동물', material:'acrylic on canvas',
+      size:'30호', year:2025,
+      desc:'요리조리 물 흐름을 따라 한가로이 모여있는 오리떼. 평화로운 수면 위의 오리들을 담았습니다.',
+      image:'assets/artworks/06.png',
+      leasePrice:'월 150,000원', salePrice:'2,000,000원~', badge:''
+    },
+    {
+      id:7, emoji:'💕', name:'커플앵무새',
+      category:'동물', material:'acrylic on canvas',
+      size:'30호 (90.9×72.7cm)', year:2025,
+      desc:'앵무새의 사랑. 나뭇가지 위에 정겹게 앉은 두 앵무새의 사랑스러운 모습을 담았습니다.',
+      image:'assets/artworks/07.png',
+      leasePrice:'월 150,000원', salePrice:'2,000,000원~', badge:'신작'
+    },
+    {
+      id:8, emoji:'🏡', name:'강 옆 오두막집',
+      category:'풍경', material:'acrylic on canvas',
+      size:'30호', year:2025,
+      desc:'가을밤에 운치있는 가을 오두막집. 강가에 자리한 고즈넉한 오두막의 서정적인 가을 풍경입니다.',
+      image:'assets/artworks/08.png',
+      leasePrice:'월 150,000원', salePrice:'2,000,000원~', badge:''
+    },
+    {
+      id:9, emoji:'🌸', name:'한적한 시골 벚꽃 길',
+      category:'풍경', material:'acrylic on canvas',
+      size:'20호', year:2025,
+      desc:'4월에 피는 시골 벚꽃길에서 잠시구경 중. 만개한 벚꽃 아래 시골 길의 아름다운 봄 풍경입니다.',
+      image:'assets/artworks/09.png',
+      leasePrice:'월 100,000원', salePrice:'1,200,000원~', badge:'신작'
+    },
+    {
+      id:10, emoji:'🌿', name:'스파트필름',
+      category:'정물', material:'acrylic on canvas',
+      size:'10호 (53×45.5cm)', year:2025,
+      desc:'강렬한 붉은 배경 위에 생동감 있게 표현된 식물. 선명한 색채 대비가 인상적인 작품입니다.',
+      image:'assets/artworks/10.png',
+      leasePrice:'월 50,000원', salePrice:'500,000원~', badge:''
+    },
+  ],
+
+  faqs: [
+    { q:'대여 기간은 어떻게 되나요?', a:'기본 대여 기간은 1개월이며, 3개월·6개월·1년 장기 대여 시 할인 혜택이 적용됩니다. 최소 대여 기간은 1개월입니다.' },
+    { q:'그림 설치 및 수거는 어떻게 진행되나요?', a:'수도권 지역은 직접 방문 설치 및 수거 서비스를 제공합니다. 그 외 지역은 안전 포장 후 택배로 발송하며, 왕복 배송비는 대여자 부담입니다.' },
+    { q:'작품 구매 시 할부 결제가 가능한가요?', a:'네, 구매 금액에 따라 3개월·6개월·12개월 무이자 할부가 가능합니다. 자세한 사항은 문의해주세요.' },
+    { q:'대여 중 작품이 손상되면 어떻게 되나요?', a:'대여 전 작품 상태를 사진으로 기록하며, 자연적인 노화는 책임지지 않습니다. 과실로 인한 손상 시 복원 비용이 청구될 수 있습니다.' },
+    { q:'원하는 작품의 작가 직접 사인을 받을 수 있나요?', a:'구매 작품에 한해 작가 직접 사인과 작품 보증서가 제공됩니다. 대여 작품은 별도 문의 바랍니다.' },
+  ],
+};

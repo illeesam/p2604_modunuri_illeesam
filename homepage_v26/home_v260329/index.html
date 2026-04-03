@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STUDIO - 크리에이티브 기술 스튜디오</title>
+  <meta name="description" content="웹, 모바일, 데이터 분야 전문 크리에이티브 기술 스튜디오">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="assets/cdn/axios.js"></script>
+  <script src="utils/axiosUtil.js"></script>
+  <!-- yup: base/app.js에서 jsDelivr ESM 동적 import -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vue-loading.css">
+  <style>:root { --vue-loading-accent: #34d399; --vue-loading-glow: rgba(52, 211, 153, 0.22); }</style>
+</head>
+<body>
+<div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
+  <div class="vue-app-loading-inner">
+    <div class="vue-app-loading-spinner" aria-hidden="true"></div>
+    <p class="vue-app-loading-text">로딩 중…</p>
+  </div>
+</div>
+<div id="app">
+
+  <!-- Toast notification (bottom-right) -->
+  <div v-if="toast.show" class="toast-wrap" :class="'toast-'+toast.type">
+    <span class="toast-icon">{{ toast.type==='success'?'✓':toast.type==='error'?'✗':toast.type==='warning'?'⚠':'ℹ' }}</span>
+    <span>{{ toast.msg }}</span>
+  </div>
+
+  <!-- Design Alert Modal -->
+  <div v-if="alertState.show" class="modal-overlay" @click.self="closeAlert">
+    <div class="modal-box">
+      <div class="modal-icon" :class="'icon-'+alertState.type">{{ alertState.type==='success'?'✓':alertState.type==='error'?'✗':alertState.type==='warning'?'⚠':'ℹ' }}</div>
+      <h3 class="modal-title">{{ alertState.title }}</h3>
+      <p class="modal-msg">{{ alertState.msg }}</p>
+      <button @click="closeAlert" class="btn-emerald px-6 py-2 rounded-xl font-bold mt-2">확인</button>
+    </div>
+  </div>
+
+  <!-- Design Confirm Modal -->
+  <div v-if="confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
+    <div class="modal-box">
+      <div class="modal-icon icon-warning">⚠</div>
+      <h3 class="modal-title">{{ confirmState.title }}</h3>
+      <p class="modal-msg">{{ confirmState.msg }}</p>
+      <div class="flex gap-3 justify-center mt-2">
+        <button @click="closeConfirm(false)" class="btn-outline px-6 py-2 rounded-xl font-bold">취소</button>
+        <button @click="closeConfirm(true)" class="btn-emerald px-6 py-2 rounded-xl font-bold">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- blog detail is shown as a dedicated page (no popup modal) -->
+
+  <!-- App Layout -->
+  <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base)">
+
+    <!-- Header -->
+    <header id="header" style="height:var(--header-h);position:sticky;top:0;z-index:50;display:flex;align-items:center;padding:0 1rem;gap:0.75rem;background:var(--bg-header);border-bottom:1px solid var(--border);backdrop-filter:blur(16px)">
+
+      <!-- Desktop sidebar toggle -->
+      <button @click="sidebarOpen=!sidebarOpen"
+              class="hidden lg:flex items-center justify-center w-9 h-9 rounded-lg"
+              style="background:var(--emerald-dim);color:var(--emerald);border:none;cursor:pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+
+      <!-- Mobile menu toggle -->
+      <button @click="toggleMobileMenu"
+              class="flex lg:hidden items-center justify-center w-9 h-9 rounded-lg"
+              style="background:var(--emerald-dim);color:var(--emerald);border:none;cursor:pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                :d="mobileOpen?'M6 18L18 6M6 6l12 12':'M4 6h16M4 12h16M4 18h16'"/>
+        </svg>
+      </button>
+
+      <!-- Logo -->
+      <div @click="navigate('home')" class="flex items-center gap-2 cursor-pointer select-none">
+        <span class="font-black text-lg gradient-text">STUDIO</span>
+      </div>
+
+      <div class="flex-1"></div>
+
+      <!-- Top nav (desktop) -->
+      <nav class="hidden lg:flex items-center gap-1 text-xs">
+        <button v-for="m in config.topMenu" :key="m.id" @click="navigate(m.id)"
+                class="px-3 py-1.5 rounded-lg transition-colors font-medium"
+                :style="page===m.id?'color:var(--emerald);background:var(--emerald-dim);border:none;cursor:pointer':'color:var(--text-secondary);border:none;cursor:pointer;background:transparent'">
+          {{ m.label }}
+        </button>
+      </nav>
+
+      <!-- Theme toggle (top-right) -->
+      <button @click="toggleTheme" title="테마 변경"
+              class="ml-2 w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+              style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer">
+        <span v-if="theme==='light'">🌙</span>
+        <span v-else>☀️</span>
+      </button>
+    </header>
+
+    <!-- Body -->
+    <div style="flex:1;display:flex;overflow:hidden;position:relative">
+
+      <!-- Mobile overlay -->
+      <div v-if="mobileOpen" @click="closeMobileMenu"
+           class="lg:hidden fixed inset-0 z-30"
+           style="background:rgba(0,0,0,0.5)"></div>
+
+      <!-- Sidebar -->
+      <aside id="sidebar" :class="[sidebarOpen?'':'collapsed', mobileOpen?'open':'']" class="flex flex-col py-4">
+        <nav class="flex-1 overflow-y-auto px-2 space-y-4">
+          <div v-for="sec in config.sidebarMenu" :key="sec.section">
+            <div v-if="sidebarOpen" class="text-xs font-bold px-3 mb-1" style="color:var(--text-muted)">{{ sec.section }}</div>
+            <button v-for="m in sec.items" :key="m.id" @click="navigate(m.id, { replace: true })"
+                    class="sidebar-link" :class="page===m.id?'active':''">
+              <span class="text-base flex-shrink-0">{{ m.icon }}</span>
+              <span class="text-xs font-medium" v-show="sidebarOpen">{{ m.label }}</span>
+            </button>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main -->
+      <div style="flex:1;overflow-y:auto;min-width:0">
+
+        <!-- ===== PAGE: HOME ===== -->
+        <div v-show="page==='home'">
+          <!-- Hero -->
+          <section class="hero-bg relative overflow-hidden" style="min-height:calc(100vh - var(--header-h))">
+            <div class="absolute top-0 right-0 w-1/2 h-full pointer-events-none overflow-hidden">
+              <div class="absolute top-10 right-10 w-72 h-72 rounded-full opacity-10"
+                   style="background:radial-gradient(circle,#10b981,transparent)"></div>
+              <div class="absolute bottom-20 right-1/4 w-48 h-48 rounded-full opacity-10"
+                   style="background:radial-gradient(circle,#f59e0b,transparent)"></div>
+            </div>
+            <div class="absolute left-0 bottom-0 w-48 h-48 opacity-5"
+                 style="clip-path:polygon(0 100%,100% 0,0 0);background:#10b981"></div>
+            <div class="flex items-center justify-center min-h-full py-24 px-6">
+              <div class="max-w-4xl w-full">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                  <div class="fade-up">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
+                         style="background:var(--emerald-dim);border:1px solid rgba(16,185,129,0.3);color:var(--emerald)">
+                      ✦ Creative Studio
+                    </div>
+                    <h1 class="font-black leading-tight mb-6"
+                        style="font-size:clamp(2.5rem,6vw,4.5rem);letter-spacing:-0.04em">
+                      <span style="color:var(--text-primary)">아이디어를</span><br>
+                      <span class="gradient-text">현실로</span><br>
+                      <span style="color:var(--text-primary)">만듭니다</span>
+                    </h1>
+                    <p class="text-base leading-relaxed mb-8" style="color:var(--text-secondary)">
+                      웹, 모바일, 데이터까지<br>비즈니스 성장을 위한 기술 솔루션
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                      <button @click="navigate('portfolio')" class="btn-emerald px-8 py-3 rounded-xl text-sm">포트폴리오 보기</button>
+                      <button @click="navigate('contact')" class="btn-outline px-8 py-3 rounded-xl text-sm">프로젝트 문의</button>
+                    </div>
+                  </div>
+                  <!-- Stats cards (api/base/hero-stats.json) -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <template v-for="(st, idx) in heroStats" :key="idx">
+                      <div v-if="st.cta" class="card p-5" style="border-color:rgba(16,185,129,0.3)">
+                        <div class="text-2xl mb-2">{{ st.emoji }}</div>
+                        <div class="text-xs font-bold" style="color:var(--emerald)">{{ st.label }}</div>
+                      </div>
+                      <div v-else class="card p-5">
+                        <div class="text-3xl font-black gradient-text mb-1">{{ st.value }}</div>
+                        <div class="text-xs" style="color:var(--text-muted)">{{ st.label }}</div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Services preview -->
+          <section class="py-16 px-6" style="background:var(--bg-card)">
+            <div class="max-w-6xl mx-auto">
+              <div class="text-center mb-10">
+                <h2 class="text-3xl font-black gradient-text mb-2">서비스</h2>
+                <p class="section-subtitle">비즈니스 성장을 위한 전문 서비스</p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div v-for="svc in config.services" :key="svc.id"
+                     class="card p-6 cursor-pointer" @click="navigate('services')">
+                  <div class="text-3xl mb-3">{{ svc.emoji }}</div>
+                  <h3 class="font-bold text-sm mb-2" style="color:var(--text-primary)">{{ svc.title }}</h3>
+                  <p class="text-xs leading-relaxed mb-3" style="color:var(--text-secondary)">{{ svc.desc }}</p>
+                  <div class="flex flex-wrap gap-1">
+                    <span v-for="tag in svc.tags" :key="tag"
+                          class="px-2 py-0.5 rounded text-xs"
+                          style="background:var(--emerald-dim);color:var(--emerald)">{{ tag }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Portfolio preview -->
+          <section class="py-16 px-6">
+            <div class="max-w-6xl mx-auto">
+              <div class="flex items-end justify-between mb-10">
+                <div>
+                  <h2 class="text-3xl font-black gradient-text mb-2">포트폴리오</h2>
+                  <p class="section-subtitle">최근 완료된 프로젝트</p>
+                </div>
+                <button @click="navigate('portfolio')" class="btn-outline px-4 py-2 rounded-lg text-xs">전체 보기 →</button>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div v-for="item in config.portfolio.slice(0,3)" :key="item.id"
+                     class="portfolio-card" @click="navigate('portfolio')">
+                  <div class="flex items-center justify-center"
+                       :style="'height:160px;background:'+item.bg+';font-size:4rem'">{{ item.emoji }}</div>
+                  <div class="p-4">
+                    <div class="flex items-center justify-between mb-1">
+                      <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ item.title }}</h3>
+                      <span class="text-xs px-2 py-0.5 rounded"
+                            style="background:var(--emerald-dim);color:var(--emerald)">{{ item.cat }}</span>
+                    </div>
+                    <p class="text-xs" style="color:var(--text-secondary)">{{ item.desc }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- CTA -->
+          <section class="py-16 px-6" style="background:var(--bg-card)">
+            <div class="max-w-2xl mx-auto text-center">
+              <h2 class="text-3xl font-black gradient-text mb-4">프로젝트를 시작할 준비가 되셨나요?</h2>
+              <p class="text-sm mb-8" style="color:var(--text-secondary)">무료 초기 상담부터 시작하세요. 아이디어를 현실로 만들어 드립니다.</p>
+              <button @click="navigate('contact')" class="btn-emerald px-10 py-4 rounded-xl text-base font-bold">
+                무료 상담 신청하기
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ===== PAGE: ABOUT ===== -->
+        <div v-show="page==='about'" class="p-6 max-w-5xl mx-auto">
+          <h1 class="text-4xl font-black gradient-text mb-10" style="letter-spacing:-0.03em">소개</h1>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div class="card p-8 rounded-2xl" style="border-color:rgba(16,185,129,0.2)">
+              <div class="text-5xl mb-4">💡</div>
+              <h2 class="text-xl font-black mb-4 gradient-text">STUDIO는</h2>
+              <p class="text-sm leading-relaxed" style="color:var(--text-secondary)">
+                2020년부터 100여 개의 프로젝트를 성공적으로 완수한 크리에이티브 기술 스튜디오입니다.
+                웹, 모바일, 데이터 분야에서 고객의 비즈니스 성장을 위한 맞춤형 솔루션을 제공합니다.
+              </p>
+            </div>
+            <div class="space-y-4">
+              <div v-for="v in values" :key="v.id" class="card p-4 flex items-start gap-4">
+                <div class="text-2xl">{{ v.icon }}</div>
+                <div>
+                  <div class="font-bold text-sm mb-1" style="color:var(--text-primary)">{{ v.title }}</div>
+                  <div class="text-xs" style="color:var(--text-secondary)">{{ v.desc }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Team -->
+          <h2 class="text-2xl font-black gradient-text mb-6">팀 소개</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div v-for="m in team" :key="m.id" class="card p-5 text-center">
+              <div class="text-4xl mb-3">{{ m.avatar }}</div>
+              <div class="font-bold text-sm" style="color:var(--text-primary)">{{ m.name }}</div>
+              <div class="text-xs" :style="'color:'+m.color">{{ m.role }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PAGE: SERVICES ===== -->
+        <div v-show="page==='services'" class="p-6 max-w-5xl mx-auto">
+          <h1 class="text-4xl font-black gradient-text mb-4" style="letter-spacing:-0.03em">서비스</h1>
+          <p class="section-subtitle mb-10">비즈니스 성장을 위한 전문 기술 서비스</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="svc in config.services" :key="svc.id" class="card p-6 rounded-2xl">
+              <div class="text-4xl mb-4">{{ svc.emoji }}</div>
+              <h3 class="font-bold text-base mb-2" style="color:var(--text-primary)">{{ svc.title }}</h3>
+              <p class="text-sm leading-relaxed mb-4" style="color:var(--text-secondary)">{{ svc.desc }}</p>
+              <div class="flex flex-wrap gap-1">
+                <span v-for="tag in svc.tags" :key="tag"
+                      class="px-2 py-1 rounded text-xs font-medium"
+                      style="background:var(--emerald-dim);color:var(--emerald)">{{ tag }}</span>
+              </div>
+              <button @click="navigate('contact')"
+                      class="mt-5 w-full py-2 rounded-xl text-xs font-bold"
+                      style="background:var(--emerald-dim);color:var(--emerald);border:1px solid rgba(16,185,129,0.2);cursor:pointer">
+                문의하기
+              </button>
+            </div>
+          </div>
+          <!-- Process -->
+          <div class="mt-16">
+            <h2 class="text-2xl font-black gradient-text mb-8 text-center">진행 프로세스</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div v-for="(step, i) in [{num:'01',label:'상담',icon:'💬',desc:'초기 요구사항 파악 및 방향 설정'},{num:'02',label:'기획',icon:'📋',desc:'상세 기획 및 제안서 작성'},{num:'03',label:'개발',icon:'💻',desc:'설계·디자인·개발 단계별 진행'},{num:'04',label:'납품',icon:'🚀',desc:'테스트 완료 후 최종 납품'}]"
+                   :key="i" class="card p-5 text-center">
+                <div class="text-2xl mb-2">{{ step.icon }}</div>
+                <div class="text-xs font-black mb-1" style="color:var(--emerald)">{{ step.num }}</div>
+                <div class="font-bold text-sm mb-1" style="color:var(--text-primary)">{{ step.label }}</div>
+                <div class="text-xs" style="color:var(--text-secondary)">{{ step.desc }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PAGE: PORTFOLIO ===== -->
+        <div v-show="page==='portfolio'" class="p-6 max-w-6xl mx-auto">
+          <h1 class="text-4xl font-black gradient-text mb-4" style="letter-spacing:-0.03em">포트폴리오</h1>
+          <p class="section-subtitle mb-8">지금까지 완료한 프로젝트들을 소개합니다</p>
+
+          <!-- Filter buttons -->
+          <div class="flex flex-wrap gap-2 mb-8">
+            <button v-for="cat in cats" :key="cat" @click="activeCat=cat"
+                    class="px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                    :style="activeCat===cat
+                      ?'background:var(--emerald);color:#fff;border:1px solid var(--emerald)'
+                      :'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);cursor:pointer'">
+              {{ cat }}
+            </button>
+          </div>
+
+          <!-- Search -->
+          <div style="margin-bottom:28px;">
+            <input
+              v-model="searchText"
+              type="text"
+              class="form-input w-full md:w-72"
+              placeholder="프로젝트명 검색"
+              @input="resetPagination"
+            />
+          </div>
+
+          <!-- Portfolio grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="item in displayedPortfolio" :key="item.id" class="portfolio-card">
+              <div class="flex items-center justify-center"
+                   :style="'height:180px;background:'+item.bg+';font-size:4.5rem'">{{ item.emoji }}</div>
+              <div class="p-5">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ item.title }}</h3>
+                  <span class="text-xs px-2 py-0.5 rounded font-medium"
+                        style="background:var(--emerald-dim);color:var(--emerald)">{{ item.cat }}</span>
+                </div>
+                <p class="text-xs leading-relaxed mb-3" style="color:var(--text-secondary)">{{ item.desc }}</p>
+                <button @click="navigate('contact')"
+                        class="text-xs font-bold"
+                        style="color:var(--emerald);background:none;border:none;cursor:pointer">
+                  문의하기 →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="home-portfolio-sentinel" v-show="hasMore" style="height:1px;"></div>
+          <div v-if="filteredPortfolio.length === 0" class="text-center py-16" style="color:var(--text-muted)">
+            <div class="text-4xl mb-3">🔍</div>
+            <p class="text-sm">검색 결과가 없습니다.</p>
+          </div>
+        </div>
+
+        <!-- ===== PAGE: BLOG ===== -->
+        <div v-show="page==='blog'" class="p-6 max-w-6xl mx-auto">
+          <h1 class="text-4xl font-black gradient-text mb-4" style="letter-spacing:-0.03em">블로그</h1>
+          <p class="section-subtitle mb-8">개발, 디자인, 전략에 대한 인사이트</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div v-for="post in posts" :key="post.id" class="portfolio-card" style="cursor:pointer;" @click="openBlogDetail(post)">
+              <div class="flex items-center justify-center"
+                   :style="'height:140px;font-size:4rem;background:'+post.bg">{{ post.emoji }}</div>
+              <div class="p-5">
+                <span class="text-xs px-2 py-0.5 rounded mb-2 inline-block font-medium"
+                      style="background:var(--amber-dim);color:var(--amber)">{{ post.cat }}</span>
+                <h3 class="font-bold text-sm mb-2" style="color:var(--text-primary)">{{ post.title }}</h3>
+                <p class="text-xs leading-relaxed mb-3" style="color:var(--text-secondary)">{{ post.excerpt }}</p>
+                <div class="text-xs" style="color:var(--text-muted)">{{ post.date }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PAGE: BLOG DETAIL ===== -->
+        <div v-show="page==='blogDetail'" class="p-6 max-w-6xl mx-auto">
+          <div class="mb-6 flex items-center gap-3">
+            <button @click="closeBlogDetail"
+                    class="btn-outline px-4 py-2 rounded-full text-xs"
+                    style="background:transparent;border:1px solid var(--border);color:var(--text-secondary);">
+              ← 블로그로
+            </button>
+            <div class="flex-1"></div>
+          </div>
+
+          <div v-if="blogModal.post" class="card p-6 lg:p-7">
+            <div class="mb-4">
+              <div class="text-3xl mb-2" style="line-height:1;">{{ blogModal.post.emoji }}</div>
+              <div class="text-xl font-black" style="color:var(--text-primary);margin-bottom:8px;">{{ blogModal.post.title }}</div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs px-2 py-0.5 rounded font-medium"
+                      style="background:var(--amber-dim);color:var(--amber);font-weight:700;">
+                  {{ blogModal.post.cat }}
+                </span>
+                <span class="text-xs" style="color:var(--text-muted);">{{ blogModal.post.date }}</span>
+              </div>
+              <div class="text-sm leading-relaxed" style="color:var(--text-secondary);white-space:pre-line;">
+                {{ blogModal.post.excerpt }}
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="card p-6">
+            <div class="text-sm" style="color:var(--text-muted);">선택된 글이 없습니다.</div>
+          </div>
+        </div>
+
+        <!-- ===== PAGE: CONTACT ===== -->
+        <div v-show="page==='contact'" class="p-6 max-w-5xl mx-auto">
+          <h1 class="text-4xl font-black gradient-text mb-4" style="letter-spacing:-0.03em">문의하기</h1>
+          <p class="section-subtitle mb-10">프로젝트 문의 및 무료 상담 신청</p>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <!-- FAQ -->
+              <h2 class="font-black text-base mb-5" style="color:var(--text-primary)">자주 묻는 질문</h2>
+              <div class="mb-8">
+                <div v-for="faq in config.faqs" :key="faq.q" class="faq-item">
+                  <button class="faq-question" @click="openFaq=openFaq===faq.q?null:faq.q">
+                    <span>{{ faq.q }}</span>
+                    <svg class="w-4 h-4 flex-shrink-0 transition-transform"
+                         :class="openFaq===faq.q?'rotate-180':''"
+                         style="color:var(--emerald)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </button>
+                  <div v-if="openFaq===faq.q" class="py-3 text-xs leading-relaxed" style="color:var(--text-secondary)">
+                    {{ faq.a }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contact Form -->
+              <div class="card p-6 rounded-2xl" style="border-color:rgba(16,185,129,0.2)">
+                <h2 class="font-black text-base mb-5 gradient-text">✉️ 프로젝트 문의</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Name -->
+                  <div>
+                    <label class="form-label">이름<span class="form-required">*</span></label>
+                    <input v-model="form.name" type="text" class="form-input" placeholder="홍길동" @input="clearFormError('name')">
+                    <p v-if="formErrors.name" class="field-error">{{ formErrors.name }}</p>
+                  </div>
+                  <!-- Email -->
+                  <div>
+                    <label class="form-label">이메일<span class="form-required">*</span></label>
+                    <input v-model="form.email" type="email" class="form-input" placeholder="email@company.com" @input="clearFormError('email')">
+                    <p v-if="formErrors.email" class="field-error">{{ formErrors.email }}</p>
+                  </div>
+                  <!-- Service -->
+                  <div>
+                    <label class="form-label">서비스 종류</label>
+                    <select v-model="form.service" class="form-input">
+                      <option value="">선택하세요</option>
+                      <option>웹 개발</option>
+                      <option>모바일 앱</option>
+                      <option>UI/UX 디자인</option>
+                      <option>데이터 분석</option>
+                      <option>클라우드</option>
+                      <option>컨설팅</option>
+                    </select>
+                  </div>
+                  <!-- Budget -->
+                  <div>
+                    <label class="form-label">예산 범위</label>
+                    <select v-model="form.budget" class="form-input">
+                      <option value="">선택하세요</option>
+                      <option>500만원 미만</option>
+                      <option>500~1000만원</option>
+                      <option>1000~3000만원</option>
+                      <option>3000만원 이상</option>
+                    </select>
+                  </div>
+                  <!-- Description -->
+                  <div class="sm:col-span-2">
+                    <label class="form-label">프로젝트 내용<span class="form-required">*</span></label>
+                    <textarea v-model="form.desc" rows="4" class="form-input resize-none"
+                              placeholder="프로젝트 요구사항을 간략히 설명해주세요" @input="clearFormError('desc')"></textarea>
+                    <p v-if="formErrors.desc" class="field-error">{{ formErrors.desc }}</p>
+                  </div>
+                </div>
+                <button @click="submitForm" class="btn-emerald mt-4 w-full py-3 rounded-xl font-bold">
+                  상담 신청하기
+                </button>
+              </div>
+            </div>
+
+            <!-- Contact Info sidebar -->
+            <div class="space-y-4">
+              <div class="card p-5 rounded-xl">
+                <h3 class="font-bold text-sm mb-4 gradient-text">연락처</h3>
+                <div class="space-y-3 text-sm">
+                  <div>
+                    <div class="text-xs mb-1" style="color:var(--text-muted)">전화</div>
+                    <div class="font-bold" style="color:var(--emerald)">02-0000-0000</div>
+                  </div>
+                  <div>
+                    <div class="text-xs mb-1" style="color:var(--text-muted)">이메일</div>
+                    <div style="color:var(--text-secondary)">hello@studio.kr</div>
+                  </div>
+                  <div>
+                    <div class="text-xs mb-1" style="color:var(--text-muted)">운영시간</div>
+                    <div style="color:var(--text-secondary)">평일 10:00~18:00</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5 rounded-xl" style="border-color:rgba(16,185,129,0.2)">
+                <h3 class="font-bold text-sm mb-4 gradient-text">오시는 길</h3>
+                <iframe
+                  title="Google Map"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  allowfullscreen
+                  style="width:100%;height:210px;border:0;border-radius:14px;overflow:hidden;background:rgba(0,0,0,0.02);"
+                  src="https://www.google.com/maps?q=%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EC%84%B1%EB%82%A8%EC%8B%9C%20%EC%A4%91%EC%9B%90%EA%B5%AC%20%EC%84%B1%EB%82%A8%EB%8C%80%EB%A1%9C%20997%EB%B2%88%EA%B8%B8%2049-14%20201%ED%98%B8&output=embed"
+                ></iframe>
+                <div class="text-xs mt-3" style="color:var(--text-secondary);line-height:1.7;">
+                  경기도 성남시 중원구 성남대로 997번길 49-14 201호
+                </div>
+              </div>
+              <div class="card p-5 rounded-xl" style="border-color:rgba(16,185,129,0.2)">
+                <div class="text-3xl mb-3">🚀</div>
+                <h3 class="font-bold text-sm mb-2" style="color:var(--text-primary)">빠른 시작</h3>
+                <p class="text-xs mb-3" style="color:var(--text-secondary)">
+                  초기 상담은 무료입니다. 아이디어가 있다면 지금 바로 연락주세요.
+                </p>
+                <div class="text-xs" style="color:var(--text-muted)">평균 응답 시간: 24시간 이내</div>
+              </div>
+              <div class="card p-5 rounded-xl">
+                <h3 class="font-bold text-sm mb-3 gradient-text">소셜 미디어</h3>
+                <div class="flex gap-3">
+                  <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
+                     style="background:var(--emerald-dim);color:var(--emerald)">in</a>
+                  <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
+                     style="background:var(--emerald-dim);color:var(--emerald)">gh</a>
+                  <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
+                     style="background:var(--amber-dim);color:var(--amber)">ig</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="background:var(--bg-header);border-top:1px solid var(--border);padding:1.25rem 1.5rem">
+      <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-black text-sm gradient-text">STUDIO</span>
+          <span class="text-xs" style="color:var(--text-muted)">© 2026 All rights reserved.</span>
+        </div>
+        <nav class="flex gap-4">
+          <button v-for="m in config.topMenu" :key="m.id" @click="navigate(m.id)"
+                  class="text-xs transition-colors"
+                  :style="page===m.id?'color:var(--emerald);background:none;border:none;cursor:pointer;font-weight:600':'color:var(--text-muted);background:none;border:none;cursor:pointer'">
+            {{ m.label }}
+          </button>
+        </nav>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<script src="base/config.js"></script>
+<script src="js/index.js"></script>
+<script src="base/app.js"></script>
+</body>
+</html>

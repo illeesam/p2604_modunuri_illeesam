@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>송진현 아트갤러리 - 그림 대여 &amp; 판매</title>
+  <meta name="description" content="작가 송진현의 아크릴 작품 대여 및 판매 갤러리. 공간에 예술을 더하세요.">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vue-loading.css">
+  <style>:root { --vue-loading-accent: #c9a059; --vue-loading-glow: rgba(201,160,89,0.28); }</style>
+  <style>
+    @media (max-width: 767px) {
+      .detail-grid  { grid-template-columns: 1fr !important; }
+      .contact-grid { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 1023px) { .hidden-sm { display: none !important; } }
+    @media (min-width: 1024px) {
+      .hidden-sm { display: flex !important; }
+      .lg\:hidden { display: none !important; }
+    }
+    [v-show] { transition: opacity 0.15s ease; }
+  </style>
+</head>
+<body>
+  <div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
+    <div class="vue-app-loading-inner">
+      <div class="vue-app-loading-spinner" aria-hidden="true"></div>
+      <p class="vue-app-loading-text">갤러리 불러오는 중…</p>
+    </div>
+  </div>
+  <div id="app"></div>
+  <script src="assets/cdn/axios.js"></script>
+  <script src="utils/axiosUtil.js"></script>
+  <script src="base/config.js"></script>
+  <script src="js/index.js"></script>
+  <script src="layout/AppHeader.js"></script>
+  <script src="layout/AppSidebar.js"></script>
+  <script src="layout/AppFooter.js"></script>
+  <script src="pages/PageHome.js"></script>
+  <script src="pages/PageAbout.js"></script>
+  <script src="pages/PageGallery.js"></script>
+  <script src="pages/PageDetail.js"></script>
+  <script src="pages/PageLease.js"></script>
+  <script src="pages/PageContact.js"></script>
+  <script src="pages/PageLocation.js"></script>
+  <script src="base/app.js"></script>
+</body>
+</html>

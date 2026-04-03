@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <base href="./" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="단고을 상품 상세" />
+    <title>상품 상세 — 단고을</title>
+    <link rel="stylesheet" href="layout/site.css" />
+  </head>
+  <body data-page="0300" data-layout-base="layout/">
+    <div class="site-shell">
+      <div id="slot-top"></div>
+      <div class="site-body">
+        <aside id="slot-left" class="site-sidebar" aria-label="주 메뉴"></aside>
+        <main class="site-main">
+          <div class="main-inner">
+            <a class="product-detail-back" href="page0300.html">← 상품 목록으로</a>
+
+            <article class="card" style="padding: 1.5rem 1.35rem 2rem; box-shadow: var(--shadow)">
+              <div class="product-detail-grid">
+                <div class="product-detail-visual">
+                  <img id="pd-main-img" class="product-detail-main-img" src="#" alt="" width="800" height="600" />
+                  <div id="pd-thumbs" class="product-detail-thumbs" aria-label="추가 이미지"></div>
+                </div>
+                <div class="product-detail-info">
+                  <span class="badge">로컬 직거래</span>
+                  <h1 id="pd-title">상품명</h1>
+                  <p id="pd-lead" class="product-detail-lead"></p>
+                  <p id="pd-price" class="product-detail-price"></p>
+                  <dl class="product-spec">
+                    <dt>원산지</dt>
+                    <dd id="pd-origin"></dd>
+                    <dt>보관</dt>
+                    <dd id="pd-storage"></dd>
+                  </dl>
+                  <div id="pd-bullets-wrap">
+                    <h2 class="section-title" style="margin-top: 0">안내</h2>
+                    <ul id="pd-bullets" class="list-check"></ul>
+                  </div>
+                  <div class="product-detail-actions">
+                    <a class="btn btn-primary" href="page0600.html">문의·안내</a>
+                    <a class="btn btn-outline" href="page0300.html">다른 상품 보기</a>
+                    <button id="pd-share-btn" type="button" class="btn btn-outline">📤 공유하기</button>
+                  </div>
+                  <p id="pd-share-toast" style="display:none;margin-top:8px;font-size:0.8rem;color:#3d9970;font-weight:600;">✅ 링크가 클립보드에 복사되었습니다.</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </main>
+      </div>
+      <div id="slot-bottom"></div>
+    </div>
+    <script src="layout/load-fragments.js"></script>
+    <script src="product-detail.js"></script>
+  </body>
+</html>

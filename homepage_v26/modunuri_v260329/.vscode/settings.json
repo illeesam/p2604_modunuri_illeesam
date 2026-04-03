@@ -1,0 +1,29 @@
+{
+    "workbench.colorCustomizations": {
+        // 상단 타이틀바 배경색
+        "titleBar.activeBackground": "#5c6625",
+        "titleBar.inactiveBackground": "#5c6625",
+        "window.activeBorder": "#06798d",
+        // 윈도우 테두리 보더칼라
+        "tab.activeBorder": "#12EAFF",
+        "tab.activeModifiedBorder": "#ff0000",
+        "tab.border": "#bb7b7b",
+        "sideBar.background": "#232323",
+        "editor.background": "#000000",
+        "scrollbarSlider.background": "#A6A6A6",
+        "minimap.background": "#313030",
+        "sideBarSectionHeader.border": "#B7B7B7",
+        "sideBarSectionHeader.background": "#474747",
+        "editor.lineHighlightBorder": "#8C8C8C",
+        "terminal.background": "#02022b",
+        "titleBar.activeForeground": "#ffffff",
+        "titleBar.inactiveForeground": "#ffffff",
+        /////////////
+        "list.activeSelectionBackground": "#1a1a1a",
+        "list.activeSelectionForeground": "#aca912",
+        "list.inactiveFocusBackground": "#1a1a1a",
+        "list.inactiveSelectionBackground": "#595a00",
+        "list.inactiveSelectionForeground": "#d0ff00",
+    },
+    "liveServer.settings.port": 5502
+}

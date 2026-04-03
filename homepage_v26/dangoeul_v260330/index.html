@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 기본 메타(스크립트 미실행·최초 페인트). 상세는 utils/seo.js 가 SITE_CONFIG.seo 로 덮어씁니다 -->
+  <title>단고을 DANGOEUL — 지역 농산물 직거래</title>
+  <meta name="description" content="밭에서 식탁까지, 신선한 지역 농산물 직거래. 제철 박스·새벽 배송·농장 픽업.">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="favicon.png" sizes="32x32">
+  <meta name="theme-color" content="#0099cc">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vue-loading.css">
+  <style>:root { --vue-loading-accent: #0099cc; --vue-loading-glow: rgba(0, 153, 204, 0.22); }</style>
+  <style>
+    @media (max-width: 767px) {
+      .detail-grid  { grid-template-columns: 1fr !important; }
+      .contact-grid { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 1023px) { .hidden-sm { display: none !important; } }
+    @media (min-width: 1024px) {
+      .hidden-sm { display: flex !important; }
+      .lg\:hidden { display: none !important; }
+    }
+    [v-show] { transition: opacity 0.15s ease; }
+  </style>
+</head>
+<body>
+  <div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
+    <div class="vue-app-loading-inner">
+      <div class="vue-app-loading-spinner" aria-hidden="true"></div>
+      <p class="vue-app-loading-text">로딩 중…</p>
+    </div>
+  </div>
+  <div id="app"></div>
+  <script src="js/index.js"></script>
+</body>
+</html>
