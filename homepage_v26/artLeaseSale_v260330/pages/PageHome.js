@@ -67,7 +67,7 @@ window.PageHome = {
         <div style="padding:18px 16px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
             <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ a.artworkName }}</span>
-            <span class="badge badge-cat">{{ a.category }}</span>
+            <span class="badge badge-cat">{{ categoryLabel(a) }}</span>
           </div>
           <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.55;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ a.desc }}</p>
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
@@ -103,6 +103,12 @@ window.PageHome = {
 </div>
 `,
   setup(props) {
-    return {};
+    function categoryLabel(a) {
+      if (!a) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === a.categoryId);
+      return row ? row.categoryName : a.categoryId;
+    }
+    return { categoryLabel };
   }
 };

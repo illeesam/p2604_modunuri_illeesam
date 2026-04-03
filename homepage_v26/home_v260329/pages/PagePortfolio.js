@@ -25,11 +25,11 @@ window.PagePortfolio = {
         />
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div v-for="item in displayedItems" :key="item.id" class="portfolio-card">
+        <div v-for="item in displayedItems" :key="item.portfolioId" class="portfolio-card">
           <div class="flex items-center justify-center" :style="'height:180px;background:'+item.bg+';font-size:4.5rem'">{{ item.emoji }}</div>
           <div class="p-5">
             <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ item.title }}</h3>
+              <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ item.portfolioName }}</h3>
               <span class="text-xs px-2 py-0.5 rounded" style="background:var(--emerald-dim);color:var(--emerald)">{{ item.cat }}</span>
             </div>
             <p class="text-xs" style="color:var(--text-secondary)">{{ item.desc }}</p>
@@ -61,7 +61,7 @@ window.PagePortfolio = {
     const searchedItems = computed(() => {
       var q = String(searchText.value || '').trim().toLowerCase();
       if (!q) return filtered.value;
-      return filtered.value.filter(p => (p.title || '').toLowerCase().includes(q));
+      return filtered.value.filter(p => (p.portfolioName || '').toLowerCase().includes(q));
     });
 
     const displayedItems = computed(() => searchedItems.value.slice(0, visibleCount.value));

@@ -169,7 +169,7 @@
       var base = activeCat.value === '전체' ? portfolio : portfolio.filter(p => p.cat === activeCat.value);
       var q = String(searchText.value || '').trim().toLowerCase();
       if (!q) return base;
-      return base.filter(p => (p.title || '').toLowerCase().includes(q));
+      return base.filter(p => (p.portfolioName || '').toLowerCase().includes(q));
     });
 
     const displayedPortfolio = computed(() => filteredPortfolio.value.slice(0, visibleCount.value));

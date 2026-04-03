@@ -32,7 +32,7 @@ window.PageGallery = {
       <div style="padding:20px 18px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
           <span style="font-weight:700;color:var(--text-primary);">{{ a.artworkName }}</span>
-          <span class="badge badge-cat">{{ a.category }}</span>
+          <span class="badge badge-cat">{{ categoryLabel(a) }}</span>
         </div>
         <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.55;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ a.desc }}</p>
         <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">{{ a.size }} · {{ a.year }}년</div>
@@ -67,11 +67,27 @@ window.PageGallery = {
     const searchText = ref('');
     const visibleCount = ref(PAGE_SIZE);
 
-    const artCats = computed(() => ['전체', ...new Set(props.artworks.map(a => a.category))]);
+    function categoryLabel(a) {
+      if (!a) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === a.categoryId);
+      return row ? row.categoryName : a.categoryId;
+    }
+
+    const artCats = computed(() => {
+      const cats = (props.config && props.config.categorys) || [];
+      return ['전체', ...cats.map(c => c.categoryName)];
+    });
 
     const filteredArtworks = computed(() => {
       const q = String(searchText.value || '').trim().toLowerCase();
-      const byCat = activeCat.value === '전체' ? props.artworks : props.artworks.filter(a => a.category === activeCat.value);
+      const cats = (props.config && props.config.categorys) || [];
+      const byCat = activeCat.value === '전체'
+        ? props.artworks
+        : props.artworks.filter(a => {
+            const row = cats.find(c => c.categoryName === activeCat.value);
+            return row && a.categoryId === row.categoryId;
+          });
       if (!q) return byCat;
       return byCat.filter(a => (a.artworkName || '').toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q));
     });
@@ -95,6 +111,6 @@ window.PageGallery = {
       if (galleryObserver) galleryObserver.disconnect();
     });
 
-    return { activeCat, artCats, searchText, displayedArtworks, hasMore };
+    return { activeCat, artCats, searchText, displayedArtworks, hasMore, categoryLabel };
   }
 };

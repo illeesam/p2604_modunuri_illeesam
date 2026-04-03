@@ -69,10 +69,10 @@ window.PageHome = {
             <p style="color:var(--text-secondary);font-size:0.9rem">비즈니스 성장을 위한 전문 서비스</p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div v-for="svc in services" :key="svc.id"
+            <div v-for="svc in services" :key="svc.serviceId"
                  class="card p-6 cursor-pointer" @click="$emit('navigate','services')">
               <div class="text-3xl mb-3">{{ svc.emoji }}</div>
-              <h3 class="font-bold text-sm mb-2" style="color:var(--text-primary)">{{ svc.title }}</h3>
+              <h3 class="font-bold text-sm mb-2" style="color:var(--text-primary)">{{ svc.serviceName }}</h3>
               <p class="text-xs leading-relaxed mb-3" style="color:var(--text-secondary)">{{ svc.desc }}</p>
               <div class="flex flex-wrap gap-1">
                 <span v-for="tag in svc.tags" :key="tag"
@@ -95,14 +95,14 @@ window.PageHome = {
             <button @click="$emit('navigate','portfolio')" class="btn-outline px-4 py-2 rounded-lg text-xs">전체 보기 →</button>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div v-for="item in portfolio.slice(0,3)" :key="item.id"
+            <div v-for="item in portfolio.slice(0,3)" :key="item.portfolioId"
                  class="portfolio-card" @click="$emit('navigate','portfolio')">
               <div class="flex items-center justify-center" :style="'height:160px;background:'+item.bg+';font-size:4rem'">
                 {{ item.emoji }}
               </div>
               <div class="p-4">
                 <div class="flex items-center justify-between mb-1">
-                  <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ item.title }}</h3>
+                  <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ item.portfolioName }}</h3>
                   <span class="text-xs px-2 py-0.5 rounded" style="background:var(--emerald-dim);color:var(--emerald)">{{ item.cat }}</span>
                 </div>
                 <p class="text-xs" style="color:var(--text-secondary)">{{ item.desc }}</p>

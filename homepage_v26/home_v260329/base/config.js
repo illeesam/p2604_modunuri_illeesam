@@ -78,9 +78,9 @@ window.SITE_CONFIG = {
   ],
   "services": [
     {
-      "id": 1,
+      "serviceId": 1,
       "emoji": "💻",
-      "title": "웹 개발",
+      "serviceName": "웹 개발",
       "desc": "모던 프론트엔드, 백엔드, 풀스택 웹 개발",
       "tags": [
         "React",
@@ -89,9 +89,9 @@ window.SITE_CONFIG = {
       ]
     },
     {
-      "id": 2,
+      "serviceId": 2,
       "emoji": "📱",
-      "title": "모바일 앱",
+      "serviceName": "모바일 앱",
       "desc": "iOS/Android 네이티브 및 크로스플랫폼 앱",
       "tags": [
         "Flutter",
@@ -99,9 +99,9 @@ window.SITE_CONFIG = {
       ]
     },
     {
-      "id": 3,
+      "serviceId": 3,
       "emoji": "🎨",
-      "title": "UI/UX 디자인",
+      "serviceName": "UI/UX 디자인",
       "desc": "사용자 중심의 아름다운 인터페이스 디자인",
       "tags": [
         "Figma",
@@ -109,9 +109,9 @@ window.SITE_CONFIG = {
       ]
     },
     {
-      "id": 4,
+      "serviceId": 4,
       "emoji": "📊",
-      "title": "데이터 분석",
+      "serviceName": "데이터 분석",
       "desc": "비즈니스 인사이트를 위한 데이터 시각화",
       "tags": [
         "Analytics",
@@ -119,9 +119,9 @@ window.SITE_CONFIG = {
       ]
     },
     {
-      "id": 5,
+      "serviceId": 5,
       "emoji": "☁️",
-      "title": "클라우드 구축",
+      "serviceName": "클라우드 구축",
       "desc": "확장 가능한 클라우드 인프라 설계 및 구축",
       "tags": [
         "AWS",
@@ -130,9 +130,9 @@ window.SITE_CONFIG = {
       ]
     },
     {
-      "id": 6,
+      "serviceId": 6,
       "emoji": "🔍",
-      "title": "컨설팅",
+      "serviceName": "컨설팅",
       "desc": "기술 전략 및 디지털 전환 컨설팅 서비스",
       "tags": [
         "전략",
@@ -142,49 +142,49 @@ window.SITE_CONFIG = {
   ],
   "portfolio": [
     {
-      "id": 1,
+      "portfolioId": 1,
       "emoji": "🛍️",
-      "title": "이커머스 리뉴얼",
+      "portfolioName": "이커머스 리뉴얼",
       "cat": "웹개발",
       "desc": "국내 중견 패션 브랜드 쇼핑몰 리뉴얼 프로젝트",
       "bg": "#1a2a1a"
     },
     {
-      "id": 2,
+      "portfolioId": 2,
       "emoji": "📱",
-      "title": "헬스케어 앱",
+      "portfolioName": "헬스케어 앱",
       "cat": "모바일",
       "desc": "AI 기반 건강 관리 모바일 애플리케이션",
       "bg": "#1a1a2a"
     },
     {
-      "id": 3,
+      "portfolioId": 3,
       "emoji": "📊",
-      "title": "금융 대시보드",
+      "portfolioName": "금융 대시보드",
       "cat": "데이터",
       "desc": "핀테크 스타트업 실시간 금융 데이터 대시보드",
       "bg": "#2a1a1a"
     },
     {
-      "id": 4,
+      "portfolioId": 4,
       "emoji": "🌐",
-      "title": "기업 포털",
+      "portfolioName": "기업 포털",
       "cat": "웹개발",
       "desc": "글로벌 기업 내부 업무 통합 포털 시스템",
       "bg": "#1a2a2a"
     },
     {
-      "id": 5,
+      "portfolioId": 5,
       "emoji": "🎮",
-      "title": "게임 플랫폼 UI",
+      "portfolioName": "게임 플랫폼 UI",
       "cat": "디자인",
       "desc": "소셜 게임 플랫폼 디자인 시스템 구축",
       "bg": "#2a1a2a"
     },
     {
-      "id": 6,
+      "portfolioId": 6,
       "emoji": "🏥",
-      "title": "의료 정보 시스템",
+      "portfolioName": "의료 정보 시스템",
       "cat": "웹개발",
       "desc": "병원 EMR 연동 환자 정보 관리 시스템",
       "bg": "#1a2a1a"

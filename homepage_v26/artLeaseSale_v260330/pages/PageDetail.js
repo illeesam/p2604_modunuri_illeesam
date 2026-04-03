@@ -43,7 +43,7 @@ window.PageDetail = {
       <div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
           <h1 style="font-size:1.7rem;font-weight:800;color:var(--text-primary);font-family:'Noto Serif KR',serif;">{{ artwork.artworkName }}</h1>
-          <span class="badge badge-cat">{{ artwork.category }}</span>
+          <span class="badge badge-cat">{{ categoryLabel(artwork) }}</span>
         </div>
         <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.8;">{{ artwork.desc }}</p>
       </div>
@@ -125,6 +125,13 @@ window.PageDetail = {
     const shareModal = ref(false);
     const shareData = reactive({ title: '', text: '', url: '' });
 
+    function categoryLabel(a) {
+      if (!a) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === a.categoryId);
+      return row ? row.categoryName : a.categoryId;
+    }
+
     function shareArtwork(artwork) {
       const siteName = props.config?.name || '송진현 갤러리';
       shareData.title = `${siteName} - ${artwork.artworkName}`;
@@ -157,6 +164,6 @@ window.PageDetail = {
       });
     }
 
-    return { shareToast, shareModal, shareArtwork, shareViaKakao, copyLink };
+    return { categoryLabel, shareToast, shareModal, shareArtwork, shareViaKakao, copyLink };
   }
 };

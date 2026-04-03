@@ -97,10 +97,28 @@ window.SITE_CONFIG = {
       ]
     }
   ],
+  "categorys": [
+    {
+      "categoryId": "flower",
+      "categoryName": "꽃"
+    },
+    {
+      "categoryId": "landscape",
+      "categoryName": "풍경"
+    },
+    {
+      "categoryId": "stillLife",
+      "categoryName": "정물"
+    },
+    {
+      "categoryId": "animal",
+      "categoryName": "동물"
+    }
+  ],
   "artworks": [
     {
       "emoji": "🌸",
-      "category": "꽃",
+      "categoryId": "flower",
       "material": "acrylic on canvas",
       "size": "15호",
       "year": 2025,
@@ -114,7 +132,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🌊",
-      "category": "풍경",
+      "categoryId": "landscape",
       "material": "acrylic on canvas",
       "size": "10호 (53×45.5cm)",
       "year": 2025,
@@ -128,7 +146,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🎄",
-      "category": "정물",
+      "categoryId": "stillLife",
       "material": "acrylic on canvas",
       "size": "20호 (72.7×60.6cm)",
       "year": 2024,
@@ -142,7 +160,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🌼",
-      "category": "꽃",
+      "categoryId": "flower",
       "material": "acrylic on canvas",
       "size": "20호 (72.7×60.6cm)",
       "year": 2024,
@@ -156,7 +174,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🦜",
-      "category": "동물",
+      "categoryId": "animal",
       "material": "acrylic on canvas",
       "size": "30호 (90.9×72.7cm)",
       "year": 2025,
@@ -170,7 +188,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🦆",
-      "category": "동물",
+      "categoryId": "animal",
       "material": "acrylic on canvas",
       "size": "30호",
       "year": 2025,
@@ -184,7 +202,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "💕",
-      "category": "동물",
+      "categoryId": "animal",
       "material": "acrylic on canvas",
       "size": "30호 (90.9×72.7cm)",
       "year": 2025,
@@ -198,7 +216,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🏡",
-      "category": "풍경",
+      "categoryId": "landscape",
       "material": "acrylic on canvas",
       "size": "30호",
       "year": 2025,
@@ -212,7 +230,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🌸",
-      "category": "풍경",
+      "categoryId": "landscape",
       "material": "acrylic on canvas",
       "size": "20호",
       "year": 2025,
@@ -226,7 +244,7 @@ window.SITE_CONFIG = {
     },
     {
       "emoji": "🌿",
-      "category": "정물",
+      "categoryId": "stillLife",
       "material": "acrylic on canvas",
       "size": "10호 (53×45.5cm)",
       "year": 2025,
