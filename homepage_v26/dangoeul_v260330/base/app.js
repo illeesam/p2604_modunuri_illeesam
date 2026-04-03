@@ -6,7 +6,7 @@ const { createApp, ref, computed, reactive, onBeforeUnmount } = Vue;
 var P = window.DangoeulPages || {};
 var C = window.DangoeulComponents || {};
 
-createApp({
+const dangoeulApp = createApp({
   components: {
     AppHeader: C.AppHeader,
     AppSidebar: C.AppSidebar,
@@ -428,7 +428,11 @@ createApp({
 
 </div>
   `,
-}).mount('#app');
+});
+dangoeulApp.config.globalProperties.$listImg = function (src) {
+  return typeof window.imageThumbnailSrc === 'function' ? window.imageThumbnailSrc(src) : src;
+};
+dangoeulApp.mount('#app');
 (function dismissVueLoading() {
   var el = document.getElementById('vue-app-loading');
   if (!el) return;

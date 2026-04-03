@@ -401,25 +401,63 @@
         grid-template-columns: 1fr;
       }
     }
+    .topbar-search-row {
+      display: flex;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .topbar-search-row:hover {
+      background: #eff6ff;
+      border-color: #93c5fd;
+    }
     .topbar-search-item {
       margin: 0;
+      flex: 1 1 auto;
+      min-width: 0;
       padding: 0.45rem 0.55rem;
       font: inherit;
       font-size: 0.82rem;
       font-weight: 600;
       text-align: left;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      background: #fff;
+      border: none;
+      border-radius: 0;
+      background: transparent;
       color: #0f172a;
       cursor: pointer;
-      transition: background 0.12s, border-color 0.12s;
+      transition: color 0.12s;
     }
-    .topbar-search-item:hover {
-      background: #eff6ff;
-      border-color: #93c5fd;
+    .topbar-search-newwin {
+      flex: 0 0 auto;
+      margin: 0;
+      padding: 0.35rem 0.45rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-left: 1px solid #e2e8f0;
+      border-radius: 0;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
     }
-    .topbar-search-item.is-hidden {
+    .topbar-search-row:hover .topbar-search-newwin {
+      color: #2563eb;
+      border-left-color: #bfdbfe;
+    }
+    .topbar-search-newwin:hover,
+    .topbar-search-newwin:focus-visible {
+      background: rgba(37, 99, 235, 0.08);
+      color: #1d4ed8;
+      outline: none;
+    }
+    .topbar-search-row.is-hidden {
       display: none;
     }
     .topbar-search-empty {
@@ -2967,14 +3005,26 @@
             var list = document.createElement('div');
             list.className = 'topbar-search-items';
             sec.items.forEach(function (it) {
+              var row = document.createElement('div');
+              row.className = 'topbar-search-row';
+              row.setAttribute('data-mode', it.mode);
+              row.setAttribute('data-doc', it.docId);
+              row.setAttribute('data-app', it.label);
+              row.setAttribute('data-kw', (it.label + ' ' + it.mode).toLowerCase());
               var b = document.createElement('button');
               b.type = 'button';
               b.className = 'topbar-search-item';
               b.textContent = it.label;
-              b.setAttribute('data-mode', it.mode);
-              b.setAttribute('data-doc', it.docId);
-              b.setAttribute('data-kw', (it.label + ' ' + it.mode).toLowerCase());
-              list.appendChild(b);
+              var nw = document.createElement('button');
+              nw.type = 'button';
+              nw.className = 'topbar-search-newwin';
+              nw.setAttribute('aria-label', '새 창에서 열기');
+              nw.setAttribute('title', '새 창에서 열기');
+              nw.innerHTML =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+              row.appendChild(b);
+              row.appendChild(nw);
+              list.appendChild(row);
             });
             secEl.appendChild(list);
             var noMatch = document.createElement('p');
@@ -2987,7 +3037,7 @@
 
         function applyTopNavSearchFilter() {
           var q = (input.value || '').trim().toLowerCase();
-          body.querySelectorAll('.topbar-search-item').forEach(function (el) {
+          body.querySelectorAll('.topbar-search-row').forEach(function (el) {
             var hay = el.getAttribute('data-kw') || '';
             var show = !q || hay.indexOf(q) !== -1;
             el.classList.toggle('is-hidden', !show);
@@ -2996,7 +3046,7 @@
             var list = secEl.querySelector('.topbar-search-items');
             var noMatch = secEl.querySelector('.topbar-search-no-match');
             if (!list || !noMatch) return;
-            var any = list.querySelector('.topbar-search-item:not(.is-hidden)');
+            var any = list.querySelector('.topbar-search-row:not(.is-hidden)');
             noMatch.style.display = q && !any ? 'block' : 'none';
           });
         }
@@ -3007,7 +3057,7 @@
           backdrop.classList.add('is-open');
           btn.setAttribute('aria-expanded', 'true');
           input.value = '';
-          body.querySelectorAll('.topbar-search-item').forEach(function (el) {
+          body.querySelectorAll('.topbar-search-row').forEach(function (el) {
             el.classList.remove('is-hidden');
           });
           body.querySelectorAll('.topbar-search-no-match').forEach(function (el) {
@@ -3041,10 +3091,23 @@
           }
         });
         body.addEventListener('click', function (e) {
+          var nw = e.target.closest('.topbar-search-newwin');
+          if (nw) {
+            e.preventDefault();
+            var rowNw = nw.closest('.topbar-search-row');
+            var appKey = rowNw && rowNw.getAttribute('data-app');
+            if (appKey) {
+              var urlNw = absoluteHrefForRepoRelative(resolveEmbedHtmlFile(appKey));
+              if (urlNw) window.open(urlNw, '_blank', 'noopener,noreferrer');
+            }
+            closePanel();
+            return;
+          }
           var t = e.target.closest('.topbar-search-item');
           if (!t) return;
-          var mode = t.getAttribute('data-mode');
-          var docId = t.getAttribute('data-doc');
+          var row = t.closest('.topbar-search-row');
+          var mode = row && row.getAttribute('data-mode');
+          var docId = row && row.getAttribute('data-doc');
           if (mode && docId) {
             navigateTopbarApp(mode, docId);
             closePanel();

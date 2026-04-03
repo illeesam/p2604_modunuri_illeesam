@@ -38,7 +38,7 @@ window.DangoeulPages.PageProducts = {
     <div class="grid-3">
       <div v-for="p in displayedProducts" :key="p.id" class="product-card">
         <div v-if="p.image" class="product-card-cover">
-          <img :src="p.image" :alt="p.name" loading="lazy"
+          <img :src="$listImg(p.image)" :alt="p.name" loading="lazy"
             @load="$event.target.classList.add('loaded')"
             :style="{ objectPosition: p.imagePos || 'center center' }" />
         </div>

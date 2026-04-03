@@ -34,6 +34,7 @@
         window.SITE_CONFIG = r.data;
       } catch (e) {}
       await loadScript('utils/seo.js');
+      await loadScript('utils/imageThumb.js');
       await loadScript('https://unpkg.com/vue@3/dist/vue.global.prod.js');
       var chain = [
         'layout/AppHeader.js',

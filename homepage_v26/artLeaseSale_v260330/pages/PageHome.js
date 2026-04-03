@@ -58,7 +58,7 @@ window.PageHome = {
     <div class="grid-3" style="margin-top:8px;">
       <div v-for="a in artworks.slice(0,6)" :key="a.id" class="artwork-card" @click="selectArtwork(a)">
         <div class="artwork-thumb">
-          <img v-if="a.image" :src="a.image" :alt="a.name" loading="lazy"
+          <img v-if="a.image" :src="$listImg(a.image)" :alt="a.name" loading="lazy"
             @load="$event.target.classList.add('loaded')"
             style="width:100%;height:100%;object-fit:cover;display:block;" />
           <span v-else>{{ a.emoji }}</span>

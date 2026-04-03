@@ -78,7 +78,7 @@ window.DangoeulPages.PageDetail = {
             <div v-for="p in products.filter(x=>x.id!==selectedProduct.id).slice(0,4)" :key="p.id"
               class="card" style="padding:14px;cursor:pointer;" @click="selectProduct(p)">
               <div style="display:flex;align-items:center;gap:12px;">
-                <img v-if="p.image" class="product-related-thumb" :src="p.image" :alt="p.name" loading="lazy"
+                <img v-if="p.image" class="product-related-thumb" :src="$listImg(p.image)" :alt="p.name" loading="lazy"
                   :style="{ objectPosition: p.imagePos || 'center center' }" />
                 <span v-else style="font-size:1.5rem;">{{ p.emoji }}</span>
                 <div style="flex:1;min-width:0;">

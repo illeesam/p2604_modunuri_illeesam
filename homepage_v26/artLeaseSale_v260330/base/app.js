@@ -6,7 +6,7 @@
   await window.__SITE_CONFIG_READY__;
   const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount } = Vue;
 
-  createApp({
+  const artGalleryApp = createApp({
   setup() {
     /* ── Theme ── */
     const theme = ref(localStorage.getItem('artgallery-theme') || 'light');
@@ -245,15 +245,19 @@
 </div>
 `,
   })
-  .component('AppHeader',   window.AppHeader)
-  .component('AppSidebar',  window.AppSidebar)
-  .component('AppFooter',   window.AppFooter)
-  .component('PageHome',    window.PageHome)
-  .component('PageAbout',   window.PageAbout)
-  .component('PageGallery', window.PageGallery)
-  .component('PageDetail',  window.PageDetail)
-  .component('PageLease',   window.PageLease)
-  .component('PageContact', window.PageContact)
-  .component('PageLocation',window.PageLocation)
-  .mount('#app');
+    .component('AppHeader',   window.AppHeader)
+    .component('AppSidebar',  window.AppSidebar)
+    .component('AppFooter',   window.AppFooter)
+    .component('PageHome',    window.PageHome)
+    .component('PageAbout',   window.PageAbout)
+    .component('PageGallery', window.PageGallery)
+    .component('PageDetail',  window.PageDetail)
+    .component('PageLease',   window.PageLease)
+    .component('PageContact', window.PageContact)
+    .component('PageLocation',window.PageLocation);
+
+  artGalleryApp.config.globalProperties.$listImg = function (src) {
+    return typeof window.imageThumbnailSrc === 'function' ? window.imageThumbnailSrc(src) : src;
+  };
+  artGalleryApp.mount('#app');
 })();
