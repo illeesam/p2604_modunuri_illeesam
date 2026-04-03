@@ -30,13 +30,13 @@ window.PageContact = {
               <div><label class="form-label">서비스 종류</label>
                 <select v-model="form.service" class="form-input">
                   <option value="">선택하세요</option>
-                  <option v-for="c in contactServiceRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+                  <option v-for="c in contactServiceRows" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </div>
               <div><label class="form-label">예산 범위</label>
                 <select v-model="form.budget" class="form-input">
                   <option value="">선택하세요</option>
-                  <option v-for="c in contactBudgetRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+                  <option v-for="c in contactBudgetRows" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </div>
               <div class="sm:col-span-2"><label class="form-label">프로젝트 내용</label><textarea v-model="form.desc" rows="4" class="form-input resize-none" placeholder="프로젝트 요구사항을 간략히 설명해주세요"></textarea></div>
@@ -70,20 +70,20 @@ window.PageContact = {
     const form = ref({ name:'', email:'', service:'', budget:'', desc:'' });
     const contactServiceRows = computed(() =>
       window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'home_contact_service', [
-        { code_id: 1, code_value: 'web', code_label: '웹 개발' },
-        { code_id: 2, code_value: 'mobile', code_label: '모바일 앱' },
-        { code_id: 3, code_value: 'uiux', code_label: 'UI/UX 디자인' },
-        { code_id: 4, code_value: 'data', code_label: '데이터 분석' },
-        { code_id: 5, code_value: 'cloud', code_label: '클라우드' },
-        { code_id: 6, code_value: 'consulting', code_label: '컨설팅' },
+        { codeId: 1, codeValue: 'web', codeLabel: '웹 개발' },
+        { codeId: 2, codeValue: 'mobile', codeLabel: '모바일 앱' },
+        { codeId: 3, codeValue: 'uiux', codeLabel: 'UI/UX 디자인' },
+        { codeId: 4, codeValue: 'data', codeLabel: '데이터 분석' },
+        { codeId: 5, codeValue: 'cloud', codeLabel: '클라우드' },
+        { codeId: 6, codeValue: 'consulting', codeLabel: '컨설팅' },
       ])
     );
     const contactBudgetRows = computed(() =>
       window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'home_contact_budget', [
-        { code_id: 1, code_value: 'lt500', code_label: '500만원 미만' },
-        { code_id: 2, code_value: '500_1000', code_label: '500~1000만원' },
-        { code_id: 3, code_value: '1000_3000', code_label: '1000~3000만원' },
-        { code_id: 4, code_value: 'gt3000', code_label: '3000만원 이상' },
+        { codeId: 1, codeValue: 'lt500', codeLabel: '500만원 미만' },
+        { codeId: 2, codeValue: '500_1000', codeLabel: '500~1000만원' },
+        { codeId: 3, codeValue: '1000_3000', codeLabel: '1000~3000만원' },
+        { codeId: 4, codeValue: 'gt3000', codeLabel: '3000만원 이상' },
       ])
     );
     const submit = () => {

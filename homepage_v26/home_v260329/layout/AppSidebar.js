@@ -11,10 +11,10 @@ window.AppSidebar = {
         <template v-for="sec in sidebarMenu" :key="sec.section">
           <div v-if="sidebarOpen||mobileOpen" class="px-4 pt-4 pb-1 text-xs font-bold tracking-widest uppercase" style="color:var(--text-muted)">{{ sec.section }}</div>
           <div v-else class="mx-3 my-2" style="height:1px;background:rgba(16,185,129,0.1)"></div>
-          <a v-for="item in sec.items" :key="item.id" @click="$emit('navigate',item.id);$emit('close')"
-             class="sidebar-link mx-2" :class="{active:activeMenu===item.id}">
+          <a v-for="item in sec.items" :key="item.menuId" @click="$emit('navigate',item.menuId);$emit('close')"
+             class="sidebar-link mx-2" :class="{active:activeMenu===item.menuId}">
             <span class="text-base flex-shrink-0">{{ item.icon }}</span>
-            <span v-if="sidebarOpen||mobileOpen" class="text-sm truncate">{{ item.label }}</span>
+            <span v-if="sidebarOpen||mobileOpen" class="text-sm truncate">{{ item.menuName }}</span>
           </a>
         </template>
       </nav>

@@ -133,8 +133,8 @@
         sel.setAttribute("aria-label", "문서 분류");
         list.forEach(function (c) {
           var opt = document.createElement("option");
-          opt.value = c.code_value;
-          opt.textContent = c.code_label;
+          opt.value = c.codeValue;
+          opt.textContent = c.codeLabel;
           sel.appendChild(opt);
         });
         lab.appendChild(span);

@@ -19,8 +19,8 @@ window.AppHeader = {
           </a>
         </div>
         <nav class="hidden lg:flex items-center gap-1">
-          <a v-for="item in menu" :key="item.id" @click="$emit('navigate',item.id)"
-             class="nav-link" :class="{active:activeMenu===item.id}">{{ item.label }}</a>
+          <a v-for="item in menu" :key="item.menuId" @click="$emit('navigate',item.menuId)"
+             class="nav-link" :class="{active:activeMenu===item.menuId}">{{ item.menuName }}</a>
         </nav>
         <div class="flex items-center gap-2">
           <button @click="$emit('navigate','contact')" class="hidden md:flex btn-emerald text-xs px-4 py-2 rounded-lg items-center gap-1">프로젝트 시작하기</button>
@@ -34,11 +34,11 @@ window.AppHeader = {
       </div>
       <div v-show="mobileOpen" class="lg:hidden glass border-t" style="border-color:var(--border);position:absolute;left:0;right:0;top:var(--header-h);z-index:50;">
         <div class="px-4 py-3 space-y-1">
-          <a v-for="item in menu" :key="item.id" @click="$emit('navigate',item.id);$emit('toggle-mobile')"
+          <a v-for="item in menu" :key="item.menuId" @click="$emit('navigate',item.menuId);$emit('toggle-mobile')"
              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
-             :class="activeMenu===item.id ? 'font-semibold' : 'hover:bg-white/5'"
-             :style="activeMenu===item.id ? 'color:var(--emerald);background:var(--emerald-dim)' : 'color:var(--text-secondary)'">
-            <span>{{ item.icon }}</span><span>{{ item.label }}</span>
+             :class="activeMenu===item.menuId ? 'font-semibold' : 'hover:bg-white/5'"
+             :style="activeMenu===item.menuId ? 'color:var(--emerald);background:var(--emerald-dim)' : 'color:var(--text-secondary)'">
+            <span>{{ item.icon }}</span><span>{{ item.menuName }}</span>
           </a>
         </div>
       </div>

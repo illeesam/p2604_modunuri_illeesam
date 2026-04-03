@@ -17,8 +17,8 @@ window.PageDetail = {
             <div style="font-size:4rem;line-height:1;">{{ product.emoji }}</div>
             <div style="flex:1;min-width:200px;">
               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-                <h1 style="font-size:1.5rem;font-weight:800;color:var(--text-primary);">{{ product.name }}</h1>
-                <span class="badge badge-cat">{{ product.category }}</span>
+                <h1 style="font-size:1.5rem;font-weight:800;color:var(--text-primary);">{{ product.productName }}</h1>
+                <span class="badge badge-cat">{{ categoryLabel(product) }}</span>
               </div>
               <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin-bottom:16px;">{{ product.desc }}</p>
               <div style="font-size:1.2rem;font-weight:800;color:var(--blue);margin-bottom:20px;">{{ product.price }}</div>
@@ -66,12 +66,12 @@ window.PageDetail = {
       <div>
         <div style="font-size:0.875rem;font-weight:700;color:var(--text-secondary);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.06em;">관련 상품</div>
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div v-for="p in config.products.filter(x=>x.id!==product.id).slice(0,4)" :key="p.id"
+          <div v-for="p in config.products.filter(x=>x.productId!==product.productId).slice(0,4)" :key="p.productId"
             class="card" style="padding:16px;cursor:pointer;" @click="selectRelated(p)">
             <div style="display:flex;align-items:center;gap:10px;">
               <span style="font-size:1.5rem;">{{ p.emoji }}</span>
               <div style="flex:1;min-width:0;">
-                <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
+                <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.productName }}</div>
                 <div style="font-size:0.75rem;color:var(--blue);font-weight:600;">{{ p.price }}</div>
               </div>
             </div>
@@ -109,14 +109,21 @@ window.PageDetail = {
     const shareModal = ref(false);
     const shareData = reactive({ title: '', text: '', url: '' });
 
+    function categoryLabel(p) {
+      if (!p) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryName : p.categoryId;
+    }
+
     function selectRelated(p) {
       props.selectProduct(p);
     }
 
     function shareProduct(product) {
       const siteName = props.config?.name || '모두누리';
-      shareData.title = `${siteName} - ${product.name}`;
-      shareData.text = `[${siteName}] ${product.name}\n💰 ${product.price}\n${product.desc}`;
+      shareData.title = `${siteName} - ${product.productName}`;
+      shareData.text = `[${siteName}] ${product.productName}\n💰 ${product.price}\n${product.desc}`;
       shareData.url = window.location.href;
 
       if (window.isSecureContext && navigator.share) {
@@ -145,6 +152,6 @@ window.PageDetail = {
       });
     }
 
-    return { selectRelated, shareToast, shareModal, shareProduct, shareViaKakao, copyLink };
+    return { selectRelated, categoryLabel, shareToast, shareModal, shareProduct, shareViaKakao, copyLink };
   }
 };

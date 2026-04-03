@@ -1,93 +1,447 @@
-/* ============================================
-   MODUNURI - Site Configuration
-   소프트웨어 개발 & 솔루션 소개
-   ============================================ */
+/* Synced from api/base/site-config.json (do not diverge structure manually) */
 window.SITE_CONFIG = {
-  name: '모두누리',
-  nameEn: 'MODUNURI',
-  tagline: '소프트웨어 개발 & 솔루션',
-  tel: '010-3805-0206',
-  email: 'illeesam@gmail.com',
-  address: '경기도 성남시 중원구 성남대로 997번길 49-14 201호',
-
-  topMenu: [
-    { id:'home',     label:'홈',           icon:'🏠' },
-    { id:'about',    label:'회사소개',      icon:'🏢' },
-    { id:'solution', label:'솔루션안내',    icon:'💡' },
-    { id:'products', label:'상품목록',      icon:'🗂️' },
-    { id:'detail',   label:'상품상세',      icon:'🔍' },
-    { id:'blog',     label:'블로그',        icon:'📝' },
-    { id:'location', label:'위치안내',      icon:'📍' },
-    { id:'contact',  label:'고객센터',      icon:'📞' },
-    { id:'order',    label:'주문하기',      icon:'🧾' },
-    { id:'faq',      label:'FAQ',           icon:'❓' },
+  "name": "모두누리",
+  "nameEn": "MODUNURI",
+  "tagline": "소프트웨어 개발 & 솔루션",
+  "tel": "010-3805-0206",
+  "email": "illeesam@gmail.com",
+  "address": "경기도 성남시 중원구 성남대로 997번길 49-14 201호",
+  "topMenu": [
+    {
+      "icon": "🏠",
+      "menuId": "home",
+      "menuName": "홈"
+    },
+    {
+      "icon": "🏢",
+      "menuId": "about",
+      "menuName": "회사소개"
+    },
+    {
+      "icon": "💡",
+      "menuId": "solution",
+      "menuName": "솔루션안내"
+    },
+    {
+      "icon": "🗂️",
+      "menuId": "products",
+      "menuName": "상품목록"
+    },
+    {
+      "icon": "🔍",
+      "menuId": "detail",
+      "menuName": "상품상세"
+    },
+    {
+      "icon": "📝",
+      "menuId": "blog",
+      "menuName": "블로그"
+    },
+    {
+      "icon": "📍",
+      "menuId": "location",
+      "menuName": "위치안내"
+    },
+    {
+      "icon": "📞",
+      "menuId": "contact",
+      "menuName": "고객센터"
+    },
+    {
+      "icon": "🧾",
+      "menuId": "order",
+      "menuName": "주문하기"
+    },
+    {
+      "icon": "❓",
+      "menuId": "faq",
+      "menuName": "FAQ"
+    }
   ],
-
-  sidebarMenu: [
+  "sidebarMenu": [
     {
-      section: '서비스',
-      items: [
-        { id:'home',     label:'홈',        icon:'🏠' },
-        { id:'solution', label:'솔루션',    icon:'💡' },
-        { id:'products', label:'상품목록',  icon:'🗂️' },
+      "section": "서비스",
+      "items": [
+        {
+          "icon": "🏠",
+          "menuId": "home",
+          "menuName": "홈"
+        },
+        {
+          "icon": "💡",
+          "menuId": "solution",
+          "menuName": "솔루션"
+        },
+        {
+          "icon": "🗂️",
+          "menuId": "products",
+          "menuName": "상품목록"
+        }
       ]
     },
     {
-      section: '회사',
-      items: [
-        { id:'about',    label:'회사소개',  icon:'🏢' },
-        { id:'blog',     label:'블로그',    icon:'📝' },
+      "section": "회사",
+      "items": [
+        {
+          "icon": "🏢",
+          "menuId": "about",
+          "menuName": "회사소개"
+        },
+        {
+          "icon": "📝",
+          "menuId": "blog",
+          "menuName": "블로그"
+        }
       ]
     },
     {
-      section: '지원',
-      items: [
-        { id:'location', label:'위치안내',  icon:'📍' },
-        { id:'contact',  label:'고객센터',  icon:'📞' },
-        { id:'order',    label:'주문하기',  icon:'🧾' },
-        { id:'faq',      label:'FAQ',       icon:'❓' },
+      "section": "지원",
+      "items": [
+        {
+          "icon": "📍",
+          "menuId": "location",
+          "menuName": "위치안내"
+        },
+        {
+          "icon": "📞",
+          "menuId": "contact",
+          "menuName": "고객센터"
+        },
+        {
+          "icon": "🧾",
+          "menuId": "order",
+          "menuName": "주문하기"
+        },
+        {
+          "icon": "❓",
+          "menuId": "faq",
+          "menuName": "FAQ"
+        }
       ]
     }
   ],
-
-  solutions: [
-    { id:1, emoji:'🤖', title:'AI 분석 엔진', desc:'머신러닝 기반 데이터 분석 및 예측 솔루션', tags:['AI','ML','데이터'], badge:'NEW' },
-    { id:2, emoji:'🏢', title:'ERP 시스템', desc:'기업 전사적 자원 관리 통합 플랫폼', tags:['ERP','HR','회계'], badge:'인기' },
-    { id:3, emoji:'🛒', title:'이커머스 플랫폼', desc:'맞춤형 온라인 쇼핑몰 구축 솔루션', tags:['쇼핑몰','결제','배송'], badge:'' },
-    { id:4, emoji:'📱', title:'모바일 앱 개발', desc:'iOS/Android 크로스플랫폼 앱 개발', tags:['iOS','Android','앱'], badge:'' },
-    { id:5, emoji:'🔐', title:'보안 솔루션', desc:'기업 데이터 보안 및 접근제어 시스템', tags:['보안','암호화','접근제어'], badge:'' },
-    { id:6, emoji:'☁️', title:'클라우드 인프라', desc:'AWS/GCP 기반 클라우드 아키텍처 구축', tags:['클라우드','AWS','인프라'], badge:'' },
+  "solutions": [
+    {
+      "solutionId": 1,
+      "emoji": "🤖",
+      "solutionName": "AI 분석 엔진",
+      "desc": "머신러닝 기반 데이터 분석 및 예측 솔루션",
+      "tags": [
+        "AI",
+        "ML",
+        "데이터"
+      ],
+      "badge": "NEW"
+    },
+    {
+      "solutionId": 2,
+      "emoji": "🏢",
+      "solutionName": "ERP 시스템",
+      "desc": "기업 전사적 자원 관리 통합 플랫폼",
+      "tags": [
+        "ERP",
+        "HR",
+        "회계"
+      ],
+      "badge": "인기"
+    },
+    {
+      "solutionId": 3,
+      "emoji": "🛒",
+      "solutionName": "이커머스 플랫폼",
+      "desc": "맞춤형 온라인 쇼핑몰 구축 솔루션",
+      "tags": [
+        "쇼핑몰",
+        "결제",
+        "배송"
+      ],
+      "badge": ""
+    },
+    {
+      "solutionId": 4,
+      "emoji": "📱",
+      "solutionName": "모바일 앱 개발",
+      "desc": "iOS/Android 크로스플랫폼 앱 개발",
+      "tags": [
+        "iOS",
+        "Android",
+        "앱"
+      ],
+      "badge": ""
+    },
+    {
+      "solutionId": 5,
+      "emoji": "🔐",
+      "solutionName": "보안 솔루션",
+      "desc": "기업 데이터 보안 및 접근제어 시스템",
+      "tags": [
+        "보안",
+        "암호화",
+        "접근제어"
+      ],
+      "badge": ""
+    },
+    {
+      "solutionId": 6,
+      "emoji": "☁️",
+      "solutionName": "클라우드 인프라",
+      "desc": "AWS/GCP 기반 클라우드 아키텍처 구축",
+      "tags": [
+        "클라우드",
+        "AWS",
+        "인프라"
+      ],
+      "badge": ""
+    }
   ],
-
-  products: [
-    { id:1, emoji:'📊', name:'DataPulse Pro', category:'분석', desc:'실시간 비즈니스 데이터 대시보드 솔루션', price:'월 299,000원~', demo:'https://demo.modunuri.kr/datapulse' },
-    { id:2, emoji:'🤝', name:'WorkFlow Suite', category:'협업', desc:'팀 협업 및 프로젝트 관리 올인원 플랫폼', price:'월 199,000원~', demo:'https://demo.modunuri.kr/workflow' },
-    { id:3, emoji:'🛡️', name:'SecureVault', category:'보안', desc:'기업용 데이터 암호화 및 보안 관리 솔루션', price:'월 499,000원~', demo:'https://demo.modunuri.kr/securevault' },
-    { id:4, emoji:'🚀', name:'LaunchPad ERP', category:'ERP', desc:'중소기업 맞춤형 통합 ERP 시스템', price:'별도 문의', demo:'https://demo.modunuri.kr/launchpad' },
-    { id:5, emoji:'📱', name:'AppForge Mobile', category:'앱', desc:'노코드/로우코드 모바일 앱 빌더', price:'월 149,000원~', demo:'https://demo.modunuri.kr/appforge' },
-    { id:6, emoji:'☁️', name:'CloudNest IaC', category:'클라우드', desc:'인프라-as-Code 클라우드 관리 플랫폼', price:'별도 문의', demo:'https://demo.modunuri.kr/cloudnest' },
-    // 판매상품 (일시 구매형) - 1,000만원 ~ 3,000만원
-    { id:7, emoji:'🧾', name:'DataPulse Enterprise (구매형)', category:'판매', desc:'현업 대시보드/리포팅을 구매형으로 도입하는 엔터프라이즈 패키지.', price:'1,000만원~', demo:'https://demo.modunuri.kr/datapulse-enterprise' },
-    { id:8, emoji:'🧩', name:'WorkFlow Suite Enterprise (구매형)', category:'판매', desc:'팀 협업/프로세스 관리 기능을 구매형으로 도입하는 엔터프라이즈 패키지.', price:'2,200만원~', demo:'https://demo.modunuri.kr/workflow-enterprise' },
-    { id:9, emoji:'🛡️', name:'SecureVault Enterprise (구매형)', category:'판매', desc:'데이터 암호화/권한관리를 구매형으로 도입하는 보안 패키지.', price:'3,000만원~', demo:'https://demo.modunuri.kr/securevault-enterprise' },
-
-    // 홈페이지(서브사이트) 데모
-    { id:10, emoji:'🏠', name:'AnyNuri 홈페이지', category:'홈페이지', desc:'애니메이션 스튜디오 소개형 홈페이지 데모', price:'별도 문의', demo:'../anynuri_v260329/index.html' },
-    { id:11, emoji:'🏠', name:'Dangoeul 홈페이지', category:'홈페이지', desc:'지역 농산물 직거래 소개형 홈페이지 데모', price:'별도 문의', demo:'../dangoeul_v260330/index.html' },
-    { id:12, emoji:'🏠', name:'Home(STUDIO) 홈페이지', category:'홈페이지', desc:'크리에이티브 기술 스튜디오 홈페이지 데모', price:'별도 문의', demo:'../home_v260329/index.html' },
-    { id:13, emoji:'🏠', name:'Partyroom 홈페이지', category:'홈페이지', desc:'파티룸 공간 소개형 홈페이지 데모', price:'별도 문의', demo:'../partyroom_v260329/index.html' },
-    { id:14, emoji:'🖼️', name:'송진현 갤러리(그림 대여/판매)', category:'홈페이지', desc:'그림 대여 및 판매 갤러리 데모', price:'별도 문의', demo:'../artLeaseSale_v260330/index.html' },
-    { id:16, emoji:'🏥', name:'CareMate(병원동행) 홈페이지', category:'홈페이지', desc:'병원동행 & 돌봄 서비스 홈페이지 데모', price:'별도 문의', demo:'../careMate_v260330/index.html' },
-
-    // admin (종합서비스관리)
-    { id:15, emoji:'🛠️', name:'종합서비스관리(Admin)', category:'admin', desc:'mainFrame.html 기반 통합 서비스/문서 관리 화면', price:'별도 문의', demo:'../../mainFrame.html#hm_index' },
+  "categorys": [
+    {
+      "categoryId": "analytics",
+      "categoryName": "분석"
+    },
+    {
+      "categoryId": "collaboration",
+      "categoryName": "협업"
+    },
+    {
+      "categoryId": "security",
+      "categoryName": "보안"
+    },
+    {
+      "categoryId": "erp",
+      "categoryName": "ERP"
+    },
+    {
+      "categoryId": "app",
+      "categoryName": "앱"
+    },
+    {
+      "categoryId": "cloud",
+      "categoryName": "클라우드"
+    },
+    {
+      "categoryId": "purchase",
+      "categoryName": "판매"
+    },
+    {
+      "categoryId": "homepage",
+      "categoryName": "홈페이지"
+    },
+    {
+      "categoryId": "admin",
+      "categoryName": "Admin"
+    }
   ],
-
-  faqs: [
-    { q:'솔루션 도입 절차가 어떻게 되나요?', a:'문의 → 수요 분석 → 제안서 제출 → 계약 → 구축/커스터마이징 → 운영 지원 순으로 진행됩니다. 일반적으로 2~8주 소요됩니다.' },
-    { q:'데모를 직접 사용해 볼 수 있나요?', a:'각 상품 상세 페이지의 "데모 보기" 버튼을 통해 30일 무료 체험이 가능합니다.' },
-    { q:'커스터마이징이 가능한가요?', a:'모든 솔루션은 고객사 환경에 맞게 커스터마이징 가능합니다. 별도 개발 비용이 발생할 수 있습니다.' },
-    { q:'기술 지원은 어떻게 받나요?', a:'이메일, 전화, 전용 슬랙 채널을 통해 지원됩니다. 엔터프라이즈 플랜은 24/7 전담 지원이 제공됩니다.' },
-    { q:'데이터 보안은 어떻게 관리되나요?', a:'ISO 27001 인증 데이터센터를 사용하며, AES-256 암호화 및 정기 보안 감사를 실시합니다.' },
+  "products": [
+    {
+      "emoji": "📊",
+      "desc": "실시간 비즈니스 데이터 대시보드 솔루션",
+      "price": "월 299,000원~",
+      "demo": "https://demo.modunuri.kr/datapulse",
+      "productId": 1,
+      "productName": "DataPulse Pro",
+      "categoryId": "analytics"
+    },
+    {
+      "emoji": "🤝",
+      "desc": "팀 협업 및 프로젝트 관리 올인원 플랫폼",
+      "price": "월 199,000원~",
+      "demo": "https://demo.modunuri.kr/workflow",
+      "productId": 2,
+      "productName": "WorkFlow Suite",
+      "categoryId": "collaboration"
+    },
+    {
+      "emoji": "🛡️",
+      "desc": "기업용 데이터 암호화 및 보안 관리 솔루션",
+      "price": "월 499,000원~",
+      "demo": "https://demo.modunuri.kr/securevault",
+      "productId": 3,
+      "productName": "SecureVault",
+      "categoryId": "security"
+    },
+    {
+      "emoji": "🚀",
+      "desc": "중소기업 맞춤형 통합 ERP 시스템",
+      "price": "별도 문의",
+      "demo": "https://demo.modunuri.kr/launchpad",
+      "productId": 4,
+      "productName": "LaunchPad ERP",
+      "categoryId": "erp"
+    },
+    {
+      "emoji": "📱",
+      "desc": "노코드/로우코드 모바일 앱 빌더",
+      "price": "월 149,000원~",
+      "demo": "https://demo.modunuri.kr/appforge",
+      "productId": 5,
+      "productName": "AppForge Mobile",
+      "categoryId": "app"
+    },
+    {
+      "emoji": "☁️",
+      "desc": "인프라-as-Code 클라우드 관리 플랫폼",
+      "price": "별도 문의",
+      "demo": "https://demo.modunuri.kr/cloudnest",
+      "productId": 6,
+      "productName": "CloudNest IaC",
+      "categoryId": "cloud"
+    },
+    {
+      "emoji": "🧾",
+      "desc": "현업 대시보드/리포팅을 구매형으로 도입하는 엔터프라이즈 패키지.",
+      "price": "1,000만원~",
+      "demo": "https://demo.modunuri.kr/datapulse-enterprise",
+      "productId": 7,
+      "productName": "DataPulse Enterprise (구매형)",
+      "categoryId": "purchase"
+    },
+    {
+      "emoji": "🧩",
+      "desc": "팀 협업/프로세스 관리 기능을 구매형으로 도입하는 엔터프라이즈 패키지.",
+      "price": "2,200만원~",
+      "demo": "https://demo.modunuri.kr/workflow-enterprise",
+      "productId": 8,
+      "productName": "WorkFlow Suite Enterprise (구매형)",
+      "categoryId": "purchase"
+    },
+    {
+      "emoji": "🛡️",
+      "desc": "데이터 암호화/권한관리를 구매형으로 도입하는 보안 패키지.",
+      "price": "3,000만원~",
+      "demo": "https://demo.modunuri.kr/securevault-enterprise",
+      "productId": 9,
+      "productName": "SecureVault Enterprise (구매형)",
+      "categoryId": "purchase"
+    },
+    {
+      "emoji": "🏠",
+      "desc": "애니메이션 스튜디오 소개형 홈페이지 데모",
+      "price": "별도 문의",
+      "demo": "../anynuri_v260329/index.html",
+      "productId": 10,
+      "productName": "AnyNuri 홈페이지",
+      "categoryId": "homepage"
+    },
+    {
+      "emoji": "🏠",
+      "desc": "지역 농산물 직거래 소개형 홈페이지 데모",
+      "price": "별도 문의",
+      "demo": "../dangoeul_v260330/index.html",
+      "productId": 11,
+      "productName": "Dangoeul 홈페이지",
+      "categoryId": "homepage"
+    },
+    {
+      "emoji": "🏠",
+      "desc": "크리에이티브 기술 스튜디오 홈페이지 데모",
+      "price": "별도 문의",
+      "demo": "../home_v260329/index.html",
+      "productId": 12,
+      "productName": "Home(STUDIO) 홈페이지",
+      "categoryId": "homepage"
+    },
+    {
+      "emoji": "🏠",
+      "desc": "파티룸 공간 소개형 홈페이지 데모",
+      "price": "별도 문의",
+      "demo": "../partyroom_v260329/index.html",
+      "productId": 13,
+      "productName": "Partyroom 홈페이지",
+      "categoryId": "homepage"
+    },
+    {
+      "emoji": "🖼️",
+      "desc": "그림 대여 및 판매 갤러리 데모",
+      "price": "별도 문의",
+      "demo": "../artLeaseSale_v260330/index.html",
+      "productId": 14,
+      "productName": "송진현 갤러리(그림 대여/판매)",
+      "categoryId": "homepage"
+    },
+    {
+      "emoji": "🏥",
+      "desc": "병원동행 & 돌봄 서비스 홈페이지 데모",
+      "price": "별도 문의",
+      "demo": "../careMate_v260330/index.html",
+      "productId": 16,
+      "productName": "CareMate(병원동행) 홈페이지",
+      "categoryId": "homepage"
+    },
+    {
+      "emoji": "🛠️",
+      "desc": "mainFrame.html 기반 통합 서비스/문서 관리 화면",
+      "price": "별도 문의",
+      "demo": "../../mainFrame.html#hm_index",
+      "productId": 15,
+      "productName": "종합서비스관리(Admin)",
+      "categoryId": "admin"
+    }
   ],
+  "faqs": [
+    {
+      "q": "솔루션 도입 절차가 어떻게 되나요?",
+      "a": "문의 → 수요 분석 → 제안서 제출 → 계약 → 구축/커스터마이징 → 운영 지원 순으로 진행됩니다. 일반적으로 2~8주 소요됩니다."
+    },
+    {
+      "q": "데모를 직접 사용해 볼 수 있나요?",
+      "a": "각 상품 상세 페이지의 \"데모 보기\" 버튼을 통해 30일 무료 체험이 가능합니다."
+    },
+    {
+      "q": "커스터마이징이 가능한가요?",
+      "a": "모든 솔루션은 고객사 환경에 맞게 커스터마이징 가능합니다. 별도 개발 비용이 발생할 수 있습니다."
+    },
+    {
+      "q": "기술 지원은 어떻게 받나요?",
+      "a": "이메일, 전화, 전용 슬랙 채널을 통해 지원됩니다. 엔터프라이즈 플랜은 24/7 전담 지원이 제공됩니다."
+    },
+    {
+      "q": "데이터 보안은 어떻게 관리되나요?",
+      "a": "ISO 27001 인증 데이터센터를 사용하며, AES-256 암호화 및 정기 보안 감사를 실시합니다."
+    }
+  ],
+  "codes": [
+    {
+      "codeId": 1,
+      "codeGrp": "modunuri_contact_service",
+      "codeValue": "AI 분석 엔진",
+      "codeLabel": "AI 분석 엔진"
+    },
+    {
+      "codeId": 2,
+      "codeGrp": "modunuri_contact_service",
+      "codeValue": "ERP 시스템",
+      "codeLabel": "ERP 시스템"
+    },
+    {
+      "codeId": 3,
+      "codeGrp": "modunuri_contact_service",
+      "codeValue": "이커머스 플랫폼",
+      "codeLabel": "이커머스 플랫폼"
+    },
+    {
+      "codeId": 4,
+      "codeGrp": "modunuri_contact_service",
+      "codeValue": "모바일 앱 개발",
+      "codeLabel": "모바일 앱 개발"
+    },
+    {
+      "codeId": 5,
+      "codeGrp": "modunuri_contact_service",
+      "codeValue": "보안 솔루션",
+      "codeLabel": "보안 솔루션"
+    },
+    {
+      "codeId": 6,
+      "codeGrp": "modunuri_contact_service",
+      "codeValue": "클라우드 인프라",
+      "codeLabel": "클라우드 인프라"
+    },
+    {
+      "codeId": 7,
+      "codeGrp": "modunuri_contact_service",
+      "codeValue": "기타·복합 문의",
+      "codeLabel": "기타·복합 문의"
+    }
+  ]
 };

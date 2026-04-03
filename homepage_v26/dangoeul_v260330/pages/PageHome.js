@@ -21,7 +21,13 @@ window.DangoeulPages.PageHome = {
   methods: {
     productsByIds(ids) {
       if (!ids || !this.products || !this.products.length) return [];
-      return ids.map(id => this.products.find(p => p.id === id)).filter(Boolean);
+      return ids.map(id => this.products.find(p => p.productId === id)).filter(Boolean);
+    },
+    categoryLabel(p) {
+      if (!p) return '';
+      const cats = (this.config && this.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryName : p.categoryId;
     },
   },
   template: /* html */ `
@@ -66,11 +72,11 @@ window.DangoeulPages.PageHome = {
         <button class="btn-outline btn-sm" @click="navigate('solution')">전체 보기 →</button>
       </div>
       <div class="grid-2" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
-        <div v-for="s in config.solutions.slice(0,4)" :key="s.id" class="solution-card solution-card--compact">
+        <div v-for="s in config.solutions.slice(0,4)" :key="s.solutionId" class="solution-card solution-card--compact">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
             <span style="font-size:1.65rem;">{{ s.emoji }}</span>
             <div>
-              <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ s.title }}</div>
+              <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ s.solutionName }}</div>
               <span v-if="s.badge==='NEW'" class="badge badge-new">NEW</span>
               <span v-else-if="s.badge==='인기'" class="badge badge-hot">인기</span>
             </div>
@@ -84,29 +90,29 @@ window.DangoeulPages.PageHome = {
     </div>
     <div
       v-for="sec in (config.homeSections || [])"
-      :key="sec.key"
+      :key="sec.homeSectionId"
       class="page-wrap home-product-section"
       style="padding-top:0;margin-top:6px;"
     >
       <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
         <div>
-          <h2 class="section-title">{{ sec.title }}</h2>
+          <h2 class="section-title">{{ sec.homeSectionName }}</h2>
           <p class="section-subtitle">{{ sec.subtitle }}</p>
         </div>
         <button class="btn-outline btn-sm" @click="navigate('products')">전체 상품 →</button>
       </div>
-      <div v-if="sec.key === 'best'" class="home-best-grid">
-        <div v-for="p in productsByIds(sec.productIds).slice(0,1)" :key="sec.key + '-' + p.id" class="product-card home-best-feature">
+      <div v-if="sec.homeSectionId === 'best'" class="home-best-grid">
+        <div v-for="p in productsByIds(sec.productIds).slice(0,1)" :key="sec.homeSectionId + '-' + p.productId" class="product-card home-best-feature">
           <div v-if="p.image" class="product-card-cover home-best-feature-cover">
-            <img :src="p.image" :alt="p.name" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
+            <img :src="p.image" :alt="p.productName" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
           </div>
           <div v-else class="product-card-body" style="padding-top:22px;">
             <span style="font-size:2.5rem;">{{ p.emoji }}</span>
           </div>
           <div class="product-card-body">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-              <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ p.name }}</span>
-              <span class="badge badge-cat">{{ p.category }}</span>
+              <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ p.productName }}</span>
+              <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
               <span v-if="p.isSet" class="badge badge-set">세트</span>
             </div>
             <p class="home-best-desc">{{ p.desc }}</p>
@@ -118,17 +124,17 @@ window.DangoeulPages.PageHome = {
           </div>
         </div>
         <div class="home-best-stack">
-          <div v-for="p in productsByIds(sec.productIds).slice(1)" :key="sec.key + '-' + p.id" class="product-card home-best-side">
+          <div v-for="p in productsByIds(sec.productIds).slice(1)" :key="sec.homeSectionId + '-' + p.productId" class="product-card home-best-side">
             <div v-if="p.image" class="product-card-cover home-best-side-cover">
-              <img :src="$listImg(p.image)" :alt="p.name" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
+              <img :src="$listImg(p.image)" :alt="p.productName" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
             </div>
             <div v-else class="product-card-body" style="padding-top:16px;">
               <span style="font-size:2rem;">{{ p.emoji }}</span>
             </div>
             <div class="product-card-body home-best-side-body">
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
-                <span style="font-weight:700;color:var(--text-primary);font-size:0.85rem;line-height:1.35;">{{ p.name }}</span>
-                <span class="badge badge-cat">{{ p.category }}</span>
+                <span style="font-weight:700;color:var(--text-primary);font-size:0.85rem;line-height:1.35;">{{ p.productName }}</span>
+                <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
                 <span v-if="p.isSet" class="badge badge-set">세트</span>
               </div>
               <p class="home-best-desc home-best-desc--compact">{{ p.desc }}</p>
@@ -142,17 +148,17 @@ window.DangoeulPages.PageHome = {
         </div>
       </div>
       <div v-else class="grid-3">
-        <div v-for="p in productsByIds(sec.productIds)" :key="sec.key + '-' + p.id" class="product-card">
+        <div v-for="p in productsByIds(sec.productIds)" :key="sec.homeSectionId + '-' + p.productId" class="product-card">
           <div v-if="p.image" class="product-card-cover" style="height:128px;">
-            <img :src="$listImg(p.image)" :alt="p.name" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
+            <img :src="$listImg(p.image)" :alt="p.productName" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
           </div>
           <div v-else class="product-card-body" style="padding-top:22px;">
             <span style="font-size:2.5rem;">{{ p.emoji }}</span>
           </div>
           <div class="product-card-body">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-              <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;">{{ p.name }}</span>
-              <span class="badge badge-cat">{{ p.category }}</span>
+              <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;">{{ p.productName }}</span>
+              <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
               <span v-if="p.isSet" class="badge badge-set">세트</span>
             </div>
             <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.55;margin-bottom:12px;">{{ p.desc }}</p>

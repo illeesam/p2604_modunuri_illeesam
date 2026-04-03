@@ -92,12 +92,12 @@
     const selectedProduct = ref(products[0]);
     const selectProduct = p => {
       selectedProduct.value = p;
-      if (p && p.id != null) try { sessionStorage.setItem('modunuri_pid', String(p.id)); } catch (e) {}
+      if (p && p.productId != null) try { sessionStorage.setItem('modunuri_pid', String(p.productId)); } catch (e) {}
       navigate('detail');
     };
     const orderProduct = p => {
       selectedProduct.value = p;
-      if (p && p.id != null) try { sessionStorage.setItem('modunuri_pid', String(p.id)); } catch (e) {}
+      if (p && p.productId != null) try { sessionStorage.setItem('modunuri_pid', String(p.productId)); } catch (e) {}
       navigate('order');
     };
 
@@ -109,7 +109,7 @@
       }
       showAlert(
         '데모 연결',
-        (p ? p.name : '') + ' 30일 무료 체험 페이지로 이동합니다.\n실제 서비스에서 데모 URL로 연결됩니다.',
+        (p ? p.productName : '') + ' 30일 무료 체험 페이지로 이동합니다.\n실제 서비스에서 데모 URL로 연결됩니다.',
         'info'
       );
     };
@@ -133,12 +133,12 @@
       const hpid = hasPageParam ? params.get('pid') : null;
       const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
       if (!Number.isNaN(pid)) {
-        const f = products.find(x => Number(x.id) === pid);
+        const f = products.find(x => Number(x.productId) === pid);
         if (f) selectedProduct.value = f;
       } else {
         const s = Number(sessionStorage.getItem('modunuri_pid'));
         if (!Number.isNaN(s)) {
-          const f = products.find(x => Number(x.id) === s);
+          const f = products.find(x => Number(x.productId) === s);
           if (f) selectedProduct.value = f;
         }
       }
@@ -158,7 +158,7 @@
         const hpid = params.get('pid');
         const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
         if (!Number.isNaN(pid)) {
-          const f = products.find(x => Number(x.id) === pid);
+          const f = products.find(x => Number(x.productId) === pid);
           if (f) selectedProduct.value = f;
         }
       } catch(e) {}
@@ -171,8 +171,8 @@
       const params = new URLSearchParams();
       params.set('page', page.value);
       if (id === 'detail' || id === 'order') {
-        params.set('pid', selectedProduct.value?.id ?? '');
-        if (selectedProduct.value?.id != null) sessionStorage.setItem('modunuri_pid', String(selectedProduct.value.id));
+        params.set('pid', selectedProduct.value?.productId ?? '');
+        if (selectedProduct.value?.productId != null) sessionStorage.setItem('modunuri_pid', String(selectedProduct.value.productId));
       }
       const hash = params.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
@@ -184,7 +184,7 @@
       }
     });
     watch(selectedProduct, p => {
-      if (!syncingFromHash && p && p.id != null) sessionStorage.setItem('modunuri_pid', String(p.id));
+      if (!syncingFromHash && p && p.productId != null) sessionStorage.setItem('modunuri_pid', String(p.productId));
     });
 
     try {
@@ -193,7 +193,7 @@
         const pr = new URLSearchParams();
         pr.set('page', page.value);
         if (page.value === 'detail' || page.value === 'order') {
-          pr.set('pid', String(selectedProduct.value?.id ?? ''));
+          pr.set('pid', String(selectedProduct.value?.productId ?? ''));
         }
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
       }

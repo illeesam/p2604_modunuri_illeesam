@@ -16,8 +16,8 @@ window.PageOrder = {
       <div style="font-size:2.6rem;line-height:1;">{{ product.emoji }}</div>
       <div style="flex:1;min-width:220px;">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-          <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);">{{ product.name }}</div>
-          <span class="badge badge-cat">{{ product.category }}</span>
+          <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);">{{ product.productName }}</div>
+          <span class="badge badge-cat">{{ categoryLabel(product) }}</span>
         </div>
         <div style="font-size:1.1rem;font-weight:900;color:var(--blue);margin-bottom:10px;">{{ product.price }}</div>
         <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin:0;">{{ product.desc }}</p>
@@ -129,6 +129,13 @@ window.PageOrder = {
   setup(props) {
     const { reactive } = Vue;
 
+    function categoryLabel(p) {
+      if (!p) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryName : p.categoryId;
+    }
+
     const orderForm = reactive({ name: '', email: '', company: '', tel: '', desc: '' });
     const orderErrors = reactive({});
 
@@ -168,8 +175,8 @@ window.PageOrder = {
             .post('contact-intake.json', {
               source: 'modunuri',
               kind: 'order',
-              productId: props.product ? props.product.id : null,
-              productName: props.product ? props.product.name : null,
+              productId: props.product ? props.product.productId : null,
+              productName: props.product ? props.product.productName : null,
               name: orderForm.name,
               email: orderForm.email,
               company: orderForm.company,
@@ -193,6 +200,6 @@ window.PageOrder = {
       }
     };
 
-    return { orderForm, orderErrors, clearOrderError, submitOrder };
+    return { orderForm, orderErrors, clearOrderError, submitOrder, categoryLabel };
   }
 };

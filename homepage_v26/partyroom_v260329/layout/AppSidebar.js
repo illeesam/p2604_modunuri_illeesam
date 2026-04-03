@@ -31,12 +31,12 @@ window.AppSidebar = {
           </div>
           <div v-else class="gold-divider mx-3 my-2"></div>
 
-          <a v-for="item in section.items" :key="item.id"
-             @click="$emit('navigate', item.id); $emit('close')"
+          <a v-for="item in section.items" :key="item.menuId"
+             @click="$emit('navigate', item.menuId); $emit('close')"
              class="sidebar-link mx-2"
-             :class="{ active: activeMenu === item.id }">
+             :class="{ active: activeMenu === item.menuId }">
             <span class="text-base flex-shrink-0">{{ item.icon }}</span>
-            <span v-if="sidebarOpen || mobileOpen" class="text-sm truncate">{{ item.label }}</span>
+            <span v-if="sidebarOpen || mobileOpen" class="text-sm truncate">{{ item.menuName }}</span>
           </a>
         </template>
       </nav>

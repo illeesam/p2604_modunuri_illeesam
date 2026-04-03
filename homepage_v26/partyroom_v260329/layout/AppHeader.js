@@ -30,11 +30,11 @@ window.AppHeader = {
 
         <!-- Desktop Nav -->
         <nav class="hidden lg:flex items-center gap-1 overflow-x-auto">
-          <a v-for="item in menu" :key="item.id"
-             @click="$emit('navigate', item.id)"
+          <a v-for="item in menu" :key="item.menuId"
+             @click="$emit('navigate', item.menuId)"
              class="nav-link"
-             :class="{ active: activeMenu === item.id }">
-            {{ item.label }}
+             :class="{ active: activeMenu === item.menuId }">
+            {{ item.menuName }}
           </a>
         </nav>
 
@@ -61,15 +61,15 @@ window.AppHeader = {
            class="lg:hidden glass border-t"
            style="border-color:var(--border); position:absolute; left:0; right:0; top:var(--header-h); z-index:50;">
         <div class="px-4 py-3 space-y-1">
-          <a v-for="item in menu" :key="item.id"
-             @click="$emit('navigate', item.id); $emit('toggle-mobile')"
+          <a v-for="item in menu" :key="item.menuId"
+             @click="$emit('navigate', item.menuId); $emit('toggle-mobile')"
              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors"
-             :class="activeMenu===item.id
+             :class="activeMenu===item.menuId
                ? 'font-semibold'
                : 'hover:bg-white/5'"
-             :style="activeMenu===item.id ? 'color:var(--gold);background:var(--gold-dim)' : 'color:var(--text-secondary)'">
+             :style="activeMenu===item.menuId ? 'color:var(--gold);background:var(--gold-dim)' : 'color:var(--text-secondary)'">
             <span>{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
+            <span>{{ item.menuName }}</span>
           </a>
           <div class="pt-2 pb-1">
             <button @click="$emit('navigate','booking'); $emit('toggle-mobile')"

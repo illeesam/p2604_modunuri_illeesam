@@ -33,7 +33,7 @@ window.PageBooking = {
                 <label class="form-label">공간 선택</label>
                 <select v-model="form.room" class="form-input">
                   <option value="">공간을 선택하세요</option>
-                  <option v-for="r in rooms" :key="r.id" :value="r.name">{{ r.name }}</option>
+                  <option v-for="r in rooms" :key="r.roomId" :value="String(r.roomId)">{{ r.roomName }}</option>
                 </select>
               </div>
               <div>
@@ -48,14 +48,14 @@ window.PageBooking = {
                 <label class="form-label">시작 시간</label>
                 <select v-model="form.startTime" class="form-input">
                   <option value="">선택</option>
-                  <option v-for="c in timeSlotCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+                  <option v-for="c in timeSlotCodes" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </div>
               <div>
                 <label class="form-label">종료 시간</label>
                 <select v-model="form.endTime" class="form-input">
                   <option value="">선택</option>
-                  <option v-for="c in timeSlotCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+                  <option v-for="c in timeSlotCodes" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </div>
               <div class="sm:col-span-2">
@@ -119,7 +119,7 @@ window.PageBooking = {
     const PR_DEFAULT_TIMES = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
     const timeSlotCodes = computed(function () {
       var fb = PR_DEFAULT_TIMES.map(function (t, i) {
-        return { code_id: i + 1, code_value: t, code_label: t };
+        return { codeId: i + 1, codeValue: t, codeLabel: t };
       });
       return window.cmUtil.codesByGroupOrRows(window.SITE_CONFIG || {}, 'partyroom_booking_time', fb);
     });

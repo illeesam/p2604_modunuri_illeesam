@@ -88,10 +88,10 @@
 
       <!-- Top nav (desktop) -->
       <nav class="hidden lg:flex items-center gap-1 text-xs">
-        <button v-for="m in config.topMenu" :key="m.id" @click="navigate(m.id)"
+        <button v-for="m in config.topMenu" :key="m.menuId" @click="navigate(m.menuId)"
                 class="px-3 py-1.5 rounded-lg transition-colors font-medium"
-                :style="page===m.id?'color:var(--emerald);background:var(--emerald-dim);border:none;cursor:pointer':'color:var(--text-secondary);border:none;cursor:pointer;background:transparent'">
-          {{ m.label }}
+                :style="page===m.menuId?'color:var(--emerald);background:var(--emerald-dim);border:none;cursor:pointer':'color:var(--text-secondary);border:none;cursor:pointer;background:transparent'">
+          {{ m.menuName }}
         </button>
       </nav>
 
@@ -117,10 +117,10 @@
         <nav class="flex-1 overflow-y-auto px-2 space-y-4">
           <div v-for="sec in config.sidebarMenu" :key="sec.section">
             <div v-if="sidebarOpen" class="text-xs font-bold px-3 mb-1" style="color:var(--text-muted)">{{ sec.section }}</div>
-            <button v-for="m in sec.items" :key="m.id" @click="navigate(m.id, { replace: true })"
-                    class="sidebar-link" :class="page===m.id?'active':''">
+            <button v-for="m in sec.items" :key="m.menuId" @click="navigate(m.menuId, { replace: true })"
+                    class="sidebar-link" :class="page===m.menuId?'active':''">
               <span class="text-base flex-shrink-0">{{ m.icon }}</span>
-              <span class="text-xs font-medium" v-show="sidebarOpen">{{ m.label }}</span>
+              <span class="text-xs font-medium" v-show="sidebarOpen">{{ m.menuName }}</span>
             </button>
           </div>
         </nav>
@@ -466,7 +466,7 @@
                     <label class="form-label">서비스 종류</label>
                     <select v-model="form.service" class="form-input">
                       <option value="">선택하세요</option>
-                      <option v-for="c in contactServiceRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+                      <option v-for="c in contactServiceRows" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                     </select>
                   </div>
                   <!-- Budget -->
@@ -474,7 +474,7 @@
                     <label class="form-label">예산 범위</label>
                     <select v-model="form.budget" class="form-input">
                       <option value="">선택하세요</option>
-                      <option v-for="c in contactBudgetRows" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+                      <option v-for="c in contactBudgetRows" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                     </select>
                   </div>
                   <!-- Description -->
@@ -558,10 +558,10 @@
           <span class="text-xs" style="color:var(--text-muted)">© 2026 All rights reserved.</span>
         </div>
         <nav class="flex gap-4">
-          <button v-for="m in config.topMenu" :key="m.id" @click="navigate(m.id)"
+          <button v-for="m in config.topMenu" :key="m.menuId" @click="navigate(m.menuId)"
                   class="text-xs transition-colors"
-                  :style="page===m.id?'color:var(--emerald);background:none;border:none;cursor:pointer;font-weight:600':'color:var(--text-muted);background:none;border:none;cursor:pointer'">
-            {{ m.label }}
+                  :style="page===m.menuId?'color:var(--emerald);background:none;border:none;cursor:pointer;font-weight:600':'color:var(--text-muted);background:none;border:none;cursor:pointer'">
+            {{ m.menuName }}
           </button>
         </nav>
       </div>

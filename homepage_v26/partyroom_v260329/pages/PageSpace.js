@@ -23,7 +23,7 @@ window.PageSpace = {
 
       <!-- 공간 상세 -->
       <div class="space-y-6">
-        <div v-for="room in rooms" :key="room.id"
+        <div v-for="room in rooms" :key="room.roomId"
              class="card overflow-hidden"
              style="border-radius:16px">
           <div class="flex flex-col md:flex-row">
@@ -34,7 +34,7 @@ window.PageSpace = {
             <div class="p-6 flex-1">
               <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div>
-                  <h3 class="font-black text-lg" style="color:var(--text-primary)">{{ room.name }}</h3>
+                  <h3 class="font-black text-lg" style="color:var(--text-primary)">{{ room.roomName }}</h3>
                   <div class="text-xs mt-1" style="color:var(--text-muted)">{{ room.area }} · 수용 {{ room.capacity }}</div>
                 </div>
                 <div class="flex gap-1">

@@ -37,16 +37,16 @@ window.PageProducts = {
     </div>
   </div>
   <div v-else-if="displayedProducts.length" class="grid-3">
-    <div v-for="p in displayedProducts" :key="p.id" class="product-card">
+    <div v-for="p in displayedProducts" :key="p.productId" class="product-card">
       <div style="padding:24px 24px 0;">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
           <span style="font-size:2.6rem;">{{ p.emoji }}</span>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
             <span v-if="p.badge" class="badge" :class="p.badge==='추천'?'badge-blue':p.badge==='인기'?'badge-teal':'badge-amber'">{{ p.badge }}</span>
-            <span class="badge badge-cat" style="font-size:0.65rem;">{{ p.categoryLabel }}</span>
+            <span class="badge badge-cat" style="font-size:0.65rem;">{{ p.categoryName }}</span>
           </div>
         </div>
-        <div style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">{{ p.name }}</div>
+        <div style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">{{ p.productName }}</div>
         <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ p.desc }}</p>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;">
           <span v-for="t in p.tags" :key="t" class="tag">{{ t }}</span>
@@ -56,7 +56,7 @@ window.PageProducts = {
       </div>
       <div style="padding:0 24px 20px;display:flex;gap:8px;">
         <button class="btn-blue btn-sm" style="flex:1;" @click="selectProduct(p)">상세보기</button>
-        <button class="btn-outline btn-sm" style="flex:1;" @click="p.category==='hospital'?navigate('booking'):navigate('order')">신청하기</button>
+        <button class="btn-outline btn-sm" style="flex:1;" @click="p.categoryId==='hospital'?navigate('booking'):navigate('order')">신청하기</button>
       </div>
     </div>
   </div>
@@ -69,16 +69,16 @@ window.PageProducts = {
 
     const PAGE_SIZE = 6;
     const activeCat = ref('전체');
-    const productCats = computed(() => ['전체', ...window.SITE_CONFIG.categories.map(c => c.label)]);
+    const productCats = computed(() => ['전체', ...window.SITE_CONFIG.categorys.map(c => c.categoryName)]);
     const searchText = ref('');
     const visibleCount = ref(PAGE_SIZE);
     const skeletonDone = ref(false);
 
     const filteredProducts = computed(() => {
       const q = String(searchText.value || '').trim().toLowerCase();
-      const byCat = activeCat.value === '전체' ? props.products : props.products.filter(p => p.categoryLabel === activeCat.value);
+      const byCat = activeCat.value === '전체' ? props.products : props.products.filter(p => p.categoryName === activeCat.value);
       if (!q) return byCat;
-      return byCat.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+      return byCat.filter(p => p.productName.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
     });
     const displayedProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value));
     const hasMore = computed(() => visibleCount.value < filteredProducts.value.length);

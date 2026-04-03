@@ -10,10 +10,10 @@ window.DangoeulComponents.AppSidebar = {
         <div v-if="sidebarOpen" style="padding:12px 8px 4px;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
           {{ section.section }}
         </div>
-        <button v-for="item in section.items" :key="item.id" @click="navigate(item.id, { replace: true })"
-          class="sidebar-link" :class="{active: page===item.id}">
+        <button v-for="item in section.items" :key="item.menuId" @click="navigate(item.menuId, { replace: true })"
+          class="sidebar-link" :class="{active: page===item.menuId}">
           <span style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
-          <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">{{ item.label }}</span>
+          <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">{{ item.menuName }}</span>
         </button>
       </template>
       <div style="flex:1;"></div>

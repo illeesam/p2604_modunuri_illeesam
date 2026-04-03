@@ -32,7 +32,7 @@ window.PageContact = {
           <label class="form-label">문의 유형</label>
           <select v-model="contactForm.subject" class="form-input">
             <option value="">선택 (선택사항)</option>
-            <option v-for="c in subjectCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+            <option v-for="c in subjectCodes" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>
@@ -70,12 +70,12 @@ window.PageContact = {
 
     const subjectCodes = computed(function () {
       return window.cmUtil.codesByGroupOrRows(props.config, 'caremate_contact_subject', [
-        { code_id: 1, code_value: '병원동행 문의', code_label: '병원동행 문의' },
-        { code_id: 2, code_value: '일상생활지원 문의', code_label: '일상생활지원 문의' },
-        { code_id: 3, code_value: '장애인활동지원 문의', code_label: '장애인활동지원 문의' },
-        { code_id: 4, code_value: '요양보호사 문의', code_label: '요양보호사 문의' },
-        { code_id: 5, code_value: '가격/결제 문의', code_label: '가격/결제 문의' },
-        { code_id: 6, code_value: '기타', code_label: '기타' },
+        { codeId: 1, codeValue: '병원동행 문의', codeLabel: '병원동행 문의' },
+        { codeId: 2, codeValue: '일상생활지원 문의', codeLabel: '일상생활지원 문의' },
+        { codeId: 3, codeValue: '장애인활동지원 문의', codeLabel: '장애인활동지원 문의' },
+        { codeId: 4, codeValue: '요양보호사 문의', codeLabel: '요양보호사 문의' },
+        { codeId: 5, codeValue: '가격/결제 문의', codeLabel: '가격/결제 문의' },
+        { codeId: 6, codeValue: '기타', codeLabel: '기타' },
       ]);
     });
 

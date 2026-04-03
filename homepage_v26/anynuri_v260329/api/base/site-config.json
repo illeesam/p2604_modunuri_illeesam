@@ -7,49 +7,49 @@
   },
   "menus": [
     {
-      "id": "home",
-      "label": "홈",
-      "icon": "🏠"
+      "icon": "🏠",
+      "menuId": "home",
+      "menuName": "홈"
     },
     {
-      "id": "about",
-      "label": "회사소개",
-      "icon": "✨"
+      "icon": "✨",
+      "menuId": "about",
+      "menuName": "회사소개"
     },
     {
-      "id": "works",
-      "label": "작품소개",
-      "icon": "🎬"
+      "icon": "🎬",
+      "menuId": "works",
+      "menuName": "작품소개"
     },
     {
-      "id": "portfolio",
-      "label": "작품목록",
-      "icon": "🖼️"
+      "icon": "🖼️",
+      "menuId": "portfolio",
+      "menuName": "작품목록"
     },
     {
-      "id": "detail",
-      "label": "작품상세",
-      "icon": "🔍"
+      "icon": "🔍",
+      "menuId": "detail",
+      "menuName": "작품상세"
     },
     {
-      "id": "blog",
-      "label": "블로그",
-      "icon": "📝"
+      "icon": "📝",
+      "menuId": "blog",
+      "menuName": "블로그"
     },
     {
-      "id": "location",
-      "label": "위치안내",
-      "icon": "📍"
+      "icon": "📍",
+      "menuId": "location",
+      "menuName": "위치안내"
     },
     {
-      "id": "contact",
-      "label": "고객센터",
-      "icon": "💬"
+      "icon": "💬",
+      "menuId": "contact",
+      "menuName": "고객센터"
     },
     {
-      "id": "faq",
-      "label": "FAQ",
-      "icon": "❓"
+      "icon": "❓",
+      "menuId": "faq",
+      "menuName": "FAQ"
     }
   ],
   "works": [
@@ -167,14 +167,6 @@
       ]
     }
   ],
-  "categories": [
-    "전체",
-    "로맨스",
-    "액션",
-    "판타지",
-    "코미디",
-    "SF"
-  ],
   "stats": [
     {
       "value": "15+",
@@ -213,6 +205,32 @@
     {
       "q": "해외 배급도 지원하나요?",
       "a": "일본, 미국, 유럽 등 주요 배급사와 파트너십을 맺고 있어 해외 배급도 지원 가능합니다."
+    }
+  ],
+  "categorys": [
+    {
+      "categoryId": "all",
+      "categoryName": "전체"
+    },
+    {
+      "categoryId": "romance",
+      "categoryName": "로맨스"
+    },
+    {
+      "categoryId": "action",
+      "categoryName": "액션"
+    },
+    {
+      "categoryId": "fantasy",
+      "categoryName": "판타지"
+    },
+    {
+      "categoryId": "comedy",
+      "categoryName": "코미디"
+    },
+    {
+      "categoryId": "sf",
+      "categoryName": "SF"
     }
   ]
 }

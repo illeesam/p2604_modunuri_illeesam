@@ -104,7 +104,7 @@ const dangoeulApp = createApp({
       }
 
       if (nextPage === 'detail' || nextPage === 'order' || nextPage === 'blogDetail') {
-        const pid = selectedProduct.value?.id;
+        const pid = selectedProduct.value?.productId;
         if (pid != null) nextParams.set('pid', String(pid));
       }
 
@@ -153,7 +153,7 @@ const dangoeulApp = createApp({
       try {
         if (page.value !== hPage) navigate(hPage);
         if ((hPage === 'detail' || hPage === 'order') && hPid != null && !Number.isNaN(hPid)) {
-          const found = products.find(p => Number(p.id) === hPid);
+          const found = products.find(p => Number(p.productId) === hPid);
           if (found) selectedProduct.value = found;
           try { sessionStorage.setItem('dangoeul_pid', String(hPid)); } catch (e) {}
         }
@@ -188,14 +188,14 @@ const dangoeulApp = createApp({
     const products = window.SITE_CONFIG.products;
     const selectedProduct = ref(products[0]);
     if (initialPidToRestore != null && !Number.isNaN(initialPidToRestore)) {
-      const found = products.find(p => Number(p.id) === initialPidToRestore);
+      const found = products.find(p => Number(p.productId) === initialPidToRestore);
       if (found) selectedProduct.value = found;
     } else {
       const savedPid = sessionStorage.getItem('dangoeul_pid');
       if (savedPid) {
         const pidNum = Number(savedPid);
         if (!Number.isNaN(pidNum)) {
-          const found = products.find(p => Number(p.id) === pidNum);
+          const found = products.find(p => Number(p.productId) === pidNum);
           if (found) selectedProduct.value = found;
         }
       }
@@ -208,16 +208,20 @@ const dangoeulApp = createApp({
     } catch (e) {}
     const selectProduct = p => {
       selectedProduct.value = p;
-      if (p && p.id != null) sessionStorage.setItem('dangoeul_pid', String(p.id));
+      if (p && p.productId != null) sessionStorage.setItem('dangoeul_pid', String(p.productId));
       navigate('detail');
     };
 
+    const categorys = window.SITE_CONFIG.categorys || [];
     const activeProductCat = ref('전체');
-    const productCats = ['전체', ...new Set(products.map(p => p.category))];
+    const productCats = ['전체', ...categorys.map(c => c.categoryName)];
     const filteredProducts = computed(() =>
       activeProductCat.value === '전체'
         ? products
-        : products.filter(p => p.category === activeProductCat.value)
+        : products.filter(p => {
+            const row = categorys.find(c => c.categoryName === activeProductCat.value);
+            return row && p.categoryId === row.categoryId;
+          })
     );
     const setProductCat = cat => { activeProductCat.value = cat; };
 
@@ -274,7 +278,7 @@ const dangoeulApp = createApp({
     const openDemo = p => {
       showAlert(
         '주문 안내',
-        p.name + ' 샘플 주문·구성 확인 페이지로 연결됩니다.\n실제 서비스에서는 장바구니·결제로 이어집니다.',
+        p.productName + ' 샘플 주문·구성 확인 페이지로 연결됩니다.\n실제 서비스에서는 장바구니·결제로 이어집니다.',
         'info'
       );
     };

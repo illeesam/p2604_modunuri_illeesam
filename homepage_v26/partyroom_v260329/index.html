@@ -57,11 +57,11 @@
     <nav class="hide-mobile" style="display:flex;align-items:center;gap:2px;flex:1;justify-content:center;flex-wrap:nowrap;overflow:hidden;">
       <span
         v-for="m in config.topMenu"
-        :key="m.id"
+        :key="m.menuId"
         class="nav-link"
-        :class="{ active: page === m.id }"
-        @click="navigate(m.id)"
-      >{{ m.label }}</span>
+        :class="{ active: page === m.menuId }"
+        @click="navigate(m.menuId)"
+      >{{ m.menuName }}</span>
     </nav>
 
     <!-- Right actions -->
@@ -113,14 +113,14 @@
           </div>
           <button
             v-for="item in section.items"
-            :key="item.id"
+            :key="item.menuId"
             class="sidebar-link"
-            :class="{ active: page === item.id }"
-            @click="navigate(item.id, { replace: true })"
-            :title="item.label"
+            :class="{ active: page === item.menuId }"
+            @click="navigate(item.menuId, { replace: true })"
+            :title="item.menuName"
           >
             <span style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
-            <span v-show="sidebarOpen || mobileOpen" style="font-size:0.85rem;">{{ item.label }}</span>
+            <span v-show="sidebarOpen || mobileOpen" style="font-size:0.85rem;">{{ item.menuName }}</span>
           </button>
           <div class="gold-divider" style="margin:6px 8px;"></div>
         </template>
@@ -219,14 +219,14 @@
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.25rem;">
             <div
               v-for="room in rooms.slice(0,4)"
-              :key="room.id"
+              :key="room.roomId"
               class="room-card"
               @click="selectRoom(room)"
               style="cursor:pointer;"
             >
               <div class="room-thumb">{{ room.emoji }}</div>
               <div style="padding:1rem;">
-                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;color:var(--text-primary);">{{ room.name }}</div>
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;color:var(--text-primary);">{{ room.roomName }}</div>
                 <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;">{{ room.capacity }} · {{ room.area }}</div>
                 <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">
                   <span v-for="tag in room.tags" :key="tag" class="tag-pill">{{ tag }}</span>
@@ -389,12 +389,12 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;">
           <div
             v-for="room in displayedRooms"
-            :key="room.id"
+            :key="room.roomId"
             class="room-card"
           >
             <div class="room-thumb">{{ room.emoji }}</div>
             <div style="padding:1.25rem;">
-              <div style="font-weight:800;font-size:1rem;margin-bottom:4px;color:var(--text-primary);">{{ room.name }}</div>
+              <div style="font-weight:800;font-size:1rem;margin-bottom:4px;color:var(--text-primary);">{{ room.roomName }}</div>
               <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px;">{{ room.capacity }} · {{ room.area }}</div>
 
               <!-- Features -->
@@ -455,7 +455,7 @@
           <!-- Header -->
           <div class="card" style="padding:2rem;text-align:center;margin-bottom:1.5rem;">
             <div style="font-size:5rem;margin-bottom:12px;">{{ selectedRoom.emoji }}</div>
-            <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-primary);margin-bottom:8px;">{{ selectedRoom.name }}</h1>
+            <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-primary);margin-bottom:8px;">{{ selectedRoom.roomName }}</h1>
             <div style="display:flex;justify-content:center;gap:16px;color:var(--text-muted);font-size:0.85rem;margin-bottom:16px;">
               <span>👥 {{ selectedRoom.capacity }}</span>
               <span>📐 {{ selectedRoom.area }}</span>
@@ -522,7 +522,7 @@
             <button
               class="btn-gold"
               style="font-size:1rem;padding:14px 48px;"
-              @click="() => { booking.room = selectedRoom.id; navigate('booking'); }"
+              @click="() => { booking.room = selectedRoom.roomId; navigate('booking'); }"
             >📅 이 공간 예약하기</button>
           </div>
         </div>
@@ -552,14 +552,14 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;margin-bottom:2.5rem;">
           <div
             v-for="room in rooms"
-            :key="room.id"
+            :key="room.roomId"
             class="card"
             style="overflow:hidden;cursor:pointer;"
             @click="selectRoom(room)"
           >
             <div class="room-thumb" style="height:140px;">{{ room.emoji }}</div>
             <div style="padding:1.25rem;">
-              <div style="font-weight:800;color:var(--text-primary);margin-bottom:4px;">{{ room.name }}</div>
+              <div style="font-weight:800;color:var(--text-primary);margin-bottom:4px;">{{ room.roomName }}</div>
               <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">{{ room.capacity }} · {{ room.area }}</div>
               <div style="display:flex;flex-wrap:wrap;gap:4px;">
                 <span v-for="f in room.features.slice(0,3)" :key="f" style="font-size:0.72rem;color:var(--text-secondary);background:var(--gold-dim);padding:2px 8px;border-radius:4px;">{{ f }}</span>
@@ -871,8 +871,8 @@
                 <label class="form-label">공간 선택<span class="form-required">*</span></label>
                 <select class="form-input" v-model="booking.room" @change="clearBookingError('room')">
                   <option value="">-- 공간을 선택해주세요 --</option>
-                  <option v-for="room in rooms" :key="room.id" :value="room.id">
-                    {{ room.emoji }} {{ room.name }} ({{ room.capacity }} · {{ room.area }})
+                  <option v-for="room in rooms" :key="room.roomId" :value="room.roomId">
+                    {{ room.emoji }} {{ room.roomName }} ({{ room.capacity }} · {{ room.area }})
                   </option>
                 </select>
                 <div class="form-error" v-if="bookingErrors.room">{{ bookingErrors.room }}</div>
@@ -978,9 +978,9 @@
             <div class="card" style="padding:1.25rem;">
               <div style="font-weight:700;color:var(--text-primary);margin-bottom:10px;font-size:0.88rem;">선택된 공간</div>
               <div v-if="booking.room">
-                <div v-for="room in rooms.filter(r => r.id === Number(booking.room))" :key="room.id">
+                <div v-for="room in rooms.filter(r => r.roomId === Number(booking.room))" :key="room.roomId">
                   <div style="font-size:2rem;margin-bottom:6px;">{{ room.emoji }}</div>
-                  <div style="font-weight:700;color:var(--text-primary);">{{ room.name }}</div>
+                  <div style="font-weight:700;color:var(--text-primary);">{{ room.roomName }}</div>
                   <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ room.capacity }} · {{ room.area }}</div>
                 </div>
               </div>

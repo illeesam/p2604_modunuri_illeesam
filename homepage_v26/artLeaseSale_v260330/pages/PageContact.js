@@ -52,9 +52,9 @@ window.PageContact = {
         <div>
           <label class="form-label">문의 유형</label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <label v-for="c in inquiryTypeCodes" :key="c.code_id + '-' + c.code_value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
-              <input type="radio" v-model="form.type" :value="c.code_value" style="accent-color:var(--gold);">
-              <span>{{ c.code_label }}</span>
+            <label v-for="c in inquiryTypeCodes" :key="c.codeId + '-' + c.codeValue" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
+              <input type="radio" v-model="form.type" :value="c.codeValue" style="accent-color:var(--gold);">
+              <span>{{ c.codeLabel }}</span>
             </label>
           </div>
         </div>
@@ -92,9 +92,9 @@ window.PageContact = {
 
     const inquiryTypeCodes = computed(function () {
       return window.cmUtil.codesByGroupOrRows(props.config || {}, 'artgallery_inquiry_type', [
-        { code_id: 1, code_value: 'lease', code_label: '대여 문의' },
-        { code_id: 2, code_value: 'purchase', code_label: '구매 상담' },
-        { code_id: 3, code_value: 'other', code_label: '기타' },
+        { codeId: 1, codeValue: 'lease', codeLabel: '대여 문의' },
+        { codeId: 2, codeValue: 'purchase', codeLabel: '구매 상담' },
+        { codeId: 3, codeValue: 'other', codeLabel: '기타' },
       ]);
     });
 

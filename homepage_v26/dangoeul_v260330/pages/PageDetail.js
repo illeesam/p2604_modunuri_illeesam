@@ -11,7 +11,7 @@ window.DangoeulPages.PageDetail = {
       <div style="display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;" class="detail-grid">
         <div>
           <div v-if="selectedProduct.image" class="product-detail-hero">
-            <img :src="selectedProduct.image" :alt="selectedProduct.name" loading="eager"
+            <img :src="selectedProduct.image" :alt="selectedProduct.productName" loading="eager"
               @load="$event.target.classList.add('loaded')"
               :style="{ objectPosition: selectedProduct.imagePos || 'center center' }" />
           </div>
@@ -20,8 +20,8 @@ window.DangoeulPages.PageDetail = {
               <span style="font-size:3rem;line-height:1;">{{ selectedProduct.emoji }}</span>
               <div style="flex:1;min-width:200px;">
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-                  <h1 style="font-size:1.5rem;font-weight:800;color:var(--text-primary);">{{ selectedProduct.name }}</h1>
-                  <span class="badge badge-cat">{{ selectedProduct.category }}</span>
+                  <h1 style="font-size:1.5rem;font-weight:800;color:var(--text-primary);">{{ selectedProduct.productName }}</h1>
+                  <span class="badge badge-cat">{{ categoryLabel(selectedProduct) }}</span>
                   <span v-if="selectedProduct.isSet" class="badge badge-set">구성 세트</span>
                 </div>
                 <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin-bottom:16px;">{{ selectedProduct.desc }}</p>
@@ -75,14 +75,14 @@ window.DangoeulPages.PageDetail = {
         <div>
           <div style="font-size:0.875rem;font-weight:700;color:var(--text-secondary);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.06em;">관련 상품</div>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <div v-for="p in products.filter(x=>x.id!==selectedProduct.id).slice(0,4)" :key="p.id"
+            <div v-for="p in products.filter(x=>x.productId!==selectedProduct.productId).slice(0,4)" :key="p.productId"
               class="card" style="padding:14px;cursor:pointer;" @click="selectProduct(p)">
               <div style="display:flex;align-items:center;gap:12px;">
-                <img v-if="p.image" class="product-related-thumb" :src="$listImg(p.image)" :alt="p.name" loading="lazy"
+                <img v-if="p.image" class="product-related-thumb" :src="$listImg(p.image)" :alt="p.productName" loading="lazy"
                   :style="{ objectPosition: p.imagePos || 'center center' }" />
                 <span v-else style="font-size:1.5rem;">{{ p.emoji }}</span>
                 <div style="flex:1;min-width:0;">
-                  <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
+                  <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.productName }}</div>
                   <div style="font-size:0.75rem;color:var(--blue);font-weight:600;">{{ p.price }}</div>
                 </div>
               </div>
@@ -122,8 +122,8 @@ window.DangoeulPages.PageDetail = {
 
     function shareProduct(product) {
       const siteName = window.SITE_CONFIG?.name || '단고을';
-      shareData.title = `${siteName} - ${product.name}`;
-      shareData.text = `[${siteName}] ${product.name}\n💰 ${product.price}\n${product.desc}`;
+      shareData.title = `${siteName} - ${product.productName}`;
+      shareData.text = `[${siteName}] ${product.productName}\n💰 ${product.price}\n${product.desc}`;
       shareData.url = window.location.href;
 
       if (window.isSecureContext && navigator.share) {
@@ -152,6 +152,6 @@ window.DangoeulPages.PageDetail = {
       });
     }
 
-    return { shareToast, shareModal, shareProduct, shareViaKakao, copyLink };
+    return { categoryLabel, shareToast, shareModal, shareProduct, shareViaKakao, copyLink };
   }
 };

@@ -26,8 +26,8 @@ window.DangoeulComponents.AppHeader = {
       </div>
     </button>
     <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
-      <button v-for="m in config.topMenu" :key="m.id" @click="navigate(m.id)"
-        class="nav-link" :class="{active: page===m.id}">{{ m.label }}</button>
+      <button v-for="m in config.topMenu" :key="m.menuId" @click="navigate(m.menuId)"
+        class="nav-link" :class="{active: page===m.menuId}">{{ m.menuName }}</button>
     </nav>
     <button class="theme-toggle" @click="toggleTheme" :title="theme==='light'?'다크 모드로 전환':'라이트 모드로 전환'">
       <span v-if="theme==='light'">🌙</span>

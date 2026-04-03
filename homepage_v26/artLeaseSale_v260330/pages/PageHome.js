@@ -56,9 +56,9 @@ window.PageHome = {
     </div>
     <div class="art-divider"><span class="art-divider-icon">🎨</span></div>
     <div class="grid-3" style="margin-top:8px;">
-      <div v-for="a in artworks.slice(0,6)" :key="a.id" class="artwork-card" @click="selectArtwork(a)">
+      <div v-for="a in artworks.slice(0,6)" :key="a.artworkId" class="artwork-card" @click="selectArtwork(a)">
         <div class="artwork-thumb">
-          <img v-if="a.image" :src="$listImg(a.image)" :alt="a.name" loading="lazy"
+          <img v-if="a.image" :src="$listImg(a.image)" :alt="a.artworkName" loading="lazy"
             @load="$event.target.classList.add('loaded')"
             style="width:100%;height:100%;object-fit:cover;display:block;" />
           <span v-else>{{ a.emoji }}</span>
@@ -66,7 +66,7 @@ window.PageHome = {
         </div>
         <div style="padding:18px 16px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ a.name }}</span>
+            <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ a.artworkName }}</span>
             <span class="badge badge-cat">{{ a.category }}</span>
           </div>
           <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.55;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ a.desc }}</p>

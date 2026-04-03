@@ -92,7 +92,7 @@
         const validPages = ['home','about','products','detail','booking','order','faq','contact','location'];
         const hp = p.get('page'); if (hp && validPages.includes(hp)) page.value = hp;
         const hpid = p.get('pid'); const pid = hpid!==null&&hpid!==''?Number(hpid):NaN;
-        if (!Number.isNaN(pid)) { const f = products.find(x=>Number(x.id)===pid); if(f) selectedProduct.value=f; }
+        if (!Number.isNaN(pid)) { const f = products.find(x=>Number(x.productId)===pid); if(f) selectedProduct.value=f; }
       } else {
         try {
           const sp = sessionStorage.getItem('caremate_page');
@@ -100,7 +100,7 @@
           if (sp && validPages.includes(sp)) page.value = sp;
         } catch (e) {}
         const s = Number(sessionStorage.getItem('caremate_pid'));
-        if(!Number.isNaN(s)){const f=products.find(x=>Number(x.id)===s);if(f)selectedProduct.value=f;}
+        if(!Number.isNaN(s)){const f=products.find(x=>Number(x.productId)===s);if(f)selectedProduct.value=f;}
       }
     } catch(e){}
     restoring = false;
@@ -116,7 +116,7 @@
         const validPages = ['home','about','products','detail','booking','order','faq','contact','location'];
         const hp = p.get('page'); if(hp&&validPages.includes(hp)) page.value=hp;
         const hpid = p.get('pid'); const pid = hpid!==null&&hpid!==''?Number(hpid):NaN;
-        if(!Number.isNaN(pid)){const f=products.find(x=>Number(x.id)===pid);if(f)selectedProduct.value=f;}
+        if(!Number.isNaN(pid)){const f=products.find(x=>Number(x.productId)===pid);if(f)selectedProduct.value=f;}
         setTimeout(()=>{syncingFromHash=false;},0);
       } catch(e){syncingFromHash=false;}
     });
@@ -125,8 +125,8 @@
       if(restoring||syncingFromHash) return;
       const p = new URLSearchParams(); p.set('page', page.value);
       if(id==='detail'||id==='booking'||id==='order'){
-        p.set('pid',selectedProduct.value?.id??'');
-        if(selectedProduct.value?.id!=null)sessionStorage.setItem('caremate_pid',String(selectedProduct.value.id));
+        p.set('pid',selectedProduct.value?.productId??'');
+        if(selectedProduct.value?.productId!=null)sessionStorage.setItem('caremate_pid',String(selectedProduct.value.productId));
       }
       const hash = p.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
@@ -137,7 +137,7 @@
         window.location.hash = hash;
       }
     });
-    watch(selectedProduct, p=>{if(!syncingFromHash&&p&&p.id!=null)sessionStorage.setItem('caremate_pid',String(p.id));});
+    watch(selectedProduct, p=>{if(!syncingFromHash&&p&&p.productId!=null)sessionStorage.setItem('caremate_pid',String(p.productId));});
 
     try {
       const raw = String(window.location.hash || '').replace(/^#/, '');
@@ -145,7 +145,7 @@
         const pr = new URLSearchParams();
         pr.set('page', page.value);
         if (page.value === 'detail' || page.value === 'booking' || page.value === 'order') {
-          pr.set('pid', String(selectedProduct.value?.id ?? ''));
+          pr.set('pid', String(selectedProduct.value?.productId ?? ''));
         }
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
       }

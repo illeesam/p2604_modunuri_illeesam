@@ -119,8 +119,14 @@
 
     /* ── Works / Filter ─────────────────────────────────── */
     const works = window.SITE_CONFIG.works;
-    const activeCat = ref('전체');
-    const cats = window.SITE_CONFIG.categories;
+    const categoryList = window.SITE_CONFIG.categorys || [];
+    const activeCat = ref('all');
+    function normalizeWorksCatParam(hCat) {
+      if (hCat == null || hCat === '') return null;
+      if (categoryList.some(c => c.categoryId === hCat)) return hCat;
+      const byName = categoryList.find(c => c.categoryName === hCat);
+      return byName ? byName.categoryId : null;
+    }
     const searchText = ref('');
     const PAGE_SIZE = 6;
     const visibleCount = ref(PAGE_SIZE);
@@ -138,7 +144,8 @@
         if (hPage && validPagesWorks.includes(hPage)) page.value = hPage;
 
         const hCat = params.get('cat');
-        if (hCat && cats.includes(hCat)) activeCat.value = hCat;
+        const resolvedCat = normalizeWorksCatParam(hCat);
+        if (resolvedCat) activeCat.value = resolvedCat;
 
         const hQ = params.get('q');
         if (hQ !== null) searchText.value = hQ;
@@ -166,9 +173,11 @@
     } catch (e) {}
 
     const filteredWorks = computed(() => {
-      var base = activeCat.value === '전체'
+      const catEntry = categoryList.find(c => c.categoryId === activeCat.value);
+      const label = catEntry ? catEntry.categoryName : '';
+      var base = activeCat.value === 'all' || label === '전체'
         ? works
-        : works.filter(w => w.genre === activeCat.value || w.tags.includes(activeCat.value));
+        : works.filter(w => w.genre === label || w.tags.includes(label));
 
       var q = String(searchText.value || '').trim().toLowerCase();
       if (!q) return base;
@@ -284,7 +293,8 @@
         if (hPage && validPages.includes(hPage)) page.value = hPage;
 
         const hCat = params.get('cat');
-        if (hCat && cats.includes(hCat)) activeCat.value = hCat;
+        const resolvedCat = normalizeWorksCatParam(hCat);
+        if (resolvedCat) activeCat.value = resolvedCat;
 
         const hQ = params.get('q');
         if (hQ !== null) searchText.value = hQ;
@@ -396,7 +406,7 @@
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
       blogModal, openBlogDetail, closeBlogDetail,
-      works, activeCat, cats, filteredWorks, selectedWork, selectWork,
+      works, activeCat, categoryList, filteredWorks, selectedWork, selectWork,
       searchText, displayedWorks, hasMore, resetPagination,
       openFaq, toggleFaq,
       form, formErrors, submitForm, clearFormError,

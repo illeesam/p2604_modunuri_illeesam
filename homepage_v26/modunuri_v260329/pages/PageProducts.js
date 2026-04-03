@@ -46,13 +46,13 @@ window.PageProducts = {
   </div>
   <!-- Product Grid -->
   <div v-else class="grid-3">
-    <div v-for="p in displayedProducts" :key="p.id" class="product-card">
+    <div v-for="p in displayedProducts" :key="p.productId" class="product-card">
       <div style="padding:24px 24px 0;">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
           <span style="font-size:2.8rem;">{{ p.emoji }}</span>
-          <span class="badge badge-cat">{{ p.category }}</span>
+          <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
         </div>
-        <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">{{ p.name }}</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">{{ p.productName }}</div>
         <p style="font-size:0.825rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">{{ p.desc }}</p>
         <div style="font-size:0.9rem;font-weight:700;color:var(--blue);margin-bottom:18px;">{{ p.price }}</div>
       </div>
@@ -80,15 +80,31 @@ window.PageProducts = {
     const visibleCount = ref(PAGE_SIZE);
     const skeletonDone = ref(false);
 
-    const productCats = computed(() => ['전체', ...new Set(props.products.map(p => p.category))]);
+    function categoryLabel(p) {
+      if (!p) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryName : p.categoryId;
+    }
+
+    const productCats = computed(() => {
+      const cats = (props.config && props.config.categorys) || [];
+      const used = new Set((props.products || []).map(p => p.categoryId));
+      const ordered = cats.filter(c => used.has(c.categoryId)).map(c => c.categoryName);
+      return ['전체', ...ordered];
+    });
 
     const filteredProducts = computed(() => {
       var q = String(searchText.value || '').trim().toLowerCase();
-      var byCat = activeCat.value === '전체'
+      const cats = (props.config && props.config.categorys) || [];
+      const byCat = activeCat.value === '전체'
         ? props.products
-        : props.products.filter(p => p.category === activeCat.value);
+        : props.products.filter(p => {
+            const row = cats.find(c => c.categoryName === activeCat.value);
+            return row && p.categoryId === row.categoryId;
+          });
       if (!q) return byCat;
-      return byCat.filter(p => (p.name || '').toLowerCase().includes(q));
+      return byCat.filter(p => (p.productName || '').toLowerCase().includes(q));
     });
 
     const displayedProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value));
@@ -127,6 +143,7 @@ window.PageProducts = {
       filteredProducts, displayedProducts, hasMore,
       skeletonDone,
       resetPagination,
+      categoryLabel,
     };
   }
 };

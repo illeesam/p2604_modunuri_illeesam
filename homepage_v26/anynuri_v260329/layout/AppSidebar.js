@@ -13,12 +13,12 @@ window.AppSidebar = {
            class="glass flex flex-col" style="min-height:0">
       <!-- Menu list -->
       <nav class="flex-1 overflow-y-auto p-3 space-y-0.5 mt-2">
-        <button v-for="m in menus" :key="m.id"
-                @click="$emit('navigate', m.id); $emit('close')"
+        <button v-for="m in menus" :key="m.menuId"
+                @click="$emit('navigate', m.menuId); $emit('close')"
                 class="sidebar-link w-full"
-                :class="activeMenu === m.id ? 'active' : ''">
+                :class="activeMenu === m.menuId ? 'active' : ''">
           <span class="text-base flex-shrink-0">{{ m.icon }}</span>
-          <span class="text-xs font-medium transition-opacity" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden'">{{ m.label }}</span>
+          <span class="text-xs font-medium transition-opacity" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden'">{{ m.menuName }}</span>
         </button>
       </nav>
 

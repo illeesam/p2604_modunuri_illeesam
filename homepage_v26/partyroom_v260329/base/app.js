@@ -124,7 +124,7 @@
     const selectedRoom = ref(rooms[0]);
     const selectRoom = r => {
       selectedRoom.value = r;
-      if (r && r.id != null) sessionStorage.setItem('partyroom_pid', String(r.id));
+      if (r && r.roomId != null) sessionStorage.setItem('partyroom_pid', String(r.roomId));
       navigate('detail');
     };
     const activeTag = ref('전체');
@@ -173,7 +173,7 @@
       var base = activeTag.value === '전체' ? rooms : rooms.filter(r => r.tags.includes(activeTag.value));
       var q = String(searchText.value || '').trim().toLowerCase();
       if (!q) return base;
-      return base.filter(r => (r.name || '').toLowerCase().includes(q));
+      return base.filter(r => (r.roomName || '').toLowerCase().includes(q));
     });
 
     const displayedRooms = computed(() => filteredRooms.value.slice(0, visibleCount.value));
@@ -211,14 +211,14 @@
           params.set('v', String(visibleCount.value));
         }
         if (page.value === 'detail') {
-          const pid = selectedRoom.value?.id;
+          const pid = selectedRoom.value?.roomId;
           if (pid != null) {
             params.set('pid', String(pid));
             try { sessionStorage.setItem('partyroom_pid', String(pid)); } catch (e) {}
           }
         }
         if (page.value === 'booking') {
-          const pid = selectedRoom.value?.id;
+          const pid = selectedRoom.value?.roomId;
           if (pid != null) {
             params.set('pid', String(pid));
             if (booking.room != null && booking.room !== '') params.set('room', String(booking.room));
@@ -259,7 +259,7 @@
       const savedPid = restoringRoomPid ?? sessionStorage.getItem('partyroom_pid');
       const pidNum = savedPid !== null && savedPid !== '' ? Number(savedPid) : NaN;
       if (!Number.isNaN(pidNum)) {
-        const found = rooms.find(rm => Number(rm.id) === pidNum);
+        const found = rooms.find(rm => Number(rm.roomId) === pidNum);
         if (found) selectedRoom.value = found;
       }
     } catch (e) {}
@@ -275,11 +275,11 @@
           params.set('v', String(visibleCount.value));
         }
         if (page.value === 'detail') {
-          const pid = selectedRoom.value?.id;
+          const pid = selectedRoom.value?.roomId;
           if (pid != null) params.set('pid', String(pid));
         }
         if (page.value === 'booking') {
-          const pid = selectedRoom.value?.id;
+          const pid = selectedRoom.value?.roomId;
           if (pid != null) {
             params.set('pid', String(pid));
             if (booking.room != null && booking.room !== '') params.set('room', String(booking.room));
@@ -315,16 +315,16 @@
         const hPid = params.get('pid') || params.get('roomId');
         const pidNum = hPid !== null && hPid !== '' ? Number(hPid) : NaN;
         if (!Number.isNaN(pidNum)) {
-          const found = rooms.find(rm => Number(rm.id) === pidNum);
+          const found = rooms.find(rm => Number(rm.roomId) === pidNum);
           if (found) {
             selectedRoom.value = found;
-            if (found?.id != null) sessionStorage.setItem('partyroom_pid', String(found.id));
+            if (found?.roomId != null) sessionStorage.setItem('partyroom_pid', String(found.roomId));
           }
         } else if (page.value === 'detail') {
           const saved = sessionStorage.getItem('partyroom_pid');
           const savedNum = saved !== null && saved !== '' ? Number(saved) : NaN;
           if (!Number.isNaN(savedNum)) {
-            const found = rooms.find(rm => Number(rm.id) === savedNum);
+            const found = rooms.find(rm => Number(rm.roomId) === savedNum);
             if (found) selectedRoom.value = found;
           }
         }
@@ -383,7 +383,7 @@
 
       // room이 비어있으면, 선택된 공간으로 자동 채웁니다.
       try {
-        if (!booking.room && selectedRoom.value?.id != null) booking.room = String(selectedRoom.value.id);
+        if (!booking.room && selectedRoom.value?.roomId != null) booking.room = String(selectedRoom.value.roomId);
       } catch (e) {}
     };
 
@@ -416,7 +416,7 @@
     );
     const bookingErrors = reactive({});
     const bookingTotal = computed(() => {
-      const r = rooms.find(rm => rm.id === Number(booking.room));
+      const r = rooms.find(rm => rm.roomId === Number(booking.room));
       if (!r) return 0;
       if (booking.rentalType === 'hourly') return r.hourly * booking.hours;
       if (booking.rentalType === 'daily') {

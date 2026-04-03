@@ -48,8 +48,8 @@
   },
   "homeSections": [
     {
-      "key": "weekly",
-      "title": "이번 주 추천 모종",
+      "homeSectionId": "weekly",
+      "homeSectionName": "이번 주 추천 모종",
       "subtitle": "온실 출고 기준 · 한정 수량",
       "productIds": [
         1,
@@ -58,8 +58,8 @@
       ]
     },
     {
-      "key": "best",
-      "title": "베스트 상품",
+      "homeSectionId": "best",
+      "homeSectionName": "베스트 상품",
       "subtitle": "재구매·문의가 많은 모종·세트",
       "productIds": [
         1,
@@ -68,8 +68,8 @@
       ]
     },
     {
-      "key": "new",
-      "title": "새로 나온 상품",
+      "homeSectionId": "new",
+      "homeSectionName": "새로 나온 상품",
       "subtitle": "이번 시즌 입고·신규 라인",
       "productIds": [
         12,
@@ -80,54 +80,54 @@
   ],
   "topMenu": [
     {
-      "id": "home",
-      "label": "홈",
-      "icon": "🏠"
+      "icon": "🏠",
+      "menuId": "home",
+      "menuName": "홈"
     },
     {
-      "id": "about",
-      "label": "브랜드",
-      "icon": "🌾"
+      "icon": "🌾",
+      "menuId": "about",
+      "menuName": "브랜드"
     },
     {
-      "id": "solution",
-      "label": "직거래 안내",
-      "icon": "📦"
+      "icon": "📦",
+      "menuId": "solution",
+      "menuName": "직거래 안내"
     },
     {
-      "id": "products",
-      "label": "제철 상품",
-      "icon": "🥬"
+      "icon": "🥬",
+      "menuId": "products",
+      "menuName": "제철 상품"
     },
     {
-      "id": "detail",
-      "label": "상품 상세",
-      "icon": "🔍"
+      "icon": "🔍",
+      "menuId": "detail",
+      "menuName": "상품 상세"
     },
     {
-      "id": "blog",
-      "label": "소식·레시피",
-      "icon": "📝"
+      "icon": "📝",
+      "menuId": "blog",
+      "menuName": "소식·레시피"
     },
     {
-      "id": "location",
-      "label": "오시는 길",
-      "icon": "📍"
+      "icon": "📍",
+      "menuId": "location",
+      "menuName": "오시는 길"
     },
     {
-      "id": "contact",
-      "label": "문의·주문",
-      "icon": "📞"
+      "icon": "📞",
+      "menuId": "contact",
+      "menuName": "문의·주문"
     },
     {
-      "id": "order",
-      "label": "주문하기",
-      "icon": "🧾"
+      "icon": "🧾",
+      "menuId": "order",
+      "menuName": "주문하기"
     },
     {
-      "id": "faq",
-      "label": "FAQ",
-      "icon": "❓"
+      "icon": "❓",
+      "menuId": "faq",
+      "menuName": "FAQ"
     }
   ],
   "sidebarMenu": [
@@ -135,19 +135,19 @@
       "section": "직거래",
       "items": [
         {
-          "id": "home",
-          "label": "홈",
-          "icon": "🏠"
+          "icon": "🏠",
+          "menuId": "home",
+          "menuName": "홈"
         },
         {
-          "id": "solution",
-          "label": "직거래 안내",
-          "icon": "📦"
+          "icon": "📦",
+          "menuId": "solution",
+          "menuName": "직거래 안내"
         },
         {
-          "id": "products",
-          "label": "제철 상품",
-          "icon": "🥬"
+          "icon": "🥬",
+          "menuId": "products",
+          "menuName": "제철 상품"
         }
       ]
     },
@@ -155,14 +155,14 @@
       "section": "단고을",
       "items": [
         {
-          "id": "about",
-          "label": "브랜드",
-          "icon": "🌾"
+          "icon": "🌾",
+          "menuId": "about",
+          "menuName": "브랜드"
         },
         {
-          "id": "blog",
-          "label": "소식·레시피",
-          "icon": "📝"
+          "icon": "📝",
+          "menuId": "blog",
+          "menuName": "소식·레시피"
         }
       ]
     },
@@ -170,33 +170,33 @@
       "section": "고객지원",
       "items": [
         {
-          "id": "location",
-          "label": "오시는 길",
-          "icon": "📍"
+          "icon": "📍",
+          "menuId": "location",
+          "menuName": "오시는 길"
         },
         {
-          "id": "contact",
-          "label": "문의·주문",
-          "icon": "📞"
+          "icon": "📞",
+          "menuId": "contact",
+          "menuName": "문의·주문"
         },
         {
-          "id": "order",
-          "label": "주문하기",
-          "icon": "🧾"
+          "icon": "🧾",
+          "menuId": "order",
+          "menuName": "주문하기"
         },
         {
-          "id": "faq",
-          "label": "FAQ",
-          "icon": "❓"
+          "icon": "❓",
+          "menuId": "faq",
+          "menuName": "FAQ"
         }
       ]
     }
   ],
   "solutions": [
     {
-      "id": 1,
+      "solutionId": 1,
       "emoji": "🚚",
-      "title": "새벽 배송",
+      "solutionName": "새벽 배송",
       "desc": "수확 당일 포장해 새벽 시간대에 도착하는 콜드체인 배송.",
       "tags": [
         "배송",
@@ -205,9 +205,9 @@
       "badge": "인기"
     },
     {
-      "id": 2,
+      "solutionId": 2,
       "emoji": "📅",
-      "title": "정기 구독 박스",
+      "solutionName": "정기 구독 박스",
       "desc": "제철 농산물을 매주·격주로 큐레이션해 보내드립니다.",
       "tags": [
         "구독",
@@ -216,9 +216,9 @@
       "badge": "NEW"
     },
     {
-      "id": 3,
+      "solutionId": 3,
       "emoji": "🏡",
-      "title": "농장 픽업",
+      "solutionName": "농장 픽업",
       "desc": "현장 방문 후 직접 수령 — 당일 수확 상품을 만나보세요.",
       "tags": [
         "픽업",
@@ -227,9 +227,9 @@
       "badge": ""
     },
     {
-      "id": 4,
+      "solutionId": 4,
       "emoji": "🤝",
-      "title": "지역 협동조합 연계",
+      "solutionName": "지역 협동조합 연계",
       "desc": "인근 농가와 함께하는 공동 출하·품질 관리.",
       "tags": [
         "로컬",
@@ -238,9 +238,9 @@
       "badge": ""
     },
     {
-      "id": 5,
+      "solutionId": 5,
       "emoji": "📷",
-      "title": "생산 과정 공개",
+      "solutionName": "생산 과정 공개",
       "desc": "재배·가공 과정을 사진·영상으로 투명하게 안내합니다.",
       "tags": [
         "신뢰",
@@ -249,9 +249,9 @@
       "badge": ""
     },
     {
-      "id": 6,
+      "solutionId": 6,
       "emoji": "♻️",
-      "title": "친환경 포장",
+      "solutionName": "친환경 포장",
       "desc": "재활용 가능한 포장재와 최소 비닐 사용을 지향합니다.",
       "tags": [
         "친환경",
@@ -260,162 +260,169 @@
       "badge": ""
     }
   ],
+  "categorys": [
+    {
+      "categoryId": "seedling",
+      "categoryName": "모종"
+    },
+    {
+      "categoryId": "set",
+      "categoryName": "세트"
+    }
+  ],
   "products": [
     {
-      "id": 1,
       "emoji": "🥬",
-      "name": "[단고을] 싱싱한 적상추 모종 (1포트)",
-      "category": "모종",
       "desc": "뿌리 뭉치가 하얗고 튼튼한 적상추 모종. 비닐하우스 트레이 배경 그대로 — 이식 후 활착에 유리합니다.",
       "price": "1,200원",
       "demo": "https://demo.dangoeul.kr/p01",
-      "image": "assets/images/products/p01-jeoksangchu-root.png"
+      "image": "assets/images/products/p01-jeoksangchu-root.png",
+      "productId": 1,
+      "productName": "[단고을] 싱싱한 적상추 모종 (1포트)",
+      "categoryId": "seedling"
     },
     {
-      "id": 2,
       "emoji": "🌿",
-      "name": "적상추 모종 (붉은 잎)",
-      "category": "모종",
       "desc": "적갈색 잎맥이 선명한 적상추. 물방울 맺힌 신선 잎 — 샐러드·쌈용.",
       "price": "1,200원",
       "demo": "https://demo.dangoeul.kr/p02",
-      "image": "assets/images/products/p02-red-lettuce-hand.png"
+      "image": "assets/images/products/p02-red-lettuce-hand.png",
+      "productId": 2,
+      "productName": "적상추 모종 (붉은 잎)",
+      "categoryId": "seedling"
     },
     {
-      "id": 3,
       "emoji": "🍃",
-      "name": "깻잎 모종 (밀생육)",
-      "category": "모종",
       "desc": "하트형 잎이 빽빽한 육묘 단지. 향 좋은 깻잎 — 쌈채소 대표 품목.",
       "price": "1,000원",
       "demo": "https://demo.dangoeul.kr/p03",
-      "image": "assets/images/products/p03-kkaennip-dense.png"
+      "image": "assets/images/products/p03-kkaennip-dense.png",
+      "productId": 3,
+      "productName": "깻잎 모종 (밀생육)",
+      "categoryId": "seedling"
     },
     {
-      "id": 4,
       "emoji": "🥦",
-      "name": "브라시카 모종 트레이 (케일·배추류)",
-      "category": "모종",
       "desc": "검은 플러그 트레이에 고르게 올라온 아삭한 묘. 브로콜리·케일·배추 묘 재배.",
       "price": "판별 문의",
       "demo": "https://demo.dangoeul.kr/p04",
-      "image": "assets/images/products/p04-brassica-trays.png"
+      "image": "assets/images/products/p04-brassica-trays.png",
+      "productId": 4,
+      "productName": "브라시카 모종 트레이 (케일·배추류)",
+      "categoryId": "seedling"
     },
     {
-      "id": 5,
       "emoji": "🌱",
-      "name": "청상추·청경채 계열 모종 (밀집)",
-      "category": "모종",
       "desc": "잎 끝에 물방울 맺힌 싱싱한 연녹색 묘. 샐러드·볶음배추 심기 좋은 시기.",
       "price": "1,100원",
       "demo": "https://demo.dangoeul.kr/p05",
-      "image": "assets/images/products/p05-lettuce-sea.png"
+      "image": "assets/images/products/p05-lettuce-sea.png",
+      "productId": 5,
+      "productName": "청상추·청경채 계열 모종 (밀집)",
+      "categoryId": "seedling"
     },
     {
-      "id": 6,
       "emoji": "🥗",
-      "name": "버터헤드 상추 트레이 (육묘판)",
-      "category": "모종",
       "desc": "로제트가 고른 버터헤드형. 트레이 전체가 한 격자 패턴 — 덩어리 주문 시 협의.",
       "price": "판별 문의",
       "demo": "https://demo.dangoeul.kr/p06",
-      "image": "assets/images/products/p06-butterhead-tray.png"
+      "image": "assets/images/products/p06-butterhead-tray.png",
+      "productId": 6,
+      "productName": "버터헤드 상추 트레이 (육묘판)",
+      "categoryId": "seedling"
     },
     {
-      "id": 7,
       "emoji": "💚",
-      "name": "상추 모종 (손바닥 비교)",
-      "category": "모종",
       "desc": "손에 올려 크기 확인 가능한 개별 묘. 포트에서 막 뽑은 듯한 로제트.",
       "price": "1,100원",
       "demo": "https://demo.dangoeul.kr/p07",
-      "image": "assets/images/products/p07-lettuce-hand-palm.png"
+      "image": "assets/images/products/p07-lettuce-hand-palm.png",
+      "productId": 7,
+      "productName": "상추 모종 (손바닥 비교)",
+      "categoryId": "seedling"
     },
     {
-      "id": 8,
       "emoji": "✨",
-      "name": "버터헤드 상추 (뿌리 발달)",
-      "category": "모종",
       "desc": "흰 뿌리가 포트를 감싼 프리미엄 묘. “뿌리가 생명” — 이식 직후 생존률 강조.",
       "price": "1,300원",
       "demo": "https://demo.dangoeul.kr/p08",
-      "image": "assets/images/products/p08-butterhead-roots.png"
+      "image": "assets/images/products/p08-butterhead-roots.png",
+      "productId": 8,
+      "productName": "버터헤드 상추 (뿌리 발달)",
+      "categoryId": "seedling"
     },
     {
-      "id": 9,
       "emoji": "🍃",
-      "name": "깻잎 모종 (플러그)",
-      "category": "모종",
       "desc": "깻잎 특유의 잎 모양·거친 잎결. 원통형 플러그에 실뿌리 밀착.",
       "price": "1,000원",
       "demo": "https://demo.dangoeul.kr/p09",
-      "image": "assets/images/products/p09-kkaennip-plug.png"
+      "image": "assets/images/products/p09-kkaennip-plug.png",
+      "productId": 9,
+      "productName": "깻잎 모종 (플러그)",
+      "categoryId": "seedling"
     },
     {
-      "id": 10,
       "emoji": "🍅",
-      "name": "방울토마토 모종",
-      "category": "모종",
       "desc": "복엽·털이 도드라진 토마토 묘. 줄기 튼튼 — 베란다·하우스 재배용.",
       "price": "1,500원",
       "demo": "https://demo.dangoeul.kr/p10",
-      "image": "assets/images/products/p10-tomato-seedling.png"
+      "image": "assets/images/products/p10-tomato-seedling.png",
+      "productId": 10,
+      "productName": "방울토마토 모종",
+      "categoryId": "seedling"
     },
     {
-      "id": 11,
       "emoji": "🥦",
-      "name": "브로콜리 모종 (1포)",
-      "category": "모종",
       "desc": "분무 녹 잎의 브라시카 묘. 배경 트레이와 동일 품질로 출고.",
       "price": "1,200원",
       "demo": "https://demo.dangoeul.kr/p11",
-      "image": "assets/images/products/p11-broccoli-hand.png"
+      "image": "assets/images/products/p11-broccoli-hand.png",
+      "productId": 11,
+      "productName": "브로콜리 모종 (1포)",
+      "categoryId": "seedling"
     },
     {
-      "id": 12,
       "emoji": "🟣",
-      "name": "적 겨자 모종 (보라 잎맥)",
-      "category": "모종",
       "desc": "적색 맥이 도드라진 겨자류. 샐러드·감칠맛 — 트레이 단위 구매 가능.",
       "price": "1,200원",
       "demo": "https://demo.dangoeul.kr/p12",
-      "image": "assets/images/products/p12-red-mustard.png"
+      "image": "assets/images/products/p12-red-mustard.png",
+      "productId": 12,
+      "productName": "적 겨자 모종 (보라 잎맥)",
+      "categoryId": "seedling"
     },
     {
-      "id": 13,
       "emoji": "🏡",
-      "name": "깻잎 모종 (하우스 대단지)",
-      "category": "모종",
       "desc": "진천 온실에서 키운 깻잎 묘 대면적 컷. 대량·도매 문의 환영.",
       "price": "판별 문의",
       "demo": "https://demo.dangoeul.kr/p13",
-      "image": "assets/images/products/p13-kkaennip-greenhouse.png"
+      "image": "assets/images/products/p13-kkaennip-greenhouse.png",
+      "productId": 13,
+      "productName": "깻잎 모종 (하우스 대단지)",
+      "categoryId": "seedling"
     },
     {
-      "id": 14,
       "emoji": "🥬",
-      "name": "배추·양배추 모종 (플러그)",
-      "category": "모종",
       "desc": "넓은 원형 잎의 배추류 묘. 김장·봄 배추 심기 적합.",
       "price": "1,000원",
       "demo": "https://demo.dangoeul.kr/p14",
-      "image": "assets/images/products/p14-cabbage-hand.png"
+      "image": "assets/images/products/p14-cabbage-hand.png",
+      "productId": 14,
+      "productName": "배추·양배추 모종 (플러그)",
+      "categoryId": "seedling"
     },
     {
-      "id": 15,
       "emoji": "🍅",
-      "name": "토마토 모종 (대단지·손 비교)",
-      "category": "모종",
       "desc": "수만 주 묘 중 한 포를 들어 올린 컷. 대규모 육묘와 개체 품질을 함께 확인.",
       "price": "1,500원",
       "demo": "https://demo.dangoeul.kr/p15",
-      "image": "assets/images/products/p15-tomato-field-hand.png"
+      "image": "assets/images/products/p15-tomato-field-hand.png",
+      "productId": 15,
+      "productName": "토마토 모종 (대단지·손 비교)",
+      "categoryId": "seedling"
     },
     {
-      "id": 16,
       "emoji": "🎁",
-      "name": "[실속세트] 적상추 모종 10포 / 20포",
-      "category": "세트",
       "desc": "주력 적상추를 수량별로 묶은 실속 구성. 가정·소규모 텃밭용.",
       "price": "10포 9,500원 / 20포 17,500원",
       "demo": "https://demo.dangoeul.kr/set10",
@@ -425,13 +432,13 @@
         "적상추 모종 1포트 × 10 또는 × 20",
         "심기 순서 안내지",
         "포장 시 뿌리·잎 상태 검수"
-      ]
+      ],
+      "productId": 16,
+      "productName": "[실속세트] 적상추 모종 10포 / 20포",
+      "categoryId": "set"
     },
     {
-      "id": 17,
       "emoji": "🎁",
-      "name": "[주말농장] 쌈채소 모둠 세트",
-      "category": "세트",
       "desc": "깻잎·상추·(시즌) 고추 묘 등 쌈 라인을 한 번에. 사진은 하우스 깻잎 육묘 현장.",
       "price": "세트 28,000원~",
       "demo": "https://demo.dangoeul.kr/set-ssam",
@@ -442,13 +449,13 @@
         "청·적상추 모종",
         "시즌 고추 묘(재고)",
         "배송 전 물주기·포장"
-      ]
+      ],
+      "productId": 17,
+      "productName": "[주말농장] 쌈채소 모둠 세트",
+      "categoryId": "set"
     },
     {
-      "id": 18,
       "emoji": "🎁",
-      "name": "텃밭 스타터 세트 (잎채소+토마토)",
-      "category": "세트",
       "desc": "잎채소와 토마토 묘를 조합한 입문 세트. 베란다·작은 텃밭에 맞춤.",
       "price": "세트 32,000원~",
       "demo": "https://demo.dangoeul.kr/set-starter",
@@ -459,7 +466,10 @@
         "방울토마토 묘",
         "배양토 소포장(선택)",
         "이식 요령 카드"
-      ]
+      ],
+      "productId": 18,
+      "productName": "텃밭 스타터 세트 (잎채소+토마토)",
+      "categoryId": "set"
     }
   ],
   "faqs": [
@@ -485,12 +495,47 @@
     }
   ],
   "codes": [
-    { "code_id": 1, "code_grp": "dangoeul_contact_service", "code_value": "새벽 배송", "code_label": "새벽 배송" },
-    { "code_id": 2, "code_grp": "dangoeul_contact_service", "code_value": "정기 구독 박스", "code_label": "정기 구독 박스" },
-    { "code_id": 3, "code_grp": "dangoeul_contact_service", "code_value": "농장 픽업", "code_label": "농장 픽업" },
-    { "code_id": 4, "code_grp": "dangoeul_contact_service", "code_value": "지역 협동조합 연계", "code_label": "지역 협동조합 연계" },
-    { "code_id": 5, "code_grp": "dangoeul_contact_service", "code_value": "생산 과정 공개", "code_label": "생산 과정 공개" },
-    { "code_id": 6, "code_grp": "dangoeul_contact_service", "code_value": "친환경 포장", "code_label": "친환경 포장" },
-    { "code_id": 7, "code_grp": "dangoeul_contact_service", "code_value": "기타 문의", "code_label": "기타 문의" }
+    {
+      "codeId": 1,
+      "codeGrp": "dangoeul_contact_service",
+      "codeValue": "새벽 배송",
+      "codeLabel": "새벽 배송"
+    },
+    {
+      "codeId": 2,
+      "codeGrp": "dangoeul_contact_service",
+      "codeValue": "정기 구독 박스",
+      "codeLabel": "정기 구독 박스"
+    },
+    {
+      "codeId": 3,
+      "codeGrp": "dangoeul_contact_service",
+      "codeValue": "농장 픽업",
+      "codeLabel": "농장 픽업"
+    },
+    {
+      "codeId": 4,
+      "codeGrp": "dangoeul_contact_service",
+      "codeValue": "지역 협동조합 연계",
+      "codeLabel": "지역 협동조합 연계"
+    },
+    {
+      "codeId": 5,
+      "codeGrp": "dangoeul_contact_service",
+      "codeValue": "생산 과정 공개",
+      "codeLabel": "생산 과정 공개"
+    },
+    {
+      "codeId": 6,
+      "codeGrp": "dangoeul_contact_service",
+      "codeValue": "친환경 포장",
+      "codeLabel": "친환경 포장"
+    },
+    {
+      "codeId": 7,
+      "codeGrp": "dangoeul_contact_service",
+      "codeValue": "기타 문의",
+      "codeLabel": "기타 문의"
+    }
   ]
 }

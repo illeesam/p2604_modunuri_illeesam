@@ -15,13 +15,13 @@ window.PageDetail = {
 
       <!-- Room Selector -->
       <div class="flex flex-wrap gap-2 mb-6">
-        <button v-for="room in rooms" :key="room.id"
+        <button v-for="room in rooms" :key="room.roomId"
                 @click="selected = room"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                :style="selected.id===room.id
+                :style="selected.roomId===room.roomId
                   ? 'background:var(--gold);color:#0f1119'
                   : 'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border)'">
-          {{ room.name }}
+          {{ room.roomName }}
         </button>
       </div>
 
@@ -41,7 +41,7 @@ window.PageDetail = {
         <!-- 상세 정보 -->
         <div>
           <div class="flex items-start justify-between mb-3">
-            <h1 class="text-2xl font-black" style="color:var(--text-primary)">{{ selected.name }}</h1>
+            <h1 class="text-2xl font-black" style="color:var(--text-primary)">{{ selected.roomName }}</h1>
             <span class="badge badge-purple">{{ selected.area }}</span>
           </div>
 
@@ -145,8 +145,8 @@ window.PageDetail = {
 
     function shareRoom(room) {
       const siteName = window.SITE_CONFIG?.name || '파티룸 스페이스';
-      shareData.title = `${siteName} - ${room.name}`;
-      shareData.text = `[${siteName}] ${room.name}\n💰 시간당 ${room.hourly.toLocaleString()}원 / 1일 ${room.daily.toLocaleString()}원\n👥 수용 인원: ${room.capacity} · 면적: ${room.area}`;
+      shareData.title = `${siteName} - ${room.roomName}`;
+      shareData.text = `[${siteName}] ${room.roomName}\n💰 시간당 ${room.hourly.toLocaleString()}원 / 1일 ${room.daily.toLocaleString()}원\n👥 수용 인원: ${room.capacity} · 면적: ${room.area}`;
       shareData.url = window.location.href;
 
       if (window.isSecureContext && navigator.share) {

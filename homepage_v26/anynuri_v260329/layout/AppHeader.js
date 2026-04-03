@@ -31,12 +31,12 @@ window.AppHeader = {
 
       <!-- Top nav (desktop) -->
       <nav class="hidden lg:flex items-center gap-1 text-xs">
-        <button v-for="m in topMenus" :key="m.id"
-                @click="$emit('navigate', m.id)"
+        <button v-for="m in topMenus" :key="m.menuId"
+                @click="$emit('navigate', m.menuId)"
                 class="nav-link px-3 py-1.5 rounded-lg transition-colors font-medium"
-                :style="activeMenu===m.id ? 'color:var(--sakura)' : 'color:var(--text-secondary)'"
-                :class="activeMenu===m.id ? 'active' : ''">
-          {{ m.label }}
+                :style="activeMenu===m.menuId ? 'color:var(--sakura)' : 'color:var(--text-secondary)'"
+                :class="activeMenu===m.menuId ? 'active' : ''">
+          {{ m.menuName }}
         </button>
       </nav>
 

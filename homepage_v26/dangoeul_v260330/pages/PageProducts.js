@@ -36,9 +36,9 @@ window.DangoeulPages.PageProducts = {
     </div>
 
     <div class="grid-3">
-      <div v-for="p in displayedProducts" :key="p.id" class="product-card">
+      <div v-for="p in displayedProducts" :key="p.productId" class="product-card">
         <div v-if="p.image" class="product-card-cover">
-          <img :src="$listImg(p.image)" :alt="p.name" loading="lazy"
+          <img :src="$listImg(p.image)" :alt="p.productName" loading="lazy"
             @load="$event.target.classList.add('loaded')"
             :style="{ objectPosition: p.imagePos || 'center center' }" />
         </div>
@@ -49,11 +49,11 @@ window.DangoeulPages.PageProducts = {
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
             <span v-if="!p.image" style="font-size:1.5rem;line-height:1;">{{ p.emoji }}</span>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-left:auto;">
-              <span class="badge badge-cat">{{ p.category }}</span>
+              <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
               <span v-if="p.isSet" class="badge badge-set">구성 세트</span>
             </div>
           </div>
-          <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">{{ p.name }}</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">{{ p.productName }}</div>
           <p style="font-size:0.825rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">{{ p.desc }}</p>
           <div style="font-size:0.9rem;font-weight:700;color:var(--blue);margin-bottom:8px;">{{ p.price }}</div>
         </div>
@@ -79,6 +79,13 @@ window.DangoeulPages.PageProducts = {
     const visibleCount = ref(PAGE_SIZE);
     const sentinel = ref(null);
     const observerRef = ref(null);
+
+    function categoryLabel(p) {
+      if (!p) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryName : p.categoryId;
+    }
 
     /* ── Preserve products list state on refresh ── */
     let restoring = true;
@@ -137,7 +144,7 @@ window.DangoeulPages.PageProducts = {
       var q = String(searchText.value || '').trim().toLowerCase();
       var base = props.filteredProducts || [];
       if (!q) return base;
-      return base.filter(p => (p.name || '').toLowerCase().includes(q));
+      return base.filter(p => (p.productName || '').toLowerCase().includes(q));
     });
 
     const displayedProducts = computed(() => searchedProducts.value.slice(0, visibleCount.value));
@@ -210,6 +217,7 @@ window.DangoeulPages.PageProducts = {
       sentinel,
       hasMore,
       resetPagination,
+      categoryLabel,
     };
   },
 };

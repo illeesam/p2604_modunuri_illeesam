@@ -55,11 +55,11 @@ window.PageHome = {
       <button class="btn-outline btn-sm" @click="navigate('solution')">전체 보기 →</button>
     </div>
     <div class="grid-2" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
-      <div v-for="s in config.solutions.slice(0,4)" :key="s.id" class="solution-card">
+      <div v-for="s in config.solutions.slice(0,4)" :key="s.solutionId" class="solution-card">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
           <span style="font-size:2rem;">{{ s.emoji }}</span>
           <div>
-            <div style="font-weight:700;font-size:0.95rem;color:var(--text-primary);">{{ s.title }}</div>
+            <div style="font-weight:700;font-size:0.95rem;color:var(--text-primary);">{{ s.solutionName }}</div>
             <span v-if="s.badge==='NEW'" class="badge badge-new">NEW</span>
             <span v-else-if="s.badge==='인기'" class="badge badge-hot">인기</span>
           </div>
@@ -82,11 +82,11 @@ window.PageHome = {
       <button class="btn-outline btn-sm" @click="navigate('products')">전체 상품 →</button>
     </div>
     <div class="grid-3">
-      <div v-for="p in products.slice(0,3)" :key="p.id" class="product-card" style="padding:24px;">
+      <div v-for="p in products.slice(0,3)" :key="p.productId" class="product-card" style="padding:24px;">
         <div style="font-size:2.4rem;margin-bottom:12px;">{{ p.emoji }}</div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <span style="font-weight:700;color:var(--text-primary);">{{ p.name }}</span>
-          <span class="badge badge-cat">{{ p.category }}</span>
+          <span style="font-weight:700;color:var(--text-primary);">{{ p.productName }}</span>
+          <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
         </div>
         <p style="font-size:0.825rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">{{ p.desc }}</p>
         <div style="font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:14px;">{{ p.price }}</div>
@@ -114,7 +114,13 @@ window.PageHome = {
   </div>
 </div>
   `,
-  setup() {
-    return {};
+  setup(props) {
+    function categoryLabel(p) {
+      if (!p) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryName : p.categoryId;
+    }
+    return { categoryLabel };
   }
 };

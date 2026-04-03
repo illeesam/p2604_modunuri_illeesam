@@ -64,13 +64,13 @@ window.PageHome = {
             <p class="section-subtitle">파티룸부터 스터디룸, 회의실까지</p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div v-for="room in featuredRooms" :key="room.id"
+            <div v-for="room in featuredRooms" :key="room.roomId"
                  class="room-card cursor-pointer"
                  @click="$emit('navigate','detail')">
               <div class="room-thumb">{{ room.emoji }}</div>
               <div class="p-4">
                 <div class="flex items-start justify-between mb-2">
-                  <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ room.name }}</h3>
+                  <h3 class="font-bold text-sm" style="color:var(--text-primary)">{{ room.roomName }}</h3>
                   <span class="badge badge-gold">{{ room.capacity }}</span>
                 </div>
                 <div class="flex flex-wrap gap-1 mb-3">

@@ -1,9 +1,9 @@
 {
-  "text": "이 문구는 docs_v260329/api/base/site-notice.json 에서 axiosApi.get 으로 불러옵니다. 아래 셀렉트는 codes(code_grp: docs_view_filter) 데모입니다.",
+  "text": "이 문구는 docs_v260329/api/base/site-notice.json 에서 axiosApi.get 으로 불러옵니다. 아래 셀렉트는 codes(codeGrp: docs_view_filter) 데모입니다.",
   "codes": [
-    { "code_id": 1, "code_grp": "docs_view_filter", "code_value": "all", "code_label": "전체 문서" },
-    { "code_id": 2, "code_grp": "docs_view_filter", "code_value": "guide", "code_label": "가이드" },
-    { "code_id": 3, "code_grp": "docs_view_filter", "code_value": "api", "code_label": "API 참고" },
-    { "code_id": 4, "code_grp": "docs_view_filter", "code_value": "release", "code_label": "배포·릴리스" }
+    { "codeId": 1, "codeGrp": "docs_view_filter", "codeValue": "all", "codeLabel": "전체 문서" },
+    { "codeId": 2, "codeGrp": "docs_view_filter", "codeValue": "guide", "codeLabel": "가이드" },
+    { "codeId": 3, "codeGrp": "docs_view_filter", "codeValue": "api", "codeLabel": "API 참고" },
+    { "codeId": 4, "codeGrp": "docs_view_filter", "codeValue": "release", "codeLabel": "배포·릴리스" }
   ]
 }

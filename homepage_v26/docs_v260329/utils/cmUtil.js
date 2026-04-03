@@ -5,24 +5,34 @@
 (function (global) {
   'use strict';
 
+  function fallbackStringList(fallback) {
+    if (!fallback || !fallback.length) return [];
+    var first = fallback[0];
+    if (typeof first === 'string') return fallback;
+    if (first && first.hospitalName != null) return fallback.map(function (x) { return x.hospitalName; });
+    if (first && first.departmentName != null) return fallback.map(function (x) { return x.departmentName; });
+    return [];
+  }
+
   function codesByGroup(config, grp) {
     var codes = (config && config.codes) || [];
     return codes
       .filter(function (c) {
-        return c.code_grp === grp;
+        return c.codeGrp === grp;
       })
       .sort(function (a, b) {
-        return (a.code_id || 0) - (b.code_id || 0);
+        return (a.codeId || 0) - (b.codeId || 0);
       });
   }
 
-  /** codes에 행이 있으면 사용, 없으면 문자열 배열을 code 행으로 변환 */
+  /** codes에 행이 있으면 사용, 없으면 문자열·hospital/department 객체 배열을 code 행으로 변환 */
   function codesByGroupOrStringList(config, grp, fallbackStrings) {
     var rows = codesByGroup(config, grp);
     if (rows.length) return rows;
-    if (!fallbackStrings || !fallbackStrings.length) return [];
-    return fallbackStrings.map(function (x, i) {
-      return { code_id: i + 1, code_grp: grp, code_value: x, code_label: x };
+    var list = fallbackStringList(fallbackStrings);
+    if (!list.length) return [];
+    return list.map(function (x, i) {
+      return { codeId: i + 1, codeGrp: grp, codeValue: x, codeLabel: x };
     });
   }
 
@@ -33,13 +43,15 @@
     return fallbackRows && fallbackRows.length ? fallbackRows : [];
   }
 
-  /** codes 우선, 없으면 config.solutions[].title */
+  /** codes 우선, 없으면 config.solutions[].solutionName */
   function codesByGroupOrSolutionTitles(config, grp) {
     var rows = codesByGroup(config, grp);
     if (rows.length) return rows;
     var sol = (config && config.solutions) || [];
     return sol.map(function (s) {
-      return { code_id: s.id, code_value: s.title, code_label: s.title };
+      var sid = s.solutionId != null ? s.solutionId : s.id;
+      var sn = s.solutionName != null ? s.solutionName : s.title;
+      return { codeId: sid, codeGrp: grp, codeValue: sn, codeLabel: sn };
     });
   }
 

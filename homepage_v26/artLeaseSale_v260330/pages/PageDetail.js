@@ -12,10 +12,10 @@ window.PageDetail = {
 
   <!-- Artwork selector -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">
-    <button v-for="a in artworks" :key="a.id" @click="selectArtwork(a)"
+    <button v-for="a in artworks" :key="a.artworkId" @click="selectArtwork(a)"
       style="padding:6px 14px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;"
-      :style="artwork && artwork.id===a.id ? 'background:var(--gold);color:#fff;border:1.5px solid var(--gold);' : 'background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);'">
-      {{ a.emoji }} {{ a.name }}
+      :style="artwork && artwork.artworkId===a.artworkId ? 'background:var(--gold);color:#fff;border:1.5px solid var(--gold);' : 'background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);'">
+      {{ a.emoji }} {{ a.artworkName }}
     </button>
   </div>
 
@@ -23,7 +23,7 @@ window.PageDetail = {
     <!-- Artwork image -->
     <div class="card" style="padding:0;overflow:hidden;">
       <div style="height:360px;display:flex;align-items:center;justify-content:center;font-size:8rem;background:linear-gradient(135deg,var(--gold-dim),var(--burgundy-dim));position:relative;">
-        <img v-if="artwork.image" :src="artwork.image" :alt="artwork.name" loading="lazy"
+        <img v-if="artwork.image" :src="artwork.image" :alt="artwork.artworkName" loading="lazy"
           @load="$event.target.classList.add('loaded')"
           style="width:100%;height:100%;object-fit:cover;display:block;" />
         <template v-else>{{ artwork.emoji }}</template>
@@ -42,7 +42,7 @@ window.PageDetail = {
     <div style="display:flex;flex-direction:column;gap:20px;">
       <div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-          <h1 style="font-size:1.7rem;font-weight:800;color:var(--text-primary);font-family:'Noto Serif KR',serif;">{{ artwork.name }}</h1>
+          <h1 style="font-size:1.7rem;font-weight:800;color:var(--text-primary);font-family:'Noto Serif KR',serif;">{{ artwork.artworkName }}</h1>
           <span class="badge badge-cat">{{ artwork.category }}</span>
         </div>
         <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.8;">{{ artwork.desc }}</p>
@@ -127,8 +127,8 @@ window.PageDetail = {
 
     function shareArtwork(artwork) {
       const siteName = props.config?.name || '송진현 갤러리';
-      shareData.title = `${siteName} - ${artwork.name}`;
-      shareData.text = `[${siteName}] ${artwork.name}\n📋 대여: ${artwork.leasePrice}/월\n🏷️ 구매: ${artwork.salePrice}\n${artwork.desc}`;
+      shareData.title = `${siteName} - ${artwork.artworkName}`;
+      shareData.text = `[${siteName}] ${artwork.artworkName}\n📋 대여: ${artwork.leasePrice}/월\n🏷️ 구매: ${artwork.salePrice}\n${artwork.desc}`;
       shareData.url = window.location.href;
 
       if (window.isSecureContext && navigator.share) {

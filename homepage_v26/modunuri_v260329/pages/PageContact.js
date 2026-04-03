@@ -39,7 +39,7 @@ window.PageContact = {
         <label class="form-label">관심 서비스</label>
         <select v-model="form.service" class="form-input">
           <option value="">선택 (선택사항)</option>
-          <option v-for="c in contactServiceCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+          <option v-for="c in contactServiceCodes" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div style="margin-bottom:22px;">

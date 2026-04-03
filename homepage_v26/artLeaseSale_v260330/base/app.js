@@ -102,7 +102,7 @@
         const hAid = params.get('aid');
         const aid = hAid !== null && hAid !== '' ? Number(hAid) : NaN;
         if (!Number.isNaN(aid)) {
-          const found = artworks.find(a => Number(a.id) === aid);
+          const found = artworks.find(a => Number(a.artworkId) === aid);
           if (found) selectedArtwork.value = found;
         }
       } else {
@@ -113,7 +113,7 @@
         } catch (e) {}
         const saved = Number(sessionStorage.getItem('artgallery_aid'));
         if (!Number.isNaN(saved)) {
-          const found = artworks.find(a => Number(a.id) === saved);
+          const found = artworks.find(a => Number(a.artworkId) === saved);
           if (found) selectedArtwork.value = found;
         }
       }
@@ -133,7 +133,7 @@
         const hAid = params.get('aid');
         const aid = hAid !== null && hAid !== '' ? Number(hAid) : NaN;
         if (!Number.isNaN(aid)) {
-          const found = artworks.find(a => Number(a.id) === aid);
+          const found = artworks.find(a => Number(a.artworkId) === aid);
           if (found) selectedArtwork.value = found;
         }
       } catch (e) {}
@@ -147,8 +147,8 @@
       const params = new URLSearchParams();
       params.set('page', page.value);
       if (page.value === 'detail') {
-        params.set('aid', selectedArtwork.value?.id ?? '');
-        if (selectedArtwork.value?.id != null) sessionStorage.setItem('artgallery_aid', String(selectedArtwork.value.id));
+        params.set('aid', selectedArtwork.value?.artworkId ?? '');
+        if (selectedArtwork.value?.artworkId != null) sessionStorage.setItem('artgallery_aid', String(selectedArtwork.value.artworkId));
       }
       const hash = params.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
@@ -160,7 +160,7 @@
       }
     });
     watch(selectedArtwork, a => {
-      if (!syncingFromHash && a && a.id != null) sessionStorage.setItem('artgallery_aid', String(a.id));
+      if (!syncingFromHash && a && a.artworkId != null) sessionStorage.setItem('artgallery_aid', String(a.artworkId));
     });
 
     try {
@@ -168,8 +168,8 @@
       if (!raw || !raw.includes('page=')) {
         const pr = new URLSearchParams();
         pr.set('page', page.value);
-        if (page.value === 'detail' && selectedArtwork.value?.id != null) {
-          pr.set('aid', String(selectedArtwork.value.id));
+        if (page.value === 'detail' && selectedArtwork.value?.artworkId != null) {
+          pr.set('aid', String(selectedArtwork.value.artworkId));
         }
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
       }

@@ -44,7 +44,7 @@ window.PageBooking = {
             <label class="form-label">병원 선택 <span class="form-required">*</span></label>
             <select v-model="booking.hospital" @change="clearBookingError('hospital')" class="form-input">
               <option value="">병원을 선택하세요</option>
-              <option v-for="c in hospitalCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+              <option v-for="c in hospitalCodes" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
             <div v-if="bookingErrors.hospital" class="form-error">{{ bookingErrors.hospital }}</div>
           </div>
@@ -56,7 +56,7 @@ window.PageBooking = {
             <label class="form-label">진료과목 <span class="form-required">*</span></label>
             <select v-model="booking.department" @change="clearBookingError('department')" class="form-input">
               <option value="">진료과목을 선택하세요</option>
-              <option v-for="c in departmentCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+              <option v-for="c in departmentCodes" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
             <div v-if="bookingErrors.department" class="form-error">{{ bookingErrors.department }}</div>
           </div>
@@ -75,7 +75,7 @@ window.PageBooking = {
           <div>
             <label class="form-label">진료 예상 시간</label>
             <select v-model="booking.expectedDuration" class="form-input">
-              <option v-for="c in durationCodes" :key="c.code_id + '-' + c.code_value" :value="c.code_value">{{ c.code_label }}</option>
+              <option v-for="c in durationCodes" :key="c.codeId + '-' + c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </div>
         </div>
@@ -148,21 +148,21 @@ window.PageBooking = {
           <span style="font-size:0.72rem;font-weight:400;color:var(--teal);">환자 상태에 따라 자동 추천됩니다</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div v-for="p in hospitalProducts" :key="p.id"
-            @click="booking.productId=p.id"
+          <div v-for="p in hospitalProducts" :key="p.productId"
+            @click="booking.productId=p.productId"
             style="padding:14px 16px;border-radius:12px;cursor:pointer;transition:all 0.2s;"
-            :style="booking.productId===p.id?'border:2px solid var(--blue);background:var(--blue-dim);':'border:1.5px solid var(--border);background:var(--bg-card);'">
+            :style="booking.productId===p.productId?'border:2px solid var(--blue);background:var(--blue-dim);':'border:1.5px solid var(--border);background:var(--bg-card);'">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="font-size:1.4rem;">{{ p.emoji }}</span>
               <div style="flex:1;">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                  <span style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">{{ p.name }}</span>
-                  <span v-if="p.id===recommendedProductId" class="badge badge-teal" style="font-size:0.62rem;">자동 추천</span>
+                  <span style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">{{ p.productName }}</span>
+                  <span v-if="p.productId===recommendedProductId" class="badge badge-teal" style="font-size:0.62rem;">자동 추천</span>
                 </div>
                 <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">{{ p.price }} · {{ p.priceNote }}</div>
               </div>
               <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;">
-                <div v-if="booking.productId===p.id" style="width:10px;height:10px;border-radius:50%;background:var(--blue);"></div>
+                <div v-if="booking.productId===p.productId" style="width:10px;height:10px;border-radius:50%;background:var(--blue);"></div>
               </div>
             </div>
           </div>
@@ -184,13 +184,13 @@ window.PageBooking = {
       <div class="booking-highlight">
         <div style="font-size:0.75rem;font-weight:700;color:var(--blue);margin-bottom:10px;">📋 선택 서비스 요약</div>
         <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary);">
-          {{ hospitalProducts.find(p=>p.id===booking.productId)?.name || '선택 안됨' }}
+          {{ hospitalProducts.find(p=>p.productId===booking.productId)?.productName || '선택 안됨' }}
         </div>
         <div style="font-size:0.9rem;font-weight:700;color:var(--blue);margin-top:4px;">
-          {{ hospitalProducts.find(p=>p.id===booking.productId)?.price }}
+          {{ hospitalProducts.find(p=>p.productId===booking.productId)?.price }}
         </div>
         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
-          {{ hospitalProducts.find(p=>p.id===booking.productId)?.priceNote }}
+          {{ hospitalProducts.find(p=>p.productId===booking.productId)?.priceNote }}
         </div>
         <div v-if="booking.hospital" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(26,115,232,0.15);font-size:0.8rem;color:var(--text-secondary);">
           🏥 {{ selectedHospital || booking.hospital }}<br>
@@ -251,7 +251,7 @@ window.PageBooking = {
     });
     watch(recommendedProductId, id => { booking.productId = id; });
 
-    const hospitalProducts = computed(() => products.filter(p => p.category === 'hospital'));
+    const hospitalProducts = computed(() => products.filter(p => p.categoryId === 'hospital'));
 
     const hospitalCodes = computed(() =>
       window.cmUtil.codesByGroupOrStringList(props.config, 'caremate_hospital', props.config.hospitals)
@@ -261,11 +261,11 @@ window.PageBooking = {
     );
     const durationCodes = computed(() =>
       window.cmUtil.codesByGroupOrRows(props.config, 'caremate_visit_duration', [
-        { code_id: 1, code_value: '0.5', code_label: '30분 이내' },
-        { code_id: 2, code_value: '1', code_label: '1시간 내외' },
-        { code_id: 3, code_value: '2', code_label: '2시간 내외' },
-        { code_id: 4, code_value: '3', code_label: '3시간 이상' },
-        { code_id: 5, code_value: 'unknown', code_label: '예측 불가' },
+        { codeId: 1, codeValue: '0.5', codeLabel: '30분 이내' },
+        { codeId: 2, codeValue: '1', codeLabel: '1시간 내외' },
+        { codeId: 3, codeValue: '2', codeLabel: '2시간 내외' },
+        { codeId: 4, codeValue: '3', codeLabel: '3시간 이상' },
+        { codeId: 5, codeValue: 'unknown', codeLabel: '예측 불가' },
       ])
     );
 

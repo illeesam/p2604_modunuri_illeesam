@@ -54,13 +54,13 @@ window.PageProducts = {
 
       <!-- Room Grid -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
-        <div v-for="room in displayedRooms" :key="room.id"
+        <div v-for="room in displayedRooms" :key="room.roomId"
              class="room-card cursor-pointer"
              @click="$emit('navigate','detail')">
           <div class="room-thumb">{{ room.emoji }}</div>
           <div class="p-5">
             <div class="flex items-start justify-between mb-2">
-              <h3 class="font-bold" style="color:var(--text-primary)">{{ room.name }}</h3>
+              <h3 class="font-bold" style="color:var(--text-primary)">{{ room.roomName }}</h3>
               <span class="badge badge-gold">{{ room.area }}</span>
             </div>
             <div class="text-xs mb-3" style="color:var(--text-secondary)">수용 인원: {{ room.capacity }}</div>
@@ -145,7 +145,7 @@ window.PageProducts = {
       if (activecat.value === 'all') return rooms;
       var base = rooms.filter(r => r.tags.some(t => t.includes(activecat.value)));
       if (!q) return base;
-      return base.filter(r => (r.name || '').toLowerCase().includes(q));
+      return base.filter(r => (r.roomName || '').toLowerCase().includes(q));
     });
 
     const displayedRooms = computed(() => filteredRooms.value.slice(0, visibleCount.value));

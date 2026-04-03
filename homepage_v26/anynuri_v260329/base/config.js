@@ -1,60 +1,237 @@
-/* ANYNURI - Site Config & Data */
+/* Synced from api/base/site-config.json (do not diverge structure manually) */
 window.SITE_CONFIG = {
-  site: { name: 'AnyNuri', tagline: '애니메이션으로 세상을 물들이다', email: 'hello@anynuri.kr', tel: '02-1234-5678' },
-
-  menus: [
-    { id: 'home',      label: '홈',       icon: '🏠' },
-    { id: 'about',     label: '회사소개', icon: '✨' },
-    { id: 'works',     label: '작품소개', icon: '🎬' },
-    { id: 'portfolio', label: '작품목록', icon: '🖼️' },
-    { id: 'detail',    label: '작품상세', icon: '🔍' },
-    { id: 'blog',      label: '블로그',   icon: '📝' },
-    { id: 'location',  label: '위치안내', icon: '📍' },
-    { id: 'contact',   label: '고객센터', icon: '💬' },
-    { id: 'faq',       label: 'FAQ',      icon: '❓' },
+  "site": {
+    "name": "AnyNuri",
+    "tagline": "애니메이션으로 세상을 물들이다",
+    "email": "hello@anynuri.kr",
+    "tel": "02-1234-5678"
+  },
+  "menus": [
+    {
+      "icon": "🏠",
+      "menuId": "home",
+      "menuName": "홈"
+    },
+    {
+      "icon": "✨",
+      "menuId": "about",
+      "menuName": "회사소개"
+    },
+    {
+      "icon": "🎬",
+      "menuId": "works",
+      "menuName": "작품소개"
+    },
+    {
+      "icon": "🖼️",
+      "menuId": "portfolio",
+      "menuName": "작품목록"
+    },
+    {
+      "icon": "🔍",
+      "menuId": "detail",
+      "menuName": "작품상세"
+    },
+    {
+      "icon": "📝",
+      "menuId": "blog",
+      "menuName": "블로그"
+    },
+    {
+      "icon": "📍",
+      "menuId": "location",
+      "menuName": "위치안내"
+    },
+    {
+      "icon": "💬",
+      "menuId": "contact",
+      "menuName": "고객센터"
+    },
+    {
+      "icon": "❓",
+      "menuId": "faq",
+      "menuName": "FAQ"
+    }
   ],
-
-  works: [
-    { id: 1, title: '벚꽃 소녀의 여름', genre: '로맨스', year: 2025, duration: '24분 × 12화',
-      emoji: '🌸', bg: '#2a1020', tags: ['로맨스', '청춘', '힐링'],
-      desc: '벚꽃 흩날리는 작은 마을에서 펼쳐지는 두 소년소녀의 순수한 사랑 이야기',
-      demoUrl: '#demo-sakura', awards: ['서울애니메이션센터 우수상', '부산국제애니메이션페스티벌 노미네이트'] },
-    { id: 2, title: '스타더스트 레인저', genre: '액션', year: 2025, duration: '24분 × 24화',
-      emoji: '⭐', bg: '#0a1a2a', tags: ['액션', 'SF', '모험'],
-      desc: '은하계를 수호하는 청소년 특공대의 우주 대모험. 화려한 전투 연출과 깊은 우정',
-      demoUrl: '#demo-stardust', awards: ['일본국제애니메이션영화제 특별상'] },
-    { id: 3, title: '마녀의 제과점', genre: '판타지', year: 2024, duration: '12분 × 8화',
-      emoji: '🍰', bg: '#1a0a1a', tags: ['판타지', '힐링', '음식'],
-      desc: '마법을 잃은 견습 마녀가 제과점을 운영하며 특별한 손님들과 만나는 따뜻한 이야기',
-      demoUrl: '#demo-witch', awards: ['한국애니메이션대상 최우수 단편상'] },
-    { id: 4, title: '철의 기사단', genre: '판타지', year: 2024, duration: '46분 × 13화',
-      emoji: '⚔️', bg: '#1a1000', tags: ['판타지', '액션', '드라마'],
-      desc: '중세 판타지 세계에서 왕국을 지키는 기사단의 영광과 상처를 그린 서사 애니메이션',
-      demoUrl: '#demo-knights', awards: [] },
-    { id: 5, title: '고양이 탐정 냥탐', genre: '코미디', year: 2023, duration: '7분 × 26화',
-      emoji: '🐱', bg: '#0a1a10', tags: ['코미디', '어린이', '추리'],
-      desc: '사건을 해결하는 귀여운 고양이 탐정의 유쾌한 일상 추리 어드벤처',
-      demoUrl: '#demo-cat', awards: ['어린이 애니메이션 인기상'] },
-    { id: 6, title: '네온 도시의 밤', genre: 'SF', year: 2023, duration: '90분 극장판',
-      emoji: '🌃', bg: '#1a0a20', tags: ['SF', '사이버펑크', '성인'],
-      desc: '2087년 디지털과 아날로그가 공존하는 네온 도시에서 벌어지는 정체성 탐구 서사',
-      demoUrl: '#demo-neon', awards: ['부천국제애니메이션페스티벌 대상'] },
+  "works": [
+    {
+      "id": 1,
+      "title": "벚꽃 소녀의 여름",
+      "genre": "로맨스",
+      "year": 2025,
+      "duration": "24분 × 12화",
+      "emoji": "🌸",
+      "bg": "#2a1020",
+      "tags": [
+        "로맨스",
+        "청춘",
+        "힐링"
+      ],
+      "desc": "벚꽃 흩날리는 작은 마을에서 펼쳐지는 두 소년소녀의 순수한 사랑 이야기",
+      "demoUrl": "#demo-sakura",
+      "awards": [
+        "서울애니메이션센터 우수상",
+        "부산국제애니메이션페스티벌 노미네이트"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "스타더스트 레인저",
+      "genre": "액션",
+      "year": 2025,
+      "duration": "24분 × 24화",
+      "emoji": "⭐",
+      "bg": "#0a1a2a",
+      "tags": [
+        "액션",
+        "SF",
+        "모험"
+      ],
+      "desc": "은하계를 수호하는 청소년 특공대의 우주 대모험. 화려한 전투 연출과 깊은 우정",
+      "demoUrl": "#demo-stardust",
+      "awards": [
+        "일본국제애니메이션영화제 특별상"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "마녀의 제과점",
+      "genre": "판타지",
+      "year": 2024,
+      "duration": "12분 × 8화",
+      "emoji": "🍰",
+      "bg": "#1a0a1a",
+      "tags": [
+        "판타지",
+        "힐링",
+        "음식"
+      ],
+      "desc": "마법을 잃은 견습 마녀가 제과점을 운영하며 특별한 손님들과 만나는 따뜻한 이야기",
+      "demoUrl": "#demo-witch",
+      "awards": [
+        "한국애니메이션대상 최우수 단편상"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "철의 기사단",
+      "genre": "판타지",
+      "year": 2024,
+      "duration": "46분 × 13화",
+      "emoji": "⚔️",
+      "bg": "#1a1000",
+      "tags": [
+        "판타지",
+        "액션",
+        "드라마"
+      ],
+      "desc": "중세 판타지 세계에서 왕국을 지키는 기사단의 영광과 상처를 그린 서사 애니메이션",
+      "demoUrl": "#demo-knights",
+      "awards": []
+    },
+    {
+      "id": 5,
+      "title": "고양이 탐정 냥탐",
+      "genre": "코미디",
+      "year": 2023,
+      "duration": "7분 × 26화",
+      "emoji": "🐱",
+      "bg": "#0a1a10",
+      "tags": [
+        "코미디",
+        "어린이",
+        "추리"
+      ],
+      "desc": "사건을 해결하는 귀여운 고양이 탐정의 유쾌한 일상 추리 어드벤처",
+      "demoUrl": "#demo-cat",
+      "awards": [
+        "어린이 애니메이션 인기상"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "네온 도시의 밤",
+      "genre": "SF",
+      "year": 2023,
+      "duration": "90분 극장판",
+      "emoji": "🌃",
+      "bg": "#1a0a20",
+      "tags": [
+        "SF",
+        "사이버펑크",
+        "성인"
+      ],
+      "desc": "2087년 디지털과 아날로그가 공존하는 네온 도시에서 벌어지는 정체성 탐구 서사",
+      "demoUrl": "#demo-neon",
+      "awards": [
+        "부천국제애니메이션페스티벌 대상"
+      ]
+    }
   ],
-
-  categories: ['전체', '로맨스', '액션', '판타지', '코미디', 'SF'],
-
-  stats: [
-    { value: '15+', label: '작품 수' },
-    { value: '5개국', label: '해외 배급' },
-    { value: '수상 12회', label: '국내외 수상' },
-    { value: '2016년', label: '설립' },
+  "stats": [
+    {
+      "value": "15+",
+      "label": "작품 수"
+    },
+    {
+      "value": "5개국",
+      "label": "해외 배급"
+    },
+    {
+      "value": "수상 12회",
+      "label": "국내외 수상"
+    },
+    {
+      "value": "2016년",
+      "label": "설립"
+    }
   ],
-
-  faqs: [
-    { q: '애니메이션 의뢰는 어떻게 하나요?', a: '고객센터 페이지의 의뢰 양식을 작성하거나 이메일로 문의해 주세요. 초기 상담은 무료이며 48시간 이내에 답변 드립니다.' },
-    { q: '제작 기간은 얼마나 걸리나요?', a: '단편(5분 내외) 3~6개월, 시리즈(12화) 6~18개월, 극장판 18~36개월이 일반적입니다. 프로젝트 규모에 따라 달라집니다.' },
-    { q: '2D와 3D 모두 제작 가능한가요?', a: '네, 2D 셀 애니메이션, 2.5D, 3D CG 애니메이션 모두 제작 가능합니다. 원하시는 스타일을 말씀해 주세요.' },
-    { q: '저작권은 누구에게 있나요?', a: '기본적으로 의뢰인께 저작권을 이전합니다. 단, 포트폴리오 게재 권한은 AnyNuri에 귀속됩니다.' },
-    { q: '해외 배급도 지원하나요?', a: '일본, 미국, 유럽 등 주요 배급사와 파트너십을 맺고 있어 해외 배급도 지원 가능합니다.' },
+  "faqs": [
+    {
+      "q": "애니메이션 의뢰는 어떻게 하나요?",
+      "a": "고객센터 페이지의 의뢰 양식을 작성하거나 이메일로 문의해 주세요. 초기 상담은 무료이며 48시간 이내에 답변 드립니다."
+    },
+    {
+      "q": "제작 기간은 얼마나 걸리나요?",
+      "a": "단편(5분 내외) 3~6개월, 시리즈(12화) 6~18개월, 극장판 18~36개월이 일반적입니다. 프로젝트 규모에 따라 달라집니다."
+    },
+    {
+      "q": "2D와 3D 모두 제작 가능한가요?",
+      "a": "네, 2D 셀 애니메이션, 2.5D, 3D CG 애니메이션 모두 제작 가능합니다. 원하시는 스타일을 말씀해 주세요."
+    },
+    {
+      "q": "저작권은 누구에게 있나요?",
+      "a": "기본적으로 의뢰인께 저작권을 이전합니다. 단, 포트폴리오 게재 권한은 AnyNuri에 귀속됩니다."
+    },
+    {
+      "q": "해외 배급도 지원하나요?",
+      "a": "일본, 미국, 유럽 등 주요 배급사와 파트너십을 맺고 있어 해외 배급도 지원 가능합니다."
+    }
   ],
+  "categorys": [
+    {
+      "categoryId": "all",
+      "categoryName": "전체"
+    },
+    {
+      "categoryId": "romance",
+      "categoryName": "로맨스"
+    },
+    {
+      "categoryId": "action",
+      "categoryName": "액션"
+    },
+    {
+      "categoryId": "fantasy",
+      "categoryName": "판타지"
+    },
+    {
+      "categoryId": "comedy",
+      "categoryName": "코미디"
+    },
+    {
+      "categoryId": "sf",
+      "categoryName": "SF"
+    }
+  ]
 };

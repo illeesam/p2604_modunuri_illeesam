@@ -18,23 +18,23 @@ window.PageOrder = {
       <div class="order-section">
         <div class="order-section-title">서비스 선택 <span class="form-required">*</span></div>
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div v-for="p in nonHospitalProducts" :key="p.id"
-            @click="orderForm.productId=p.id"
+          <div v-for="p in nonHospitalProducts" :key="p.productId"
+            @click="orderForm.productId=p.productId"
             style="padding:14px 16px;border-radius:12px;cursor:pointer;transition:all 0.2s;"
-            :style="orderForm.productId===p.id?'border:2px solid var(--teal);background:var(--teal-dim);':'border:1.5px solid var(--border);background:var(--bg-card);'">
+            :style="orderForm.productId===p.productId?'border:2px solid var(--teal);background:var(--teal-dim);':'border:1.5px solid var(--border);background:var(--bg-card);'">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="font-size:1.3rem;">{{ p.emoji }}</span>
               <div style="flex:1;">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                  <span style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">{{ p.name }}</span>
-                  <span class="badge badge-cat" style="font-size:0.62rem;">{{ p.categoryLabel }}</span>
+                  <span style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">{{ p.productName }}</span>
+                  <span class="badge badge-cat" style="font-size:0.62rem;">{{ p.categoryName }}</span>
                   <span v-if="p.badge" class="badge" :class="p.badge==='인기'?'badge-teal':'badge-amber'" style="font-size:0.62rem;">{{ p.badge }}</span>
                 </div>
                 <div style="font-size:0.75rem;color:var(--blue);margin-top:2px;font-weight:600;">{{ p.price }}</div>
                 <div style="font-size:0.7rem;color:var(--text-muted);">{{ p.priceNote }}</div>
               </div>
               <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;">
-                <div v-if="orderForm.productId===p.id" style="width:10px;height:10px;border-radius:50%;background:var(--teal);"></div>
+                <div v-if="orderForm.productId===p.productId" style="width:10px;height:10px;border-radius:50%;background:var(--teal);"></div>
               </div>
             </div>
           </div>
@@ -96,7 +96,7 @@ window.PageOrder = {
     <div style="display:flex;flex-direction:column;gap:16px;position:sticky;top:80px;">
       <div class="booking-highlight" style="background:linear-gradient(135deg,var(--teal-dim),var(--blue-dim));border:1.5px solid rgba(0,137,123,0.2);">
         <div style="font-size:0.75rem;font-weight:700;color:var(--teal);margin-bottom:10px;">📋 신청 서비스</div>
-        <div style="font-size:1.05rem;font-weight:800;color:var(--text-primary);">{{ orderSelectedProduct?.name }}</div>
+        <div style="font-size:1.05rem;font-weight:800;color:var(--text-primary);">{{ orderSelectedProduct?.productName }}</div>
         <div style="font-size:0.9rem;font-weight:700;color:var(--teal);margin-top:4px;">{{ orderSelectedProduct?.price }}</div>
         <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px;">{{ orderSelectedProduct?.priceNote }}</div>
       </div>
@@ -127,12 +127,12 @@ window.PageOrder = {
 
     const products = window.SITE_CONFIG.products;
 
-    const orderForm = reactive({ name: '', tel: '', email: '', serviceDate: '', serviceTime: '', address: '', productId: products[4]?.id || 5, note: '' });
+    const orderForm = reactive({ name: '', tel: '', email: '', serviceDate: '', serviceTime: '', address: '', productId: products[4]?.productId || 5, note: '' });
     const orderErrors = reactive({});
     const clearOrderError = k => { if (orderErrors[k] !== undefined) delete orderErrors[k]; };
 
-    const orderSelectedProduct = computed(() => products.find(p => p.id === orderForm.productId) || products[4]);
-    const nonHospitalProducts = computed(() => products.filter(p => p.category !== 'hospital'));
+    const orderSelectedProduct = computed(() => products.find(p => p.productId === orderForm.productId) || products[4]);
+    const nonHospitalProducts = computed(() => products.filter(p => p.categoryId !== 'hospital'));
 
     let orderSchemaPromise = null;
     const getOrderSchema = () => {
@@ -155,11 +155,11 @@ window.PageOrder = {
         const schema = await getOrderSchema();
         await schema.validate({ name: orderForm.name, tel: orderForm.tel, serviceDate: orderForm.serviceDate, address: orderForm.address }, { abortEarly: false });
         if (window.axiosApi) {
-          await window.axiosApi.post('order-intake.json', { source: 'caremate', kind: 'service-order', ...orderForm, productName: orderSelectedProduct.value?.name }).catch(() => {});
+          await window.axiosApi.post('order-intake.json', { source: 'caremate', kind: 'service-order', ...orderForm, productName: orderSelectedProduct.value?.productName }).catch(() => {});
         }
         await props.showAlert(
           '서비스 신청 완료 ✅',
-          `서비스 신청이 접수되었습니다.\n\n선택 서비스: ${orderSelectedProduct.value?.name}\n서비스 금액: ${orderSelectedProduct.value?.price}\n\n📌 계좌이체 안내\n은행: ${window.SITE_CONFIG.bankName}\n계좌: ${window.SITE_CONFIG.bankAccount}\n예금주: ${window.SITE_CONFIG.bankHolder}\n\n입금 확인 후 매니저를 배정해 드립니다.`,
+          `서비스 신청이 접수되었습니다.\n\n선택 서비스: ${orderSelectedProduct.value?.productName}\n서비스 금액: ${orderSelectedProduct.value?.price}\n\n📌 계좌이체 안내\n은행: ${window.SITE_CONFIG.bankName}\n계좌: ${window.SITE_CONFIG.bankAccount}\n예금주: ${window.SITE_CONFIG.bankHolder}\n\n입금 확인 후 매니저를 배정해 드립니다.`,
           'info'
         );
         Object.assign(orderForm, { name: '', tel: '', email: '', serviceDate: '', serviceTime: '', address: '', note: '' });

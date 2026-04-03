@@ -9,13 +9,13 @@ window.PageWorks = {
 
       <!-- Genre filter -->
       <div class="flex flex-wrap gap-2 mb-8">
-        <button v-for="cat in categories" :key="cat"
-                @click="activeCat = cat"
+        <button v-for="c in categoryList" :key="c.categoryId"
+                @click="activeCat = c.categoryId"
                 class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
-                :style="activeCat === cat
+                :style="activeCat === c.categoryId
                   ? 'background:var(--sakura);color:#fff'
                   : 'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border)'">
-          {{ cat }}
+          {{ c.categoryName }}
         </button>
       </div>
 
@@ -81,8 +81,8 @@ window.PageWorks = {
   setup() {
     const { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } = Vue;
     const works = window.SITE_CONFIG.works;
-    const categories = window.SITE_CONFIG.categories;
-    const activeCat = ref('전체');
+    const categoryList = window.SITE_CONFIG.categorys || [];
+    const activeCat = ref('all');
     const searchText = ref('');
     const PAGE_SIZE = 6;
     const visibleCount = ref(PAGE_SIZE);
@@ -90,11 +90,12 @@ window.PageWorks = {
     const observerRef = ref(null);
     const skeletonDone = ref(false);
 
-    const filtered = computed(() =>
-      activeCat.value === '전체'
-        ? works
-        : works.filter(w => w.genre === activeCat.value || w.tags.includes(activeCat.value))
-    );
+    const filtered = computed(() => {
+      const entry = categoryList.find(c => c.categoryId === activeCat.value);
+      const label = entry ? entry.categoryName : '';
+      if (activeCat.value === 'all' || label === '전체') return works;
+      return works.filter(w => w.genre === label || w.tags.includes(label));
+    });
 
     const searchedWorks = computed(() => {
       var q = String(searchText.value || '').trim().toLowerCase();
@@ -145,7 +146,7 @@ window.PageWorks = {
     });
 
     return {
-      categories,
+      categoryList,
       activeCat,
       searchText,
       displayedWorks,
