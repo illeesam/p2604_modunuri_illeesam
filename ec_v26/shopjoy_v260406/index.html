@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopJoy - 쇼핑의 즐거움</title>
+  <meta name="description" content="트렌디한 의류를 합리적인 가격으로. ShopJoy에서 나만의 스타일을 완성하세요.">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vue-loading.css">
+  <style>:root { --vue-loading-accent: #e8587a; --vue-loading-glow: rgba(232, 88, 122, 0.25); }</style>
+</head>
+<body>
+  <div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
+    <div class="vue-app-loading-inner">
+      <div class="vue-app-loading-spinner" aria-hidden="true"></div>
+      <p class="vue-app-loading-text">로딩 중…</p>
+    </div>
+  </div>
+  <div id="app"></div>
+  <script src="assets/cdn/axios.js"></script>
+  <script src="utils/axiosUtil.js"></script>
+  <script src="utils/cmUtil.js"></script>
+  <script src="base/config.js"></script>
+  <script src="js/index.js"></script>
+  <script src="layout/AppHeader.js"></script>
+  <script src="layout/AppSidebar.js"></script>
+  <script src="layout/AppFooter.js"></script>
+  <script src="pages/PageHome.js"></script>
+  <script src="pages/PageProducts.js"></script>
+  <script src="pages/PageDetail.js"></script>
+  <script src="pages/PageCart.js"></script>
+  <script src="pages/PageOrder.js"></script>
+  <script src="pages/PageContact.js"></script>
+  <script src="pages/PageFaq.js"></script>
+  <script src="base/app.js"></script>
+</body>
+</html>

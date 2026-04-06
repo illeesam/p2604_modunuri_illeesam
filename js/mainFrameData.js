@@ -14,14 +14,15 @@
     modunuri_v260329: { mode: 'modunuri_v260329', docId: 'md_index' },
     partyroom_v260329: { mode: 'partyroom_v260329', docId: 'pr_index' },
     artLeaseSale_v260330: { mode: 'artLeaseSale_v260330', docId: 'als_index' },
-    careMate_v260330: { mode: 'careMate_v260330', docId: 'cm_index' }
+    careMate_v260330: { mode: 'careMate_v260330', docId: 'cm_index' },
+    shopjoy_v260406: { mode: 'shopjoy_v260406', docId: 'sj_index' }
   };
 
   /** 상단 검색 패널 섹션: 앱 키는 MAIN_FRAME_NAV_BY_APP 와 동일 */
   global.MAIN_FRAME_SEARCH_GROUPS = [
     { key: '회사제품', apps: ['docs_v260329', 'home_v260329'] },
     { key: '준비중', apps: ['anynuri_v260329'] },
-    { key: '작업중', apps: ['dangoeul_v260330', 'modunuri_v260329', 'partyroom_v260329', 'artLeaseSale_v260330', 'careMate_v260330'] },
+    { key: '작업중', apps: ['dangoeul_v260330', 'modunuri_v260329', 'partyroom_v260329', 'artLeaseSale_v260330', 'careMate_v260330', 'shopjoy_v260406'] },
     { key: '서비스중', apps: [] }
   ];
 
@@ -58,7 +59,8 @@
         { value: 'modunuri_v260329', label: 'modunuri_v260329' },
         { value: 'partyroom_v260329', label: 'partyroom_v260329' },
         { value: 'artLeaseSale_v260330', label: 'artLeaseSale_v260330' },
-        { value: 'careMate_v260330', label: 'careMate_v260330' }
+        { value: 'careMate_v260330', label: 'careMate_v260330' },
+        { value: 'shopjoy_v260406', label: 'shopjoy_v260406' }
       ]
     },
     {
@@ -92,6 +94,7 @@
     { value: 'anynuri_v260329', label: 'anynuri_v260329' },
     { value: 'artLeaseSale_v260330', label: 'artLeaseSale_v260330' },
     { value: 'careMate_v260330', label: 'careMate_v260330' },
+    { value: 'ec_v26/shopjoy_v260406', label: 'shopjoy_v260406' },
     { value: 'mainFrame.html', label: '메인프레임 :: mainFrame.html' }
   ];
 
@@ -144,6 +147,7 @@
     { id: 'pr_index', file: 'partyroom_v260329', label: 'partyroom_v260329', group: '진입', app: 'partyroom_v260329', groupOrder: 5 },
     { id: 'als_index', file: 'artLeaseSale_v260330', label: 'artLeaseSale_v260330', group: '진입', app: 'artLeaseSale_v260330', groupOrder: 5 },
     { id: 'cm_index', file: 'careMate_v260330', label: 'careMate_v260330', group: '진입', app: 'careMate_v260330', groupOrder: 5 },
+    { id: 'sj_index', file: 'ec_v26/shopjoy_v260406', label: 'shopjoy_v260406', group: '진입', app: 'shopjoy_v260406', groupOrder: 5 },
     { id: 'docs_index', file: 'docs_v260329', label: 'docs_v260329', group: '진입', app: 'docs_v260329', groupOrder: 5 },
     { id: 'any_index', file: 'anynuri_v260329', label: 'anynuri_v260329', group: '진입', app: 'anynuri_v260329', groupOrder: 5 },
     {

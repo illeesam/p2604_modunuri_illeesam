@@ -1443,6 +1443,7 @@
       function buildTopNavSearchSections() {
         var groups = window.MAIN_FRAME_SEARCH_GROUPS || [];
         var nav = NAV_BY_APP;
+        var docs = window.MAIN_FRAME_DOCS || [];
         var out = [];
         for (var g = 0; g < groups.length; g++) {
           var grp = groups[g];
@@ -1452,7 +1453,13 @@
             var key = apps[a];
             var n = nav[key];
             if (!n) continue;
-            items.push({ mode: n.mode, docId: n.docId, label: key });
+            // docId 로 DOCS 에서 실제 file 경로 조회 (ec_v26/ 등 비표준 경로 대응)
+            var doc = null;
+            for (var di = 0; di < docs.length; di++) {
+              if (docs[di].id === n.docId) { doc = docs[di]; break; }
+            }
+            var file = (doc && doc.file) ? doc.file : key;
+            items.push({ mode: n.mode, docId: n.docId, label: key, file: file });
           }
           out.push({ key: grp.key, items: items });
         }
@@ -1555,12 +1562,13 @@
         }
       }
 
-      /** 앱 폴더(`*_v숫자`)는 `homepage_v26/` 아래로 통일 */
+      /** 앱 폴더(`*_v숫자`)는 `homepage_v26/` 아래로 통일 (ec_v26/ 등 명시 경로는 그대로 반환) */
       function resolveRepoFilePath(file) {
         if (!file) return '';
         var f = String(file).trim();
         if (!f) return '';
         if (f.startsWith('homepage_v26/')) return f;
+        if (f.startsWith('ec_v26/')) return f;
         if (/^[a-z0-9_-]+_v\d+(\/|$)/i.test(f)) {
           return 'homepage_v26/' + f;
         }
@@ -1584,7 +1592,8 @@
         var f = String(doc.file).trim();
         if (/\.html?$/i.test(f)) return true;
         if (/^[a-z0-9_-]+_v\d+\/?$/i.test(f)) return true;
-        return /^homepage_v26\/[a-z0-9_-]+_v\d+\/?$/i.test(f);
+        if (/^homepage_v26\/[a-z0-9_-]+_v\d+\/?$/i.test(f)) return true;
+        return /^ec_v26\/[a-z0-9_-]+_v\d+\/?$/i.test(f);
       }
 
       function syncTopNav() {
@@ -3023,6 +3032,7 @@
        */
       function openTopNavSelectionsInNewWindows() {
         var cfg = window.MAIN_FRAME_TOP_NAV_SELECTS || [];
+        var docs = window.MAIN_FRAME_DOCS || [];
         var ids = [];
         for (var c = 0; c < cfg.length; c++) {
           if (!cfg[c].disabled && cfg[c].id) ids.push(cfg[c].id);
@@ -3033,7 +3043,18 @@
           if (!sel || sel.disabled) continue;
           var v = String(sel.value || '').trim();
           if (!v) continue;
-          var url = absoluteHrefForRepoRelative(resolveEmbedHtmlFile(v));
+          // NAV_BY_APP → DOCS 에서 실제 file 경로 조회 (ec_v26/ 등 비표준 경로 대응)
+          var navEntry = NAV_BY_APP[v];
+          var filePath = v;
+          if (navEntry && navEntry.docId) {
+            for (var di = 0; di < docs.length; di++) {
+              if (docs[di].id === navEntry.docId && docs[di].file) {
+                filePath = docs[di].file;
+                break;
+              }
+            }
+          }
+          var url = absoluteHrefForRepoRelative(resolveEmbedHtmlFile(filePath));
           if (!url || seen[url]) continue;
           seen[url] = true;
           window.open(url, '_blank', 'noopener,noreferrer');
@@ -3113,6 +3134,7 @@
               row.setAttribute('data-mode', it.mode);
               row.setAttribute('data-doc', it.docId);
               row.setAttribute('data-app', it.label);
+              row.setAttribute('data-file', it.file || it.label);
               row.setAttribute('data-kw', (it.label + ' ' + it.mode).toLowerCase());
               var b = document.createElement('button');
               b.type = 'button';
@@ -3198,7 +3220,7 @@
           if (nw) {
             e.preventDefault();
             var rowNw = nw.closest('.topbar-search-row');
-            var appKey = rowNw && rowNw.getAttribute('data-app');
+            var appKey = rowNw && (rowNw.getAttribute('data-file') || rowNw.getAttribute('data-app'));
             if (appKey) {
               var urlNw = absoluteHrefForRepoRelative(resolveEmbedHtmlFile(appKey));
               if (urlNw) window.open(urlNw, '_blank', 'noopener,noreferrer');
@@ -3672,7 +3694,7 @@
         nav.appendChild(host);
         appendSidebarTreeToolbar(nav);
         var buckets = buildMainSidebarBucketsForApp(appKey);
-        if (appKey === HOME_APP_KEY || appKey === 'modunuri_v260329' || appKey === 'partyroom_v260329' || appKey === 'docs_v260329' || appKey === 'anynuri_v260329' || appKey === 'dangoeul_v260330' || appKey === 'artLeaseSale_v260330') {
+        if (appKey === HOME_APP_KEY || appKey === 'modunuri_v260329' || appKey === 'partyroom_v260329' || appKey === 'docs_v260329' || appKey === 'anynuri_v260329' || appKey === 'dangoeul_v260330' || appKey === 'artLeaseSale_v260330' || appKey === 'shopjoy_v260406') {
           var pageRootBucket2 = null;
           var pageSubBuckets2 = [];
           buckets.forEach(function (b) {
