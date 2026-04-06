@@ -1,9 +1,23 @@
 /* ANYNURI - Vue App (no component registration) */
 (async function () {
   await window.__SITE_CONFIG_READY__;
-  const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount } = Vue;
+  const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, provide } = Vue;
+
+  var P = window.AnyNuriPages || {};
 
   createApp({
+  components: {
+    PageHome: P.PageHome,
+    PageAbout: P.PageAbout,
+    PageWorks: P.PageWorks,
+    PagePortfolio: P.PagePortfolio,
+    PageDetail: P.PageDetail,
+    PageBlog: P.PageBlog,
+    PageBlogDetail: P.PageBlogDetail,
+    PageLocation: P.PageLocation,
+    PageContact: P.PageContact,
+    PageFaq: P.PageFaq,
+  },
   setup() {
     /* ── Theme ──────────────────────────────────────────── */
     const theme = ref(localStorage.getItem('anynuri-theme') || 'light');
@@ -17,7 +31,7 @@
 
     /* ── Navigation ─────────────────────────────────────── */
     const page = ref('home');
-    const validPages = ['home', 'works', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
+    const validPages = ['home', 'about', 'works', 'portfolio', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
     try {
       const savedPage = sessionStorage.getItem('anynuri_page');
       if (savedPage && validPages.includes(savedPage)) page.value = savedPage;
@@ -134,7 +148,7 @@
     /* ── Preserve works list state on refresh ── */
     let restoring = true;
     let restoringWorkPid = null;
-    const validPagesWorks = ['home', 'works', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
+    const validPagesWorks = ['home', 'about', 'works', 'portfolio', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
     try {
       const raw = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = raw && raw.includes('page=');
@@ -206,6 +220,9 @@
     function resetPagination() {
       visibleCount.value = PAGE_SIZE;
     }
+    const setActiveCat = id => {
+      activeCat.value = id;
+    };
 
     watch([activeCat, searchText], function () {
       if (restoring || syncingFromHash) return;
@@ -289,7 +306,7 @@
       try {
         const params = new URLSearchParams(raw);
         const hPage = params.get('page');
-        const validPages = ['home', 'works', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
+        const validPages = ['home', 'about', 'works', 'portfolio', 'detail', 'blog', 'blogDetail', 'location', 'contact', 'faq', 'order'];
         if (hPage && validPages.includes(hPage)) page.value = hPage;
 
         const hCat = params.get('cat');
@@ -398,7 +415,23 @@
       );
     };
 
-    /* ── Return ─────────────────────────────────────────── */
+    const anynuri = {
+      theme, toggleTheme,
+      page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
+      toast, showToast,
+      alertState, showAlert, closeAlert,
+      confirmState, showConfirm, closeConfirm,
+      blogModal, openBlogDetail, closeBlogDetail,
+      works, activeCat, categoryList, filteredWorks, selectedWork, selectWork,
+      searchText, displayedWorks, hasMore, resetPagination, setActiveCat,
+      openFaq, toggleFaq,
+      form, formErrors, submitForm, clearFormError,
+      openDemo,
+      config: window.SITE_CONFIG,
+    };
+    provide('anynuri', anynuri);
+
+    /* ── Return (루트 셸 템플릿용) ─────────────────────── */
     return {
       theme, toggleTheme,
       page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
