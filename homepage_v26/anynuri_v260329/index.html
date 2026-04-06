@@ -68,130 +68,33 @@
 
   <!-- (blog detail is shown as a dedicated page, not a popup modal) -->
 
-  <!-- ══ MOBILE SIDEBAR OVERLAY ═════════════════════════════ -->
-  <div class="mobile-overlay" :class="{ active: mobileOpen }" @click="closeMobileMenu"></div>
-
   <!-- ══ OUTER SHELL ════════════════════════════════════════ -->
   <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);color:var(--text-primary)">
 
-    <!-- ── HEADER ─────────────────────────────────────────── -->
-    <header id="header">
-      <!-- Hamburger (mobile) -->
-      <button @click="toggleMobileMenu"
-        class="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-pink-50 dark:hover:bg-white/5 transition-colors"
-        style="color:var(--text-secondary)">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path v-if="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-          <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-
-      <!-- Sidebar toggle (desktop) -->
-      <button @click="sidebarOpen=!sidebarOpen"
-        class="hidden lg:flex items-center justify-center w-9 h-9 rounded-lg transition-colors"
-        style="color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border)">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            :d="sidebarOpen ? 'M11 19l-7-7 7-7' : 'M13 5l7 7-7 7'"/>
-        </svg>
-      </button>
-
-      <!-- Logo -->
-      <div class="flex items-center gap-2.5 cursor-pointer select-none flex-1" @click="navigate('home')">
-        <div class="w-9 h-9 rounded-2xl gradient-bg flex items-center justify-center text-lg font-black flex-shrink-0">✨</div>
-        <div>
-          <div class="text-base font-black gradient-text leading-none">AnyNuri</div>
-          <div class="text-xs leading-none" style="color:var(--text-muted)">애니메이션 스튜디오</div>
-        </div>
-      </div>
-
-      <!-- Desktop nav links (top bar quick access) -->
-      <nav class="hidden xl:flex items-center gap-1 mr-2">
-        <button v-for="m in config.menus.slice(0,5)" :key="m.menuId"
-          @click="navigate(m.menuId)"
-          class="nav-link px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
-          :class="page===m.menuId ? 'active' : ''"
-          style="color:var(--text-secondary)">
-          {{ m.menuName }}
-        </button>
-      </nav>
-
-      <!-- CTA + theme toggle -->
-      <div class="flex items-center gap-2">
-        <button @click="navigate('contact')"
-          class="hidden md:block btn-sakura px-4 py-2 rounded-full text-sm">
-          의뢰하기
-        </button>
-        <button @click="toggleTheme"
-          class="w-9 h-9 rounded-lg flex items-center justify-center text-base transition-colors"
-          style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary)"
-          :title="theme==='light' ? '다크 모드' : '라이트 모드'">
-          <span v-if="theme==='light'">🌙</span>
-          <span v-else>☀️</span>
-        </button>
-      </div>
-    </header>
+    <app-header></app-header>
 
     <!-- ── BODY ROW ────────────────────────────────────────── -->
     <div style="display:flex;flex:1;overflow:hidden;position:relative">
 
-      <!-- ── SIDEBAR ─────────────────────────────────────── -->
-      <aside id="sidebar" :class="{ collapsed: !sidebarOpen, open: mobileOpen }">
-        <!-- Sidebar header -->
-        <div style="height:48px;display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--border);flex-shrink:0">
-          <span v-if="sidebarOpen" class="text-xs font-bold uppercase tracking-widest" style="color:var(--text-muted)">메뉴</span>
-          <span v-else class="text-xs" style="color:var(--text-muted)">≡</span>
-        </div>
-
-        <!-- Nav items -->
-        <nav style="flex:1;overflow-y:auto;padding:0.75rem 0.5rem">
-          <button v-for="m in config.menus" :key="m.menuId"
-            @click="navigate(m.menuId, { replace: true })"
-            class="sidebar-link w-full"
-            :class="{ active: page===m.menuId }">
-            <span class="text-base flex-shrink-0">{{ m.icon }}</span>
-            <span v-if="sidebarOpen" class="truncate">{{ m.menuName }}</span>
-          </button>
-        </nav>
-
-        <!-- Sidebar footer CTA -->
-        <div v-if="sidebarOpen" style="padding:0.75rem;border-top:1px solid var(--border);flex-shrink:0">
-          <button @click="navigate('contact', { replace: true })" class="btn-sakura w-full py-2 rounded-xl text-sm">
-            ✨ 작품 의뢰하기
-          </button>
-        </div>
-      </aside>
+      <app-sidebar></app-sidebar>
 
       <!-- ── MAIN CONTENT ────────────────────────────────── -->
       <main style="flex:1;overflow-y:auto;min-width:0">
-        <page-home v-show="page==='home'" />
-        <page-about v-show="page==='about'" />
-        <page-works v-show="page==='works'" />
-        <page-portfolio v-show="page==='portfolio'" />
-        <page-detail v-show="page==='detail'" />
-        <page-blog v-show="page==='blog'" />
-        <page-blog-detail v-show="page==='blogDetail'" />
-        <page-location v-show="page==='location'" />
-        <page-contact v-show="page==='contact'" />
-        <page-faq v-show="page==='faq'" />
+        <!-- HTML 커스텀 태그는 self-close 시 형제가 중첩으로 파싱됨 -->
+        <page-home v-show="page==='home'"></page-home>
+        <page-about v-show="page==='about'"></page-about>
+        <page-works v-show="page==='works'"></page-works>
+        <page-portfolio v-show="page==='portfolio'"></page-portfolio>
+        <page-detail v-show="page==='detail'"></page-detail>
+        <page-blog v-show="page==='blog'"></page-blog>
+        <page-blog-detail v-show="page==='blogDetail'"></page-blog-detail>
+        <page-location v-show="page==='location'"></page-location>
+        <page-contact v-show="page==='contact'"></page-contact>
+        <page-faq v-show="page==='faq'"></page-faq>
       </main><!-- /main -->
     </div><!-- /body row -->
 
-    <!-- ── FOOTER ──────────────────────────────────────────── -->
-    <footer style="background:var(--bg-header);border-top:1px solid var(--border);padding:1.5rem 2rem">
-      <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-xl gradient-bg flex items-center justify-center text-sm font-black">✨</div>
-          <span class="font-black gradient-text text-sm">AnyNuri</span>
-          <span class="text-xs" style="color:var(--text-muted)">— 애니메이션으로 세상을 물들이다</span>
-        </div>
-        <div class="flex items-center gap-4 text-xs" style="color:var(--text-muted)">
-          <span>{{ config.site.email }}</span>
-          <span>{{ config.site.tel }}</span>
-          <span>© 2026 AnyNuri. All rights reserved.</span>
-        </div>
-      </div>
-    </footer>
+    <app-footer></app-footer>
 
   </div><!-- /outer shell -->
 </div><!-- /app -->
@@ -217,6 +120,9 @@
 <script src="pages/Location.js"></script>
 <script src="pages/Contact.js"></script>
 <script src="pages/Faq.js"></script>
+<script src="layout/AppHeader.js"></script>
+<script src="layout/AppSidebar.js"></script>
+<script src="layout/AppFooter.js"></script>
 <script src="base/app.js"></script>
 </body>
 </html>

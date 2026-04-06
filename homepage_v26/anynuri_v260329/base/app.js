@@ -1,12 +1,16 @@
-/* ANYNURI - Vue App (no component registration) */
+/* ANYNURI - Vue App (페이지: pages/*.js, 레이아웃: layout/*.js, inject: anynuri) */
 (async function () {
   await window.__SITE_CONFIG_READY__;
   const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, provide } = Vue;
 
   var P = window.AnyNuriPages || {};
+  var L = window.AnyNuriLayout || {};
 
   createApp({
   components: {
+    AppHeader: L.AppHeader,
+    AppSidebar: L.AppSidebar,
+    AppFooter: L.AppFooter,
     PageHome: P.PageHome,
     PageAbout: P.PageAbout,
     PageWorks: P.PageWorks,
@@ -415,7 +419,8 @@
       );
     };
 
-    const anynuri = {
+    /* 레이아웃·페이지에서 anynuri.xxx 로 접근하므로 ref/computed 는 reactive 로 감싸 unwrap */
+    const anynuri = reactive({
       theme, toggleTheme,
       page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
       toast, showToast,
@@ -428,7 +433,7 @@
       form, formErrors, submitForm, clearFormError,
       openDemo,
       config: window.SITE_CONFIG,
-    };
+    });
     provide('anynuri', anynuri);
 
     /* ── Return (루트 셸 템플릿용) ─────────────────────── */

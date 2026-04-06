@@ -1,40 +1,34 @@
-/* ANYNURI - AppSidebar */
-window.AppSidebar = {
-  name: 'AppSidebar',
-  props: ['activeMenu', 'sidebarOpen', 'mobileOpen'],
-  emits: ['navigate', 'close'],
-  template: /* html */ `
-    <!-- Mobile overlay -->
-    <div v-if="mobileOpen" @click="$emit('close')"
-         class="lg:hidden fixed inset-0 z-30" style="background:rgba(0,0,0,0.6)"></div>
+/* ANYNURI — 모바일 오버레이 + 사이드바 (index.html 레이아웃 분리) */
+(function (g) {
+  g.AnyNuriLayout = g.AnyNuriLayout || {};
+  g.AnyNuriLayout.AppSidebar = {
+    name: 'AppSidebar',
+    inject: ['anynuri'],
+    template: `
+<div class="mobile-overlay" :class="{ active: anynuri.mobileOpen }" @click="anynuri.closeMobileMenu"></div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" :class="[sidebarOpen ? '' : 'collapsed', mobileOpen ? 'open' : '']"
-           class="glass flex flex-col" style="min-height:0">
-      <!-- Menu list -->
-      <nav class="flex-1 overflow-y-auto p-3 space-y-0.5 mt-2">
-        <button v-for="m in menus" :key="m.menuId"
-                @click="$emit('navigate', m.menuId); $emit('close')"
-                class="sidebar-link w-full"
-                :class="activeMenu === m.menuId ? 'active' : ''">
-          <span class="text-base flex-shrink-0">{{ m.icon }}</span>
-          <span class="text-xs font-medium transition-opacity" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden'">{{ m.menuName }}</span>
-        </button>
-      </nav>
+<aside id="sidebar" :class="{ collapsed: !anynuri.sidebarOpen, open: anynuri.mobileOpen }">
+        <div style="height:48px;display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--border);flex-shrink:0">
+          <span v-if="anynuri.sidebarOpen" class="text-xs font-bold uppercase tracking-widest" style="color:var(--text-muted)">메뉴</span>
+          <span v-else class="text-xs" style="color:var(--text-muted)">≡</span>
+        </div>
 
-      <!-- Footer area -->
-      <div class="p-3 border-t" style="border-color:var(--border)" v-show="sidebarOpen">
-        <div class="text-center">
-          <div class="text-xs mb-2" style="color:var(--text-muted)">애니메이션 의뢰</div>
-          <button @click="$emit('navigate', 'contact'); $emit('close')" class="btn-sakura w-full py-2 rounded-xl text-xs font-bold">
-            지금 의뢰하기
+        <nav style="flex:1;overflow-y:auto;padding:0.75rem 0.5rem">
+          <button v-for="m in anynuri.config.menus" :key="m.menuId"
+            @click="anynuri.navigate(m.menuId, { replace: true })"
+            class="sidebar-link w-full"
+            :class="{ active: anynuri.page===m.menuId }">
+            <span class="text-base flex-shrink-0">{{ m.icon }}</span>
+            <span v-if="anynuri.sidebarOpen" class="truncate">{{ m.menuName }}</span>
+          </button>
+        </nav>
+
+        <div v-if="anynuri.sidebarOpen" style="padding:0.75rem;border-top:1px solid var(--border);flex-shrink:0">
+          <button @click="anynuri.navigate('contact', { replace: true })" class="btn-sakura w-full py-2 rounded-xl text-sm">
+            ✨ 작품 의뢰하기
           </button>
         </div>
-      </div>
-    </aside>
-  `,
-  setup() {
-    const menus = window.SITE_CONFIG.menus;
-    return { menus };
-  }
-};
+      </aside>
+`,
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
