@@ -12,9 +12,12 @@ window.PageProducts = {
   </div>
   <!-- Category Filter -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">
-    <button v-for="cat in productCats" :key="cat" class="cat-btn"
-      :class="{active: activeCat===cat}"
-      @click="activeCat=cat">{{ cat }}</button>
+    <button v-for="cat in productCats" :key="cat.name" class="cat-btn"
+      :class="{active: activeCat===cat.name}"
+      @click="activeCat=cat.name">
+      {{ cat.name }}
+      <span v-if="cat.count > 0" style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--blue);color:#fff;font-size:0.62rem;font-weight:700;margin-left:5px;vertical-align:middle;">{{ cat.count }}</span>
+    </button>
   </div>
   <!-- Search -->
   <div style="margin-bottom:28px;">
@@ -46,11 +49,15 @@ window.PageProducts = {
   </div>
   <!-- Product Grid -->
   <div v-else class="grid-3">
-    <div v-for="p in displayedProducts" :key="p.productId" class="product-card">
+    <div v-for="p in displayedProducts" :key="p.productId" class="product-card"
+      :style="p.salesYn !== 'Y' ? 'opacity:0.42;filter:grayscale(30%);' : ''">
       <div style="padding:24px 24px 0;">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
           <span style="font-size:2.8rem;">{{ p.emoji }}</span>
-          <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+            <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
+            <span v-if="p.salesYn !== 'Y'" style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;background:rgba(120,120,120,0.12);color:var(--text-muted);font-size:0.68rem;font-weight:700;border:1px solid rgba(120,120,120,0.2);">판매안함</span>
+          </div>
         </div>
         <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">{{ p.productName }}</div>
         <p style="font-size:0.825rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">{{ p.desc }}</p>
@@ -89,9 +96,14 @@ window.PageProducts = {
 
     const productCats = computed(() => {
       const cats = (props.config && props.config.categorys) || [];
-      const used = new Set((props.products || []).map(p => p.categoryId));
-      const ordered = cats.filter(c => used.has(c.categoryId)).map(c => c.categoryName);
-      return ['전체', ...ordered];
+      const prods = props.products || [];
+      const used = new Set(prods.map(p => p.categoryId));
+      const totalSales = prods.filter(p => p.salesYn === 'Y').length;
+      const ordered = cats.filter(c => used.has(c.categoryId)).map(c => {
+        const count = prods.filter(p => p.categoryId === c.categoryId && p.salesYn === 'Y').length;
+        return { name: c.categoryName, count };
+      });
+      return [{ name: '전체', count: totalSales }, ...ordered];
     });
 
     const filteredProducts = computed(() => {
@@ -103,8 +115,8 @@ window.PageProducts = {
             const row = cats.find(c => c.categoryName === activeCat.value);
             return row && p.categoryId === row.categoryId;
           });
-      if (!q) return byCat;
-      return byCat.filter(p => (p.productName || '').toLowerCase().includes(q));
+      const filtered = q ? byCat.filter(p => (p.productName || '').toLowerCase().includes(q)) : byCat;
+      return filtered.slice().sort((a, b) => (b.salesYn === 'Y' ? 1 : 0) - (a.salesYn === 'Y' ? 1 : 0));
     });
 
     const displayedProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value));

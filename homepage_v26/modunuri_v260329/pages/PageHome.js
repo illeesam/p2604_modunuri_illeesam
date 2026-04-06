@@ -27,7 +27,7 @@ window.PageHome = {
   <div style="padding:0 32px;margin:-28px auto 0;max-width:900px;position:relative;z-index:2;">
     <div class="grid-4">
       <div class="stat-card fade-up">
-        <div class="stat-number gradient-text">50+</div>
+        <div class="stat-number gradient-text">20+</div>
         <div class="stat-label">완료 프로젝트</div>
       </div>
       <div class="stat-card fade-up" style="animation-delay:0.1s">
@@ -35,8 +35,8 @@ window.PageHome = {
         <div class="stat-label">고객 만족도</div>
       </div>
       <div class="stat-card fade-up" style="animation-delay:0.2s">
-        <div class="stat-number gradient-text">100+</div>
-        <div class="stat-label">고객사</div>
+        <div class="stat-number gradient-text">30+</div>
+        <div class="stat-label">구축사이트</div>
       </div>
       <div class="stat-card fade-up" style="animation-delay:0.3s">
         <div class="stat-number gradient-text">24h</div>
@@ -49,8 +49,8 @@ window.PageHome = {
   <div class="page-wrap" style="margin-top:48px;">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <div>
-        <h2 class="section-title">주요 솔루션</h2>
-        <p class="section-subtitle">기업 디지털 전환을 위한 핵심 솔루션</p>
+        <h2 class="section-title">주요 제품</h2>
+        <p class="section-subtitle">기업 디지털 전환을 위한 핵심 제품</p>
       </div>
       <button class="btn-outline btn-sm" @click="navigate('solution')">전체 보기 →</button>
     </div>
@@ -82,7 +82,7 @@ window.PageHome = {
       <button class="btn-outline btn-sm" @click="navigate('products')">전체 상품 →</button>
     </div>
     <div class="grid-3">
-      <div v-for="p in products.slice(0,3)" :key="p.productId" class="product-card" style="padding:24px;">
+      <div v-for="p in featuredProducts" :key="p.productId" class="product-card" style="padding:24px;">
         <div style="font-size:2.4rem;margin-bottom:12px;">{{ p.emoji }}</div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
           <span style="font-weight:700;color:var(--text-primary);">{{ p.productName }}</span>
@@ -115,12 +115,18 @@ window.PageHome = {
 </div>
   `,
   setup(props) {
+    const { computed } = Vue;
     function categoryLabel(p) {
       if (!p) return '';
       const cats = (props.config && props.config.categorys) || [];
       const row = cats.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryName : p.categoryId;
     }
-    return { categoryLabel };
+    const FEATURED_IDS = [17, 14, 15];
+    const featuredProducts = computed(() => {
+      const prods = props.products || [];
+      return FEATURED_IDS.map(id => prods.find(p => p.productId === id)).filter(Boolean);
+    });
+    return { categoryLabel, featuredProducts };
   }
 };
