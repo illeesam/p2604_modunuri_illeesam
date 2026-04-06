@@ -1569,6 +1569,7 @@
         if (!f) return '';
         if (f.startsWith('homepage_v26/')) return f;
         if (f.startsWith('ec_v26/')) return f;
+        if (f.startsWith('dataVisual_v26/')) return f;
         if (/^[a-z0-9_-]+_v\d+(\/|$)/i.test(f)) {
           return 'homepage_v26/' + f;
         }
@@ -1593,7 +1594,8 @@
         if (/\.html?$/i.test(f)) return true;
         if (/^[a-z0-9_-]+_v\d+\/?$/i.test(f)) return true;
         if (/^homepage_v26\/[a-z0-9_-]+_v\d+\/?$/i.test(f)) return true;
-        return /^ec_v26\/[a-z0-9_-]+_v\d+\/?$/i.test(f);
+        if (/^ec_v26\/[a-z0-9_-]+_v\d+\/?$/i.test(f)) return true;
+        return /^dataVisual_v26\/[a-z0-9_-]+_v\d+\/?$/i.test(f);
       }
 
       function syncTopNav() {
@@ -3694,7 +3696,7 @@
         nav.appendChild(host);
         appendSidebarTreeToolbar(nav);
         var buckets = buildMainSidebarBucketsForApp(appKey);
-        if (appKey === HOME_APP_KEY || appKey === 'modunuri_v260329' || appKey === 'partyroom_v260329' || appKey === 'docs_v260329' || appKey === 'anynuri_v260329' || appKey === 'dangoeul_v260330' || appKey === 'artLeaseSale_v260330' || appKey === 'shopjoy_v260406') {
+        if (appKey === HOME_APP_KEY || appKey === 'modunuri_v260329' || appKey === 'partyroom_v260329' || appKey === 'docs_v260329' || appKey === 'anynuri_v260329' || appKey === 'datavisual_v260406' || appKey === 'dangoeul_v260330' || appKey === 'artLeaseSale_v260330' || appKey === 'shopjoy_v260406') {
           var pageRootBucket2 = null;
           var pageSubBuckets2 = [];
           buckets.forEach(function (b) {

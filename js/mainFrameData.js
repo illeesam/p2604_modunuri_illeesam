@@ -10,6 +10,7 @@
     home_v260329: { mode: 'home_v260329', docId: 'hm_index' },
     docs_v260329: { mode: 'docs_v260329', docId: 'docs_index' },
     anynuri_v260329: { mode: 'anynuri_v260329', docId: 'any_index' },
+    datavisual_v260406: { mode: 'datavisual_v260406', docId: 'dv406_index' },
     dangoeul_v260330: { mode: 'dangoeul_v260330', docId: 'dg330_index' },
     modunuri_v260329: { mode: 'modunuri_v260329', docId: 'md_index' },
     partyroom_v260329: { mode: 'partyroom_v260329', docId: 'pr_index' },
@@ -21,7 +22,7 @@
   /** 상단 검색 패널 섹션: 앱 키는 MAIN_FRAME_NAV_BY_APP 와 동일 */
   global.MAIN_FRAME_SEARCH_GROUPS = [
     { key: '회사제품', apps: ['docs_v260329', 'home_v260329'] },
-    { key: '준비중', apps: ['anynuri_v260329'] },
+    { key: '준비중', apps: ['anynuri_v260329', 'datavisual_v260406'] },
     { key: '작업중', apps: ['dangoeul_v260330', 'modunuri_v260329', 'partyroom_v260329', 'artLeaseSale_v260330', 'careMate_v260330', 'shopjoy_v260406'] },
     { key: '서비스중', apps: [] }
   ];
@@ -47,7 +48,10 @@
       label: '준비중',
       ariaLabel: '준비중 앱 선택',
       emptyLabel: '선택…',
-      options: [{ value: 'anynuri_v260329', label: 'anynuri_v260329' }]
+      options: [
+        { value: 'anynuri_v260329', label: 'anynuri_v260329' },
+        { value: 'datavisual_v260406', label: 'datavisual_v260406' }
+      ]
     },
     {
       id: 'topNavSelectWork',
@@ -92,6 +96,7 @@
     { value: 'partyroom_v260329', label: 'partyroom_v260329' },
     { value: 'dangoeul_v260330', label: 'dangoeul_v260330' },
     { value: 'anynuri_v260329', label: 'anynuri_v260329' },
+    { value: 'dataVisual_v26/datavisual_v260406', label: 'datavisual_v260406' },
     { value: 'artLeaseSale_v260330', label: 'artLeaseSale_v260330' },
     { value: 'careMate_v260330', label: 'careMate_v260330' },
     { value: 'ec_v26/shopjoy_v260406', label: 'shopjoy_v260406' },
@@ -149,6 +154,14 @@
     { id: 'sj_index', file: 'ec_v26/shopjoy_v260406', label: 'shopjoy_v260406', group: '진입', app: 'shopjoy_v260406', groupOrder: 5 },
     { id: 'docs_index', file: 'docs_v260329', label: 'docs_v260329', group: '진입', app: 'docs_v260329', groupOrder: 5 },
     { id: 'any_index', file: 'anynuri_v260329', label: 'anynuri_v260329', group: '진입', app: 'anynuri_v260329', groupOrder: 5 },
+    {
+      id: 'dv406_index',
+      file: 'dataVisual_v26/datavisual_v260406',
+      label: 'datavisual_v260406',
+      group: '진입',
+      app: 'datavisual_v260406',
+      groupOrder: 5
+    },
     {
       id: 'tmp1',
       label: '임시메뉴1',
