@@ -1,6 +1,6 @@
-/* ShopJoy - PageFaq */
-window.PageFaq = {
-  name: 'PageFaq',
+/* ShopJoy - Faq */
+window.Faq = {
+  name: 'Faq',
   props: ['navigate', 'config'],
   emits: [],
   template: /* html */ `

@@ -279,35 +279,35 @@
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
 
     <main style="flex:1;overflow-y:auto;min-width:0;">
-      <page-home
+      <home
         v-if="page==='home'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
       />
-      <page-products
+      <products
         v-else-if="page==='products'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
       />
-      <page-detail
+      <detail
         v-else-if="page==='detail'"
         :navigate="navigate" :config="config" :product="selectedProduct"
         :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
       />
-      <page-cart
+      <cart
         v-else-if="page==='cart'"
         :navigate="navigate" :config="config" :cart="cart" :cart-count="cartCount"
         :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
         :show-confirm="showConfirm" :clear-cart="clearCart"
       />
-      <page-order
+      <order
         v-else-if="page==='order'"
         :navigate="navigate" :config="config" :cart="cart"
         :show-toast="showToast" :show-alert="showAlert" :clear-cart="clearCart"
       />
-      <page-contact
+      <contact
         v-else-if="page==='contact'"
         :navigate="navigate" :config="config" :show-toast="showToast" :show-alert="showAlert"
       />
-      <page-faq
+      <faq
         v-else-if="page==='faq'"
         :navigate="navigate" :config="config"
       />
@@ -355,12 +355,12 @@
   .component('AppHeader',   window.AppHeader)
   .component('AppSidebar',  window.AppSidebar)
   .component('AppFooter',   window.AppFooter)
-  .component('PageHome',    window.PageHome)
-  .component('PageProducts',window.PageProducts)
-  .component('PageDetail',  window.PageDetail)
-  .component('PageCart',    window.PageCart)
-  .component('PageOrder',   window.PageOrder)
-  .component('PageContact', window.PageContact)
-  .component('PageFaq',     window.PageFaq)
+  .component('Home',    window.Home)
+  .component('Products',window.Products)
+  .component('Detail',  window.Detail)
+  .component('Cart',    window.Cart)
+  .component('Order',   window.Order)
+  .component('Contact', window.Contact)
+  .component('Faq',     window.Faq)
   .mount('#app');
 })();

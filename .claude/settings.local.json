@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv PageCart.js Cart.js)",
+      "Bash(mv PageContact.js Contact.js)",
+      "Bash(mv PageDetail.js Detail.js)",
+      "Bash(mv PageFaq.js Faq.js)",
+      "Bash(mv PageHome.js Home.js)"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
-/* ShopJoy - PageOrder */
-window.PageOrder = {
-  name: 'PageOrder',
+/* ShopJoy - Order */
+window.Order = {
+  name: 'Order',
   props: ['navigate', 'config', 'cart', 'showToast', 'showAlert', 'clearCart'],
   emits: [],
   template: /* html */ `

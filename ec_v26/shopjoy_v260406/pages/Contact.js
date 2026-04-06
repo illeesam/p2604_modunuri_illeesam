@@ -1,6 +1,6 @@
-/* ShopJoy - PageContact */
-window.PageContact = {
-  name: 'PageContact',
+/* ShopJoy - Contact */
+window.Contact = {
+  name: 'Contact',
   props: ['navigate', 'config', 'showToast', 'showAlert'],
   emits: [],
   template: /* html */ `

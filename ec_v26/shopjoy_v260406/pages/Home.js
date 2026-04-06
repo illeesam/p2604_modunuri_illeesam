@@ -1,6 +1,6 @@
-/* ShopJoy - PageHome */
-window.PageHome = {
-  name: 'PageHome',
+/* ShopJoy - Home */
+window.Home = {
+  name: 'Home',
   props: ['navigate', 'config', 'products', 'selectProduct'],
   emits: [],
   template: /* html */ `

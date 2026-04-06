@@ -1,6 +1,6 @@
-/* ShopJoy - PageDetail (색상/사이즈 필수 선택) */
-window.PageDetail = {
-  name: 'PageDetail',
+/* ShopJoy - Detail (색상/사이즈 필수 선택) */
+window.Detail = {
+  name: 'Detail',
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert'],
   emits: [],
   template: /* html */ `

@@ -1,6 +1,6 @@
-/* ShopJoy - PageProducts */
-window.PageProducts = {
-  name: 'PageProducts',
+/* ShopJoy - Products */
+window.Products = {
+  name: 'Products',
   props: ['navigate', 'config', 'products', 'selectProduct'],
   emits: [],
   template: /* html */ `

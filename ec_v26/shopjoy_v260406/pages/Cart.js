@@ -1,6 +1,6 @@
-/* ShopJoy - PageCart */
-window.PageCart = {
-  name: 'PageCart',
+/* ShopJoy - Cart */
+window.Cart = {
+  name: 'Cart',
   props: ['navigate', 'config', 'cart', 'cartCount', 'removeFromCart', 'updateCartQty', 'showConfirm', 'clearCart'],
   emits: [],
   template: /* html */ `
