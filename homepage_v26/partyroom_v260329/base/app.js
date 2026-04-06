@@ -1,13 +1,27 @@
 /* ============================================
-   PARTYROOM SPACE — Single-file Vue App
-   No component registration. All inline in index.html.
+   PARTYROOM SPACE — Vue App (본문은 pages/*.js)
    ============================================ */
 
 (async function () {
   await window.__SITE_CONFIG_READY__;
-  const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount } = Vue;
+  const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, provide } = Vue;
+
+  var P = window.PartyroomPages || {};
 
   createApp({
+  components: {
+    PageHome: P.PageHome,
+    PageAbout: P.PageAbout,
+    PageProducts: P.PageProducts,
+    PageDetail: P.PageDetail,
+    PageSpace: P.PageSpace,
+    PageBlog: P.PageBlog,
+    PageBlogDetail: P.PageBlogDetail,
+    PageLocation: P.PageLocation,
+    PageContact: P.PageContact,
+    PageFaq: P.PageFaq,
+    PageBooking: P.PageBooking,
+  },
   setup() {
     /* ── Theme ─────────────────────────────────── */
     const theme = ref(localStorage.getItem('partyroom-theme') || 'light');
@@ -21,7 +35,7 @@
 
     /* ── Navigation ────────────────────────────── */
     const page = ref('home');
-    const validPages = ['home', 'products', 'detail', 'booking', 'blog', 'blogDetail', 'space', 'location', 'contact', 'faq', 'order'];
+    const validPages = ['home', 'about', 'products', 'detail', 'booking', 'blog', 'blogDetail', 'space', 'location', 'contact', 'faq', 'order'];
     try {
       const savedPage = sessionStorage.getItem('partyroom_page');
       if (savedPage && validPages.includes(savedPage)) page.value = savedPage;
@@ -141,7 +155,7 @@
       if (raw && raw.includes('page=')) {
         const params = new URLSearchParams(raw);
         const hPage = params.get('page');
-        const validPages = ['home', 'products', 'detail', 'booking', 'blog', 'blogDetail', 'space', 'location', 'contact', 'faq', 'order'];
+        const validPages = ['home', 'about', 'products', 'detail', 'booking', 'blog', 'blogDetail', 'space', 'location', 'contact', 'faq', 'order'];
         if (hPage && validPages.includes(hPage)) page.value = hPage;
 
         const tagPool = ['전체', ...new Set(rooms.flatMap(r => r.tags))];
@@ -299,7 +313,7 @@
       try {
         const params = new URLSearchParams(raw);
         const hPage = params.get('page');
-        const validPages = ['home', 'products', 'detail', 'booking', 'blog', 'blogDetail', 'space', 'location', 'contact', 'faq', 'order'];
+        const validPages = ['home', 'about', 'products', 'detail', 'booking', 'blog', 'blogDetail', 'space', 'location', 'contact', 'faq', 'order'];
         if (hPage && validPages.includes(hPage)) page.value = hPage;
 
         const hCat = params.get('cat');
@@ -527,6 +541,44 @@
 
     /* ── FAQ ───────────────────────────────────── */
     const openFaq = ref(null);
+
+    const setActiveTag = tag => {
+      activeTag.value = tag;
+    };
+    const toggleFaqAt = idx => {
+      openFaq.value = openFaq.value === idx ? null : idx;
+    };
+    const reserveThisRoom = () => {
+      if (selectedRoom.value?.roomId != null) booking.room = String(selectedRoom.value.roomId);
+      navigate('booking');
+    };
+
+    const partyroom = {
+      theme, toggleTheme,
+      page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
+      toast, showToast,
+      alertState, showAlert, closeAlert,
+      confirmState, showConfirm, closeConfirm,
+      blogModal, openBlogDetail, closeBlogDetail,
+      rooms,
+      selectedRoom,
+      selectRoom,
+      activeTag,
+      setActiveTag,
+      allTags,
+      searchText,
+      filteredRooms,
+      displayedRooms,
+      hasMore,
+      resetPagination,
+      booking, bookingErrors, bookingTotal, submitBooking, clearBookingError,
+      contactForm, contactErrors, submitContact, clearContactError,
+      openFaq,
+      toggleFaqAt,
+      reserveThisRoom,
+      config: window.SITE_CONFIG,
+    };
+    provide('partyroom', partyroom);
 
     return {
       theme, toggleTheme,
