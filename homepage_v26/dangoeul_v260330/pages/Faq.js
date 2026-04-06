@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageFaq = {
-  name: 'PageFaq',
+window.DangoeulPages.Faq = {
+  name: 'Faq',
   props: ['navigate', 'config', 'openFaq', 'toggleMainFaq'],
   template: /* html */ `
   <div class="page-wrap">

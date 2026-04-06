@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageSolution = {
-  name: 'PageSolution',
+window.DangoeulPages.Solution = {
+  name: 'Solution',
   props: ['config', 'navigate'],
   template: /* html */ `
   <div class="page-wrap">

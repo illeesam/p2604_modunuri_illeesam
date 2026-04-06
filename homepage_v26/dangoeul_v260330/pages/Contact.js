@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageContact = {
-  name: 'PageContact',
+window.DangoeulPages.Contact = {
+  name: 'Contact',
   props: ['navigate', 'config', 'form', 'formErrors', 'submitForm', 'clearFormError', 'openFaq', 'toggleContactFaq'],
   template: /* html */ `
   <div class="page-wrap">

@@ -1,8 +1,8 @@
 /* PARTYROOM — blog (index.html 분리) */
 (function (g) {
   g.PartyroomPages = g.PartyroomPages || {};
-  g.PartyroomPages.PageBlog = {
-    name: 'PageBlog',
+  g.PartyroomPages.Blog = {
+    name: 'Blog',
     inject: ['partyroom'],
     template: `
 <div class="fade-up" style="padding:2rem 1.5rem;max-width:1000px;margin:0 auto;">

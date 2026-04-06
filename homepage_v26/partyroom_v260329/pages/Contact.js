@@ -1,8 +1,8 @@
 /* PARTYROOM — contact (index.html 분리) */
 (function (g) {
   g.PartyroomPages = g.PartyroomPages || {};
-  g.PartyroomPages.PageContact = {
-    name: 'PageContact',
+  g.PartyroomPages.Contact = {
+    name: 'Contact',
     inject: ['partyroom'],
     template: `
 <div class="fade-up" style="padding:2rem 1.5rem;max-width:900px;margin:0 auto;">

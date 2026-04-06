@@ -1,8 +1,8 @@
 /* HOME — 헤더 (index.html 레이아웃 분리) */
 (function (g) {
   g.HomeLayout = g.HomeLayout || {};
-  g.HomeLayout.AppHeader = {
-    name: 'AppHeader',
+  g.HomeLayout.LayoutHeader = {
+    name: 'LayoutHeader',
     inject: ['studio'],
     template: `
 <header id="header" style="height:var(--header-h);position:sticky;top:0;z-index:50;display:flex;align-items:center;padding:0 1rem;gap:0.75rem;background:var(--bg-header);border-bottom:1px solid var(--border);backdrop-filter:blur(16px)">

@@ -1,8 +1,8 @@
 /* HOME — 푸터 (index.html 레이아웃 분리) */
 (function (g) {
   g.HomeLayout = g.HomeLayout || {};
-  g.HomeLayout.AppFooter = {
-    name: 'AppFooter',
+  g.HomeLayout.LayoutFooter = {
+    name: 'LayoutFooter',
     inject: ['studio'],
     template: `
 <footer style="background:var(--bg-header);border-top:1px solid var(--border);padding:1.25rem 1.5rem">

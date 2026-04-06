@@ -1,8 +1,8 @@
 /* ============================================
-   PARTYROOM - AppHeader Component
+   PARTYROOM - LayoutHeader Component
    ============================================ */
-window.AppHeader = {
-  name: 'AppHeader',
+window.LayoutHeader = {
+  name: 'LayoutHeader',
   props: ['activeMenu', 'mobileOpen', 'sidebarOpen'],
   emits: ['navigate', 'toggle-mobile', 'toggle-sidebar'],
   template: /* html */ `

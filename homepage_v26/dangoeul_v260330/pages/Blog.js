@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageBlog = {
-  name: 'PageBlog',
+window.DangoeulPages.Blog = {
+  name: 'Blog',
   data() {
     return {
       blogModalOpen: false,

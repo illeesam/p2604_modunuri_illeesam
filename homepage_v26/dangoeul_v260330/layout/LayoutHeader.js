@@ -1,7 +1,7 @@
 /* 단고을 — 상단 헤더 */
 window.DangoeulComponents = window.DangoeulComponents || {};
-window.DangoeulComponents.AppHeader = {
-  name: 'AppHeader',
+window.DangoeulComponents.LayoutHeader = {
+  name: 'LayoutHeader',
   props: ['page', 'theme', 'config', 'navigate', 'toggleTheme', 'toggleMobile', 'toggleSidebar'],
   template: /* html */ `
   <header class="glass" style="height:var(--header-h);display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">

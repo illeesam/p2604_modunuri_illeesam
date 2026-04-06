@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageLocation = {
-  name: 'PageLocation',
+window.DangoeulPages.Location = {
+  name: 'Location',
   props: ['config'],
   data() {
     return { copiedHint: false };

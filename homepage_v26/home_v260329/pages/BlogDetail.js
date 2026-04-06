@@ -1,8 +1,8 @@
 /* HOME — BLOG DETAIL (index.html 본문 분리) */
 (function (g) {
   g.HomePages = g.HomePages || {};
-  g.HomePages.PageBlogDetail = {
-    name: 'PageBlogDetail',
+  g.HomePages.BlogDetail = {
+    name: 'BlogDetail',
     inject: ['studio'],
     template: `
 <div class="p-6 max-w-6xl mx-auto">

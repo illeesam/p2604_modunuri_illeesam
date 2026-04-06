@@ -1,8 +1,8 @@
 /* PARTYROOM — location (index.html 분리) */
 (function (g) {
   g.PartyroomPages = g.PartyroomPages || {};
-  g.PartyroomPages.PageLocation = {
-    name: 'PageLocation',
+  g.PartyroomPages.Location = {
+    name: 'Location',
     inject: ['partyroom'],
     template: `
 <div class="fade-up" style="padding:2rem 1.5rem;max-width:900px;margin:0 auto;">

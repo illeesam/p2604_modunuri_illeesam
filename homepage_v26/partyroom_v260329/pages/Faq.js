@@ -1,8 +1,8 @@
 /* PARTYROOM — faq (index.html 분리) */
 (function (g) {
   g.PartyroomPages = g.PartyroomPages || {};
-  g.PartyroomPages.PageFaq = {
-    name: 'PageFaq',
+  g.PartyroomPages.Faq = {
+    name: 'Faq',
     inject: ['partyroom'],
     template: `
 <div class="fade-up" style="padding:2rem 1.5rem;max-width:760px;margin:0 auto;">

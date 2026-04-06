@@ -1,8 +1,8 @@
 /* HOME — CONTACT (index.html 본문 분리) */
 (function (g) {
   g.HomePages = g.HomePages || {};
-  g.HomePages.PageContact = {
-    name: 'PageContact',
+  g.HomePages.Contact = {
+    name: 'Contact',
     inject: ['studio'],
     template: `
 <div class="p-6 max-w-5xl mx-auto">

@@ -1,9 +1,9 @@
 /* ============================================
-   PARTYROOM - AppSidebar Component
+   PARTYROOM - LayoutSidebar Component
    반응형: 모바일에서 오버레이로 슬라이드
    ============================================ */
-window.AppSidebar = {
-  name: 'AppSidebar',
+window.LayoutSidebar = {
+  name: 'LayoutSidebar',
   props: ['activeMenu', 'sidebarOpen', 'mobileOpen'],
   emits: ['navigate', 'close'],
   template: /* html */ `

@@ -1,8 +1,8 @@
 /* HOME — ABOUT (index.html 본문 분리) */
 (function (g) {
   g.HomePages = g.HomePages || {};
-  g.HomePages.PageAbout = {
-    name: 'PageAbout',
+  g.HomePages.About = {
+    name: 'About',
     inject: ['studio'],
     template: `
 <div class="p-6 max-w-5xl mx-auto">

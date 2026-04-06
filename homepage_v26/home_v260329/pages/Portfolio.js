@@ -1,8 +1,8 @@
 /* HOME — PORTFOLIO (index.html 본문 분리) */
 (function (g) {
   g.HomePages = g.HomePages || {};
-  g.HomePages.PagePortfolio = {
-    name: 'PagePortfolio',
+  g.HomePages.Portfolio = {
+    name: 'Portfolio',
     inject: ['studio'],
     template: `
 <div class="p-6 max-w-6xl mx-auto">

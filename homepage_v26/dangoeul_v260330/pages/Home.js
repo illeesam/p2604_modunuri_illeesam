@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageHome = {
-  name: 'PageHome',
+window.DangoeulPages.Home = {
+  name: 'Home',
   props: ['navigate', 'config', 'products', 'selectProduct', 'openDemo'],
   data() {
     return { statItems: [] };

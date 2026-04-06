@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageProducts = {
-  name: 'PageProducts',
+window.DangoeulPages.Products = {
+  name: 'Products',
   props: ['productCats', 'activeProductCat', 'setProductCat', 'filteredProducts', 'selectProduct', 'openDemo', 'config'],
   template: /* html */ `
   <div>

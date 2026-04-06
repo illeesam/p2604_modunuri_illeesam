@@ -1,7 +1,7 @@
 /* 단고을 — 푸터 */
 window.DangoeulComponents = window.DangoeulComponents || {};
-window.DangoeulComponents.AppFooter = {
-  name: 'AppFooter',
+window.DangoeulComponents.LayoutFooter = {
+  name: 'LayoutFooter',
   props: ['config'],
   template: /* html */ `
   <footer style="padding:28px 32px;">

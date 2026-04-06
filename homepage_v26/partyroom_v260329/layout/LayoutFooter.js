@@ -1,8 +1,8 @@
 /* ============================================
-   PARTYROOM - AppFooter Component
+   PARTYROOM - LayoutFooter Component
    ============================================ */
-window.AppFooter = {
-  name: 'AppFooter',
+window.LayoutFooter = {
+  name: 'LayoutFooter',
   emits: ['navigate'],
   template: /* html */ `
     <footer class="glass" style="border-top:1px solid var(--border);margin-top:auto">

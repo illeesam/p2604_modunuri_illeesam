@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageDetail = {
-  name: 'PageDetail',
+window.DangoeulPages.Detail = {
+  name: 'Detail',
   props: ['navigate', 'products', 'selectedProduct', 'selectProduct', 'openDemo'],
   template: /* html */ `
   <div class="page-wrap">

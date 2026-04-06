@@ -1,7 +1,7 @@
 /* 단고을 — 좌측 사이드바 */
 window.DangoeulComponents = window.DangoeulComponents || {};
-window.DangoeulComponents.AppSidebar = {
-  name: 'AppSidebar',
+window.DangoeulComponents.LayoutSidebar = {
+  name: 'LayoutSidebar',
   props: ['config', 'page', 'navigate', 'sidebarOpen', 'toggleSidebar', 'mobileOpen'],
   template: /* html */ `
   <div id="sidebar" :class="[sidebarOpen?'':'collapsed', mobileOpen?'open':'']">

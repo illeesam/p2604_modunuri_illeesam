@@ -1,6 +1,6 @@
 window.DangoeulPages = window.DangoeulPages || {};
-window.DangoeulPages.PageOrder = {
-  name: 'PageOrder',
+window.DangoeulPages.Order = {
+  name: 'Order',
   props: ['navigate', 'config'],
   template: /* html */ `
   <div class="page-wrap">

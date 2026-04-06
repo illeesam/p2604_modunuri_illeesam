@@ -1,8 +1,8 @@
 /* HOME — 모바일 오버레이 + 사이드바 (index.html 레이아웃 분리) */
 (function (g) {
   g.HomeLayout = g.HomeLayout || {};
-  g.HomeLayout.AppSidebar = {
-    name: 'AppSidebar',
+  g.HomeLayout.LayoutSidebar = {
+    name: 'LayoutSidebar',
     inject: ['studio'],
     template: `
 <div v-if="studio.mobileOpen" @click="studio.closeMobileMenu"
