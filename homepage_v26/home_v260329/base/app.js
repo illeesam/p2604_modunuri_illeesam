@@ -1,7 +1,9 @@
-/* HOME - Single Vue App (no component registration) */
+/* HOME - Vue app (page bodies in pages/*.js, inject key: studio) */
 (async function () {
   await window.__SITE_CONFIG_READY__;
-  const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount } = Vue;
+  const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, provide } = Vue;
+
+  var P = window.HomePages || {};
 
   const heroStats = ref([]);
   try {
@@ -17,6 +19,15 @@
   }
 
   createApp({
+  components: {
+    PageHome: P.PageHome,
+    PageAbout: P.PageAbout,
+    PageServices: P.PageServices,
+    PagePortfolio: P.PagePortfolio,
+    PageBlog: P.PageBlog,
+    PageBlogDetail: P.PageBlogDetail,
+    PageContact: P.PageContact,
+  },
   setup() {
     /* ── Theme ── */
     const theme = ref(localStorage.getItem('home-theme') || 'light');
@@ -274,6 +285,12 @@
 
     /* ── FAQ accordion ── */
     const openFaq = ref(null);
+    const toggleFaq = q => {
+      openFaq.value = openFaq.value === q ? null : q;
+    };
+    const setActiveCat = c => {
+      activeCat.value = c;
+    };
 
     /* ── Contact form + Yup (ESM 동적 import) ── */
     const form = reactive({ name: '', email: '', service: '', budget: '', desc: '' });
@@ -370,6 +387,22 @@
       { id: 5, emoji: '🔐', title: '웹 보안의 기초: OWASP Top 10', excerpt: '개발자가 알아야 할 웹 보안 취약점과 대응 방법', cat: '보안', date: '2026.02.28', bg: '#2a2a1a' },
       { id: 6, emoji: '🚀', title: '스타트업을 위한 MVP 개발 전략', excerpt: '예산을 최소화하면서 빠르게 시장을 검증하는 법', cat: '전략', date: '2026.02.20', bg: '#1a2a1a' },
     ];
+
+    /* 자식 페이지 템플릿에서 studio.xxx 로 접근하므로 ref/computed 는 reactive 안에 넣어 자동 unwrap 되게 함 */
+    const studio = reactive({
+      theme, toggleTheme,
+      page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
+      toast, showToast,
+      alertState, showAlert, closeAlert,
+      confirmState, showConfirm, closeConfirm,
+      blogModal, openBlogDetail, closeBlogDetail,
+      activeCat, cats, filteredPortfolio,
+      searchText, displayedPortfolio, hasMore, resetPagination, setActiveCat,
+      openFaq, toggleFaq,
+      form, formErrors, submitForm, clearFormError, contactServiceRows, contactBudgetRows,
+      values, team, posts, heroStats, config: window.SITE_CONFIG,
+    });
+    provide('studio', studio);
 
     return {
       theme, toggleTheme,
