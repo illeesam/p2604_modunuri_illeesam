@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataVisual — 데이터 시각화 대시보드</title>
+  <meta name="description" content="Vue 3 CDN 기반 데이터 시각화 대시보드. 차트 위젯, 실시간 시계열, 레이아웃 편집기 포함.">
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <!-- Chart.js 4 + date adapter (실시간 시계열용) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <style>
+    /* Sidebar responsive */
+    @media (max-width:1023px) { .hidden-sm { display:none !important; } }
+    @media (min-width:1024px) { .hidden-sm { display:flex !important; } .lg\:hidden { display:none !important; } }
+    /* Page transitions */
+    [v-show] { transition:opacity 0.12s ease; }
+    /* Prevent FOUC */
+    html[data-theme="dark"] body { background:#0d1117; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- Config -->
+  <script src="base/config.js"></script>
+
+  <!-- Layout -->
+  <script src="layout/LayoutHeader.js"></script>
+  <script src="layout/LayoutSidebar.js"></script>
+  <script src="layout/LayoutFooter.js"></script>
+
+  <!-- Widgets -->
+  <script src="component/widgets/KpiWidget.js"></script>
+  <script src="component/widgets/LineChartWidget.js"></script>
+  <script src="component/widgets/BarChartWidget.js"></script>
+  <script src="component/widgets/PieChartWidget.js"></script>
+  <script src="component/widgets/AreaChartWidget.js"></script>
+  <script src="component/widgets/RadarChartWidget.js"></script>
+  <script src="component/widgets/ScatterChartWidget.js"></script>
+  <script src="component/widgets/BubbleChartWidget.js"></script>
+  <script src="component/widgets/StackedBarWidget.js"></script>
+  <script src="component/widgets/HeatmapWidget.js"></script>
+  <script src="component/widgets/GaugeWidget.js"></script>
+  <script src="component/widgets/DataTableWidget.js"></script>
+  <script src="component/widgets/RealtimeScatterWidget.js"></script>
+
+  <!-- Panels -->
+  <script src="component/panels/DashboardPanel.js"></script>
+  <script src="component/panels/AnalyticsPanel.js"></script>
+  <script src="component/panels/RealtimePanel.js"></script>
+  <script src="component/panels/GridPanel.js"></script>
+
+  <!-- Pages -->
+  <script src="pages/Dashboard.js"></script>
+  <script src="pages/Gallery.js"></script>
+  <script src="pages/Realtime.js"></script>
+  <script src="pages/Panels.js"></script>
+  <script src="pages/WidgetManager.js"></script>
+  <script src="pages/LayoutManager.js"></script>
+
+  <!-- App bootstrap -->
+  <script src="base/app.js"></script>
+</body>
+</html>
