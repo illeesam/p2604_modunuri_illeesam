@@ -102,15 +102,14 @@
   global.MAIN_FRAME_SIDEBAR_USEFUL_SITES = [
     { value: '', label: '사이트 선택…' },
     { value: 'https://github.com', label: '➧ github.com' },
-    { value: 'https://github.com/illeesam/p2604_modunuri_illeesam', label: '..⤷ illeesam/p2604_modunuri_illeesam' },
-    { value: 'https://github.com/illeesam/p2604_modunuri_illeesam/settings/pages', label: '....⤷ /settings/pages ' },
-    { value: 'https://illeesam.github.io/p2604_modunuri_illeesam', label: '....⤷ illeesam.github.io/p2604_modunuri_illeesam' },
-    { value: 'https://github.com/gumez75/p2604_dnagoeul', label: '..⤷ gumez75/p2604_dnagoeul' },
+    { value: 'https://github.com/gumez75/p2604_dangoeul', label: '..⤷ gumez75/p2604_dangoeul' },
+    { value: '', label: ' --------------- ' },
     { value: 'https://www.netlify.com', label: '➧ www.netlify.com' },
     { value: 'https://illeesam.netlify.app', label: '..⤷ illeesam.netlify.app' },
-    { value: 'https://gumez75.github.io/p2604_dnagoeul', label: '..⤷ gumez75.github.io/p2604_dnagoeul' },
+    { value: '', label: ' --------------- ' },
     { value: 'https://www.youtube.com/watch?v=rd1C-LFz8fU', label: 'GitHub Pages로 웹사이트 무료 호스팅하기' },
-    { value: 'https://www.youtube.com/watch?v=zK0Lx4aFOFA', label: 'GitHub Pages에 커스텀 도메인 연결' }
+    { value: 'https://www.youtube.com/watch?v=zK0Lx4aFOFA', label: 'GitHub Pages에 커스텀 도메인 연결' },
+    { value: 'https://www.youtube.com/watch?v=WJtetccrv3o&t=156s', label: 'GitHub 웹사이트 Netlify 배포하기 (1개무료) ' }
   ];
 
   /** 초기 사이드바 앱 (해시 없을 때와 동일) */
