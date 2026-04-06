@@ -98,14 +98,14 @@
   /** 좌측 하단 «유용한 사이트» — value 빈 문자열 = 안내 옵션만 */
   global.MAIN_FRAME_SIDEBAR_USEFUL_SITES = [
     { value: '', label: '사이트 선택…' },
-    { value: 'https://github.com/illeesam/p2603_modunuri_illeesam', label: 'GitHub > illeesam/p2603_modunuri_illeesam' },
-    { value: 'https://github.com/illeesam/p2603_modunuri_illeesam/settings/pages', label: ' - /settings/pages ' },
-    { value: 'https://illeesam.github.io/p2603_modunuri_illeesam', label: 'illeesam.github.io/p2603_modunuri_illeesam' },
-    { value: 'https://github.com/illeesam/p2603_deploy_test', label: 'GitHub > illeesam/p2603_deploy_test' },
-    { value: 'https://github.com/gumez75/p2603_dnagoeul', label: 'GitHub > gumez75/p2603_dnagoeul' },
-    { value: 'https://www.netlify.com', label: 'www.netlify.com' },
-    { value: 'https://illeesam.netlify.app', label: 'illeesam.netlify.app' },
-    { value: 'https://gumez75.github.io/p2603_dnagoeul', label: 'gumez75.github.io/p2603_dnagoeul' },
+    { value: 'https://github.com', label: '➧ github.com' },
+    { value: 'https://github.com/illeesam/p2604_modunuri_illeesam', label: '..⤷ illeesam/p2604_modunuri_illeesam' },
+    { value: 'https://github.com/illeesam/p2604_modunuri_illeesam/settings/pages', label: '....⤷ /settings/pages ' },
+    { value: 'https://illeesam.github.io/p2604_modunuri_illeesam', label: '....⤷ illeesam.github.io/p2604_modunuri_illeesam' },
+    { value: 'https://github.com/gumez75/p2604_dnagoeul', label: '..⤷ gumez75/p2604_dnagoeul' },
+    { value: 'https://www.netlify.com', label: '➧ www.netlify.com' },
+    { value: 'https://illeesam.netlify.app', label: '..⤷ illeesam.netlify.app' },
+    { value: 'https://gumez75.github.io/p2604_dnagoeul', label: '..⤷ gumez75.github.io/p2604_dnagoeul' },
     { value: 'https://www.youtube.com/watch?v=rd1C-LFz8fU', label: 'GitHub Pages로 웹사이트 무료 호스팅하기' },
     { value: 'https://www.youtube.com/watch?v=zK0Lx4aFOFA', label: 'GitHub Pages에 커스텀 도메인 연결' }
   ];
