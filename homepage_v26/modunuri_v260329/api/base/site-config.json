@@ -315,6 +315,15 @@
     },
     {
       "emoji": "🏠",
+      "desc": "쇼핑을 즐거움 데모",
+      "price": "별도 문의",
+      "demo": "../../ec_v26/shopjoy_v260406/index.html", 
+      "productId": 17,
+      "productName": "쇼핑을 즐거움",
+      "categoryId": "purchase"
+    },
+    {
+      "emoji": "🏠",
       "desc": "애니메이션 스튜디오 소개형 홈페이지 데모",
       "price": "별도 문의",
       "demo": "../anynuri_v260329/index.html",

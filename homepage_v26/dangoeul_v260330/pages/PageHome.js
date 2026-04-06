@@ -104,7 +104,7 @@ window.DangoeulPages.PageHome = {
       <div v-if="sec.homeSectionId === 'best'" class="home-best-grid">
         <div v-for="p in productsByIds(sec.productIds).slice(0,1)" :key="sec.homeSectionId + '-' + p.productId" class="product-card home-best-feature">
           <div v-if="p.image" class="product-card-cover home-best-feature-cover">
-            <img :src="p.image" :alt="p.productName" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
+            <img :src="p.image" :alt="p.productName" loading="lazy" @load="$event.target.classList.add('loaded')" :style="{ objectPosition: p.imagePos || 'center center' }" />
           </div>
           <div v-else class="product-card-body" style="padding-top:22px;">
             <span style="font-size:2.5rem;">{{ p.emoji }}</span>
@@ -126,7 +126,7 @@ window.DangoeulPages.PageHome = {
         <div class="home-best-stack">
           <div v-for="p in productsByIds(sec.productIds).slice(1)" :key="sec.homeSectionId + '-' + p.productId" class="product-card home-best-side">
             <div v-if="p.image" class="product-card-cover home-best-side-cover">
-              <img :src="$listImg(p.image)" :alt="p.productName" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
+              <img :src="$listImg(p.image)" :alt="p.productName" loading="lazy" @load="$event.target.classList.add('loaded')" :style="{ objectPosition: p.imagePos || 'center center' }" />
             </div>
             <div v-else class="product-card-body" style="padding-top:16px;">
               <span style="font-size:2rem;">{{ p.emoji }}</span>
@@ -150,7 +150,7 @@ window.DangoeulPages.PageHome = {
       <div v-else class="grid-3">
         <div v-for="p in productsByIds(sec.productIds)" :key="sec.homeSectionId + '-' + p.productId" class="product-card">
           <div v-if="p.image" class="product-card-cover" style="height:128px;">
-            <img :src="$listImg(p.image)" :alt="p.productName" loading="lazy" :style="{ objectPosition: p.imagePos || 'center center' }" />
+            <img :src="$listImg(p.image)" :alt="p.productName" loading="lazy" @load="$event.target.classList.add('loaded')" :style="{ objectPosition: p.imagePos || 'center center' }" />
           </div>
           <div v-else class="product-card-body" style="padding-top:22px;">
             <span style="font-size:2.5rem;">{{ p.emoji }}</span>
