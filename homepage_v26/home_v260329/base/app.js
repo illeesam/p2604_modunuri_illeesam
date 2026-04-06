@@ -4,6 +4,7 @@
   const { createApp, ref, computed, reactive, watch, onMounted, onBeforeUnmount, provide } = Vue;
 
   var P = window.HomePages || {};
+  var L = window.HomeLayout || {};
 
   const heroStats = ref([]);
   try {
@@ -20,6 +21,9 @@
 
   createApp({
   components: {
+    AppHeader: L.AppHeader,
+    AppSidebar: L.AppSidebar,
+    AppFooter: L.AppFooter,
     PageHome: P.PageHome,
     PageAbout: P.PageAbout,
     PageServices: P.PageServices,

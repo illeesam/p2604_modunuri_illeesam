@@ -57,74 +57,12 @@
   <!-- App Layout -->
   <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base)">
 
-    <!-- Header -->
-    <header id="header" style="height:var(--header-h);position:sticky;top:0;z-index:50;display:flex;align-items:center;padding:0 1rem;gap:0.75rem;background:var(--bg-header);border-bottom:1px solid var(--border);backdrop-filter:blur(16px)">
-
-      <!-- Desktop sidebar toggle -->
-      <button @click="sidebarOpen=!sidebarOpen"
-              class="hidden lg:flex items-center justify-center w-9 h-9 rounded-lg"
-              style="background:var(--emerald-dim);color:var(--emerald);border:none;cursor:pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
-
-      <!-- Mobile menu toggle -->
-      <button @click="toggleMobileMenu"
-              class="flex lg:hidden items-center justify-center w-9 h-9 rounded-lg"
-              style="background:var(--emerald-dim);color:var(--emerald);border:none;cursor:pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                :d="mobileOpen?'M6 18L18 6M6 6l12 12':'M4 6h16M4 12h16M4 18h16'"/>
-        </svg>
-      </button>
-
-      <!-- Logo -->
-      <div @click="navigate('home')" class="flex items-center gap-2 cursor-pointer select-none">
-        <span class="font-black text-lg gradient-text">STUDIO</span>
-      </div>
-
-      <div class="flex-1"></div>
-
-      <!-- Top nav (desktop) -->
-      <nav class="hidden lg:flex items-center gap-1 text-xs">
-        <button v-for="m in config.topMenu" :key="m.menuId" @click="navigate(m.menuId)"
-                class="px-3 py-1.5 rounded-lg transition-colors font-medium"
-                :style="page===m.menuId?'color:var(--emerald);background:var(--emerald-dim);border:none;cursor:pointer':'color:var(--text-secondary);border:none;cursor:pointer;background:transparent'">
-          {{ m.menuName }}
-        </button>
-      </nav>
-
-      <!-- Theme toggle (top-right) -->
-      <button @click="toggleTheme" title="테마 변경"
-              class="ml-2 w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
-              style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer">
-        <span v-if="theme==='light'">🌙</span>
-        <span v-else>☀️</span>
-      </button>
-    </header>
+    <app-header></app-header>
 
     <!-- Body -->
     <div style="flex:1;display:flex;overflow:hidden;position:relative">
 
-      <!-- Mobile overlay -->
-      <div v-if="mobileOpen" @click="closeMobileMenu"
-           class="lg:hidden fixed inset-0 z-30"
-           style="background:rgba(0,0,0,0.5)"></div>
-
-      <!-- Sidebar -->
-      <aside id="sidebar" :class="[sidebarOpen?'':'collapsed', mobileOpen?'open':'']" class="flex flex-col py-4">
-        <nav class="flex-1 overflow-y-auto px-2 space-y-4">
-          <div v-for="sec in config.sidebarMenu" :key="sec.section">
-            <div v-if="sidebarOpen" class="text-xs font-bold px-3 mb-1" style="color:var(--text-muted)">{{ sec.section }}</div>
-            <button v-for="m in sec.items" :key="m.menuId" @click="navigate(m.menuId, { replace: true })"
-                    class="sidebar-link" :class="page===m.menuId?'active':''">
-              <span class="text-base flex-shrink-0">{{ m.icon }}</span>
-              <span class="text-xs font-medium" v-show="sidebarOpen">{{ m.menuName }}</span>
-            </button>
-          </div>
-        </nav>
-      </aside>
+      <app-sidebar></app-sidebar>
 
       <!-- Main -->
       <div style="flex:1;overflow-y:auto;min-width:0">
@@ -141,22 +79,7 @@
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer style="background:var(--bg-header);border-top:1px solid var(--border);padding:1.25rem 1.5rem">
-      <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <span class="font-black text-sm gradient-text">STUDIO</span>
-          <span class="text-xs" style="color:var(--text-muted)">© 2026 All rights reserved.</span>
-        </div>
-        <nav class="flex gap-4">
-          <button v-for="m in config.topMenu" :key="m.menuId" @click="navigate(m.menuId)"
-                  class="text-xs transition-colors"
-                  :style="page===m.menuId?'color:var(--emerald);background:none;border:none;cursor:pointer;font-weight:600':'color:var(--text-muted);background:none;border:none;cursor:pointer'">
-            {{ m.menuName }}
-          </button>
-        </nav>
-      </div>
-    </footer>
+    <app-footer></app-footer>
 
   </div>
 </div>
@@ -171,6 +94,9 @@
 <script src="pages/Blog.js"></script>
 <script src="pages/BlogDetail.js"></script>
 <script src="pages/Contact.js"></script>
+<script src="layout/AppHeader.js"></script>
+<script src="layout/AppSidebar.js"></script>
+<script src="layout/AppFooter.js"></script>
 <script src="base/app.js"></script>
 </body>
 </html>
