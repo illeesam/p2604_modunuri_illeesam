@@ -5,6 +5,10 @@
   await window.__SITE_CONFIG_READY__;
   const { createApp, ref, reactive, computed, watch, onBeforeUnmount } = Vue;
 
+  /* ── Pinia 생성 및 Auth 초기화 ── */
+  const pinia = Pinia.createPinia();
+  window.shopjoyAuth.init(pinia);
+
   createApp({
   setup() {
     /* ── Theme ── */
@@ -158,9 +162,23 @@
       saveCart();
     };
 
+    /* ── Auth ── */
+    const auth = window.shopjoyAuth.state;
+    const showLogin = ref(false);
+    const onShowLogin = () => { showLogin.value = true; };
+    const onLogout = () => {
+      window.shopjoyAuth.logout();
+      showToast('로그아웃되었습니다.', 'info');
+      if (page.value === 'my') page.value = 'home';
+    };
+    /* shopjoy_token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
+    watch(() => auth.user, u => {
+      if (!u && page.value === 'my') page.value = 'home';
+    });
+
     /* ── URL state ── */
     let restoring = true;
-    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq'];
+    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'my'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = rawHash.includes('page=');
@@ -258,6 +276,7 @@
       products, selectedProduct, selectProduct,
       cart, cartCount, addToCart, removeFromCart, updateCartQty, clearCart,
       config: window.SITE_CONFIG,
+      auth, showLogin, onShowLogin, onLogout,
     };
   },
 
@@ -267,6 +286,7 @@
   <app-header
     :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
     :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cartCount"
+    :auth="auth" :on-show-login="onShowLogin" :on-logout="onLogout"
     @toggle-sidebar="sidebarOpen=!sidebarOpen" @toggle-mobile="toggleMobileMenu"
   />
 
@@ -311,10 +331,20 @@
         v-else-if="page==='faq'"
         :navigate="navigate" :config="config"
       />
+      <my
+        v-else-if="page==='my'"
+        :navigate="navigate" :config="config"
+        :cart="cart" :cart-count="cartCount"
+        :show-toast="showToast" :show-confirm="showConfirm"
+        :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
+      />
 
       <app-footer :config="config" :navigate="navigate" />
     </main>
   </div>
+
+  <!-- LOGIN MODAL -->
+  <login v-if="showLogin" :show-toast="showToast" @close="showLogin=false" />
 
   <!-- TOAST -->
   <div v-if="toast.show" class="toast-wrap" :class="'toast-'+toast.type">
@@ -362,5 +392,8 @@
   .component('Order',   window.Order)
   .component('Contact', window.Contact)
   .component('Faq',     window.Faq)
+  .component('My',      window.My)
+  .component('Login',   window.Login)
+  .use(pinia)
   .mount('#app');
 })();

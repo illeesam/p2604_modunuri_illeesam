@@ -1,0 +1,44 @@
+[
+  {"chatId":1,"date":"2026-04-06 14:32","subject":"배송 관련 문의","lastMsg":"주문하신 상품은 내일 발송 예정입니다.","status":"진행중","unread":1,"messages":[
+    {"from":"user","text":"안녕하세요, 주문한 상품 배송이 언제 될까요?","time":"14:25"},
+    {"from":"cs","text":"안녕하세요 ShopJoy 고객센터입니다. 확인해보겠습니다.","time":"14:28"},
+    {"from":"cs","text":"주문하신 상품은 내일 발송 예정입니다.","time":"14:32"}
+  ]},
+  {"chatId":2,"date":"2026-04-03 10:15","subject":"반품 신청","lastMsg":"반품 접수가 완료되었습니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"사이즈가 맞지 않아 반품하고 싶습니다.","time":"10:10"},
+    {"from":"cs","text":"안녕하세요. 반품 접수 도와드리겠습니다.","time":"10:12"},
+    {"from":"cs","text":"반품 접수가 완료되었습니다. 택배 회수 예정입니다.","time":"10:15"}
+  ]},
+  {"chatId":3,"date":"2026-03-28 16:45","subject":"상품 재입고 문의","lastMsg":"재입고 시 알림 신청 완료했습니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"블랙 XL 재입고 언제 될까요?","time":"16:40"},
+    {"from":"cs","text":"현재 재입고 일정 확인 중입니다.","time":"16:43"},
+    {"from":"cs","text":"재입고 시 알림 신청 완료했습니다. 입고되면 문자드리겠습니다.","time":"16:45"}
+  ]},
+  {"chatId":4,"date":"2026-03-20 11:20","subject":"쿠폰 적용 문의","lastMsg":"쿠폰 적용 방법 안내드렸습니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"쿠폰을 어떻게 사용하나요?","time":"11:18"},
+    {"from":"cs","text":"주문 페이지에서 쿠폰 선택 후 적용하시면 됩니다.","time":"11:20"}
+  ]},
+  {"chatId":5,"date":"2026-03-15 09:30","subject":"교환 문의","lastMsg":"교환 접수 완료되었습니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"M 사이즈를 L로 교환하고 싶어요.","time":"09:25"},
+    {"from":"cs","text":"교환 접수 완료되었습니다. 새 상품 발송까지 3일 소요됩니다.","time":"09:30"}
+  ]},
+  {"chatId":6,"date":"2026-04-07 09:00","subject":"신상품 문의","lastMsg":"","status":"진행중","unread":2,"messages":[
+    {"from":"user","text":"신상품 입고 일정 알 수 있을까요?","time":"09:00"}
+  ]},
+  {"chatId":7,"date":"2026-02-25 14:00","subject":"결제 오류 문의","lastMsg":"결제 정상 처리 확인되었습니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"결제가 두 번 된 것 같아요.","time":"13:55"},
+    {"from":"cs","text":"확인 결과 한 번만 결제되었습니다. 안심하세요.","time":"14:00"}
+  ]},
+  {"chatId":8,"date":"2026-02-18 16:00","subject":"색상 문의","lastMsg":"실제 색상 사진 보내드렸습니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"카멜 색상이 어떤 느낌인가요?","time":"15:55"},
+    {"from":"cs","text":"실제 색상 사진 보내드렸습니다. 따뜻한 베이지 계열입니다.","time":"16:00"}
+  ]},
+  {"chatId":9,"date":"2026-02-10 11:30","subject":"포인트 적립 문의","lastMsg":"구매 확정 후 자동 적립됩니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"캐쉬는 언제 적립되나요?","time":"11:28"},
+    {"from":"cs","text":"구매 확정 후 자동 적립됩니다.","time":"11:30"}
+  ]},
+  {"chatId":10,"date":"2026-01-30 10:00","subject":"회원 탈퇴 문의","lastMsg":"탈퇴 절차 안내드렸습니다.","status":"종료","unread":0,"messages":[
+    {"from":"user","text":"회원 탈퇴는 어떻게 하나요?","time":"09:58"},
+    {"from":"cs","text":"마이페이지 > 회원정보에서 탈퇴 가능합니다. 탈퇴 시 보유 쿠폰/캐쉬는 소멸됩니다.","time":"10:00"}
+  ]}
+]
