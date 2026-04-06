@@ -117,7 +117,7 @@
   global.MAIN_FRAME_HOME_APP_KEY = 'home_v260329';
 
   global.MAIN_FRAME_UI = {
-    topbarTitle: '종합서비스관리 b',
+    topbarTitle: '종합서비스관리 v0406_1109',
     sidebarHomeAppTitle: '문서',
     sidebarFooterService: '서비스보기',
     sidebarFooterUseful: '유용한 사이트',
