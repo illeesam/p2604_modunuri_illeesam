@@ -38,9 +38,9 @@
       await loadScript('utils/cmUtil.js');
       await loadScript('https://unpkg.com/vue@3/dist/vue.global.prod.js');
       var chain = [
-        'layout/AppHeader.js',
-        'layout/AppSidebar.js',
-        'layout/AppFooter.js',
+        'layout/LayoutHeader.js',
+        'layout/LayoutSidebar.js',
+        'layout/LayoutFooter.js',
         'pages/Home.js',
         'pages/About.js',
         'pages/Solution.js',

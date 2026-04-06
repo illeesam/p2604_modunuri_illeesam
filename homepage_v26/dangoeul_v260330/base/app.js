@@ -8,19 +8,19 @@ var C = window.DangoeulComponents || {};
 
 const dangoeulApp = createApp({
   components: {
-    AppHeader: C.AppHeader,
-    AppSidebar: C.AppSidebar,
-    AppFooter: C.AppFooter,
-    PageHome: P.PageHome,
-    PageAbout: P.PageAbout,
-    PageSolution: P.PageSolution,
-    PageProducts: P.PageProducts,
-    PageDetail: P.PageDetail,
-    PageBlog: P.PageBlog,
-    PageLocation: P.PageLocation,
-    PageContact: P.PageContact,
-    PageOrder: P.PageOrder,
-    PageFaq: P.PageFaq,
+    AppHeader: C.LayoutHeader,
+    AppSidebar: C.LayoutSidebar,
+    AppFooter: C.LayoutFooter,
+    PageHome: P.Home,
+    PageAbout: P.About,
+    PageSolution: P.Solution,
+    PageProducts: P.Products,
+    PageDetail: P.Detail,
+    PageBlog: P.Blog,
+    PageLocation: P.Location,
+    PageContact: P.Contact,
+    PageOrder: P.Order,
+    PageFaq: P.Faq,
   },
   setup() {
     const theme = ref(localStorage.getItem('dangoeul-theme') || 'light');

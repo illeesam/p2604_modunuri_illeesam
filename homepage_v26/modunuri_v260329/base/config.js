@@ -376,6 +376,16 @@ window.SITE_CONFIG = {
       "productId": 15,
       "productName": "종합서비스관리(Admin)",
       "categoryId": "admin"
+    },
+    {
+      "emoji": "📈",
+      "desc": "대시보드·차트·실시간 패널로 구성된 데이터 시각화 데모",
+      "price": "별도 문의",
+      "demo": "../../dataVisual_v26/datavisual_v260406/index.html",
+      "productId": 18,
+      "productName": "DataVisual 데이터 시각화",
+      "categoryId": "analytics",
+      "salesYn": "Y"
     }
   ],
   "faqs": [
