@@ -1,8 +1,8 @@
 {
     "workbench.colorCustomizations": {
         // 상단 타이틀바 배경색
-        "titleBar.activeBackground": "#5c6625",
-        "titleBar.inactiveBackground": "#5c6625",
+        "titleBar.activeBackground": "#c6d66d",
+        "titleBar.inactiveBackground": "#c6d66d",
         "window.activeBorder": "#06798d",
         // 윈도우 테두리 보더칼라
         // "tab.activeBorder": "#12EAFF",

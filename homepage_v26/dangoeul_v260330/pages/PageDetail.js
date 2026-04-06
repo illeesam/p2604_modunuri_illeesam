@@ -120,6 +120,13 @@ window.DangoeulPages.PageDetail = {
     const shareModal = ref(false);
     const shareData = reactive({ title: '', text: '', url: '' });
 
+    function categoryLabel(p) {
+      if (!p) return '';
+      const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryName : p.categoryId;
+    }
+
     function shareProduct(product) {
       const siteName = window.SITE_CONFIG?.name || '단고을';
       shareData.title = `${siteName} - ${product.productName}`;
