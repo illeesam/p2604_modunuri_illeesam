@@ -103,6 +103,8 @@
     { value: 'https://illeesam.github.io/p2603_modunuri_illeesam', label: 'illeesam.github.io/p2603_modunuri_illeesam' },
     { value: 'https://github.com/illeesam/p2603_deploy_test', label: 'GitHub > illeesam/p2603_deploy_test' },
     { value: 'https://github.com/gumez75/p2603_dnagoeul', label: 'GitHub > gumez75/p2603_dnagoeul' },
+    { value: 'https://www.netlify.com', label: 'www.netlify.com' },
+    { value: 'https://illeesam.netlify.app', label: 'illeesam.netlify.app' },
     { value: 'https://gumez75.github.io/p2603_dnagoeul', label: 'gumez75.github.io/p2603_dnagoeul' },
     { value: 'https://www.youtube.com/watch?v=rd1C-LFz8fU', label: 'GitHub Pages로 웹사이트 무료 호스팅하기' },
     { value: 'https://www.youtube.com/watch?v=zK0Lx4aFOFA', label: 'GitHub Pages에 커스텀 도메인 연결' }
@@ -115,7 +117,7 @@
   global.MAIN_FRAME_HOME_APP_KEY = 'home_v260329';
 
   global.MAIN_FRAME_UI = {
-    topbarTitle: '종합서비스관리',
+    topbarTitle: '종합서비스관리 b',
     sidebarHomeAppTitle: '문서',
     sidebarFooterService: '서비스보기',
     sidebarFooterUseful: '유용한 사이트',
