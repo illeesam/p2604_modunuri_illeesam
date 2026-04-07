@@ -12,8 +12,10 @@ window.My = {
       { status: '배송준비중', icon: '📦' },
       { status: '배송중',     icon: '🚚' },
       { status: '배송완료',   icon: '✅' },
-      { status: '완료',       icon: '🏁' },
+      { status: '완료',       label: '구매확정', icon: '🏁' },
     ];
+    const orderStatusLabel = s => (s === '완료' ? '구매확정' : s);
+    const flowHelpOpen = ref(false);
     const CANCELABLE   = ['주문완료', '결제완료'];
     const SHOW_COURIER = ['배송준비중', '배송중', '배송완료', '완료'];
 
@@ -175,7 +177,8 @@ window.My = {
 
     return {
       TABS, tab, tabCounts,
-      ORDER_FLOW, CANCELABLE, SHOW_COURIER, flowIndex, statusColor,
+      ORDER_FLOW, orderStatusLabel, flowHelpOpen,
+      CANCELABLE, SHOW_COURIER, flowIndex, statusColor,
       orders, orderPager, cancelOrder, openTracking,
       coupons, couponPager, couponCode, addCoupon, discountLabel,
       cashBalance, cashHistory, cashPager, chargeAmount, addCash,
@@ -217,7 +220,13 @@ window.My = {
 
     <!-- 주문 상태 흐름 차트 -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;overflow-x:auto;">
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:14px;letter-spacing:0.05em;">주문 처리 흐름</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;">주문 처리 흐름</div>
+        <button type="button" @click="flowHelpOpen = true" aria-label="주문 처리 흐름 도움말" title="도움말"
+          style="flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-base);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue);transition:background 0.15s,border-color 0.15s;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+      </div>
       <div style="display:flex;align-items:center;min-width:540px;">
         <template v-for="(step, si) in ORDER_FLOW" :key="step.status">
           <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
@@ -229,7 +238,7 @@ window.My = {
             </div>
             <div style="font-size:0.72rem;font-weight:600;text-align:center;white-space:nowrap;"
               :style="orders.filter(o=>o.status===step.status).length>0 ? 'color:var(--blue);' : 'color:var(--text-muted);'">
-              {{ step.status }}
+              {{ step.label || step.status }}
             </div>
             <div v-if="orders.filter(o=>o.status===step.status).length>0"
               style="font-size:0.68rem;font-weight:700;color:var(--blue);margin-top:2px;">
@@ -260,7 +269,7 @@ window.My = {
             주문취소
           </button>
           <span style="font-size:0.78rem;font-weight:700;padding:5px 12px;border-radius:20px;color:#fff;"
-            :style="'background:' + statusColor(o.status)">{{ o.status }}</span>
+            :style="'background:' + statusColor(o.status)">{{ orderStatusLabel(o.status) }}</span>
         </div>
       </div>
 
@@ -452,6 +461,27 @@ window.My = {
     </div>
     <Pagination :total="chats.length" :pager="chatPager" />
   </div>
+
+  <Teleport to="body">
+  <div v-if="flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;"
+    @click.self="flowHelpOpen=false">
+    <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:460px;max-height:88vh;overflow-y:auto;padding:26px 24px 22px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border);" @click.stop role="dialog" aria-modal="true" aria-labelledby="flow-help-title">
+      <button type="button" @click="flowHelpOpen=false" aria-label="닫기"
+        style="position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;font-size:1.25rem;line-height:1;color:var(--text-muted);padding:4px;">✕</button>
+      <h2 id="flow-help-title" style="font-size:1.15rem;font-weight:800;color:var(--text-primary);margin:0 32px 8px 0;">주문 처리 흐름 안내</h2>
+      <p style="font-size:0.82rem;color:var(--text-muted);line-height:1.55;margin:0 0 18px;">아래 순서대로 주문이 진행됩니다. 단계별 상태는 주문 목록에서 확인할 수 있습니다.</p>
+      <ul style="margin:0;padding:0 0 0 1.1rem;font-size:0.86rem;color:var(--text-secondary);line-height:1.65;list-style:disc;">
+        <li style="margin-bottom:10px;"><strong style="color:var(--text-primary);">주문완료</strong> — 주문이 접수된 단계입니다. 입금 또는 결제가 아직 완료되지 않았을 수 있습니다.</li>
+        <li style="margin-bottom:10px;"><strong style="color:var(--text-primary);">결제완료</strong> — 입금 확인 또는 결제가 완료되어 상품 준비로 넘어갑니다.</li>
+        <li style="margin-bottom:10px;"><strong style="color:var(--text-primary);">배송준비중</strong> — 주문하신 상품을 포장하고 출고 준비 중입니다.</li>
+        <li style="margin-bottom:10px;"><strong style="color:var(--text-primary);">배송중</strong> — 택배사에 인계되어 배송지로 이동 중입니다.</li>
+        <li style="margin-bottom:10px;"><strong style="color:var(--text-primary);">배송완료</strong> — 상품이 배송지에 도착한 상태입니다.</li>
+        <li style="margin-bottom:4px;"><strong style="color:var(--text-primary);">구매확정</strong> — 상품을 수령하신 뒤 거래가 최종 확정된 단계입니다. 교환·반품 등은 각 상품 정책 및 고객센터 안내를 따릅니다.</li>
+      </ul>
+      <button type="button" @click="flowHelpOpen=false" class="btn-blue" style="width:100%;margin-top:20px;padding:12px;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:700;">확인</button>
+    </div>
+  </div>
+  </Teleport>
 
 </div>
   `,

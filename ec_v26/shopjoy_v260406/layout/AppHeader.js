@@ -5,10 +5,11 @@ window.AppHeader = {
           'toggleTheme', 'cartCount', 'auth', 'onShowLogin', 'onLogout'],
   emits: ['toggle-sidebar', 'toggle-mobile'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
 
     /* ── 유저 드롭다운 ── */
     const userMenuOpen = ref(false);
+    const userMenuRoot = ref(null);
     const toggleUserMenu = () => { userMenuOpen.value = !userMenuOpen.value; };
     const closeUserMenu  = () => { userMenuOpen.value = false; };
     const goMy    = () => { closeUserMenu(); props.navigate('my'); };
@@ -82,7 +83,32 @@ window.AppHeader = {
       { icon: '🔑', label: '비밀번호 변경', action: openPw,       color: 'var(--text-primary)' },
     ]);
 
+    /* 레이어 바깥 클릭 시 닫기 (고정 오버레이는 헤더 z-index 안에 묶여 형제 요소·본문보다 아래로 가는 경우가 있음) */
+    let removeUserMenuOutside = null;
+    function unbindUserMenuOutside() {
+      if (removeUserMenuOutside) {
+        removeUserMenuOutside();
+        removeUserMenuOutside = null;
+      }
+    }
+    function bindUserMenuOutside() {
+      unbindUserMenuOutside();
+      const onPointerDown = (e) => {
+        if (!userMenuOpen.value) return;
+        const root = userMenuRoot.value;
+        if (root && !root.contains(e.target)) closeUserMenu();
+      };
+      document.addEventListener('pointerdown', onPointerDown, true);
+      removeUserMenuOutside = () => document.removeEventListener('pointerdown', onPointerDown, true);
+    }
+    watch(userMenuOpen, (open) => {
+      if (open) nextTick(() => bindUserMenuOutside());
+      else unbindUserMenuOutside();
+    });
+    onUnmounted(() => unbindUserMenuOutside());
+
     return {
+      userMenuRoot,
       userMenuOpen, toggleUserMenu, closeUserMenu, goMy, doLogout, menuItems,
       profileOpen, pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pwOpen, pw, openPw, savePw, IS,
@@ -121,11 +147,7 @@ window.AppHeader = {
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
     <button v-for="m in config.topMenu" :key="m.menuId" @click="navigate(m.menuId)"
       class="nav-link" :class="{active: page===m.menuId}">
-      <span v-if="m.menuId==='cart'" style="position:relative;display:inline-block;">
-        {{ m.menuName }}
-        <span v-if="cartCount>0" class="cart-badge">{{ cartCount > 99 ? '99+' : cartCount }}</span>
-      </span>
-      <span v-else>{{ m.menuName }}</span>
+      <span>{{ m.menuName }}</span>
     </button>
   </nav>
 
@@ -141,8 +163,8 @@ window.AppHeader = {
     </button>
 
     <!-- 로그인 상태 -->
-    <div v-else style="position:relative;">
-      <button @click="toggleUserMenu"
+    <div v-else ref="userMenuRoot" style="position:relative;">
+      <button type="button" @click="toggleUserMenu"
         style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;color:var(--text-primary);font-weight:600;">
         <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">
           {{ auth.user.name.charAt(0) }}
@@ -190,12 +212,24 @@ window.AppHeader = {
           </button>
         </div>
       </div>
-
-      <!-- 드롭다운 오버레이 -->
-      <div v-if="userMenuOpen" @click="closeUserMenu" style="position:fixed;inset:0;z-index:99;"></div>
     </div>
 
-    <!-- 테마 토글 (사용자명 오른쪽) -->
+    <!-- 장바구니: 아이콘 + 뱃지(개수), 로그인/유저 오른쪽 -->
+    <button type="button" @click="navigate('cart'); closeUserMenu()"
+      class="header-cart-link"
+      style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
+      :aria-label="cartCount > 0 ? ('장바구니, ' + (cartCount > 99 ? '99개 이상' : cartCount + '개') + ' 상품') : '장바구니, 비어 있음'"
+      title="장바구니">
+      <span class="header-cart-icon-wrap" style="position:relative;display:flex;align-items:center;justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--blue);">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span v-if="cartCount > 0" class="header-cart-badge">{{ cartCount > 99 ? '99+' : cartCount }}</span>
+      </span>
+    </button>
+
+    <!-- 테마 토글 (장바구니 오른쪽) -->
     <button class="theme-toggle" @click="toggleTheme" :title="theme==='light'?'다크 모드로 전환':'라이트 모드로 전환'">
       <span v-if="theme==='light'">🌙</span>
       <span v-else>☀️</span>

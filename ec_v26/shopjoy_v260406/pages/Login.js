@@ -11,7 +11,7 @@ window.Login = {
     const snsProvider = ref(null); // sns 회원가입 시 provider 저장
 
     /* ── 로그인 ── */
-    const form     = reactive({ email: 'user1@demo.com', password: '' });
+    const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
     const loginErr = ref('');
 
     const doLogin = async () => {

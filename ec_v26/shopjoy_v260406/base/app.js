@@ -275,7 +275,7 @@
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
     <app-sidebar
       :page="page" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
-      :config="config" :navigate="navigate" :cart-count="cartCount"
+      :config="config" :navigate="navigate" :auth="auth"
       @toggle-sidebar="sidebarOpen=!sidebarOpen" @close-mobile="closeMobileMenu"
     />
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
