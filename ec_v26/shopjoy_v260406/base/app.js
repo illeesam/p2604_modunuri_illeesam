@@ -161,7 +161,7 @@
 
     /* ── URL state ── */
     let restoring = true;
-    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'my'];
+    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'my', 'location', 'about'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = rawHash.includes('page=');
@@ -275,7 +275,7 @@
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
     <app-sidebar
       :page="page" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
-      :config="config" :navigate="navigate" :auth="auth"
+      :config="config" :navigate="navigate" :cart-count="cartCount" :auth="auth"
       @toggle-sidebar="sidebarOpen=!sidebarOpen" @close-mobile="closeMobileMenu"
     />
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
@@ -311,6 +311,14 @@
       />
       <faq
         v-else-if="page==='faq'"
+        :navigate="navigate" :config="config"
+      />
+      <location-page
+        v-else-if="page==='location'"
+        :navigate="navigate" :config="config"
+      />
+      <about-page
+        v-else-if="page==='about'"
         :navigate="navigate" :config="config"
       />
       <my
@@ -374,8 +382,10 @@
   .component('Order',   window.Order)
   .component('Contact', window.Contact)
   .component('Faq',     window.Faq)
-  .component('My',      window.My)
-  .component('Login',   window.Login)
+  .component('My',           window.My)
+  .component('Login',        window.Login)
+  .component('LocationPage', window.Location)
+  .component('AboutPage',    window.About)
   .use(pinia)
   .mount('#app');
 })();

@@ -37,7 +37,7 @@ window.Products = {
 
     /* ── 필터 상태 ── */
     const searchText    = ref('');
-    const filterOpen    = ref(true);
+    const filterOpen    = ref(false);
     const priceMin      = ref('');
     const priceMax      = ref('');
     const selColors     = ref(new Set());
@@ -185,6 +185,28 @@ window.Products = {
     <p class="section-subtitle">색상·사이즈를 선택해 나만의 스타일을 완성하세요.</p>
   </div>
 
+  <!-- ── 카테고리 탭 (최상위 독립 배치) ── -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+    <button
+      @click="selCats=new Set()"
+      style="padding:7px 18px;border-radius:24px;cursor:pointer;font-size:0.85rem;font-weight:700;transition:all 0.18s;"
+      :style="selCats.size===0
+        ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
+        : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
+      전체
+    </button>
+    <button v-for="cat in allCats" :key="cat.categoryId"
+      @click="toggleCat(cat.categoryId)"
+      style="padding:7px 18px;border-radius:24px;cursor:pointer;font-size:0.85rem;font-weight:700;transition:all 0.18s;"
+      :style="selCats.has(cat.categoryId)
+        ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
+        : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
+      {{ cat.categoryName }}
+      <span v-if="selCats.has(cat.categoryId)"
+        style="margin-left:4px;font-size:0.75rem;opacity:0.8;">✓</span>
+    </button>
+  </div>
+
   <!-- ── 검색 바 ── -->
   <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
     <div style="flex:1;position:relative;">
@@ -237,21 +259,6 @@ window.Products = {
             {{ r.label }}
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- 카테고리 -->
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">🗂️ 카테고리 <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span></div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        <button v-for="cat in allCats" :key="cat.categoryId"
-          @click="toggleCat(cat.categoryId)"
-          style="padding:5px 14px;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.15s;"
-          :style="selCats.has(cat.categoryId)
-            ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);'
-            : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
-          {{ cat.categoryName }}
-        </button>
       </div>
     </div>
 

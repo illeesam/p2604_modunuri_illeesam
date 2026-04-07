@@ -680,6 +680,16 @@ footer {
 [data-theme="dark"] .size-btn.selected { color: #1a0a10; }
 .size-btn.disabled { opacity: 0.35; cursor: not-allowed; }
 
+/* ── 마이페이지 주문 — 상품쿠폰 행 (화면/카드 분홍 바탕과 구분되는 중립 회색) ── */
+.my-order-product-coupon {
+  background: #e4e7ec;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+[data-theme="dark"] .my-order-product-coupon {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
 /* ── Cart Badge ── */
 .cart-badge {
   display: inline-flex;

@@ -41,7 +41,7 @@ window.My = {
     const statusColor = s => ({
       '주문완료': '#3b82f6', '결제완료': '#8b5cf6',
       '배송준비중': '#f59e0b', '배송중': '#f97316',
-      '배송완료': '#22c55e', '완료': '#6b7280', '취소됨': '#9ca3af'
+      '배송완료': '#22c55e', '완료': '#6b7280', '교환요청': '#f59e0b', '반품요청': '#f97316', '취소됨': '#9ca3af'
     }[s] || '#9ca3af');
 
     const flowIndex = s => ORDER_FLOW.findIndex(f => f.status === s);
@@ -54,6 +54,23 @@ window.My = {
       props.showToast('주문이 취소되었습니다.', 'success');
     };
 
+    const confirmPurchase = async orderId => {
+      const ok = await props.showConfirm('구매확정', '구매를 확정하시겠습니까?\n확정 후에는 교환/반품 신청이 어렵습니다.', 'warning');
+      if (!ok) return;
+      const o = orders.value.find(x => x.orderId === orderId);
+      if (o) { o.status = '완료'; }
+      props.showToast('구매가 확정되었습니다. 감사합니다! 🎉', 'success');
+    };
+
+    const requestExchange = async (orderId, type) => {
+      const label = type === 'exchange' ? '교환' : '반품';
+      const ok = await props.showConfirm(label + ' 신청', label + '을 신청하시겠습니까?\n고객센터에서 처리 방법을 안내드립니다.', 'warning');
+      if (!ok) return;
+      const o = orders.value.find(x => x.orderId === orderId);
+      if (o) { o.status = label + '요청'; }
+      props.showToast(label + ' 신청이 접수되었습니다. 고객센터에서 연락드리겠습니다.', 'success');
+    };
+
     const COURIER_URLS = {
       'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,
       '롯데택배':   no => `https://www.lotteglogis.com/open/tracking?invno=${no}`,
@@ -64,6 +81,12 @@ window.My = {
       if (!fn) { props.showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
       window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes,resizable=yes');
     };
+
+    const showOrderPayBreakdown = o =>
+      (o.shippingFee != null && o.shippingFee > 0) ||
+      (o.shippingCoupon && Number(o.shippingCoupon.discount) > 0) ||
+      Number(o.cashPaid) > 0 ||
+      Number(o.transferPaid) > 0;
 
     /* ── 쿠폰 ── */
     const coupons = ref([]);
@@ -121,6 +144,40 @@ window.My = {
     };
     const inquiryStatusColor = s => ({ '요청': '#3b82f6', '처리중': '#f97316', '답변완료': '#22c55e', '취소됨': '#9ca3af' }[s] || '#9ca3af');
 
+    /* ── 취소/반품/교환 (클레임) ── */
+    const claims = ref([]);
+    const claimPager = mkPager();
+    const claimFilter = ref('전체'); // 전체 | 취소 | 반품 | 교환
+    const CLAIM_FLOWS = {
+      '취소': ['취소요청', '취소처리중', '취소완료'],
+      '반품': ['반품요청', '수거예정', '수거완료', '환불처리중', '환불완료'],
+      '교환': ['교환요청', '수거예정', '수거완료', '상품준비중', '발송완료', '교환완료'],
+    };
+    const CLAIM_DONE = ['취소완료', '환불완료', '교환완료'];
+    const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#f97316', '교환': '#3b82f6' };
+    const CLAIM_STATUS_COLOR = s => ({
+      '취소요청':'#ef4444','취소처리중':'#f97316','취소완료':'#9ca3af',
+      '반품요청':'#ef4444','수거예정':'#f59e0b','수거완료':'#8b5cf6','환불처리중':'#f97316','환불완료':'#9ca3af',
+      '교환요청':'#3b82f6','상품준비중':'#f59e0b','발송완료':'#22c55e','교환완료':'#9ca3af',
+    }[s] || '#9ca3af');
+    const loadClaims = async () => {
+      if (claims.value.length) return;
+      try { const res = await window.axiosApi.get('my/claims.json'); claims.value = res.data; }
+      catch (e) { claims.value = []; }
+    };
+    const filteredClaims = computed(() =>
+      claimFilter.value === '전체' ? claims.value : claims.value.filter(c => c.type === claimFilter.value)
+    );
+    const openTracking2 = (courier, trackingNo) => {
+      const URLS = {
+        'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,
+        '롯데택배':   no => `https://www.lotteglogis.com/open/tracking?invno=${no}`,
+        '한진택배':   no => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${no}`,
+      };
+      const fn = URLS[courier];
+      if (fn) window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes');
+    };
+
     /* ── 채팅 ── */
     const chats = ref([]);
     const chatPager = mkPager();
@@ -135,6 +192,7 @@ window.My = {
     /* ── 탭 카운트 ── */
     const tabCounts = computed(() => ({
       orders:    orders.value.length,
+      claims:    claims.value.filter(c => !CLAIM_DONE.includes(c.status)).length,
       cart:      props.cartCount,
       coupons:   coupons.value.filter(c => !c.used).length,
       cash:      null,
@@ -143,17 +201,19 @@ window.My = {
     }));
 
     const TABS = [
-      { id: 'orders',    label: '주문',    icon: '📦' },
-      { id: 'cart',      label: '장바구니', icon: '🛒' },
-      { id: 'coupons',   label: '쿠폰',    icon: '🎟️' },
-      { id: 'cash',      label: '캐쉬',    icon: '💰' },
-      { id: 'inquiries', label: '문의',    icon: '📩' },
-      { id: 'chats',     label: '채팅',    icon: '💬' },
+      { id: 'orders',    label: '주문',           icon: '📦' },
+      { id: 'claims',    label: '취소/반품/교환',  icon: '↩️' },
+      { id: 'cart',      label: '장바구니',        icon: '🛒' },
+      { id: 'coupons',   label: '쿠폰',            icon: '🎟️' },
+      { id: 'cash',      label: '캐쉬',            icon: '💰' },
+      { id: 'inquiries', label: '문의',            icon: '📩' },
+      { id: 'chats',     label: '채팅',            icon: '💬' },
     ];
 
     /* ── 탭 전환 시 데이터 로드 ── */
     watch(tab, async t => {
       if (t === 'orders')    await loadOrders();
+      if (t === 'claims')    await loadClaims();
       if (t === 'coupons')   await loadCoupons();
       if (t === 'cash')      await loadCash();
       if (t === 'inquiries') await loadInquiries();
@@ -161,8 +221,8 @@ window.My = {
     });
 
     onMounted(async () => {
-      /* 주문 로드 + 나머지 카운트용 사전 로드 */
       await loadOrders();
+      loadClaims();
       loadCoupons();
       loadCash();
       loadInquiries();
@@ -179,7 +239,9 @@ window.My = {
       TABS, tab, tabCounts,
       ORDER_FLOW, orderStatusLabel, flowHelpOpen,
       CANCELABLE, SHOW_COURIER, flowIndex, statusColor,
-      orders, orderPager, cancelOrder, openTracking,
+      orders, orderPager, cancelOrder, confirmPurchase, requestExchange, openTracking, showOrderPayBreakdown,
+      claims, claimPager, claimFilter, filteredClaims,
+      CLAIM_FLOWS, CLAIM_DONE, CLAIM_TYPE_COLOR, CLAIM_STATUS_COLOR, openTracking2,
       coupons, couponPager, couponCode, addCoupon, discountLabel,
       cashBalance, cashHistory, cashPager, chargeAmount, addCash,
       inquiries, inquiryPager, expandedInquiry, cancelInquiry, inquiryStatusColor,
@@ -262,30 +324,74 @@ window.My = {
           <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ o.orderId }}</span>
           <span style="margin-left:10px;font-size:0.8rem;color:var(--text-muted);">{{ o.orderDate }}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <!-- 주문취소 버튼: 주문완료/결제완료 -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+          <!-- 주문취소: 주문완료/결제완료 -->
           <button v-if="CANCELABLE.includes(o.status)" @click="cancelOrder(o.orderId)"
             style="padding:5px 12px;border:1.5px solid #ef4444;border-radius:6px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem;font-weight:600;">
             주문취소
           </button>
-          <span style="font-size:0.78rem;font-weight:700;padding:5px 12px;border-radius:20px;color:#fff;"
+          <!-- 교환·반품·구매확정: 배송완료 -->
+          <template v-if="o.status==='배송완료'">
+            <button @click="requestExchange(o.orderId,'exchange')"
+              style="padding:5px 12px;border:1.5px solid #f59e0b;border-radius:6px;background:transparent;color:#f59e0b;cursor:pointer;font-size:0.78rem;font-weight:600;white-space:nowrap;">
+              교환신청
+            </button>
+            <button @click="requestExchange(o.orderId,'return')"
+              style="padding:5px 12px;border:1.5px solid #f97316;border-radius:6px;background:transparent;color:#f97316;cursor:pointer;font-size:0.78rem;font-weight:600;white-space:nowrap;">
+              반품신청
+            </button>
+            <button @click="confirmPurchase(o.orderId)"
+              style="padding:5px 12px;border:1.5px solid #22c55e;border-radius:6px;background:#22c55e;color:#fff;cursor:pointer;font-size:0.78rem;font-weight:700;white-space:nowrap;">
+              구매확정
+            </button>
+          </template>
+          <span style="font-size:0.78rem;font-weight:700;padding:5px 12px;border-radius:20px;color:#fff;white-space:nowrap;"
             :style="'background:' + statusColor(o.status)">{{ orderStatusLabel(o.status) }}</span>
         </div>
       </div>
 
       <!-- 상품 목록 -->
-      <div v-for="item in o.items" :key="item.productName" style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-        <span style="font-size:1.4rem;">{{ item.emoji }}</span>
-        <div style="flex:1;">
-          <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</div>
-          <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
+      <div v-for="(item, iix) in o.items" :key="iix + '-' + item.productName + '-' + (item.color||'')">
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+          <span style="font-size:1.4rem;">{{ item.emoji }}</span>
+          <div style="flex:1;">
+            <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
+          </div>
+          <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
         </div>
-        <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
+        <div v-if="item.productCoupon && item.productCoupon.discount" class="my-order-product-coupon"
+          style="margin:-2px 0 6px 46px;padding:6px 10px;border-radius:8px;font-size:0.74rem;line-height:1.45;">
+          <span style="font-weight:700;color:var(--text-primary);">🎟 상품쿠폰</span>
+          <span style="color:var(--text-secondary);margin-left:6px;">{{ item.productCoupon.name }}</span>
+          <span style="font-weight:800;color:var(--blue);margin-left:8px;">-{{ Number(item.productCoupon.discount).toLocaleString() }}원</span>
+        </div>
+      </div>
+
+      <!-- 배송·결제 내역 -->
+      <div v-if="showOrderPayBreakdown(o)" style="border-top:1px dashed var(--border);margin-top:10px;padding-top:12px;display:flex;flex-direction:column;gap:6px;">
+        <div v-if="o.shippingFee != null && o.shippingFee > 0" style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:var(--text-secondary);">
+          <span>배송비</span>
+          <span style="font-weight:600;color:var(--text-primary);">{{ o.shippingFee.toLocaleString() }}원</span>
+        </div>
+        <div v-if="o.shippingCoupon && Number(o.shippingCoupon.discount) > 0" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;font-size:0.8rem;">
+          <span style="color:var(--text-secondary);">🚚 배송비 쿠폰 · <span style="color:var(--text-primary);font-weight:600;">{{ o.shippingCoupon.name }}</span></span>
+          <span style="font-weight:800;color:var(--blue);flex-shrink:0;">-{{ Number(o.shippingCoupon.discount).toLocaleString() }}원</span>
+        </div>
+        <div v-if="Number(o.cashPaid) > 0" style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;">
+          <span style="color:var(--text-secondary);">💰 캐쉬 결제</span>
+          <span style="font-weight:700;color:var(--text-primary);">{{ Number(o.cashPaid).toLocaleString() }}원</span>
+        </div>
+        <div v-if="Number(o.transferPaid) > 0" style="display:flex;align-items:center;gap:10px;font-size:0.8rem;flex-wrap:wrap;">
+          <span style="color:var(--text-secondary);flex-shrink:0;">🏦 계좌이체</span>
+          <span v-if="o.status==='주문완료'" style="font-size:0.76rem;font-weight:700;color:#d97706;letter-spacing:-0.02em;">입금확인중...</span>
+          <span style="margin-left:auto;font-weight:700;color:var(--text-primary);flex-shrink:0;">{{ Number(o.transferPaid).toLocaleString() }}원</span>
+        </div>
       </div>
 
       <!-- 합계 + 택배 정보 -->
       <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
           <div v-if="SHOW_COURIER.includes(o.status) && o.courier" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span style="font-size:0.8rem;color:var(--text-muted);">🚚 {{ o.courier }}</span>
             <button @click="openTracking(o.courier, o.trackingNo)"
@@ -295,14 +401,142 @@ window.My = {
               {{ o.trackingNo }}
             </button>
           </div>
-          <div v-else style="flex:1;"></div>
-          <span style="font-size:0.9rem;font-weight:700;color:var(--text-primary);">
-            총 <span style="color:var(--blue);">{{ o.totalPrice.toLocaleString() }}원</span>
-          </span>
+          <div v-else style="flex:1;min-width:0;"></div>
+          <div style="text-align:right;">
+            <div v-if="showOrderPayBreakdown(o)" style="font-size:0.72rem;color:var(--text-muted);margin-bottom:2px;">총 결제금액</div>
+            <span style="font-size:0.9rem;font-weight:700;color:var(--text-primary);">
+              <span style="color:var(--blue);">{{ o.totalPrice.toLocaleString() }}원</span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
     <Pagination :total="orders.length" :pager="orderPager" />
+  </div>
+
+  <!-- ── 취소/반품/교환 탭 ── -->
+  <div v-else-if="tab==='claims'">
+
+    <!-- 유형 필터 -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <button v-for="f in ['전체','취소','반품','교환']" :key="f"
+        @click="claimFilter=f;claimPager.page=1"
+        style="padding:6px 16px;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.15s;"
+        :style="claimFilter===f
+          ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
+          : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
+        {{ f }}
+        <span v-if="f!=='전체'" style="margin-left:4px;font-size:0.75rem;opacity:0.8;">
+          ({{ claims.filter(c=>c.type===f).length }})
+        </span>
+        <span v-else style="margin-left:4px;font-size:0.75rem;opacity:0.8;">({{ claims.length }})</span>
+      </button>
+    </div>
+
+    <PagerHeader :total="filteredClaims.length" :pager="claimPager" />
+    <div v-if="!filteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+      해당 내역이 없습니다.
+    </div>
+
+    <div v-for="c in paginate(filteredClaims, claimPager)" :key="c.claimId"
+      style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
+
+      <!-- 카드 헤더 -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ c.claimId }}</span>
+          <span style="margin-left:8px;font-size:0.78rem;color:var(--text-muted);">주문: {{ c.orderId }}</span>
+          <div style="margin-top:4px;font-size:0.78rem;color:var(--text-muted);">
+            신청일: {{ c.requestDate }}
+            <span v-if="c.completeDate"> · 완료일: {{ c.completeDate }}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:0.78rem;font-weight:800;padding:4px 12px;border-radius:20px;color:#fff;"
+            :style="'background:' + CLAIM_TYPE_COLOR[c.type]">{{ c.type }}</span>
+          <span style="font-size:0.78rem;font-weight:700;padding:4px 12px;border-radius:20px;color:#fff;"
+            :style="'background:' + CLAIM_STATUS_COLOR(c.status)">{{ c.status }}</span>
+        </div>
+      </div>
+
+      <!-- 진행 흐름 바 -->
+      <div style="background:var(--bg-base);border-radius:8px;padding:12px 14px;margin-bottom:12px;overflow-x:auto;">
+        <div style="display:flex;align-items:center;min-width:320px;">
+          <template v-for="(step, si) in CLAIM_FLOWS[c.type]" :key="step">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+              <div style="width:10px;height:10px;border-radius:50%;margin-bottom:4px;"
+                :style="CLAIM_FLOWS[c.type].indexOf(c.status) >= si
+                  ? 'background:var(--blue);'
+                  : 'background:var(--border);'"></div>
+              <div style="font-size:0.65rem;text-align:center;white-space:nowrap;font-weight:600;"
+                :style="c.status === step
+                  ? 'color:var(--blue);font-weight:800;'
+                  : CLAIM_FLOWS[c.type].indexOf(c.status) > si
+                    ? 'color:var(--text-secondary);'
+                    : 'color:var(--text-muted);'">
+                {{ step }}
+              </div>
+            </div>
+            <div v-if="si < CLAIM_FLOWS[c.type].length-1"
+              style="height:2px;flex:1;margin-bottom:16px;"
+              :style="CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'background:var(--blue);' : 'background:var(--border);'"></div>
+          </template>
+        </div>
+      </div>
+
+      <!-- 상품 목록 -->
+      <div v-for="(item, ii) in c.items" :key="ii"
+        style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--border);">
+        <span style="font-size:1.4rem;">{{ item.emoji }}</span>
+        <div style="flex:1;">
+          <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
+        </div>
+        <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
+      </div>
+
+      <!-- 사유 + 교환 정보 -->
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:0.82rem;">
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <span style="color:var(--text-muted);flex-shrink:0;min-width:44px;">사유</span>
+          <span style="color:var(--text-primary);font-weight:600;">{{ c.reason }}</span>
+          <span v-if="c.reasonDetail" style="color:var(--text-secondary);">· {{ c.reasonDetail }}</span>
+        </div>
+        <!-- 교환 변경 정보 -->
+        <div v-if="c.exchangeSize || c.exchangeColor" style="display:flex;gap:8px;">
+          <span style="color:var(--text-muted);flex-shrink:0;min-width:44px;">교환</span>
+          <span style="color:var(--text-primary);">
+            <span v-if="c.exchangeSize">사이즈: {{ c.exchangeSize }}</span>
+            <span v-if="c.exchangeColor">색상: {{ c.exchangeColor }}</span>
+          </span>
+        </div>
+        <!-- 수거 택배 -->
+        <div v-if="c.courier" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span style="color:var(--text-muted);flex-shrink:0;min-width:44px;">수거</span>
+          <span style="color:var(--text-primary);">{{ c.courier }}</span>
+          <button v-if="c.trackingNo" @click="openTracking2(c.courier, c.trackingNo)"
+            style="padding:2px 8px;border:1.5px solid var(--blue);border-radius:14px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.75rem;font-weight:700;">
+            {{ c.trackingNo }}
+          </button>
+          <span v-if="c.pickupDate" style="color:var(--text-muted);font-size:0.78rem;">수거예정: {{ c.pickupDate }}</span>
+        </div>
+        <!-- 교환발송 택배 -->
+        <div v-if="c.exchangeCourier" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span style="color:var(--text-muted);flex-shrink:0;min-width:44px;">발송</span>
+          <span style="color:var(--text-primary);">{{ c.exchangeCourier }}</span>
+          <button v-if="c.exchangeTrackingNo" @click="openTracking2(c.exchangeCourier, c.exchangeTrackingNo)"
+            style="padding:2px 8px;border:1.5px solid #22c55e;border-radius:14px;background:transparent;color:#22c55e;cursor:pointer;font-size:0.75rem;font-weight:700;">
+            {{ c.exchangeTrackingNo }}
+          </button>
+        </div>
+        <!-- 환불 금액 -->
+        <div v-if="c.refundAmount" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:8px;border-top:1px solid var(--border);">
+          <span style="color:var(--text-muted);">{{ c.type === '반품' ? '환불 예정금액' : '취소 환불금액' }}</span>
+          <span style="font-size:0.95rem;font-weight:800;color:var(--blue);">{{ c.refundAmount.toLocaleString() }}원</span>
+        </div>
+      </div>
+    </div>
+    <Pagination :total="filteredClaims.length" :pager="claimPager" />
   </div>
 
   <!-- ── 장바구니 탭 ── -->
