@@ -139,9 +139,9 @@ window.SITE_CONFIG = {
       "solutionName": "홈페이지 & CMS",
       "desc": "기업 전사적 자원 관리 통합 플랫폼",
       "tags": [
-        "ERP",
-        "HR",
-        "회계"
+        "homepage",
+        "CMS",
+        "blog"
       ],
       "badge": "인기"
     },

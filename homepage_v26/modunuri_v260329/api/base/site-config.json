@@ -122,30 +122,18 @@
   "solutions": [
     {
       "solutionId": 1,
-      "emoji": "🤖",
-      "solutionName": "AI 바이브",
-      "desc": "머신러닝 기반 데이터 분석 및 예측 솔루션",
-      "tags": [
-        "AI",
-        "ML",
-        "데이터"
-      ],
-      "badge": "NEW"
-    },
-    {
-      "solutionId": 2,
       "emoji": "🏢",
       "solutionName": "홈페이지 & CMS",
       "desc": "기업 전사적 자원 관리 통합 플랫폼",
       "tags": [
-        "ERP",
-        "HR",
-        "회계"
+        "homepage",
+        "CMS",
+        "blog"
       ],
       "badge": "인기"
     },
     {
-      "solutionId": 3,
+      "solutionId": 2,
       "emoji": "🛒",
       "solutionName": "이커머스 플랫폼",
       "desc": "맞춤형 온라인 쇼핑몰 구축 솔루션",
@@ -153,6 +141,18 @@
         "쇼핑몰",
         "결제",
         "배송"
+      ],
+      "badge": ""
+    },
+    {
+      "solutionId": 3,
+      "emoji": "📈",
+      "solutionName": "시각화",
+      "desc": "데이터를 직관적인 차트·대시보드로 표현하는 시각화 솔루션",
+      "tags": [
+        "차트",
+        "대시보드",
+        "데이터시각화"
       ],
       "badge": ""
     },
@@ -170,15 +170,15 @@
     },
     {
       "solutionId": 5,
-      "emoji": "📈",
-      "solutionName": "시각화",
-      "desc": "데이터를 직관적인 차트·대시보드로 표현하는 시각화 솔루션",
+      "emoji": "🤖",
+      "solutionName": "AI 바이브",
+      "desc": "머신러닝 기반 데이터 분석 및 예측 솔루션",
       "tags": [
-        "차트",
-        "대시보드",
-        "데이터시각화"
+        "AI",
+        "ML",
+        "데이터"
       ],
-      "badge": ""
+      "badge": "NEW"
     },
     {
       "solutionId": 6,
