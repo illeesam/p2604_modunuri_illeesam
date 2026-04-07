@@ -80,8 +80,8 @@
   };
 
   /* ── 회원가입 ── */
-  const signup = (name, email, phone) => {
-    const user = { userId: 'u_' + Date.now(), email, name, phone };
+  const signup = (name, email, phone, extra = {}) => {
+    const user = { userId: 'u_' + Date.now(), email, name, phone, ...extra };
     _store.setSession(user, _mkToken());
     _sync();
     return { ok: true };

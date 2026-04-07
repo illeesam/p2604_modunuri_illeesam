@@ -5,14 +5,17 @@ window.My = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
-    const TABS = [
-      { id: 'orders',    label: '주문',    icon: '📦' },
-      { id: 'cart',      label: '장바구니', icon: '🛒' },
-      { id: 'coupons',   label: '쿠폰',    icon: '🎟️' },
-      { id: 'cash',      label: '캐쉬',    icon: '💰' },
-      { id: 'inquiries', label: '문의',    icon: '📩' },
-      { id: 'chats',     label: '채팅',    icon: '💬' },
+    /* ── 주문 상태 흐름 ── */
+    const ORDER_FLOW = [
+      { status: '주문완료',   icon: '📋' },
+      { status: '결제완료',   icon: '💳' },
+      { status: '배송준비중', icon: '📦' },
+      { status: '배송중',     icon: '🚚' },
+      { status: '배송완료',   icon: '✅' },
+      { status: '완료',       icon: '🏁' },
     ];
+    const CANCELABLE   = ['주문완료', '결제완료'];
+    const SHOW_COURIER = ['배송준비중', '배송중', '배송완료', '완료'];
 
     const tab = ref('orders');
 
@@ -23,23 +26,42 @@ window.My = {
       return list.slice(start, start + pager.size);
     };
     const totalPages = (list, pager) => Math.max(1, Math.ceil(list.length / pager.size));
-    const pageRange = (total) => {
-      const r = [];
-      for (let i = 1; i <= total; i++) r.push(i);
-      return r;
-    };
+    const pageRange = (total) => { const r=[]; for(let i=1;i<=total;i++) r.push(i); return r; };
 
     /* ── 주문 ── */
     const orders = ref([]);
     const orderPager = mkPager();
     const loadOrders = async () => {
       if (orders.value.length) return;
-      try {
-        const res = await window.axiosApi.get('my/orders.json');
-        orders.value = res.data;
-      } catch (e) { orders.value = []; }
+      try { const res = await window.axiosApi.get('my/orders.json'); orders.value = res.data; }
+      catch (e) { orders.value = []; }
     };
-    const statusColor = s => ({ '주문완료': '#3b82f6', '배송중': '#f97316', '배송완료': '#22c55e', '취소됨': '#9ca3af' }[s] || '#9ca3af');
+    const statusColor = s => ({
+      '주문완료': '#3b82f6', '결제완료': '#8b5cf6',
+      '배송준비중': '#f59e0b', '배송중': '#f97316',
+      '배송완료': '#22c55e', '완료': '#6b7280', '취소됨': '#9ca3af'
+    }[s] || '#9ca3af');
+
+    const flowIndex = s => ORDER_FLOW.findIndex(f => f.status === s);
+
+    const cancelOrder = async orderId => {
+      const ok = await props.showConfirm('주문 취소', '이 주문을 취소하시겠습니까?', 'warning');
+      if (!ok) return;
+      const o = orders.value.find(x => x.orderId === orderId);
+      if (o) { o.status = '취소됨'; }
+      props.showToast('주문이 취소되었습니다.', 'success');
+    };
+
+    const COURIER_URLS = {
+      'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,
+      '롯데택배':   no => `https://www.lotteglogis.com/open/tracking?invno=${no}`,
+      '한진택배':   no => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${no}`,
+    };
+    const openTracking = (courier, trackingNo) => {
+      const fn = COURIER_URLS[courier];
+      if (!fn) { props.showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
+      window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes,resizable=yes');
+    };
 
     /* ── 쿠폰 ── */
     const coupons = ref([]);
@@ -47,24 +69,15 @@ window.My = {
     const couponCode = ref('');
     const loadCoupons = async () => {
       if (coupons.value.length) return;
-      try {
-        const res = await window.axiosApi.get('my/coupons.json');
-        coupons.value = res.data;
-      } catch (e) { coupons.value = []; }
+      try { const res = await window.axiosApi.get('my/coupons.json'); coupons.value = res.data; }
+      catch (e) { coupons.value = []; }
     };
     const addCoupon = () => {
       const code = couponCode.value.trim().toUpperCase();
       if (!code) { props.showToast('쿠폰 코드를 입력하세요.', 'error'); return; }
       if (coupons.value.find(c => c.code === code)) { props.showToast('이미 등록된 쿠폰입니다.', 'error'); return; }
-      const newCoupon = {
-        couponId: Date.now(), code,
-        name: '추가 쿠폰 (' + code + ')',
-        discountType: 'amount', discountValue: 3000,
-        minOrder: 30000, expiry: '2026-12-31', used: false
-      };
-      coupons.value.unshift(newCoupon);
-      couponCode.value = '';
-      couponPager.page = 1;
+      coupons.value.unshift({ couponId: Date.now(), code, name: '추가 쿠폰 (' + code + ')', discountType: 'amount', discountValue: 3000, minOrder: 30000, expiry: '2026-12-31', used: false });
+      couponCode.value = ''; couponPager.page = 1;
       props.showToast('쿠폰이 등록되었습니다!', 'success');
     };
     const discountLabel = c => c.discountType === 'rate' ? c.discountValue + '% 할인' : c.discountType === 'shipping' ? '무료배송' : c.discountValue.toLocaleString() + '원 할인';
@@ -76,24 +89,15 @@ window.My = {
     const chargeAmount = ref('');
     const loadCash = async () => {
       if (cashHistory.value.length) return;
-      try {
-        const res = await window.axiosApi.get('my/cash.json');
-        cashBalance.value = res.data.balance;
-        cashHistory.value = res.data.history;
-      } catch (e) {}
+      try { const res = await window.axiosApi.get('my/cash.json'); cashBalance.value = res.data.balance; cashHistory.value = res.data.history; }
+      catch (e) {}
     };
     const addCash = () => {
       const amount = parseInt(String(chargeAmount.value).replace(/,/g, ''), 10);
       if (!amount || amount < 1000) { props.showToast('최소 1,000원 이상 충전 가능합니다.', 'error'); return; }
       cashBalance.value += amount;
-      cashHistory.value.unshift({
-        cashId: Date.now(),
-        date: new Date().toISOString().slice(0, 10),
-        type: '충전', amount, desc: '직접 충전',
-        balance: cashBalance.value
-      });
-      chargeAmount.value = '';
-      cashPager.page = 1;
+      cashHistory.value.unshift({ cashId: Date.now(), date: new Date().toISOString().slice(0, 10), type: '충전', amount, desc: '직접 충전', balance: cashBalance.value });
+      chargeAmount.value = ''; cashPager.page = 1;
       props.showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
     };
 
@@ -103,10 +107,8 @@ window.My = {
     const expandedInquiry = ref(null);
     const loadInquiries = async () => {
       if (inquiries.value.length) return;
-      try {
-        const res = await window.axiosApi.get('my/inquiries.json');
-        inquiries.value = res.data;
-      } catch (e) { inquiries.value = []; }
+      try { const res = await window.axiosApi.get('my/inquiries.json'); inquiries.value = res.data; }
+      catch (e) { inquiries.value = []; }
     };
     const cancelInquiry = async id => {
       const ok = await props.showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');
@@ -123,15 +125,29 @@ window.My = {
     const expandedChat = ref(null);
     const loadChats = async () => {
       if (chats.value.length) return;
-      try {
-        const res = await window.axiosApi.get('my/chats.json');
-        chats.value = res.data;
-      } catch (e) { chats.value = []; }
+      try { const res = await window.axiosApi.get('my/chats.json'); chats.value = res.data; }
+      catch (e) { chats.value = []; }
     };
-    const openChat = chat => {
-      chat.unread = 0;
-      expandedChat.value = expandedChat.value === chat.chatId ? null : chat.chatId;
-    };
+    const openChat = chat => { chat.unread = 0; expandedChat.value = expandedChat.value === chat.chatId ? null : chat.chatId; };
+
+    /* ── 탭 카운트 ── */
+    const tabCounts = computed(() => ({
+      orders:    orders.value.length,
+      cart:      props.cartCount,
+      coupons:   coupons.value.filter(c => !c.used).length,
+      cash:      null,
+      inquiries: inquiries.value.filter(q => q.status === '요청' || q.status === '처리중').length,
+      chats:     chats.value.reduce((s, c) => s + (c.unread || 0), 0),
+    }));
+
+    const TABS = [
+      { id: 'orders',    label: '주문',    icon: '📦' },
+      { id: 'cart',      label: '장바구니', icon: '🛒' },
+      { id: 'coupons',   label: '쿠폰',    icon: '🎟️' },
+      { id: 'cash',      label: '캐쉬',    icon: '💰' },
+      { id: 'inquiries', label: '문의',    icon: '📩' },
+      { id: 'chats',     label: '채팅',    icon: '💬' },
+    ];
 
     /* ── 탭 전환 시 데이터 로드 ── */
     watch(tab, async t => {
@@ -142,7 +158,14 @@ window.My = {
       if (t === 'chats')     await loadChats();
     });
 
-    onMounted(() => loadOrders());
+    onMounted(async () => {
+      /* 주문 로드 + 나머지 카운트용 사전 로드 */
+      await loadOrders();
+      loadCoupons();
+      loadCash();
+      loadInquiries();
+      loadChats();
+    });
 
     /* ── 장바구니 금액 ── */
     const cartTotal = computed(() => props.cart.reduce((s, i) => {
@@ -151,8 +174,9 @@ window.My = {
     }, 0));
 
     return {
-      TABS, tab,
-      orders, orderPager, statusColor,
+      TABS, tab, tabCounts,
+      ORDER_FLOW, CANCELABLE, SHOW_COURIER, flowIndex, statusColor,
+      orders, orderPager, cancelOrder, openTracking,
       coupons, couponPager, couponCode, addCoupon, discountLabel,
       cashBalance, cashHistory, cashPager, chargeAmount, addCash,
       inquiries, inquiryPager, expandedInquiry, cancelInquiry, inquiryStatusColor,
@@ -166,36 +190,81 @@ window.My = {
 
   <!-- 헤더 -->
   <div style="margin-bottom:24px;">
-    <div style="font-size:0.8rem;color:var(--text-muted);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">마이페이지</div>
-    <h1 style="font-size:1.8rem;font-weight:900;color:var(--text-primary);margin-top:4px;">내 계정</h1>
+    <div style="font-size:0.8rem;color:var(--text-muted);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">My Account</div>
+    <h1 style="font-size:1.8rem;font-weight:900;color:var(--text-primary);margin-top:4px;">마이페이지</h1>
     <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">주문, 쿠폰, 캐쉬, 문의를 한곳에서 관리하세요</p>
   </div>
 
   <!-- 탭 바 -->
-  <div style="display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:24px;overflow-x:auto;scrollbar-width:none;">
+  <div style="display:flex;gap:4px;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:6px;">
     <button v-for="t in TABS" :key="t.id" @click="tab=t.id"
-      style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:0.88rem;font-weight:600;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;"
-      :style="tab===t.id ? 'color:var(--blue);border-bottom-color:var(--blue);' : 'color:var(--text-muted);'">
-      {{ t.icon }} {{ t.label }}
-      <span v-if="t.id==='cart' && cartCount>0"
-        style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--blue);color:#fff;border-radius:50%;font-size:0.7rem;margin-left:4px;">{{ cartCount }}</span>
+      style="padding:8px 14px;border:none;cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;border-radius:8px;transition:all 0.2s;display:flex;align-items:center;gap:5px;"
+      :style="tab===t.id
+        ? 'background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,0.4);'
+        : 'background:transparent;color:var(--text-muted);'">
+      <span>{{ t.icon }}</span>
+      <span>{{ t.label }}</span>
+      <span v-if="tabCounts[t.id] > 0"
+        style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:0.7rem;"
+        :style="tab===t.id ? 'background:rgba(255,255,255,0.3);color:#fff;' : 'background:var(--blue);color:#fff;'">
+        {{ tabCounts[t.id] }}
+      </span>
     </button>
   </div>
 
   <!-- ── 주문 탭 ── -->
   <div v-if="tab==='orders'">
+
+    <!-- 주문 상태 흐름 차트 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;overflow-x:auto;">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:14px;letter-spacing:0.05em;">주문 처리 흐름</div>
+      <div style="display:flex;align-items:center;min-width:540px;">
+        <template v-for="(step, si) in ORDER_FLOW" :key="step.status">
+          <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+            <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:6px;transition:all 0.2s;"
+              :style="orders.filter(o=>o.status===step.status).length>0
+                ? 'background:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.25);'
+                : 'background:var(--bg-base);border:2px solid var(--border);'">
+              {{ step.icon }}
+            </div>
+            <div style="font-size:0.72rem;font-weight:600;text-align:center;white-space:nowrap;"
+              :style="orders.filter(o=>o.status===step.status).length>0 ? 'color:var(--blue);' : 'color:var(--text-muted);'">
+              {{ step.status }}
+            </div>
+            <div v-if="orders.filter(o=>o.status===step.status).length>0"
+              style="font-size:0.68rem;font-weight:700;color:var(--blue);margin-top:2px;">
+              {{ orders.filter(o=>o.status===step.status).length }}건
+            </div>
+          </div>
+          <div v-if="si < ORDER_FLOW.length-1"
+            style="font-size:1rem;color:var(--border);flex-shrink:0;margin:0 2px;padding-bottom:20px;">›</div>
+        </template>
+      </div>
+    </div>
+
     <PagerHeader :total="orders.length" :pager="orderPager" />
     <div v-if="!orders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">주문 내역이 없습니다.</div>
     <div v-for="o in paginate(orders, orderPager)" :key="o.orderId"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
+
+      <!-- 주문 헤더 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
           <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ o.orderId }}</span>
           <span style="margin-left:10px;font-size:0.8rem;color:var(--text-muted);">{{ o.orderDate }}</span>
         </div>
-        <span style="font-size:0.8rem;font-weight:700;padding:4px 10px;border-radius:20px;color:#fff;"
-          :style="'background:' + statusColor(o.status)">{{ o.status }}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <!-- 주문취소 버튼: 주문완료/결제완료 -->
+          <button v-if="CANCELABLE.includes(o.status)" @click="cancelOrder(o.orderId)"
+            style="padding:5px 12px;border:1.5px solid #ef4444;border-radius:6px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem;font-weight:600;">
+            주문취소
+          </button>
+          <span style="font-size:0.78rem;font-weight:700;padding:5px 12px;border-radius:20px;color:#fff;"
+            :style="'background:' + statusColor(o.status)">{{ o.status }}</span>
+        </div>
       </div>
+
+      <!-- 상품 목록 -->
       <div v-for="item in o.items" :key="item.productName" style="display:flex;align-items:center;gap:10px;padding:6px 0;">
         <span style="font-size:1.4rem;">{{ item.emoji }}</span>
         <div style="flex:1;">
@@ -204,8 +273,24 @@ window.My = {
         </div>
         <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
       </div>
-      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:flex-end;">
-        <span style="font-size:0.9rem;font-weight:700;color:var(--text-primary);">총 <span style="color:var(--blue);">{{ o.totalPrice.toLocaleString() }}원</span></span>
+
+      <!-- 합계 + 택배 정보 -->
+      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div v-if="SHOW_COURIER.includes(o.status) && o.courier" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:0.8rem;color:var(--text-muted);">🚚 {{ o.courier }}</span>
+            <button @click="openTracking(o.courier, o.trackingNo)"
+              style="padding:3px 10px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.78rem;font-weight:700;transition:all 0.15s;"
+              onmouseover="this.style.background='var(--blue)';this.style.color='#fff';"
+              onmouseout="this.style.background='transparent';this.style.color='var(--blue)';">
+              {{ o.trackingNo }}
+            </button>
+          </div>
+          <div v-else style="flex:1;"></div>
+          <span style="font-size:0.9rem;font-weight:700;color:var(--text-primary);">
+            총 <span style="color:var(--blue);">{{ o.totalPrice.toLocaleString() }}원</span>
+          </span>
+        </div>
       </div>
     </div>
     <Pagination :total="orders.length" :pager="orderPager" />
@@ -242,13 +327,11 @@ window.My = {
 
   <!-- ── 쿠폰 탭 ── -->
   <div v-else-if="tab==='coupons'">
-    <!-- 쿠폰 추가 -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
       <input v-model="couponCode" type="text" placeholder="쿠폰 코드 입력 (예: SPRING5000)" @keyup.enter="addCoupon"
         style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;text-transform:uppercase;">
       <button @click="addCoupon" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">쿠폰 등록</button>
     </div>
-
     <PagerHeader :total="coupons.length" :pager="couponPager" />
     <div v-if="!coupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">보유 쿠폰이 없습니다.</div>
     <div v-for="c in paginate(coupons, couponPager)" :key="c.couponId"
@@ -269,7 +352,6 @@ window.My = {
 
   <!-- ── 캐쉬 탭 ── -->
   <div v-else-if="tab==='cash'">
-    <!-- 잔액 + 충전 -->
     <div style="background:linear-gradient(135deg,var(--blue),var(--green));border-radius:var(--radius);padding:24px;margin-bottom:20px;color:#fff;">
       <div style="font-size:0.85rem;font-weight:600;opacity:0.85;">보유 캐쉬</div>
       <div style="font-size:2.2rem;font-weight:900;margin-top:4px;">{{ cashBalance.toLocaleString() }}<span style="font-size:1rem;margin-left:4px;">원</span></div>
@@ -279,13 +361,12 @@ window.My = {
         style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;">
       <button @click="addCash" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">충전하기</button>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
       <button v-for="amt in [5000,10000,30000,50000]" :key="amt" @click="chargeAmount=amt"
         style="padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
         +{{ amt.toLocaleString() }}원
       </button>
     </div>
-
     <PagerHeader :total="cashHistory.length" :pager="cashPager" />
     <div v-if="!cashHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">캐쉬 내역이 없습니다.</div>
     <div v-for="h in paginate(cashHistory, cashPager)" :key="h.cashId"
@@ -326,11 +407,8 @@ window.My = {
         <button v-if="q.status==='요청'" @click="cancelInquiry(q.inquiryId)"
           style="padding:6px 14px;border:1.5px solid #ef4444;border-radius:6px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.8rem;font-weight:600;white-space:nowrap;">취소</button>
       </div>
-      <!-- 상세 -->
       <div v-if="expandedInquiry===q.inquiryId" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
-        <div style="background:var(--bg-base);border-radius:6px;padding:12px;font-size:0.85rem;color:var(--text-secondary);margin-bottom:10px;">
-          {{ q.content }}
-        </div>
+        <div style="background:var(--bg-base);border-radius:6px;padding:12px;font-size:0.85rem;color:var(--text-secondary);margin-bottom:10px;">{{ q.content }}</div>
         <div v-if="q.answer" style="background:var(--blue-dim);border-radius:6px;padding:12px;font-size:0.85rem;color:var(--text-primary);">
           <span style="font-size:0.78rem;font-weight:700;color:var(--blue);display:block;margin-bottom:4px;">📩 답변</span>
           {{ q.answer }}
@@ -359,7 +437,6 @@ window.My = {
         </div>
         <div style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0;">{{ c.date }}</div>
       </div>
-      <!-- 메시지 목록 -->
       <div v-if="expandedChat===c.chatId" style="padding:0 16px 16px;border-top:1px solid var(--border);">
         <div v-for="(msg, mi) in c.messages" :key="mi"
           style="display:flex;margin-top:10px;"

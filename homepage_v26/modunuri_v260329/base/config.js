@@ -124,7 +124,7 @@ window.SITE_CONFIG = {
     {
       "solutionId": 1,
       "emoji": "🤖",
-      "solutionName": "AI 분석 엔진",
+      "solutionName": "AI 바이브",
       "desc": "머신러닝 기반 데이터 분석 및 예측 솔루션",
       "tags": [
         "AI",
@@ -136,7 +136,7 @@ window.SITE_CONFIG = {
     {
       "solutionId": 2,
       "emoji": "🏢",
-      "solutionName": "ERP 시스템",
+      "solutionName": "홈페이지 & CMS",
       "desc": "기업 전사적 자원 관리 통합 플랫폼",
       "tags": [
         "ERP",
@@ -197,7 +197,7 @@ window.SITE_CONFIG = {
   "categorys": [
     {
       "categoryId": "analytics",
-      "categoryName": "분석"
+      "categoryName": "시각화"
     },
     {
       "categoryId": "collaboration",
@@ -221,7 +221,7 @@ window.SITE_CONFIG = {
     },
     {
       "categoryId": "purchase",
-      "categoryName": "판매"
+      "categoryName": "e커머스"
     },
     {
       "categoryId": "homepage",
@@ -414,14 +414,14 @@ window.SITE_CONFIG = {
     {
       "codeId": 1,
       "codeGrp": "modunuri_contact_service",
-      "codeValue": "AI 분석 엔진",
-      "codeLabel": "AI 분석 엔진"
+      "codeValue": "AI 바이브",
+      "codeLabel": "AI 바이브"
     },
     {
       "codeId": 2,
       "codeGrp": "modunuri_contact_service",
-      "codeValue": "ERP 시스템",
-      "codeLabel": "ERP 시스템"
+      "codeValue": "홈페이지 & CMS",
+      "codeLabel": "홈페이지 & CMS"
     },
     {
       "codeId": 3,
