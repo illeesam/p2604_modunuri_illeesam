@@ -529,7 +529,9 @@
       navigate('booking');
     };
 
-    const partyroom = {
+    /* inject된 자식에서 partyroom.displayedRooms 등 ref/computed가 템플릿에서
+       자동 unwrap 되도록 reactive()로 감쌉니다. (plain 객체 + 중첩 Ref → v-for 빈 화면) */
+    const partyroom = reactive({
       theme, toggleTheme,
       page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
       toast, showToast,
@@ -553,7 +555,7 @@
       toggleFaqAt,
       reserveThisRoom,
       config: window.SITE_CONFIG,
-    };
+    });
     provide('partyroom', partyroom);
 
     return {

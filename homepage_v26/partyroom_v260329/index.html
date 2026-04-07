@@ -95,7 +95,7 @@
     <aside
       id="sidebar"
       :class="{ collapsed: !sidebarOpen, open: mobileOpen }"
-      style="display:flex;flex-direction:column;min-height:100%;overflow-y:auto;"
+      style="display:flex;flex-direction:column;min-height:0;align-self:stretch;overflow:hidden;"
       @click.stop
     >
       <!-- Logo area inside sidebar -->
@@ -107,7 +107,7 @@
       </div>
 
       <!-- Sidebar menu groups -->
-      <nav style="padding:8px 8px;flex:1;">
+      <nav class="sidebar-inner" style="padding:8px 8px;flex:1;min-height:0;overflow-y:auto;">
         <template v-for="section in config.sidebarMenu" :key="section.section">
           <div class="sidebar-section-label" v-show="sidebarOpen || mobileOpen">
             {{ section.section }}
@@ -119,9 +119,10 @@
             class="sidebar-link"
             :class="{ active: page === item.menuId }"
             @click.stop="navigate(item.menuId, { replace: true })"
-            :title="item.menuName"
+            :data-tip="item.menuName"
+            :aria-label="item.menuName"
           >
-            <span style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
+            <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
             <span v-show="sidebarOpen || mobileOpen" style="font-size:0.85rem;">{{ item.menuName }}</span>
           </button>
           <div class="gold-divider" style="margin:6px 8px;"></div>

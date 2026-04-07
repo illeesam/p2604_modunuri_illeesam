@@ -7,18 +7,20 @@
     template: `
 <div class="mobile-overlay" :class="{ active: anynuri.mobileOpen }" @click="anynuri.closeMobileMenu"></div>
 
-<aside id="sidebar" :class="{ collapsed: !anynuri.sidebarOpen, open: anynuri.mobileOpen }" @click.stop>
+<aside id="sidebar" class="flex flex-col min-h-0" :class="{ collapsed: !anynuri.sidebarOpen, open: anynuri.mobileOpen }" @click.stop>
         <div style="height:48px;display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--border);flex-shrink:0">
           <span v-if="anynuri.sidebarOpen" class="text-xs font-bold uppercase tracking-widest" style="color:var(--text-muted)">메뉴</span>
           <span v-else class="text-xs" style="color:var(--text-muted)">≡</span>
         </div>
 
-        <nav style="flex:1;overflow-y:auto;padding:0.75rem 0.5rem">
+        <nav class="sidebar-inner flex-1 min-h-0 overflow-y-auto" style="padding:0.75rem 0.5rem">
           <button type="button" v-for="m in anynuri.config.menus" :key="m.menuId"
             @click.stop="anynuri.navigate(m.menuId, { replace: true })"
             class="sidebar-link w-full"
-            :class="{ active: anynuri.page===m.menuId }">
-            <span class="text-base flex-shrink-0">{{ m.icon }}</span>
+            :class="{ active: anynuri.page===m.menuId }"
+            :data-tip="m.menuName"
+            :aria-label="m.menuName">
+            <span class="sidebar-link-icon text-base flex-shrink-0">{{ m.icon }}</span>
             <span v-if="anynuri.sidebarOpen" class="truncate">{{ m.menuName }}</span>
           </button>
         </nav>

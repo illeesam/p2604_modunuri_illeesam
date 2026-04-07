@@ -170,11 +170,6 @@
           </div>
         </div>
       </div>
-      <style>
-        @media (max-width: 680px) {
-          .booking-layout { grid-template-columns: 1fr !important; }
-        }
-      </style>
     `,
   };
 })(window);

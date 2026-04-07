@@ -59,13 +59,13 @@
 
     <app-header></app-header>
 
-    <!-- Body -->
-    <div style="flex:1;display:flex;overflow:hidden;position:relative">
+    <!-- Body (min-height:0 → flex 열에서 본문 높이 붕괴 방지) -->
+    <div class="home-body-row" style="flex:1;min-height:0;display:flex;overflow:hidden;position:relative">
 
       <app-sidebar></app-sidebar>
 
       <!-- Main -->
-      <div class="layout-main" style="flex:1;overflow-y:auto;min-width:0">
+      <div class="layout-main home-main" style="flex:1;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto">
 
         <!-- HTML은 커스텀 태그를 self-close 하지 않음; /> 만으로는 형제가 아니라 중첩으로 파싱되어 본문이 사라짐 -->
         <page-home v-show="page==='home'"></page-home>
@@ -94,9 +94,9 @@
 <script src="pages/Blog.js"></script>
 <script src="pages/BlogDetail.js"></script>
 <script src="pages/Contact.js"></script>
-<script src="layout/AppHeader.js"></script>
-<script src="layout/AppSidebar.js"></script>
-<script src="layout/AppFooter.js"></script>
+<script src="layout/LayoutHeader.js"></script>
+<script src="layout/LayoutSidebar.js"></script>
+<script src="layout/LayoutFooter.js"></script>
 <script src="base/app.js"></script>
 </body>
 </html>

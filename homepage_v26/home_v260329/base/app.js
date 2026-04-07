@@ -21,16 +21,16 @@
 
   createApp({
   components: {
-    AppHeader: L.AppHeader,
-    AppSidebar: L.AppSidebar,
-    AppFooter: L.AppFooter,
-    PageHome: P.PageHome,
-    PageAbout: P.PageAbout,
-    PageServices: P.PageServices,
-    PagePortfolio: P.PagePortfolio,
-    PageBlog: P.PageBlog,
-    PageBlogDetail: P.PageBlogDetail,
-    PageContact: P.PageContact,
+    AppHeader: L.LayoutHeader,
+    AppSidebar: L.LayoutSidebar,
+    AppFooter: L.LayoutFooter,
+    PageHome: P.Home,
+    PageAbout: P.About,
+    PageServices: P.Services,
+    PagePortfolio: P.Portfolio,
+    PageBlog: P.Blog,
+    PageBlogDetail: P.BlogDetail,
+    PageContact: P.Contact,
   },
   setup() {
     /* ── Theme ── */

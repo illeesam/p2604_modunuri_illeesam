@@ -167,6 +167,69 @@ body {
   border-left: 2px solid var(--blue);
 }
 
+/* 데스크톱 접힘(폭 56px): 아이콘 가운데 + 왼쪽 보더 제거로 시각적 밀림 방지 */
+@media (min-width: 1024px) {
+  #sidebar.collapsed .sidebar-inner {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  #sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    gap: 0;
+    padding: 10px 4px;
+    text-align: center;
+    border-left: none;
+  }
+  #sidebar.collapsed .sidebar-link.active {
+    border-left: none;
+    box-shadow: inset 0 0 0 1px rgba(26, 115, 232, 0.45);
+  }
+  #sidebar.collapsed .sidebar-link .sidebar-link-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    line-height: 1;
+  }
+  #sidebar.collapsed .sidebar-collapse-toggle {
+    width: 100%;
+    justify-content: center;
+    padding-left: 4px;
+    padding-right: 4px;
+    gap: 0;
+  }
+  /* 접힘 시 호버 플라이아웃 라벨 (브라우저 기본 title보다 빠르게 표시) */
+  #sidebar.collapsed .sidebar-link[data-tip] {
+    position: relative;
+  }
+  #sidebar.collapsed .sidebar-link[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 400;
+    padding: 6px 11px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s ease, visibility 0.12s;
+  }
+  #sidebar.collapsed .sidebar-link[data-tip]:hover::after,
+  #sidebar.collapsed .sidebar-link[data-tip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
 /* ── Buttons ── */
 .btn-blue {
   background: linear-gradient(135deg, var(--blue), #0077aa);
