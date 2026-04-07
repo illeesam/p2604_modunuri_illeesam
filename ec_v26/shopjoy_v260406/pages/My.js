@@ -23,7 +23,7 @@ window.My = {
     const tab = ref('orders');
 
     /* ── 공통 페이지네이션 헬퍼 ── */
-    const mkPager = () => reactive({ page: 1, size: 10 });
+    const mkPager = () => reactive({ page: 1, size: 50 });
     const paginate = (list, pager) => {
       const start = (pager.page - 1) * pager.size;
       return list.slice(start, start + pager.size);
@@ -69,7 +69,7 @@ window.My = {
     const claimModal = Vue.reactive({
       show: false, type: '', orderId: '', order: null,
       reason: '', reasonDetail: '', exchangeSize: '', exchangeColor: '',
-      selectedCouponId: null,
+      selectedCouponId: null, exchangeItemIdx: 0,
     });
 
     const EXCHANGE_REASONS = ['사이즈 불일치', '색상 변경', '상품불량', '오배송', '단순변심'];
@@ -97,7 +97,7 @@ window.My = {
     });
     const claimModalProduct = Vue.computed(() => {
       if (!claimModal.order) return null;
-      const name = claimModal.order.items[0]?.productName;
+      const name = claimModal.order.items[claimModal.exchangeItemIdx]?.productName;
       return props.config.products.find(p => p.productName === name) || null;
     });
 
@@ -106,13 +106,18 @@ window.My = {
       claimModal.order = orders.value.find(x => x.orderId === orderId) || null;
       claimModal.reason = ''; claimModal.reasonDetail = '';
       claimModal.exchangeSize = ''; claimModal.exchangeColor = '';
-      claimModal.selectedCouponId = null;
+      claimModal.selectedCouponId = null; claimModal.exchangeItemIdx = 0;
       if (!coupons.value.length) loadCoupons();
     };
     const submitClaimModal = () => {
       if (!claimModal.reason) { props.showToast('신청 사유를 선택해주세요.', 'error'); return; }
-      if (claimModal.type === 'exchange' && !claimModal.exchangeSize && !claimModal.exchangeColor) {
-        props.showToast('교환할 사이즈 또는 색상을 선택해주세요.', 'error'); return;
+      if (claimModal.type === 'exchange') {
+        if (claimModal.order && claimModal.order.items.length > 1 && claimModal.exchangeItemIdx == null) {
+          props.showToast('교환할 상품을 선택해주세요.', 'error'); return;
+        }
+        if (!claimModal.exchangeSize && !claimModal.exchangeColor) {
+          props.showToast('교환할 사이즈 또는 색상을 선택해주세요.', 'error'); return;
+        }
       }
       if (claimSelectedCoupon.value) claimSelectedCoupon.value.used = true;
       const o = orders.value.find(x => x.orderId === claimModal.orderId);
@@ -260,6 +265,43 @@ window.My = {
     };
     const openChat = chat => { chat.unread = 0; expandedChat.value = expandedChat.value === chat.chatId ? null : chat.chatId; };
 
+    /* ── 주문 상세 모달 (캐쉬 연동) ── */
+    const orderDetailModal = Vue.reactive({ show: false, order: null });
+    const openOrderModal = orderId => {
+      const o = orders.value.find(x => x.orderId === orderId);
+      if (!o) { props.showToast('주문 정보를 찾을 수 없습니다.', 'error'); return; }
+      orderDetailModal.order = o;
+      orderDetailModal.show = true;
+    };
+    const extractOrderId = desc => {
+      const m = (desc || '').match(/ORD-\d{4}-\d{3,}/);
+      return m ? m[0] : null;
+    };
+
+    /* ── 상품/주문자/상품 모달 ── */
+    const authUser = Vue.computed(() => window.shopjoyAuth.state.user);
+    const findProduct = productName => props.config.products.find(p => p.productName === productName) || null;
+
+    const productModal = Vue.reactive({ show: false, product: null });
+    const openProductModal = productName => {
+      const p = findProduct(productName);
+      if (p) { productModal.product = p; productModal.show = true; }
+    };
+
+    const customerModal = Vue.reactive({ show: false, user: null, order: null });
+    const openCustomerModal = order => {
+      customerModal.user = authUser.value;
+      customerModal.order = order || null;
+      customerModal.show = true;
+    };
+
+    /* ── 쿠폰 사용 주문 상품 조회 ── */
+    const getCouponUsedOrderItems = c => {
+      if (!c.used || !c.usedOrderId) return null;
+      const o = orders.value.find(x => x.orderId === c.usedOrderId);
+      return o ? o.items : null;
+    };
+
     /* ── 탭 카운트 ── */
     const tabCounts = computed(() => ({
       orders:    orders.value.length,
@@ -319,6 +361,8 @@ window.My = {
       cashBalance, cashHistory, cashPager, chargeAmount, addCash,
       inquiries, inquiryPager, expandedInquiry, cancelInquiry, inquiryStatusColor,
       chats, chatPager, expandedChat, openChat,
+      orderDetailModal, openOrderModal, extractOrderId, getCouponUsedOrderItems,
+      authUser, findProduct, productModal, openProductModal, customerModal, openCustomerModal,
       cartTotal,
       paginate, totalPages, pageRange,
     };
@@ -392,10 +436,14 @@ window.My = {
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
 
       <!-- 주문 헤더 -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="my-order-card-header" style="display:flex;justify-content:space-between;align-items:center;">
         <div>
           <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ o.orderId }}</span>
-          <span style="margin-left:10px;font-size:0.78rem;color:var(--text-muted);">{{ o.orderDate }}</span>
+          <span style="margin-left:10px;font-size:0.78rem;color:var(--text-muted);"><span style="font-weight:500;">주문일: </span>{{ o.orderDate }}</span>
+          <button v-if="authUser" @click="openCustomerModal(o)"
+            style="margin-left:8px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">
+            <span style="font-weight:400;color:var(--text-muted);text-decoration:none;">주문자: </span>{{ authUser.name }}
+          </button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
           <!-- 주문취소: 주문완료/결제완료 (클레임 진행중이면 숨김) -->
@@ -493,12 +541,9 @@ window.My = {
                         : 'color:var(--text-muted);'">
                     {{ step }}
                   </div>
-                  <!-- 수거 아이콘: 교환이면 수거완료에 고정, 반품이면 현재 단계 -->
-                  <button v-if="claimsByOrderId[o.orderId].trackingNo && (
-                      claimsByOrderId[o.orderId].type==='교환'
-                        ? step==='수거완료' && CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf(claimsByOrderId[o.orderId].status) >= CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf('수거완료')
-                        : claimsByOrderId[o.orderId].status===step && ['수거예정','수거완료','환불처리중','환불완료'].includes(step)
-                    )"
+                  <!-- 수거 아이콘: 반품/교환 모두 수거완료 단계에 고정 -->
+                  <button v-if="claimsByOrderId[o.orderId].trackingNo && step==='수거완료' &&
+                      CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf(claimsByOrderId[o.orderId].status) >= CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf('수거완료')"
                     @click.stop="openTracking2(claimsByOrderId[o.orderId].courier, claimsByOrderId[o.orderId].trackingNo)" title="수거 조회"
                     style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:1px;">
                     ↩ 수거
@@ -529,6 +574,13 @@ window.My = {
             <span style="color:var(--text-muted);">환불 예정</span>
             <span style="font-weight:700;color:var(--text-primary);">{{ claimsByOrderId[o.orderId].refundAmount.toLocaleString() }}원</span>
             <span v-if="claimsByOrderId[o.orderId].refundMethod" style="color:var(--text-muted);">· {{ claimsByOrderId[o.orderId].refundMethod }}</span>
+            <template v-if="claimsByOrderId[o.orderId].refundDetails && claimsByOrderId[o.orderId].refundDetails.length">
+              <template v-for="(rd, rdi) in claimsByOrderId[o.orderId].refundDetails" :key="rdi">
+                <span v-if="rd.account" style="color:var(--text-secondary);">{{ rd.account }}</span>
+                <span v-if="rd.name && rd.type==='계좌환불'" style="color:var(--text-secondary);">· {{ rd.name }}</span>
+                <span style="color:var(--text-muted);">{{ rd.datetime }}</span>
+              </template>
+            </template>
           </div>
           <!-- 교환 내용 -->
           <div v-if="claimsByOrderId[o.orderId].type==='교환' && (claimsByOrderId[o.orderId].exchangeSize || claimsByOrderId[o.orderId].exchangeColor)"
@@ -565,7 +617,13 @@ window.My = {
         <div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
           <span style="font-size:1.4rem;">{{ item.emoji }}</span>
           <div style="flex:1;">
-            <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</div>
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+              <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</span>
+              <button v-if="findProduct(item.productName)" @click="openProductModal(item.productName)"
+                style="font-size:0.65rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);cursor:pointer;font-weight:600;line-height:1.7;white-space:nowrap;">
+                #{{ findProduct(item.productName).productId }}
+              </button>
+            </div>
             <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
           </div>
           <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
@@ -672,10 +730,17 @@ window.My = {
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
 
       <!-- 카드 헤더 -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div class="my-order-card-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
         <div>
           <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ c.claimId }}</span>
-          <span style="margin-left:8px;font-size:0.78rem;color:var(--text-muted);">주문: {{ c.orderId }}</span>
+          <button @click="openOrderModal(c.orderId)"
+            style="margin-left:8px;font-size:0.78rem;color:var(--blue);border:none;background:none;cursor:pointer;padding:0;font-weight:600;text-decoration:underline;text-underline-offset:2px;">
+            주문: {{ c.orderId }}
+          </button>
+          <button v-if="authUser" @click="openCustomerModal(orders.find(o=>o.orderId===c.orderId))"
+            style="margin-left:8px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">
+            {{ authUser.name }}
+          </button>
           <div style="margin-top:4px;font-size:0.78rem;color:var(--text-muted);">
             신청일: {{ c.requestDate }}
             <span v-if="c.completeDate"> · 완료일: {{ c.completeDate }}</span>
@@ -688,7 +753,7 @@ window.My = {
           </button>
           <span style="font-size:0.78rem;font-weight:800;padding:4px 12px;border-radius:20px;color:#fff;"
             :style="'background:' + CLAIM_TYPE_COLOR[c.type]">{{ c.type }}</span>
-          <span style="font-size:0.78rem;font-weight:700;padding:4px 12px;border-radius:20px;color:#fff;"
+          <span style="font-size:0.68rem;font-weight:600;padding:2px 8px;border-radius:10px;color:#fff;opacity:0.85;"
             :style="'background:' + CLAIM_STATUS_COLOR(c.status)">{{ c.status }}</span>
         </div>
       </div>
@@ -710,18 +775,18 @@ window.My = {
                     : 'color:var(--text-muted);'">
                 {{ step }}
               </div>
-              <template v-if="c.status === step">
-                <button v-if="c.trackingNo && (c.type==='교환' ? ['수거예정','수거완료'].includes(step) : ['수거예정','수거완료','환불처리중','환불완료'].includes(step))"
-                  @click.stop="openTracking2(c.courier, c.trackingNo)" title="수거 조회"
-                  style="margin-top:4px;padding:2px 6px;border-radius:4px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;">
-                  ↩ 수거
-                </button>
-                <button v-if="c.exchangeTrackingNo && ['발송완료','교환완료'].includes(step)"
-                  @click.stop="openTracking2(c.exchangeCourier, c.exchangeTrackingNo)" title="교환 배송 조회"
-                  style="margin-top:3px;padding:2px 6px;border-radius:4px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;">
-                  📦 교환
-                </button>
-              </template>
+              <!-- 수거 아이콘: 반품/교환 모두 수거완료 단계에 고정 -->
+              <button v-if="c.trackingNo && step==='수거완료' && CLAIM_FLOWS[c.type].indexOf(c.status) >= CLAIM_FLOWS[c.type].indexOf('수거완료')"
+                @click.stop="openTracking2(c.courier, c.trackingNo)" title="수거 조회"
+                style="margin-top:4px;padding:2px 6px;border-radius:4px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;">
+                ↩ 수거
+              </button>
+              <!-- 교환 배송 아이콘: 발송완료 단계에 고정 (status >= 발송완료) -->
+              <button v-if="c.exchangeTrackingNo && step==='발송완료' && CLAIM_FLOWS[c.type].indexOf(c.status) >= CLAIM_FLOWS[c.type].indexOf('발송완료')"
+                @click.stop="openTracking2(c.exchangeCourier, c.exchangeTrackingNo)" title="교환 배송 조회"
+                style="margin-top:3px;padding:2px 6px;border-radius:4px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;">
+                📦 교환
+              </button>
             </div>
             <div v-if="si < CLAIM_FLOWS[c.type].length-1"
               style="height:2px;flex:1;margin-bottom:16px;"
@@ -735,7 +800,13 @@ window.My = {
         style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--border);">
         <span style="font-size:1.4rem;">{{ item.emoji }}</span>
         <div style="flex:1;">
-          <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+            <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</span>
+            <button v-if="findProduct(item.productName)" @click="openProductModal(item.productName)"
+              style="font-size:0.65rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);cursor:pointer;font-weight:600;line-height:1.7;white-space:nowrap;">
+              #{{ findProduct(item.productName).productId }}
+            </button>
+          </div>
           <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
         </div>
         <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
@@ -786,7 +857,6 @@ window.My = {
           <div style="font-size:0.68rem;font-weight:700;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:5px;">💸 환불 내역</div>
           <div v-for="(rd, rdi) in c.refundDetails" :key="rdi"
             style="display:flex;align-items:center;gap:6px;font-size:0.72rem;padding:2px 0;flex-wrap:wrap;">
-            <span style="color:var(--text-muted);white-space:nowrap;flex-shrink:0;">{{ rd.datetime }}</span>
             <span style="padding:1px 7px;border-radius:4px;font-weight:700;white-space:nowrap;flex-shrink:0;"
               :style="rd.type==='계좌환불' ? 'background:#dcfce7;color:#16a34a;'
                 : rd.type==='카드취소' ? 'background:#dbeafe;color:#1d4ed8;'
@@ -796,8 +866,9 @@ window.My = {
               {{ rd.type }}
             </span>
             <span style="font-weight:700;color:var(--text-primary);white-space:nowrap;">{{ rd.amount.toLocaleString() }}원</span>
-            <span style="color:var(--text-secondary);white-space:nowrap;">{{ rd.name }}</span>
-            <span v-if="rd.account" style="color:var(--text-muted);white-space:nowrap;">{{ rd.account }}</span>
+            <span v-if="rd.account" style="color:var(--text-secondary);white-space:nowrap;">{{ rd.account }}</span>
+            <span v-if="rd.name && rd.type==='계좌환불'" style="color:var(--text-secondary);white-space:nowrap;">· {{ rd.name }}</span>
+            <span style="color:var(--text-muted);white-space:nowrap;flex-shrink:0;">{{ rd.datetime }}</span>
           </div>
         </div>
       </div>
@@ -850,6 +921,27 @@ window.My = {
       <div style="flex:1;">
         <div style="font-weight:700;color:var(--text-primary);">{{ c.name }}</div>
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">코드: {{ c.code }} · {{ c.minOrder > 0 ? c.minOrder.toLocaleString()+'원 이상 구매 시' : '최소금액 없음' }} · 만료: {{ c.expiry }}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;">
+          <span style="font-size:0.72rem;padding:1px 8px;border-radius:10px;font-weight:600;"
+            :style="c.discountType==='shipping' ? 'background:#dbeafe;color:#1d4ed8;' : 'background:#dcfce7;color:#15803d;'">
+            {{ c.discountType==='shipping' ? '배송비 할인' : '상품 할인' }}
+          </span>
+          <span v-if="c.applicableTo && c.discountType!=='shipping'"
+            style="font-size:0.72rem;padding:1px 8px;border-radius:10px;font-weight:600;background:var(--bg-base);color:var(--text-secondary);border:1px solid var(--border);">
+            {{ c.applicableTo }}
+          </span>
+        </div>
+        <template v-if="c.used && c.usedOrderId">
+          <div style="font-size:0.73rem;color:var(--text-muted);margin-top:4px;">
+            적용 주문: <span style="font-weight:600;color:var(--text-secondary);">{{ c.usedOrderId }}</span>
+          </div>
+          <div v-if="getCouponUsedOrderItems(c)" style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px;">
+            <span v-for="(item, ii) in getCouponUsedOrderItems(c)" :key="ii"
+              style="font-size:0.68rem;padding:1px 6px;border-radius:8px;background:var(--bg-base);color:var(--text-muted);border:1px solid var(--border);">
+              {{ item.emoji }} {{ item.productName }}
+            </span>
+          </div>
+        </template>
       </div>
       <div style="text-align:right;">
         <div style="font-size:1.1rem;font-weight:800;color:var(--blue);">{{ discountLabel(c) }}</div>
@@ -885,7 +977,16 @@ window.My = {
         {{ h.type === '충전' ? '↑' : '↓' }}
       </div>
       <div style="flex:1;">
-        <div style="font-weight:600;font-size:0.88rem;color:var(--text-primary);">{{ h.desc }}</div>
+        <div style="font-weight:600;font-size:0.88rem;color:var(--text-primary);">
+          <template v-if="extractOrderId(h.desc)">
+            <button @click="openOrderModal(extractOrderId(h.desc))"
+              style="background:none;border:none;padding:0;cursor:pointer;font-size:0.88rem;font-weight:700;color:var(--blue);text-decoration:underline;text-underline-offset:2px;">
+              {{ extractOrderId(h.desc) }}
+            </button>
+            <span style="font-weight:400;color:var(--text-secondary);"> {{ h.desc.replace(extractOrderId(h.desc), '').trim() }}</span>
+          </template>
+          <template v-else>{{ h.desc }}</template>
+        </div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ h.date }}</div>
       </div>
       <div style="text-align:right;">
@@ -1158,9 +1259,37 @@ window.My = {
             style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.8rem;resize:none;box-sizing:border-box;outline:none;"></textarea>
         </div>
 
+        <!-- 교환 상품 선택 (2개 이상인 경우) -->
+        <div v-if="claimModal.type==='exchange' && claimModal.order && claimModal.order.items.length > 1">
+          <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">교환 상품 선택 <span style="color:#ef4444;">*</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button v-for="(item, idx) in claimModal.order.items" :key="idx"
+              type="button"
+              @click="claimModal.exchangeItemIdx=idx; claimModal.exchangeSize=''; claimModal.exchangeColor=''"
+              style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:all 0.15s;text-align:left;width:100%;"
+              :style="claimModal.exchangeItemIdx===idx
+                ? 'background:var(--blue-dim);border:1.5px solid var(--blue);'
+                : 'background:var(--bg-base);border:1.5px solid var(--border);'">
+              <span style="font-size:1.2rem;flex-shrink:0;">{{ item.emoji }}</span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:0.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                  :style="claimModal.exchangeItemIdx===idx ? 'color:var(--blue);' : 'color:var(--text-primary);'">
+                  {{ item.productName }}
+                </div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} · {{ item.price.toLocaleString() }}원</div>
+              </div>
+              <span v-if="claimModal.exchangeItemIdx===idx" style="color:var(--blue);font-size:1rem;flex-shrink:0;">✓</span>
+            </button>
+          </div>
+        </div>
+
         <!-- 교환 옵션 -->
         <div v-if="claimModal.type==='exchange'" style="display:flex;flex-direction:column;gap:10px;">
-          <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">교환 옵션 <span style="color:#ef4444;">*</span></div>
+          <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">교환 옵션 <span style="color:#ef4444;">*</span>
+            <span v-if="claimModal.order && claimModal.order.items.length > 1" style="font-size:0.72rem;font-weight:400;color:var(--text-muted);margin-left:6px;">
+              ({{ claimModal.order.items[claimModal.exchangeItemIdx]?.productName }})
+            </span>
+          </div>
           <!-- 사이즈 -->
           <div v-if="claimModalProduct && claimModalProduct.sizes">
             <div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;">사이즈</div>
@@ -1277,6 +1406,13 @@ window.My = {
       </div>
     </div>
   </div>
+  <!-- ── 주문 상세 모달 (캐쉬 클릭 연동) ── -->
+  <OrderDetailModal :show="orderDetailModal.show" :order="orderDetailModal.order" @close="orderDetailModal.show=false" />
+  <!-- ── 상품 상세 모달 ── -->
+  <ProductModal :show="productModal.show" :product="productModal.product" @close="productModal.show=false" />
+  <!-- ── 주문자 정보 모달 ── -->
+  <CustomerModal :show="customerModal.show" :user="customerModal.user" :order="customerModal.order" @close="customerModal.show=false" />
+
   </Teleport>
 
 </div>
@@ -1289,9 +1425,12 @@ window.My = {
   <div style="font-size:0.85rem;color:var(--text-secondary);">총 <strong style="color:var(--text-primary);">{{ total }}</strong>건</div>
   <select v-model="pager.size" @change="pager.page=1"
     style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:0.82rem;cursor:pointer;">
+    <option :value="5">5개씩</option>
     <option :value="10">10개씩</option>
     <option :value="20">20개씩</option>
+    <option :value="30">30개씩</option>
     <option :value="50">50개씩</option>
+    <option :value="100">100개씩</option>
   </select>
 </div>`
     },
@@ -1316,6 +1455,9 @@ window.My = {
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
     :style="pager.page===pages.length?'opacity:0.4;cursor:not-allowed;':''">›</button>
 </div>`
-    }
+    },
+    OrderDetailModal: window.OrderDetailModal,
+    ProductModal:     window.ProductModal,
+    CustomerModal:    window.CustomerModal,
   }
 };

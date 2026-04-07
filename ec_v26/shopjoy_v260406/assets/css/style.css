@@ -690,6 +690,30 @@ footer {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
+/* ── 마이페이지 주문 — 주문 카드 헤더 강조(구분감) ── */
+.my-order-card-header {
+  margin: -16px -16px 12px;
+  padding: 12px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(156, 95, 163, 0.26) 0%,
+    rgba(255, 170, 136, 0.22) 28%,
+    rgba(255, 255, 255, 0.9) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+[data-theme="dark"] .my-order-card-header {
+  background: linear-gradient(
+    135deg,
+    rgba(196, 126, 202, 0.28) 0%,
+    rgba(255, 170, 136, 0.2) 28%,
+    rgba(26, 10, 16, 0.38) 70%,
+    rgba(26, 10, 16, 0) 100%
+  );
+}
+
 /* ── Cart Badge ── */
 .cart-badge {
   display: inline-flex;
