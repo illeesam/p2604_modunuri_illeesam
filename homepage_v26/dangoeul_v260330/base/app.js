@@ -1,7 +1,7 @@
 /* ============================================
    DANGOEUL - Vue App (레이아웃 + 페이지 컴포넌트)
    ============================================ */
-const { createApp, ref, computed, reactive, onBeforeUnmount } = Vue;
+const { createApp, ref, computed, reactive } = Vue;
 
 var P = window.DangoeulPages || {};
 var C = window.DangoeulComponents || {};
@@ -56,37 +56,17 @@ const dangoeulApp = createApp({
     }
     const sidebarOpen = ref(true);
     const mobileOpen = ref(false);
-    let mobileMenuHistory = false;
     const closeMobileMenu = () => {
-      if (mobileOpen.value && mobileMenuHistory) {
-        mobileMenuHistory = false;
-        try { history.back(); } catch (e) { mobileOpen.value = false; }
-      } else {
-        mobileOpen.value = false;
-      }
+      mobileOpen.value = false;
     };
     const toggleMobileMenu = () => {
-      if (mobileOpen.value) closeMobileMenu();
-      else {
-        mobileOpen.value = true;
-        if (window.innerWidth < 1024) {
-          try {
-            history.pushState({ __mobileSidebar: 1 }, '', window.location.href);
-            mobileMenuHistory = true;
-          } catch (e) {}
-        }
-      }
-    };
-    const onMobilePopState = () => {
       if (mobileOpen.value) {
         mobileOpen.value = false;
-        mobileMenuHistory = false;
+      } else {
+        if (window.innerWidth < 1024) sidebarOpen.value = true;
+        mobileOpen.value = true;
       }
     };
-    window.addEventListener('popstate', onMobilePopState);
-    onBeforeUnmount(() => {
-      window.removeEventListener('popstate', onMobilePopState);
-    });
     const buildHashForPage = nextPage => {
       const nextParams = new URLSearchParams();
       nextParams.set('page', nextPage);
@@ -112,13 +92,7 @@ const dangoeulApp = createApp({
     };
 
     const navigate = (id, opts = {}) => {
-      if (mobileOpen.value) {
-        if (mobileMenuHistory) {
-          mobileMenuHistory = false;
-          try { history.back(); } catch (e) {}
-        }
-        mobileOpen.value = false;
-      }
+      if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
       window.scrollTo(0, 0);
       try { sessionStorage.setItem('dangoeul_page', id); } catch (e) {}
@@ -325,7 +299,7 @@ const dangoeulApp = createApp({
 
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobile"></div>
 
-    <main style="flex:1;overflow-y:auto;min-width:0;">
+    <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
 
       <page-home v-show="page==='home'"
         :navigate="navigate"

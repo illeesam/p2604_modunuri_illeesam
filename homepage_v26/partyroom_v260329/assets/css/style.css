@@ -50,6 +50,27 @@ body {
   line-height: 1.6;
   transition: background 0.3s, color 0.3s;
 }
+
+/* ─── 본문 행 + main (flex 자식 main 높이 0 붕괴 → 빈 화면 방지) ─── */
+.partyroom-body-row {
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: var(--header-h);
+  display: flex;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+main.partyroom-main,
+.partyroom-main.layout-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 a { color: inherit; text-decoration: none; cursor: pointer; }
 button { font-family: inherit; }
 
@@ -195,12 +216,17 @@ button { font-family: inherit; }
     top: var(--header-h);
     left: 0;
     bottom: 0;
-    z-index: 40;
+    z-index: 200;
     transform: translateX(-100%);
     width: var(--sidebar-w) !important;
     transition: transform 0.3s;
+    pointer-events: auto;
   }
   #sidebar.open { transform: translateX(0); }
+  .layout-main {
+    position: relative;
+    z-index: 0;
+  }
 }
 @media (min-width: 1024px) {
   #sidebar { position: relative; top: auto; transform: none !important; }
@@ -571,8 +597,9 @@ button { font-family: inherit; }
   display: none;
   position: fixed;
   inset: 0;
+  top: var(--header-h);
   background: rgba(0,0,0,0.4);
-  z-index: 39;
+  z-index: 199;
   backdrop-filter: blur(2px);
 }
 @media (max-width: 1023px) {

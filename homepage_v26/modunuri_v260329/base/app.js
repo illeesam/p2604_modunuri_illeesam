@@ -22,44 +22,21 @@
     const sidebarOpen = ref(true);
     const mobileOpen  = ref(false);
     let replaceNextHash = false;
-    let mobileMenuHistory = false;
     const closeMobileMenu = () => {
-      if (mobileOpen.value && mobileMenuHistory) {
-        mobileMenuHistory = false;
-        try { history.back(); } catch (e) { mobileOpen.value = false; }
-      } else {
-        mobileOpen.value = false;
-      }
+      mobileOpen.value = false;
     };
     const toggleMobileMenu = () => {
-      if (mobileOpen.value) closeMobileMenu();
-      else {
-        mobileOpen.value = true;
-        if (window.innerWidth < 1024) {
-          try {
-            history.pushState({ __mobileSidebar: 1 }, '', window.location.href);
-            mobileMenuHistory = true;
-          } catch (e) {}
-        }
-      }
-    };
-    const onMobilePopState = () => {
       if (mobileOpen.value) {
         mobileOpen.value = false;
-        mobileMenuHistory = false;
+      } else {
+        if (window.innerWidth < 1024) sidebarOpen.value = true;
+        mobileOpen.value = true;
       }
     };
-    window.addEventListener('popstate', onMobilePopState);
 
     const navigate = (id, opts = {}) => {
       if (opts && opts.replace) replaceNextHash = true;
-      if (mobileOpen.value) {
-        if (mobileMenuHistory) {
-          mobileMenuHistory = false;
-          try { history.back(); } catch (e) {}
-        }
-        mobileOpen.value = false;
-      }
+      if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
       window.scrollTo(0, 0);
       try { sessionStorage.setItem('modunuri_page', id); } catch (e) {}
@@ -201,7 +178,6 @@
 
     onBeforeUnmount(() => {
       window.removeEventListener('hashchange', onHashChange);
-      window.removeEventListener('popstate', onMobilePopState);
     });
 
     /* ── Loading done ── */
@@ -240,7 +216,7 @@
     />
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
 
-    <main style="flex:1;overflow-y:auto;min-width:0;">
+    <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
       <page-home      v-if="page==='home'"         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct" :order-product="orderProduct" :open-demo="openDemo" />
       <page-about     v-else-if="page==='about'"       :navigate="navigate" :config="config" />
       <page-solution  v-else-if="page==='solution'"    :navigate="navigate" :config="config" />

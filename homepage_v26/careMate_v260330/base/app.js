@@ -20,44 +20,21 @@
     const mobileOpen  = ref(false);
     /** 좌측 메뉴 등에서 `replace: true`면 현재 히스토리 항목만 갱신(스택 증가 없음). 전체 히스토리 삭제는 브라우저에서 불가. */
     let replaceNextHash = false;
-    let mobileMenuHistory = false;
     const closeMobileMenu = () => {
-      if (mobileOpen.value && mobileMenuHistory) {
-        mobileMenuHistory = false;
-        try { history.back(); } catch (e) { mobileOpen.value = false; }
-      } else {
-        mobileOpen.value = false;
-      }
+      mobileOpen.value = false;
     };
     const toggleMobileMenu = () => {
-      if (mobileOpen.value) closeMobileMenu();
-      else {
-        mobileOpen.value = true;
-        if (window.innerWidth < 1024) {
-          try {
-            history.pushState({ __mobileSidebar: 1 }, '', window.location.href);
-            mobileMenuHistory = true;
-          } catch (e) {}
-        }
-      }
-    };
-    const onMobilePopState = () => {
       if (mobileOpen.value) {
         mobileOpen.value = false;
-        mobileMenuHistory = false;
+      } else {
+        if (window.innerWidth < 1024) sidebarOpen.value = true;
+        mobileOpen.value = true;
       }
     };
-    window.addEventListener('popstate', onMobilePopState);
 
     const navigate = (id, opts = {}) => {
       if (opts && opts.replace) replaceNextHash = true;
-      if (mobileOpen.value) {
-        if (mobileMenuHistory) {
-          mobileMenuHistory = false;
-          try { history.back(); } catch (e) {}
-        }
-        mobileOpen.value = false;
-      }
+      if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
       window.scrollTo(0, 0);
       try { sessionStorage.setItem('caremate_page', id); } catch (e) {}
@@ -106,7 +83,7 @@
     restoring = false;
 
     let syncingFromHash = false;
-    window.addEventListener('hashchange', () => {
+    const onHashChange = () => {
       if (syncingFromHash) return;
       try {
         const raw = String(window.location.hash||'').replace(/^#/,'');
@@ -119,7 +96,8 @@
         if(!Number.isNaN(pid)){const f=products.find(x=>Number(x.productId)===pid);if(f)selectedProduct.value=f;}
         setTimeout(()=>{syncingFromHash=false;},0);
       } catch(e){syncingFromHash=false;}
-    });
+    };
+    window.addEventListener('hashchange', onHashChange);
 
     watch(page, id => {
       if(restoring||syncingFromHash) return;
@@ -152,7 +130,7 @@
     } catch (e) {}
 
     onBeforeUnmount(() => {
-      window.removeEventListener('popstate', onMobilePopState);
+      window.removeEventListener('hashchange', onHashChange);
     });
 
     /* ── Loading done ── */
@@ -186,7 +164,7 @@
     />
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
 
-    <main style="flex:1;overflow-y:auto;min-width:0;">
+    <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
       <page-home      v-if="page==='home'"     :navigate="navigate" :config="config" :products="products" :select-product="selectProduct" />
       <page-about     v-else-if="page==='about'"    :navigate="navigate" :config="config" />
       <page-products  v-else-if="page==='products'" :navigate="navigate" :config="config" :products="products" :select-product="selectProduct" />

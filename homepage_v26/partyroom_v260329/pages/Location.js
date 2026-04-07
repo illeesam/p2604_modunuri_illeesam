@@ -8,7 +8,7 @@
 <div class="fade-up" style="padding:2rem 1.5rem;max-width:900px;margin:0 auto;">
         <div style="margin-bottom:2rem;">
           <h1 class="section-title">위치안내</h1>
-          <p class="section-subtitle">서울 강남 중심부에 위치해 접근이 편리합니다.</p>
+          <p class="section-subtitle">경기 성남 중심부에 위치해 접근이 편리합니다.</p>
         </div>
 
         <!-- Map placeholder -->

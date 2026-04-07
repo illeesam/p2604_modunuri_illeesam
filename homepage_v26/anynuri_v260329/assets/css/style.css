@@ -144,12 +144,17 @@ body {
     top: var(--header-h);
     left: 0;
     bottom: 0;
-    z-index: 40;
+    z-index: 200;
     transform: translateX(-100%);
     width: var(--sidebar-w) !important;
     transition: transform 0.3s ease;
+    pointer-events: auto;
   }
   #sidebar.open { transform: translateX(0); }
+  .layout-main {
+    position: relative;
+    z-index: 0;
+  }
 }
 @media (min-width: 1024px) {
   #sidebar { position: relative; top: auto; transform: none !important; }
@@ -421,7 +426,8 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 30;
+  top: var(--header-h);
+  z-index: 199;
   background: rgba(0,0,0,0.4);
 }
 @media (max-width: 1023px) {

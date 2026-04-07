@@ -10,17 +10,17 @@
 
   createApp({
   components: {
-    PageHome: P.PageHome,
-    PageAbout: P.PageAbout,
-    PageProducts: P.PageProducts,
-    PageDetail: P.PageDetail,
-    PageSpace: P.PageSpace,
-    PageBlog: P.PageBlog,
-    PageBlogDetail: P.PageBlogDetail,
-    PageLocation: P.PageLocation,
-    PageContact: P.PageContact,
-    PageFaq: P.PageFaq,
-    PageBooking: P.PageBooking,
+    PageHome: P.Home,
+    PageAbout: P.About,
+    PageProducts: P.Products,
+    PageDetail: P.Detail,
+    PageSpace: P.Space,
+    PageBlog: P.Blog,
+    PageBlogDetail: P.BlogDetail,
+    PageLocation: P.Location,
+    PageContact: P.Contact,
+    PageFaq: P.Faq,
+    PageBooking: P.Booking,
   },
   setup() {
     /* ── Theme ─────────────────────────────────── */
@@ -43,44 +43,21 @@
     const sidebarOpen = ref(true);
     const mobileOpen = ref(false);
     let replaceNextHash = false;
-    let mobileMenuHistory = false;
     const closeMobileMenu = () => {
-      if (mobileOpen.value && mobileMenuHistory) {
-        mobileMenuHistory = false;
-        try { history.back(); } catch (e) { mobileOpen.value = false; }
-      } else {
-        mobileOpen.value = false;
-      }
+      mobileOpen.value = false;
     };
     const toggleMobileMenu = () => {
-      if (mobileOpen.value) closeMobileMenu();
-      else {
-        mobileOpen.value = true;
-        if (window.innerWidth < 1024) {
-          try {
-            history.pushState({ __mobileSidebar: 1 }, '', window.location.href);
-            mobileMenuHistory = true;
-          } catch (e) {}
-        }
-      }
-    };
-    const onMobilePopState = () => {
       if (mobileOpen.value) {
         mobileOpen.value = false;
-        mobileMenuHistory = false;
+      } else {
+        if (window.innerWidth < 1024) sidebarOpen.value = true;
+        mobileOpen.value = true;
       }
     };
-    window.addEventListener('popstate', onMobilePopState);
 
     const navigate = (id, opts = {}) => {
       if (opts && opts.replace) replaceNextHash = true;
-      if (mobileOpen.value) {
-        if (mobileMenuHistory) {
-          mobileMenuHistory = false;
-          try { history.back(); } catch (e) {}
-        }
-        mobileOpen.value = false;
-      }
+      if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
       window.scrollTo(0, 0);
       try { sessionStorage.setItem('partyroom_page', id); } catch (e) {}
@@ -360,7 +337,6 @@
     window.addEventListener('hashchange', onHashChange);
     onBeforeUnmount(function () {
       window.removeEventListener('hashchange', onHashChange);
-      window.removeEventListener('popstate', onMobilePopState);
     });
 
     /* ── Booking Form ──────────────────────────── */

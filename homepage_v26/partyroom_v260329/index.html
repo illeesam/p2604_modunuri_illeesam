@@ -82,7 +82,7 @@
   <!-- ════════════════════════════════════════
        BODY WRAPPER (sidebar + main)
        ════════════════════════════════════════ -->
-  <div style="display:flex;min-height:100vh;padding-top:var(--header-h);">
+  <div class="partyroom-body-row">
 
     <!-- Mobile sidebar overlay -->
     <div
@@ -96,6 +96,7 @@
       id="sidebar"
       :class="{ collapsed: !sidebarOpen, open: mobileOpen }"
       style="display:flex;flex-direction:column;min-height:100%;overflow-y:auto;"
+      @click.stop
     >
       <!-- Logo area inside sidebar -->
       <div style="padding:16px 12px 8px;border-bottom:1px solid var(--border);">
@@ -112,11 +113,12 @@
             {{ section.section }}
           </div>
           <button
+            type="button"
             v-for="item in section.items"
             :key="item.menuId"
             class="sidebar-link"
             :class="{ active: page === item.menuId }"
-            @click="navigate(item.menuId, { replace: true })"
+            @click.stop="navigate(item.menuId, { replace: true })"
             :title="item.menuName"
           >
             <span style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
@@ -127,9 +129,10 @@
 
         <!-- Booking shortcut -->
         <button
+          type="button"
           class="btn-gold"
           style="width:calc(100% - 16px);margin:8px;font-size:0.82rem;padding:9px 12px;justify-content:center;"
-          @click="navigate('booking', { replace: true })"
+          @click.stop="navigate('booking', { replace: true })"
           v-show="sidebarOpen || mobileOpen"
         >📅 예약하기</button>
       </nav>
@@ -145,7 +148,7 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main style="flex:1;min-width:0;overflow-x:hidden;">
+    <main class="layout-main partyroom-main">
       <page-home v-show="page === 'home'" />
       <page-about v-show="page === 'about'" />
       <page-products v-show="page === 'products'" />

@@ -79,7 +79,7 @@
       <app-sidebar></app-sidebar>
 
       <!-- ── MAIN CONTENT ────────────────────────────────── -->
-      <main style="flex:1;overflow-y:auto;min-width:0">
+      <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0">
         <!-- HTML 커스텀 태그는 self-close 시 형제가 중첩으로 파싱됨 -->
         <page-home v-show="page==='home'"></page-home>
         <page-about v-show="page==='about'"></page-about>
