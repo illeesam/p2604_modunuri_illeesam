@@ -322,7 +322,7 @@ window.My = {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
           <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ o.orderId }}</span>
-          <span style="margin-left:10px;font-size:0.8rem;color:var(--text-muted);">{{ o.orderDate }}</span>
+          <span style="margin-left:10px;font-size:0.78rem;color:var(--text-muted);">{{ o.orderDate }}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
           <!-- 주문취소: 주문완료/결제완료 -->
@@ -350,6 +350,32 @@ window.My = {
         </div>
       </div>
 
+      <!-- 주문 진행 프로세스 -->
+      <div v-if="ORDER_FLOW.findIndex(f=>f.status===o.status) >= 0"
+        style="background:var(--bg-base);border-radius:8px;padding:10px 14px;margin-bottom:12px;overflow-x:auto;">
+        <div style="display:flex;align-items:flex-start;min-width:320px;">
+          <template v-for="(step, si) in ORDER_FLOW" :key="step.status">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:48px;">
+              <div style="width:10px;height:10px;border-radius:50%;margin-bottom:4px;flex-shrink:0;"
+                :style="ORDER_FLOW.findIndex(f=>f.status===o.status) >= si
+                  ? 'background:#4ade80;' : 'background:var(--border);'"></div>
+              <div style="font-size:0.63rem;text-align:center;line-height:1.3;white-space:nowrap;"
+                :style="o.status === step.status
+                  ? 'color:#16a34a;font-weight:800;'
+                  : ORDER_FLOW.findIndex(f=>f.status===o.status) > si
+                    ? 'color:var(--text-secondary);font-weight:600;'
+                    : 'color:var(--text-muted);'">
+                {{ step.label || step.status }}
+              </div>
+            </div>
+            <div v-if="si < ORDER_FLOW.length-1"
+              style="height:2px;flex:1;margin-bottom:16px;flex-shrink:0;min-width:8px;"
+              :style="ORDER_FLOW.findIndex(f=>f.status===o.status) > si
+                ? 'background:#4ade80;' : 'background:var(--border);'"></div>
+          </template>
+        </div>
+      </div>
+
       <!-- 상품 목록 -->
       <div v-for="(item, iix) in o.items" :key="iix + '-' + item.productName + '-' + (item.color||'')">
         <div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
@@ -361,10 +387,10 @@ window.My = {
           <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
         </div>
         <div v-if="item.productCoupon && item.productCoupon.discount" class="my-order-product-coupon"
-          style="margin:-2px 0 6px 46px;padding:6px 10px;border-radius:8px;font-size:0.74rem;line-height:1.45;">
-          <span style="font-weight:700;color:var(--text-primary);">🎟 상품쿠폰</span>
-          <span style="color:var(--text-secondary);margin-left:6px;">{{ item.productCoupon.name }}</span>
-          <span style="font-weight:800;color:var(--blue);margin-left:8px;">-{{ Number(item.productCoupon.discount).toLocaleString() }}원</span>
+          style="margin:1px 0 4px 46px;padding:3px 8px;border-radius:5px;font-size:0.68rem;line-height:1.3;background:var(--bg-base);display:inline-flex;align-items:center;gap:4px;">
+          <span style="color:var(--text-muted);">🎟</span>
+          <span style="color:var(--text-muted);">{{ item.productCoupon.name }}</span>
+          <span style="font-weight:700;color:#16a34a;">-{{ Number(item.productCoupon.discount).toLocaleString() }}원</span>
         </div>
       </div>
 
