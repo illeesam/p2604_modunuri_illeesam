@@ -54,9 +54,10 @@ body {
 /* ─── 본문 행 + main (flex 자식 main 높이 0 붕괴 → 빈 화면 방지) ─── */
 .partyroom-body-row {
   box-sizing: border-box;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding-top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+  height: calc(100dvh - var(--header-h));
+  padding-top: 0;
+  margin-top: var(--header-h);
   display: flex;
   align-items: stretch;
   min-width: 0;

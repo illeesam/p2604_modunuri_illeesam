@@ -59,7 +59,10 @@
       if (opts && opts.replace) replaceNextHash = true;
       if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
-      window.scrollTo(0, 0);
+      try {
+        var mainEl = document.querySelector('main.partyroom-main') || document.querySelector('.partyroom-main');
+        if (mainEl) mainEl.scrollTop = 0; else window.scrollTo(0, 0);
+      } catch (e) { window.scrollTo(0, 0); }
       try { sessionStorage.setItem('partyroom_page', id); } catch (e) {}
     };
     window.addEventListener('resize', () => {
