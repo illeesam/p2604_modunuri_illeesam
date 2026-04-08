@@ -238,7 +238,7 @@ window.Order = {
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;">
-        <button @click="navigate('my')" class="btn-blue" style="padding:14px;font-size:1rem;font-weight:700;">📋 마이페이지에서 주문 확인</button>
+        <button @click="navigate('myOrder')" class="btn-blue" style="padding:14px;font-size:1rem;font-weight:700;">📋 마이페이지에서 주문 확인</button>
         <button @click="navigate('home')" class="btn-outline" style="padding:14px;">계속 쇼핑하기</button>
       </div>
     </div>
