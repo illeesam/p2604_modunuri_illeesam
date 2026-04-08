@@ -30,7 +30,6 @@ window.SITE_CONFIG = {
       "section": "구매",
       "items": [
         { "icon": "📝", "menuId": "order", "menuName": "주문하기" },
-        { "icon": "🛒", "menuId": "cart",  "menuName": "장바구니", "authRequired": true },
         { "icon": "👤", "menuId": "myOrder", "menuName": "마이페이지", "authRequired": true }
       ]
     },

@@ -29,7 +29,7 @@
       "section": "구매",
       "items": [
         { "icon": "📝", "menuId": "order", "menuName": "주문하기" },
-        { "icon": "👤", "menuId": "myOrder", "menuName": "마이페이지" }
+        { "icon": "👤", "menuId": "myOrder", "menuName": "마이페이지", "authRequired": true }
       ]
     },
     {
