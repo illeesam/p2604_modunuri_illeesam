@@ -12,7 +12,7 @@ window.AppHeader = {
     const userMenuRoot = ref(null);
     const toggleUserMenu = () => { userMenuOpen.value = !userMenuOpen.value; };
     const closeUserMenu  = () => { userMenuOpen.value = false; };
-    const goMy    = () => { closeUserMenu(); props.navigate('my'); };
+    const goMy    = () => { closeUserMenu(); props.navigate('myOrder'); };
     const doLogout = () => { closeUserMenu(); props.onLogout(); };
 
     /* ── Profile 모달 ── */

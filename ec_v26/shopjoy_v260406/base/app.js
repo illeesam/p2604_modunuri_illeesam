@@ -149,30 +149,34 @@
     const auth = window.shopjoyAuth.state;
     const showLogin = ref(false);
     const onShowLogin = () => { showLogin.value = true; };
+    const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
     const onLogout = () => {
       window.shopjoyAuth.logout();
       showToast('로그아웃되었습니다.', 'info');
-      if (page.value === 'my') page.value = 'home';
+      if (MY_PAGES.includes(page.value)) page.value = 'home';
     };
     /* shopjoy_token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
     watch(() => auth.user, u => {
-      if (!u && page.value === 'my') page.value = 'home';
+      if (!u && MY_PAGES.includes(page.value)) page.value = 'home';
     });
 
     /* ── URL state ── */
     let restoring = true;
-    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'my', 'location', 'about'];
+    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'location', 'about',
+      'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = rawHash.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawHash) : null;
+      const isMyPage = p => ['myOrder','myClaim','myCoupon','myCache','myContact','myChatt'].includes(p);
+      const isLoggedIn = !!(localStorage.getItem('shopjoy_token'));
       if (hasPageParam) {
         const hPage = params.get('page');
-        if (hPage && validPages.includes(hPage)) page.value = hPage;
+        if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;
       } else {
         try {
           const sp = sessionStorage.getItem('shopjoy_page');
-          if (sp && validPages.includes(sp)) page.value = sp;
+          if (sp && validPages.includes(sp) && (!isMyPage(sp) || isLoggedIn)) page.value = sp;
         } catch (e) {}
       }
       const hpid = hasPageParam ? params?.get('pid') : null;
@@ -321,12 +325,34 @@
         v-else-if="page==='about'"
         :navigate="navigate" :config="config"
       />
-      <my
-        v-else-if="page==='my'"
+      <my-order
+        v-else-if="page==='myOrder'"
         :navigate="navigate" :config="config"
         :cart="cart" :cart-count="cartCount"
         :show-toast="showToast" :show-confirm="showConfirm"
         :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
+      />
+      <my-claim
+        v-else-if="page==='myClaim'"
+        :navigate="navigate" :config="config" :cart-count="cartCount"
+        :show-toast="showToast" :show-confirm="showConfirm"
+      />
+      <my-coupon
+        v-else-if="page==='myCoupon'"
+        :navigate="navigate" :cart-count="cartCount" :show-toast="showToast"
+      />
+      <my-cache
+        v-else-if="page==='myCache'"
+        :navigate="navigate" :cart-count="cartCount" :show-toast="showToast"
+      />
+      <my-contact
+        v-else-if="page==='myContact'"
+        :navigate="navigate" :cart-count="cartCount"
+        :show-toast="showToast" :show-confirm="showConfirm"
+      />
+      <my-chatt
+        v-else-if="page==='myChatt'"
+        :navigate="navigate" :cart-count="cartCount"
       />
 
       <app-footer :config="config" :navigate="navigate" />
@@ -382,7 +408,12 @@
   .component('Order',   window.Order)
   .component('Contact', window.Contact)
   .component('Faq',     window.Faq)
-  .component('My',           window.My)
+  .component('MyOrder',   window.MyOrder)
+  .component('MyClaim',   window.MyClaim)
+  .component('MyCoupon',  window.MyCoupon)
+  .component('MyCache',   window.MyCache)
+  .component('MyContact', window.MyContact)
+  .component('MyChatt',   window.MyChatt)
   .component('Login',        window.Login)
   .component('LocationPage', window.Location)
   .component('AboutPage',    window.About)

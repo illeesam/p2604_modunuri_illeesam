@@ -1,0 +1,110 @@
+
+
+ec_v26\shopjoy_v260406\components\modals\BaseModal.js
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+ec_v26/shopjoy_v260406 에서
+
+마이페이지 > 주문
+주문항목정보 컴포넌트로 만들어주면좋겠어
+ec_v26\shopjoy_v260406\components\widgets\BaseWidget.js 의 OrderItemWidget 컴포넌트
+프로세스표시 프로세스에 월/일 시:분 (시분은작게)표시해줘
+주문아이템 하단에 이럭보기 펼치기/닫기 추가해줘 (시간순 진행이력정보 보여줘, 첫번재 순번표시해줘)
+
+마이페이지 > 취소/반품/교환
+클레임항목정보 컴포넌트로 만들어주면좋겠어
+ec_v26\shopjoy_v260406\components\widgets\BaseWidget.js 의 ClaimItemWidget 컴포넌트
+프로세스표시 프로세스에 월/일 시:분 (시분은작게)표시해줘
+
+클레임아이템 하단에 이럭보기 펼치기/닫기 추가해줘 (시간순 진행이력정보 보여줘, 첫번재 순번표시해줘)
+
+
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+
+
+방금정보는 되돌렸어
+
+마이페이지 아래 파일에 소스 다 들어가 있는데
+ec_v26\shopjoy_v260406\pages\My.js
+
+탭별페이지 별로 소스 분리하고 싶어
+
+주문 탭의 경우
+ec_v26\shopjoy_v260406\pages\MyOrder.js
+클레임 탭의 경우
+ec_v26\shopjoy_v260406\pages\MyClaim.js
+장바구니 탭의 필요없어
+쿠폰 탭의 경우
+ec_v26\shopjoy_v260406\pages\MyCoupon.js
+캐쉬 탭의 경우
+ec_v26\shopjoy_v260406\pages\MyCache.js
+문의 탭의 경우
+ec_v26\shopjoy_v260406\pages\MyContact.js
+채팅 탭의 경우
+ec_v26\shopjoy_v260406\pages\MyChatt.js
+
+으로 분리해줘
+
+
+
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+
+추가로
+admin > 회원관리 (.\pages\admin\MemberMng.js, MemberDtl.js)
+admin > 상품관리 (.\pages\admin\ProdMng.js, ProdDtl.js)
+admin > 주문관리 (.\pages\admin\OrderMng.js, OrderDtl.js)
+admin > 클레임관리 (.\pages\admin\ClaimMng.js, ClaimDtl.js)
+admin > 배송관리 (.\pages\admin\DlivMng.js, DlivDtl.js)
+admin > 쿠폰관리 (.\pages\admin\CouponMng.js, CouponDtl.js)
+admin > 캐쉬관리 (.\pages\admin\CacheMng.js, CacheDtl.js)
+admin > 전시관리 (.\pages\admin\DispMng.js, DispDtl.js)  (화면영역별 부분추가되는 위젯을 관리하는화면이야, 표현방식, 조건방식, 클릭시이동, 클릭시이벤트, 인증에따른보이는지, 차트위젯도포함, 컴포넌트구성이필요하면 (components\widgets\DispWidget.js), 컴포넌트패널구성이필요하면 (components\panels\DispPanel.js) )
+admin > 이벤트관리 (.\pages\admin\EventMng.js, EventDtl.js) (html editor 로 이벤트제목, 이벤트내용1, 이벤트내용2, 이벤트내용3, 이벤트내용4, 이벤트내용5, 대상상품목록 팝업선택으로 추가, 이벤트내용 인증여부에 따라 부분 보이고 안보이고 설정, 이벤트확인버튼 클릭시, toast메시지참여완료메시지출력)
+admin > 문의관리 (.\pages\admin\ContactMng.js, ContactDtl.js)
+admin > 채팅관리 (.\pages\admin\ChattMng.js, CahttDtl.js) (최신채팅정보 조회, 고객조회하여 채탱내용조회, 채팅내용중 (상품id, 주문id, 클레임id) 있으면 내용을 모달로 볼수 있으면 좋겠어)
+
+각 화면은 url 로 독립화면으로 오픈할거라 레이아웃은 없이 순수화면만 보이면 되
+상단은 검색란 [검색] 버튼보이면되
+가운데는 목록, 아래 페이징 표시해줘, 페이징개수(10) 표시 및 5,10,20,30,50,100 수정가능하게 해줘 행 우측란에 [수정][삭제]
+페이징 왼쪽에 총 개수 표시해줘
+제목을 클릭하면 상세화면으로 이동해줘
+목록상단에  [신규] 버튼 추가해줘
+
+
+데이타정보에서 자신의화면 외 회원id/명, 상품id/명, 클레임id/명, 쿠폰id/명, 주문id/명 정보가 확인되는경우 모달상세보여주면좋겠어
+
+
+기본 계정: user1@demo.com / demo1234 / 이름: 홍길동
+
+추가허용계정
+user2@demo.com / demo1234 / 이름: 홍길동2
+user3@demo.com / demo1234 / 이름: 홍길동3
+
+
+admin1@demo.com / demo1234 / 이름: 관리자1 / 관리자권한
+admin2@demo.com / demo1234 / 이름: 관리자2 / 관리자권한
+admin3@demo.com / demo1234 / 이름: 관리자3 / 관리자권한
+
+
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+
+
+
+
+
+
+
+
+
+
+
+

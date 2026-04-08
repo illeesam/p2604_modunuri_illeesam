@@ -13,7 +13,7 @@ window.AppSidebar = {
       <template v-for="item in section.items" :key="item.menuId">
         <button v-if="!item.authRequired || (auth && auth.user)" type="button"
           @click.stop="navigate(item.menuId, { replace: true }); $emit('close-mobile')"
-          class="sidebar-link" :class="{active: page===item.menuId}"
+          class="sidebar-link" :class="{active: isMenuActive(page, item.menuId)}"
           :data-tip="item.menuName" :aria-label="item.menuName">
           <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
           <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">
@@ -38,5 +38,12 @@ window.AppSidebar = {
   </div>
 </div>
   `,
-  setup() { return {}; }
+  setup() {
+    const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
+    const isMenuActive = (page, menuId) => {
+      if (menuId === 'myOrder') return MY_PAGES.includes(page);
+      return page === menuId;
+    };
+    return { isMenuActive };
+  }
 };
