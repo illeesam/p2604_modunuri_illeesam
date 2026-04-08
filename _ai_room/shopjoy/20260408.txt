@@ -56,7 +56,8 @@ ec_v26\shopjoy_v260406\pages\MyChatt.js
 
 
 
-추가로
+화면추가해줘 
+
 admin > 회원관리 (.\pages\admin\MemberMng.js, MemberDtl.js)
 admin > 상품관리 (.\pages\admin\ProdMng.js, ProdDtl.js)
 admin > 주문관리 (.\pages\admin\OrderMng.js, OrderDtl.js)
