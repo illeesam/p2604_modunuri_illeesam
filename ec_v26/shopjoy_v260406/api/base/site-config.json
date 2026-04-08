@@ -13,7 +13,6 @@
   "topMenu": [
     { "icon": "🏠", "menuId": "home",     "menuName": "홈" },
     { "icon": "🗂️", "menuId": "products", "menuName": "상품목록" },
-    { "icon": "🛒", "menuId": "cart",     "menuName": "장바구니" },
     { "icon": "📝", "menuId": "order",    "menuName": "주문하기" },
     { "icon": "📞", "menuId": "contact",  "menuName": "고객센터" },
     { "icon": "❓", "menuId": "faq",      "menuName": "FAQ" }
@@ -30,7 +29,7 @@
       "section": "구매",
       "items": [
         { "icon": "📝", "menuId": "order", "menuName": "주문하기" },
-        { "icon": "👤", "menuId": "my", "menuName": "마이페이지" }
+        { "icon": "👤", "menuId": "myOrder", "menuName": "마이페이지" }
       ]
     },
     {

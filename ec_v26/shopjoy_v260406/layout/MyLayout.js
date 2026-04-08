@@ -51,7 +51,6 @@ window.MyLayout = {
     const MY_TABS = [
       { pageId: 'myOrder',   label: '주문',          icon: '📦' },
       { pageId: 'myClaim',   label: '취소/반품/교환', icon: '↩️' },
-      { pageId: 'myCart',    label: '장바구니',       icon: '🛒' },
       { pageId: 'myCoupon',  label: '쿠폰',           icon: '🎟️' },
       { pageId: 'myCache',   label: '캐쉬',           icon: '💰' },
       { pageId: 'myContact', label: '문의',           icon: '📩' },
