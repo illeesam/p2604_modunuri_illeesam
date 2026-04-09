@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 주문관리 목록 */
+/* ShopJoy Admin - 주문관리 목록 + 하단 OrderDtl 임베드 */
 window.OrderMng = {
   name: 'OrderMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
@@ -8,6 +8,14 @@ window.OrderMng = {
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+
+    /* 하단 상세 */
+    const selectedId = ref(null);
+    const loadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
+    const openNew = () => { selectedId.value = '__new__'; };
+    const closeDetail = () => { selectedId.value = null; };
+    const inlineNavigate = (pg, opts = {}) => { if (pg === 'orderMng') { selectedId.value = null; return; } props.navigate(pg, opts); };
+    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
 
     const filtered = computed(() => props.adminData.orders.filter(o => {
       const kw = searchKw.value.trim().toLowerCase();
@@ -28,7 +36,6 @@ window.OrderMng = {
       '주문완료': 'badge-blue', '결제완료': 'badge-orange', '배송준비중': 'badge-orange',
       '배송중': 'badge-blue', '배송완료': 'badge-green', '완료': 'badge-gray', '취소됨': 'badge-red'
     }[s] || 'badge-gray');
-
     const onSearch = () => { pager.page = 1; };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -38,10 +45,11 @@ window.OrderMng = {
       if (!ok) return;
       const idx = props.adminData.orders.findIndex(x => x.orderId === o.orderId);
       if (idx !== -1) props.adminData.orders.splice(idx, 1);
+      if (selectedId.value === o.orderId) selectedId.value = null;
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, setPage, onSizeChange, doDelete };
+    return { searchKw, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -60,7 +68,7 @@ window.OrderMng = {
   <div class="card">
     <div class="toolbar">
       <span style="font-size:13px;color:#555;">검색결과 <b>{{ total }}</b>건</span>
-      <button class="btn btn-primary btn-sm" @click="navigate('orderDtl', {id:null})">+ 신규</button>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
       <thead><tr>
@@ -68,8 +76,8 @@ window.OrderMng = {
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="o in pageList" :key="o.orderId">
-          <td><span class="title-link" @click="navigate('orderDtl',{id:o.orderId})">{{ o.orderId }}</span></td>
+        <tr v-for="o in pageList" :key="o.orderId" :style="selectedId===o.orderId?'background:#fff8f9;':''">
+          <td><span class="title-link" @click="loadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userName }}</span></td>
           <td>{{ o.orderDate }}</td>
           <td>{{ o.productName }}</td>
@@ -77,7 +85,7 @@ window.OrderMng = {
           <td>{{ o.payMethod }}</td>
           <td><span class="badge" :class="statusBadge(o.status)">{{ o.status }}</span></td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="navigate('orderDtl',{id:o.orderId})">수정</button>
+            <button class="btn btn-blue btn-sm" @click="loadDetail(o.orderId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(o)">삭제</button>
           </div></td>
         </tr>
@@ -96,6 +104,21 @@ window.OrderMng = {
         </select>
       </div>
     </div>
+  </div>
+
+  <!-- 하단 상세: OrderDtl 임베드 -->
+  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+    </div>
+    <order-dtl
+      :key="selectedId"
+      :navigate="inlineNavigate"
+      :admin-data="adminData"
+      :show-ref-modal="showRefModal"
+      :show-toast="showToast"
+      :edit-id="detailEditId"
+    />
   </div>
 </div>
 `

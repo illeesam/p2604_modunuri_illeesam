@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 클레임관리 목록 */
+/* ShopJoy Admin - 클레임관리 목록 + 하단 ClaimDtl 임베드 */
 window.ClaimMng = {
   name: 'ClaimMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
@@ -9,6 +9,14 @@ window.ClaimMng = {
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+
+    /* 하단 상세 */
+    const selectedId = ref(null);
+    const loadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
+    const openNew = () => { selectedId.value = '__new__'; };
+    const closeDetail = () => { selectedId.value = null; };
+    const inlineNavigate = (pg, opts = {}) => { if (pg === 'claimMng') { selectedId.value = null; return; } props.navigate(pg, opts); };
+    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
 
     const filtered = computed(() => props.adminData.claims.filter(c => {
       const kw = searchKw.value.trim().toLowerCase();
@@ -33,7 +41,6 @@ window.ClaimMng = {
       '환불처리중': 'badge-orange', '환불완료': 'badge-green',
       '교환요청': 'badge-orange', '발송완료': 'badge-blue', '교환완료': 'badge-green',
     }[s] || 'badge-gray');
-
     const onSearch = () => { pager.page = 1; };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -43,10 +50,11 @@ window.ClaimMng = {
       if (!ok) return;
       const idx = props.adminData.claims.findIndex(x => x.claimId === c.claimId);
       if (idx !== -1) props.adminData.claims.splice(idx, 1);
+      if (selectedId.value === c.claimId) selectedId.value = null;
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchType, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, setPage, onSizeChange, doDelete };
+    return { searchKw, searchType, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -67,7 +75,7 @@ window.ClaimMng = {
   <div class="card">
     <div class="toolbar">
       <span style="font-size:13px;color:#555;">검색결과 <b>{{ total }}</b>건</span>
-      <button class="btn btn-primary btn-sm" @click="navigate('claimDtl', {id:null})">+ 신규</button>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
       <thead><tr>
@@ -75,8 +83,8 @@ window.ClaimMng = {
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in pageList" :key="c.claimId">
-          <td><span class="title-link" @click="navigate('claimDtl',{id:c.claimId})">{{ c.claimId }}</span></td>
+        <tr v-for="c in pageList" :key="c.claimId" :style="selectedId===c.claimId?'background:#fff8f9;':''">
+          <td><span class="title-link" @click="loadDetail(c.claimId)" :style="selectedId===c.claimId?'color:#e8587a;font-weight:700;':''">{{ c.claimId }}<span v-if="selectedId===c.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userName }}</span></td>
           <td><span class="ref-link" @click="showRefModal('order', c.orderId)">{{ c.orderId }}</span></td>
           <td>{{ c.productName }}</td>
@@ -85,7 +93,7 @@ window.ClaimMng = {
           <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
           <td>{{ c.requestDate.slice(0,10) }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="navigate('claimDtl',{id:c.claimId})">수정</button>
+            <button class="btn btn-blue btn-sm" @click="loadDetail(c.claimId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>
           </div></td>
         </tr>
@@ -104,6 +112,21 @@ window.ClaimMng = {
         </select>
       </div>
     </div>
+  </div>
+
+  <!-- 하단 상세: ClaimDtl 임베드 -->
+  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+    </div>
+    <claim-dtl
+      :key="selectedId"
+      :navigate="inlineNavigate"
+      :admin-data="adminData"
+      :show-ref-modal="showRefModal"
+      :show-toast="showToast"
+      :edit-id="detailEditId"
+    />
   </div>
 </div>
 `
