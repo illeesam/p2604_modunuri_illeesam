@@ -26,5 +26,5 @@
         // "list.inactiveSelectionForeground": "#d0ff00",
     },
     "liveServer.settings.port": 5502,
-    "livePreview.defaultPreviewPath": "/mainFrame.html"
+    "livePreview.defaultPreviewPath": "/mainFrame.html",
 }
