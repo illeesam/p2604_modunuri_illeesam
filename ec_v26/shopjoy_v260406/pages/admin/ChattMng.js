@@ -6,7 +6,7 @@ window.ChattMng = {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
     const searchStatus = ref('');
-    const pager = reactive({ page: 1, size: 10 });
+    const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
 
     /* 하단 상세 */

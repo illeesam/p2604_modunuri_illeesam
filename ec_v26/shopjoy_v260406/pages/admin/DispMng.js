@@ -7,7 +7,7 @@ window.DispMng = {
     const searchKw = ref('');
     const searchArea = ref('');
     const searchStatus = ref('');
-    const pager = reactive({ page: 1, size: 10 });
+    const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
 
     /* 하단 상세 */
@@ -17,6 +17,34 @@ window.DispMng = {
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => { if (pg === 'dispMng') { selectedId.value = null; return; } props.navigate(pg, opts); };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+
+    /* 미리보기 */
+    const previewDisp = (d) => {
+      const areaPageMap = {
+        'HOME_BANNER': '', 'HOME_PRODUCT': '', 'HOME_CHART': '', 'HOME_EVENT': '',
+        'PRODUCT_TOP': '#page=products', 'PRODUCT_BTM': '#page=products',
+        'MY_PAGE': '#page=mypage', 'FOOTER': '',
+      };
+      const hash = areaPageMap[d.area] || '';
+      window.open(`http://127.0.0.1:5502/ec_v26/shopjoy_v260406/index.html${hash}`, '_blank', 'width=1280,height=900,scrollbars=yes');
+    };
+
+    /* 표현설정 요약 */
+    const dispSummary = (d) => {
+      if (d.widgetType === 'image_banner') return d.imageUrl ? '🖼 ' + d.imageUrl.split('/').pop().slice(0, 20) : '-';
+      if (d.widgetType === 'product_slider' || d.widgetType === 'product') return d.productIds ? '상품: ' + d.productIds.slice(0, 20) : '-';
+      if (d.widgetType === 'coupon') return d.couponCode ? '쿠폰: ' + d.couponCode : '-';
+      if (d.widgetType === 'file') return d.fileUrl ? '파일: ' + d.fileLabel || d.fileUrl.split('/').pop() : '-';
+      if (d.widgetType === 'event_banner') return d.eventId ? '이벤트#' + d.eventId : '-';
+      if (d.widgetType === 'cache_banner') return d.cacheDesc || '-';
+      if (d.widgetType === 'html_editor') return d.htmlContent ? d.htmlContent.replace(/<[^>]+>/g, '').slice(0, 20) + '…' : '-';
+      if (d.widgetType === 'widget_embed') return d.embedCode ? d.embedCode.slice(0, 20) + '…' : '-';
+      if (d.widgetType.startsWith('chart_')) return d.chartTitle || '-';
+      if (d.widgetType === 'text_banner') return d.textContent ? d.textContent.slice(0, 20) + (d.textContent.length > 20 ? '…' : '') : '-';
+      if (d.widgetType === 'info_card') return d.infoTitle || '-';
+      if (d.widgetType === 'popup') return d.popupWidth && d.popupHeight ? `${d.popupWidth}×${d.popupHeight}` : '-';
+      return '-';
+    };
 
     const filtered = computed(() => props.adminData.displays.filter(d => {
       const kw = searchKw.value.trim().toLowerCase();
@@ -35,8 +63,21 @@ window.DispMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
     const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const typeBadge = t => ({ 'image_banner':'badge-blue','product_slider':'badge-purple','chart_bar':'badge-orange','text_banner':'badge-gray','info_card':'badge-blue','popup':'badge-pink' }[t] || 'badge-gray');
-    const typeLabel = t => ({ 'image_banner':'이미지배너','product_slider':'상품슬라이더','chart_bar':'차트(Bar)','text_banner':'텍스트배너','info_card':'정보카드','popup':'팝업' }[t] || t);
+    const typeBadge = t => ({
+      'image_banner':'badge-blue', 'product_slider':'badge-purple', 'product':'badge-purple',
+      'chart_bar':'badge-orange', 'chart_line':'badge-orange', 'chart_pie':'badge-orange',
+      'text_banner':'badge-gray', 'info_card':'badge-blue', 'popup':'badge-red',
+      'file':'badge-gray', 'coupon':'badge-green', 'html_editor':'badge-orange',
+      'event_banner':'badge-blue', 'cache_banner':'badge-green', 'widget_embed':'badge-purple',
+    }[t] || 'badge-gray');
+    const typeLabel = t => ({
+      'image_banner':'이미지배너', 'product_slider':'상품슬라이더', 'product':'상품',
+      'chart_bar':'차트(Bar)', 'chart_line':'차트(Line)', 'chart_pie':'차트(Pie)',
+      'text_banner':'텍스트배너', 'info_card':'정보카드', 'popup':'팝업',
+      'file':'파일', 'coupon':'쿠폰', 'html_editor':'HTML에디터',
+      'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
+    }[t] || t);
+
     const onSearch = () => { pager.page = 1; };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -50,7 +91,7 @@ window.DispMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchArea, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchKw, searchArea, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewDisp, dispSummary };
   },
   template: /* html */`
 <div>
@@ -69,7 +110,7 @@ window.DispMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>위젯명</th><th>영역코드</th><th>위젯유형</th><th>클릭액션</th><th>조건</th><th>인증</th><th>순서</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th>ID</th><th>위젯명</th><th>영역코드</th><th>위젯유형</th><th>표현설정</th><th>조건</th><th>인증</th><th>순서</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="d in pageList" :key="d.dispId" :style="selectedId===d.dispId?'background:#fff8f9;':''">
@@ -77,12 +118,13 @@ window.DispMng = {
           <td><span class="title-link" @click="loadDetail(d.dispId)" :style="selectedId===d.dispId?'color:#e8587a;font-weight:700;':''">{{ d.name }}<span v-if="selectedId===d.dispId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><code style="font-size:11px;background:#f5f5f5;padding:2px 5px;border-radius:3px;">{{ d.area }}</code></td>
           <td><span class="badge" :class="typeBadge(d.widgetType)">{{ typeLabel(d.widgetType) }}</span></td>
-          <td>{{ d.clickAction === 'navigate' ? '이동: '+d.clickTarget : d.clickAction === 'event' ? '이벤트: '+d.clickTarget : '-' }}</td>
+          <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#666;">{{ dispSummary(d) }}</td>
           <td>{{ d.condition }}</td>
           <td><span v-if="d.authRequired" class="badge badge-orange">필요</span><span v-else class="badge badge-gray">불필요</span></td>
           <td>{{ d.sortOrder }}</td>
           <td><span class="badge" :class="statusBadge(d.status)">{{ d.status }}</span></td>
           <td><div class="actions">
+            <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewDisp(d)">👁</button>
             <button class="btn btn-blue btn-sm" @click="loadDetail(d.dispId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(d)">삭제</button>
           </div></td>

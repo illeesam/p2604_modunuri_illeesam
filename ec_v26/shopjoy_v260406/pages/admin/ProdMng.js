@@ -7,7 +7,7 @@ window.ProdMng = {
     const searchKw = ref('');
     const searchCate = ref('');
     const searchStatus = ref('');
-    const pager = reactive({ page: 1, size: 10 });
+    const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
 
     /* 하단 상세 */
@@ -49,7 +49,11 @@ window.ProdMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchCate, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    const previewProduct = (pid) => {
+      window.open(`http://127.0.0.1:5502/ec_v26/shopjoy_v260406/index.html#page=detail&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+    };
+
+    return { searchKw, searchCate, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewProduct };
   },
   template: /* html */`
 <div>
@@ -83,6 +87,7 @@ window.ProdMng = {
           <td><span class="badge" :class="statusBadge(p.status)">{{ p.status }}</span></td>
           <td>{{ p.regDate }}</td>
           <td><div class="actions">
+            <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.productId)">👁</button>
             <button class="btn btn-blue btn-sm" @click="loadDetail(p.productId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(p)">삭제</button>
           </div></td>
