@@ -1,0 +1,19 @@
+pages\admin, admin.html
+에 코드관리 메뉴 추가해줘
+코드는
+코드아이디 (code_id)
+코드그룹 (code_grp)
+코드라벨 (code_label)
+코드값 (code_value)
+코드는유형은 일반코드, tree코드로 구분할 수 있어
+tree코드 는 code_grp, parnet_code_value 값이 부모값이 되
+를 기준으로 만들어줘
+
+첨부파일관리도 추가해줘
+첨부파일은 첨부그룹아이디 attach_grp_id, 첨부파일아이디 attach_id 가 있으면
+attach_grp_id 은 여러개의 attach_id 를 가질수 있어
+일반업무에서는 attach_grp_id 또는 attach_id 를 첨부할때 활용할수 있어
+attach_grp_id 를 가지고 있다면 목록형 첨부가되
+
+첨부파일에 유형1코드, 유형2코드,  유형3코드 넣어줘
+추후 활용될거야
