@@ -15,15 +15,23 @@ window.DispMng = {
     const searchArea = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* 하단 상세 */
     const selectedId = ref(null);
-    const loadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
-    const openNew = () => { selectedId.value = '__new__'; };
+    const openMode = ref('view'); // 'view' | 'edit'
+    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
+    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
-    const inlineNavigate = (pg, opts = {}) => { if (pg === 'ecDispMng') { selectedId.value = null; return; } props.navigate(pg, opts); };
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'ecDispMng') { selectedId.value = null; return; }
+      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      props.navigate(pg, opts);
+    };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     /* 미리보기 */
     const previewDisp = (d) => {
@@ -129,7 +137,9 @@ window.DispMng = {
       });
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchArea, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewDisp, dispSummary };
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
+
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchArea, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel };
   },
   template: /* html */`
 <div>
@@ -149,7 +159,10 @@ window.DispMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title">전시목록 <span class="list-count">{{ total }}건</span></span>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      </div>
     </div>
     <table class="admin-table">
       <thead><tr><th>ID</th><th>위젯명</th><th>영역코드</th><th>위젯유형</th><th>표현설정</th><th>조건</th><th>인증</th><th>순서</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
@@ -192,7 +205,7 @@ window.DispMng = {
   </div>
 
   <!-- 하단 상세: DispDtl 임베드 -->
-  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+  <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>

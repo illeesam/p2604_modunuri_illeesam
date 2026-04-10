@@ -1,9 +1,9 @@
 /* ShopJoy Admin - 주문관리 상세/등록 */
 window.OrderDtl = {
   name: 'OrderDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted } = Vue;
+    const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
 
     const ORDER_STEPS = ['주문완료', '결제완료', '배송준비중', '배송중', '배송완료', '완료'];
@@ -14,17 +14,32 @@ window.OrderDtl = {
     });
     const errors = reactive({});
 
+    const memoEl = ref(null);
+    let _qMemo = null;
+
     const schema = yup.object({
       orderId: yup.string().required('주문ID를 입력해주세요.'),
       userId: yup.string().required('회원ID를 입력해주세요.'),
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       if (!isNew.value) {
         const o = props.adminData.getOrder(props.editId);
         if (o) Object.assign(form, { ...o });
       }
+      await nextTick();
+      if (memoEl.value) {
+        _qMemo = new Quill(memoEl.value, {
+          theme: 'snow',
+          placeholder: '내용을 입력하세요...',
+          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
+        });
+        if (form.memo) _qMemo.root.innerHTML = form.memo;
+        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
+      }
     });
+
+    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const currentStepIdx = computed(() => {
       const idx = ORDER_STEPS.indexOf(form.status);
@@ -65,11 +80,11 @@ window.OrderDtl = {
       });
     };
 
-    return { isNew, form, errors, save, ORDER_STEPS, currentStepIdx, isCanceled };
+    return { isNew, form, errors, save, ORDER_STEPS, currentStepIdx, isCanceled, memoEl };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '주문 등록' : '주문 수정' }}</div>
+  <div class="page-title">{{ isNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}</div>
   <div class="card">
 
     <!-- 주문 진행 상태 흐름 -->
@@ -102,14 +117,14 @@ window.OrderDtl = {
     <!-- 기본정보 폼 -->
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">주문ID <span class="req">*</span></label>
-        <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="!isNew" :class="errors.orderId ? 'is-invalid' : ''" />
+        <label class="form-label">주문ID <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="!isNew || viewMode" :class="errors.orderId ? 'is-invalid' : ''" />
         <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">회원ID <span class="req">*</span></label>
+        <label class="form-label">회원ID <span v-if="!viewMode" class="req">*</span></label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.userId" placeholder="회원 ID" :class="errors.userId ? 'is-invalid' : ''" />
+          <input class="form-control" v-model="form.userId" placeholder="회원 ID" :readonly="viewMode" :class="errors.userId ? 'is-invalid' : ''" />
           <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
         </div>
         <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
@@ -118,25 +133,25 @@ window.OrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.userName" />
+        <input class="form-control" v-model="form.userName" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">주문일시</label>
-        <input class="form-control" v-model="form.orderDate" placeholder="2026-04-08 10:00" />
+        <input class="form-control" v-model="form.orderDate" placeholder="2026-04-08 10:00" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">상품</label>
-      <input class="form-control" v-model="form.productName" placeholder="상품명" />
+      <input class="form-control" v-model="form.productName" placeholder="상품명" :readonly="viewMode" />
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">결제금액</label>
-        <input class="form-control" type="number" v-model.number="form.totalPrice" />
+        <input class="form-control" type="number" v-model.number="form.totalPrice" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">결제수단</label>
-        <select class="form-control" v-model="form.payMethod">
+        <select class="form-control" v-model="form.payMethod" :disabled="viewMode">
           <option>계좌이체</option><option>카드결제</option><option>캐쉬</option><option>혼합결제</option>
         </select>
       </div>
@@ -144,7 +159,7 @@ window.OrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.status" :disabled="viewMode">
           <option>주문완료</option><option>결제완료</option><option>배송준비중</option>
           <option>배송중</option><option>배송완료</option><option>완료</option><option>취소됨</option>
         </select>
@@ -152,11 +167,18 @@ window.OrderDtl = {
     </div>
     <div class="form-group">
       <label class="form-label">메모</label>
-      <textarea class="form-control" v-model="form.memo" rows="3"></textarea>
+      <div v-if="viewMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+      <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('ecOrderMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('ecOrderMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('ecOrderMng')">취소</button>
+      </template>
     </div>
 
   </div>

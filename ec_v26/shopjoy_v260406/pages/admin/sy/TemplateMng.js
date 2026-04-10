@@ -15,14 +15,22 @@ window.TemplateMng = {
     const searchType = ref('');
     const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const selectedId = ref(null);
-    const loadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
-    const openNew = () => { selectedId.value = '__new__'; };
+    const openMode = ref('view'); // 'view' | 'edit'
+    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
+    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
-    const inlineNavigate = (pg) => { if (pg === 'syTemplateMng') { selectedId.value = null; } };
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'syTemplateMng') { selectedId.value = null; return; }
+      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      props.navigate(pg, opts);
+    };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     /* 미리보기 모달 */
     const previewModal = Vue.reactive({ show: false, template: null });
@@ -103,7 +111,9 @@ window.TemplateMng = {
       });
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, useYnBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewModal, showPreview, closePreview, sendModal, openSend, closeSend };
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateName'},{label:'유형',key:'templateType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
+
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, useYnBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
   },
   template: /* html */`
 <div>
@@ -128,7 +138,10 @@ window.TemplateMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title">템플릿목록 <span class="list-count">{{ total }}건</span></span>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      </div>
     </div>
     <table class="admin-table">
       <thead><tr>
@@ -170,7 +183,7 @@ window.TemplateMng = {
       </div>
     </div>
   </div>
-  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+  <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>

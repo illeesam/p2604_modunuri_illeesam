@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 알림관리 상세/등록 */
 window.AlarmDtl = {
   name: 'AlarmDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -60,7 +60,7 @@ window.AlarmDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '알림 등록' : '알림 수정' }}</div>
+  <div class="page-title">{{ isNew ? '알림 등록' : (viewMode ? '알림 상세' : '알림 수정') }}</div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -70,19 +70,19 @@ window.AlarmDtl = {
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:2">
-        <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="알림 제목" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" placeholder="알림 제목" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.alarmType">
+        <select class="form-control" v-model="form.alarmType" :disabled="viewMode">
           <option>푸시</option><option>이메일</option><option>SMS</option><option>인앱</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.status" :disabled="viewMode">
           <option>임시</option><option>예약</option><option>발송완료</option><option>실패</option>
         </select>
       </div>
@@ -90,27 +90,33 @@ window.AlarmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">대상 유형</label>
-        <select class="form-control" v-model="form.targetType">
+        <select class="form-control" v-model="form.targetType" :disabled="viewMode">
           <option>전체</option><option>VIP</option><option>우수</option><option>일반</option><option>특정회원</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">대상 ID</label>
-        <input class="form-control" v-model="form.targetId" placeholder="특정회원 ID (선택)" />
+        <input class="form-control" v-model="form.targetId" placeholder="특정회원 ID (선택)" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">발송일시</label>
-        <input class="form-control" type="datetime-local" v-model="form.sendDate" />
+        <input class="form-control" type="datetime-local" v-model="form.sendDate" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">메시지 <span class="req">*</span></label>
-      <textarea class="form-control" v-model="form.message" rows="4" placeholder="알림 메시지 내용" :class="errors.message ? 'is-invalid' : ''"></textarea>
+      <label class="form-label">메시지 <span v-if="!viewMode" class="req">*</span></label>
+      <textarea class="form-control" v-model="form.message" rows="4" placeholder="알림 메시지 내용" :readonly="viewMode" :class="errors.message ? 'is-invalid' : ''"></textarea>
       <span v-if="errors.message" class="field-error">{{ errors.message }}</span>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('syAlarmMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('syAlarmMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('syAlarmMng')">취소</button>
+      </template>
     </div>
   </div>
 </div>

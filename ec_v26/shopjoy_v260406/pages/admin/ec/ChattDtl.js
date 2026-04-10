@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 채팅관리 상세/등록 */
 window.ChattDtl = {
   name: 'ChattDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
@@ -137,7 +137,7 @@ window.ChattDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '채팅 등록' : '채팅 상세' }}</div>
+  <div class="page-title">{{ isNew ? '채팅 등록' : (viewMode ? '채팅 상세' : '채팅 수정') }}</div>
 
   <!-- 채팅 상세 -->
   <div class="card" v-if="!isNew">
@@ -225,9 +225,9 @@ window.ChattDtl = {
       <div v-show="tab==='new'">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">회원ID <span class="req">*</span></label>
+            <label class="form-label">회원ID <span v-if="!viewMode" class="req">*</span></label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserChange" :class="errors.userId ? 'is-invalid' : ''" />
+              <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserChange" :readonly="viewMode" :class="errors.userId ? 'is-invalid' : ''" />
               <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
             </div>
             <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
@@ -238,19 +238,25 @@ window.ChattDtl = {
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">제목 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.subject" placeholder="채팅 제목" :class="errors.subject ? 'is-invalid' : ''" />
+          <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" v-model="form.subject" placeholder="채팅 제목" :readonly="viewMode" :class="errors.subject ? 'is-invalid' : ''" />
           <span v-if="errors.subject" class="field-error">{{ errors.subject }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" style="max-width:200px;" v-model="form.status">
+          <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
             <option>진행중</option><option>종료</option>
           </select>
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary" @click="saveNew">등록</button>
-          <button class="btn btn-secondary" @click="navigate('ecChattMng')">취소</button>
+          <template v-if="viewMode">
+            <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+            <button class="btn btn-secondary" @click="navigate('ecChattMng')">닫기</button>
+          </template>
+          <template v-else>
+            <button class="btn btn-primary" @click="saveNew">등록</button>
+            <button class="btn btn-secondary" @click="navigate('ecChattMng')">취소</button>
+          </template>
         </div>
       </div>
 

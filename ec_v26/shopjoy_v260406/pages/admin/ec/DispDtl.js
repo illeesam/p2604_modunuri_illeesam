@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시관리 상세/등록 */
 window.DispDtl = {
   name: 'DispDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -177,7 +177,7 @@ window.DispDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '전시 위젯 등록' : '전시 위젯 수정' }}</div>
+  <div class="page-title">{{ isNew ? '전시 위젯 등록' : (viewMode ? '전시 위젯 상세' : '전시 위젯 수정') }}</div>
   <div class="card">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}"    @click="tab='info'">기본정보</button>
@@ -190,12 +190,12 @@ window.DispDtl = {
     <div v-show="tab==='info'">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">위젯명 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.name" placeholder="위젯 이름" />
+          <label class="form-label">위젯명 <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" v-model="form.name" placeholder="위젯 이름" :readonly="viewMode" />
         </div>
         <div class="form-group">
-          <label class="form-label">화면 영역 <span class="req">*</span></label>
-          <select class="form-control" v-model="form.area">
+          <label class="form-label">화면 영역 <span v-if="!viewMode" class="req">*</span></label>
+          <select class="form-control" v-model="form.area" :disabled="viewMode">
             <option v-for="a in AREAS" :key="a" :value="a">{{ a }}</option>
           </select>
         </div>
@@ -203,24 +203,30 @@ window.DispDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">위젯 유형</label>
-          <select class="form-control" v-model="form.widgetType">
+          <select class="form-control" v-model="form.widgetType" :disabled="viewMode">
             <option v-for="w in WIDGET_TYPES" :key="w.value" :value="w.value">{{ w.label }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">노출 순서</label>
-          <input class="form-control" type="number" v-model.number="form.sortOrder" min="1" />
+          <input class="form-control" type="number" v-model.number="form.sortOrder" min="1" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" style="max-width:200px;" v-model="form.status">
+        <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
           <option>활성</option><option>비활성</option>
         </select>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -243,39 +249,39 @@ window.DispDtl = {
             <td style="padding:6px 8px;">
 
               <!-- input -->
-              <input v-if="row.type==='input'" class="form-control" v-model="form[row.key]" :placeholder="row.ph" style="margin:0;" />
+              <input v-if="row.type==='input'" class="form-control" v-model="form[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="viewMode" />
 
               <!-- number -->
-              <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="form[row.key]" style="margin:0;max-width:200px;" />
+              <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="form[row.key]" style="margin:0;max-width:200px;" :readonly="viewMode" />
 
               <!-- select -->
-              <select v-else-if="row.type==='select'" class="form-control" v-model="form[row.key]" style="margin:0;max-width:200px;">
+              <select v-else-if="row.type==='select'" class="form-control" v-model="form[row.key]" style="margin:0;max-width:200px;" :disabled="viewMode">
                 <option v-for="o in row.options" :key="o.v" :value="o.v">{{ o.l }}</option>
               </select>
 
               <!-- textarea -->
-              <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="form[row.key]" rows="3" style="margin:0;"></textarea>
+              <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="form[row.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
 
               <!-- color -->
               <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
-                <input type="color" v-model="form[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" />
-                <input class="form-control" v-model="form[row.key]" style="margin:0;max-width:140px;" />
+                <input type="color" v-model="form[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
+                <input class="form-control" v-model="form[row.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
                 <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:form[row.key]}"></span>
               </div>
 
               <!-- html editor -->
               <div v-else-if="row.type==='html'">
-                <textarea class="form-control" v-model="form[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph"></textarea>
+                <textarea class="form-control" v-model="form[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="viewMode"></textarea>
                 <div v-if="form[row.key]" style="margin-top:8px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;font-size:12px;color:#888;">미리보기: <span v-html="form[row.key]"></span></div>
               </div>
 
               <!-- embed code -->
-              <textarea v-else-if="row.type==='code'" class="form-control" v-model="form[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph"></textarea>
+              <textarea v-else-if="row.type==='code'" class="form-control" v-model="form[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="viewMode"></textarea>
 
               <!-- event picker -->
               <div v-else-if="row.type==='event'">
                 <div style="display:flex;gap:8px;align-items:center;">
-                  <input class="form-control" v-model="form.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" />
+                  <input class="form-control" v-model="form.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
                   <span v-if="form.eventId" class="ref-link" @click="showRefModal('event', Number(form.eventId))">보기</span>
                 </div>
                 <div v-if="relatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
@@ -323,8 +329,14 @@ window.DispDtl = {
       </table>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -336,7 +348,7 @@ window.DispDtl = {
           <tr>
             <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
             <td style="padding:6px 8px;">
-              <select class="form-control" v-model="form.clickAction" style="margin:0;max-width:220px;">
+              <select class="form-control" v-model="form.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
                 <option value="none">없음</option>
                 <option value="navigate">페이지 이동</option>
                 <option value="event">이벤트 호출</option>
@@ -348,7 +360,7 @@ window.DispDtl = {
           <tr v-if="form.clickAction !== 'none'">
             <td style="font-weight:500;color:#555;vertical-align:middle;">대상</td>
             <td style="padding:6px 8px;">
-              <input class="form-control" v-model="form.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" />
+              <input class="form-control" v-model="form.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="viewMode" />
               <div style="margin-top:6px;font-size:12px;color:#888;">
                 <span v-if="form.clickAction==='navigate'">💡 <code>/home</code>, <code>/products</code>, <code>/detail?pid=1</code> 형식</span>
                 <span v-if="form.clickAction==='event'">💡 <code>showCoupon</code>, <code>openEvent</code> 등 이벤트명</span>
@@ -359,8 +371,14 @@ window.DispDtl = {
         </tbody>
       </table>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -372,7 +390,7 @@ window.DispDtl = {
           <tr>
             <td style="font-weight:500;color:#555;vertical-align:middle;">노출 조건</td>
             <td style="padding:6px 8px;">
-              <select class="form-control" v-model="form.condition" style="margin:0;max-width:260px;">
+              <select class="form-control" v-model="form.condition" style="margin:0;max-width:260px;" :disabled="viewMode">
                 <option>항상 표시</option>
                 <option>로그인 필요</option>
                 <option>비로그인</option>
@@ -385,7 +403,7 @@ window.DispDtl = {
             <td style="font-weight:500;color:#555;vertical-align:middle;">인증 필요</td>
             <td style="padding:6px 8px;">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox" v-model="form.authRequired" />
+                <input type="checkbox" v-model="form.authRequired" :disabled="viewMode" />
                 <span style="font-size:13px;">인증 필요</span>
               </label>
             </td>
@@ -393,7 +411,7 @@ window.DispDtl = {
           <tr v-if="form.authRequired">
             <td style="font-weight:500;color:#555;vertical-align:middle;">인증 등급 제한</td>
             <td style="padding:6px 8px;">
-              <select class="form-control" v-model="form.authGrade" style="margin:0;max-width:200px;">
+              <select class="form-control" v-model="form.authGrade" style="margin:0;max-width:200px;" :disabled="viewMode">
                 <option value="">등급 제한 없음</option>
                 <option>VIP</option><option>우수</option><option>일반</option>
               </select>
@@ -410,8 +428,14 @@ window.DispDtl = {
         </tbody>
       </table>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+        </template>
       </div>
     </div>
   </div>

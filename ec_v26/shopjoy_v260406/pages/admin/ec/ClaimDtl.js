@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 클레임관리 상세/등록 */
 window.ClaimDtl = {
   name: 'ClaimDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -71,7 +71,7 @@ window.ClaimDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '클레임 등록' : '클레임 수정' }}</div>
+  <div class="page-title">{{ isNew ? '클레임 등록' : (viewMode ? '클레임 상세' : '클레임 수정') }}</div>
   <div class="card">
 
     <!-- 클레임 진행 상태 흐름 -->
@@ -102,14 +102,14 @@ window.ClaimDtl = {
     <!-- 기본정보 폼 -->
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">클레임ID <span class="req">*</span></label>
-        <input class="form-control" v-model="form.claimId" placeholder="CLM-2026-XXX" :readonly="!isNew" :class="errors.claimId ? 'is-invalid' : ''" />
+        <label class="form-label">클레임ID <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.claimId" placeholder="CLM-2026-XXX" :readonly="!isNew || viewMode" :class="errors.claimId ? 'is-invalid' : ''" />
         <span v-if="errors.claimId" class="field-error">{{ errors.claimId }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">주문ID <span class="req">*</span></label>
+        <label class="form-label">주문ID <span v-if="!viewMode" class="req">*</span></label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :class="errors.orderId ? 'is-invalid' : ''" />
+          <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="viewMode" :class="errors.orderId ? 'is-invalid' : ''" />
           <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
         </div>
         <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
@@ -119,50 +119,56 @@ window.ClaimDtl = {
       <div class="form-group">
         <label class="form-label">회원ID</label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.userId" placeholder="회원 ID" />
+          <input class="form-control" v-model="form.userId" placeholder="회원 ID" :readonly="viewMode" />
           <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.userName" />
+        <input class="form-control" v-model="form.userName" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">클레임 유형</label>
-        <select class="form-control" v-model="form.type">
+        <select class="form-control" v-model="form.type" :disabled="viewMode">
           <option>취소</option><option>반품</option><option>교환</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">처리 상태</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.status" :disabled="viewMode">
           <option v-for="s in statusOptions" :key="s">{{ s }}</option>
         </select>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">상품명</label>
-      <input class="form-control" v-model="form.productName" />
+      <input class="form-control" v-model="form.productName" :readonly="viewMode" />
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사유</label>
-        <input class="form-control" v-model="form.reason" />
+        <input class="form-control" v-model="form.reason" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">신청일</label>
-        <input class="form-control" v-model="form.requestDate" placeholder="2026-04-08 10:00" />
+        <input class="form-control" v-model="form.requestDate" placeholder="2026-04-08 10:00" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">상세 사유</label>
-      <textarea class="form-control" v-model="form.reasonDetail" rows="3"></textarea>
+      <textarea class="form-control" v-model="form.reasonDetail" rows="3" :readonly="viewMode"></textarea>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('ecClaimMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('ecClaimMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('ecClaimMng')">취소</button>
+      </template>
     </div>
 
   </div>

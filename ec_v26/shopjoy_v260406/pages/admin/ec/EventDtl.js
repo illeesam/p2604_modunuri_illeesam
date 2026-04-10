@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 이벤트관리 상세/등록 (Quill HTML Editor) */
 window.EventDtl = {
   name: 'EventDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onUnmounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -137,7 +137,7 @@ window.EventDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '이벤트 등록' : '이벤트 수정' }}</div>
+  <div class="page-title">{{ isNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}</div>
   <div class="card">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" @click="onTabChange('info')">기본정보</button>
@@ -151,24 +151,24 @@ window.EventDtl = {
     <!-- 기본정보 -->
     <div v-show="tab==='info'">
       <div class="form-group">
-        <label class="form-label">이벤트 제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">이벤트 제목 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.startDate" />
+          <input class="form-control" type="date" v-model="form.startDate" :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">종료일</label>
-          <input class="form-control" type="date" v-model="form.endDate" />
+          <input class="form-control" type="date" v-model="form.endDate" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status">
+          <select class="form-control" v-model="form.status" :disabled="viewMode">
             <option>진행중</option><option>예정</option><option>종료</option>
           </select>
         </div>
@@ -183,8 +183,14 @@ window.EventDtl = {
         ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecEventMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -203,20 +209,27 @@ window.EventDtl = {
           <span class="badge badge-orange">인증 후 표시</span>
           <span style="font-size:12px;color:#888;">로그인 회원에게만 표시됩니다</span>
         </div>
-        <div class="quill-wrap">
+        <div v-if="viewMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'"></div>
+        <div v-else class="quill-wrap">
           <div :id="'quill-content'+n" style="min-height:160px;"></div>
         </div>
       </div>
       <div class="form-actions" style="margin-top:16px;">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecEventMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+        </template>
       </div>
     </div>
 
     <!-- 대상 상품 -->
     <div v-show="tab==='products'">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
-        <button class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
+        <button v-if="!viewMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
       <table class="admin-table" v-if="selectedProducts.length">
@@ -235,8 +248,14 @@ window.EventDtl = {
       </table>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">선택된 상품이 없습니다.</div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecEventMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+        </template>
       </div>
     </div>
 

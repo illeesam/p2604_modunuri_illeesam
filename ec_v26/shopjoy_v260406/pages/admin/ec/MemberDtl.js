@@ -1,9 +1,9 @@
 /* ShopJoy Admin - 회원관리 상세/등록 */
 window.MemberDtl = {
   name: 'MemberDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted } = Vue;
+    const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       email: '', name: '', phone: '', grade: '일반', status: '활성',
@@ -11,17 +11,32 @@ window.MemberDtl = {
     });
     const errors = reactive({});
 
+    const memoEl = ref(null);
+    let _qMemo = null;
+
     const schema = yup.object({
       email: yup.string().required('이메일을 입력해주세요.').email('올바른 이메일 형식이 아닙니다.'),
       name:  yup.string().required('이름을 입력해주세요.'),
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       if (!isNew.value) {
         const m = props.adminData.getMember(props.editId);
         if (m) Object.assign(form, { ...m });
       }
+      await nextTick();
+      if (memoEl.value) {
+        _qMemo = new Quill(memoEl.value, {
+          theme: 'snow',
+          placeholder: '관리자 메모',
+          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
+        });
+        if (form.memo) _qMemo.root.innerHTML = form.memo;
+        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
+      }
     });
+
+    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -58,33 +73,33 @@ window.MemberDtl = {
       });
     };
 
-    return { isNew, form, errors, save };
+    return { isNew, form, errors, save, memoEl };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '회원 등록' : '회원 수정' }}</div>
+  <div class="page-title">{{ isNew ? '회원 등록' : (viewMode ? '회원 상세' : '회원 수정') }}</div>
   <div class="card">
     <!-- 기본정보 폼 -->
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">이메일 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.email" placeholder="이메일 주소" :class="errors.email ? 'is-invalid' : ''" />
+        <label class="form-label">이메일 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.email" placeholder="이메일 주소" :readonly="viewMode" :class="errors.email ? 'is-invalid' : ''" />
         <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">이름 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.name" placeholder="이름" :class="errors.name ? 'is-invalid' : ''" />
+        <label class="form-label">이름 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.name" placeholder="이름" :readonly="viewMode" :class="errors.name ? 'is-invalid' : ''" />
         <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">연락처</label>
-        <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" />
+        <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">등급</label>
-        <select class="form-control" v-model="form.grade">
+        <select class="form-control" v-model="form.grade" :disabled="viewMode">
           <option>일반</option><option>우수</option><option>VIP</option>
         </select>
       </div>
@@ -92,22 +107,29 @@ window.MemberDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.status" :disabled="viewMode">
           <option>활성</option><option>정지</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">가입일</label>
-        <input class="form-control" type="date" v-model="form.joinDate" />
+        <input class="form-control" type="date" v-model="form.joinDate" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">메모</label>
-      <textarea class="form-control" v-model="form.memo" rows="3" placeholder="관리자 메모"></textarea>
+      <div v-if="viewMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+      <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('ecMemberMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('ecMemberMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('ecMemberMng')">취소</button>
+      </template>
     </div>
   </div>
 

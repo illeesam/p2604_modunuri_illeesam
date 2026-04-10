@@ -19,7 +19,7 @@ window.MenuMng = {
 
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50];
+    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['menuCode', 'menuName', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];
@@ -89,10 +89,13 @@ window.MenuMng = {
     };
 
     const addRow = () => {
+      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        menuId: _tempId--, menuCode: '', menuName: '', parentId: null,
-        menuUrl: '', menuType: '페이지', sortOrd: 1, useYn: 'Y', remark: '',
-        _depth: 0, _row_status: 'I', _row_check: false, _orig: null,
+        menuId: _tempId--, menuCode: '', menuName: '', parentId: ref ? ref.parentId : null,
+        menuUrl: '', menuType: ref ? ref.menuType : '페이지',
+        sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
+        useYn: 'Y', remark: '',
+        _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
       const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
@@ -191,6 +194,12 @@ window.MenuMng = {
     const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const typeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
+    const exportExcel = () => window.adminUtil.exportCsv(
+      gridRows.filter(r => r._row_status !== 'D'),
+      [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuName'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      '메뉴목록.csv'
+    );
+
     return {
       searchKw, searchType, searchUseYn, MENU_TYPES, applied,
       siteName,
@@ -200,6 +209,7 @@ window.MenuMng = {
       checkAll, toggleCheckAll, parentName,
       menuTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, statusClass, typeClass,
+      exportExcel,
     };
   },
   template: /* html */`
@@ -227,6 +237,7 @@ window.MenuMng = {
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
@@ -270,7 +281,7 @@ window.MenuMng = {
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                              fontSize: row._depth===0 ? '13px' : '12px', flexShrink:0,
+                              fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
                               color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
               <input class="grid-input" v-model="row.menuName" :disabled="row._row_status==='D'"
                 @input="onCellChange(row)" style="flex:1;" />
@@ -285,8 +296,8 @@ window.MenuMng = {
                 :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:2px 7px;font-size:11px;"
-                @click.stop="openParentModal(row)">변경</button>
+                style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위메뉴 선택"
+                @click.stop="openParentModal(row)">↑</button>
             </div>
           </td>
 

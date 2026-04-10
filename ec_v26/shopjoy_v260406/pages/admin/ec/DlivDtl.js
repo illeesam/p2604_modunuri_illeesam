@@ -1,9 +1,9 @@
 /* ShopJoy Admin - 배송관리 상세/등록 */
 window.DlivDtl = {
   name: 'DlivDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { reactive, computed, ref, onMounted } = Vue;
+    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
 
@@ -13,17 +13,32 @@ window.DlivDtl = {
     });
     const errors = reactive({});
 
+    const memoEl = ref(null);
+    let _qMemo = null;
+
     const schema = yup.object({
       dlivId: yup.string().required('배송ID를 입력해주세요.'),
       orderId: yup.string().required('주문ID를 입력해주세요.'),
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       if (!isNew.value) {
         const d = props.adminData.deliveries.find(x => x.dlivId === props.editId);
         if (d) Object.assign(form, { ...d });
       }
+      await nextTick();
+      if (memoEl.value) {
+        _qMemo = new Quill(memoEl.value, {
+          theme: 'snow',
+          placeholder: '내용을 입력하세요...',
+          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
+        });
+        if (form.memo) _qMemo.root.innerHTML = form.memo;
+        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
+      }
     });
+
+    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const relatedOrder  = computed(() => props.adminData.getOrder(form.orderId));
     const relatedClaims = computed(() => props.adminData.claims.filter(c => c.orderId === form.orderId));
@@ -60,11 +75,11 @@ window.DlivDtl = {
       });
     };
 
-    return { isNew, tab, form, errors, save };
+    return { isNew, tab, form, errors, save, memoEl };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '배송 등록' : '배송 수정' }}</div>
+  <div class="page-title">{{ isNew ? '배송 등록' : (viewMode ? '배송 상세' : '배송 수정') }}</div>
   <div class="card">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" @click="tab='info'">기본정보</button>
@@ -75,14 +90,14 @@ window.DlivDtl = {
     <div v-show="tab==='info'">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">배송ID <span class="req">*</span></label>
-          <input class="form-control" v-model="form.dlivId" placeholder="DLIV-XXX" :readonly="!isNew" :class="errors.dlivId ? 'is-invalid' : ''" />
+          <label class="form-label">배송ID <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" v-model="form.dlivId" placeholder="DLIV-XXX" :readonly="!isNew || viewMode" :class="errors.dlivId ? 'is-invalid' : ''" />
           <span v-if="errors.dlivId" class="field-error">{{ errors.dlivId }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label">주문ID <span class="req">*</span></label>
+          <label class="form-label">주문ID <span v-if="!viewMode" class="req">*</span></label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :class="errors.orderId ? 'is-invalid' : ''" />
+            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="viewMode" :class="errors.orderId ? 'is-invalid' : ''" />
             <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
           </div>
           <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
@@ -92,38 +107,45 @@ window.DlivDtl = {
         <div class="form-group">
           <label class="form-label">회원명</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userName" />
+            <input class="form-control" v-model="form.userName" :readonly="viewMode" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', form.userId)">보기</span>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">수령인</label>
-          <input class="form-control" v-model="form.receiver" />
+          <input class="form-control" v-model="form.receiver" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">배송지 주소</label>
-        <input class="form-control" v-model="form.address" placeholder="주소 입력" />
+        <input class="form-control" v-model="form.address" placeholder="주소 입력" :readonly="viewMode" />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">연락처</label>
-          <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" />
+          <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status">
+          <select class="form-control" v-model="form.status" :disabled="viewMode">
             <option>배송준비</option><option>배송중</option><option>배송완료</option><option>반송</option>
           </select>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">메모</label>
-        <textarea class="form-control" v-model="form.memo" rows="3"></textarea>
+        <div v-if="viewMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+        <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecDlivMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecDlivMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecDlivMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -132,13 +154,13 @@ window.DlivDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">택배사</label>
-          <select class="form-control" v-model="form.courier">
+          <select class="form-control" v-model="form.courier" :disabled="viewMode">
             <option value="">선택</option><option>CJ대한통운</option><option>롯데택배</option><option>한진택배</option><option>우체국</option><option>배송예정</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">운송장번호</label>
-          <input class="form-control" v-model="form.trackingNo" placeholder="운송장번호" />
+          <input class="form-control" v-model="form.trackingNo" placeholder="운송장번호" :readonly="viewMode" />
         </div>
       </div>
       <div v-if="form.courier && form.trackingNo" style="margin-top:12px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
@@ -150,8 +172,14 @@ window.DlivDtl = {
       </div>
       <div v-else style="color:#aaa;font-size:13px;padding:20px;text-align:center;">택배사와 운송장번호를 입력하면 조회 링크가 표시됩니다.</div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecDlivMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecDlivMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecDlivMng')">취소</button>
+        </template>
       </div>
     </div>
 

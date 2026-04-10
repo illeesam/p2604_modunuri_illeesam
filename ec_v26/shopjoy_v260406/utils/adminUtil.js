@@ -117,4 +117,23 @@
 
     return true;
   };
+
+  /* ── CSV/엑셀 다운로드 ──
+     columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
+  ── */
+  window.adminUtil.exportCsv = function(rows, columns, filename) {
+    const header = columns.map(c => `"${c.label}"`).join(',');
+    const body = rows.map(row =>
+      columns.map(c => {
+        const val = typeof c.value === 'function' ? c.value(row) : (row[c.key] ?? '');
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(',')
+    ).join('\n');
+    const bom = '\uFEFF'; // UTF-8 BOM (한글 깨짐 방지)
+    const blob = new Blob([bom + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename || 'export.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
 })();

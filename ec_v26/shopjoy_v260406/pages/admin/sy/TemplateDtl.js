@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 템플릿 상세/등록 */
 window.TemplateDtl = {
   name: 'TemplateDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -42,7 +42,7 @@ window.TemplateDtl = {
 
     /* 타입 변경 시 에디터 전환 — post-flush: DOM 업데이트 후 실행 */
     watch(useHtmlEditor, (isHtml) => {
-      if (isHtml) initQuill();
+      if (isHtml && !props.viewMode) initQuill();
       else destroyQuill();
     }, { flush: 'post' });
 
@@ -51,7 +51,7 @@ window.TemplateDtl = {
         const t = props.adminData.templates.find(x => x.templateId === props.editId);
         if (t) Object.assign(form, { sampleParams: '{}', ...t });
       }
-      if (useHtmlEditor.value) { await nextTick(); initQuill(); }
+      if (useHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
     });
 
     onBeforeUnmount(() => destroyQuill());
@@ -110,7 +110,7 @@ window.TemplateDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '템플릿 등록' : '템플릿 수정' }}</div>
+  <div class="page-title">{{ isNew ? '템플릿 등록' : (viewMode ? '템플릿 상세' : '템플릿 수정') }}</div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -120,42 +120,47 @@ window.TemplateDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">템플릿유형 <span class="req">*</span></label>
-        <select class="form-control" v-model="form.templateType">
+        <label class="form-label">템플릿유형 <span v-if="!viewMode" class="req">*</span></label>
+        <select class="form-control" v-model="form.templateType" :disabled="viewMode">
           <option v-for="t in TEMPLATE_TYPES" :key="t">{{ t }}</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">템플릿코드 <span class="req">*</span></label>
+        <label class="form-label">템플릿코드 <span v-if="!viewMode" class="req">*</span></label>
         <input class="form-control" v-model="form.templateCode" placeholder="예) ORDER_CONFIRM_MAIL"
           @input="form.templateCode=form.templateCode.toUpperCase().replace(/[^A-Z0-9_]/g,'')"
+          :readonly="viewMode"
           :class="errors.templateCode ? 'is-invalid' : ''" />
         <span v-if="errors.templateCode" class="field-error">{{ errors.templateCode }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">템플릿명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.templateName" placeholder="템플릿명 입력" :class="errors.templateName ? 'is-invalid' : ''" />
+        <label class="form-label">템플릿명 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.templateName" placeholder="템플릿명 입력" :readonly="viewMode" :class="errors.templateName ? 'is-invalid' : ''" />
         <span v-if="errors.templateName" class="field-error">{{ errors.templateName }}</span>
       </div>
     </div>
     <div class="form-row" v-if="needSubject">
       <div class="form-group" style="flex:1">
         <label class="form-label">제목 (Subject)</label>
-        <input class="form-control" v-model="form.subject" placeholder="메일/MMS/시스템 제목" />
+        <input class="form-control" v-model="form.subject" placeholder="메일/MMS/시스템 제목" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
-        <label class="form-label">내용 <span class="req">*</span>
+        <label class="form-label">내용 <span v-if="!viewMode" class="req">*</span>
           <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: &#123;&#123;username&#125;&#125;, &#123;&#123;orderId&#125;&#125;, &#123;&#123;productName&#125;&#125;, &#123;&#123;trackingNo&#125;&#125; 등</span>
         </label>
         <!-- HTML 에디터 (메일, 시스템알림) -->
-        <div v-if="useHtmlEditor" ref="quillEditorEl"
-          style="height:260px;background:#fff;border:1px solid #d9d9d9;border-radius:0 0 6px 6px;"></div>
+        <template v-if="useHtmlEditor">
+          <div v-if="viewMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
+          <div v-else ref="quillEditorEl"
+            style="height:260px;background:#fff;border:1px solid #d9d9d9;border-radius:0 0 6px 6px;"></div>
+        </template>
         <!-- 텍스트 영역 -->
         <textarea v-else class="form-control" v-model="form.content"
           :rows="isLongContent ? 10 : 5"
           placeholder="템플릿 내용 입력"
+          :readonly="viewMode"
           :class="errors.content ? 'is-invalid' : ''"></textarea>
         <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
       </div>
@@ -167,22 +172,30 @@ window.TemplateDtl = {
         </label>
         <textarea class="form-control" v-model="form.sampleParams" rows="3"
           style="font-family:monospace;font-size:12px;"
-          placeholder='{"username":"홍길동","orderId":"ORD-20260410-001"}'></textarea>
+          placeholder='{"username":"홍길동","orderId":"ORD-20260410-001"}'
+          :readonly="viewMode"></textarea>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn">
+        <select class="form-control" v-model="form.useYn" :disabled="viewMode">
           <option value="Y">사용</option><option value="N">미사용</option>
         </select>
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-secondary" @click="previewOpen=true">📄 미리보기</button>
-      <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="sendOpen=true">📨 발송하기</button>
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-secondary" @click="previewOpen=true">📄 미리보기</button>
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('syTemplateMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-secondary" @click="previewOpen=true">📄 미리보기</button>
+        <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="sendOpen=true">📨 발송하기</button>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
+      </template>
     </div>
   </div>
 

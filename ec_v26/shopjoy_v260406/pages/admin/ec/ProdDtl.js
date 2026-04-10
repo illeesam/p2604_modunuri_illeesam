@@ -1,9 +1,9 @@
 /* ShopJoy Admin - 상품관리 상세/등록 */
 window.ProdDtl = {
   name: 'ProdDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { reactive, computed, ref, onMounted } = Vue;
+    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const topTab = ref('info');
 
@@ -61,6 +61,9 @@ window.ProdDtl = {
     const fileInputRef = ref(null);
     const triggerFileInput = () => { if (fileInputRef.value) fileInputRef.value.click(); };
 
+    const descEl = ref(null);
+    let _qDesc = null;
+
     /* ── 판매계획 CRUD ── */
     const salePlans = ref([]);
     let planIdSeq = 1;
@@ -109,7 +112,7 @@ window.ProdDtl = {
       'I': 'badge-green', 'U': 'badge-orange', 'D': 'badge-red', 'N': 'badge-gray',
     }[s] || 'badge-gray');
 
-    onMounted(() => {
+    onMounted(async () => {
       if (!isNew.value) {
         const p = props.adminData.getProduct(props.editId);
         if (p) Object.assign(form, { ...p });
@@ -124,7 +127,19 @@ window.ProdDtl = {
           salePlans.value = p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false }));
         }
       }
+      await nextTick();
+      if (descEl.value) {
+        _qDesc = new Quill(descEl.value, {
+          theme: 'snow',
+          placeholder: '상품 설명을 입력해주세요.',
+          modules: { toolbar: [[{header:[1,2,3,false]}],['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','blockquote','clean']] }
+        });
+        if (form.description) _qDesc.root.innerHTML = form.description;
+        _qDesc.on('text-change', () => { form.description = _qDesc.root.innerHTML; });
+      }
     });
+
+    onBeforeUnmount(() => { if (_qDesc) { form.description = _qDesc.root.innerHTML; _qDesc = null; } });
 
     /* 연관상품 파싱 */
     const relatedProducts = computed(() => {
@@ -182,11 +197,12 @@ window.ProdDtl = {
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
       salePlans, planVisible, planAllChecked, addPlanRow, onPlanChange,
       deletePlanChecked, deleteLastPlanRow, planRowStyle, planStatusBadge,
+      descEl,
     };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '상품 등록' : '상품 수정' }}</div>
+  <div class="page-title">{{ isNew ? '상품 등록' : (viewMode ? '상품 상세' : '상품 수정') }}</div>
   <div class="card">
 
     <!-- 상단 탭 -->
@@ -203,13 +219,13 @@ window.ProdDtl = {
     <div v-show="topTab==='info'">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">상품명 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.productName" placeholder="상품명" :class="errors.productName ? 'is-invalid' : ''" />
+          <label class="form-label">상품명 <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" v-model="form.productName" placeholder="상품명" :readonly="viewMode" :class="errors.productName ? 'is-invalid' : ''" />
           <span v-if="errors.productName" class="field-error">{{ errors.productName }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">카테고리</label>
-          <select class="form-control" v-model="form.category">
+          <select class="form-control" v-model="form.category" :disabled="viewMode">
             <option>상의</option><option>하의</option><option>원피스</option><option>아우터</option><option>가방</option><option>기타</option>
           </select>
         </div>
@@ -217,11 +233,11 @@ window.ProdDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">브랜드</label>
-          <input class="form-control" v-model="form.brand" />
+          <input class="form-control" v-model="form.brand" :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status">
+          <select class="form-control" v-model="form.status" :disabled="viewMode">
             <option>판매중</option><option>품절</option><option>판매중지</option>
           </select>
         </div>
@@ -229,16 +245,22 @@ window.ProdDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">재고</label>
-          <input class="form-control" type="number" v-model.number="form.stock" placeholder="0" />
+          <input class="form-control" type="number" v-model.number="form.stock" placeholder="0" :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">등록일</label>
-          <input class="form-control" type="date" v-model="form.regDate" />
+          <input class="form-control" type="date" v-model="form.regDate" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -246,7 +268,7 @@ window.ProdDtl = {
     <div v-show="topTab==='option'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-          <input type="checkbox" v-model="form.optionUse" />
+          <input type="checkbox" v-model="form.optionUse" :disabled="viewMode" />
           <span style="font-size:13px;font-weight:500;">옵션 사용</span>
         </label>
       </div>
@@ -254,16 +276,16 @@ window.ProdDtl = {
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">색상 (쉼표 구분)</label>
-            <input class="form-control" v-model="form.colors" placeholder="블랙, 화이트, 베이지" />
+            <input class="form-control" v-model="form.colors" placeholder="블랙, 화이트, 베이지" :readonly="viewMode" />
           </div>
           <div class="form-group">
             <label class="form-label">사이즈 (쉼표 구분)</label>
-            <input class="form-control" v-model="form.sizes" placeholder="XS, S, M, L, XL" />
+            <input class="form-control" v-model="form.sizes" placeholder="XS, S, M, L, XL" :readonly="viewMode" />
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">옵션 그룹 (쉼표 구분)</label>
-          <input class="form-control" v-model="form.optionGroups" placeholder="색상, 사이즈, 소재" />
+          <input class="form-control" v-model="form.optionGroups" placeholder="색상, 사이즈, 소재" :readonly="viewMode" />
         </div>
         <!-- 옵션 조합 미리보기 -->
         <div v-if="form.colors || form.sizes" style="margin-top:12px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
@@ -278,8 +300,14 @@ window.ProdDtl = {
       </template>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">옵션 사용을 활성화하면 설정이 표시됩니다.</div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -287,11 +315,18 @@ window.ProdDtl = {
     <div v-show="topTab==='detail'">
       <div class="form-group">
         <label class="form-label">상품 설명</label>
-        <textarea class="form-control" v-model="form.description" rows="8" placeholder="상품 설명을 입력해주세요."></textarea>
+        <div v-if="viewMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.description || '<span style=color:#bbb>-</span>'"></div>
+        <div v-else ref="descEl" style="min-height:200px;background:#fff;"></div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -301,7 +336,7 @@ window.ProdDtl = {
       <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
 
       <!-- 추가 버튼 -->
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+      <div v-if="!viewMode" style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
         <button class="btn btn-secondary" @click="triggerFileInput">+ 파일 선택</button>
         <button class="btn btn-secondary" @click="addImageByUrl">+ URL 입력</button>
         <span style="font-size:12px;color:#aaa;">{{ images.length }}개 이미지</span>
@@ -309,8 +344,9 @@ window.ProdDtl = {
 
       <!-- 이미지 없음 -->
       <div v-if="images.length === 0"
-        style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
-        @click="triggerFileInput">
+        style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;"
+        :style="viewMode ? '' : 'cursor:pointer;'"
+        @click="viewMode ? null : triggerFileInput()">
         클릭하거나 파일을 끌어다 놓으세요
       </div>
 
@@ -330,17 +366,17 @@ window.ProdDtl = {
           <!-- URL 입력 (URL 추가 방식일 때) -->
           <div v-if="!img.previewUrl || img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:8px;">
             <label class="form-label" style="font-size:11px;">이미지 URL</label>
-            <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" />
+            <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" :readonly="viewMode" />
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <div class="form-group" style="flex:1;min-width:120px;margin-bottom:8px;">
               <label class="form-label" style="font-size:11px;">색상 <span style="color:#aaa;">(쉼표 구분)</span></label>
-              <input class="form-control" v-model="img.colors" placeholder="블랙, 화이트" style="font-size:12px;" />
+              <input class="form-control" v-model="img.colors" placeholder="블랙, 화이트" style="font-size:12px;" :readonly="viewMode" />
             </div>
             <div class="form-group" style="flex:1;min-width:120px;margin-bottom:8px;">
               <label class="form-label" style="font-size:11px;">사이즈 <span style="color:#aaa;">(쉼표 구분)</span></label>
-              <input class="form-control" v-model="img.sizes" placeholder="S, M, L" style="font-size:12px;" />
+              <input class="form-control" v-model="img.sizes" placeholder="S, M, L" style="font-size:12px;" :readonly="viewMode" />
             </div>
           </div>
 
@@ -355,16 +391,25 @@ window.ProdDtl = {
 
         <!-- 우측 버튼 -->
         <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-          <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="white-space:nowrap;font-size:11px;">대표 설정</button>
-          <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">★ 대표</span>
-          <button class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
+          <template v-if="!viewMode">
+            <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="white-space:nowrap;font-size:11px;">대표 설정</button>
+            <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">★ 대표</span>
+            <button class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
+          </template>
+          <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;" v-if="img.isMain">★ 대표</span>
           <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
         </div>
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -372,7 +417,7 @@ window.ProdDtl = {
     <div v-show="topTab==='related'">
       <div class="form-group">
         <label class="form-label">연관 상품 ID (쉼표 구분)</label>
-        <input class="form-control" v-model="form.relatedProductIds" placeholder="1, 2, 3" />
+        <input class="form-control" v-model="form.relatedProductIds" placeholder="1, 2, 3" :readonly="viewMode" />
       </div>
       <table class="admin-table" v-if="relatedProducts.length" style="margin-top:12px;">
         <thead><tr><th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>상태</th><th>관리</th></tr></thead>
@@ -390,8 +435,14 @@ window.ProdDtl = {
       </table>
       <div v-else-if="!form.relatedProductIds" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 상품 ID를 입력하세요.</div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -399,29 +450,29 @@ window.ProdDtl = {
     <div v-show="topTab==='price'">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">판매가 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.price" placeholder="0" :class="errors.price ? 'is-invalid' : ''" />
+          <label class="form-label">판매가 <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" type="number" v-model.number="form.price" placeholder="0" :readonly="viewMode" :class="errors.price ? 'is-invalid' : ''" />
           <span v-if="errors.price" class="field-error">{{ errors.price }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">할인가 (0=미적용)</label>
-          <input class="form-control" type="number" v-model.number="form.salePrice" placeholder="0" />
+          <input class="form-control" type="number" v-model.number="form.salePrice" placeholder="0" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">원가</label>
-          <input class="form-control" type="number" v-model.number="form.costPrice" placeholder="0" />
+          <input class="form-control" type="number" v-model.number="form.costPrice" placeholder="0" :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">적립 포인트율 (%)</label>
-          <input class="form-control" type="number" v-model.number="form.pointRate" placeholder="0" min="0" max="100" />
+          <input class="form-control" type="number" v-model.number="form.pointRate" placeholder="0" min="0" max="100" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">과세 유형</label>
-          <select class="form-control" v-model="form.taxType">
+          <select class="form-control" v-model="form.taxType" :disabled="viewMode">
             <option>과세</option><option>면세</option><option>영세</option>
           </select>
         </div>
@@ -441,15 +492,21 @@ window.ProdDtl = {
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecProdMng')">취소</button>
+        </template>
       </div>
 
       <!-- 판매계획 CRUD -->
       <div style="margin-top:24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="font-size:13px;font-weight:700;color:#333;">판매계획 <span style="font-size:12px;font-weight:400;color:#888;">{{ planVisible.length }}건</span></div>
-          <div style="display:flex;gap:6px;">
+          <div v-if="!viewMode" style="display:flex;gap:6px;">
             <button class="btn btn-sm btn-danger"    @click="deletePlanChecked">체크삭제</button>
             <button class="btn btn-sm btn-secondary" @click="addPlanRow">행추가</button>
             <button class="btn btn-sm btn-secondary" @click="deleteLastPlanRow">행삭제</button>
@@ -461,7 +518,7 @@ window.ProdDtl = {
               <tr>
                 <th style="width:40px;">순번</th>
                 <th style="width:42px;">상태</th>
-                <th style="width:36px;"><input type="checkbox" :checked="planAllChecked" @change="e => planAllChecked = e.target.checked" /></th>
+                <th style="width:36px;"><input type="checkbox" :checked="planAllChecked" @change="e => planAllChecked = e.target.checked" :disabled="viewMode" /></th>
                 <th style="width:130px;">시작일시</th>
                 <th style="width:130px;">종료일시</th>
                 <th style="width:80px;">판매상태</th>
@@ -479,31 +536,31 @@ window.ProdDtl = {
                   <span class="badge" :class="planStatusBadge(row._row_status)" style="font-size:10px;padding:1px 5px;">{{ row._row_status }}</span>
                 </td>
                 <td style="text-align:center;">
-                  <input type="checkbox" v-model="row._checked" />
+                  <input type="checkbox" v-model="row._checked" :disabled="viewMode" />
                 </td>
                 <td>
                   <div style="display:flex;gap:2px;">
-                    <input type="date" v-model="row.startDate" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100px;" />
-                    <input type="time" v-model="row.startTime" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:70px;" />
+                    <input type="date" v-model="row.startDate" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100px;" :readonly="viewMode" />
+                    <input type="time" v-model="row.startTime" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:70px;" :readonly="viewMode" />
                   </div>
                 </td>
                 <td>
                   <div style="display:flex;gap:2px;">
-                    <input type="date" v-model="row.endDate" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100px;" />
-                    <input type="time" v-model="row.endTime" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:70px;" />
+                    <input type="date" v-model="row.endDate" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100px;" :readonly="viewMode" />
+                    <input type="time" v-model="row.endTime" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:70px;" :readonly="viewMode" />
                   </div>
                 </td>
                 <td>
-                  <select v-model="row.planStatus" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;">
+                  <select v-model="row.planStatus" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;" :disabled="viewMode">
                     <option>준비중</option><option>판매예정</option><option>판매중</option><option>판매중지</option><option>판매종료</option>
                   </select>
                 </td>
-                <td><input type="number" v-model.number="row.price"     @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-                <td><input type="number" v-model.number="row.salePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-                <td><input type="number" v-model.number="row.costPrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
-                <td><input type="number" v-model.number="row.pointRate" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" min="0" max="100" /></td>
+                <td><input type="number" v-model.number="row.price"     @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" :readonly="viewMode" /></td>
+                <td><input type="number" v-model.number="row.salePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" :readonly="viewMode" /></td>
+                <td><input type="number" v-model.number="row.costPrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" :readonly="viewMode" /></td>
+                <td><input type="number" v-model.number="row.pointRate" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" min="0" max="100" :readonly="viewMode" /></td>
                 <td>
-                  <select v-model="row.taxType" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;">
+                  <select v-model="row.taxType" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;" :disabled="viewMode">
                     <option>과세</option><option>면세</option><option>영세</option>
                   </select>
                 </td>

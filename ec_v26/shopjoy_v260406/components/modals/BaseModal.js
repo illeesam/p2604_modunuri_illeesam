@@ -1092,7 +1092,7 @@ window.RoleTreeModal = {
       <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
         :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="selectNone">
-        <span style="font-size:14px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
+        <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 권한으로 등록</span></div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
       </div>
@@ -1101,7 +1101,7 @@ window.RoleTreeModal = {
         :style="{ background: hoverId===r.roleId ? '#fff5f7' : '' }"
         @mouseenter="hoverId=r.roleId" @mouseleave="hoverId=null" @click="select(r)">
         <span :style="{ marginLeft:(r._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-                        fontSize: r._depth===0?'14px':'12px', flexShrink:0,
+                        fontSize: r._depth===0?'7px':'12px', flexShrink:0,
                         color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(r._depth,3)] }">
           {{ ['●','◦','·','-'][Math.min(r._depth,3)] }}
         </span>
@@ -1198,7 +1198,7 @@ window.MenuTreeModal = {
         :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null"
         @click="selectNone">
-        <span style="font-size:14px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
+        <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;">
           <span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span>
           <span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 메뉴로 등록</span>
@@ -1217,7 +1217,7 @@ window.MenuTreeModal = {
 
         <!-- 블릿 들여쓰기 -->
         <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-                        fontSize: m._depth===0?'14px':'12px', flexShrink:0,
+                        fontSize: m._depth===0?'7px':'12px', flexShrink:0,
                         color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
           {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
         </span>
@@ -1350,7 +1350,7 @@ window.DeptTreeModal = {
 
         <!-- 블릿 들여쓰기 -->
         <span :style="{ marginLeft:(d._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-                        fontSize: d._depth===0?'14px':'12px', flexShrink:0,
+                        fontSize: d._depth===0?'7px':'12px', flexShrink:0,
                         color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(d._depth,3)] }">
           {{ ['●','◦','·','-'][Math.min(d._depth,3)] }}
         </span>
@@ -1375,6 +1375,101 @@ window.DeptTreeModal = {
     </div>
 
     <!-- ── 푸터 ── -->
+    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="$emit('close')">취소</button>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ─────────────────────────────────────────────
+   CategoryTreeModal  상위카테고리 선택 팝업
+───────────────────────────────────────────── */
+window.CategoryTreeModal = {
+  name: 'CategoryTreeModal',
+  props: ['adminData', 'excludeId'],
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const hoverId = ref(null);
+
+    const buildTree = (items, parentId, depth) => {
+      return items
+        .filter(c => (c.parentId || null) === (parentId || null))
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(c => ({ ...c, _depth: depth, _kids: buildTree(items, c.categoryId, depth + 1) }));
+    };
+
+    const flatten = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
+      return result;
+    };
+
+    const flatTree = computed(() => {
+      const excSet = new Set();
+      if (props.excludeId) {
+        const mark = (id) => { excSet.add(id); props.adminData.categories.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
+        mark(props.excludeId);
+      }
+      const base   = props.adminData.categories.filter(c => !excSet.has(c.categoryId) && c.status === '활성');
+      const kwVal  = kw.value.trim().toLowerCase();
+      const list   = kwVal ? base.filter(c => c.categoryName.toLowerCase().includes(kwVal)) : base;
+      return flatten(buildTree(list, null, 0));
+    });
+
+    const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryName: cat.categoryName });
+    const selectNone = () => emit('select', { categoryId: null, categoryName: '' });
+    const siteName   = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    return { siteName, kw, hoverId, flatTree, select, selectNone };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위카테고리 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+        <div style="font-size:11px;color:#aaa;margin-top:1px;">카테고리를 클릭하면 상위카테고리로 지정됩니다</div>
+      </div>
+      <span class="modal-close" @click="$emit('close')">✕</span>
+    </div>
+    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div style="position:relative;">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
+        <input class="form-control" v-model="kw" placeholder="카테고리명 검색"
+          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;">
+      <!-- 최상위 선택 -->
+      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
+        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="selectNone">
+        <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
+        <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 카테고리로 등록</span></div>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+      </div>
+      <!-- 카테고리 트리 -->
+      <div v-for="c in flatTree" :key="c.categoryId"
+        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
+        :style="{ background: hoverId===c.categoryId ? '#fff5f7' : '' }"
+        @mouseenter="hoverId=c.categoryId" @mouseleave="hoverId=null" @click="select(c)">
+        <span :style="{ marginLeft:(c._depth*14)+'px', marginRight:'7px', fontWeight:'700',
+                        fontSize: c._depth===0?'7px':'12px', flexShrink:0,
+                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(c._depth,3)] }">
+          {{ ['●','◦','·','-'][Math.min(c._depth,3)] }}
+        </span>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ c.categoryName }}</span>
+          <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ c.depth }}단계</span>
+        </div>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===c.categoryId ? 1 : 0 }">›</span>
+      </div>
+      <div v-if="flatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
+        <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.' }}
+      </div>
+    </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
       <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>

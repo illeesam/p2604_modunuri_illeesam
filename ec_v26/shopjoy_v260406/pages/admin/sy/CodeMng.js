@@ -27,7 +27,7 @@ window.CodeMng = {
 
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50];
+    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark'];
@@ -86,9 +86,11 @@ window.CodeMng = {
 
     /* ── 행추가: 포커스 행 아래 삽입, 없으면 끝에 추가 ── */
     const addRow = () => {
+      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        codeId: _tempId--, codeGrp: '', codeLabel: '', codeValue: '',
-        sortOrd: 1, useYn: 'Y', remark: '',
+        codeId: _tempId--, codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '',
+        sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
+        useYn: 'Y', remark: '',
         _row_status: 'I', _row_check: false, _orig: null,
       };
       const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
@@ -233,6 +235,12 @@ window.CodeMng = {
     const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
+    const exportExcel = () => window.adminUtil.exportCsv(
+      gridRows.filter(r => r._row_status !== 'D'),
+      [{label:'ID',key:'codeId'},{label:'코드그룹',key:'codeGrp'},{label:'코드레이블',key:'codeLabel'},{label:'코드값',key:'codeValue'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      '공통코드목록.csv'
+    );
+
     return {
       siteName,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
@@ -242,6 +250,7 @@ window.CodeMng = {
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
       checkAll, toggleCheckAll, statusClass,
+      exportExcel,
     };
   },
   template: /* html */`
@@ -279,6 +288,7 @@ window.CodeMng = {
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>코드목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>

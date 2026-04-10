@@ -9,11 +9,19 @@ window.BbmMng = {
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
     const selectedId = ref(null);
-    const loadDetail = (id) => { selectedId.value = selectedId.value === id ? null : id; };
-    const openNew = () => { selectedId.value = '__new__'; };
+    const openMode = ref('view'); // 'view' | 'edit'
+    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
+    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
-    const inlineNavigate = (pg) => { if (pg === 'syBbmMng') { selectedId.value = null; return; } props.navigate(pg); };
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'syBbmMng') { selectedId.value = null; return; }
+      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      props.navigate(pg, opts);
+    };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', useYn: '' });
     const filtered = computed(() => props.adminData.bbms.filter(b => {
@@ -59,7 +67,9 @@ window.BbmMng = {
       });
     };
     const bbsCount = (bbmId) => props.adminData.bbss.filter(b => b.bbmId === bbmId).length;
-    return { siteName, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, bbsCount };
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmName'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
+
+    return { siteName, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel };
   },
   template: /* html */`
 <div>
@@ -78,7 +88,10 @@ window.BbmMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시판목록 <span class="list-count">{{ total }}건</span></span>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      </div>
     </div>
     <table class="admin-table">
       <thead><tr><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
@@ -122,7 +135,7 @@ window.BbmMng = {
       </div>
     </div>
   </div>
-  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+  <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>

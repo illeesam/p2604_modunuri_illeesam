@@ -1,9 +1,9 @@
 /* ShopJoy Admin - 문의관리 상세/등록 */
 window.ContactDtl = {
   name: 'ContactDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, ref, onMounted } = Vue;
+    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const tab = ref('content');
@@ -14,18 +14,48 @@ window.ContactDtl = {
     });
     const errors = reactive({});
 
+    const contentEl = ref(null);
+    let _qContent = null;
+    const answerEl = ref(null);
+    let _qAnswer = null;
+
     const schema = yup.object({
       title: yup.string().required('제목을 입력해주세요.'),
       content: yup.string().required('문의 내용을 입력해주세요.'),
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       if (!isNew.value) {
         const c = props.adminData.contacts.find(x => x.inquiryId === props.editId);
         if (c) Object.assign(form, { ...c });
         // 답변 있으면 답변 탭 기본 선택
         if (form.answer) tab.value = 'answer';
       }
+      await nextTick();
+      const fullToolbar = [[{header:[1,2,3,false]}],['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','blockquote','clean']];
+      if (contentEl.value) {
+        _qContent = new Quill(contentEl.value, {
+          theme: 'snow',
+          placeholder: '내용을 입력하세요...',
+          modules: { toolbar: fullToolbar }
+        });
+        if (form.content) _qContent.root.innerHTML = form.content;
+        _qContent.on('text-change', () => { form.content = _qContent.root.innerHTML; });
+      }
+      if (answerEl.value) {
+        _qAnswer = new Quill(answerEl.value, {
+          theme: 'snow',
+          placeholder: '고객에게 전달할 답변을 입력하세요.',
+          modules: { toolbar: fullToolbar }
+        });
+        if (form.answer) _qAnswer.root.innerHTML = form.answer;
+        _qAnswer.on('text-change', () => { form.answer = _qAnswer.root.innerHTML; });
+      }
+    });
+
+    onBeforeUnmount(() => {
+      if (_qContent) { form.content = _qContent.root.innerHTML; _qContent = null; }
+      if (_qAnswer) { form.answer = _qAnswer.root.innerHTML; _qAnswer = null; }
     });
 
     const onUserIdChange = () => {
@@ -85,11 +115,11 @@ window.ContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { isNew, tab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteName };
+    return { isNew, tab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteName, contentEl, answerEl };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '문의 등록' : '문의 수정' }}</div>
+  <div class="page-title">{{ isNew ? '문의 등록' : (viewMode ? '문의 상세' : '문의 수정') }}</div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -111,7 +141,7 @@ window.ContactDtl = {
         <div class="form-group">
           <label class="form-label">회원ID</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" />
+            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="viewMode" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
           </div>
         </div>
@@ -123,31 +153,38 @@ window.ContactDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">카테고리</label>
-          <select class="form-control" v-model="form.category">
+          <select class="form-control" v-model="form.category" :disabled="viewMode">
             <option>배송 문의</option><option>상품 문의</option><option>교환·반품 문의</option>
             <option>주문·결제 문의</option><option>기타 문의</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status">
+          <select class="form-control" v-model="form.status" :disabled="viewMode">
             <option>요청</option><option>처리중</option><option>답변완료</option><option>취소됨</option>
           </select>
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">문의 내용 <span class="req">*</span></label>
-        <textarea class="form-control" v-model="form.content" rows="6" :class="errors.content ? 'is-invalid' : ''"></textarea>
+        <label class="form-label">문의 내용 <span v-if="!viewMode" class="req">*</span></label>
+        <div v-if="viewMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
+        <div v-else ref="contentEl" style="min-height:150px;background:#fff;" :class="errors.content ? 'is-invalid' : ''"></div>
         <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -160,12 +197,19 @@ window.ContactDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">답변 내용 <span v-if="!form.answer" class="badge badge-orange" style="margin-left:4px;">미답변</span></label>
-        <textarea class="form-control" v-model="form.answer" rows="8" placeholder="고객에게 전달할 답변을 입력하세요."></textarea>
+        <div v-if="viewMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.answer || '<span style=color:#bbb>-</span>'"></div>
+        <div v-else ref="answerEl" style="min-height:180px;background:#fff;"></div>
       </div>
       <div class="form-actions">
-        <button v-if="!isNew" class="btn btn-primary" @click="saveAnswer">답변 저장</button>
-        <button class="btn btn-primary" @click="save">전체 저장</button>
-        <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button v-if="!isNew" class="btn btn-primary" @click="saveAnswer">답변 저장</button>
+          <button class="btn btn-primary" @click="save">전체 저장</button>
+          <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
+        </template>
       </div>
     </div>
 

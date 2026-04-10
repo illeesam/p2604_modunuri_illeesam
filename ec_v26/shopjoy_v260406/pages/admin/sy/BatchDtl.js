@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 배치스케즐 상세/등록 */
 window.BatchDtl = {
   name: 'BatchDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -70,7 +70,7 @@ window.BatchDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '배치 등록' : '배치 수정' }}</div>
+  <div class="page-title">{{ isNew ? '배치 등록' : (viewMode ? '배치 상세' : '배치 수정') }}</div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -80,32 +80,32 @@ window.BatchDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">배치명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.batchName" placeholder="배치 이름" :class="errors.batchName ? 'is-invalid' : ''" />
+        <label class="form-label">배치명 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.batchName" placeholder="배치 이름" :readonly="viewMode" :class="errors.batchName ? 'is-invalid' : ''" />
         <span v-if="errors.batchName" class="field-error">{{ errors.batchName }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">배치코드 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.batchCode" placeholder="ORDER_AUTO_COMPLETE" style="text-transform:uppercase;" :class="errors.batchCode ? 'is-invalid' : ''" />
+        <label class="form-label">배치코드 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.batchCode" placeholder="ORDER_AUTO_COMPLETE" style="text-transform:uppercase;" :readonly="viewMode" :class="errors.batchCode ? 'is-invalid' : ''" />
         <span v-if="errors.batchCode" class="field-error">{{ errors.batchCode }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">설명</label>
-        <input class="form-control" v-model="form.description" placeholder="배치 처리 내용 설명" />
+        <input class="form-control" v-model="form.description" placeholder="배치 처리 내용 설명" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
-        <label class="form-label">Cron 표현식 <span class="req">*</span>
+        <label class="form-label">Cron 표현식 <span v-if="!viewMode" class="req">*</span>
           <span style="font-size:11px;color:#888;margin-left:8px;">분 시 일 월 요일</span>
         </label>
-        <input class="form-control" v-model="form.cron" placeholder="0 0 * * *" :class="errors.cron ? 'is-invalid' : ''" />
+        <input class="form-control" v-model="form.cron" placeholder="0 0 * * *" :readonly="viewMode" :class="errors.cron ? 'is-invalid' : ''" />
         <span v-if="errors.cron" class="field-error">{{ errors.cron }}</span>
       </div>
     </div>
-    <div style="margin-bottom:16px;padding:10px 12px;background:#f8f9fa;border-radius:6px;">
+    <div v-if="!viewMode" style="margin-bottom:16px;padding:10px 12px;background:#f8f9fa;border-radius:6px;">
       <div style="font-size:12px;color:#666;margin-bottom:8px;font-weight:600;">Cron 프리셋</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         <button v-for="p in CRON_PRESETS" :key="p.value"
@@ -117,14 +117,20 @@ window.BatchDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">활성여부</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.status" :disabled="viewMode">
           <option>활성</option><option>비활성</option>
         </select>
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('syBatchMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('syBatchMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('syBatchMng')">취소</button>
+      </template>
     </div>
   </div>
 </div>

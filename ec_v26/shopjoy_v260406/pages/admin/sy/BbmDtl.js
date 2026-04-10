@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 게시판관리 상세/등록 */
 window.BbmDtl = {
   name: 'BbmDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -62,7 +62,7 @@ window.BbmDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '게시판 등록' : '게시판 수정' }}</div>
+  <div class="page-title">{{ isNew ? '게시판 등록' : (viewMode ? '게시판 상세' : '게시판 수정') }}</div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -72,18 +72,18 @@ window.BbmDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">게시판코드 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmCode" placeholder="BOARD_CODE" style="font-family:monospace;" :class="errors.bbmCode ? 'is-invalid' : ''" />
+        <label class="form-label">게시판코드 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.bbmCode" placeholder="BOARD_CODE" style="font-family:monospace;" :readonly="viewMode" :class="errors.bbmCode ? 'is-invalid' : ''" />
         <span v-if="errors.bbmCode" class="field-error">{{ errors.bbmCode }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">게시판명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmName" placeholder="게시판명" :class="errors.bbmName ? 'is-invalid' : ''" />
+        <label class="form-label">게시판명 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.bbmName" placeholder="게시판명" :readonly="viewMode" :class="errors.bbmName ? 'is-invalid' : ''" />
         <span v-if="errors.bbmName" class="field-error">{{ errors.bbmName }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.bbmType">
+        <select class="form-control" v-model="form.bbmType" :disabled="viewMode">
           <option>일반</option><option>공지</option><option>갤러리</option><option>FAQ</option><option>QnA</option>
         </select>
       </div>
@@ -91,19 +91,19 @@ window.BbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">댓글허용</label>
-        <select class="form-control" v-model="form.allowComment">
+        <select class="form-control" v-model="form.allowComment" :disabled="viewMode">
           <option>불가</option><option>댓글허용</option><option>대댓글허용</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">첨부허용</label>
-        <select class="form-control" v-model="form.allowAttach">
+        <select class="form-control" v-model="form.allowAttach" :disabled="viewMode">
           <option>불가</option><option>1개</option><option>2개</option><option>3개</option><option>목록</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">좋아요허용</label>
-        <select class="form-control" v-model="form.allowLike">
+        <select class="form-control" v-model="form.allowLike" :disabled="viewMode">
           <option value="Y">허용</option><option value="N">불가</option>
         </select>
       </div>
@@ -111,13 +111,13 @@ window.BbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">내용입력</label>
-        <select class="form-control" v-model="form.contentType">
+        <select class="form-control" v-model="form.contentType" :disabled="viewMode">
           <option>불가</option><option>textarea</option><option>htmleditor</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">공개범위</label>
-        <select class="form-control" v-model="form.scopeType">
+        <select class="form-control" v-model="form.scopeType" :disabled="viewMode">
           <option>공개</option><option>개인</option><option>회사</option>
         </select>
       </div>
@@ -126,22 +126,28 @@ window.BbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">정렬순서</label>
-        <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" />
+        <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn">
+        <select class="form-control" v-model="form.useYn" :disabled="viewMode">
           <option value="Y">사용</option><option value="N">미사용</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">비고</label>
-        <input class="form-control" v-model="form.remark" placeholder="비고" />
+        <input class="form-control" v-model="form.remark" placeholder="비고" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('syBbmMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('syBbmMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('syBbmMng')">취소</button>
+      </template>
     </div>
   </div>
 </div>

@@ -15,15 +15,23 @@ window.ClaimMng = {
     const searchType = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* 하단 상세 */
     const selectedId = ref(null);
-    const loadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
-    const openNew = () => { selectedId.value = '__new__'; };
+    const openMode = ref('view'); // 'view' | 'edit'
+    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
+    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
-    const inlineNavigate = (pg, opts = {}) => { if (pg === 'ecClaimMng') { selectedId.value = null; return; } props.navigate(pg, opts); };
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'ecClaimMng') { selectedId.value = null; return; }
+      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      props.navigate(pg, opts);
+    };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
@@ -92,7 +100,9 @@ window.ClaimMng = {
       });
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userName'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'status'},{label:'상품명',key:'productName'},{label:'사유',key:'reason'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -117,7 +127,10 @@ window.ClaimMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>클레임목록 <span class="list-count">{{ total }}건</span></span>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      </div>
     </div>
     <table class="admin-table">
       <thead><tr>
@@ -160,7 +173,7 @@ window.ClaimMng = {
   </div>
 
   <!-- 하단 상세: ClaimDtl 임베드 -->
-  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+  <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>

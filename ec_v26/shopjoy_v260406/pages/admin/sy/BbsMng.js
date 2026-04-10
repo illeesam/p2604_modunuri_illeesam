@@ -13,13 +13,21 @@ window.BbsMng = {
       pager.page = 1;
     };
     const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const selectedId = ref(null);
-    const loadDetail = (id) => { selectedId.value = selectedId.value === id ? null : id; };
-    const openNew = () => { selectedId.value = '__new__'; };
+    const openMode = ref('view'); // 'view' | 'edit'
+    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
+    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
-    const inlineNavigate = (pg) => { if (pg === 'syBbsMng') { selectedId.value = null; return; } props.navigate(pg); };
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'syBbsMng') { selectedId.value = null; return; }
+      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      props.navigate(pg, opts);
+    };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const bbmOptions = computed(() => props.adminData.bbms.map(b => ({ value: b.bbmId, label: b.bbmName })));
     const bbmName = (bbmId) => { const b = props.adminData.bbms.find(x => x.bbmId === bbmId); return b ? b.bbmName : bbmId; };
@@ -65,7 +73,9 @@ window.BbsMng = {
         },
       });
     };
-    return { siteName, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, bbmOptions, bbmName };
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'author'},{label:'조회수',key:'viewCount'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
+
+    return { siteName, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbmOptions, bbmName, exportExcel };
   },
   template: /* html */`
 <div>
@@ -90,7 +100,10 @@ window.BbsMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ total }}건</span></span>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      </div>
     </div>
     <table class="admin-table">
       <thead><tr><th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
@@ -130,7 +143,7 @@ window.BbsMng = {
       </div>
     </div>
   </div>
-  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+  <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>

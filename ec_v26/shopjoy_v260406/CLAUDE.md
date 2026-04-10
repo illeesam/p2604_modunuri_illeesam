@@ -32,11 +32,16 @@ shopjoy_v260406/
 │   │   ├── MyContact.js          # 문의
 │   │   └── MyCache.js            # 캐시
 │   └── admin/                    # 관리자 페이지
-│       ├── AdminApp.js           # 관리자 메인 앱
+│       ├── AdminApp.js           # 관리자 메인 앱 (showToast, showConfirm, setApiRes, apiResPanel)
 │       ├── AdminData.js          # 데이터 관리
 │       ├── AdminModals.js        # 모달 관리
-│       ├── *Mng.js               # 각 항목 관리 (ProductMng, OrderMng, MemberMng 등)
-│       └── *Dtl.js               # 각 항목 상세 (ProductDtl, OrderDtl 등)
+│       ├── ec/                   # 이커머스 관리 화면
+│       │   ├── *Mng.js           # 목록 (MemberMng, ProdMng, OrderMng 등)
+│       │   ├── *Dtl.js           # 상세/등록 (MemberDtl, ProdDtl 등)
+│       │   └── *Hist.js          # 이력 컴포넌트 (MemberHist, OrderHist 등)
+│       └── sy/                   # 시스템 관리 화면
+│           ├── *Mng.js           # 목록
+│           └── *Dtl.js           # 상세/등록
 ├── layout/                        # 레이아웃 컴포넌트
 │   ├── AppHeader.js              # 헤더
 │   ├── AppFooter.js              # 푸터
@@ -64,7 +69,8 @@ shopjoy_v260406/
 │       ├── inquiries.json        # 문의 데이터
 │       └── after-sales.json      # 애프터세일 데이터
 ├── utils/                         # 유틸리티 함수
-│   ├── axiosUtil.js              # Axios 설정 및 요청/응답 인터셉터
+│   ├── axiosUtil.js              # Axios 설정 및 요청/응답 인터셉터 (window.axiosApi)
+│   ├── adminUtil.js              # 관리자 공통 유틸 (window.adminUtil, window.adminApiCall)
 │   └── cmUtil.js                 # 공통 유틸리티
 ├── assets/                        # 정적 자산
 │   ├── css/
@@ -72,7 +78,8 @@ shopjoy_v260406/
 │   │   ├── backOfficeStyle.css   # 관리자 페이스 스타일
 │   │   └── vue-loading.css       # 로딩 스타일
 │   └── cdn/
-│       └── axios.js              # Axios 라이브러리
+│       ├── axios.js              # Axios 라이브러리
+│       └── yup.js                # Yup 유효성 검사 shim (로컬, CDN 불필요)
 ├── index.html                     # 사용자 페이스 HTML
 ├── admin.html                     # 관리자 페이스 HTML
 └── settings.json                  # 로컬 설정
@@ -97,16 +104,17 @@ shopjoy_v260406/
 - 에러 처리
 
 ### 관리자 기능
-- 상품 관리 (ProdMng, ProdDtl)
-- 주문 관리 (OrderMng, OrderDtl)
-- 회원 관리 (MemberMng, MemberDtl)
-- 배송 관리 (DlivMng, DlivDtl)
+- 회원 관리 (MemberMng, MemberDtl, MemberHist)
+- 상품 관리 (ProdMng, ProdDtl, ProdHist)
+- 주문 관리 (OrderMng, OrderDtl, OrderHist)
+- 배송 관리 (DlivMng, DlivDtl, DlivHist)
+- 클레임 관리 (ClaimMng, ClaimDtl, ClaimHist)
 - 쿠폰 관리 (CouponMng, CouponDtl)
 - 이벤트 관리 (EventMng, EventDtl)
 - 채팅/고객지원 (ChattMng, ChattDtl, ContactMng, ContactDtl)
-- 클레임 관리 (ClaimMng, ClaimDtl)
 - 캐시 관리 (CacheMng, CacheDtl)
 - 디스플레이 관리 (DispMng, DispDtl)
+- 카테고리/공지/알림/게시판/배치/사용자 등 sy/ 모듈
 
 ## ⚙️ 개발 설정
 
@@ -143,19 +151,66 @@ shopjoy_v260406/
 3. 필요시 `stores/`에 상태 추가
 
 ### 관리자 기능 추가
-1. `pages/admin/` 디렉토리에 Mng(관리 목록) 및 Dtl(상세) 컴포넌트 생성
-2. `AdminModals.js`에 모달 추가
-3. `AdminData.js`에 데이터 로직 추가
+1. `pages/admin/ec/` 또는 `pages/admin/sy/`에 `*Mng.js`, `*Dtl.js` 생성
+2. 필요시 `*Hist.js` 이력 컴포넌트 생성 (Dtl 하단에 별도 card로 임베드)
+3. `AdminApp.js`에 컴포넌트 등록 및 라우트 추가 (v-else-if 목록)
+4. `admin.html`에 script 태그 추가
+5. `AdminData.js`에 데이터 로직 추가
+
+### 관리자 컴포넌트 Props 규칙
+- **Mng**: `['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes']`
+- **Dtl**: `['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId']`
+- **Hist**: `['navigate', 'adminData', 'showRefModal', 'showToast', '<entityId>']`
+- Mng 파일 내에서 Dtl을 인라인 임베드할 때 `:show-confirm="showConfirm" :set-api-res="setApiRes"` 반드시 전달
+
+### 관리자 저장/삭제 패턴
+모든 [저장]/[삭제]는 `window.adminApiCall()` 사용:
+```js
+await window.adminApiCall({
+  method: 'post' | 'put' | 'delete',
+  path: `resource/${form.id}`,
+  data: { ...form },                 // delete 시 생략
+  confirmTitle: '저장',
+  confirmMsg: '저장하시겠습니까?',
+  showConfirm: props.showConfirm,
+  showToast: props.showToast,
+  setApiRes: props.setApiRes,
+  successMsg: '저장되었습니다.',
+  onLocal: () => { /* 로컬 데이터 즉시 반영 */ },
+  navigate: props.navigate,          // 저장 후 이동 (삭제 시 생략)
+  navigateTo: 'pageId',
+});
+```
+- 성공: 자동 dismiss toast
+- 오류: 시간제한 없는 persistent error toast + 우하단 API 응답 패널 자동 표시
+
+### Yup 유효성 검사 패턴
+```js
+const errors = reactive({});
+const schema = yup.object({
+  fieldName: yup.string().required('메시지'),
+});
+// save() 시작부에:
+Object.keys(errors).forEach(k => delete errors[k]);
+try {
+  await schema.validate(form, { abortEarly: false });
+} catch (err) {
+  err.inner.forEach(e => { errors[e.path] = e.message; });
+  props.showToast('입력 내용을 확인해주세요.', 'error');
+  return;
+}
+```
 
 ### API 연동
-1. `utils/axiosUtil.js`로 API 호출
-2. 필요시 `api/` 폴더에 새 JSON 모의 데이터 추가
-3. Store에서 API 응답 처리
+1. `window.axiosApi` (axiosUtil.js) - `.get()`, `.post()`, `.put()`, `.patch()`, `.delete()`
+2. `window.adminApiCall` (adminUtil.js) - 확인→로컬반영→API→토스트 패턴
+3. `window.yup` (assets/cdn/yup.js) - 로컬 shim, CDN 불필요
 
 ## 📦 주요 라이브러리
-- **Vue.js** - UI 프레임워크
-- **Axios** - HTTP 클라이언트 (`assets/cdn/axios.js`)
-- **Pinia/Vuex** - 상태 관리
+- **Vue.js 3** - UI 프레임워크 (CDN global build, `const { ref, reactive, computed } = Vue`)
+- **Axios** - HTTP 클라이언트 (`assets/cdn/axios.js`, `window.axiosApi` 래퍼)
+- **Yup** - 유효성 검사 (`assets/cdn/yup.js` 로컬 shim, `window.yup`)
+- **Quill** - 리치 텍스트 에디터 (CDN)
 
 ## 🔗 중요한 파일
 | 파일 | 역할 |
@@ -163,10 +218,14 @@ shopjoy_v260406/
 | `base/app.js` | Vue 앱 초기화 |
 | `base/config.js` | 전역 설정 및 라우트 |
 | `base/shopjoyAuth.js` | 인증 로직 |
-| `utils/axiosUtil.js` | API 통신 설정 |
+| `utils/axiosUtil.js` | API 통신 (`window.axiosApi`) |
+| `utils/adminUtil.js` | 관리자 유틸 (`window.adminUtil`, `window.adminApiCall`) |
+| `assets/cdn/yup.js` | Yup 로컬 shim (`window.yup`) |
 | `base/stores/authStore.js` | 인증 상태 관리 |
 | `base/stores/myStore.js` | 사용자 상태 관리 |
-| `pages/admin/AdminApp.js` | 관리자 메인 진입점 |
+| `pages/admin/AdminApp.js` | 관리자 메인 진입점 (showToast/showConfirm/setApiRes/apiResPanel) |
+| `pages/admin/AdminData.js` | 관리자 모의 데이터 및 헬퍼 메서드 |
+| `assets/css/backOfficeStyle.css` | 관리자 스타일 (is-invalid, field-error, form-actions 등) |
 
 ## 🌳 Git 및 배포
 
@@ -249,4 +308,4 @@ VITE_ENV=production
 
 ---
 
-**마지막 업데이트**: 2026-04-10
+**마지막 업데이트**: 2026-04-10 (API 통합, Hist 분리, Yup shim, adminApiCall 패턴 추가)

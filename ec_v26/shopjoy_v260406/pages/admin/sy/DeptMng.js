@@ -22,7 +22,7 @@ window.DeptMng = {
 
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50];
+    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
     const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
     const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
@@ -89,10 +89,13 @@ window.DeptMng = {
     };
 
     const addRow = () => {
+      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        deptId: _tempId--, deptCode: '', deptName: '', parentId: null,
-        deptType: '운영', sortOrd: 1, useYn: 'Y', remark: '',
-        _depth: 0, _row_status: 'I', _row_check: false, _orig: null,
+        deptId: _tempId--, deptCode: '', deptName: '', parentId: ref ? ref.parentId : null,
+        deptType: ref ? ref.deptType : '운영',
+        sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
+        useYn: 'Y', remark: '',
+        _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
       const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
@@ -190,6 +193,12 @@ window.DeptMng = {
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
     const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
+    const exportExcel = () => window.adminUtil.exportCsv(
+      gridRows.filter(r => r._row_status !== 'D'),
+      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptName'},{label:'상위ID',key:'parentId'},{label:'유형',key:'deptType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      '부서목록.csv'
+    );
+
     return {
       searchKw, searchType, searchUseYn, typeOptions, DEPT_TYPES, applied,
       siteName,
@@ -199,6 +208,7 @@ window.DeptMng = {
       checkAll, toggleCheckAll, parentName,
       deptTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, statusClass,
+      exportExcel,
     };
   },
   template: /* html */`
@@ -226,6 +236,7 @@ window.DeptMng = {
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>부서목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
@@ -268,7 +279,7 @@ window.DeptMng = {
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                              fontSize: row._depth===0 ? '13px' : '12px', flexShrink:0,
+                              fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
                               color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
               <input class="grid-input" v-model="row.deptName" :disabled="row._row_status==='D'"
                 @input="onCellChange(row)" style="flex:1;" />
@@ -283,8 +294,8 @@ window.DeptMng = {
                 :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:2px 7px;font-size:11px;"
-                @click.stop="openParentModal(row)">변경</button>
+                style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위부서 선택"
+                @click.stop="openParentModal(row)">↑</button>
             </div>
           </td>
 

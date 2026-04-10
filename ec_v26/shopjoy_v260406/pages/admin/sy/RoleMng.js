@@ -29,7 +29,7 @@ window.RoleMng = {
 
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50];
+    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['roleCode', 'roleName', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'remark'];
@@ -104,10 +104,13 @@ window.RoleMng = {
     };
 
     const addRow = () => {
+      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        roleId: _tempId--, roleCode: '', roleName: '', parentId: null,
-        roleType: '업무', sortOrd: 1, useYn: 'Y', restrictPerm: '없음', remark: '',
-        _depth: 0, _row_status: 'I', _row_check: false, _orig: null,
+        roleId: _tempId--, roleCode: '', roleName: '', parentId: ref ? ref.parentId : null,
+        roleType: ref ? ref.roleType : '업무',
+        sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
+        useYn: 'Y', restrictPerm: '없음', remark: '',
+        _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
       const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
@@ -295,6 +298,12 @@ window.RoleMng = {
       return r ? r.roleName : '';
     });
 
+    const exportExcel = () => window.adminUtil.exportCsv(
+      gridRows.filter(r => r._row_status !== 'D'),
+      [{label:'ID',key:'roleId'},{label:'권한코드',key:'roleCode'},{label:'권한명',key:'roleName'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
+      '권한목록.csv'
+    );
+
     return {
       siteName, ROLE_TYPES, PERM_LEVELS, permColor, depthBullet, depthColor, statusClass,
       searchKw, searchType, searchUseYn, applied, onSearch, onReset,
@@ -306,6 +315,7 @@ window.RoleMng = {
       selectedRoleId, selectedRoleName,
       menuSearchKw, menuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, menuAllChecked,
       userSelectOpen, roleUsersList, onUserSelect, removeUser,
+      exportExcel,
     };
   },
   template: /* html */`
@@ -335,6 +345,7 @@ window.RoleMng = {
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>권한목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
@@ -378,7 +389,7 @@ window.RoleMng = {
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                              fontSize: row._depth===0?'13px':'12px', flexShrink:0,
+                              fontSize: row._depth===0?'7px':'12px', flexShrink:0,
                               color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
               <input class="grid-input" v-model="row.roleName" :disabled="row._row_status==='D'"
                 @input="onCellChange(row)" style="flex:1;" />
@@ -393,8 +404,8 @@ window.RoleMng = {
                 :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:2px 7px;font-size:11px;"
-                @click.stop="openParentModal(row)">변경</button>
+                style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위권한 선택"
+                @click.stop="openParentModal(row)">↑</button>
             </div>
           </td>
 
@@ -484,7 +495,7 @@ window.RoleMng = {
             :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
             <!-- 블릿 트리 들여쓰기 -->
             <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
-                            fontSize: m._depth===0?'13px':'11px', flexShrink:0,
+                            fontSize: m._depth===0?'7px':'11px', flexShrink:0,
                             color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
               {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
             </span>

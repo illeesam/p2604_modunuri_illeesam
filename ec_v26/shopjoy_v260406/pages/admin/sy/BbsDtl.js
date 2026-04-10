@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 게시글관리 상세/등록 */
 window.BbsDtl = {
   name: 'BbsDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -64,8 +64,8 @@ window.BbsDtl = {
           selectedBbm.value = props.adminData.bbms.find(m => m.bbmId === b.bbmId) || null;
         }
       }
-      /* htmleditor 초기화는 selectedBbm 결정 후 */
-      if (contentType.value === 'htmleditor') {
+      /* htmleditor 초기화는 selectedBbm 결정 후 — viewMode 일 때는 초기화 불필요 */
+      if (!props.viewMode && contentType.value === 'htmleditor') {
         Vue.nextTick(() => { initQuill(); });
       }
     });
@@ -73,7 +73,7 @@ window.BbsDtl = {
     /* contentType 변화 감지 → Quill 초기화 */
     const { watch, nextTick } = Vue;
     watch(contentType, (val) => {
-      if (val === 'htmleditor') {
+      if (!props.viewMode && val === 'htmleditor') {
         nextTick(() => { initQuill(); });
       } else {
         quill = null;
@@ -128,7 +128,7 @@ window.BbsDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '게시글 등록' : '게시글 수정' }}</div>
+  <div class="page-title">{{ isNew ? '게시글 등록' : (viewMode ? '게시글 상세' : '게시글 수정') }}</div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -139,14 +139,14 @@ window.BbsDtl = {
 
     <!-- 게시판 선택 -->
     <div class="form-group">
-      <label class="form-label">게시판 <span class="req">*</span></label>
+      <label class="form-label">게시판 <span v-if="!viewMode" class="req">*</span></label>
       <div style="display:flex;align-items:center;gap:8px;">
         <!-- 신규: 선택 버튼 -->
-        <template v-if="isNew">
+        <template v-if="isNew && !viewMode">
           <button class="btn btn-secondary btn-sm" type="button" @click="showBbmModal=true">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
-        <!-- 수정: 변경 불가 -->
+        <!-- 수정 또는 viewMode: 변경 불가 -->
         <template v-else>
           <button class="btn btn-secondary btn-sm" type="button" disabled style="opacity:.5;cursor:not-allowed;">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
@@ -166,17 +166,17 @@ window.BbsDtl = {
     <!-- 기본 정보 -->
     <div class="form-row">
       <div class="form-group" style="flex:2">
-        <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="게시글 제목" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" placeholder="게시글 제목" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">작성자</label>
-        <input class="form-control" v-model="form.author" placeholder="작성자명" />
+        <input class="form-control" v-model="form.author" placeholder="작성자명" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.status" :disabled="viewMode">
           <option>게시</option><option>임시</option><option>비공개</option><option>삭제</option>
         </select>
       </div>
@@ -193,11 +193,12 @@ window.BbsDtl = {
     </div>
     <div v-else-if="contentType==='textarea'" class="form-group">
       <label class="form-label">내용</label>
-      <textarea class="form-control" v-model="form.contentHtml" rows="8" placeholder="게시글 내용을 입력하세요."></textarea>
+      <textarea class="form-control" v-model="form.contentHtml" rows="8" placeholder="게시글 내용을 입력하세요." :readonly="viewMode"></textarea>
     </div>
     <div v-else-if="contentType==='htmleditor'" class="form-group">
       <label class="form-label">내용</label>
-      <div id="bbs-editor" style="min-height:300px;background:#fff;"></div>
+      <div v-if="viewMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
+      <div v-else id="bbs-editor" style="min-height:300px;background:#fff;"></div>
     </div>
 
     <!-- 첨부파일 -->
@@ -226,8 +227,14 @@ window.BbsDtl = {
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('syBbsMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('syBbsMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('syBbsMng')">취소</button>
+      </template>
     </div>
   </div>
 

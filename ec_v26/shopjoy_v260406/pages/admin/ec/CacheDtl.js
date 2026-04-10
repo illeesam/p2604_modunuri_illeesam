@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 캐쉬관리 상세/등록 */
 window.CacheDtl = {
   name: 'CacheDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -85,7 +85,7 @@ window.CacheDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '캐쉬 등록' : '캐쉬 수정' }}</div>
+  <div class="page-title">{{ isNew ? '캐쉬 등록' : (viewMode ? '캐쉬 상세' : '캐쉬 수정') }}</div>
   <div class="card">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" @click="tab='info'">기본정보</button>
@@ -98,9 +98,9 @@ window.CacheDtl = {
     <div v-show="tab==='info'">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">회원ID <span class="req">*</span></label>
+          <label class="form-label">회원ID <span v-if="!viewMode" class="req">*</span></label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :class="errors.userId ? 'is-invalid' : ''" />
+            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="viewMode" :class="errors.userId ? 'is-invalid' : ''" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
           </div>
           <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
@@ -113,33 +113,39 @@ window.CacheDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">유형</label>
-          <select class="form-control" v-model="form.type">
+          <select class="form-control" v-model="form.type" :disabled="viewMode">
             <option>충전</option><option>사용</option><option>환불</option><option>소멸</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">일시</label>
-          <input class="form-control" v-model="form.date" placeholder="2026-04-08 10:00" />
+          <input class="form-control" v-model="form.date" placeholder="2026-04-08 10:00" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">금액 <span class="req">*</span> <span style="font-size:11px;color:#888;">(사용/소멸은 음수)</span></label>
-          <input class="form-control" type="number" v-model.number="form.amount" />
+          <label class="form-label">금액 <span v-if="!viewMode" class="req">*</span> <span style="font-size:11px;color:#888;">(사용/소멸은 음수)</span></label>
+          <input class="form-control" type="number" v-model.number="form.amount" :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">처리 후 잔액</label>
-          <input class="form-control" type="number" v-model.number="form.balance" />
+          <input class="form-control" type="number" v-model.number="form.balance" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">내용 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.desc" placeholder="내용 입력" :class="errors.desc ? 'is-invalid' : ''" />
+        <label class="form-label">내용 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.desc" placeholder="내용 입력" :readonly="viewMode" :class="errors.desc ? 'is-invalid' : ''" />
         <span v-if="errors.desc" class="field-error">{{ errors.desc }}</span>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecCacheMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecCacheMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecCacheMng')">취소</button>
+        </template>
       </div>
     </div>
 

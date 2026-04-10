@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 공지사항관리 상세/등록 */
 window.NoticeDtl = {
   name: 'NoticeDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -70,23 +70,23 @@ window.NoticeDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '공지사항 등록' : '공지사항 수정' }}</div>
+  <div class="page-title">{{ isNew ? '공지사항 등록' : (viewMode ? '공지사항 상세' : '공지사항 수정') }}</div>
   <div class="card">
     <div class="form-row">
       <div class="form-group" style="flex:2">
-        <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="공지 제목" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" placeholder="공지 제목" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.noticeType">
+        <select class="form-control" v-model="form.noticeType" :disabled="viewMode">
           <option>일반</option><option>긴급</option><option>이벤트</option><option>시스템</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status">
+        <select class="form-control" v-model="form.status" :disabled="viewMode">
           <option>게시</option><option>예약</option><option>종료</option><option>임시</option>
         </select>
       </div>
@@ -94,11 +94,11 @@ window.NoticeDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">시작일</label>
-        <input class="form-control" type="date" v-model="form.startDate" />
+        <input class="form-control" type="date" v-model="form.startDate" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">종료일</label>
-        <input class="form-control" type="date" v-model="form.endDate" />
+        <input class="form-control" type="date" v-model="form.endDate" :readonly="viewMode" />
       </div>
       <div class="form-group" style="display:flex;align-items:flex-end;gap:8px;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:4px;">
@@ -108,7 +108,8 @@ window.NoticeDtl = {
     </div>
     <div class="form-group">
       <label class="form-label">내용</label>
-      <div id="notice-editor" style="min-height:200px;background:#fff;"></div>
+      <div v-if="viewMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
+      <div v-else id="notice-editor" style="min-height:200px;background:#fff;"></div>
     </div>
     <div class="form-group">
       <label class="form-label">첨부파일 <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">첨부그룹ID: {{ form.attachGrpId }}</span></label>
@@ -126,8 +127,14 @@ window.NoticeDtl = {
       />
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
-      <button class="btn btn-secondary" @click="navigate('ecNoticeMng')">취소</button>
+      <template v-if="viewMode">
+        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+        <button class="btn btn-secondary" @click="navigate('ecNoticeMng')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('ecNoticeMng')">취소</button>
+      </template>
     </div>
   </div>
 </div>

@@ -1,9 +1,9 @@
 /* ShopJoy Admin - 쿠폰관리 상세/등록 */
 window.CouponDtl = {
   name: 'CouponDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { reactive, computed, ref, onMounted } = Vue;
+    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
 
@@ -14,18 +14,33 @@ window.CouponDtl = {
     });
     const errors = reactive({});
 
+    const memoEl = ref(null);
+    let _qMemo = null;
+
     const schema = yup.object({
       code: yup.string().required('쿠폰코드를 입력해주세요.'),
       name: yup.string().required('쿠폰명을 입력해주세요.'),
       expiry: yup.string().required('만료일을 입력해주세요.'),
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       if (!isNew.value) {
         const c = props.adminData.getCoupon(props.editId);
         if (c) Object.assign(form, { ...c });
       }
+      await nextTick();
+      if (memoEl.value) {
+        _qMemo = new Quill(memoEl.value, {
+          theme: 'snow',
+          placeholder: '내용을 입력하세요...',
+          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
+        });
+        if (form.memo) _qMemo.root.innerHTML = form.memo;
+        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
+      }
     });
+
+    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     /* 이 쿠폰을 사용한 주문들 (mock: orderId로 확인 불가, userId별 쿠폰 사용 내역 근사치) */
     const useRate = computed(() => form.issueCount > 0 ? Math.round((form.useCount / form.issueCount) * 100) : 0);
@@ -67,11 +82,11 @@ window.CouponDtl = {
       });
     };
 
-    return { isNew, tab, form, errors, useRate, save };
+    return { isNew, tab, form, errors, useRate, save, memoEl };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '쿠폰 등록' : '쿠폰 수정' }}</div>
+  <div class="page-title">{{ isNew ? '쿠폰 등록' : (viewMode ? '쿠폰 상세' : '쿠폰 수정') }}</div>
   <div class="card">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" @click="tab='info'">기본정보</button>
@@ -83,54 +98,60 @@ window.CouponDtl = {
     <div v-show="tab==='info'">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">쿠폰코드 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.code" placeholder="COUPON_CODE" :class="errors.code ? 'is-invalid' : ''" />
+          <label class="form-label">쿠폰코드 <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" v-model="form.code" placeholder="COUPON_CODE" :readonly="viewMode" :class="errors.code ? 'is-invalid' : ''" />
           <span v-if="errors.code" class="field-error">{{ errors.code }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label">쿠폰명 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.name" placeholder="쿠폰명" :class="errors.name ? 'is-invalid' : ''" />
+          <label class="form-label">쿠폰명 <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" v-model="form.name" placeholder="쿠폰명" :readonly="viewMode" :class="errors.name ? 'is-invalid' : ''" />
           <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">할인유형</label>
-          <select class="form-control" v-model="form.discountType">
+          <select class="form-control" v-model="form.discountType" :disabled="viewMode">
             <option value="amount">금액 할인</option><option value="rate">% 할인</option><option value="shipping">무료배송</option>
           </select>
         </div>
         <div class="form-group" v-if="form.discountType!=='shipping'">
           <label class="form-label">할인값</label>
-          <input class="form-control" type="number" v-model.number="form.discountValue" placeholder="0" />
+          <input class="form-control" type="number" v-model.number="form.discountValue" placeholder="0" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">최소 주문금액</label>
-          <input class="form-control" type="number" v-model.number="form.minOrder" placeholder="0" />
+          <input class="form-control" type="number" v-model.number="form.minOrder" placeholder="0" :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">적용상품</label>
-          <input class="form-control" v-model="form.applicableTo" placeholder="전체 상품, 의류, ..." />
+          <input class="form-control" v-model="form.applicableTo" placeholder="전체 상품, 의류, ..." :readonly="viewMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">만료일 <span class="req">*</span></label>
-          <input class="form-control" type="date" v-model="form.expiry" :class="errors.expiry ? 'is-invalid' : ''" />
+          <label class="form-label">만료일 <span v-if="!viewMode" class="req">*</span></label>
+          <input class="form-control" type="date" v-model="form.expiry" :readonly="viewMode" :class="errors.expiry ? 'is-invalid' : ''" />
           <span v-if="errors.expiry" class="field-error">{{ errors.expiry }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status">
+          <select class="form-control" v-model="form.status" :disabled="viewMode">
             <option>활성</option><option>비활성</option><option>만료</option>
           </select>
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecCouponMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecCouponMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecCouponMng')">취소</button>
+        </template>
       </div>
     </div>
 
@@ -139,20 +160,27 @@ window.CouponDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">발급대상</label>
-          <input class="form-control" v-model="form.issueTo" placeholder="전체, VIP 회원, ..." />
+          <input class="form-control" v-model="form.issueTo" placeholder="전체, VIP 회원, ..." :readonly="viewMode" />
         </div>
         <div class="form-group">
           <label class="form-label">발급수량</label>
-          <input class="form-control" type="number" v-model.number="form.issueCount" />
+          <input class="form-control" type="number" v-model.number="form.issueCount" :readonly="viewMode" />
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">메모</label>
-        <textarea class="form-control" v-model="form.memo" rows="4"></textarea>
+        <div v-if="viewMode" class="form-control" style="min-height:100px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+        <div v-else ref="memoEl" style="min-height:100px;background:#fff;"></div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
-        <button class="btn btn-secondary" @click="navigate('ecCouponMng')">취소</button>
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('ecCouponMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('ecCouponMng')">취소</button>
+        </template>
       </div>
     </div>
 
