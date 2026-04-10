@@ -12,6 +12,13 @@ window.CouponDtl = {
       minOrder: 0, expiry: '', issueTo: '전체', issueCount: 0, useCount: 0,
       status: '활성', applicableTo: '전체 상품', memo: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      code: yup.string().required('쿠폰코드를 입력해주세요.'),
+      name: yup.string().required('쿠폰명을 입력해주세요.'),
+      expiry: yup.string().required('만료일을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -23,8 +30,15 @@ window.CouponDtl = {
     /* 이 쿠폰을 사용한 주문들 (mock: orderId로 확인 불가, userId별 쿠폰 사용 내역 근사치) */
     const useRate = computed(() => form.issueCount > 0 ? Math.round((form.useCount / form.issueCount) * 100) : 0);
 
-    const save = () => {
-      if (!form.code || !form.name) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.coupons.push({
           ...form,
@@ -41,7 +55,7 @@ window.CouponDtl = {
       props.navigate('ecCouponMng');
     };
 
-    return { isNew, tab, form, useRate, save };
+    return { isNew, tab, form, errors, useRate, save };
   },
   template: /* html */`
 <div>
@@ -58,11 +72,13 @@ window.CouponDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">쿠폰코드 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.code" placeholder="COUPON_CODE" />
+          <input class="form-control" v-model="form.code" placeholder="COUPON_CODE" :class="errors.code ? 'is-invalid' : ''" />
+          <span v-if="errors.code" class="field-error">{{ errors.code }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">쿠폰명 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.name" placeholder="쿠폰명" />
+          <input class="form-control" v-model="form.name" placeholder="쿠폰명" :class="errors.name ? 'is-invalid' : ''" />
+          <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
         </div>
       </div>
       <div class="form-row">
@@ -90,7 +106,8 @@ window.CouponDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">만료일 <span class="req">*</span></label>
-          <input class="form-control" type="date" v-model="form.expiry" />
+          <input class="form-control" type="date" v-model="form.expiry" :class="errors.expiry ? 'is-invalid' : ''" />
+          <span v-if="errors.expiry" class="field-error">{{ errors.expiry }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>

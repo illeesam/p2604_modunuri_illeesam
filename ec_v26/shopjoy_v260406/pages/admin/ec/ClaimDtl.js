@@ -11,6 +11,12 @@ window.ClaimDtl = {
       type: '취소', status: '취소요청', reason: '', reasonDetail: '',
       refundAmount: 0, refundMethod: '계좌환불', requestDate: '', memo: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      claimId: yup.string().required('클레임ID를 입력해주세요.'),
+      orderId: yup.string().required('주문ID를 입력해주세요.'),
+    });
 
     /* CLAIM_STEPS: 유형별 진행 단계 */
     const CLAIM_STEPS = computed(() => ({
@@ -29,8 +35,15 @@ window.ClaimDtl = {
       }
     });
 
-    const save = () => {
-      if (!form.claimId || !form.orderId) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.claims.push({ ...form, refundAmount: Number(form.refundAmount) });
         props.showToast('클레임이 등록되었습니다.');
@@ -42,7 +55,7 @@ window.ClaimDtl = {
       props.navigate('ecClaimMng');
     };
 
-    return { isNew, form, statusOptions, CLAIM_STEPS, currentStepIdx, save };
+    return { isNew, form, errors, statusOptions, CLAIM_STEPS, currentStepIdx, save };
   },
   template: /* html */`
 <div>
@@ -78,14 +91,16 @@ window.ClaimDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">클레임ID <span class="req">*</span></label>
-        <input class="form-control" v-model="form.claimId" placeholder="CLM-2026-XXX" :readonly="!isNew" />
+        <input class="form-control" v-model="form.claimId" placeholder="CLM-2026-XXX" :readonly="!isNew" :class="errors.claimId ? 'is-invalid' : ''" />
+        <span v-if="errors.claimId" class="field-error">{{ errors.claimId }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">주문ID <span class="req">*</span></label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" />
+          <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :class="errors.orderId ? 'is-invalid' : ''" />
           <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
         </div>
+        <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
       </div>
     </div>
     <div class="form-row">

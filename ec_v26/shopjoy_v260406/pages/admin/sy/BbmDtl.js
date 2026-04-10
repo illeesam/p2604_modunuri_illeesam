@@ -12,6 +12,12 @@ window.BbmDtl = {
       contentType: 'textarea', scopeType: '공개',
       sortOrd: 1, useYn: 'Y', remark: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      bbmCode: yup.string().required('게시판코드를 입력해주세요.'),
+      bbmName: yup.string().required('게시판명을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -20,9 +26,15 @@ window.BbmDtl = {
       }
     });
 
-    const save = () => {
-      if (!form.bbmCode.trim()) { props.showToast('게시판코드를 입력해주세요.', 'error'); return; }
-      if (!form.bbmName.trim()) { props.showToast('게시판명을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.bbms.push({
           ...form,
@@ -38,7 +50,7 @@ window.BbmDtl = {
       props.navigate('syBbmMng');
     };
 
-    return { isNew, form, save, siteName };
+    return { isNew, form, errors, save, siteName };
   },
   template: /* html */`
 <div>
@@ -53,11 +65,13 @@ window.BbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">게시판코드 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmCode" placeholder="BOARD_CODE" style="font-family:monospace;" />
+        <input class="form-control" v-model="form.bbmCode" placeholder="BOARD_CODE" style="font-family:monospace;" :class="errors.bbmCode ? 'is-invalid' : ''" />
+        <span v-if="errors.bbmCode" class="field-error">{{ errors.bbmCode }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">게시판명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmName" placeholder="게시판명" />
+        <input class="form-control" v-model="form.bbmName" placeholder="게시판명" :class="errors.bbmName ? 'is-invalid' : ''" />
+        <span v-if="errors.bbmName" class="field-error">{{ errors.bbmName }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>

@@ -10,6 +10,12 @@ window.CacheDtl = {
     const form = reactive({
       userId: '', userName: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      userId: yup.string().required('회원ID를 입력해주세요.'),
+      desc: yup.string().required('내용을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -30,8 +36,15 @@ window.CacheDtl = {
       return list.sort((a, b) => b.date.localeCompare(a.date))[0]?.balance || 0;
     });
 
-    const save = () => {
-      if (!form.userId || !form.desc) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.cacheList.unshift({
           ...form,
@@ -56,7 +69,7 @@ window.CacheDtl = {
 
     const typeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
-    return { isNew, tab, form, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge };
+    return { isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge };
   },
   template: /* html */`
 <div>
@@ -75,9 +88,10 @@ window.CacheDtl = {
         <div class="form-group">
           <label class="form-label">회원ID <span class="req">*</span></label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" />
+            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :class="errors.userId ? 'is-invalid' : ''" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
           </div>
+          <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">회원명</label>
@@ -108,7 +122,8 @@ window.CacheDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">내용 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.desc" placeholder="내용 입력" />
+        <input class="form-control" v-model="form.desc" placeholder="내용 입력" :class="errors.desc ? 'is-invalid' : ''" />
+        <span v-if="errors.desc" class="field-error">{{ errors.desc }}</span>
       </div>
       <div class="form-actions">
         <button class="btn btn-primary" @click="save">저장</button>

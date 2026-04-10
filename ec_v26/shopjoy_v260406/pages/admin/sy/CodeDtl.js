@@ -9,6 +9,13 @@ window.CodeDtl = {
     const form = reactive({
       codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      codeGrp: yup.string().required('코드그룹을 입력해주세요.'),
+      codeLabel: yup.string().required('코드라벨을 입력해주세요.'),
+      codeValue: yup.string().required('코드값을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -17,8 +24,15 @@ window.CodeDtl = {
       }
     });
 
-    const save = () => {
-      if (!form.codeGrp || !form.codeLabel || !form.codeValue) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.codes.push({
           ...form, codeId: props.adminData.nextId(props.adminData.codes, 'codeId'),
@@ -33,7 +47,7 @@ window.CodeDtl = {
       props.navigate('syCodeMng');
     };
 
-    return { isNew, form, save, siteName };
+    return { isNew, form, errors, save, siteName };
   },
   template: /* html */`
 <div>
@@ -48,17 +62,20 @@ window.CodeDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">코드그룹 (code_grp) <span class="req">*</span></label>
-        <input class="form-control" v-model="form.codeGrp" placeholder="예: ORDER_STATUS" style="text-transform:uppercase;" />
+        <input class="form-control" v-model="form.codeGrp" placeholder="예: ORDER_STATUS" style="text-transform:uppercase;" :class="errors.codeGrp ? 'is-invalid' : ''" />
+        <span v-if="errors.codeGrp" class="field-error">{{ errors.codeGrp }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">코드라벨 (code_label) <span class="req">*</span></label>
-        <input class="form-control" v-model="form.codeLabel" placeholder="예: 주문완료" />
+        <input class="form-control" v-model="form.codeLabel" placeholder="예: 주문완료" :class="errors.codeLabel ? 'is-invalid' : ''" />
+        <span v-if="errors.codeLabel" class="field-error">{{ errors.codeLabel }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">코드값 (code_value) <span class="req">*</span></label>
-        <input class="form-control" v-model="form.codeValue" placeholder="예: ORDER_COMPLETE" />
+        <input class="form-control" v-model="form.codeValue" placeholder="예: ORDER_COMPLETE" :class="errors.codeValue ? 'is-invalid' : ''" />
+        <span v-if="errors.codeValue" class="field-error">{{ errors.codeValue }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">정렬순서</label>

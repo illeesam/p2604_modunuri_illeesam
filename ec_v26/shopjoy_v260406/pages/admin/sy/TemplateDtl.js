@@ -10,6 +10,7 @@ window.TemplateDtl = {
     const form = reactive({
       templateType: '메일템플릿', templateCode: '', templateName: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
     });
+    const errors = reactive({});
 
     /* ── Quill (메일, 시스템알림) ── */
     const useHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateType));
@@ -55,8 +56,21 @@ window.TemplateDtl = {
 
     onBeforeUnmount(() => destroyQuill());
 
-    const save = () => {
-      if (!form.templateCode || !form.templateName || !form.content) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const schema = yup.object({
+      templateCode: yup.string().required('템플릿코드를 입력해주세요.'),
+      templateName: yup.string().required('템플릿명을 입력해주세요.'),
+      content: yup.string().required('내용을 입력해주세요.'),
+    });
+
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (form.sampleParams) {
         try { JSON.parse(form.sampleParams); }
         catch { props.showToast('파라미터 샘플 JSON 형식이 올바르지 않습니다.', 'error'); return; }
@@ -82,7 +96,7 @@ window.TemplateDtl = {
     const previewOpen = ref(false);
     const sendOpen    = ref(false);
 
-    return { isNew, form, save, TEMPLATE_TYPES, needSubject, isLongContent,
+    return { isNew, form, errors, save, TEMPLATE_TYPES, needSubject, isLongContent,
              useHtmlEditor, quillEditorEl, previewOpen, sendOpen, siteName };
   },
   template: /* html */`
@@ -105,11 +119,14 @@ window.TemplateDtl = {
       <div class="form-group">
         <label class="form-label">템플릿코드 <span class="req">*</span></label>
         <input class="form-control" v-model="form.templateCode" placeholder="예) ORDER_CONFIRM_MAIL"
-          @input="form.templateCode=form.templateCode.toUpperCase().replace(/[^A-Z0-9_]/g,'')" />
+          @input="form.templateCode=form.templateCode.toUpperCase().replace(/[^A-Z0-9_]/g,'')"
+          :class="errors.templateCode ? 'is-invalid' : ''" />
+        <span v-if="errors.templateCode" class="field-error">{{ errors.templateCode }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">템플릿명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.templateName" placeholder="템플릿명 입력" />
+        <input class="form-control" v-model="form.templateName" placeholder="템플릿명 입력" :class="errors.templateName ? 'is-invalid' : ''" />
+        <span v-if="errors.templateName" class="field-error">{{ errors.templateName }}</span>
       </div>
     </div>
     <div class="form-row" v-if="needSubject">
@@ -129,7 +146,9 @@ window.TemplateDtl = {
         <!-- 텍스트 영역 -->
         <textarea v-else class="form-control" v-model="form.content"
           :rows="isLongContent ? 10 : 5"
-          placeholder="템플릿 내용 입력"></textarea>
+          placeholder="템플릿 내용 입력"
+          :class="errors.content ? 'is-invalid' : ''"></textarea>
+        <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
       </div>
     </div>
     <div class="form-row">

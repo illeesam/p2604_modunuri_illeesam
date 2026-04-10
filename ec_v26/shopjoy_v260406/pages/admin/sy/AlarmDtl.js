@@ -10,6 +10,12 @@ window.AlarmDtl = {
       title: '', alarmType: '푸시', targetType: '전체', targetId: '',
       message: '', sendDate: '', status: '임시',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      title: yup.string().required('제목을 입력해주세요.'),
+      message: yup.string().required('메시지를 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -18,9 +24,15 @@ window.AlarmDtl = {
       }
     });
 
-    const save = () => {
-      if (!form.title.trim()) { props.showToast('제목을 입력해주세요.', 'error'); return; }
-      if (!form.message.trim()) { props.showToast('메시지를 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.alarms.unshift({
           ...form,
@@ -36,7 +48,7 @@ window.AlarmDtl = {
       props.navigate('syAlarmMng');
     };
 
-    return { isNew, form, save, siteName };
+    return { isNew, form, errors, save, siteName };
   },
   template: /* html */`
 <div>
@@ -51,7 +63,8 @@ window.AlarmDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="알림 제목" />
+        <input class="form-control" v-model="form.title" placeholder="알림 제목" :class="errors.title ? 'is-invalid' : ''" />
+        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
@@ -84,7 +97,8 @@ window.AlarmDtl = {
     </div>
     <div class="form-group">
       <label class="form-label">메시지 <span class="req">*</span></label>
-      <textarea class="form-control" v-model="form.message" rows="4" placeholder="알림 메시지 내용"></textarea>
+      <textarea class="form-control" v-model="form.message" rows="4" placeholder="알림 메시지 내용" :class="errors.message ? 'is-invalid' : ''"></textarea>
+      <span v-if="errors.message" class="field-error">{{ errors.message }}</span>
     </div>
     <div class="form-actions">
       <button class="btn btn-primary" @click="save">저장</button>

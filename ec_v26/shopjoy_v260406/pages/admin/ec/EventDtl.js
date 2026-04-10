@@ -12,6 +12,11 @@ window.EventDtl = {
       authRequired: false, targetProducts: [],
       content1: '', content2: '', content3: '', content4: '', content5: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      title: yup.string().required('이벤트 제목을 입력해주세요.'),
+    });
 
     /* Quill 인스턴스 5개 */
     const quillers = {};
@@ -92,8 +97,15 @@ window.EventDtl = {
       props.showToast('이벤트 참여가 완료되었습니다! 감사합니다.', 'success');
     };
 
-    const save = () => {
-      if (!form.title) { props.showToast('이벤트 제목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.events.push({
           ...form, eventId: props.adminData.nextId(props.adminData.events, 'eventId'),
@@ -109,7 +121,7 @@ window.EventDtl = {
       props.navigate('ecEventMng');
     };
 
-    return { isNew, tab, onTabChange, form, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save };
+    return { isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save };
   },
   template: /* html */`
 <div>
@@ -128,7 +140,8 @@ window.EventDtl = {
     <div v-show="tab==='info'">
       <div class="form-group">
         <label class="form-label">이벤트 제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" />
+        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :class="errors.title ? 'is-invalid' : ''" />
+        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-row">
         <div class="form-group">

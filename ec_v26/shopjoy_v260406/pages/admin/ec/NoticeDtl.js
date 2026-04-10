@@ -10,6 +10,11 @@ window.NoticeDtl = {
       startDate: '', endDate: '', status: '게시', contentHtml: '',
       attachGrpId: null,
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      title: yup.string().required('제목을 입력해주세요.'),
+    });
     let quill = null;
 
     onMounted(() => {
@@ -25,8 +30,15 @@ window.NoticeDtl = {
     });
     onBeforeUnmount(() => { quill = null; });
 
-    const save = () => {
-      if (!form.title.trim()) { props.showToast('제목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.notices.unshift({
           ...form,
@@ -42,7 +54,7 @@ window.NoticeDtl = {
       props.navigate('ecNoticeMng');
     };
 
-    return { isNew, form, save };
+    return { isNew, form, errors, save };
   },
   template: /* html */`
 <div>
@@ -51,7 +63,8 @@ window.NoticeDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="공지 제목" />
+        <input class="form-control" v-model="form.title" placeholder="공지 제목" :class="errors.title ? 'is-invalid' : ''" />
+        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>

@@ -12,6 +12,12 @@ window.ContactDtl = {
       userId: '', userName: '', date: '', category: '배송 문의',
       title: '', content: '', status: '요청', answer: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      title: yup.string().required('제목을 입력해주세요.'),
+      content: yup.string().required('문의 내용을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -36,8 +42,15 @@ window.ContactDtl = {
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
     }[s] || 'badge-gray');
 
-    const save = () => {
-      if (!form.title || !form.content) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.contacts.push({
           ...form,
@@ -65,7 +78,7 @@ window.ContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { isNew, tab, form, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteName };
+    return { isNew, tab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteName };
   },
   template: /* html */`
 <div>
@@ -117,11 +130,13 @@ window.ContactDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" />
+        <input class="form-control" v-model="form.title" :class="errors.title ? 'is-invalid' : ''" />
+        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">문의 내용 <span class="req">*</span></label>
-        <textarea class="form-control" v-model="form.content" rows="6"></textarea>
+        <textarea class="form-control" v-model="form.content" rows="6" :class="errors.content ? 'is-invalid' : ''"></textarea>
+        <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
       </div>
       <div class="form-actions">
         <button class="btn btn-primary" @click="save">저장</button>

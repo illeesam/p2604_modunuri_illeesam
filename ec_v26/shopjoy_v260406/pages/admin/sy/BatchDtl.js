@@ -9,6 +9,13 @@ window.BatchDtl = {
     const form = reactive({
       batchName: '', batchCode: '', description: '', cron: '0 0 * * *', status: '활성',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      batchName: yup.string().required('배치명을 입력해주세요.'),
+      batchCode: yup.string().required('배치코드를 입력해주세요.'),
+      cron: yup.string().required('Cron 표현식을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -27,8 +34,15 @@ window.BatchDtl = {
       { label: '매월 1일 오전 8시 (0 8 1 * *)', value: '0 8 1 * *' },
     ];
 
-    const save = () => {
-      if (!form.batchName || !form.batchCode || !form.cron) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.batches.push({
           ...form, batchId: props.adminData.nextId(props.adminData.batches, 'batchId'),
@@ -44,7 +58,7 @@ window.BatchDtl = {
       props.navigate('syBatchMng');
     };
 
-    return { isNew, form, save, CRON_PRESETS, siteName };
+    return { isNew, form, errors, save, CRON_PRESETS, siteName };
   },
   template: /* html */`
 <div>
@@ -59,11 +73,13 @@ window.BatchDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">배치명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.batchName" placeholder="배치 이름" />
+        <input class="form-control" v-model="form.batchName" placeholder="배치 이름" :class="errors.batchName ? 'is-invalid' : ''" />
+        <span v-if="errors.batchName" class="field-error">{{ errors.batchName }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">배치코드 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.batchCode" placeholder="ORDER_AUTO_COMPLETE" style="text-transform:uppercase;" />
+        <input class="form-control" v-model="form.batchCode" placeholder="ORDER_AUTO_COMPLETE" style="text-transform:uppercase;" :class="errors.batchCode ? 'is-invalid' : ''" />
+        <span v-if="errors.batchCode" class="field-error">{{ errors.batchCode }}</span>
       </div>
     </div>
     <div class="form-row">
@@ -77,7 +93,8 @@ window.BatchDtl = {
         <label class="form-label">Cron 표현식 <span class="req">*</span>
           <span style="font-size:11px;color:#888;margin-left:8px;">분 시 일 월 요일</span>
         </label>
-        <input class="form-control" v-model="form.cron" placeholder="0 0 * * *" />
+        <input class="form-control" v-model="form.cron" placeholder="0 0 * * *" :class="errors.cron ? 'is-invalid' : ''" />
+        <span v-if="errors.cron" class="field-error">{{ errors.cron }}</span>
       </div>
     </div>
     <div style="margin-bottom:16px;padding:10px 12px;background:#f8f9fa;border-radius:6px;">

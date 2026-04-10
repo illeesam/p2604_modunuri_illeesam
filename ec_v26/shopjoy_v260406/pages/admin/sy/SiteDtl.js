@@ -13,6 +13,13 @@ window.SiteDtl = {
       logoUrl: '', favicon: '', description: '',
       email: '', phone: '', address: '', businessNo: '', ceo: '', status: '운영중',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      siteCode: yup.string().required('사이트코드를 입력해주세요.'),
+      siteName: yup.string().required('사이트명을 입력해주세요.'),
+      domain: yup.string().required('도메인을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -25,9 +32,14 @@ window.SiteDtl = {
       }
     });
 
-    const save = () => {
-      if (!form.siteCode || !form.siteName || !form.domain) {
-        props.showToast('사이트코드·사이트명·도메인은 필수입니다.', 'error'); return;
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
       }
       if (isNew.value) {
         props.adminData.sites.push({
@@ -44,7 +56,7 @@ window.SiteDtl = {
       props.navigate('sySiteMng');
     };
 
-    return { isNew, form, save, SITE_TYPES };
+    return { isNew, form, errors, save, SITE_TYPES };
   },
   template: /* html */`
 <div>
@@ -53,7 +65,8 @@ window.SiteDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트코드 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.siteCode" placeholder="ST0001" style="font-family:monospace;font-weight:600;" />
+        <input class="form-control" v-model="form.siteCode" placeholder="ST0001" style="font-family:monospace;font-weight:600;" :class="errors.siteCode ? 'is-invalid' : ''" />
+        <span v-if="errors.siteCode" class="field-error">{{ errors.siteCode }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">사이트유형</label>
@@ -65,11 +78,13 @@ window.SiteDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.siteName" placeholder="ShopJoy" />
+        <input class="form-control" v-model="form.siteName" placeholder="ShopJoy" :class="errors.siteName ? 'is-invalid' : ''" />
+        <span v-if="errors.siteName" class="field-error">{{ errors.siteName }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">도메인 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.domain" placeholder="shopjoy.com" />
+        <input class="form-control" v-model="form.domain" placeholder="shopjoy.com" :class="errors.domain ? 'is-invalid' : ''" />
+        <span v-if="errors.domain" class="field-error">{{ errors.domain }}</span>
       </div>
     </div>
     <div class="form-row">

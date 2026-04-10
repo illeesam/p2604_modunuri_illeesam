@@ -10,6 +10,12 @@ window.VendorDtl = {
       vendorType: '판매업체', vendorName: '', ceo: '', bizNo: '', phone: '', email: '',
       address: '', contractDate: '', status: '활성', memo: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      vendorName: yup.string().required('업체명을 입력해주세요.'),
+      bizNo: yup.string().required('사업자등록번호를 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -18,8 +24,15 @@ window.VendorDtl = {
       }
     });
 
-    const save = () => {
-      if (!form.vendorName || !form.bizNo) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.vendors.push({
           ...form, vendorId: props.adminData.nextId(props.adminData.vendors, 'vendorId'),
@@ -33,7 +46,7 @@ window.VendorDtl = {
       props.navigate('syVendorMng');
     };
 
-    return { isNew, form, save, siteName };
+    return { isNew, form, errors, save, siteName };
   },
   template: /* html */`
 <div>
@@ -54,7 +67,8 @@ window.VendorDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">업체명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.vendorName" placeholder="업체명" />
+        <input class="form-control" v-model="form.vendorName" placeholder="업체명" :class="errors.vendorName ? 'is-invalid' : ''" />
+        <span v-if="errors.vendorName" class="field-error">{{ errors.vendorName }}</span>
       </div>
     </div>
     <div class="form-row">
@@ -64,7 +78,8 @@ window.VendorDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">사업자등록번호 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.bizNo" placeholder="000-00-00000" />
+        <input class="form-control" v-model="form.bizNo" placeholder="000-00-00000" :class="errors.bizNo ? 'is-invalid' : ''" />
+        <span v-if="errors.bizNo" class="field-error">{{ errors.bizNo }}</span>
       </div>
     </div>
     <div class="form-row">

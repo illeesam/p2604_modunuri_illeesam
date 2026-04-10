@@ -15,6 +15,12 @@ window.BbsDtl = {
       bbmId: null, title: '', author: '', status: '게시',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      bbmId: yup.mixed().required('게시판을 선택해주세요.').nullable(false),
+      title: yup.string().required('제목을 입력해주세요.'),
+    });
 
     /* ── 게시판 선택 팝업 ── */
     const showBbmModal  = ref(false);
@@ -83,9 +89,15 @@ window.BbsDtl = {
     });
 
     /* ── 저장 ── */
-    const save = () => {
-      if (!form.bbmId) { props.showToast('게시판을 선택해주세요.', 'error'); return; }
-      if (!form.title.trim()) { props.showToast('제목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.bbss.unshift({
           ...form,
@@ -104,7 +116,7 @@ window.BbsDtl = {
     };
 
     return {
-      isNew, form, selectedBbm, contentType, allowAttach, attachMaxCount,
+      isNew, form, errors, selectedBbm, contentType, allowAttach, attachMaxCount,
       showBbmModal, showBbmDetail, onBbmSelect, save, siteName,
     };
   },
@@ -142,13 +154,15 @@ window.BbsDtl = {
         </span>
         <span v-else style="font-size:12px;color:#bbb;">게시판을 선택해주세요.</span>
       </div>
+      <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
     </div>
 
     <!-- 기본 정보 -->
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="게시글 제목" />
+        <input class="form-control" v-model="form.title" placeholder="게시글 제목" :class="errors.title ? 'is-invalid' : ''" />
+        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">작성자</label>

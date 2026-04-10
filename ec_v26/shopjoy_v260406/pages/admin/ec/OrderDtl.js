@@ -12,6 +12,12 @@ window.OrderDtl = {
       orderId: '', userId: '', userName: '', orderDate: '', productName: '',
       totalPrice: 0, payMethod: '계좌이체', status: '주문완료', memo: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      orderId: yup.string().required('주문ID를 입력해주세요.'),
+      userId: yup.string().required('회원ID를 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -27,8 +33,15 @@ window.OrderDtl = {
 
     const isCanceled = computed(() => form.status === '취소됨');
 
-    const save = () => {
-      if (!form.orderId || !form.userId) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value) {
         props.adminData.orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
         props.showToast('주문이 등록되었습니다.');
@@ -40,7 +53,7 @@ window.OrderDtl = {
       props.navigate('ecOrderMng');
     };
 
-    return { isNew, form, save, ORDER_STEPS, currentStepIdx, isCanceled };
+    return { isNew, form, errors, save, ORDER_STEPS, currentStepIdx, isCanceled };
   },
   template: /* html */`
 <div>
@@ -78,14 +91,16 @@ window.OrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">주문ID <span class="req">*</span></label>
-        <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="!isNew" />
+        <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="!isNew" :class="errors.orderId ? 'is-invalid' : ''" />
+        <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">회원ID <span class="req">*</span></label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.userId" placeholder="회원 ID" />
+          <input class="form-control" v-model="form.userId" placeholder="회원 ID" :class="errors.userId ? 'is-invalid' : ''" />
           <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
         </div>
+        <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
       </div>
     </div>
     <div class="form-row">

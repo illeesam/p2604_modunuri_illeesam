@@ -8,6 +8,11 @@ window.CategoryDtl = {
     const form = reactive({
       parentId: null, categoryName: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      categoryName: yup.string().required('카테고리명을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -30,8 +35,15 @@ window.CategoryDtl = {
       }
     };
 
-    const save = () => {
-      if (!form.categoryName) { props.showToast('카테고리명은 필수입니다.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       const parentId = form.parentId ? Number(form.parentId) : null;
       if (isNew.value) {
         props.adminData.categories.push({
@@ -47,7 +59,7 @@ window.CategoryDtl = {
       props.navigate('ecCategoryMng');
     };
 
-    return { isNew, form, save, parentOptions, onParentChange };
+    return { isNew, form, errors, save, parentOptions, onParentChange };
   },
   template: /* html */`
 <div>
@@ -63,7 +75,8 @@ window.CategoryDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">카테고리명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.categoryName" placeholder="카테고리명" />
+        <input class="form-control" v-model="form.categoryName" placeholder="카테고리명" :class="errors.categoryName ? 'is-invalid' : ''" />
+        <span v-if="errors.categoryName" class="field-error">{{ errors.categoryName }}</span>
       </div>
     </div>
     <div class="form-row">

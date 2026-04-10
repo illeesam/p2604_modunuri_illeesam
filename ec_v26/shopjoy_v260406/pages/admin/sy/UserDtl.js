@@ -9,6 +9,13 @@ window.UserDtl = {
     const form = reactive({
       loginId: '', name: '', email: '', phone: '', role: '운영자', dept: '', status: '활성', password: '',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      loginId: yup.string().required('로그인ID를 입력해주세요.'),
+      name: yup.string().required('이름을 입력해주세요.'),
+      email: yup.string().required('이메일을 입력해주세요.'),
+    });
 
     onMounted(() => {
       if (!isNew.value) {
@@ -17,8 +24,15 @@ window.UserDtl = {
       }
     });
 
-    const save = () => {
-      if (!form.loginId || !form.name || !form.email) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       if (isNew.value && !form.password) { props.showToast('신규 등록 시 비밀번호는 필수입니다.', 'error'); return; }
       if (isNew.value) {
         const { password, ...rest } = form;
@@ -38,7 +52,7 @@ window.UserDtl = {
       props.navigate('syUserMng');
     };
 
-    return { isNew, form, save, siteName };
+    return { isNew, form, errors, save, siteName };
   },
   template: /* html */`
 <div>
@@ -53,7 +67,8 @@ window.UserDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">로그인ID <span class="req">*</span></label>
-        <input class="form-control" v-model="form.loginId" placeholder="로그인 아이디" :readonly="!isNew" :style="!isNew?'background:#f5f5f5;':''" />
+        <input class="form-control" v-model="form.loginId" placeholder="로그인 아이디" :readonly="!isNew" :style="!isNew?'background:#f5f5f5;':''" :class="errors.loginId ? 'is-invalid' : ''" />
+        <span v-if="errors.loginId" class="field-error">{{ errors.loginId }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">비밀번호 {{ isNew ? '' : '(변경 시 입력)' }} <span v-if="isNew" class="req">*</span></label>
@@ -63,11 +78,13 @@ window.UserDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">이름 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.name" placeholder="이름" />
+        <input class="form-control" v-model="form.name" placeholder="이름" :class="errors.name ? 'is-invalid' : ''" />
+        <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">이메일 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.email" placeholder="이메일" />
+        <input class="form-control" v-model="form.email" placeholder="이메일" :class="errors.email ? 'is-invalid' : ''" />
+        <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
       </div>
     </div>
     <div class="form-row">

@@ -53,7 +53,9 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
-.form-actions { display: flex; gap: 8px; margin-top: 20px; }
+.form-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: center; }
+.form-control.is-invalid { border-color: #cf1322 !important; }
+.field-error { font-size: 11px; color: #cf1322; margin-top: 3px; display: block; }
 .section-title { font-size: 13px; font-weight: 700; color: #444; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #e8587a; }
 .readonly-field { padding: 8px 11px; background: #f5f5f5; border: 1px solid #e8e8e8; border-radius: 6px; font-size: 13px; color: #666; }
 

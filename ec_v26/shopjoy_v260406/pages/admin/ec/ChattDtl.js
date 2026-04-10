@@ -58,6 +58,12 @@ window.ChattDtl = {
 
     /* 신규 채팅 form */
     const form = reactive({ userId: '', userName: '', subject: '', status: '진행중' });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      userId: yup.string().required('회원ID를 입력해주세요.'),
+      subject: yup.string().required('제목을 입력해주세요.'),
+    });
 
     const sendReply = () => {
       if (!replyText.value.trim()) return;
@@ -75,8 +81,15 @@ window.ChattDtl = {
       props.showToast('채팅이 종료되었습니다.');
     };
 
-    const saveNew = () => {
-      if (!form.userId || !form.subject) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const saveNew = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       const m = props.adminData.getMember(Number(form.userId));
       props.adminData.chats.push({
         chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
@@ -104,7 +117,7 @@ window.ChattDtl = {
     return {
       isNew, tab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
-      form, saveNew, onUserChange,
+      form, errors, saveNew, onUserChange,
       searchUserId, userChats, searchUser,
       memberChats,
     };
@@ -201,9 +214,10 @@ window.ChattDtl = {
           <div class="form-group">
             <label class="form-label">회원ID <span class="req">*</span></label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserChange" />
+              <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserChange" :class="errors.userId ? 'is-invalid' : ''" />
               <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
             </div>
+            <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
           </div>
           <div class="form-group">
             <label class="form-label">회원명</label>
@@ -212,7 +226,8 @@ window.ChattDtl = {
         </div>
         <div class="form-group">
           <label class="form-label">제목 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.subject" placeholder="채팅 제목" />
+          <input class="form-control" v-model="form.subject" placeholder="채팅 제목" :class="errors.subject ? 'is-invalid' : ''" />
+          <span v-if="errors.subject" class="field-error">{{ errors.subject }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>

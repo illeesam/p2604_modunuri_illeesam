@@ -18,6 +18,12 @@ window.ProdDtl = {
       // 가격설정
       salePrice: 0, costPrice: 0, pointRate: 0, taxType: '과세',
     });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      productName: yup.string().required('상품명을 입력해주세요.'),
+      price: yup.number().typeError('숫자를 입력해주세요.').required('가격을 입력해주세요.').min(1, '가격은 1원 이상이어야 합니다.'),
+    });
 
     /* 상품 이미지 목록 [{ id, previewUrl, isMain, colors, sizes }] */
     const images = ref([]);
@@ -127,8 +133,15 @@ window.ProdDtl = {
         .map(id => props.adminData.getProduct(id)).filter(Boolean);
     });
 
-    const save = () => {
-      if (!form.productName || !form.price) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       const imgData = images.value.map(({ id, ...rest }) => rest);
       const mainImg = images.value.find(img => img.isMain);
       if (isNew.value) {
@@ -153,7 +166,7 @@ window.ProdDtl = {
     };
 
     return {
-      isNew, topTab, form, relatedProducts, save,
+      isNew, topTab, form, errors, relatedProducts, save,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
       salePlans, planVisible, planAllChecked, addPlanRow, onPlanChange,
       deletePlanChecked, deleteLastPlanRow, planRowStyle, planStatusBadge,
@@ -179,7 +192,8 @@ window.ProdDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">상품명 <span class="req">*</span></label>
-          <input class="form-control" v-model="form.productName" placeholder="상품명" />
+          <input class="form-control" v-model="form.productName" placeholder="상품명" :class="errors.productName ? 'is-invalid' : ''" />
+          <span v-if="errors.productName" class="field-error">{{ errors.productName }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">카테고리</label>
@@ -374,7 +388,8 @@ window.ProdDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">판매가 <span class="req">*</span></label>
-          <input class="form-control" type="number" v-model.number="form.price" placeholder="0" />
+          <input class="form-control" type="number" v-model.number="form.price" placeholder="0" :class="errors.price ? 'is-invalid' : ''" />
+          <span v-if="errors.price" class="field-error">{{ errors.price }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">할인가 (0=미적용)</label>
