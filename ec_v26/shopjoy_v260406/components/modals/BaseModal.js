@@ -394,3 +394,69 @@ window.OrderSelectModal = {
   </div>
 </div>`,
 };
+
+/* ── 게시판 선택 모달 ── */
+window.BbmSelectModal = {
+  name: 'BbmSelectModal',
+  props: ['adminData'],
+  emits: ['select', 'close'],
+  setup(props) {
+    const { ref, computed, watch } = Vue;
+    const kw       = ref('');
+    const page     = ref(1);
+    const pageSize = 6;
+
+    const filtered = computed(() => props.adminData.bbms.filter(b => {
+      if (b.useYn === 'N') return false;
+      if (!kw.value) return true;
+      const k = kw.value.toLowerCase();
+      return b.bbmName.toLowerCase().includes(k) || b.bbmCode.toLowerCase().includes(k) || b.bbmType.toLowerCase().includes(k);
+    }));
+
+    /* 검색어 변경 시 첫 페이지로 */
+    watch(kw, () => { page.value = 1; });
+
+    const total      = computed(() => filtered.value.length);
+    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
+    const pageList   = computed(() => filtered.value.slice((page.value - 1) * pageSize, page.value * pageSize));
+    const pageNums   = computed(() => {
+      const s = Math.max(1, page.value - 2), e = Math.min(totalPages.value, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const setPage = n => { if (n >= 1 && n <= totalPages.value) page.value = n; };
+
+    const typeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
+    const scopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
+
+    return { kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header"><span class="modal-title">게시판 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <input class="form-control" v-model="kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ total }}건</div>
+    <div class="sel-modal-list" style="min-height:200px;">
+      <div v-if="pageList.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="b in pageList" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
+        <div class="sel-modal-item-name" style="flex:1;min-width:0;">
+          <span>{{ b.bbmName }}</span>
+          <span class="badge" :class="typeBadge(b.bbmType)" style="margin-left:5px;font-size:10px;">{{ b.bbmType }}</span>
+          <span class="badge" :class="scopeBadge(b.scopeType)" style="margin-left:3px;font-size:10px;">{{ b.scopeType }}</span>
+        </div>
+        <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:3px;flex-shrink:0;">{{ b.bbmCode }}</code>
+        <span class="sel-modal-item-id" style="background:#f0f0f0;color:#888;flex-shrink:0;">ID: {{ b.bbmId }}</span>
+        <button class="sel-modal-item-btn" @click="$emit('select', b)">선택</button>
+      </div>
+    </div>
+    <!-- 페이징 -->
+    <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
+      <button class="pager-btn" :disabled="page===1" @click="setPage(1)">«</button>
+      <button class="pager-btn" :disabled="page===1" @click="setPage(page-1)">‹</button>
+      <button v-for="n in pageNums" :key="n" class="pager-btn" :class="{active:page===n}" @click="setPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="page===totalPages" @click="setPage(page+1)">›</button>
+      <button class="pager-btn" :disabled="page===totalPages" @click="setPage(totalPages)">»</button>
+    </div>
+  </div>
+</div>`,
+};

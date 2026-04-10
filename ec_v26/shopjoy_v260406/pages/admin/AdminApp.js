@@ -23,7 +23,9 @@
     system:    [{ id: 'siteMng', label: '사이트관리' }, { id: 'codeMng', label: '공통코드관리' },
                 { id: 'attachMng', label: '첨부관리' }, { id: 'templateMng', label: '템플릿관리' },
                 { id: 'vendorMng', label: '업체정보' }, { id: 'userMng', label: '사용자관리' },
-                { id: 'batchMng', label: '배치스케즐관리' }],
+                { id: 'batchMng', label: '배치스케즐관리' },
+                { id: 'noticeMng', label: '공지사항관리' }, { id: 'alarmMng', label: '알림관리' },
+                { id: 'bbmMng', label: '게시판관리' }, { id: 'bbsMng', label: '게시글관리' }],
   };
 
   /* 페이지 → 상위메뉴 매핑 */
@@ -518,6 +520,10 @@
         <user-dtl    v-else-if="page==='userDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
         <batch-mng   v-else-if="page==='batchMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <batch-dtl   v-else-if="page==='batchDtl'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <notice-mng  v-else-if="page==='noticeMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <alarm-mng   v-else-if="page==='alarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <bbm-mng     v-else-if="page==='bbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <bbs-mng     v-else-if="page==='bbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
       </div>
     </div>
 
@@ -835,6 +841,16 @@
   .component('UserDtl',    window.UserDtl)
   .component('BatchMng',   window.BatchMng)
   .component('BatchDtl',   window.BatchDtl)
+  .component('ComnAttachGrp', window.ComnAttachGrp)
+  .component('NoticeMng',  window.NoticeMng)
+  .component('NoticeDtl',  window.NoticeDtl)
+  .component('AlarmMng',   window.AlarmMng)
+  .component('AlarmDtl',   window.AlarmDtl)
+  .component('BbmMng',     window.BbmMng)
+  .component('BbmDtl',     window.BbmDtl)
+  .component('BbsMng',     window.BbsMng)
+  .component('BbsDtl',     window.BbsDtl)
+  .component('BbmSelectModal', window.BbmSelectModal)
   .component('SiteSelectModal',      window.SiteSelectModal)
   .component('VendorSelectModal',    window.VendorSelectModal)
   .component('AdminUserSelectModal', window.AdminUserSelectModal)
