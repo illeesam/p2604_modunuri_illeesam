@@ -1,0 +1,124 @@
+/* ShopJoy Admin - 공지사항관리 */
+window.NoticeMng = {
+  name: 'NoticeMng',
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  setup(props) {
+    const { ref, reactive, computed } = Vue;
+    const searchKw = ref(''); const searchType = ref(''); const searchStatus = ref('');
+    const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
+    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const onDateRangeChange = () => {
+      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      pager.page = 1;
+    };
+    const pager = reactive({ page: 1, size: 10 });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+    const selectedId = ref(null);
+    const loadDetail = (id) => { selectedId.value = selectedId.value === id ? null : id; };
+    const openNew = () => { selectedId.value = '__new__'; };
+    const closeDetail = () => { selectedId.value = null; };
+    const inlineNavigate = (pg) => { if (pg === 'noticeMng') { selectedId.value = null; return; } props.navigate(pg); };
+    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+
+    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
+    const filtered = computed(() => props.adminData.notices.filter(n => {
+      const kw = applied.kw.trim().toLowerCase();
+      if (kw && !n.title.toLowerCase().includes(kw)) return false;
+      if (applied.type && n.noticeType !== applied.type) return false;
+      if (applied.status && n.status !== applied.status) return false;
+      const d = String(n.regDate || '').slice(0, 10);
+      if (applied.dateStart && d < applied.dateStart) return false;
+      if (applied.dateEnd && d > applied.dateEnd) return false;
+      return true;
+    }));
+    const total = computed(() => filtered.value.length);
+    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
+    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const pageNums = computed(() => {
+      const cur = pager.page, last = totalPages.value;
+      const s = Math.max(1, cur - 2), e = Math.min(last, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const statusBadge = s => ({ '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' }[s] || 'badge-gray');
+    const typeBadge = t => ({ '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' }[t] || 'badge-gray');
+    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, type: searchType.value, status: searchStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value }); pager.page = 1; };
+    const onReset = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = ''; Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' }); pager.page = 1; };
+    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+    const doDelete = async (n) => {
+      const ok = await props.showConfirm('공지사항 삭제', `[${n.title}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.notices.findIndex(x => x.noticeId === n.noticeId);
+      if (idx !== -1) props.adminData.notices.splice(idx, 1);
+      if (selectedId.value === n.noticeId) selectedId.value = null;
+      props.showToast('삭제되었습니다.');
+    };
+    return { searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+  },
+  template: /* html */`
+<div>
+  <div class="page-title">공지사항관리</div>
+  <div class="card">
+    <div class="search-bar">
+      <input v-model="searchKw" placeholder="제목 검색" />
+      <select v-model="searchType"><option value="">유형 전체</option><option>일반</option><option>긴급</option><option>이벤트</option><option>시스템</option></select>
+      <select v-model="searchStatus"><option value="">상태 전체</option><option>게시</option><option>예약</option><option>종료</option><option>임시</option></select>
+      <span class="search-label">등록일</span>
+      <input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" />
+      <select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <span class="list-title">공지사항목록 <span class="list-count">{{ total }}건</span></span>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>ID</th><th>유형</th><th>제목</th><th>고정</th><th>시작일</th><th>종료일</th><th>상태</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
+      <tbody>
+        <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="n in pageList" :key="n.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
+          <td>{{ n.noticeId }}</td>
+          <td><span class="badge" :class="typeBadge(n.noticeType)">{{ n.noticeType }}</span></td>
+          <td><span class="title-link" @click="loadDetail(n.noticeId)" :style="selectedId===n.noticeId?'color:#e8587a;font-weight:700;':''">{{ n.title }}<span v-if="n.isFixed" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span><span v-if="selectedId===n.noticeId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="badge" :class="n.isFixed?'badge-red':'badge-gray'">{{ n.isFixed ? '고정' : '-' }}</span></td>
+          <td>{{ n.startDate || '-' }}</td>
+          <td>{{ n.endDate || '-' }}</td>
+          <td><span class="badge" :class="statusBadge(n.status)">{{ n.status }}</span></td>
+          <td>{{ n.regDate }}</td>
+          <td><div class="actions">
+            <button class="btn btn-blue btn-sm" @click="loadDetail(n.noticeId)">수정</button>
+            <button class="btn btn-danger btn-sm" @click="doDelete(n)">삭제</button>
+          </div></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <div></div>
+      <div class="pager">
+        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+      </div>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+    </div>
+    <notice-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+  </div>
+</div>
+`
+};

@@ -99,7 +99,6 @@ window.CodeMng = {
         if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
       } else {
         row._row_status = 'D';
-        row._row_check  = false;
       }
     };
 
@@ -113,7 +112,6 @@ window.CodeMng = {
         // U / D: 원래값 복원 → N
         if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
         row._row_status = 'N';
-        row._row_check  = false;
       }
     };
 
@@ -286,7 +284,8 @@ window.CodeMng = {
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
           <th>비고</th>
-          <th class="col-row-actions"></th>
+          <th class="col-act-cancel"></th>
+          <th class="col-act-delete"></th>
         </tr>
       </thead>
       <tbody>
@@ -319,11 +318,13 @@ window.CodeMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td class="row-actions">
-            <button v-if="['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+          <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+          </td>
+          <td class="col-act-delete-val">
+            <button v-if="['N','U'].includes(row._row_status)"
+              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
           </td>
         </tr>
       </tbody>
