@@ -5,8 +5,12 @@ window.DispMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
-    const searchDateRange = ref('3months');
+    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const onDateRangeChange = () => {
+      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      pager.page = 1;
+    };
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchArea = ref('');
     const searchStatus = ref('');
@@ -49,12 +53,16 @@ window.DispMng = {
       return '-';
     };
 
+    const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '' });
+
     const filtered = computed(() => props.adminData.displays.filter(d => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
-      if (searchArea.value && d.area !== searchArea.value) return false;
-      if (searchStatus.value && d.status !== searchStatus.value) return false;
-      if (!window.adminUtil.isInRange(d.regDate, searchDateRange.value)) return false;
+      if (applied.area && d.area !== applied.area) return false;
+      if (applied.status && d.status !== applied.status) return false;
+      const _d = String(d.regDate || '').slice(0, 10);
+      if (applied.dateStart && _d < applied.dateStart) return false;
+      if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
     const areas = computed(() => [...new Set(props.adminData.displays.map(d => d.area))]);
@@ -82,7 +90,24 @@ window.DispMng = {
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     }[t] || t);
 
-    const onSearch = () => { pager.page = 1; };
+    const onSearch = () => {
+      Object.assign(applied, {
+        kw: searchKw.value,
+        area: searchArea.value,
+        status: searchStatus.value,
+        dateStart: searchDateStart.value,
+        dateEnd: searchDateEnd.value,
+      });
+      pager.page = 1;
+    };
+    const onReset = () => {
+      searchKw.value = '';
+      searchArea.value = '';
+      searchStatus.value = '';
+      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
+      Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '' });
+      pager.page = 1;
+    };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -95,23 +120,26 @@ window.DispMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchArea, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewDisp, dispSummary };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchArea, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewDisp, dispSummary };
   },
   template: /* html */`
 <div>
   <div class="page-title">전시관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 위젯 관리</span></div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="위젯명 / 영역코드 검색" @keyup.enter="onSearch" />
-      <select v-model="searchArea" @change="onSearch"><option value="">영역 전체</option><option v-for="a in areas" :key="a">{{ a }}</option></select>
-      <select v-model="searchStatus" @change="onSearch"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
-      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
-      <button class="btn btn-primary" @click="onSearch">검색</button>
+      <input v-model="searchKw" placeholder="위젯명 / 영역코드 검색" />
+      <select v-model="searchArea"><option value="">영역 전체</option><option v-for="a in areas" :key="a">{{ a }}</option></select>
+      <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      </div>
     </div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <span style="font-size:13px;color:#555;">검색결과 <b>{{ total }}</b>건</span>
+      <span class="list-title">전시목록 <span class="list-count">{{ total }}건</span></span>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
@@ -138,13 +166,15 @@ window.DispMng = {
       </tbody>
     </table>
     <div class="pagination">
-      <span class="total-label">총 {{ total }}개</span>
+      <div></div>
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+      </div>
+      <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
           <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
         </select>

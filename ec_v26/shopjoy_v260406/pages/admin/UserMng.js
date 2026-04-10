@@ -5,8 +5,12 @@ window.UserMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
-    const searchDateRange = ref('3months');
+    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const onDateRangeChange = () => {
+      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      pager.page = 1;
+    };
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchRole = ref('');
     const searchStatus = ref('');
@@ -20,12 +24,16 @@ window.UserMng = {
     const inlineNavigate = (pg) => { if (pg === 'userMng') { selectedId.value = null; } };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
 
+    const applied = Vue.reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
+
     const filtered = computed(() => props.adminData.adminUsers.filter(u => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = applied.kw.trim().toLowerCase();
       if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
-      if (searchRole.value && u.role !== searchRole.value) return false;
-      if (searchStatus.value && u.status !== searchStatus.value) return false;
-      if (!window.adminUtil.isInRange(u.regDate, searchDateRange.value)) return false;
+      if (applied.role && u.role !== applied.role) return false;
+      if (applied.status && u.status !== applied.status) return false;
+      const _d = String(u.regDate || '').slice(0, 10);
+      if (applied.dateStart && _d < applied.dateStart) return false;
+      if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -39,7 +47,24 @@ window.UserMng = {
 
     const roleBadge = r => ({ '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' }[r] || 'badge-gray');
     const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => { pager.page = 1; };
+    const onSearch = () => {
+      Object.assign(applied, {
+        kw: searchKw.value,
+        role: searchRole.value,
+        status: searchStatus.value,
+        dateStart: searchDateStart.value,
+        dateEnd: searchDateEnd.value,
+      });
+      pager.page = 1;
+    };
+    const onReset = () => {
+      searchKw.value = '';
+      searchRole.value = '';
+      searchStatus.value = '';
+      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
+      Object.assign(applied, { kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
+      pager.page = 1;
+    };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -53,27 +78,30 @@ window.UserMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, onSearch, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
   <div class="page-title">사용자관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="onSearch" />
-      <select v-model="searchRole" @change="onSearch">
+      <input v-model="searchKw" placeholder="이름 / 로그인ID / 이메일 검색" />
+      <select v-model="searchRole">
         <option value="">권한 전체</option><option>슈퍼관리자</option><option>관리자</option><option>운영자</option>
       </select>
-      <select v-model="searchStatus" @change="onSearch">
+      <select v-model="searchStatus">
         <option value="">상태 전체</option><option>활성</option><option>비활성</option>
       </select>
-      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
-      <button class="btn btn-primary" @click="onSearch">검색</button>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      </div>
     </div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <span style="font-size:13px;color:#555;">검색결과 <b>{{ total }}</b>건</span>
+      <span class="list-title">사용자목록 <span class="list-count">{{ total }}건</span></span>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
@@ -101,13 +129,15 @@ window.UserMng = {
       </tbody>
     </table>
     <div class="pagination">
-      <span class="total-label">총 {{ total }}명</span>
+      <div></div>
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+      </div>
+      <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
           <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
         </select>

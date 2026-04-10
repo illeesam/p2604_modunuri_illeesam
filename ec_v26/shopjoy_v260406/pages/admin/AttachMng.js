@@ -4,8 +4,11 @@ window.AttachMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const searchDateRange = ref('3months');
+    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const onDateRangeChange = () => {
+      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    };
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
 
     /* ── 첨부그룹 ── */
@@ -51,13 +54,30 @@ window.AttachMng = {
     const fileEditId = ref(null);
     const fileEditMode = ref(false);
 
+    const applied = Vue.reactive({ kw: '', dateStart: '', dateEnd: '' });
+
     const filteredFiles = computed(() => props.adminData.attaches.filter(a => {
       if (selectedGrpId.value && a.attachGrpId !== selectedGrpId.value) return false;
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = applied.kw.trim().toLowerCase();
       if (kw && !a.fileName.toLowerCase().includes(kw) && !a.refId.toLowerCase().includes(kw)) return false;
-      if (!window.adminUtil.isInRange(a.regDate, searchDateRange.value)) return false;
+      const _d = String(a.regDate || '').slice(0, 10);
+      if (applied.dateStart && _d < applied.dateStart) return false;
+      if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
+
+    const onSearch = () => {
+      Object.assign(applied, {
+        kw: searchKw.value,
+        dateStart: searchDateStart.value,
+        dateEnd: searchDateEnd.value,
+      });
+    };
+    const onReset = () => {
+      searchKw.value = '';
+      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
+      Object.assign(applied, { kw: '', dateStart: '', dateEnd: '' });
+    };
 
     const openFileNew = () => {
       fileEditId.value = null; fileEditMode.value = true;
@@ -97,9 +117,9 @@ window.AttachMng = {
     const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
     return {
-      searchDateRange, DATE_RANGE_OPTIONS, siteName,
+      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName,
       selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, saveGrp, deleteGrp,
-      searchKw, fileForm, fileEditId, fileEditMode, filteredFiles, openFileNew, openFileEdit, saveFile, deleteFile,
+      searchKw, fileForm, fileEditId, fileEditMode, applied, filteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
       fmtSize, statusBadge,
     };
   },
@@ -188,11 +208,15 @@ window.AttachMng = {
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
             <input v-model="searchKw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:160px;" />
-            <select v-model="searchDateRange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+            <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><select v-model="searchDateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+            <div class="search-actions">
+              <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+              <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+            </div>
             <button class="btn btn-primary btn-sm" @click="openFileNew">+ 신규</button>
           </div>
         </div>
-        <span style="font-size:12px;color:#888;display:block;margin-bottom:8px;">검색결과 <b>{{ filteredFiles.length }}</b>건</span>
+        <span class="list-title">첨부파일목록 <span class="list-count">{{ total }}건</span></span>
 
         <!-- 파일 폼 -->
         <div v-if="fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">

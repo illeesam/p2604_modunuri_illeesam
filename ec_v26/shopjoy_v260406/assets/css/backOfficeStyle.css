@@ -10,8 +10,14 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .search-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .search-bar input, .search-bar select { padding: 7px 11px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; }
 .search-bar input { min-width: 200px; }
+.date-range-input { min-width: auto !important; width: 130px; padding: 6px 8px !important; color: #333; cursor: pointer; }
+.date-range-sep { color: #bbb; font-size: 13px; flex-shrink: 0; }
+.search-label { font-size: 12px; color: #666; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+.search-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 
 .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.list-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.list-title .list-count { font-size: 12px; font-weight: 400; color: #999; margin-left: 6px; }
 
 .btn { display: inline-flex; align-items: center; gap: 4px; padding: 7px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity .15s; }
 .btn:hover { opacity: .85; }
@@ -30,8 +36,9 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .title-link { color: #1677ff; cursor: pointer; font-weight: 500; }
 .title-link:hover { text-decoration: underline; }
 
-.pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
-.pagination .total-label { font-size: 13px; color: #666; }
+.pagination { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 14px; }
+.pagination .pager { justify-self: center; }
+.pager-right { display: flex; justify-content: flex-end; align-items: center; }
 .pager { display: flex; gap: 3px; align-items: center; }
 .pager button { min-width: 30px; height: 30px; border: 1px solid #d9d9d9; background: #fff; border-radius: 5px; cursor: pointer; font-size: 13px; }
 .pager button.active { background: #e8587a; color: #fff; border-color: #e8587a; font-weight: 700; }

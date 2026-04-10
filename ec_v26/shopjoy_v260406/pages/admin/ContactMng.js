@@ -5,8 +5,12 @@ window.ContactMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
-    const searchDateRange = ref('3months');
+    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const onDateRangeChange = () => {
+      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      pager.page = 1;
+    };
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchCategory = ref('');
     const searchStatus = ref('');
@@ -21,12 +25,16 @@ window.ContactMng = {
     const inlineNavigate = (pg, opts = {}) => { if (pg === 'contactMng') { selectedId.value = null; return; } props.navigate(pg, opts); };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
 
+    const applied = Vue.reactive({ kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
+
     const filtered = computed(() => props.adminData.contacts.filter(c => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.title.toLowerCase().includes(kw) && !c.userName.toLowerCase().includes(kw)) return false;
-      if (searchCategory.value && c.category !== searchCategory.value) return false;
-      if (searchStatus.value && c.status !== searchStatus.value) return false;
-      if (!window.adminUtil.isInRange(c.date, searchDateRange.value)) return false;
+      if (applied.category && c.category !== applied.category) return false;
+      if (applied.status && c.status !== applied.status) return false;
+      const _d = String(c.date || '').slice(0, 10);
+      if (applied.dateStart && _d < applied.dateStart) return false;
+      if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -38,7 +46,24 @@ window.ContactMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
     const statusBadge = s => ({ '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => { pager.page = 1; };
+    const onSearch = () => {
+      Object.assign(applied, {
+        kw: searchKw.value,
+        category: searchCategory.value,
+        status: searchStatus.value,
+        dateStart: searchDateStart.value,
+        dateEnd: searchDateEnd.value,
+      });
+      pager.page = 1;
+    };
+    const onReset = () => {
+      searchKw.value = '';
+      searchCategory.value = '';
+      searchStatus.value = '';
+      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
+      Object.assign(applied, { kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
+      pager.page = 1;
+    };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -51,29 +76,32 @@ window.ContactMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
   <div class="page-title">문의관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="제목 / 회원명 검색" @keyup.enter="onSearch" />
-      <select v-model="searchCategory" @change="onSearch">
+      <input v-model="searchKw" placeholder="제목 / 회원명 검색" />
+      <select v-model="searchCategory">
         <option value="">카테고리 전체</option>
         <option>배송 문의</option><option>상품 문의</option><option>교환·반품 문의</option>
         <option>주문·결제 문의</option><option>기타 문의</option>
       </select>
-      <select v-model="searchStatus" @change="onSearch">
+      <select v-model="searchStatus">
         <option value="">상태 전체</option><option>요청</option><option>처리중</option><option>답변완료</option><option>취소됨</option>
       </select>
-      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
-      <button class="btn btn-primary" @click="onSearch">검색</button>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      </div>
     </div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <span style="font-size:13px;color:#555;">검색결과 <b>{{ total }}</b>건</span>
+      <span class="list-title">문의목록 <span class="list-count">{{ total }}건</span></span>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
@@ -98,13 +126,15 @@ window.ContactMng = {
       </tbody>
     </table>
     <div class="pagination">
-      <span class="total-label">총 {{ total }}건</span>
+      <div></div>
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+      </div>
+      <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
           <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
         </select>
