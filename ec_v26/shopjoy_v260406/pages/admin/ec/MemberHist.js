@@ -12,7 +12,8 @@ window.MemberHist = {
     return { tab, memberOrders, memberClaims };
   },
   template: /* html */`
-<div style="margin-top:28px;">
+<div>
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 8px;border-bottom:2px solid #f0f0f0;margin-bottom:0;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
   <div class="tab-nav">
     <button class="tab-btn" :class="{active:tab==='orders'}" @click="tab='orders'">
       연관 주문 <span class="tab-count">{{ memberOrders.length }}</span>

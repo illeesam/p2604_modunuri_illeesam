@@ -82,10 +82,11 @@ window.MemberDtl = {
       <button class="btn btn-primary" @click="save">저장</button>
       <button class="btn btn-secondary" @click="navigate('ecMemberMng')">취소</button>
     </div>
+  </div>
 
-    <!-- 연관 이력 -->
+  <!-- 연관 이력 -->
+  <div v-if="!isNew" class="card">
     <member-hist
-      v-if="!isNew"
       :navigate="navigate"
       :admin-data="adminData"
       :show-ref-modal="showRefModal"

@@ -277,7 +277,7 @@ window.CodeMng = {
   <!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">코드목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>코드목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>

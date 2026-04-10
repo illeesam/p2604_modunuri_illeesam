@@ -5,8 +5,7 @@ window.ProdDtl = {
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const topTab = ref('info');    // 상단 탭
-    const botTab = ref('orders'); // 하단 탭
+    const topTab = ref('info');
 
     const form = reactive({
       productName: '', category: '상의', price: 0, stock: 0,
@@ -55,12 +54,6 @@ window.ProdDtl = {
 
     const fileInputRef = ref(null);
     const triggerFileInput = () => { if (fileInputRef.value) fileInputRef.value.click(); };
-
-    /* mock 이력 데이터 */
-    const stockHistory = ref([]);
-    const statusHistory = ref([]);
-    const changeHistory = ref([]);
-    const priceHistory = ref([]);
 
     /* ── 판매계획 CRUD ── */
     const salePlans = ref([]);
@@ -124,25 +117,8 @@ window.ProdDtl = {
         if (p && p.salePlans && p.salePlans.length) {
           salePlans.value = p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false }));
         }
-        // mock 이력
-        stockHistory.value = [
-          { date: form.regDate || '2026-01-01', type: '입고', qty: form.stock, balance: form.stock, memo: '초기 입고' },
-        ];
-        statusHistory.value = [
-          { date: form.regDate || '2026-01-01', before: '-', after: form.status, admin: '관리자' },
-        ];
-        changeHistory.value = [
-          { date: form.regDate || '2026-01-01', field: '등록', before: '-', after: form.productName, admin: '관리자' },
-        ];
-        priceHistory.value = [
-          { date: form.regDate || '2026-01-01', field: '판매가', before: '-', after: String(form.price), admin: '관리자' },
-        ];
       }
     });
-
-    const relatedOrders = computed(() =>
-      props.adminData.orders.filter(o => o.productName && form.productName && o.productName.includes(form.productName.slice(0, 8)))
-    );
 
     /* 연관상품 파싱 */
     const relatedProducts = computed(() => {
@@ -177,8 +153,7 @@ window.ProdDtl = {
     };
 
     return {
-      isNew, topTab, botTab, form, relatedOrders, relatedProducts, save,
-      stockHistory, statusHistory, changeHistory, priceHistory,
+      isNew, topTab, form, relatedProducts, save,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
       salePlans, planVisible, planAllChecked, addPlanRow, onPlanChange,
       deletePlanChecked, deleteLastPlanRow, planRowStyle, planStatusBadge,
@@ -522,114 +497,9 @@ window.ProdDtl = {
       </div>
     </div>
 
-    <!-- 하단 탭 (수정 모드에서만) -->
-    <template v-if="!isNew">
-      <div class="tab-nav" style="margin-top:28px;">
-        <button class="tab-btn" :class="{active:botTab==='orders'}"  @click="botTab='orders'">
-          연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:botTab==='stock'}"   @click="botTab='stock'">
-          재고 이력 <span class="tab-count">{{ stockHistory.length }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:botTab==='price'}"   @click="botTab='price'">
-          가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:botTab==='status'}"  @click="botTab='status'">
-          상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:botTab==='changes'}" @click="botTab='changes'">
-          상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span>
-        </button>
-      </div>
-
-      <!-- 연관 주문 -->
-      <div v-show="botTab==='orders'">
-        <table class="admin-table" v-if="relatedOrders.length">
-          <thead><tr><th>주문ID</th><th>회원</th><th>주문일</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
-          <tbody>
-            <tr v-for="o in relatedOrders" :key="o.orderId">
-              <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
-              <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userName }}</span></td>
-              <td>{{ o.orderDate.slice(0,10) }}</td>
-              <td>{{ o.totalPrice.toLocaleString() }}원</td>
-              <td>{{ o.status }}</td>
-              <td><button class="btn btn-blue btn-sm" @click="navigate('ecOrderDtl',{id:o.orderId})">상세</button></td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문이 없습니다.</div>
-      </div>
-
-      <!-- 가격변경이력 -->
-      <div v-show="botTab==='price'">
-        <table class="admin-table" v-if="priceHistory.length">
-          <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
-          <tbody>
-            <tr v-for="(h, i) in priceHistory" :key="i">
-              <td>{{ h.date }}</td>
-              <td><span class="tag">{{ h.field }}</span></td>
-              <td style="color:#888;">{{ h.before }}</td>
-              <td style="font-weight:600;color:#e8587a;">{{ h.after }}</td>
-              <td>{{ h.admin }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">가격 변경 이력이 없습니다.</div>
-      </div>
-
-      <!-- 재고 이력 -->
-      <div v-show="botTab==='stock'">
-        <table class="admin-table" v-if="stockHistory.length">
-          <thead><tr><th>일시</th><th>유형</th><th>수량</th><th>처리 후 재고</th><th>메모</th></tr></thead>
-          <tbody>
-            <tr v-for="(h, i) in stockHistory" :key="i">
-              <td>{{ h.date }}</td>
-              <td><span class="badge" :class="h.type==='입고'?'badge-green':h.type==='출고'?'badge-orange':'badge-gray'">{{ h.type }}</span></td>
-              <td :style="h.qty>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
-                {{ h.qty > 0 ? '+' : '' }}{{ h.qty }}
-              </td>
-              <td>{{ h.balance }}개</td>
-              <td>{{ h.memo }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">재고 이력이 없습니다.</div>
-      </div>
-
-      <!-- 상품상태 이력 -->
-      <div v-show="botTab==='status'">
-        <table class="admin-table" v-if="statusHistory.length">
-          <thead><tr><th>일시</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
-          <tbody>
-            <tr v-for="(h, i) in statusHistory" :key="i">
-              <td>{{ h.date }}</td>
-              <td><span class="badge badge-gray">{{ h.before }}</span></td>
-              <td><span class="badge badge-blue">{{ h.after }}</span></td>
-              <td>{{ h.admin }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">상태 변경 이력이 없습니다.</div>
-      </div>
-
-      <!-- 상품정보 변경이력 -->
-      <div v-show="botTab==='changes'">
-        <table class="admin-table" v-if="changeHistory.length">
-          <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
-          <tbody>
-            <tr v-for="(h, i) in changeHistory" :key="i">
-              <td>{{ h.date }}</td>
-              <td><span class="tag">{{ h.field }}</span></td>
-              <td style="color:#888;">{{ h.before }}</td>
-              <td style="font-weight:500;">{{ h.after }}</td>
-              <td>{{ h.admin }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">변경 이력이 없습니다.</div>
-      </div>
-    </template>
-
+  </div>
+  <div v-if="!isNew" class="card">
+    <prod-hist :prod-id="editId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
   </div>
 </div>
 `

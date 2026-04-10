@@ -3,9 +3,8 @@ window.OrderDtl = {
   name: 'OrderDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
   setup(props) {
-    const { reactive, computed, ref, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
-    const botTab = ref('products');
 
     const ORDER_STEPS = ['주문완료', '결제완료', '배송준비중', '배송중', '배송완료', '완료'];
 
@@ -14,19 +13,10 @@ window.OrderDtl = {
       totalPrice: 0, payMethod: '계좌이체', status: '주문완료', memo: '',
     });
 
-    /* mock 구성 상품 목록 */
-    const orderItems = ref([]);
-
     onMounted(() => {
       if (!isNew.value) {
         const o = props.adminData.getOrder(props.editId);
         if (o) Object.assign(form, { ...o });
-        // mock 구성상품 생성
-        if (o) {
-          orderItems.value = [
-            { no: 1, productName: o.productName, optionName: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, status: o.status },
-          ];
-        }
       }
     });
 
@@ -36,18 +26,6 @@ window.OrderDtl = {
     });
 
     const isCanceled = computed(() => form.status === '취소됨');
-
-    const relatedClaims = computed(() => props.adminData.claims.filter(c => c.orderId === form.orderId));
-    const relatedDliv   = computed(() => props.adminData.deliveries.find(d => d.orderId === form.orderId) || null);
-
-    /* mock 배송이력 */
-    const dlivHistory = computed(() => {
-      if (!relatedDliv.value) return [];
-      return [
-        { date: form.orderDate ? form.orderDate.slice(0, 10) : '-', status: '배송준비중', location: '물류센터', memo: '상품 포장 완료' },
-        { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courier || '-', memo: '출고 완료' },
-      ].filter(h => h.date !== '-');
-    });
 
     const save = () => {
       if (!form.orderId || !form.userId) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
@@ -62,7 +40,7 @@ window.OrderDtl = {
       props.navigate('ecOrderMng');
     };
 
-    return { isNew, botTab, form, relatedClaims, relatedDliv, save, ORDER_STEPS, currentStepIdx, isCanceled, orderItems, dlivHistory };
+    return { isNew, form, save, ORDER_STEPS, currentStepIdx, isCanceled };
   },
   template: /* html */`
 <div>
@@ -154,87 +132,9 @@ window.OrderDtl = {
       <button class="btn btn-secondary" @click="navigate('ecOrderMng')">취소</button>
     </div>
 
-    <!-- 하단 탭 (수정 모드에서만) -->
-    <template v-if="!isNew">
-      <div class="tab-nav" style="margin-top:28px;">
-        <button class="tab-btn" :class="{active:botTab==='products'}" @click="botTab='products'">
-          구성 상품 <span class="tab-count">{{ orderItems.length }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:botTab==='dliv'}" @click="botTab='dliv'">
-          배송 이력 <span class="tab-count">{{ relatedDliv ? 1 : 0 }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:botTab==='claims'}" @click="botTab='claims'">
-          연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span>
-        </button>
-      </div>
-
-      <!-- 구성 상품 -->
-      <div v-show="botTab==='products'">
-        <table class="admin-table" v-if="orderItems.length">
-          <thead><tr><th>No</th><th>상품명</th><th>옵션</th><th>수량</th><th>단가</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
-          <tbody>
-            <tr v-for="item in orderItems" :key="item.no">
-              <td>{{ item.no }}</td>
-              <td>{{ item.productName }}</td>
-              <td>{{ item.optionName }}</td>
-              <td>{{ item.qty }}</td>
-              <td>{{ item.unitPrice.toLocaleString() }}원</td>
-              <td style="font-weight:600;">{{ item.totalPrice.toLocaleString() }}원</td>
-              <td>{{ item.status }}</td>
-              <td><button class="btn btn-secondary btn-sm" @click="showRefModal('order', form.orderId)">보기</button></td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">구성 상품 정보가 없습니다.</div>
-      </div>
-
-      <!-- 배송 이력 -->
-      <div v-show="botTab==='dliv'">
-        <template v-if="relatedDliv">
-          <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-size:13px;">
-              <span style="color:#888;">수령인</span> <b>{{ relatedDliv.receiver }}</b>
-              &nbsp;·&nbsp;<span style="color:#888;">택배사</span> <b>{{ relatedDliv.courier }}</b>
-              &nbsp;·&nbsp;<span style="color:#888;">운송장</span> <b>{{ relatedDliv.trackingNo || '-' }}</b>
-            </div>
-            <button class="btn btn-blue btn-sm" @click="navigate('ecDlivDtl',{id:relatedDliv.dlivId})">배송 수정</button>
-          </div>
-          <table class="admin-table" v-if="dlivHistory.length">
-            <thead><tr><th>일시</th><th>상태</th><th>위치</th><th>메모</th></tr></thead>
-            <tbody>
-              <tr v-for="(h, i) in dlivHistory" :key="i">
-                <td>{{ h.date }}</td>
-                <td><span class="badge badge-blue">{{ h.status }}</span></td>
-                <td>{{ h.location }}</td>
-                <td>{{ h.memo }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div v-else style="text-align:center;color:#aaa;padding:20px;font-size:13px;">배송 이력이 없습니다.</div>
-        </template>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
-      </div>
-
-      <!-- 연관 클레임 -->
-      <div v-show="botTab==='claims'">
-        <table class="admin-table" v-if="relatedClaims.length">
-          <thead><tr><th>클레임ID</th><th>회원</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
-          <tbody>
-            <tr v-for="c in relatedClaims" :key="c.claimId">
-              <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-              <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userName }}</span></td>
-              <td>{{ c.type }}</td>
-              <td>{{ c.status }}</td>
-              <td>{{ c.reason }}</td>
-              <td>{{ c.requestDate.slice(0,10) }}</td>
-              <td><button class="btn btn-blue btn-sm" @click="navigate('ecClaimDtl',{id:c.claimId})">상세</button></td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 클레임이 없습니다.</div>
-      </div>
-    </template>
-
+  </div>
+  <div v-if="!isNew" class="card">
+    <order-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 </div>
 `

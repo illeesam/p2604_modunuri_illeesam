@@ -100,7 +100,7 @@ window.VendorMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">거래처목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>거래처목록 <span class="list-count">{{ total }}건</span></span>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">

@@ -35,7 +35,7 @@ window.DlivDtl = {
       props.navigate('ecDlivMng');
     };
 
-    return { isNew, tab, form, relatedOrder, relatedClaims, save };
+    return { isNew, tab, form, save };
   },
   template: /* html */`
 <div>
@@ -44,12 +44,6 @@ window.DlivDtl = {
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" @click="tab='info'">기본정보</button>
       <button class="tab-btn" :class="{active:tab==='tracking'}" @click="tab='tracking'">배송 추적</button>
-      <button v-if="!isNew" class="tab-btn" :class="{active:tab==='order'}" @click="tab='order'">
-        연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span>
-      </button>
-      <button v-if="!isNew" class="tab-btn" :class="{active:tab==='claims'}" @click="tab='claims'">
-        연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span>
-      </button>
     </div>
 
     <!-- 기본정보 -->
@@ -134,36 +128,9 @@ window.DlivDtl = {
       </div>
     </div>
 
-    <!-- 연관 주문 -->
-    <div v-show="tab==='order'">
-      <template v-if="relatedOrder">
-        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ relatedOrder.orderId }}</span></div>
-        <div class="detail-row"><span class="detail-label">회원</span>
-          <span class="detail-value"><span class="ref-link" @click="showRefModal('member', relatedOrder.userId)">{{ relatedOrder.userName }}</span></span>
-        </div>
-        <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ relatedOrder.productName }}</span></div>
-        <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ relatedOrder.totalPrice.toLocaleString() }}원</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ relatedOrder.status }}</span></div>
-        <div style="margin-top:14px;"><button class="btn btn-blue btn-sm" @click="navigate('ecOrderDtl',{id:relatedOrder.orderId})">주문 상세 수정</button></div>
-      </template>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문 정보가 없습니다.</div>
-    </div>
-
-    <!-- 연관 클레임 -->
-    <div v-show="tab==='claims'">
-      <table class="admin-table" v-if="relatedClaims.length">
-        <thead><tr><th>클레임ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
-        <tbody>
-          <tr v-for="c in relatedClaims" :key="c.claimId">
-            <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-            <td>{{ c.type }}</td><td>{{ c.status }}</td><td>{{ c.reason }}</td>
-            <td>{{ c.requestDate.slice(0,10) }}</td>
-            <td><button class="btn btn-blue btn-sm" @click="navigate('ecClaimDtl',{id:c.claimId})">상세</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 클레임이 없습니다.</div>
-    </div>
+  </div>
+  <div v-if="!isNew" class="card">
+    <dliv-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
   </div>
 </div>
 `

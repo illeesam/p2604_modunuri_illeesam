@@ -217,7 +217,7 @@ window.AttachMng = {
             <button class="btn btn-primary btn-sm" @click="openFileNew">+ 신규</button>
           </div>
         </div>
-        <span class="list-title">첨부파일목록 <span class="list-count">{{ total }}건</span></span>
+        <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>첨부파일목록 <span class="list-count">{{ total }}건</span></span>
 
         <!-- 파일 폼 -->
         <div v-if="fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
