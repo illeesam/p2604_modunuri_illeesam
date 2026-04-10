@@ -19,7 +19,7 @@
     order:     [{ id: 'ecOrderMng',    label: '주문관리' }, { id: 'ecClaimMng', label: '클레임관리' }, { id: 'ecDlivMng', label: '배송관리' }],
     promotion: [{ id: 'ecCouponMng',   label: '쿠폰관리' }, { id: 'ecCacheMng', label: '캐쉬관리' }, { id: 'ecEventMng', label: '이벤트관리' }],
     display:   [{ id: 'ecDispMng',     label: '전시관리' }],
-    customer:  [{ id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
+    customer:  [{ id: 'ecCustInfoMng', label: '고객종합정보' }, { id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
     system:    [{ id: 'sySiteMng', label: '사이트관리' }, { id: 'syCodeMng', label: '공통코드관리' }, { id: 'syBrandMng', label: '브랜드관리' },
                 { id: 'syAttachMng', label: '첨부관리' }, { id: 'syTemplateMng', label: '템플릿관리' },
                 { id: 'syVendorMng', label: '업체정보' }, { id: 'syUserMng', label: '사용자관리' },
@@ -512,6 +512,7 @@
         <disp-dtl    v-else-if="page==='ecDispDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <event-mng   v-else-if="page==='ecEventMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <event-dtl   v-else-if="page==='ecEventDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
+        <cust-info-mng v-else-if="page==='ecCustInfoMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <chatt-mng   v-else-if="page==='ecChattMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -858,6 +859,7 @@
   .component('DispDtl',    window.DispDtl)
   .component('EventMng',   window.EventMng)
   .component('EventDtl',   window.EventDtl)
+  .component('CustInfoMng', window.CustInfoMng)
   .component('ContactMng', window.ContactMng)
   .component('ContactDtl', window.ContactDtl)
   .component('ChattMng',   window.ChattMng)
