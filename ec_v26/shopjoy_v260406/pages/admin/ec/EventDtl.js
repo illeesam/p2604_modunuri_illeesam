@@ -1,0 +1,262 @@
+/* ShopJoy Admin - 이벤트관리 상세/등록 (Quill HTML Editor) */
+window.EventDtl = {
+  name: 'EventDtl',
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  setup(props) {
+    const { reactive, computed, ref, onMounted, onUnmounted } = Vue;
+    const isNew = computed(() => !props.editId);
+    const tab = ref('info');
+
+    const form = reactive({
+      title: '', status: '진행중', startDate: '', endDate: '',
+      authRequired: false, targetProducts: [],
+      content1: '', content2: '', content3: '', content4: '', content5: '',
+    });
+
+    /* Quill 인스턴스 5개 */
+    const quillers = {};
+    const activeContentTab = ref(1);
+
+    const initQuill = (id, key) => {
+      const el = document.getElementById(id);
+      if (!el || typeof Quill === 'undefined') return;
+      if (quillers[key]) return;
+      quillers[key] = new Quill(el, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            ['clean'],
+          ],
+        },
+      });
+      quillers[key].on('text-change', () => { form[key] = quillers[key].root.innerHTML; });
+      if (form[key]) quillers[key].root.innerHTML = form[key];
+    };
+
+    const syncToQuill = () => {
+      for (let i = 1; i <= 5; i++) {
+        const key = 'content' + i;
+        if (quillers[key]) quillers[key].root.innerHTML = form[key] || '';
+      }
+    };
+
+    const onTabChange = (newTab) => {
+      tab.value = newTab;
+      if (newTab === 'content') {
+        setTimeout(() => {
+          for (let i = 1; i <= 5; i++) initQuill('quill-content' + i, 'content' + i);
+          syncToQuill();
+        }, 50);
+      }
+    };
+
+    onMounted(() => {
+      if (!isNew.value) {
+        const e = props.adminData.events.find(x => x.eventId === props.editId);
+        if (e) Object.assign(form, { ...e, targetProducts: [...(e.targetProducts || [])] });
+      }
+    });
+
+    onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
+
+    /* 대상 상품 팝업 */
+    const showProdPopup = ref(false);
+    const prodSearch = ref('');
+    const filteredProds = computed(() => props.adminData.products.filter(p => {
+      const kw = prodSearch.value.trim().toLowerCase();
+      return !kw || p.productName.toLowerCase().includes(kw);
+    }));
+    const toggleProduct = (pid) => {
+      const idx = form.targetProducts.indexOf(pid);
+      if (idx === -1) form.targetProducts.push(pid);
+      else form.targetProducts.splice(idx, 1);
+    };
+    const isSelected = (pid) => form.targetProducts.includes(pid);
+    const selectedProducts = computed(() =>
+      form.targetProducts.map(pid => props.adminData.getProduct(pid)).filter(Boolean)
+    );
+    const removeProduct = (pid) => {
+      const idx = form.targetProducts.indexOf(pid);
+      if (idx !== -1) form.targetProducts.splice(idx, 1);
+    };
+
+    /* 이벤트 확인 버튼 토스트 */
+    const onEventConfirm = () => {
+      props.showToast('이벤트 참여가 완료되었습니다! 감사합니다.', 'success');
+    };
+
+    const save = () => {
+      if (!form.title) { props.showToast('이벤트 제목을 입력해주세요.', 'error'); return; }
+      if (isNew.value) {
+        props.adminData.events.push({
+          ...form, eventId: props.adminData.nextId(props.adminData.events, 'eventId'),
+          targetProducts: [...form.targetProducts],
+          regDate: new Date().toISOString().slice(0, 10),
+        });
+        props.showToast('이벤트가 등록되었습니다.');
+      } else {
+        const idx = props.adminData.events.findIndex(e => e.eventId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.events[idx], { ...form, targetProducts: [...form.targetProducts] });
+        props.showToast('저장되었습니다.');
+      }
+      props.navigate('ecEventMng');
+    };
+
+    return { isNew, tab, onTabChange, form, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save };
+  },
+  template: /* html */`
+<div>
+  <div class="page-title">{{ isNew ? '이벤트 등록' : '이벤트 수정' }}</div>
+  <div class="card">
+    <div class="tab-nav">
+      <button class="tab-btn" :class="{active:tab==='info'}" @click="onTabChange('info')">기본정보</button>
+      <button class="tab-btn" :class="{active:tab==='content'}" @click="onTabChange('content')">이벤트 내용</button>
+      <button class="tab-btn" :class="{active:tab==='products'}" @click="onTabChange('products')">
+        대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:tab==='preview'}" @click="onTabChange('preview')">미리보기</button>
+    </div>
+
+    <!-- 기본정보 -->
+    <div v-show="tab==='info'">
+      <div class="form-group">
+        <label class="form-label">이벤트 제목 <span class="req">*</span></label>
+        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">시작일</label>
+          <input class="form-control" type="date" v-model="form.startDate" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">종료일</label>
+          <input class="form-control" type="date" v-model="form.endDate" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">상태</label>
+          <select class="form-control" v-model="form.status">
+            <option>진행중</option><option>예정</option><option>종료</option>
+          </select>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" v-model="form.authRequired" />
+            <span style="font-size:13px;font-weight:500;">로그인 인증 필요</span>
+          </label>
+        </div>
+      </div>
+      <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
+        ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+      </div>
+    </div>
+
+    <!-- 이벤트 내용 (HTML 에디터) -->
+    <div v-show="tab==='content'">
+      <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
+        <button v-for="n in 5" :key="n" class="btn btn-sm"
+          :class="activeContentTab===n ? 'btn-primary' : 'btn-secondary'"
+          @click="activeContentTab=n">
+          내용 {{ n }}
+          <span v-if="form.authRequired && n >= 3" class="tab-count" style="background:#fde8ee;color:#e8587a;">인증</span>
+        </button>
+      </div>
+      <div v-for="n in 5" :key="n" v-show="activeContentTab===n">
+        <div v-if="form.authRequired && n >= 3" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;">
+          <span class="badge badge-orange">인증 후 표시</span>
+          <span style="font-size:12px;color:#888;">로그인 회원에게만 표시됩니다</span>
+        </div>
+        <div class="quill-wrap">
+          <div :id="'quill-content'+n" style="min-height:160px;"></div>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:16px;">
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+      </div>
+    </div>
+
+    <!-- 대상 상품 -->
+    <div v-show="tab==='products'">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+        <button class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
+        <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
+      </div>
+      <table class="admin-table" v-if="selectedProducts.length">
+        <thead><tr><th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>상태</th><th>제거</th></tr></thead>
+        <tbody>
+          <tr v-for="p in selectedProducts" :key="p.productId">
+            <td>{{ p.productId }}</td>
+            <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.productName }}</span></td>
+            <td>{{ p.category }}</td>
+            <td>{{ p.price.toLocaleString() }}원</td>
+            <td>{{ p.stock }}개</td>
+            <td>{{ p.status }}</td>
+            <td><button class="btn btn-danger btn-sm" @click="removeProduct(p.productId)">제거</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">선택된 상품이 없습니다.</div>
+      <div class="form-actions">
+        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-secondary" @click="navigate('ecEventMng')">취소</button>
+      </div>
+    </div>
+
+    <!-- 미리보기 -->
+    <div v-show="tab==='preview'">
+      <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.title || '이벤트 제목' }}</div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
+        <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content1 || '<p style=color:#aaa>이벤트 내용 1이 여기에 표시됩니다.</p>'"></div>
+        <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content2"></div>
+        <template v-if="!form.authRequired">
+          <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content3"></div>
+          <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content4"></div>
+          <div style="font-size:13px;color:#444;margin-bottom:16px;" v-html="form.content5"></div>
+        </template>
+        <div v-else style="padding:12px;background:#f0f0f0;border-radius:6px;font-size:12px;color:#888;margin-bottom:16px;">
+          🔒 내용 3~5는 로그인 후 확인 가능합니다.
+        </div>
+        <button class="btn btn-primary" @click="onEventConfirm">이벤트 확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상품 선택 팝업 -->
+  <div v-if="showProdPopup" class="modal-overlay" @click.self="showProdPopup=false">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">대상 상품 선택</span>
+        <span class="modal-close" @click="showProdPopup=false">×</span>
+      </div>
+      <div style="margin-bottom:10px;">
+        <input class="form-control" v-model="prodSearch" placeholder="상품명 검색" />
+      </div>
+      <div class="popup-prod-list">
+        <label v-for="p in filteredProds" :key="p.productId" class="popup-prod-item">
+          <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
+          <span>{{ p.productName }}</span>
+          <span style="font-size:12px;color:#888;margin-left:auto;">{{ p.price.toLocaleString() }}원</span>
+        </label>
+      </div>
+      <div style="margin-top:12px;text-align:right;">
+        <button class="btn btn-primary" @click="showProdPopup=false">확인 ({{ form.targetProducts.length }}개)</button>
+      </div>
+    </div>
+  </div>
+</div>
+`
+};

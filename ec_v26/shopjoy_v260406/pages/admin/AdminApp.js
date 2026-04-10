@@ -14,18 +14,18 @@
   ];
 
   const LEFT_MENUS = {
-    member:    [{ id: 'memberMng',   label: '회원관리' }],
-    product:   [{ id: 'categoryMng', label: '카테고리관리' }, { id: 'prodMng', label: '상품관리' }],
-    order:     [{ id: 'orderMng',    label: '주문관리' }, { id: 'claimMng', label: '클레임관리' }, { id: 'dlivMng', label: '배송관리' }],
-    promotion: [{ id: 'couponMng',   label: '쿠폰관리' }, { id: 'cacheMng', label: '캐쉬관리' }, { id: 'eventMng', label: '이벤트관리' }],
-    display:   [{ id: 'dispMng',     label: '전시관리' }],
-    customer:  [{ id: 'contactMng',  label: '문의관리' }, { id: 'chattMng', label: '채팅관리' }],
-    system:    [{ id: 'siteMng', label: '사이트관리' }, { id: 'codeMng', label: '공통코드관리' },
-                { id: 'attachMng', label: '첨부관리' }, { id: 'templateMng', label: '템플릿관리' },
-                { id: 'vendorMng', label: '업체정보' }, { id: 'userMng', label: '사용자관리' },
-                { id: 'batchMng', label: '배치스케즐관리' },
-                { id: 'noticeMng', label: '공지사항관리' }, { id: 'alarmMng', label: '알림관리' },
-                { id: 'bbmMng', label: '게시판관리' }, { id: 'bbsMng', label: '게시글관리' }],
+    member:    [{ id: 'ecMemberMng',   label: '회원관리' }],
+    product:   [{ id: 'ecCategoryMng', label: '카테고리관리' }, { id: 'ecProdMng', label: '상품관리' }],
+    order:     [{ id: 'ecOrderMng',    label: '주문관리' }, { id: 'ecClaimMng', label: '클레임관리' }, { id: 'ecDlivMng', label: '배송관리' }],
+    promotion: [{ id: 'ecCouponMng',   label: '쿠폰관리' }, { id: 'ecCacheMng', label: '캐쉬관리' }, { id: 'ecEventMng', label: '이벤트관리' }],
+    display:   [{ id: 'ecDispMng',     label: '전시관리' }],
+    customer:  [{ id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
+    system:    [{ id: 'sySiteMng', label: '사이트관리' }, { id: 'syCodeMng', label: '공통코드관리' },
+                { id: 'syAttachMng', label: '첨부관리' }, { id: 'syTemplateMng', label: '템플릿관리' },
+                { id: 'syVendorMng', label: '업체정보' }, { id: 'syUserMng', label: '사용자관리' },
+                { id: 'syBatchMng', label: '배치스케즐관리' },
+                { id: 'ecNoticeMng', label: '공지사항관리' }, { id: 'syAlarmMng', label: '알림관리' },
+                { id: 'syBbmMng', label: '게시판관리' }, { id: 'syBbsMng', label: '게시글관리' }],
   };
 
   /* 페이지 → 상위메뉴 매핑 */
@@ -483,47 +483,47 @@
     <div class="admin-main">
       <div class="admin-wrap">
         <dashboard-mng v-if="page==='dashboard'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" />
-        <member-mng  v-else-if="page==='memberMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <member-dtl  v-else-if="page==='memberDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <prod-mng    v-else-if="page==='prodMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <prod-dtl    v-else-if="page==='prodDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <order-mng   v-else-if="page==='orderMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <order-dtl   v-else-if="page==='orderDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <claim-mng   v-else-if="page==='claimMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <claim-dtl   v-else-if="page==='claimDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <dliv-mng    v-else-if="page==='dlivMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <dliv-dtl    v-else-if="page==='dlivDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <coupon-mng  v-else-if="page==='couponMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <coupon-dtl  v-else-if="page==='couponDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <cache-mng   v-else-if="page==='cacheMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <cache-dtl   v-else-if="page==='cacheDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <disp-mng    v-else-if="page==='dispMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <disp-dtl    v-else-if="page==='dispDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <event-mng   v-else-if="page==='eventMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <event-dtl   v-else-if="page==='eventDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <contact-mng v-else-if="page==='contactMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <contact-dtl v-else-if="page==='contactDtl'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <chatt-mng   v-else-if="page==='chattMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
-        <chatt-dtl   v-else-if="page==='chattDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
-        <site-mng    v-else-if="page==='siteMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <site-dtl    v-else-if="page==='siteDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
-        <code-mng    v-else-if="page==='codeMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <code-dtl    v-else-if="page==='codeDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
-        <attach-mng  v-else-if="page==='attachMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <template-mng v-else-if="page==='templateMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <template-dtl v-else-if="page==='templateDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
-        <vendor-mng  v-else-if="page==='vendorMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <vendor-dtl  v-else-if="page==='vendorDtl'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
-        <category-mng v-else-if="page==='categoryMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <category-dtl v-else-if="page==='categoryDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
-        <user-mng    v-else-if="page==='userMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <user-dtl    v-else-if="page==='userDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
-        <batch-mng   v-else-if="page==='batchMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <batch-dtl   v-else-if="page==='batchDtl'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
-        <notice-mng  v-else-if="page==='noticeMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <alarm-mng   v-else-if="page==='alarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <bbm-mng     v-else-if="page==='bbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <bbs-mng     v-else-if="page==='bbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <member-mng  v-else-if="page==='ecMemberMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <member-dtl  v-else-if="page==='ecMemberDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <prod-mng    v-else-if="page==='ecProdMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <prod-dtl    v-else-if="page==='ecProdDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <order-mng   v-else-if="page==='ecOrderMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <order-dtl   v-else-if="page==='ecOrderDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <claim-mng   v-else-if="page==='ecClaimMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <claim-dtl   v-else-if="page==='ecClaimDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <dliv-mng    v-else-if="page==='ecDlivMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <dliv-dtl    v-else-if="page==='ecDlivDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <coupon-mng  v-else-if="page==='ecCouponMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <coupon-dtl  v-else-if="page==='ecCouponDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <cache-mng   v-else-if="page==='ecCacheMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <cache-dtl   v-else-if="page==='ecCacheDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <disp-mng    v-else-if="page==='ecDispMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <disp-dtl    v-else-if="page==='ecDispDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <event-mng   v-else-if="page==='ecEventMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <event-dtl   v-else-if="page==='ecEventDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <chatt-mng   v-else-if="page==='ecChattMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" />
+        <chatt-dtl   v-else-if="page==='ecChattDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :edit-id="editId" />
+        <site-mng    v-else-if="page==='sySiteMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <site-dtl    v-else-if="page==='sySiteDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <code-mng    v-else-if="page==='syCodeMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <code-dtl    v-else-if="page==='syCodeDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <category-mng v-else-if="page==='ecCategoryMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <category-dtl v-else-if="page==='ecCategoryDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <user-mng    v-else-if="page==='syUserMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <user-dtl    v-else-if="page==='syUserDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <batch-mng   v-else-if="page==='syBatchMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <batch-dtl   v-else-if="page==='syBatchDtl'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <notice-mng  v-else-if="page==='ecNoticeMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <alarm-mng   v-else-if="page==='syAlarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <bbm-mng     v-else-if="page==='syBbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <bbs-mng     v-else-if="page==='syBbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
       </div>
     </div>
 
