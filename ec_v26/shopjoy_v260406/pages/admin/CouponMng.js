@@ -5,6 +5,9 @@ window.CouponMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
+    const searchDateRange = ref('3months');
+    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
@@ -21,6 +24,7 @@ window.CouponMng = {
       const kw = searchKw.value.trim().toLowerCase();
       if (kw && !c.name.toLowerCase().includes(kw) && !c.code.toLowerCase().includes(kw)) return false;
       if (searchStatus.value && c.status !== searchStatus.value) return false;
+      if (!window.adminUtil.isInRange(c.expiry, searchDateRange.value)) return false;
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -47,7 +51,7 @@ window.CouponMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, discountLabel, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, discountLabel, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -56,6 +60,7 @@ window.CouponMng = {
     <div class="search-bar">
       <input v-model="searchKw" placeholder="쿠폰명 / 코드 검색" @keyup.enter="onSearch" />
       <select v-model="searchStatus" @change="onSearch"><option value="">상태 전체</option><option>활성</option><option>만료</option><option>비활성</option></select>
+      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <button class="btn btn-primary" @click="onSearch">검색</button>
     </div>
   </div>
@@ -65,7 +70,7 @@ window.CouponMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>쿠폰명</th><th>코드</th><th>할인</th><th>최소주문</th><th>발급대상</th><th>발급/사용</th><th>만료일</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th>ID</th><th>쿠폰명</th><th>코드</th><th>할인</th><th>최소주문</th><th>발급대상</th><th>발급/사용</th><th>만료일</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="c in pageList" :key="c.couponId" :style="selectedId===c.couponId?'background:#fff8f9;':''">
@@ -78,6 +83,7 @@ window.CouponMng = {
           <td>{{ c.issueCount }} / {{ c.useCount }}</td>
           <td>{{ c.expiry }}</td>
           <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.couponId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>

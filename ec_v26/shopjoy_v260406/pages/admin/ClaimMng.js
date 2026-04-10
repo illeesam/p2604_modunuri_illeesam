@@ -5,6 +5,9 @@ window.ClaimMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
+    const searchDateRange = ref('3months');
+    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchType = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -23,6 +26,7 @@ window.ClaimMng = {
       if (kw && !c.claimId.toLowerCase().includes(kw) && !c.userName.toLowerCase().includes(kw) && !c.productName.toLowerCase().includes(kw)) return false;
       if (searchType.value && c.type !== searchType.value) return false;
       if (searchStatus.value && c.status !== searchStatus.value) return false;
+      if (!window.adminUtil.isInRange(c.requestDate, searchDateRange.value)) return false;
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -54,7 +58,7 @@ window.ClaimMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchType, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchType, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -69,6 +73,7 @@ window.ClaimMng = {
         <option>반품요청</option><option>수거예정</option><option>수거완료</option><option>환불처리중</option><option>환불완료</option>
         <option>교환요청</option><option>발송완료</option><option>교환완료</option>
       </select>
+      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <button class="btn btn-primary" @click="onSearch">검색</button>
     </div>
   </div>
@@ -79,7 +84,7 @@ window.ClaimMng = {
     </div>
     <table class="admin-table">
       <thead><tr>
-        <th>클레임ID</th><th>회원</th><th>주문ID</th><th>상품</th><th>유형</th><th>사유</th><th>상태</th><th>신청일</th><th style="text-align:right">관리</th>
+        <th>클레임ID</th><th>회원</th><th>주문ID</th><th>상품</th><th>유형</th><th>사유</th><th>상태</th><th>신청일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
@@ -92,6 +97,7 @@ window.ClaimMng = {
           <td>{{ c.reason }}</td>
           <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
           <td>{{ c.requestDate.slice(0,10) }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.claimId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>

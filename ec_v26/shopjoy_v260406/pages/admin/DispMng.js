@@ -5,6 +5,9 @@ window.DispMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
+    const searchDateRange = ref('3months');
+    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchArea = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -51,6 +54,7 @@ window.DispMng = {
       if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
       if (searchArea.value && d.area !== searchArea.value) return false;
       if (searchStatus.value && d.status !== searchStatus.value) return false;
+      if (!window.adminUtil.isInRange(d.regDate, searchDateRange.value)) return false;
       return true;
     }));
     const areas = computed(() => [...new Set(props.adminData.displays.map(d => d.area))]);
@@ -91,7 +95,7 @@ window.DispMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchArea, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewDisp, dispSummary };
+    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchArea, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewDisp, dispSummary };
   },
   template: /* html */`
 <div>
@@ -101,6 +105,7 @@ window.DispMng = {
       <input v-model="searchKw" placeholder="위젯명 / 영역코드 검색" @keyup.enter="onSearch" />
       <select v-model="searchArea" @change="onSearch"><option value="">영역 전체</option><option v-for="a in areas" :key="a">{{ a }}</option></select>
       <select v-model="searchStatus" @change="onSearch"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
+      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <button class="btn btn-primary" @click="onSearch">검색</button>
     </div>
   </div>
@@ -110,7 +115,7 @@ window.DispMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>위젯명</th><th>영역코드</th><th>위젯유형</th><th>표현설정</th><th>조건</th><th>인증</th><th>순서</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th>ID</th><th>위젯명</th><th>영역코드</th><th>위젯유형</th><th>표현설정</th><th>조건</th><th>인증</th><th>순서</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="d in pageList" :key="d.dispId" :style="selectedId===d.dispId?'background:#fff8f9;':''">
@@ -123,6 +128,7 @@ window.DispMng = {
           <td><span v-if="d.authRequired" class="badge badge-orange">필요</span><span v-else class="badge badge-gray">불필요</span></td>
           <td>{{ d.sortOrder }}</td>
           <td><span class="badge" :class="statusBadge(d.status)">{{ d.status }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewDisp(d)">👁</button>
             <button class="btn btn-blue btn-sm" @click="loadDetail(d.dispId)">수정</button>

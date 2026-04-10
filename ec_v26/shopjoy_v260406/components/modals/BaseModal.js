@@ -228,3 +228,169 @@ window.CustomerModal = {
 </div>
 `,
 };
+
+/* ══════════════════════════════════════════════════════
+   어드민 공통필터 팝업 선택 모달 (5종)
+   Props: adminData  Emits: select(item), close
+   ══════════════════════════════════════════════════════ */
+
+/* ── 사이트 선택 모달 ── */
+window.SiteSelectModal = {
+  name: 'SiteSelectModal',
+  props: ['adminData'],
+  emits: ['select', 'close'],
+  setup(props) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const filtered = computed(() => props.adminData.sites.filter(s => {
+      if (!kw.value) return true;
+      const k = kw.value.toLowerCase();
+      return s.siteName.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k);
+    }));
+    return { kw, filtered };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">사이트 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <input class="form-control" v-model="kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
+    <div class="sel-modal-list">
+      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="s in filtered" :key="s.siteId" class="sel-modal-item">
+        <div class="sel-modal-item-name">{{ s.siteName }}</div>
+        <span class="sel-modal-item-id">{{ s.siteCode }}</span>
+        <button class="sel-modal-item-btn" @click="$emit('select', s)">선택</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ── 판매업체 선택 모달 ── */
+window.VendorSelectModal = {
+  name: 'VendorSelectModal',
+  props: ['adminData'],
+  emits: ['select', 'close'],
+  setup(props) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const filtered = computed(() => props.adminData.vendors.filter(v => {
+      if (v.vendorType !== '판매업체') return false;
+      if (!kw.value) return true;
+      const k = kw.value.toLowerCase();
+      return v.vendorName.toLowerCase().includes(k) || v.bizNo.includes(k);
+    }));
+    return { kw, filtered };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">판매업체 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <input class="form-control" v-model="kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
+    <div class="sel-modal-list">
+      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="v in filtered" :key="v.vendorId" class="sel-modal-item">
+        <div class="sel-modal-item-name">{{ v.vendorName }}</div>
+        <span class="sel-modal-item-id">{{ v.vendorId }}</span>
+        <button class="sel-modal-item-btn" @click="$emit('select', v)">선택</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ── 판매사용자 선택 모달 ── */
+window.AdminUserSelectModal = {
+  name: 'AdminUserSelectModal',
+  props: ['adminData'],
+  emits: ['select', 'close'],
+  setup(props) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const filtered = computed(() => props.adminData.adminUsers.filter(u => {
+      if (!kw.value) return true;
+      const k = kw.value.toLowerCase();
+      return u.name.toLowerCase().includes(k) || u.loginId.toLowerCase().includes(k) || u.email.toLowerCase().includes(k);
+    }));
+    return { kw, filtered };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">판매사용자 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <input class="form-control" v-model="kw" placeholder="이름 / 로그인ID / 이메일 검색" style="margin-bottom:12px;" />
+    <div class="sel-modal-list">
+      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="u in filtered" :key="u.adminUserId" class="sel-modal-item">
+        <div class="sel-modal-item-name">{{ u.name }} <span style="font-size:11px;color:#888;">({{ u.loginId }})</span></div>
+        <span class="sel-modal-item-id">{{ u.adminUserId }}</span>
+        <button class="sel-modal-item-btn" @click="$emit('select', u)">선택</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ── 회원 선택 모달 ── */
+window.MemberSelectModal = {
+  name: 'MemberSelectModal',
+  props: ['adminData'],
+  emits: ['select', 'close'],
+  setup(props) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const filtered = computed(() => props.adminData.members.filter(m => {
+      if (!kw.value) return true;
+      const k = kw.value.toLowerCase();
+      return m.name.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
+    }));
+    return { kw, filtered };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">회원 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <input class="form-control" v-model="kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
+    <div class="sel-modal-list">
+      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="m in filtered" :key="m.userId" class="sel-modal-item">
+        <div class="sel-modal-item-name">{{ m.name }} <span style="font-size:11px;color:#888;">{{ m.email }}</span></div>
+        <span class="sel-modal-item-id">{{ m.userId }}</span>
+        <button class="sel-modal-item-btn" @click="$emit('select', m)">선택</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ── 주문 선택 모달 ── */
+window.OrderSelectModal = {
+  name: 'OrderSelectModal',
+  props: ['adminData'],
+  emits: ['select', 'close'],
+  setup(props) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const filtered = computed(() => props.adminData.orders.filter(o => {
+      if (!kw.value) return true;
+      const k = kw.value.toLowerCase();
+      return o.orderId.toLowerCase().includes(k) || o.userName.toLowerCase().includes(k) || o.productName.toLowerCase().includes(k);
+    }));
+    return { kw, filtered };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">주문 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <input class="form-control" v-model="kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
+    <div class="sel-modal-list">
+      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="o in filtered" :key="o.orderId" class="sel-modal-item">
+        <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.userName }}</span></div>
+        <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">{{ o.totalPrice.toLocaleString() }}원</span>
+        <button class="sel-modal-item-btn" @click="$emit('select', o)">선택</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+};

@@ -5,6 +5,9 @@ window.CacheMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
+    const searchDateRange = ref('3months');
+    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchType = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
@@ -21,6 +24,7 @@ window.CacheMng = {
       const kw = searchKw.value.trim().toLowerCase();
       if (kw && !c.userName.toLowerCase().includes(kw) && !c.desc.toLowerCase().includes(kw) && !String(c.userId).includes(kw)) return false;
       if (searchType.value && c.type !== searchType.value) return false;
+      if (!window.adminUtil.isInRange(c.date, searchDateRange.value)) return false;
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -46,7 +50,7 @@ window.CacheMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchType, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, typeBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchType, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, typeBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -55,6 +59,7 @@ window.CacheMng = {
     <div class="search-bar">
       <input v-model="searchKw" placeholder="회원명 / 회원ID / 내용 검색" @keyup.enter="onSearch" />
       <select v-model="searchType" @change="onSearch"><option value="">유형 전체</option><option>충전</option><option>사용</option><option>환불</option><option>소멸</option></select>
+      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <button class="btn btn-primary" @click="onSearch">검색</button>
     </div>
   </div>
@@ -64,7 +69,7 @@ window.CacheMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>회원</th><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th>ID</th><th>회원</th><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="c in pageList" :key="c.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">
@@ -75,6 +80,7 @@ window.CacheMng = {
           <td :style="c.amount > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ c.amount > 0 ? '+' : '' }}{{ c.amount.toLocaleString() }}원</td>
           <td>{{ c.balance.toLocaleString() }}원</td>
           <td><span class="title-link" @click="loadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.desc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.cacheId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>

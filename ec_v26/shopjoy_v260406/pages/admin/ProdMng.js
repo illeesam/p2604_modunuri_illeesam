@@ -5,6 +5,9 @@ window.ProdMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
+    const searchDateRange = ref('3months');
+    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchCate = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -23,6 +26,7 @@ window.ProdMng = {
       if (kw && !p.productName.toLowerCase().includes(kw) && !String(p.productId).includes(kw)) return false;
       if (searchCate.value && p.category !== searchCate.value) return false;
       if (searchStatus.value && p.status !== searchStatus.value) return false;
+      if (!window.adminUtil.isInRange(p.regDate, searchDateRange.value)) return false;
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -53,7 +57,7 @@ window.ProdMng = {
       window.open(`http://127.0.0.1:5502/ec_v26/shopjoy_v260406/index.html#page=detail&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
-    return { searchKw, searchCate, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewProduct };
+    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewProduct };
   },
   template: /* html */`
 <div>
@@ -63,6 +67,7 @@ window.ProdMng = {
       <input v-model="searchKw" placeholder="상품명 / ID 검색" @keyup.enter="onSearch" />
       <select v-model="searchCate" @change="onSearch"><option value="">카테고리 전체</option><option v-for="c in categories" :key="c">{{ c }}</option></select>
       <select v-model="searchStatus" @change="onSearch"><option value="">상태 전체</option><option>판매중</option><option>품절</option><option>판매중지</option></select>
+      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <button class="btn btn-primary" @click="onSearch">검색</button>
     </div>
   </div>
@@ -73,7 +78,7 @@ window.ProdMng = {
     </div>
     <table class="admin-table">
       <thead><tr>
-        <th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>브랜드</th><th>상태</th><th>등록일</th><th style="text-align:right">관리</th>
+        <th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>브랜드</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
@@ -86,6 +91,7 @@ window.ProdMng = {
           <td>{{ p.brand }}</td>
           <td><span class="badge" :class="statusBadge(p.status)">{{ p.status }}</span></td>
           <td>{{ p.regDate }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.productId)">👁</button>
             <button class="btn btn-blue btn-sm" @click="loadDetail(p.productId)">수정</button>

@@ -5,6 +5,9 @@ window.MemberMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
+    const searchDateRange = ref('3months');
+    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchGrade = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -23,6 +26,7 @@ window.MemberMng = {
       if (kw && !m.name.toLowerCase().includes(kw) && !m.email.toLowerCase().includes(kw) && !String(m.userId).includes(kw)) return false;
       if (searchGrade.value && m.grade !== searchGrade.value) return false;
       if (searchStatus.value && m.status !== searchStatus.value) return false;
+      if (!window.adminUtil.isInRange(m.joinDate, searchDateRange.value)) return false;
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -49,7 +53,7 @@ window.MemberMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, onSearch, setPage, onSizeChange, gradeBadge, statusBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchDateRange, DATE_RANGE_OPTIONS, siteName, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, onSearch, setPage, onSizeChange, gradeBadge, statusBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -59,6 +63,7 @@ window.MemberMng = {
       <input v-model="searchKw" placeholder="이름 / 이메일 / ID 검색" @keyup.enter="onSearch" />
       <select v-model="searchGrade" @change="onSearch"><option value="">등급 전체</option><option>VIP</option><option>우수</option><option>일반</option></select>
       <select v-model="searchStatus" @change="onSearch"><option value="">상태 전체</option><option>활성</option><option>정지</option></select>
+      <select v-model="searchDateRange" @change="onSearch"><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <button class="btn btn-primary" @click="onSearch">검색</button>
     </div>
   </div>
@@ -69,7 +74,7 @@ window.MemberMng = {
     </div>
     <table class="admin-table">
       <thead><tr>
-        <th>ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th>주문수</th><th>총구매액</th><th style="text-align:right">관리</th>
+        <th>ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th>주문수</th><th>총구매액</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
@@ -83,6 +88,7 @@ window.MemberMng = {
           <td>{{ m.joinDate }}</td>
           <td>{{ m.orderCount }}건</td>
           <td>{{ m.totalPurchase.toLocaleString() }}원</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(m.userId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(m)">삭제</button>
