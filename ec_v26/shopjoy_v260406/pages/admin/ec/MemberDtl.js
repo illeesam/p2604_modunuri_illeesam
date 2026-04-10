@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 회원관리 상세/등록 */
 window.MemberDtl = {
   name: 'MemberDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -32,18 +32,30 @@ window.MemberDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.members.push({
-          ...form, userId: props.adminData.nextId(props.adminData.members, 'userId'),
-          joinDate: form.joinDate || new Date().toISOString().slice(0, 10), orderCount: 0, totalPurchase: 0,
-        });
-        props.showToast('회원이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.members.findIndex(m => m.userId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.members[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecMemberMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `members/${form.userId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.members.push({
+              ...form, userId: props.adminData.nextId(props.adminData.members, 'userId'),
+              joinDate: form.joinDate || new Date().toISOString().slice(0, 10), orderCount: 0, totalPurchase: 0,
+            });
+          } else {
+            const idx = props.adminData.members.findIndex(x => x.userId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.members[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecMemberMng',
+      });
     };
 
     return { isNew, form, errors, save };

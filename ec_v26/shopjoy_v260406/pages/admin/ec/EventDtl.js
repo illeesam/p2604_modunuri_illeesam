@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 이벤트관리 상세/등록 (Quill HTML Editor) */
 window.EventDtl = {
   name: 'EventDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onUnmounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -106,19 +106,31 @@ window.EventDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.events.push({
-          ...form, eventId: props.adminData.nextId(props.adminData.events, 'eventId'),
-          targetProducts: [...form.targetProducts],
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('이벤트가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.events.findIndex(e => e.eventId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.events[idx], { ...form, targetProducts: [...form.targetProducts] });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecEventMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `events/${form.eventId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.events.push({
+              ...form, eventId: props.adminData.nextId(props.adminData.events, 'eventId'),
+              targetProducts: [...form.targetProducts],
+              regDate: new Date().toISOString().slice(0, 10),
+            });
+          } else {
+            const idx = props.adminData.events.findIndex(x => x.eventId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.events[idx], { ...form, targetProducts: [...form.targetProducts] });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecEventMng',
+      });
     };
 
     return { isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save };

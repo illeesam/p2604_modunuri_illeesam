@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 쿠폰관리 상세/등록 */
 window.CouponDtl = {
   name: 'CouponDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -39,20 +39,32 @@ window.CouponDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.coupons.push({
-          ...form,
-          couponId: props.adminData.nextId(props.adminData.coupons, 'couponId'),
-          discountValue: Number(form.discountValue), minOrder: Number(form.minOrder),
-          issueCount: Number(form.issueCount), useCount: 0,
-        });
-        props.showToast('쿠폰이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.coupons.findIndex(c => c.couponId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.coupons[idx], { ...form, discountValue: Number(form.discountValue), minOrder: Number(form.minOrder) });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecCouponMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `coupons/${form.couponId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.coupons.push({
+              ...form,
+              couponId: props.adminData.nextId(props.adminData.coupons, 'couponId'),
+              discountValue: Number(form.discountValue), minOrder: Number(form.minOrder),
+              issueCount: Number(form.issueCount), useCount: 0,
+            });
+          } else {
+            const idx = props.adminData.coupons.findIndex(x => x.couponId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.coupons[idx], { ...form, discountValue: Number(form.discountValue), minOrder: Number(form.minOrder) });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecCouponMng',
+      });
     };
 
     return { isNew, tab, form, errors, useRate, save };

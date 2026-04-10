@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 게시글관리 */
 window.BbsMng = {
   name: 'BbsMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
@@ -49,12 +49,21 @@ window.BbsMng = {
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const doDelete = async (b) => {
-      const ok = await props.showConfirm('게시글 삭제', `[${b.title}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.bbss.findIndex(x => x.bbsId === b.bbsId);
-      if (idx !== -1) props.adminData.bbss.splice(idx, 1);
-      if (selectedId.value === b.bbsId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `bbs/${b.bbsId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${b.title}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.bbss.findIndex(x => x.bbsId === b.bbsId);
+          if (idx !== -1) props.adminData.bbss.splice(idx, 1);
+          if (selectedId.value === b.bbsId) selectedId.value = null;
+        },
+      });
     };
     return { siteName, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, bbmOptions, bbmName };
   },
@@ -125,7 +134,7 @@ window.BbsMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <bbs-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <bbs-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

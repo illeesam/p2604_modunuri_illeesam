@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 배치스케즐 상세/등록 */
 window.BatchDtl = {
   name: 'BatchDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -43,19 +43,27 @@ window.BatchDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.batches.push({
-          ...form, batchId: props.adminData.nextId(props.adminData.batches, 'batchId'),
-          lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0,
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('배치가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.batches.findIndex(x => x.batchId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchName: form.batchName, batchCode: form.batchCode, description: form.description, cron: form.cron, status: form.status });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syBatchMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `batches/${form.batchId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.batches.push({ ...form, batchId: props.adminData.nextId(props.adminData.batches, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
+          } else {
+            const idx = props.adminData.batches.findIndex(x => x.batchId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchName: form.batchName, batchCode: form.batchCode, description: form.description, cron: form.cron, status: form.status });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syBatchMng',
+      });
     };
 
     return { isNew, form, errors, save, CRON_PRESETS, siteName };

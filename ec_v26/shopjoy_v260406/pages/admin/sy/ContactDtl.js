@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 문의관리 상세/등록 */
 window.ContactDtl = {
   name: 'ContactDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -51,20 +51,27 @@ window.ContactDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.contacts.push({
-          ...form,
-          inquiryId: props.adminData.nextId(props.adminData.contacts, 'inquiryId'),
-          userId: Number(form.userId),
-          date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
-        });
-        props.showToast('문의가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.contacts.findIndex(x => x.inquiryId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.contacts[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syContactMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `contacts/${form.inquiryId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.contacts.push({ ...form, inquiryId: props.adminData.nextId(props.adminData.contacts, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
+          } else {
+            const idx = props.adminData.contacts.findIndex(x => x.inquiryId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.contacts[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syContactMng',
+      });
     };
 
     const saveAnswer = () => {

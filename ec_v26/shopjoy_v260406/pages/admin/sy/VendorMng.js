@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 업체정보 목록 */
 window.VendorMng = {
   name: 'VendorMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -69,12 +69,21 @@ window.VendorMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (v) => {
-      const ok = await props.showConfirm('업체 삭제', `[${v.vendorName}] 업체를 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.vendors.findIndex(x => x.vendorId === v.vendorId);
-      if (idx !== -1) props.adminData.vendors.splice(idx, 1);
-      if (selectedId.value === v.vendorId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `vendors/${v.vendorId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${v.vendorName}] 업체를 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.vendors.findIndex(x => x.vendorId === v.vendorId);
+          if (idx !== -1) props.adminData.vendors.splice(idx, 1);
+          if (selectedId.value === v.vendorId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, statusBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -147,7 +156,7 @@ window.VendorMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <vendor-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <vendor-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

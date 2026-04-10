@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 캐쉬관리 상세/등록 */
 window.CacheDtl = {
   name: 'CacheDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -45,21 +45,33 @@ window.CacheDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.cacheList.unshift({
-          ...form,
-          cacheId: props.adminData.nextId(props.adminData.cacheList, 'cacheId'),
-          amount: Number(form.amount), balance: Number(form.balance),
-          userId: Number(form.userId),
-          date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
-        });
-        props.showToast('캐쉬 내역이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.cacheList.findIndex(x => x.cacheId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.cacheList[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecCacheMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `cache/${form.cacheId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.cacheList.unshift({
+              ...form,
+              cacheId: props.adminData.nextId(props.adminData.cacheList, 'cacheId'),
+              amount: Number(form.amount), balance: Number(form.balance),
+              userId: Number(form.userId),
+              date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
+            });
+          } else {
+            const idx = props.adminData.cacheList.findIndex(x => x.cacheId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.cacheList[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecCacheMng',
+      });
     };
 
     const onUserIdChange = () => {

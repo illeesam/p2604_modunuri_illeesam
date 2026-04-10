@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 상품관리 상세/등록 */
 window.ProdDtl = {
   name: 'ProdDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -144,25 +144,37 @@ window.ProdDtl = {
       }
       const imgData = images.value.map(({ id, ...rest }) => rest);
       const mainImg = images.value.find(img => img.isMain);
-      if (isNew.value) {
-        props.adminData.products.push({
-          ...form,
-          productId: props.adminData.nextId(props.adminData.products, 'productId'),
-          price: Number(form.price), stock: Number(form.stock),
-          regDate: form.regDate || new Date().toISOString().slice(0, 10),
-          images: imgData,
-          mainImage: mainImg ? mainImg.previewUrl : '',
-        });
-        props.showToast('상품이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.products.findIndex(p => p.productId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.products[idx], {
-          ...form, price: Number(form.price), stock: Number(form.stock),
-          images: imgData, mainImage: mainImg ? mainImg.previewUrl : '',
-        });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecProdMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `products/${form.productId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.products.push({
+              ...form,
+              productId: props.adminData.nextId(props.adminData.products, 'productId'),
+              price: Number(form.price), stock: Number(form.stock),
+              regDate: form.regDate || new Date().toISOString().slice(0, 10),
+              images: imgData,
+              mainImage: mainImg ? mainImg.previewUrl : '',
+            });
+          } else {
+            const idx = props.adminData.products.findIndex(x => x.productId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.products[idx], {
+              ...form, price: Number(form.price), stock: Number(form.stock),
+              images: imgData, mainImage: mainImg ? mainImg.previewUrl : '',
+            });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecProdMng',
+      });
     };
 
     return {

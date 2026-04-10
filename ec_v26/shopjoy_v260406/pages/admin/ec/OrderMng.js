@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 주문관리 목록 + 하단 OrderDtl 임베드 */
 window.OrderMng = {
   name: 'OrderMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -68,12 +68,21 @@ window.OrderMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (o) => {
-      const ok = await props.showConfirm('주문 삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.orders.findIndex(x => x.orderId === o.orderId);
-      if (idx !== -1) props.adminData.orders.splice(idx, 1);
-      if (selectedId.value === o.orderId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `orders/${o.orderId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${o.orderId}]를 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.orders.findIndex(x => x.orderId === o.orderId);
+          if (idx !== -1) props.adminData.orders.splice(idx, 1);
+          if (selectedId.value === o.orderId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -151,6 +160,8 @@ window.OrderMng = {
       :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
+      :show-confirm="showConfirm"
+      :set-api-res="setApiRes"
       :edit-id="detailEditId"
     />
   </div>

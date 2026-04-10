@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 사이트관리 목록 */
 window.SiteMng = {
   name: 'SiteMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw     = ref('');
@@ -76,12 +76,21 @@ window.SiteMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (s) => {
-      const ok = await props.showConfirm('사이트 삭제', `[${s.siteCode}] ${s.siteName} 사이트를 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.sites.findIndex(x => x.siteId === s.siteId);
-      if (idx !== -1) props.adminData.sites.splice(idx, 1);
-      if (selectedId.value === s.siteId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `sites/${s.siteId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${s.siteCode}] ${s.siteName} 사이트를 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.sites.findIndex(x => x.siteId === s.siteId);
+          if (idx !== -1) props.adminData.sites.splice(idx, 1);
+          if (selectedId.value === s.siteId) selectedId.value = null;
+        },
+      });
     };
 
     return {
@@ -167,7 +176,7 @@ window.SiteMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <site-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <site-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

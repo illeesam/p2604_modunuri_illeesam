@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 게시판관리 */
 window.BbmMng = {
   name: 'BbmMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
@@ -42,12 +42,21 @@ window.BbmMng = {
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const doDelete = async (b) => {
-      const ok = await props.showConfirm('게시판 삭제', `[${b.bbmName}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.bbms.findIndex(x => x.bbmId === b.bbmId);
-      if (idx !== -1) props.adminData.bbms.splice(idx, 1);
-      if (selectedId.value === b.bbmId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `bbm/${b.bbmId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${b.bbmName}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.bbms.findIndex(x => x.bbmId === b.bbmId);
+          if (idx !== -1) props.adminData.bbms.splice(idx, 1);
+          if (selectedId.value === b.bbmId) selectedId.value = null;
+        },
+      });
     };
     const bbsCount = (bbmId) => props.adminData.bbss.filter(b => b.bbmId === bbmId).length;
     return { siteName, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, bbsCount };
@@ -117,7 +126,7 @@ window.BbmMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <bbm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <bbm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

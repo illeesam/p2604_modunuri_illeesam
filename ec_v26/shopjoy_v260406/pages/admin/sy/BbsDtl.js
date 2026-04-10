@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 게시글관리 상세/등록 */
 window.BbsDtl = {
   name: 'BbsDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -98,21 +98,27 @@ window.BbsDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.bbss.unshift({
-          ...form,
-          bbmId: Number(form.bbmId),
-          bbsId: props.adminData.nextId(props.adminData.bbss, 'bbsId'),
-          viewCount: 0, commentCount: 0,
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('게시글이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.bbss.findIndex(x => x.bbsId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.bbss[idx], { ...form, bbmId: Number(form.bbmId) });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syBbsMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `bbs/${form.bbsId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.bbss.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: props.adminData.nextId(props.adminData.bbss, 'bbsId'), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
+          } else {
+            const idx = props.adminData.bbss.findIndex(x => x.bbsId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.bbss[idx], { ...form, bbmId: Number(form.bbmId) });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syBbsMng',
+      });
     };
 
     return {

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 알림관리 상세/등록 */
 window.AlarmDtl = {
   name: 'AlarmDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -33,19 +33,27 @@ window.AlarmDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.alarms.unshift({
-          ...form,
-          alarmId: props.adminData.nextId(props.adminData.alarms, 'alarmId'),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('알림이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.alarms.findIndex(x => x.alarmId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.alarms[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syAlarmMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `alarms/${form.alarmId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.alarms.unshift({ ...form, alarmId: props.adminData.nextId(props.adminData.alarms, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
+          } else {
+            const idx = props.adminData.alarms.findIndex(x => x.alarmId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.alarms[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syAlarmMng',
+      });
     };
 
     return { isNew, form, errors, save, siteName };

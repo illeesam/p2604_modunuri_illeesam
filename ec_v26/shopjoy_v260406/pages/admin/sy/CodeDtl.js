@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 공통코드 상세/등록 */
 window.CodeDtl = {
   name: 'CodeDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -33,18 +33,27 @@ window.CodeDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.codes.push({
-          ...form, codeId: props.adminData.nextId(props.adminData.codes, 'codeId'),
-          sortOrd: Number(form.sortOrd) || 1,
-        });
-        props.showToast('코드가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.codes.findIndex(x => x.codeId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syCodeMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `codes/${form.codeId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.codes.push({ ...form, codeId: props.adminData.nextId(props.adminData.codes, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
+          } else {
+            const idx = props.adminData.codes.findIndex(x => x.codeId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syCodeMng',
+      });
     };
 
     return { isNew, form, errors, save, siteName };

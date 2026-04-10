@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 쿠폰관리 목록 + 하단 CouponDtl 임베드 */
 window.CouponMng = {
   name: 'CouponMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -66,12 +66,21 @@ window.CouponMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (c) => {
-      const ok = await props.showConfirm('쿠폰 삭제', `[${c.name}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.coupons.findIndex(x => x.couponId === c.couponId);
-      if (idx !== -1) props.adminData.coupons.splice(idx, 1);
-      if (selectedId.value === c.couponId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `coupons/${c.couponId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${c.name}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.coupons.findIndex(x => x.couponId === c.couponId);
+          if (idx !== -1) props.adminData.coupons.splice(idx, 1);
+          if (selectedId.value === c.couponId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, discountLabel, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -145,6 +154,8 @@ window.CouponMng = {
       :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
+      :show-confirm="showConfirm"
+      :set-api-res="setApiRes"
       :edit-id="detailEditId"
     />
   </div>

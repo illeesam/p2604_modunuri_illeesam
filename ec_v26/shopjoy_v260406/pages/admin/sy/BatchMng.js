@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 배치스케즐관리 목록 */
 window.BatchMng = {
   name: 'BatchMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -87,12 +87,21 @@ window.BatchMng = {
     };
 
     const doDelete = async (b) => {
-      const ok = await props.showConfirm('배치 삭제', `[${b.batchName}] 배치를 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.batches.findIndex(x => x.batchId === b.batchId);
-      if (idx !== -1) props.adminData.batches.splice(idx, 1);
-      if (selectedId.value === b.batchId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `batches/${b.batchId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${b.batchName}] 배치를 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.batches.findIndex(x => x.batchId === b.batchId);
+          if (idx !== -1) props.adminData.batches.splice(idx, 1);
+          if (selectedId.value === b.batchId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, searchRunStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, statusBadge, runStatusBadge, runNow, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -166,7 +175,7 @@ window.BatchMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <batch-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <batch-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

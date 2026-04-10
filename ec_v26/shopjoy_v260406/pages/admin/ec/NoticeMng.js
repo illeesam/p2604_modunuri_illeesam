@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 공지사항관리 */
 window.NoticeMng = {
   name: 'NoticeMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
@@ -47,12 +47,21 @@ window.NoticeMng = {
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const doDelete = async (n) => {
-      const ok = await props.showConfirm('공지사항 삭제', `[${n.title}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.notices.findIndex(x => x.noticeId === n.noticeId);
-      if (idx !== -1) props.adminData.notices.splice(idx, 1);
-      if (selectedId.value === n.noticeId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `notices/${n.noticeId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${n.title}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.notices.findIndex(x => x.noticeId === n.noticeId);
+          if (idx !== -1) props.adminData.notices.splice(idx, 1);
+          if (selectedId.value === n.noticeId) selectedId.value = null;
+        },
+      });
     };
     return { siteName, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
@@ -119,7 +128,7 @@ window.NoticeMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <notice-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <notice-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 주문관리 상세/등록 */
 window.OrderDtl = {
   name: 'OrderDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -42,15 +42,27 @@ window.OrderDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
-        props.showToast('주문이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.orders.findIndex(o => o.orderId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecOrderMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `orders/${form.orderId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
+          } else {
+            const idx = props.adminData.orders.findIndex(x => x.orderId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecOrderMng',
+      });
     };
 
     return { isNew, form, errors, save, ORDER_STEPS, currentStepIdx, isCanceled };

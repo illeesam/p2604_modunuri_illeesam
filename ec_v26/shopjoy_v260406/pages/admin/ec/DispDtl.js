@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시관리 상세/등록 */
 window.DispDtl = {
   name: 'DispDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -143,22 +143,34 @@ window.DispDtl = {
       }
     });
 
-    const save = () => {
+    const save = async () => {
       if (!form.name || !form.area) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
-      if (isNew.value) {
-        props.adminData.displays.push({
-          ...form,
-          dispId: props.adminData.nextId(props.adminData.displays, 'dispId'),
-          sortOrder: Number(form.sortOrder),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('전시 위젯이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.displays.findIndex(x => x.dispId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.displays[idx], { ...form, sortOrder: Number(form.sortOrder) });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecDispMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `disps/${form.dispId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.displays.push({
+              ...form,
+              dispId: props.adminData.nextId(props.adminData.displays, 'dispId'),
+              sortOrder: Number(form.sortOrder),
+              regDate: new Date().toISOString().slice(0, 10),
+            });
+          } else {
+            const idx = props.adminData.displays.findIndex(x => x.dispId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.displays[idx], { ...form, sortOrder: Number(form.sortOrder) });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecDispMng',
+      });
     };
 
     return { isNew, tab, form, WIDGET_TYPES, AREAS, isChart, isProduct, isImage, isText, isInfo, isPopup, isFile, isCoupon, isHtmlEditor, isEventBanner, isCacheBanner, isWidgetEmbed, displayRows, relatedEvent, save };

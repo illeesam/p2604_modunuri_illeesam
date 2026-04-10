@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 채팅관리 상세/등록 */
 window.ChattDtl = {
   name: 'ChattDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
@@ -90,15 +90,28 @@ window.ChattDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const m = props.adminData.getMember(Number(form.userId));
-      props.adminData.chats.push({
-        chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
-        userId: Number(form.userId), userName: m ? m.name : form.userName,
-        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-        subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
+      await window.adminApiCall({
+        method: 'post',
+        path: `chatts/${form.chatId}`,
+        data: { ...form },
+        confirmTitle: '등록',
+        confirmMsg: '등록하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '등록되었습니다.',
+        onLocal: () => {
+          const m = props.adminData.getMember(Number(form.userId));
+          props.adminData.chats.push({
+            chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
+            userId: Number(form.userId), userName: m ? m.name : form.userName,
+            date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+            subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
+          });
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecChattMng',
       });
-      props.showToast('채팅이 등록되었습니다.');
-      props.navigate('ecChattMng');
     };
 
     const onUserChange = () => {

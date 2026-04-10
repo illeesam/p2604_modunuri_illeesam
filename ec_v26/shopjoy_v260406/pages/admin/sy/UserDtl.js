@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 사용자관리(관리자) 상세/등록 */
 window.UserDtl = {
   name: 'UserDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -34,22 +34,31 @@ window.UserDtl = {
         return;
       }
       if (isNew.value && !form.password) { props.showToast('신규 등록 시 비밀번호는 필수입니다.', 'error'); return; }
-      if (isNew.value) {
-        const { password, ...rest } = form;
-        props.adminData.adminUsers.push({
-          ...rest, adminUserId: props.adminData.nextId(props.adminData.adminUsers, 'adminUserId'),
-          lastLogin: '-', regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('사용자가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === props.editId);
-        if (idx !== -1) {
-          const { password, ...rest } = form;
-          Object.assign(props.adminData.adminUsers[idx], rest);
-        }
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syUserMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `admin-users/${form.adminUserId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            const { password, ...rest } = form;
+            props.adminData.adminUsers.push({ ...rest, adminUserId: props.adminData.nextId(props.adminData.adminUsers, 'adminUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
+          } else {
+            const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === props.editId);
+            if (idx !== -1) {
+              const { password, ...rest } = form;
+              Object.assign(props.adminData.adminUsers[idx], rest);
+            }
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syUserMng',
+      });
     };
 
     return { isNew, form, errors, save, siteName };

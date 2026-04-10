@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 사용자관리(관리자) 목록 */
 window.UserMng = {
   name: 'UserMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -70,12 +70,21 @@ window.UserMng = {
 
     const doDelete = async (u) => {
       if (u.role === '슈퍼관리자') { props.showToast('슈퍼관리자는 삭제할 수 없습니다.', 'error'); return; }
-      const ok = await props.showConfirm('사용자 삭제', `[${u.name}] 사용자를 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === u.adminUserId);
-      if (idx !== -1) props.adminData.adminUsers.splice(idx, 1);
-      if (selectedId.value === u.adminUserId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `admin-users/${u.adminUserId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${u.name}] 사용자를 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === u.adminUserId);
+          if (idx !== -1) props.adminData.adminUsers.splice(idx, 1);
+          if (selectedId.value === u.adminUserId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -148,7 +157,7 @@ window.UserMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <user-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <user-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

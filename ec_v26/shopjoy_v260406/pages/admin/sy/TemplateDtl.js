@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 템플릿 상세/등록 */
 window.TemplateDtl = {
   name: 'TemplateDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -75,18 +75,27 @@ window.TemplateDtl = {
         try { JSON.parse(form.sampleParams); }
         catch { props.showToast('파라미터 샘플 JSON 형식이 올바르지 않습니다.', 'error'); return; }
       }
-      if (isNew.value) {
-        props.adminData.templates.push({
-          ...form, templateId: props.adminData.nextId(props.adminData.templates, 'templateId'),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('템플릿이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.templates.findIndex(x => x.templateId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.templates[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syTemplateMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `templates/${form.templateId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.templates.push({ ...form, templateId: props.adminData.nextId(props.adminData.templates, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
+          } else {
+            const idx = props.adminData.templates.findIndex(x => x.templateId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.templates[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syTemplateMng',
+      });
     };
 
     const needSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateType));

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 상품관리 목록 + 하단 ProdDtl 임베드 */
 window.ProdMng = {
   name: 'ProdMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -70,12 +70,21 @@ window.ProdMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (p) => {
-      const ok = await props.showConfirm('상품 삭제', `[${p.productName}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.products.findIndex(x => x.productId === p.productId);
-      if (idx !== -1) props.adminData.products.splice(idx, 1);
-      if (selectedId.value === p.productId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `products/${p.productId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${p.productName}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.products.findIndex(x => x.productId === p.productId);
+          if (idx !== -1) props.adminData.products.splice(idx, 1);
+          if (selectedId.value === p.productId) selectedId.value = null;
+        },
+      });
     };
 
     const previewProduct = (pid) => {
@@ -156,6 +165,8 @@ window.ProdMng = {
       :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
+      :show-confirm="showConfirm"
+      :set-api-res="setApiRes"
       :edit-id="detailEditId"
     />
   </div>

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시관리 목록 + 하단 DispDtl 임베드 */
 window.DispMng = {
   name: 'DispMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -112,12 +112,21 @@ window.DispMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (d) => {
-      const ok = await props.showConfirm('위젯 삭제', `[${d.name}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.displays.findIndex(x => x.dispId === d.dispId);
-      if (idx !== -1) props.adminData.displays.splice(idx, 1);
-      if (selectedId.value === d.dispId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `disps/${d.dispId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${d.name}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.displays.findIndex(x => x.dispId === d.dispId);
+          if (idx !== -1) props.adminData.displays.splice(idx, 1);
+          if (selectedId.value === d.dispId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchArea, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewDisp, dispSummary };
@@ -193,6 +202,8 @@ window.DispMng = {
       :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
+      :show-confirm="showConfirm"
+      :set-api-res="setApiRes"
       :edit-id="detailEditId"
     />
   </div>

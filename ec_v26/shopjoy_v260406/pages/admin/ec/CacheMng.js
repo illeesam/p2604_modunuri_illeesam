@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 캐쉬관리 목록 + 하단 CacheDtl 임베드 */
 window.CacheMng = {
   name: 'CacheMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -65,12 +65,21 @@ window.CacheMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (c) => {
-      const ok = await props.showConfirm('캐쉬 내역 삭제', `[${c.desc}] 내역을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.cacheList.findIndex(x => x.cacheId === c.cacheId);
-      if (idx !== -1) props.adminData.cacheList.splice(idx, 1);
-      if (selectedId.value === c.cacheId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `cache/${c.cacheId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${c.desc}] 내역을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.cacheList.findIndex(x => x.cacheId === c.cacheId);
+          if (idx !== -1) props.adminData.cacheList.splice(idx, 1);
+          if (selectedId.value === c.cacheId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -142,6 +151,8 @@ window.CacheMng = {
       :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
+      :show-confirm="showConfirm"
+      :set-api-res="setApiRes"
       :edit-id="detailEditId"
     />
   </div>

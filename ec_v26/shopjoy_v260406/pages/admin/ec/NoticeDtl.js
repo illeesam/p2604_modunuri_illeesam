@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 공지사항관리 상세/등록 */
 window.NoticeDtl = {
   name: 'NoticeDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId', 'setApiRes'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -39,19 +39,31 @@ window.NoticeDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.notices.unshift({
-          ...form,
-          noticeId: props.adminData.nextId(props.adminData.notices, 'noticeId'),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('공지사항이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.notices.findIndex(x => x.noticeId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.notices[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecNoticeMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `notices/${form.noticeId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.notices.unshift({
+              ...form,
+              noticeId: props.adminData.nextId(props.adminData.notices, 'noticeId'),
+              regDate: new Date().toISOString().slice(0, 10),
+            });
+          } else {
+            const idx = props.adminData.notices.findIndex(x => x.noticeId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.notices[idx], form);
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecNoticeMng',
+      });
     };
 
     return { isNew, form, errors, save };

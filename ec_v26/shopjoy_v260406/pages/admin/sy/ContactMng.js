@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 문의관리 목록 + 하단 ContactDtl 임베드 */
 window.ContactMng = {
   name: 'ContactMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -68,12 +68,21 @@ window.ContactMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (c) => {
-      const ok = await props.showConfirm('문의 삭제', `[${c.title}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.contacts.findIndex(x => x.inquiryId === c.inquiryId);
-      if (idx !== -1) props.adminData.contacts.splice(idx, 1);
-      if (selectedId.value === c.inquiryId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `contacts/${c.inquiryId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${c.title}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.contacts.findIndex(x => x.inquiryId === c.inquiryId);
+          if (idx !== -1) props.adminData.contacts.splice(idx, 1);
+          if (selectedId.value === c.inquiryId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -153,6 +162,8 @@ window.ContactMng = {
       :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
+      :show-confirm="showConfirm"
+      :set-api-res="setApiRes"
       :edit-id="detailEditId"
     />
   </div>

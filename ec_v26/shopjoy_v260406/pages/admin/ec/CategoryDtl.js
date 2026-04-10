@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 카테고리 상세/등록 */
 window.CategoryDtl = {
   name: 'CategoryDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -45,18 +45,30 @@ window.CategoryDtl = {
         return;
       }
       const parentId = form.parentId ? Number(form.parentId) : null;
-      if (isNew.value) {
-        props.adminData.categories.push({
-          ...form, parentId, categoryId: props.adminData.nextId(props.adminData.categories, 'categoryId'),
-          sortOrd: Number(form.sortOrd) || 1, depth: Number(form.depth) || 1,
-        });
-        props.showToast('카테고리가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.categories.findIndex(x => x.categoryId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.categories[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecCategoryMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `categories/${form.categoryId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.categories.push({
+              ...form, parentId, categoryId: props.adminData.nextId(props.adminData.categories, 'categoryId'),
+              sortOrd: Number(form.sortOrd) || 1, depth: Number(form.depth) || 1,
+            });
+          } else {
+            const idx = props.adminData.categories.findIndex(x => x.categoryId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.categories[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecCategoryMng',
+      });
     };
 
     return { isNew, form, errors, save, parentOptions, onParentChange };

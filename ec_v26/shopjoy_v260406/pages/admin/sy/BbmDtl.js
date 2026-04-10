@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 게시판관리 상세/등록 */
 window.BbmDtl = {
   name: 'BbmDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -35,19 +35,27 @@ window.BbmDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.bbms.push({
-          ...form,
-          bbmId: props.adminData.nextId(props.adminData.bbms, 'bbmId'),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('게시판이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.bbms.findIndex(x => x.bbmId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.bbms[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syBbmMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `bbm/${form.bbmId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.bbms.push({ ...form, bbmId: props.adminData.nextId(props.adminData.bbms, 'bbmId'), regDate: new Date().toISOString().slice(0, 10) });
+          } else {
+            const idx = props.adminData.bbms.findIndex(x => x.bbmId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.bbms[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syBbmMng',
+      });
     };
 
     return { isNew, form, errors, save, siteName };

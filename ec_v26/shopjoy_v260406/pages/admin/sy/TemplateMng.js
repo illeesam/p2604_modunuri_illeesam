@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 템플릿관리 목록 */
 window.TemplateMng = {
   name: 'TemplateMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -86,12 +86,21 @@ window.TemplateMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (t) => {
-      const ok = await props.showConfirm('템플릿 삭제', `[${t.templateName}] 템플릿을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.templates.findIndex(x => x.templateId === t.templateId);
-      if (idx !== -1) props.adminData.templates.splice(idx, 1);
-      if (selectedId.value === t.templateId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `templates/${t.templateId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${t.templateName}] 템플릿을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.templates.findIndex(x => x.templateId === t.templateId);
+          if (idx !== -1) props.adminData.templates.splice(idx, 1);
+          if (selectedId.value === t.templateId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, useYnBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewModal, showPreview, closePreview, sendModal, openSend, closeSend };
@@ -165,7 +174,7 @@ window.TemplateMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <template-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :edit-id="detailEditId" />
+    <template-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 
   <!-- 미리보기 모달 -->

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 배송관리 상세/등록 */
 window.DlivDtl = {
   name: 'DlivDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -37,15 +37,27 @@ window.DlivDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.deliveries.push({ ...form });
-        props.showToast('배송 정보가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.deliveries.findIndex(x => x.dlivId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.deliveries[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecDlivMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `deliveries/${form.dlivId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.deliveries.push({ ...form });
+          } else {
+            const idx = props.adminData.deliveries.findIndex(x => x.dlivId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.deliveries[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecDlivMng',
+      });
     };
 
     return { isNew, tab, form, errors, save };

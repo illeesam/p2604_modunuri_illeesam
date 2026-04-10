@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 이벤트관리 목록 + 하단 EventDtl 임베드 */
 window.EventMng = {
   name: 'EventMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -64,12 +64,21 @@ window.EventMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (e) => {
-      const ok = await props.showConfirm('이벤트 삭제', `[${e.title}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.events.findIndex(x => x.eventId === e.eventId);
-      if (idx !== -1) props.adminData.events.splice(idx, 1);
-      if (selectedId.value === e.eventId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `events/${e.eventId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${e.title}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.events.findIndex(x => x.eventId === e.eventId);
+          if (idx !== -1) props.adminData.events.splice(idx, 1);
+          if (selectedId.value === e.eventId) selectedId.value = null;
+        },
+      });
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
@@ -141,6 +150,8 @@ window.EventMng = {
       :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
+      :show-confirm="showConfirm"
+      :set-api-res="setApiRes"
       :edit-id="detailEditId"
     />
   </div>

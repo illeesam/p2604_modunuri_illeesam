@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 알림관리 */
 window.AlarmMng = {
   name: 'AlarmMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
@@ -48,12 +48,21 @@ window.AlarmMng = {
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const doDelete = async (a) => {
-      const ok = await props.showConfirm('알림 삭제', `[${a.title}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const idx = props.adminData.alarms.findIndex(x => x.alarmId === a.alarmId);
-      if (idx !== -1) props.adminData.alarms.splice(idx, 1);
-      if (selectedId.value === a.alarmId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+      await window.adminApiCall({
+        method: 'delete',
+        path: `alarms/${a.alarmId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${a.title}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const idx = props.adminData.alarms.findIndex(x => x.alarmId === a.alarmId);
+          if (idx !== -1) props.adminData.alarms.splice(idx, 1);
+          if (selectedId.value === a.alarmId) selectedId.value = null;
+        },
+      });
     };
     return { siteName, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, targetBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
@@ -120,7 +129,7 @@ window.AlarmMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <alarm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <alarm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

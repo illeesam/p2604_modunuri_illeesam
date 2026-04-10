@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 사이트관리 상세/등록 */
 window.SiteDtl = {
   name: 'SiteDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -41,19 +41,27 @@ window.SiteDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.sites.push({
-          ...form,
-          siteId: props.adminData.nextId(props.adminData.sites, 'siteId'),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-        props.showToast('사이트가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.sites.findIndex(x => x.siteId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.sites[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('sySiteMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `sites/${form.siteId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.sites.push({ ...form, siteId: props.adminData.nextId(props.adminData.sites, 'siteId'), regDate: new Date().toISOString().slice(0, 10) });
+          } else {
+            const idx = props.adminData.sites.findIndex(x => x.siteId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.sites[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'sySiteMng',
+      });
     };
 
     return { isNew, form, errors, save, SITE_TYPES };

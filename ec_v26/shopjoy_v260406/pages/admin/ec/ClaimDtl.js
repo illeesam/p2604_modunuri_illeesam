@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 클레임관리 상세/등록 */
 window.ClaimDtl = {
   name: 'ClaimDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
@@ -44,15 +44,27 @@ window.ClaimDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.claims.push({ ...form, refundAmount: Number(form.refundAmount) });
-        props.showToast('클레임이 등록되었습니다.');
-      } else {
-        const idx = props.adminData.claims.findIndex(c => c.claimId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.claims[idx], { ...form, refundAmount: Number(form.refundAmount) });
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('ecClaimMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `claims/${form.claimId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.claims.push({ ...form, refundAmount: Number(form.refundAmount) });
+          } else {
+            const idx = props.adminData.claims.findIndex(x => x.claimId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.claims[idx], { ...form, refundAmount: Number(form.refundAmount) });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecClaimMng',
+      });
     };
 
     return { isNew, form, errors, statusOptions, CLAIM_STEPS, currentStepIdx, save };

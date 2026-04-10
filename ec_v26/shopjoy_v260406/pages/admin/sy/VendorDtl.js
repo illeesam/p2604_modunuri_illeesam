@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 업체정보 상세/등록 */
 window.VendorDtl = {
   name: 'VendorDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
@@ -33,17 +33,27 @@ window.VendorDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value) {
-        props.adminData.vendors.push({
-          ...form, vendorId: props.adminData.nextId(props.adminData.vendors, 'vendorId'),
-        });
-        props.showToast('업체가 등록되었습니다.');
-      } else {
-        const idx = props.adminData.vendors.findIndex(x => x.vendorId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.vendors[idx], form);
-        props.showToast('저장되었습니다.');
-      }
-      props.navigate('syVendorMng');
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: `vendors/${form.vendorId}`,
+        data: { ...form },
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
+        onLocal: () => {
+          if (isNew.value) {
+            props.adminData.vendors.push({ ...form, vendorId: props.adminData.nextId(props.adminData.vendors, 'vendorId') });
+          } else {
+            const idx = props.adminData.vendors.findIndex(x => x.vendorId === props.editId);
+            if (idx !== -1) Object.assign(props.adminData.vendors[idx], { ...form });
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'syVendorMng',
+      });
     };
 
     return { isNew, form, errors, save, siteName };
