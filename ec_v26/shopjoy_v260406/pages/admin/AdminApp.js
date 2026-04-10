@@ -305,6 +305,23 @@
         showToast('가입이 완료되었습니다. 로그인해주세요.');
       };
 
+      /* ── 즐겨찾기 ── */
+      const favorites = reactive([]);
+      const sidebarTab = ref('open');
+      const isFav = (pgId) => favorites.includes(pgId);
+      const toggleFav = (pgId) => {
+        const idx = favorites.indexOf(pgId);
+        if (idx === -1) favorites.push(pgId);
+        else favorites.splice(idx, 1);
+      };
+      const favList = computed(() =>
+        favorites.map(pgId => {
+          const topId = PAGE_TO_TOP[pgId];
+          const topLabel = TOP_MENUS.find(t => t.id === topId)?.label || '';
+          return { id: pgId, label: PAGE_LABELS[pgId] || pgId, topLabel };
+        })
+      );
+
       /* 루트 클릭 → 컨텍스트 메뉴·유저메뉴 닫기 */
       const onRootClick = () => { closeCtxMenu(); userMenuShow.value = false; };
 
@@ -326,6 +343,7 @@
         openLogin, closeLogin, doLogin, doLogout, doRegister,
         profileModal, profileForm, openProfile, saveProfile,
         pwModal, pwForm, pwError, openPwChange, savePwChange,
+        favorites, sidebarTab, isFav, toggleFav, favList,
         onRootClick,
       };
     },
@@ -393,18 +411,54 @@
         <div v-for="item in LEFT_MENUS[activeTop]" :key="item.id"
           class="left-nav-item" :class="{active: activeTabId===item.id}"
           @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
-          :title="'Ctrl+클릭: 새창'">{{ item.label }}</div>
+          :title="'Ctrl+클릭: 새창'">
+          {{ item.label }}
+          <span class="left-fav-star" :class="{active: isFav(item.id)}"
+            @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
+        </div>
       </div>
 
-      <!-- 열린 화면 목록 (하단 고정) -->
-      <div class="left-nav-open-section" v-if="openTabsWithGroup.length">
-        <div class="left-nav-open-title">열린 화면</div>
-        <div v-for="tab in openTabsWithGroup" :key="tab.id"
-          class="left-nav-open-item" :class="{active: activeTabId===tab.id}"
-          @click="navigate(tab.id)">
-          <span class="left-nav-open-group">{{ tab.topLabel }}</span>
-          <span class="left-nav-open-sep"> › </span>
-          <span class="left-nav-open-label">{{ tab.label }}</span>
+      <!-- 열린화면 / 즐겨찾기 (하단 고정) -->
+      <div class="left-nav-open-section">
+        <!-- 목록 (위) -->
+        <div class="left-nav-open-list">
+          <!-- 즐겨찾기 목록 -->
+          <template v-if="sidebarTab==='fav'">
+            <div v-if="favList.length===0" class="left-nav-open-empty">즐겨찾기가 없습니다.</div>
+            <div v-for="fav in favList" :key="fav.id"
+              class="left-nav-open-item" :class="{active: activeTabId===fav.id}"
+              @click="navigate(fav.id)">
+              <span class="left-nav-open-path">
+                <span class="left-nav-open-group">{{ fav.topLabel }}</span>
+                <span class="left-nav-open-sep"> › </span>
+                <span class="left-nav-open-label">{{ fav.label }}</span>
+              </span>
+              <span class="left-fav-star active" @click.stop="toggleFav(fav.id)" title="즐겨찾기 해제">★</span>
+            </div>
+          </template>
+          <!-- 열린화면 목록 -->
+          <template v-if="sidebarTab==='open'">
+            <div v-if="openTabsWithGroup.length===0" class="left-nav-open-empty">열린 화면이 없습니다.</div>
+            <div v-for="tab in openTabsWithGroup" :key="tab.id"
+              class="left-nav-open-item" :class="{active: activeTabId===tab.id}"
+              @click="navigate(tab.id)">
+              <span class="left-nav-open-path">
+                <span class="left-nav-open-group">{{ tab.topLabel }}</span>
+                <span class="left-nav-open-sep"> › </span>
+                <span class="left-nav-open-label">{{ tab.label }}</span>
+              </span>
+              <span class="left-fav-star" :class="{active: isFav(tab.id)}"
+                @click.stop="toggleFav(tab.id)" :title="isFav(tab.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
+              <span class="left-nav-open-close" @click.stop="closeTab(tab.id, $event)">✕</span>
+            </div>
+          </template>
+        </div>
+        <!-- 탭 버튼 (최하단 고정) -->
+        <div class="left-nav-section-tabs">
+          <button class="left-nav-section-tab" :class="{active: sidebarTab==='fav'}"
+            @click="sidebarTab='fav'">★ 즐겨찾기</button>
+          <button class="left-nav-section-tab" :class="{active: sidebarTab==='open'}"
+            @click="sidebarTab='open'">열린화면</button>
         </div>
       </div>
     </nav>
@@ -717,6 +771,7 @@
   .component('AdminRefModal', window.AdminRefModal)
   .component('MemberMng',  window.MemberMng)
   .component('MemberDtl',  window.MemberDtl)
+  .component('MemberHist', window.MemberHist)
   .component('ProdMng',    window.ProdMng)
   .component('ProdDtl',    window.ProdDtl)
   .component('OrderMng',   window.OrderMng)

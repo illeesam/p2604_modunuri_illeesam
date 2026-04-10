@@ -178,14 +178,15 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .tab-ctx-sep { height: 1px; background: #f0f0f0; margin: 3px 0; }
 
 /* ── 좌측 열린 화면 목록 (하단 고정) ── */
-.left-nav-open-section { border-top: 1px solid #f0f0f0; background: #fafafa; flex-shrink: 0; max-height: calc(100vh - 240px); overflow-y: auto; }
-.left-nav-open-title { padding: 8px 14px 4px; font-size: 9px; font-weight: 800; color: #c0c0cc; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+.left-nav-open-section { border-top: 1px solid #f0f0f0; background: #fafafa; flex-shrink: 0; max-height: calc(100vh - 240px); display: flex; flex-direction: column; }
+.left-nav-open-list { flex: 1; overflow-y: auto; min-height: 0; }
 .left-nav-open-item { display: flex; align-items: center; padding: 5px 10px 5px 14px; font-size: 11px; color: #999; cursor: pointer; white-space: nowrap; overflow: hidden; gap: 1px; transition: background .1s, color .1s; border-left: 2px solid transparent; }
 .left-nav-open-item:hover { background: #fff0f4; color: #e8587a; border-left-color: #f9c0cf; }
 .left-nav-open-item.active { color: #e8587a; font-weight: 700; background: #fff5f7; border-left-color: #e8587a; }
+.left-nav-open-path { flex: 1; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 1px; }
 .left-nav-open-group { color: #c0c0cc; flex-shrink: 0; font-size: 10px; }
 .left-nav-open-sep { color: #d8d8d8; flex-shrink: 0; padding: 0 1px; }
-.left-nav-open-label { overflow: hidden; text-overflow: ellipsis; }
+.left-nav-open-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 관리자 우측 공통필터 패널 ── */
 .admin-right-panel { width: 220px; flex-shrink: 0; background: #fff; border-left: 2px solid #eaeaea; min-height: calc(100vh - 94px); position: sticky; top: 94px; align-self: flex-start; transition: width .2s ease; overflow: hidden; box-shadow: -2px 0 8px rgba(0,0,0,.04); }
@@ -217,6 +218,19 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .top-nav-user { position: relative; display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 8px; }
 .login-btn { background: rgba(232,88,122,.2); border: 1px solid rgba(232,88,122,.5); color: #fff; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; transition: background .15s; white-space: nowrap; }
 .login-btn:hover { background: rgba(232,88,122,.4); }
+/* 즐겨찾기 */
+.left-fav-star { font-size: 13px; color: #ddd; cursor: pointer; flex-shrink: 0; line-height: 1; transition: color .12s, transform .12s; padding: 0 3px; }
+.left-nav-item .left-fav-star { margin-left: auto; }
+.left-fav-star:hover { color: #c8860a; transform: scale(1.2); }
+.left-fav-star.active { color: #c8860a; text-shadow: 0 0 4px rgba(200,134,10,.4); }
+.left-nav-open-close { margin-left: auto; font-size: 11px; color: #ccc; cursor: pointer; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; opacity: 0; transition: opacity .1s, color .1s; }
+.left-nav-open-item:hover .left-nav-open-close { opacity: 1; }
+.left-nav-open-close:hover { color: #e8587a; }
+/* 열린화면/즐겨찾기 탭 */
+.left-nav-section-tabs { display: flex; border-top: 2px solid #e8e8ee; background: #f5f5f8; flex-shrink: 0; }
+.left-nav-section-tab { flex: 1; padding: 8px 6px; font-size: 11px; font-weight: 600; color: #aaa; background: none; border: none; cursor: pointer; border-top: 2px solid transparent; margin-top: -2px; transition: color .12s, border-color .12s; white-space: nowrap; }
+.left-nav-section-tab.active { color: #e8587a; border-top-color: #e8587a; background: #fff; }
+.left-nav-open-empty { padding: 18px 14px; font-size: 11px; color: #ccc; text-align: center; }
 .user-name-label { font-size: 12px; color: #ccc; white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
 .user-avatar-btn { width: 30px; height: 30px; border-radius: 50%; background: #e8587a; color: #fff; border: 2px solid rgba(255,255,255,.3); cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color .15s; }
 .user-avatar-btn:hover { border-color: rgba(255,255,255,.7); }
