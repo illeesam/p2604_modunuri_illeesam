@@ -178,6 +178,21 @@
       { siteId: 17, siteCode: 'ST0017', siteType: '홈페이지',    siteName: 'CareMate(병원동행)',          domain: 'caremate.demo.kr',     logoUrl: '/assets/img/caremate.png',         description: '병원동행 & 돌봄 서비스 소개형 홈페이지 데모',             email: 'info@caremate.demo.kr',   phone: '02-0000-1701', address: '서울 서초구 서초대로 396 CareMate',           businessNo: '111-87-17001', ceo: '케어대표', status: '운영중', regDate: '2026-03-10' },
     ],
 
+    brands: [
+      { brandId:  1, brandCode: 'NIKE',       brandName: '나이키',     brandEnName: 'Nike',        logoUrl: '', sortOrd:  1, useYn: 'Y', remark: '글로벌 스포츠 브랜드',  regDate: '2026-01-01' },
+      { brandId:  2, brandCode: 'ADIDAS',     brandName: '아디다스',   brandEnName: 'Adidas',      logoUrl: '', sortOrd:  2, useYn: 'Y', remark: '독일 스포츠 브랜드',    regDate: '2026-01-01' },
+      { brandId:  3, brandCode: 'PUMA',       brandName: '푸마',       brandEnName: 'Puma',        logoUrl: '', sortOrd:  3, useYn: 'Y', remark: '독일 스포츠 브랜드',    regDate: '2026-01-01' },
+      { brandId:  4, brandCode: 'NB',         brandName: '뉴발란스',   brandEnName: 'New Balance', logoUrl: '', sortOrd:  4, useYn: 'Y', remark: '미국 스포츠 브랜드',    regDate: '2026-01-01' },
+      { brandId:  5, brandCode: 'UNIQLO',     brandName: '유니클로',   brandEnName: 'Uniqlo',      logoUrl: '', sortOrd:  5, useYn: 'Y', remark: '일본 캐주얼 브랜드',    regDate: '2026-01-01' },
+      { brandId:  6, brandCode: 'ZARA',       brandName: '자라',       brandEnName: 'Zara',        logoUrl: '', sortOrd:  6, useYn: 'Y', remark: '스페인 패스트패션',     regDate: '2026-01-01' },
+      { brandId:  7, brandCode: 'HM',         brandName: 'H&M',        brandEnName: 'H&M',         logoUrl: '', sortOrd:  7, useYn: 'Y', remark: '스웨덴 패스트패션',     regDate: '2026-01-01' },
+      { brandId:  8, brandCode: 'LEVIS',      brandName: '리바이스',   brandEnName: "Levi's",      logoUrl: '', sortOrd:  8, useYn: 'Y', remark: '미국 데님 브랜드',      regDate: '2026-01-01' },
+      { brandId:  9, brandCode: 'MLB',        brandName: 'MLB',        brandEnName: 'MLB',         logoUrl: '', sortOrd:  9, useYn: 'Y', remark: '야구 라이선스 패션',    regDate: '2026-01-01' },
+      { brandId: 10, brandCode: 'DESCENTE',   brandName: '데상트',     brandEnName: 'Descente',    logoUrl: '', sortOrd: 10, useYn: 'Y', remark: '일본 스포츠 브랜드',    regDate: '2026-01-01' },
+      { brandId: 11, brandCode: 'SHOPJOY_OWN',brandName: 'ShopJoy OB', brandEnName: 'ShopJoy OB',  logoUrl: '', sortOrd: 11, useYn: 'Y', remark: '자체 브랜드(PB상품)',   regDate: '2026-01-01' },
+      { brandId: 12, brandCode: 'LEGACY',     brandName: '레거시브랜드',brandEnName: 'Legacy',      logoUrl: '', sortOrd: 12, useYn: 'N', remark: '미사용 처리된 브랜드', regDate: '2026-01-01' },
+    ],
+
     codes: [
       /* ── 회원 등급 ── */
       { codeId:  1, codeGrp: 'MEMBER_GRADE',    codeLabel: 'VIP',       codeValue: 'VIP',            sortOrd: 1, useYn: 'Y', remark: 'VIP 회원 등급', regDate: '2026-01-01' },
@@ -463,7 +478,7 @@
       { logId:  5, batchId: 2, batchName: '쿠폰 만료 처리',       batchCode: 'COUPON_EXPIRE',       runAt: '2026-04-10 01:00:03', duration:  3, runStatus: '성공',   message: '만료 쿠폰 처리 7건' },
       { logId:  6, batchId: 8, batchName: '배송조회 상태 동기화', batchCode: 'DLIV_STATUS_SYNC',    runAt: '2026-04-10 08:00:06', duration:  6, runStatus: '성공',   message: '배송 상태 업데이트 34건' },
       { logId:  7, batchId: 8, batchName: '배송조회 상태 동기화', batchCode: 'DLIV_STATUS_SYNC',    runAt: '2026-04-10 06:00:04', duration:  4, runStatus: '성공',   message: '배송 상태 업데이트 28건' },
-      { logId:  8, batchId: 8, batchName: '배송조회 상태 동기화', batchCode: 'DLIV_STATUS_SYNC',    runAt: '2026-04-10 04:00:09', duration:  9, runStatus: '실패',   message: '[ERROR] 택배사 API 응답 시간 초과 (timeout: 30s)' },
+      { logId:  8, batchId: 8, batchName: '배송조회 상태 동기화', batchCode: 'DLIV_STATUS_SYNC',    runAt: '2026-04-10 04:00:09', duration:  9, runStatus: '실패',   message: '[ERROR] 택배사 API 응답 시간 초과 (timeout: 30s)', detail: 'Error: ConnectTimeoutException - Remote host 210.123.45.6:8443 did not respond within 30000ms\n  at HttpClient.request (dliv-api.js:142)\n  at DlivSyncBatch.run (DlivSyncBatch.java:87)\nCause: 처리 대상 38건 중 0건 완료. 재시도 예약됨.' },
       { logId:  9, batchId: 8, batchName: '배송조회 상태 동기화', batchCode: 'DLIV_STATUS_SYNC',    runAt: '2026-04-10 02:00:05', duration:  5, runStatus: '성공',   message: '배송 상태 업데이트 21건' },
       { logId: 10, batchId: 3, batchName: '이벤트 상태 동기화',   batchCode: 'EVENT_STATUS_SYNC',   runAt: '2026-04-09 00:00:06', duration:  6, runStatus: '성공',   message: '이벤트 상태 2건 동기화 완료' },
       { logId: 11, batchId: 1, batchName: '주문 자동 완료 처리',  batchCode: 'ORDER_AUTO_COMPLETE', runAt: '2026-04-09 02:00:04', duration:  4, runStatus: '성공',   message: '주문 자동완료 처리 9건' },
@@ -474,7 +489,7 @@
       { logId: 16, batchId: 6, batchName: '회원 등급 재산정',     batchCode: 'MEMBER_GRADE_CALC',   runAt: '2026-04-01 04:00:15', duration: 35, runStatus: '성공',   message: '회원 등급 재산정 완료 (VIP +3, 우수 -2)' },
       { logId: 17, batchId: 7, batchName: '캐시 자동 소멸',       batchCode: 'CACHE_EXPIRE',        runAt: '2026-04-01 05:00:04', duration:  4, runStatus: '성공',   message: '미사용 캐시 소멸 처리 24건 (₩48,000)' },
       { logId: 18, batchId: 1, batchName: '주문 자동 완료 처리',  batchCode: 'ORDER_AUTO_COMPLETE', runAt: '2026-04-01 02:00:11', duration: 11, runStatus: '성공',   message: '주문 자동완료 처리 21건' },
-      { logId: 19, batchId: 8, batchName: '배송조회 상태 동기화', batchCode: 'DLIV_STATUS_SYNC',    runAt: '2026-03-31 22:00:08', duration:  8, runStatus: '실패',   message: '[ERROR] 내부 DB 연결 실패 (retry: 3/3)' },
+      { logId: 19, batchId: 8, batchName: '배송조회 상태 동기화', batchCode: 'DLIV_STATUS_SYNC',    runAt: '2026-03-31 22:00:08', duration:  8, runStatus: '실패',   message: '[ERROR] 내부 DB 연결 실패 (retry: 3/3)', detail: 'Error: DataSourceException - Unable to acquire JDBC Connection\n  at HikariPool.getConnection (HikariPool.java:213)\n  at DlivSyncBatch.run (DlivSyncBatch.java:54)\nRetry: 3회 시도 후 최종 실패. DBA 확인 필요.\n발생시각: 2026-03-31 22:00:08 / 복구시각: 2026-03-31 22:17:44' },
       { logId: 20, batchId: 9, batchName: '통계 데이터 집계',     batchCode: 'STATS_AGGREGATION',   runAt: '2026-03-31 00:05:18', duration: 318, runStatus: '성공',  message: '일별 통계 집계 완료 (조회 163건)' },
     ],
 

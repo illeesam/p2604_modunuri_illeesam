@@ -20,7 +20,7 @@
     promotion: [{ id: 'ecCouponMng',   label: '쿠폰관리' }, { id: 'ecCacheMng', label: '캐쉬관리' }, { id: 'ecEventMng', label: '이벤트관리' }],
     display:   [{ id: 'ecDispMng',     label: '전시관리' }],
     customer:  [{ id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
-    system:    [{ id: 'sySiteMng', label: '사이트관리' }, { id: 'syCodeMng', label: '공통코드관리' },
+    system:    [{ id: 'sySiteMng', label: '사이트관리' }, { id: 'syCodeMng', label: '공통코드관리' }, { id: 'syBrandMng', label: '브랜드관리' },
                 { id: 'syAttachMng', label: '첨부관리' }, { id: 'syTemplateMng', label: '템플릿관리' },
                 { id: 'syVendorMng', label: '업체정보' }, { id: 'syUserMng', label: '사용자관리' },
                 { id: 'syBatchMng', label: '배치스케즐관리' },
@@ -520,6 +520,7 @@
         <site-dtl    v-else-if="page==='sySiteDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <code-mng    v-else-if="page==='syCodeMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <code-dtl    v-else-if="page==='syCodeDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
+        <brand-mng   v-else-if="page==='syBrandMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
@@ -864,6 +865,7 @@
   .component('SiteMng',    window.SiteMng)
   .component('SiteDtl',    window.SiteDtl)
   .component('CodeMng',    window.CodeMng)
+  .component('BrandMng',   window.BrandMng)
   .component('CodeDtl',    window.CodeDtl)
   .component('AttachMng',  window.AttachMng)
   .component('TemplateMng',window.TemplateMng)
@@ -876,6 +878,7 @@
   .component('UserDtl',    window.UserDtl)
   .component('BatchMng',   window.BatchMng)
   .component('BatchDtl',   window.BatchDtl)
+  .component('BatchHist',  window.BatchHist)
   .component('DeptMng',    window.DeptMng)
   .component('MenuMng',    window.MenuMng)
   .component('RoleMng',    window.RoleMng)
@@ -900,7 +903,8 @@
   .component('AdminUserSelectModal', window.AdminUserSelectModal)
   .component('MemberSelectModal',    window.MemberSelectModal)
   .component('OrderSelectModal',     window.OrderSelectModal)
-  .component('DispWidget',  window.DispWidget  || { template: '<div/>' })
-  .component('DispPanel',   window.DispPanel   || { template: '<div/>' })
+  .component('DispWidget',       window.DispWidget       || { template: '<div/>' })
+  .component('DispPanel',        window.DispPanel        || { template: '<div/>' })
+  .component('DispPreviewModal', window.DispPreviewModal || { template: '<div/>' })
   .mount('#app');
 })();

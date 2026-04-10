@@ -1476,3 +1476,116 @@ window.CategoryTreeModal = {
   </div>
 </div>`,
 };
+
+/* ── 전시 위젯 미리보기 모달 ─────────────────────────────────
+   Props:
+     show       Boolean   표시 여부
+     mode       String    'all' | 'single'
+                          all    → area 전체 위젯 (DispPanel)
+                          single → 현재 form 단일 위젯 (DispWidget)
+     tabLabel   String    탭 이름 (모달 제목용)
+     area       String    mode=all 시 사용할 영역코드
+     widgets    Array     mode=all 시 adminData.displays 배열
+     widget     Object    mode=single 시 미리볼 위젯 데이터 (form 스냅샷)
+   Emits: close
+   ─────────────────────────────────────────────────────────── */
+window.DispPreviewModal = {
+  name: 'DispPreviewModal',
+  props: {
+    show:     { type: Boolean, default: false },
+    mode:     { type: String,  default: 'single' },   /* 'all' | 'single' */
+    tabLabel: { type: String,  default: '미리보기' },
+    area:     { type: String,  default: '' },
+    widgets:  { type: Array,   default: () => [] },
+    widget:   { type: Object,  default: () => ({}) },
+  },
+  emits: ['close'],
+  setup(props) {
+    const { computed } = Vue;
+
+    /* mode=all: 해당 area의 활성 위젯 목록 */
+    const areaWidgets = computed(() =>
+      props.widgets
+        .filter(w => w.area === props.area && w.status === '활성')
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    );
+
+    /* mode=single: form 스냅샷에 status='활성' 강제 적용하여 렌더 */
+    const previewWidget = computed(() => ({ ...props.widget, status: '활성' }));
+
+    const WIDGET_LABEL = {
+      image_banner: '이미지 배너', product_slider: '상품 슬라이더', product: '상품',
+      chart_bar: '차트(Bar)', chart_line: '차트(Line)', chart_pie: '차트(Pie)',
+      text_banner: '텍스트 배너', info_card: '정보 카드', popup: '팝업',
+      file: '파일', coupon: '쿠폰', html_editor: 'HTML 에디터',
+      event_banner: '이벤트', cache_banner: '캐쉬', widget_embed: '위젯 임베드',
+    };
+    const widgetLabel = computed(() => WIDGET_LABEL[props.widget?.widgetType] || props.widget?.widgetType || '');
+
+    return { areaWidgets, previewWidget, widgetLabel };
+  },
+  template: /* html */`
+<div v-if="show"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;"
+  @click.self="$emit('close')">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.28);overflow:hidden;"
+    @click.stop>
+
+    <!-- 헤더 -->
+    <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fafafa;">
+      <div>
+        <span style="font-size:14px;font-weight:700;color:#333;">👁 미리보기</span>
+        <span style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:600;">{{ tabLabel }}</span>
+        <span v-if="mode==='single' && widgetLabel" style="margin-left:6px;font-size:11px;color:#aaa;">({{ widgetLabel }})</span>
+        <span v-if="mode==='all' && area" style="margin-left:6px;font-size:11px;color:#aaa;">영역: {{ area }}</span>
+      </div>
+      <button @click="$emit('close')"
+        style="background:none;border:none;cursor:pointer;font-size:18px;color:#aaa;line-height:1;padding:2px 6px;">✕</button>
+    </div>
+
+    <!-- 콘텐츠 -->
+    <div style="flex:1;overflow-y:auto;padding:20px;">
+
+      <!-- mode=all: 해당 area 전체 위젯 -->
+      <template v-if="mode==='all'">
+        <div v-if="areaWidgets.length===0"
+          style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
+          <div style="font-size:32px;margin-bottom:8px;">📭</div>
+          [{{ area }}] 영역에 활성 위젯이 없습니다.
+        </div>
+        <div v-else style="display:flex;flex-direction:column;gap:12px;">
+          <div v-for="w in areaWidgets" :key="w.dispId">
+            <div style="font-size:10px;color:#bbb;margin-bottom:4px;font-family:monospace;">
+              #{{ w.dispId }} {{ w.name }} · 순서{{ w.sortOrder }}
+            </div>
+            <disp-widget :widget="w" />
+          </div>
+        </div>
+      </template>
+
+      <!-- mode=single: 현재 form 단일 위젯 -->
+      <template v-else>
+        <div style="font-size:10px;color:#bbb;margin-bottom:8px;font-family:monospace;">
+          현재 입력값 기준 실시간 미리보기
+        </div>
+        <!-- widgetType 없으면 DispWidget 렌더 금지 (widgetType.startsWith 오류 방지) -->
+        <div v-if="previewWidget.widgetType"
+          style="border:1px dashed #e0e0e0;border-radius:8px;padding:16px;background:#fafbff;">
+          <disp-widget :widget="previewWidget" />
+        </div>
+        <div v-else
+          style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
+          <div style="font-size:28px;margin-bottom:8px;">🎨</div>
+          행(1~5행)에서 위젯 유형을 선택하면<br>미리보기가 표시됩니다.
+        </div>
+      </template>
+
+    </div>
+
+    <!-- 푸터 -->
+    <div style="padding:10px 18px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="$emit('close')">닫기</button>
+    </div>
+  </div>
+</div>`,
+};
