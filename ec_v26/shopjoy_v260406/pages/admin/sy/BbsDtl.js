@@ -5,6 +5,7 @@ window.BbsDtl = {
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
 
     /* ── 선택된 게시판 정보 ── */
     const selectedBbm = ref(null);
@@ -104,13 +105,19 @@ window.BbsDtl = {
 
     return {
       isNew, form, selectedBbm, contentType, allowAttach, attachMaxCount,
-      showBbmModal, showBbmDetail, onBbmSelect, save,
+      showBbmModal, showBbmDetail, onBbmSelect, save, siteName,
     };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '게시글 등록' : '게시글 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
 
     <!-- 게시판 선택 -->
     <div class="form-group">

@@ -4,6 +4,7 @@ window.AlarmMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchKw = ref(''); const searchType = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -54,7 +55,7 @@ window.AlarmMng = {
       if (selectedId.value === a.alarmId) selectedId.value = null;
       props.showToast('삭제되었습니다.');
     };
-    return { searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, targetBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { siteName, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, targetBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -79,9 +80,9 @@ window.AlarmMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>유형</th><th>제목</th><th>메시지</th><th>대상</th><th>발송일</th><th>상태</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th>ID</th><th>유형</th><th>제목</th><th>메시지</th><th>대상</th><th>발송일</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="a in pageList" :key="a.alarmId" :style="selectedId===a.alarmId?'background:#fff8f9;':''">
           <td>{{ a.alarmId }}</td>
           <td><span class="badge" :class="typeBadge(a.alarmType)">{{ a.alarmType }}</span></td>
@@ -90,6 +91,7 @@ window.AlarmMng = {
           <td><span class="badge" :class="targetBadge(a.targetType)">{{ a.targetType }}</span></td>
           <td>{{ a.sendDate || '-' }}</td>
           <td><span class="badge" :class="statusBadge(a.status)">{{ a.status }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td>{{ a.regDate }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(a.alarmId)">수정</button>

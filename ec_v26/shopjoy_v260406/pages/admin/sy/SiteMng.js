@@ -11,7 +11,6 @@ window.SiteMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchType   = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
@@ -86,7 +85,7 @@ window.SiteMng = {
     };
 
     return {
-      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName,
+      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
       searchKw, searchType, searchStatus, typeOptions,
       pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums,
       onSearch, onReset, setPage, onSizeChange,
@@ -121,7 +120,7 @@ window.SiteMng = {
     </div>
     <table class="admin-table">
       <thead><tr>
-        <th>사이트코드</th><th>유형</th><th>사이트명</th><th>도메인</th><th>대표이메일</th><th>대표전화</th><th>대표자</th><th>등록일</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th>사이트코드</th><th>유형</th><th>사이트명</th><th>도메인</th><th>대표이메일</th><th>대표전화</th><th>대표자</th><th>등록일</th><th>상태</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
@@ -140,7 +139,6 @@ window.SiteMng = {
           <td style="font-size:12px;">{{ s.ceo }}</td>
           <td style="font-size:12px;">{{ s.regDate }}</td>
           <td><span class="badge" :class="statusBadge(s.status)">{{ s.status }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(s.siteId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(s)">삭제</button>

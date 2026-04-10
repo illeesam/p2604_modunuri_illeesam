@@ -5,6 +5,7 @@ window.VendorDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
       vendorType: '판매업체', vendorName: '', ceo: '', bizNo: '', phone: '', email: '',
       address: '', contractDate: '', status: '활성', memo: '',
@@ -32,12 +33,18 @@ window.VendorDtl = {
       props.navigate('syVendorMng');
     };
 
-    return { isNew, form, save };
+    return { isNew, form, save, siteName };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '업체 등록' : '업체 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">업체유형 <span class="req">*</span></label>

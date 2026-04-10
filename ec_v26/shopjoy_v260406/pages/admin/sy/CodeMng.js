@@ -25,6 +25,11 @@ window.CodeMng = {
     let   _tempId    = -1;
     const focusedIdx = ref(null);
 
+    /* ── 페이징 ── */
+    const pager      = reactive({ page: 1, size: 20 });
+    const PAGE_SIZES = [10, 20, 50];
+    const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
+
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark'];
 
     const makeRow = (c) => ({
@@ -36,7 +41,7 @@ window.CodeMng = {
     });
 
     const loadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null;
+      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       props.adminData.codes
         .filter(c => {
           const kw = applied.kw.trim().toLowerCase();
@@ -89,6 +94,7 @@ window.CodeMng = {
       const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
       focusedIdx.value = insertAt;
+      pager.page = Math.ceil((insertAt + 1) / pager.size);
     };
 
     /* ── 행 단건 삭제 버튼: N/U 에 표시 (I는 표시 안함) ── */
@@ -218,12 +224,21 @@ window.CodeMng = {
       gridRows.forEach(r => { r._row_check = checkAll.value; });
     };
 
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
+    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+
     return {
+      siteName,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
       searchKw, searchGrp, searchUseYn, grpOptions, applied,
-      gridRows, total, focusedIdx, setFocused, onSearch, onReset, onCellChange,
+      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+      focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
       checkAll, toggleCheckAll, statusClass,
@@ -284,20 +299,21 @@ window.CodeMng = {
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
           <th>비고</th>
+          <th style="width:80px;">사이트명</th>
           <th class="col-act-cancel"></th>
           <th class="col-act-delete"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in gridRows" :key="row.codeId"
-          class="crud-row" :class="['status-'+row._row_status, focusedIdx===idx ? 'focused' : '']"
+        <tr v-for="(row, idx) in pagedRows" :key="row.codeId"
+          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
-          @click="setFocused(idx)"
-          @dragstart="onDragStart(idx)"
-          @dragover="onDragOver($event, idx)"
+          @click="setFocused(getRealIdx(idx))"
+          @dragstart="onDragStart(getRealIdx(idx))"
+          @dragover="onDragOver($event, getRealIdx(idx))"
           @dragend="onDragEnd">
 
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
@@ -318,17 +334,34 @@ window.CodeMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+              class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
           </td>
           <td class="col-act-delete-val">
             <button v-if="['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+              class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <div class="pagination">
+      <div></div>
+      <div class="pager">
+        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+      </div>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        </select>
+      </div>
+    </div>
   </div>
 </div>
 `,

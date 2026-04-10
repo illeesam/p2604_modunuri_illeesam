@@ -24,6 +24,9 @@
                 { id: 'syAttachMng', label: '첨부관리' }, { id: 'syTemplateMng', label: '템플릿관리' },
                 { id: 'syVendorMng', label: '업체정보' }, { id: 'syUserMng', label: '사용자관리' },
                 { id: 'syBatchMng', label: '배치스케즐관리' },
+                { id: 'syDeptMng', label: '부서관리' },
+                { id: 'syMenuMng', label: '메뉴관리' },
+                { id: 'syRoleMng', label: '권한관리' },
                 { id: 'ecNoticeMng', label: '공지사항관리' }, { id: 'syAlarmMng', label: '알림관리' },
                 { id: 'syBbmMng', label: '게시판관리' }, { id: 'syBbsMng', label: '게시글관리' }],
   };
@@ -511,7 +514,7 @@
         <code-dtl    v-else-if="page==='syCodeDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
         <attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
-        <template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :edit-id="editId" />
         <vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
         <category-mng v-else-if="page==='ecCategoryMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
@@ -520,6 +523,9 @@
         <user-dtl    v-else-if="page==='syUserDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
         <batch-mng   v-else-if="page==='syBatchMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <batch-dtl   v-else-if="page==='syBatchDtl'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :edit-id="editId" />
+        <dept-mng    v-else-if="page==='syDeptMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <menu-mng    v-else-if="page==='syMenuMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
+        <role-mng    v-else-if="page==='syRoleMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <notice-mng  v-else-if="page==='ecNoticeMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <alarm-mng   v-else-if="page==='syAlarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <bbm-mng     v-else-if="page==='syBbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
@@ -841,6 +847,9 @@
   .component('UserDtl',    window.UserDtl)
   .component('BatchMng',   window.BatchMng)
   .component('BatchDtl',   window.BatchDtl)
+  .component('DeptMng',    window.DeptMng)
+  .component('MenuMng',    window.MenuMng)
+  .component('RoleMng',    window.RoleMng)
   .component('ComnAttachGrp', window.ComnAttachGrp)
   .component('NoticeMng',  window.NoticeMng)
   .component('NoticeDtl',  window.NoticeDtl)
@@ -851,6 +860,11 @@
   .component('BbsMng',     window.BbsMng)
   .component('BbsDtl',     window.BbsDtl)
   .component('BbmSelectModal', window.BbmSelectModal)
+  .component('DeptTreeModal',  window.DeptTreeModal)
+  .component('MenuTreeModal',  window.MenuTreeModal)
+  .component('RoleTreeModal',  window.RoleTreeModal)
+  .component('TemplatePreviewModal', window.TemplatePreviewModal)
+  .component('TemplateSendModal',    window.TemplateSendModal)
   .component('SiteSelectModal',      window.SiteSelectModal)
   .component('VendorSelectModal',    window.VendorSelectModal)
   .component('AdminUserSelectModal', window.AdminUserSelectModal)

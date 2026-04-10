@@ -5,6 +5,7 @@ window.AlarmDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
       title: '', alarmType: '푸시', targetType: '전체', targetId: '',
       message: '', sendDate: '', status: '임시',
@@ -35,12 +36,18 @@ window.AlarmDtl = {
       props.navigate('syAlarmMng');
     };
 
-    return { isNew, form, save };
+    return { isNew, form, save, siteName };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '알림 등록' : '알림 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span class="req">*</span></label>

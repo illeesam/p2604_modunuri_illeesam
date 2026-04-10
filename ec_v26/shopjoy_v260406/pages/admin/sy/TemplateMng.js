@@ -24,7 +24,17 @@ window.TemplateMng = {
     const inlineNavigate = (pg) => { if (pg === 'syTemplateMng') { selectedId.value = null; } };
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
 
-    const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿'];
+    /* 미리보기 모달 */
+    const previewModal = Vue.reactive({ show: false, template: null });
+    const showPreview = (t) => { previewModal.template = t; previewModal.show = true; };
+    const closePreview = () => { previewModal.show = false; };
+
+    /* 발송하기 모달 */
+    const sendModal = Vue.reactive({ show: false, template: null });
+    const openSend  = (t) => { sendModal.template = t; sendModal.show = true; };
+    const closeSend = () => { sendModal.show = false; };
+
+    const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
 
     const applied = Vue.reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '' });
 
@@ -50,6 +60,7 @@ window.TemplateMng = {
     const typeBadge = t => ({
       '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
       'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
+      '시스템알림': 'badge-red', '회원알림': 'badge-teal',
     }[t] || 'badge-gray');
     const useYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
@@ -83,7 +94,7 @@ window.TemplateMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, useYnBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, useYnBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, previewModal, showPreview, closePreview, sendModal, openSend, closeSend };
   },
   template: /* html */`
 <div>
@@ -112,19 +123,22 @@ window.TemplateMng = {
     </div>
     <table class="admin-table">
       <thead><tr>
-        <th>ID</th><th>템플릿유형</th><th>템플릿명</th><th>제목(Subject)</th><th>사용여부</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th>ID</th><th>템플릿유형</th><th>템플릿코드</th><th>템플릿명</th><th>제목(Subject)</th><th>사용여부</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="t in pageList" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
           <td>{{ t.templateId }}</td>
           <td><span class="badge" :class="typeBadge(t.templateType)">{{ t.templateType }}</span></td>
+          <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ t.templateCode || '-' }}</code></td>
           <td><span class="title-link" @click="loadDetail(t.templateId)" :style="selectedId===t.templateId?'color:#e8587a;font-weight:700;':''">{{ t.templateName }}<span v-if="selectedId===t.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;color:#555;">{{ t.subject || '-' }}</td>
           <td><span class="badge" :class="useYnBadge(t.useYn)">{{ t.useYn === 'Y' ? '사용' : '미사용' }}</span></td>
           <td>{{ t.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
+            <button class="btn btn-secondary btn-sm" @click="showPreview(t)">미리보기</button>
+            <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="openSend(t)">발송</button>
             <button class="btn btn-blue btn-sm" @click="loadDetail(t.templateId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(t)">삭제</button>
           </div></td>
@@ -151,8 +165,20 @@ window.TemplateMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <template-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
+    <template-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :edit-id="detailEditId" />
   </div>
+
+  <!-- 미리보기 모달 -->
+  <template-preview-modal v-if="previewModal.show"
+    :tmpl="previewModal.template"
+    :sample-params="previewModal.template?.sampleParams || '{}'"
+    @close="closePreview" />
+
+  <!-- 발송하기 모달 -->
+  <template-send-modal v-if="sendModal.show"
+    :tmpl="sendModal.template" :admin-data="adminData"
+    :show-toast="showToast" :show-confirm="showConfirm"
+    @close="closeSend" />
 </div>
 `
 };

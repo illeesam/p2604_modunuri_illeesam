@@ -191,6 +191,7 @@ window.AttachMng = {
           <div style="margin-top:4px;">
             <span class="badge" :class="statusBadge(g.status)" style="font-size:10px;">{{ g.status }}</span>
             <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.allowExt }}</span>
+            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ siteName }}</span>
           </div>
         </div>
         <div v-if="!adminData.attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">그룹이 없습니다.</div>

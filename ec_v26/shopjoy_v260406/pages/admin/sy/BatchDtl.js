@@ -5,6 +5,7 @@ window.BatchDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
       batchName: '', batchCode: '', description: '', cron: '0 0 * * *', status: '활성',
     });
@@ -43,12 +44,18 @@ window.BatchDtl = {
       props.navigate('syBatchMng');
     };
 
-    return { isNew, form, save, CRON_PRESETS };
+    return { isNew, form, save, CRON_PRESETS, siteName };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '배치 등록' : '배치 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">배치명 <span class="req">*</span></label>

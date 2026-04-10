@@ -11,6 +11,9 @@ window.OrderDetailModal = {
   name: 'OrderDetailModal',
   props: ['show', 'order'],
   emits: ['close'],
+  computed: {
+    siteName() { return window.adminCommonFilter?.site?.siteName || 'ShopJoy'; },
+  },
   methods: {
     statusColor(s) {
       return ({
@@ -31,7 +34,7 @@ window.OrderDetailModal = {
     <!-- 헤더 -->
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div>
-        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">📦 주문 상세</div>
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">📦 주문 상세<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ order && order.orderId }}</div>
       </div>
       <button type="button" @click="$emit('close')" aria-label="닫기"
@@ -241,18 +244,19 @@ window.SiteSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const kw = ref('');
     const filtered = computed(() => props.adminData.sites.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return s.siteName.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k);
     }));
-    return { kw, filtered };
+    return { siteName, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">사이트 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
@@ -273,6 +277,7 @@ window.VendorSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const kw = ref('');
     const filtered = computed(() => props.adminData.vendors.filter(v => {
       if (v.vendorType !== '판매업체') return false;
@@ -280,12 +285,12 @@ window.VendorSelectModal = {
       const k = kw.value.toLowerCase();
       return v.vendorName.toLowerCase().includes(k) || v.bizNo.includes(k);
     }));
-    return { kw, filtered };
+    return { siteName, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">판매업체 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
@@ -299,34 +304,214 @@ window.VendorSelectModal = {
 </div>`,
 };
 
-/* ── 판매사용자 선택 모달 ── */
+/* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
 window.AdminUserSelectModal = {
   name: 'AdminUserSelectModal',
   props: ['adminData'],
   emits: ['select', 'close'],
-  setup(props) {
-    const { ref, computed } = Vue;
-    const kw = ref('');
-    const filtered = computed(() => props.adminData.adminUsers.filter(u => {
-      if (!kw.value) return true;
-      const k = kw.value.toLowerCase();
-      return u.name.toLowerCase().includes(k) || u.loginId.toLowerCase().includes(k) || u.email.toLowerCase().includes(k);
-    }));
-    return { kw, filtered };
+  setup(props, { emit }) {
+    const { ref, computed, reactive } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+
+    /* ── 부서 트리 (depth 1부터 시작, root는 별도 렌더) ── */
+    const selectedDeptId = ref(null);
+    const deptKw = ref('');
+    const buildDeptTree = (items, parentId, depth) =>
+      items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(d => ({ ...d, _depth: depth, _kids: buildDeptTree(items, d.deptId, depth + 1) }));
+    const flattenDept = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); });
+      return result;
+    };
+    const flatDeptTree = computed(() => {
+      const kw = deptKw.value.trim().toLowerCase();
+      const list = kw
+        ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptName.toLowerCase().includes(kw))
+        : props.adminData.depts;
+      return flattenDept(buildDeptTree(list, null, 1)); /* depth 1부터 = 2레벨 */
+    });
+
+    const getDescDeptNames = (deptId) => {
+      const names = new Set();
+      const queue = [deptId];
+      while (queue.length) {
+        const id = queue.shift();
+        const d = props.adminData.depts.find(x => x.deptId === id);
+        if (d) { names.add(d.deptName); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+      }
+      return names;
+    };
+
+    /* ── 사용자 ── */
+    const userKw = ref('');
+    const selectedIds = reactive(new Set());
+    const totalUsers = computed(() => props.adminData.adminUsers.length);
+
+    const filtered = computed(() => {
+      const k = userKw.value.trim().toLowerCase();
+      let list = props.adminData.adminUsers;
+      if (selectedDeptId.value !== null) {
+        const names = getDescDeptNames(selectedDeptId.value);
+        list = list.filter(u => names.has(u.dept));
+      }
+      if (k) list = list.filter(u =>
+        u.name.toLowerCase().includes(k) || u.loginId.toLowerCase().includes(k) || (u.email || '').toLowerCase().includes(k)
+      );
+      return list;
+    });
+
+    const isChecked = (u) => selectedIds.has(u.adminUserId);
+    const toggleUser = (u) => {
+      if (selectedIds.has(u.adminUserId)) selectedIds.delete(u.adminUserId);
+      else selectedIds.add(u.adminUserId);
+    };
+    const allChecked = computed(() => filtered.value.length > 0 && filtered.value.every(u => selectedIds.has(u.adminUserId)));
+    const toggleAll = () => {
+      if (allChecked.value) filtered.value.forEach(u => selectedIds.delete(u.adminUserId));
+      else filtered.value.forEach(u => selectedIds.add(u.adminUserId));
+    };
+    const selectedCount = computed(() => selectedIds.size);
+    const confirm = () => {
+      const selected = props.adminData.adminUsers.filter(u => selectedIds.has(u.adminUserId));
+      emit('select', selected);
+    };
+
+    return { siteName, selectedDeptId, deptKw, flatDeptTree, userKw, filtered, totalUsers, isChecked, toggleUser, allChecked, toggleAll, selectedCount, confirm };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
-  <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">판매사용자 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="kw" placeholder="이름 / 로그인ID / 이메일 검색" style="margin-bottom:12px;" />
-    <div class="sel-modal-list">
-      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="u in filtered" :key="u.adminUserId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ u.name }} <span style="font-size:11px;color:#888;">({{ u.loginId }})</span></div>
-        <span class="sel-modal-item-id">{{ u.adminUserId }}</span>
-        <button class="sel-modal-item-btn" @click="$emit('select', u)">선택</button>
+  <div style="background:#fff;border-radius:14px;width:calc(100vw - 40px);max-width:780px;height:82vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.26);overflow:hidden;" @click.stop>
+
+    <!-- ── 헤더 ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:15px;font-weight:800;color:#1a1a2e;">사용자 선택</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">{{ siteName }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span v-if="selectedCount" style="font-size:12px;color:#e8587a;font-weight:700;background:#fff0f4;padding:3px 10px;border-radius:20px;">{{ selectedCount }}명 선택됨</span>
+        <span style="cursor:pointer;font-size:20px;color:#d1d5db;line-height:1;" @click="$emit('close')">✕</span>
       </div>
     </div>
+
+    <!-- ── 바디 ── -->
+    <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
+
+      <!-- 좌: 부서 트리 -->
+      <div style="width:216px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#f8f9fb;">
+        <!-- 부서 검색 -->
+        <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
+          <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
+          <div style="position:relative;">
+            <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">🔍</span>
+            <input v-model="deptKw" placeholder="부서 검색"
+              style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px 5px 24px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
+          </div>
+        </div>
+        <!-- 트리 목록 -->
+        <div style="flex:1;overflow-y:auto;padding:6px 6px;">
+          <!-- 루트: 전체 (1레벨) -->
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:all .12s;"
+            :style="selectedDeptId===null?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.25);':'background:transparent;'"
+            @click="selectedDeptId=null">
+            <span style="font-size:8px;font-weight:900;flex-shrink:0;line-height:1;"
+              :style="{ color: selectedDeptId===null?'#fff':'#e8587a' }">●</span>
+            <span style="font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+              :style="{ color: selectedDeptId===null?'#fff':'#374151' }">전체</span>
+            <span style="font-size:10px;font-weight:600;flex-shrink:0;"
+              :style="{ color: selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">{{ totalUsers }}</span>
+          </div>
+          <!-- 2레벨~: 실 데이터 -->
+          <div v-for="d in flatDeptTree" :key="d.deptId"
+            style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:all .12s;"
+            :style="selectedDeptId===d.deptId?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.2);':'background:transparent;'"
+            @click="selectedDeptId=d.deptId">
+            <span style="flex-shrink:0;font-weight:800;line-height:1;"
+              :style="{
+                marginLeft: ((d._depth-1)*13)+'px',
+                fontSize: d._depth===1?'10px':'8px',
+                color: selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)]
+              }">{{ ['●','◦','·'][Math.min(d._depth-1,2)] }}</span>
+            <span style="font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+              :style="{ fontWeight: d._depth===1?'600':'400', color: selectedDeptId===d.deptId?'#fff':'#374151' }">
+              {{ d.deptName }}
+            </span>
+          </div>
+          <div v-if="flatDeptTree.length===0" style="padding:20px 0;text-align:center;font-size:12px;color:#bbb;">없음</div>
+        </div>
+      </div>
+
+      <!-- 우: 사용자 목록 -->
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
+        <!-- 검색 -->
+        <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+          <div style="position:relative;">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">🔍</span>
+            <input v-model="userKw" placeholder="이름 / 로그인ID / 이메일 검색"
+              style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;color:#374151;" />
+          </div>
+        </div>
+        <!-- 전체선택 바 -->
+        <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
+            <input type="checkbox" :checked="allChecked" @change="toggleAll" style="width:14px;height:14px;" />
+            전체선택
+          </label>
+          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
+            총 <b style="color:#374151;">{{ filtered.length }}</b>명
+          </span>
+        </div>
+        <!-- 카드 목록 -->
+        <div style="flex:1;overflow-y:auto;">
+          <div v-if="filtered.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
+            <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+            검색 결과가 없습니다.
+          </div>
+          <div v-for="u in filtered" :key="u.adminUserId"
+            style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
+            :style="isChecked(u)?'background:#fff5f7;':'' "
+            @click="toggleUser(u)">
+            <input type="checkbox" :checked="isChecked(u)" @click.stop="toggleUser(u)"
+              style="width:15px;height:15px;flex-shrink:0;accent-color:#e8587a;cursor:pointer;" />
+            <!-- 아바타 -->
+            <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
+              :style="isChecked(u)?'background:#e8587a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
+              {{ u.name.charAt(0) }}
+            </div>
+            <!-- 텍스트 -->
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
+                {{ u.name }}
+                <span style="font-size:11px;color:#9ca3af;font-weight:400;">{{ u.loginId }}</span>
+              </div>
+              <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">{{ u.dept || '-' }} · {{ u.role }}</div>
+            </div>
+            <!-- 상태 뱃지 -->
+            <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
+              :style="u.status==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;'">
+              {{ u.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 푸터 ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #f0f0f0;flex-shrink:0;background:#fff;">
+      <span style="font-size:12px;" :style="selectedCount?'color:#e8587a;font-weight:600;':'color:#bbb;'">
+        {{ selectedCount ? selectedCount+'명이 선택되었습니다.' : '목록에서 사용자를 선택하세요.' }}
+      </span>
+      <div style="display:flex;gap:8px;">
+        <button style="padding:8px 22px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;"
+          @click="$emit('close')">취소</button>
+        <button :disabled="!selectedCount"
+          style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
+          :style="selectedCount?'background:#e8587a;color:#fff;box-shadow:0 2px 8px rgba(232,88,122,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
+          @click="confirm">확인{{ selectedCount?' ('+selectedCount+'명)':'' }}</button>
+      </div>
+    </div>
+
   </div>
 </div>`,
 };
@@ -338,18 +523,19 @@ window.MemberSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const kw = ref('');
     const filtered = computed(() => props.adminData.members.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return m.name.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
     }));
-    return { kw, filtered };
+    return { siteName, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">회원 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
@@ -370,18 +556,19 @@ window.OrderSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const kw = ref('');
     const filtered = computed(() => props.adminData.orders.filter(o => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return o.orderId.toLowerCase().includes(k) || o.userName.toLowerCase().includes(k) || o.productName.toLowerCase().includes(k);
     }));
-    return { kw, filtered };
+    return { siteName, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">주문 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
@@ -425,15 +612,16 @@ window.BbmSelectModal = {
     });
     const setPage = n => { if (n >= 1 && n <= totalPages.value) page.value = n; };
 
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const typeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const scopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
 
-    return { kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge };
+    return { siteName, kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:560px;">
-    <div class="modal-header"><span class="modal-title">게시판 선택</span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ total }}건</div>
     <div class="sel-modal-list" style="min-height:200px;">
@@ -456,6 +644,739 @@ window.BbmSelectModal = {
       <button v-for="n in pageNums" :key="n" class="pager-btn" :class="{active:page===n}" @click="setPage(n)">{{ n }}</button>
       <button class="pager-btn" :disabled="page===totalPages" @click="setPage(page+1)">›</button>
       <button class="pager-btn" :disabled="page===totalPages" @click="setPage(totalPages)">»</button>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ── 템플릿 미리보기 모달 ── */
+window.TemplatePreviewModal = {
+  name: 'TemplatePreviewModal',
+  props: ['tmpl', 'sampleParams'],
+  emits: ['close'],
+  setup(props) {
+    const { computed } = Vue;
+
+    const params = computed(() => {
+      try { return JSON.parse(props.sampleParams || '{}'); }
+      catch { return {}; }
+    });
+
+    const isHtml = computed(() =>
+      ['메일템플릿', 'MMS템플릿'].includes(props.tmpl?.templateType)
+    );
+
+    /* 텍스트에 파라미터 치환 → HTML 반환 (미치환 변수는 빨간색 표시) */
+    const applyAndRender = (text) => {
+      if (!text) return '';
+      let base = text;
+      if (!isHtml.value) {
+        /* 텍스트 계열: HTML 이스케이프 후 파라미터 치환 */
+        base = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+      return base.replace(/\{\{(\w+)\}\}/g, (_, k) =>
+        params.value[k] !== undefined
+          ? `<span style="background:#fff3cd;color:#856404;border-radius:3px;padding:0 2px;font-weight:600;">${String(params.value[k])}</span>`
+          : `<span style="color:#dc3545;font-weight:600;">{{${k}}}</span>`
+      );
+    };
+
+    const renderedSubject = computed(() => applyAndRender(props.tmpl?.subject || ''));
+    const renderedContent = computed(() => applyAndRender(props.tmpl?.content || ''));
+
+    const typeBadge = computed(() => ({
+      '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
+      'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
+    }[props.tmpl?.templateType] || 'badge-gray'));
+
+    const paramList = computed(() => Object.entries(params.value).map(([k, v]) => ({ k, v })));
+
+    /* setup에서 tmpl을 반환해 템플릿에서 직접 접근 가능하게 */
+    const fmtKey = k => '{{' + k + '}}';
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+
+    return { siteName, tmpl: computed(() => props.tmpl), renderedSubject, renderedContent, isHtml, typeBadge, paramList, fmtKey };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:700px;">
+    <div class="modal-header">
+      <span class="modal-title">📄 템플릿 미리보기<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span>
+      <span class="modal-close" @click="$emit('close')">✕</span>
+    </div>
+
+    <!-- 템플릿 기본정보 -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:#f8f9fa;border-radius:8px;">
+      <span class="badge" :class="typeBadge">{{ tmpl?.templateType }}</span>
+      <span style="font-weight:700;font-size:14px;color:#1a1a2e;">{{ tmpl?.templateName }}</span>
+    </div>
+
+    <!-- 파라미터 샘플 뱃지 -->
+    <div v-if="paramList.length" style="margin-bottom:12px;">
+      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">파라미터 샘플값</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        <span v-for="p in paramList" :key="p.k"
+          style="display:inline-flex;align-items:center;gap:3px;font-size:11px;background:#f0f4ff;border:1px solid #d0d9ff;border-radius:4px;padding:2px 8px;color:#2563eb;">
+          <b>{{ fmtKey(p.k) }}</b>
+          <span style="color:#aaa;margin:0 2px;">=</span>
+          <span style="color:#856404;background:#fff3cd;border-radius:2px;padding:0 3px;">{{ p.v }}</span>
+        </span>
+      </div>
+    </div>
+    <div v-else style="margin-bottom:12px;font-size:12px;color:#aaa;">파라미터 샘플값 없음</div>
+
+    <!-- 제목 -->
+    <div v-if="tmpl?.subject" style="margin-bottom:12px;">
+      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px;">제목 (Subject)</div>
+      <div style="padding:9px 13px;background:#fff;border:1px solid #e8e8e8;border-radius:7px;font-size:13px;color:#333;"
+        v-html="renderedSubject"></div>
+    </div>
+
+    <!-- 내용 미리보기 -->
+    <div>
+      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">내용 미리보기</div>
+      <!-- HTML 타입 -->
+      <div v-if="isHtml"
+        style="padding:18px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;min-height:120px;max-height:380px;overflow-y:auto;font-size:13px;line-height:1.8;"
+        v-html="renderedContent"></div>
+      <!-- 텍스트 타입 -->
+      <pre v-else
+        style="padding:14px 16px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;min-height:80px;max-height:280px;overflow-y:auto;font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-all;margin:0;color:#333;"
+        v-html="renderedContent"></pre>
+    </div>
+
+    <div style="margin-top:18px;display:flex;justify-content:flex-end;">
+      <button class="btn btn-secondary" @click="$emit('close')">닫기</button>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ── 템플릿 발송하기 모달 ── */
+window.TemplateSendModal = {
+  name: 'TemplateSendModal',
+  props: ['tmpl', 'adminData', 'showToast', 'showConfirm'],
+  emits: ['close'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed, watch } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+
+    const targetType = ref('member');
+    const kw = ref('');
+    const selected = reactive([]);
+    const getId = (item) => targetType.value === 'member' ? item.userId : item.adminUserId;
+
+    /* ── 부서 트리 (관리자 탭) ── */
+    const selectedDeptId = ref(null);
+    const deptKw = ref('');
+    const buildDeptTree = (items, parentId, depth) =>
+      items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(d => ({ ...d, _depth: depth, _kids: buildDeptTree(items, d.deptId, depth + 1) }));
+    const flattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); }); return result; };
+    const flatDeptTree = computed(() => {
+      const k = deptKw.value.trim().toLowerCase();
+      const list = k ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptName.toLowerCase().includes(k)) : props.adminData.depts;
+      return flattenDept(buildDeptTree(list, null, 1));
+    });
+    const getDescDeptNames = (deptId) => {
+      const names = new Set();
+      const queue = [deptId];
+      while (queue.length) {
+        const id = queue.shift();
+        const d = props.adminData.depts.find(x => x.deptId === id);
+        if (d) { names.add(d.deptName); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+      }
+      return names;
+    };
+
+    /* ── 등급 필터 (회원 탭) ── */
+    const selectedGrade = ref(null);
+    const MEMBER_GRADES = ['VIP', '우수', '일반'];
+
+    /* ── 목록 ── */
+    const memberList = computed(() => {
+      const k = kw.value.trim().toLowerCase();
+      let list = props.adminData.members || [];
+      if (selectedGrade.value) list = list.filter(m => m.grade === selectedGrade.value);
+      if (k) list = list.filter(m => m.name?.toLowerCase().includes(k) || m.email?.toLowerCase().includes(k) || String(m.userId).includes(k));
+      return list;
+    });
+    const userList = computed(() => {
+      const k = kw.value.trim().toLowerCase();
+      let list = props.adminData.adminUsers || [];
+      if (selectedDeptId.value !== null) {
+        const names = getDescDeptNames(selectedDeptId.value);
+        list = list.filter(u => names.has(u.dept));
+      }
+      if (k) list = list.filter(u => u.name?.toLowerCase().includes(k) || u.email?.toLowerCase().includes(k) || String(u.adminUserId).includes(k));
+      return list;
+    });
+    const list = computed(() => targetType.value === 'member' ? memberList.value : userList.value);
+
+    const isSelected = (item) => selected.includes(getId(item));
+    const toggleSelect = (item) => {
+      const id = getId(item);
+      const idx = selected.indexOf(id);
+      if (idx === -1) selected.push(id); else selected.splice(idx, 1);
+    };
+    const allChecked = computed(() => list.value.length > 0 && list.value.every(x => selected.includes(getId(x))));
+    const toggleAll = () => {
+      if (allChecked.value) { selected.splice(0); }
+      else { list.value.forEach(x => { const id = getId(x); if (!selected.includes(id)) selected.push(id); }); }
+    };
+
+    watch(targetType, () => { selected.splice(0); kw.value = ''; selectedDeptId.value = null; selectedGrade.value = null; });
+
+    const typeBadge = computed(() => ({
+      '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
+      'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
+      '시스템알림': 'badge-red', '회원알림': 'badge-teal',
+    }[props.tmpl?.templateType] || 'badge-gray'));
+
+    const gradeBadgeColor = g => ({ 'VIP': '#f59e0b', '우수': '#2563eb', '일반': '#6b7280' }[g] || '#6b7280');
+
+    const doSend = async () => {
+      if (!selected.length) { props.showToast('발송할 수신자를 선택하세요.', 'info'); return; }
+      const typeLabel = targetType.value === 'member' ? '회원' : '관리자';
+      const ok = await props.showConfirm('템플릿 발송',
+        `[${props.tmpl?.templateName}] 템플릿을 선택된 ${typeLabel} ${selected.length}명에게 발송하시겠습니까?`,
+        { btnOk: '발송', btnCancel: '취소' });
+      if (!ok) return;
+      props.showToast(`${typeLabel} ${selected.length}명에게 발송 요청이 완료되었습니다.`);
+      emit('close');
+    };
+
+    return { siteName, targetType, kw, list, selected, isSelected, toggleSelect, allChecked, toggleAll, typeBadge, gradeBadgeColor, doSend,
+             selectedDeptId, deptKw, flatDeptTree, selectedGrade, MEMBER_GRADES };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div style="background:#fff;border-radius:14px;width:calc(100vw - 40px);max-width:800px;height:84vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.26);overflow:hidden;" @click.stop>
+
+    <!-- ── 헤더 ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:15px;font-weight:800;color:#1a1a2e;">📨 발송하기</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">{{ siteName }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span v-if="selected.length" style="font-size:12px;color:#52c41a;font-weight:700;background:#f6ffed;padding:3px 10px;border-radius:20px;">{{ selected.length }}명 선택됨</span>
+        <span style="cursor:pointer;font-size:20px;color:#d1d5db;line-height:1;" @click="$emit('close')">✕</span>
+      </div>
+    </div>
+
+    <!-- ── 템플릿 정보 바 ── -->
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 20px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <span class="badge" :class="typeBadge" style="flex-shrink:0;">{{ tmpl?.templateType }}</span>
+      <span style="font-weight:700;font-size:13px;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ tmpl?.templateName }}</span>
+      <code v-if="tmpl?.templateCode" style="font-size:11px;color:#888;background:#efefef;padding:1px 8px;border-radius:4px;flex-shrink:0;">{{ tmpl.templateCode }}</code>
+    </div>
+
+    <!-- ── 탭 ── -->
+    <div style="display:flex;border-bottom:2px solid #f0f0f0;flex-shrink:0;background:#fff;">
+      <button @click="targetType='member'"
+        style="padding:9px 24px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .12s;"
+        :style="targetType==='member'?'border-bottom:2px solid #e8587a;color:#e8587a;margin-bottom:-2px;':'color:#9ca3af;'">
+        👥 회원
+      </button>
+      <button @click="targetType='user'"
+        style="padding:9px 24px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .12s;"
+        :style="targetType==='user'?'border-bottom:2px solid #e8587a;color:#e8587a;margin-bottom:-2px;':'color:#9ca3af;'">
+        👤 관리자
+      </button>
+    </div>
+
+    <!-- ── 바디: 좌(필터) + 우(목록) ── -->
+    <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
+
+      <!-- 좌: 필터 패널 -->
+      <div style="width:200px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#f8f9fb;">
+
+        <!-- 관리자 탭: 부서 트리 -->
+        <template v-if="targetType==='user'">
+          <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
+            <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
+            <div style="position:relative;">
+              <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">🔍</span>
+              <input v-model="deptKw" placeholder="부서 검색"
+                style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px 5px 24px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;" />
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:6px 6px;">
+            <!-- 전체 루트 -->
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:all .12s;"
+              :style="selectedDeptId===null?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.25);':''"
+              @click="selectedDeptId=null">
+              <span style="font-size:8px;font-weight:900;flex-shrink:0;" :style="{ color: selectedDeptId===null?'#fff':'#e8587a' }">●</span>
+              <span style="font-size:13px;font-weight:700;flex:1;" :style="{ color: selectedDeptId===null?'#fff':'#374151' }">전체</span>
+            </div>
+            <!-- 부서 트리 -->
+            <div v-for="d in flatDeptTree" :key="d.deptId"
+              style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:all .12s;"
+              :style="selectedDeptId===d.deptId?'background:#e8587a;box-shadow:0 2px 6px rgba(232,88,122,0.2);':''"
+              @click="selectedDeptId=d.deptId">
+              <span style="flex-shrink:0;font-weight:800;"
+                :style="{ marginLeft:((d._depth-1)*13)+'px', fontSize:d._depth===1?'10px':'8px',
+                          color:selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)] }">
+                {{ ['●','◦','·'][Math.min(d._depth-1,2)] }}
+              </span>
+              <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                :style="{ fontWeight:d._depth===1?'600':'400', color:selectedDeptId===d.deptId?'#fff':'#374151' }">
+                {{ d.deptName }}
+              </span>
+            </div>
+          </div>
+        </template>
+
+        <!-- 회원 탭: 등급 필터 -->
+        <template v-else>
+          <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
+            <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;">회원 등급</div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:6px 6px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:all .12s;"
+              :style="selectedGrade===null?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.25);':''"
+              @click="selectedGrade=null">
+              <span style="font-size:8px;font-weight:900;flex-shrink:0;" :style="{ color: selectedGrade===null?'#fff':'#e8587a' }">●</span>
+              <span style="font-size:13px;font-weight:700;" :style="{ color: selectedGrade===null?'#fff':'#374151' }">전체</span>
+            </div>
+            <div v-for="g in MEMBER_GRADES" :key="g"
+              style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:all .12s;"
+              :style="selectedGrade===g?'background:#e8587a;box-shadow:0 2px 6px rgba(232,88,122,0.2);':''"
+              @click="selectedGrade=g">
+              <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"
+                :style="{ background: selectedGrade===g?'#fff':gradeBadgeColor(g) }"></span>
+              <span style="font-size:13px;font-weight:600;" :style="{ color: selectedGrade===g?'#fff':'#374151' }">{{ g }}</span>
+            </div>
+          </div>
+        </template>
+
+      </div>
+
+      <!-- 우: 사용자 목록 -->
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
+        <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+          <div style="position:relative;">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">🔍</span>
+            <input v-model="kw" :placeholder="targetType==='member'?'이름 / 이메일 / ID 검색':'이름 / 이메일 / ID 검색'"
+              style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;" />
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
+            <input type="checkbox" :checked="allChecked" @change="toggleAll" style="width:14px;height:14px;" /> 전체선택
+          </label>
+          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">총 <b style="color:#374151;">{{ list.length }}</b>명</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <div v-if="list.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
+            <div style="font-size:32px;margin-bottom:8px;">🔍</div>검색 결과가 없습니다.
+          </div>
+          <div v-for="item in list" :key="item.userId||item.adminUserId"
+            style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
+            :style="isSelected(item)?'background:#f0fff4;':''"
+            @click="toggleSelect(item)">
+            <input type="checkbox" :checked="isSelected(item)" @click.stop="toggleSelect(item)"
+              style="width:15px;height:15px;flex-shrink:0;accent-color:#52c41a;cursor:pointer;" />
+            <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
+              :style="isSelected(item)?'background:#52c41a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
+              {{ item.name.charAt(0) }}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
+                {{ item.name }}
+                <span style="font-size:11px;color:#9ca3af;font-weight:400;">{{ item.loginId || item.email }}</span>
+              </div>
+              <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">
+                <template v-if="targetType==='user'">{{ item.dept || '-' }} · {{ item.role }}</template>
+                <template v-else>{{ item.email }}</template>
+              </div>
+            </div>
+            <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
+              :style="targetType==='user'
+                ? (item.status==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;')
+                : (item.grade==='VIP'?'background:#fef3c7;color:#d97706;':item.grade==='우수'?'background:#dbeafe;color:#1d4ed8;':'background:#f3f4f6;color:#6b7280;')">
+              {{ targetType==='user' ? item.status : item.grade }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 푸터 ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #f0f0f0;flex-shrink:0;background:#fff;">
+      <span style="font-size:12px;" :style="selected.length?'color:#52c41a;font-weight:600;':'color:#bbb;'">
+        {{ selected.length ? selected.length+'명이 선택되었습니다.' : '목록에서 수신자를 선택하세요.' }}
+      </span>
+      <div style="display:flex;gap:8px;">
+        <button style="padding:8px 22px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;"
+          @click="$emit('close')">취소</button>
+        <button :disabled="!selected.length"
+          style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
+          :style="selected.length?'background:#52c41a;color:#fff;box-shadow:0 2px 8px rgba(82,196,26,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
+          @click="doSend">
+          📨 발송{{ selected.length?' ('+selected.length+'명)':'' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ── 부서 트리 선택 모달 ──────────────────────────────────
+   Props: adminData, excludeId (선택 불가 부서 ID, 보통 자기 자신)
+   Emits: select({ deptId, deptName }), close
+   ─────────────────────────────────────────────────── */
+/* ── 메뉴 트리 선택 모달 ──────────────────────────────
+   Props: adminData, excludeId
+   Emits: select({ menuId, menuName }), close
+   ─────────────────────────────────────────────────── */
+/* ── 권한 트리 선택 모달 ──────────────────────────────
+   Props: adminData, excludeId
+   Emits: select({ roleId, roleName }), close
+   ─────────────────────────────────────────────────── */
+window.RoleTreeModal = {
+  name: 'RoleTreeModal',
+  props: ['adminData', 'excludeId'],
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const hoverId = ref(null);
+
+    const buildTree = (items, parentId, depth) => {
+      return items
+        .filter(r => (r.parentId || null) === (parentId || null))
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(r => ({ ...r, _depth: depth, _kids: buildTree(items, r.roleId, depth + 1) }));
+    };
+    const flatten = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
+      return result;
+    };
+    const flatTree = computed(() => {
+      const excSet = new Set();
+      if (props.excludeId) {
+        const mark = (id) => { excSet.add(id); props.adminData.roles.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
+        mark(props.excludeId);
+      }
+      const base = props.adminData.roles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
+      const kwVal = kw.value.trim().toLowerCase();
+      const list  = kwVal ? base.filter(r => r.roleName.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
+      return flatten(buildTree(list, null, 0));
+    });
+    const select = (role) => emit('select', { roleId: role.roleId, roleName: role.roleName });
+    const selectNone = () => emit('select', { roleId: null, roleName: '' });
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    return { siteName, kw, hoverId, flatTree, select, selectNone };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위권한 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+        <div style="font-size:11px;color:#aaa;margin-top:1px;">권한을 클릭하면 상위권한으로 지정됩니다</div>
+      </div>
+      <span class="modal-close" @click="$emit('close')">✕</span>
+    </div>
+    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div style="position:relative;">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
+        <input class="form-control" v-model="kw" placeholder="권한명 또는 권한코드 검색"
+          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;">
+      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
+        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="selectNone">
+        <span style="font-size:14px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
+        <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 권한으로 등록</span></div>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+      </div>
+      <div v-for="r in flatTree" :key="r.roleId"
+        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
+        :style="{ background: hoverId===r.roleId ? '#fff5f7' : '' }"
+        @mouseenter="hoverId=r.roleId" @mouseleave="hoverId=null" @click="select(r)">
+        <span :style="{ marginLeft:(r._depth*14)+'px', marginRight:'7px', fontWeight:'700',
+                        fontSize: r._depth===0?'14px':'12px', flexShrink:0,
+                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(r._depth,3)] }">
+          {{ ['●','◦','·','-'][Math.min(r._depth,3)] }}
+        </span>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ r.roleName }}</span>
+          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ r.roleCode }}</code>
+        </div>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===r.roleId ? 1 : 0 }">›</span>
+      </div>
+      <div v-if="flatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
+        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
+      </div>
+    </div>
+    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="$emit('close')">취소</button>
+    </div>
+  </div>
+</div>`,
+};
+
+window.MenuTreeModal = {
+  name: 'MenuTreeModal',
+  props: ['adminData', 'excludeId'],
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const hoverId = ref(null);
+
+    const buildTree = (items, parentId, depth) => {
+      return items
+        .filter(m => (m.parentId || null) === (parentId || null))
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(m => ({ ...m, _depth: depth, _kids: buildTree(items, m.menuId, depth + 1) }));
+    };
+
+    const flatten = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
+      return result;
+    };
+
+    const flatTree = computed(() => {
+      const excSet = new Set();
+      if (props.excludeId) {
+        const markExclude = (id) => {
+          excSet.add(id);
+          props.adminData.menus.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
+        };
+        markExclude(props.excludeId);
+      }
+      const base = props.adminData.menus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
+      const kwVal = kw.value.trim().toLowerCase();
+      const list  = kwVal
+        ? base.filter(m => m.menuName.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
+        : base;
+      return flatten(buildTree(list, null, 0));
+    });
+
+    const select = (menu) => emit('select', { menuId: menu.menuId, menuName: menu.menuName });
+    const selectNone = () => emit('select', { menuId: null, menuName: '' });
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+
+    return { siteName, kw, hoverId, flatTree, select, selectNone };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+
+    <!-- ── 헤더 ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위메뉴 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+        <div style="font-size:11px;color:#aaa;margin-top:1px;">메뉴를 클릭하면 상위메뉴로 지정됩니다</div>
+      </div>
+      <span class="modal-close" @click="$emit('close')">✕</span>
+    </div>
+
+    <!-- ── 검색 ── -->
+    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div style="position:relative;">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
+        <input class="form-control" v-model="kw"
+          placeholder="메뉴명 또는 메뉴코드 검색"
+          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
+      </div>
+    </div>
+
+    <!-- ── 트리 목록 ── -->
+    <div style="flex:1;overflow-y:auto;">
+
+      <!-- 최상위 선택 -->
+      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;
+                  border-bottom:2px solid #f0f0f0;transition:background .12s;"
+        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null"
+        @click="selectNone">
+        <span style="font-size:14px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
+        <div style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span>
+          <span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 메뉴로 등록</span>
+        </div>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;"
+          :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+      </div>
+
+      <!-- 메뉴 트리 항목들 -->
+      <div v-for="m in flatTree" :key="m.menuId"
+        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
+               border-bottom:1px solid #f5f5f5;transition:background .1s;"
+        :style="{ background: hoverId===m.menuId ? '#fff5f7' : '' }"
+        @mouseenter="hoverId=m.menuId" @mouseleave="hoverId=null"
+        @click="select(m)">
+
+        <!-- 블릿 들여쓰기 -->
+        <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'7px', fontWeight:'700',
+                        fontSize: m._depth===0?'14px':'12px', flexShrink:0,
+                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
+          {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
+        </span>
+
+        <!-- 메뉴명 + 코드 -->
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ m.menuName }}</span>
+          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ m.menuCode }}</code>
+        </div>
+
+        <!-- hover 화살표 -->
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
+          :style="{ opacity: hoverId===m.menuId ? 1 : 0 }">›</span>
+      </div>
+
+      <!-- 빈 상태 -->
+      <div v-if="flatTree.length===0"
+        style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
+        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
+      </div>
+    </div>
+
+    <!-- ── 푸터 ── -->
+    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="$emit('close')">취소</button>
+    </div>
+  </div>
+</div>`,
+};
+
+window.DeptTreeModal = {
+  name: 'DeptTreeModal',
+  props: ['adminData', 'excludeId'],
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, computed } = Vue;
+    const kw = ref('');
+    const hoverId = ref(null);
+
+    /* ── 트리 구성 ── */
+    const buildTree = (items, parentId, depth) => {
+      return items
+        .filter(d => (d.parentId || null) === (parentId || null))
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(d => ({ ...d, _depth: depth, _kids: buildTree(items, d.deptId, depth + 1) }));
+    };
+
+    const flatten = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
+      return result;
+    };
+
+    const flatTree = computed(() => {
+      /* excludeId 및 그 자손 전체를 제외 (circular 방지) */
+      const excSet = new Set();
+      if (props.excludeId) {
+        const markExclude = (id) => {
+          excSet.add(id);
+          props.adminData.depts.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
+        };
+        markExclude(props.excludeId);
+      }
+      const base = props.adminData.depts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
+      const kwVal = kw.value.trim().toLowerCase();
+      const list  = kwVal
+        ? base.filter(d => d.deptName.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
+        : base;
+      return flatten(buildTree(list, null, 0));
+    });
+
+    const select = (dept) => emit('select', { deptId: dept.deptId, deptName: dept.deptName });
+    const selectNone = () => emit('select', { deptId: null, deptName: '' });
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+
+    return { siteName, kw, hoverId, flatTree, select, selectNone };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+
+    <!-- ── 헤더 ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;line-height:1;">🌳</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위부서 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+          <div style="font-size:11px;color:#aaa;margin-top:1px;">부서를 클릭하면 상위부서로 지정됩니다</div>
+        </div>
+      </div>
+      <span class="modal-close" @click="$emit('close')">✕</span>
+    </div>
+
+    <!-- ── 검색 ── -->
+    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <div style="position:relative;">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
+        <input class="form-control" v-model="kw"
+          placeholder="부서명 또는 부서코드 검색"
+          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
+      </div>
+    </div>
+
+    <!-- ── 트리 목록 ── -->
+    <div style="flex:1;overflow-y:auto;">
+
+      <!-- 최상위 선택 (고정 첫 항목) -->
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;
+                  border-bottom:2px solid #f0f0f0;transition:background .12s;"
+        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null"
+        @click="selectNone">
+        <!-- accent bar -->
+        <div style="width:4px;align-self:stretch;border-radius:3px;background:#e8587a;flex-shrink:0;opacity:0.7;"></div>
+        <span style="font-size:20px;flex-shrink:0;line-height:1;">🏢</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</div>
+          <div style="font-size:11px;color:#aaa;margin-top:2px;">최상위 부서로 등록</div>
+        </div>
+        <span style="font-size:16px;color:#e8587a;font-weight:700;transition:opacity .12s;"
+          :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+      </div>
+
+      <!-- 부서 트리 항목들 -->
+      <div v-for="d in flatTree" :key="d.deptId"
+        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
+               border-bottom:1px solid #f5f5f5;transition:background .1s;"
+        :style="{ background: hoverId===d.deptId ? '#fff5f7' : '' }"
+        @mouseenter="hoverId=d.deptId" @mouseleave="hoverId=null"
+        @click="select(d)">
+
+        <!-- 블릿 들여쓰기 -->
+        <span :style="{ marginLeft:(d._depth*14)+'px', marginRight:'7px', fontWeight:'700',
+                        fontSize: d._depth===0?'14px':'12px', flexShrink:0,
+                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(d._depth,3)] }">
+          {{ ['●','◦','·','-'][Math.min(d._depth,3)] }}
+        </span>
+
+        <!-- 부서명 + 코드 -->
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ d.deptName }}</span>
+          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ d.deptCode }}</code>
+        </div>
+
+        <!-- hover 화살표 -->
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
+          :style="{ opacity: hoverId===d.deptId ? 1 : 0 }">›</span>
+      </div>
+
+      <!-- 빈 상태 -->
+      <div v-if="flatTree.length===0"
+        style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
+        <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
+      </div>
+    </div>
+
+    <!-- ── 푸터 ── -->
+    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>
   </div>
 </div>`,

@@ -5,6 +5,7 @@ window.ContactDtl = {
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const tab = ref('content');
 
     const form = reactive({
@@ -64,12 +65,18 @@ window.ContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { isNew, tab, form, memberContacts, statusBadge, save, saveAnswer, onUserIdChange };
+    return { isNew, tab, form, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteName };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '문의 등록' : '문의 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='content'}" @click="tab='content'">문의 내용</button>
       <button class="tab-btn" :class="{active:tab==='answer'}" @click="tab='answer'">답변</button>

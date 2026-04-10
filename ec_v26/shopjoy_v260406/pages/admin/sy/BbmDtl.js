@@ -5,6 +5,7 @@ window.BbmDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
       bbmCode: '', bbmName: '', bbmType: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
@@ -37,12 +38,18 @@ window.BbmDtl = {
       props.navigate('syBbmMng');
     };
 
-    return { isNew, form, save };
+    return { isNew, form, save, siteName };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '게시판 등록' : '게시판 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">게시판코드 <span class="req">*</span></label>

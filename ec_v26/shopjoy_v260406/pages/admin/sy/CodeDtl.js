@@ -5,6 +5,7 @@ window.CodeDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
       codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
     });
@@ -32,12 +33,18 @@ window.CodeDtl = {
       props.navigate('syCodeMng');
     };
 
-    return { isNew, form, save };
+    return { isNew, form, save, siteName };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '공통코드 등록' : '공통코드 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">코드그룹 (code_grp) <span class="req">*</span></label>

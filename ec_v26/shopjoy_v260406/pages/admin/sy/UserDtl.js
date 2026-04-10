@@ -5,6 +5,7 @@ window.UserDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
       loginId: '', name: '', email: '', phone: '', role: '운영자', dept: '', status: '활성', password: '',
     });
@@ -37,12 +38,18 @@ window.UserDtl = {
       props.navigate('syUserMng');
     };
 
-    return { isNew, form, save };
+    return { isNew, form, save, siteName };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '사용자 등록' : '사용자 수정' }}</div>
   <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">로그인ID <span class="req">*</span></label>

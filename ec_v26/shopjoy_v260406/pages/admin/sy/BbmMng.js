@@ -4,6 +4,7 @@ window.BbmMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchKw = ref(''); const searchType = ref(''); const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
@@ -49,7 +50,7 @@ window.BbmMng = {
       props.showToast('삭제되었습니다.');
     };
     const bbsCount = (bbmId) => props.adminData.bbss.filter(b => b.bbmId === bbmId).length;
-    return { searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, bbsCount };
+    return { siteName, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate, bbsCount };
   },
   template: /* html */`
 <div>
@@ -71,9 +72,9 @@ window.BbmMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="b in pageList" :key="b.bbmId" :style="selectedId===b.bbmId?'background:#fff8f9;':''">
           <td>{{ b.bbmId }}</td>
           <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
@@ -87,6 +88,7 @@ window.BbmMng = {
           <td style="text-align:center;">{{ bbsCount(b.bbmId) }}</td>
           <td style="text-align:center;">{{ b.sortOrd }}</td>
           <td><span class="badge" :class="ynBadge(b.useYn)">{{ b.useYn==='Y'?'사용':'미사용' }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td>{{ b.regDate }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(b.bbmId)">수정</button>

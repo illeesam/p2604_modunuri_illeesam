@@ -1,24 +1,66 @@
 /* ShopJoy Admin - 템플릿 상세/등록 */
 window.TemplateDtl = {
   name: 'TemplateDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId'],
   setup(props) {
-    const { reactive, computed, onMounted } = Vue;
+    const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿'];
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
-      templateType: '메일템플릿', templateName: '', subject: '', content: '', useYn: 'Y',
+      templateType: '메일템플릿', templateCode: '', templateName: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
     });
 
-    onMounted(() => {
+    /* ── Quill (메일, 시스템알림) ── */
+    const useHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateType));
+    const quillEditorEl = ref(null);
+    let _quill = null;
+
+    const initQuill = () => {
+      if (!quillEditorEl.value || _quill) return;
+      _quill = new Quill(quillEditorEl.value, {
+        theme: 'snow',
+        placeholder: '내용을 입력하세요...',
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ color: [] }, { background: [] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'blockquote', 'clean'],
+          ]
+        }
+      });
+      _quill.root.innerHTML = form.content || '';
+      _quill.on('text-change', () => { form.content = _quill.root.innerHTML; });
+    };
+
+    const destroyQuill = () => {
+      if (_quill) { form.content = _quill.root.innerHTML; _quill = null; }
+    };
+
+    /* 타입 변경 시 에디터 전환 — post-flush: DOM 업데이트 후 실행 */
+    watch(useHtmlEditor, (isHtml) => {
+      if (isHtml) initQuill();
+      else destroyQuill();
+    }, { flush: 'post' });
+
+    onMounted(async () => {
       if (!isNew.value) {
         const t = props.adminData.templates.find(x => x.templateId === props.editId);
-        if (t) Object.assign(form, { ...t });
+        if (t) Object.assign(form, { sampleParams: '{}', ...t });
       }
+      if (useHtmlEditor.value) { await nextTick(); initQuill(); }
     });
 
+    onBeforeUnmount(() => destroyQuill());
+
     const save = () => {
-      if (!form.templateName || !form.content) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+      if (!form.templateCode || !form.templateName || !form.content) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+      if (form.sampleParams) {
+        try { JSON.parse(form.sampleParams); }
+        catch { props.showToast('파라미터 샘플 JSON 형식이 올바르지 않습니다.', 'error'); return; }
+      }
       if (isNew.value) {
         props.adminData.templates.push({
           ...form, templateId: props.adminData.nextId(props.adminData.templates, 'templateId'),
@@ -33,10 +75,15 @@ window.TemplateDtl = {
       props.navigate('syTemplateMng');
     };
 
-    const needSubject = computed(() => form.templateType === '메일템플릿' || form.templateType === 'MMS템플릿');
-    const isLongContent = computed(() => ['메일템플릿', 'MMS템플릿'].includes(form.templateType));
+    const needSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateType));
+    const isLongContent = computed(() => ['MMS템플릿'].includes(form.templateType));
 
-    return { isNew, form, save, TEMPLATE_TYPES, needSubject, isLongContent };
+    /* 미리보기 / 발송 모달 */
+    const previewOpen = ref(false);
+    const sendOpen    = ref(false);
+
+    return { isNew, form, save, TEMPLATE_TYPES, needSubject, isLongContent,
+             useHtmlEditor, quillEditorEl, previewOpen, sendOpen, siteName };
   },
   template: /* html */`
 <div>
@@ -44,10 +91,21 @@ window.TemplateDtl = {
   <div class="card">
     <div class="form-row">
       <div class="form-group">
+        <label class="form-label">사이트명</label>
+        <div class="readonly-field">{{ siteName }}</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
         <label class="form-label">템플릿유형 <span class="req">*</span></label>
         <select class="form-control" v-model="form.templateType">
           <option v-for="t in TEMPLATE_TYPES" :key="t">{{ t }}</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">템플릿코드 <span class="req">*</span></label>
+        <input class="form-control" v-model="form.templateCode" placeholder="예) ORDER_CONFIRM_MAIL"
+          @input="form.templateCode=form.templateCode.toUpperCase().replace(/[^A-Z0-9_]/g,'')" />
       </div>
       <div class="form-group">
         <label class="form-label">템플릿명 <span class="req">*</span></label>
@@ -57,17 +115,31 @@ window.TemplateDtl = {
     <div class="form-row" v-if="needSubject">
       <div class="form-group" style="flex:1">
         <label class="form-label">제목 (Subject)</label>
-        <input class="form-control" v-model="form.subject" placeholder="메일/MMS 제목" />
+        <input class="form-control" v-model="form.subject" placeholder="메일/MMS/시스템 제목" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">내용 <span class="req">*</span>
-          <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: {{username}}, {{orderId}}, {{productName}}, {{trackingNo}} 등</span>
+          <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: &#123;&#123;username&#125;&#125;, &#123;&#123;orderId&#125;&#125;, &#123;&#123;productName&#125;&#125;, &#123;&#123;trackingNo&#125;&#125; 등</span>
         </label>
-        <textarea class="form-control" v-model="form.content"
-          :rows="isLongContent ? 12 : 5"
-          placeholder="템플릿 내용 입력 (HTML 또는 텍스트)"></textarea>
+        <!-- HTML 에디터 (메일, 시스템알림) -->
+        <div v-if="useHtmlEditor" ref="quillEditorEl"
+          style="height:260px;background:#fff;border:1px solid #d9d9d9;border-radius:0 0 6px 6px;"></div>
+        <!-- 텍스트 영역 -->
+        <textarea v-else class="form-control" v-model="form.content"
+          :rows="isLongContent ? 10 : 5"
+          placeholder="템플릿 내용 입력"></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">파라미터 샘플 (JSON)
+          <span style="font-size:11px;color:#888;margin-left:6px;">미리보기에 사용되는 샘플 변수값 — 예) {"username":"홍길동","orderId":"ORD-001"}</span>
+        </label>
+        <textarea class="form-control" v-model="form.sampleParams" rows="3"
+          style="font-family:monospace;font-size:12px;"
+          placeholder='{"username":"홍길동","orderId":"ORD-20260410-001"}'></textarea>
       </div>
     </div>
     <div class="form-row">
@@ -79,10 +151,23 @@ window.TemplateDtl = {
       </div>
     </div>
     <div class="form-actions">
+      <button class="btn btn-secondary" @click="previewOpen=true">📄 미리보기</button>
+      <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="sendOpen=true">📨 발송하기</button>
       <button class="btn btn-primary" @click="save">저장</button>
       <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
     </div>
   </div>
+
+  <!-- 미리보기 모달 -->
+  <template-preview-modal v-if="previewOpen"
+    :tmpl="form" :sample-params="form.sampleParams"
+    @close="previewOpen=false" />
+
+  <!-- 발송하기 모달 -->
+  <template-send-modal v-if="sendOpen"
+    :tmpl="form" :admin-data="adminData"
+    :show-toast="showToast" :show-confirm="showConfirm"
+    @close="sendOpen=false" />
 </div>
 `
 };

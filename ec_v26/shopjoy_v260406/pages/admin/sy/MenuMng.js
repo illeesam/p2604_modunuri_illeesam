@@ -1,0 +1,344 @@
+/* ShopJoy Admin - 메뉴관리 (Tree CRUD 그리드) */
+window.MenuMng = {
+  name: 'MenuMng',
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
+  setup(props) {
+    const { ref, reactive, computed } = Vue;
+
+    /* ── 검색 ── */
+    const searchKw     = ref('');
+    const searchType   = ref('');
+    const searchUseYn  = ref('');
+    const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
+    const applied = Vue.reactive({ kw: '', type: '', useYn: '' });
+
+    /* ── CRUD 그리드 ── */
+    const gridRows   = reactive([]);
+    let   _tempId    = -1;
+    const focusedIdx = ref(null);
+
+    /* ── 페이징 ── */
+    const pager      = reactive({ page: 1, size: 20 });
+    const PAGE_SIZES = [10, 20, 50];
+    const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
+
+    const EDIT_FIELDS = ['menuCode', 'menuName', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];
+
+    /* ── 트리 정렬 ── */
+    const buildTreeRows = (items) => {
+      const map = {};
+      items.forEach(m => { map[m.menuId] = { ...m, _children: [] }; });
+      const roots = [];
+      items.forEach(m => {
+        if (m.parentId && map[m.parentId]) map[m.parentId]._children.push(map[m.menuId]);
+        else roots.push(map[m.menuId]);
+      });
+      const result = [];
+      const traverse = (node, depth) => {
+        result.push({ ...node, _depth: depth });
+        node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
+      };
+      roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(r => traverse(r, 0));
+      return result;
+    };
+
+    const makeRow = (m) => ({
+      ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
+      _orig: { menuCode: m.menuCode, menuName: m.menuName, parentId: m.parentId,
+               menuUrl: m.menuUrl, menuType: m.menuType, sortOrd: m.sortOrd, useYn: m.useYn, remark: m.remark },
+    });
+
+    const loadGrid = () => {
+      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      const filtered = props.adminData.menus.filter(m => {
+        const kw = applied.kw.trim().toLowerCase();
+        if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuName.toLowerCase().includes(kw)) return false;
+        if (applied.type  && m.menuType !== applied.type)  return false;
+        if (applied.useYn && m.useYn    !== applied.useYn) return false;
+        return true;
+      });
+      buildTreeRows(filtered).forEach(m => gridRows.push(makeRow(m)));
+    };
+
+    loadGrid();
+
+    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+
+    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+
+    const onSearch = () => {
+      Object.assign(applied, { kw: searchKw.value, type: searchType.value, useYn: searchUseYn.value });
+      loadGrid();
+    };
+    const onReset = () => {
+      searchKw.value = ''; searchType.value = ''; searchUseYn.value = '';
+      Object.assign(applied, { kw: '', type: '', useYn: '' });
+      loadGrid();
+    };
+
+    const setFocused = (realIdx) => { focusedIdx.value = realIdx; };
+
+    const onCellChange = (row) => {
+      if (row._row_status === 'I' || row._row_status === 'D') return;
+      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
+      row._row_status = changed ? 'U' : 'N';
+    };
+
+    const addRow = () => {
+      const newRow = {
+        menuId: _tempId--, menuCode: '', menuName: '', parentId: null,
+        menuUrl: '', menuType: '페이지', sortOrd: 1, useYn: 'Y', remark: '',
+        _depth: 0, _row_status: 'I', _row_check: false, _orig: null,
+      };
+      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      gridRows.splice(insertAt, 0, newRow);
+      focusedIdx.value = insertAt;
+      pager.page = Math.ceil((insertAt + 1) / pager.size);
+    };
+
+    const deleteRow = (realIdx) => {
+      const row = gridRows[realIdx];
+      if (row._row_status === 'I') {
+        gridRows.splice(realIdx, 1);
+        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+      } else { row._row_status = 'D'; }
+    };
+
+    const cancelRow = (realIdx) => {
+      const row = gridRows[realIdx];
+      if (row._row_status === 'I') {
+        gridRows.splice(realIdx, 1);
+        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+      } else {
+        if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+        row._row_status = 'N';
+      }
+    };
+
+    const cancelChecked = () => {
+      const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.menuId));
+      if (!checkedIds.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        const row = gridRows[i];
+        if (!checkedIds.has(row.menuId)) continue;
+        if (row._row_status === 'I') { gridRows.splice(i, 1); }
+        else if (row._row_status !== 'N') {
+          if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+          row._row_status = 'N';
+        }
+      }
+    };
+
+    const deleteRows = () => {
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        if (!gridRows[i]._row_check) continue;
+        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
+        else gridRows[i]._row_status = 'D';
+      }
+    };
+
+    const doSave = async () => {
+      const iRows = gridRows.filter(r => r._row_status === 'I');
+      const uRows = gridRows.filter(r => r._row_status === 'U');
+      const dRows = gridRows.filter(r => r._row_status === 'D');
+      if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
+      for (const r of [...iRows, ...uRows]) {
+        if (!r.menuCode || !r.menuName) { props.showToast('메뉴코드와 메뉴명은 필수 항목입니다.', 'error'); return; }
+      }
+      const details = [];
+      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
+      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
+      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
+      if (!ok) return;
+      dRows.forEach(r => { const i = props.adminData.menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) props.adminData.menus.splice(i, 1); });
+      uRows.forEach(r => { const i = props.adminData.menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(props.adminData.menus[i], { menuCode: r.menuCode, menuName: r.menuName, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
+      let nextId = Math.max(...props.adminData.menus.map(m => m.menuId), 0);
+      iRows.forEach(r => { props.adminData.menus.push({ menuId: ++nextId, menuCode: r.menuCode, menuName: r.menuName, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      const toastParts = [];
+      if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
+      if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
+      if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
+      props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
+      loadGrid();
+    };
+
+    const checkAll = ref(false);
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
+
+    const parentName = (parentId) => {
+      if (!parentId) return '';
+      const p = props.adminData.menus.find(m => m.menuId === parentId);
+      return p ? p.menuName : `ID:${parentId}`;
+    };
+
+    const menuTreeModal = Vue.reactive({ show: false, targetRow: null });
+    const openParentModal = (row) => { menuTreeModal.targetRow = row; menuTreeModal.show = true; };
+    const onParentSelect  = (menu) => {
+      if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }
+      menuTreeModal.show = false;
+    };
+
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
+    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
+    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
+    const depthColor  = (d) => DEPTH_COLORS[d % 5];
+    const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const typeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
+
+    return {
+      searchKw, searchType, searchUseYn, MENU_TYPES, applied,
+      siteName,
+      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+      focusedIdx, setFocused, onSearch, onReset, onCellChange,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      checkAll, toggleCheckAll, parentName,
+      menuTreeModal, openParentModal, onParentSelect,
+      depthBullet, depthColor, statusClass, typeClass,
+    };
+  },
+  template: /* html */`
+<div>
+  <div class="page-title">메뉴관리</div>
+
+  <div class="card">
+    <div class="search-bar">
+      <input v-model="searchKw" placeholder="메뉴코드 / 메뉴명 검색" />
+      <select v-model="searchType">
+        <option value="">유형 전체</option>
+        <option v-for="t in MENU_TYPES" :key="t">{{ t }}</option>
+      </select>
+      <select v-model="searchUseYn">
+        <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
+      </select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <span class="list-title">메뉴목록 <span class="list-count">{{ total }}건</span></span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
+        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
+        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
+        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+      </div>
+    </div>
+
+    <table class="admin-table crud-grid">
+      <thead>
+        <tr>
+          <th class="col-id">ID</th>
+          <th class="col-status">상태</th>
+          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th style="width:110px;">메뉴코드</th>
+          <th style="min-width:180px;">메뉴명</th>
+          <th style="min-width:140px;">상위메뉴</th>
+          <th style="min-width:160px;">메뉴URL</th>
+          <th style="width:80px;">유형</th>
+          <th class="col-ord">순서</th>
+          <th class="col-use">사용여부</th>
+          <th>비고</th>
+          <th style="width:80px;">사이트명</th>
+          <th class="col-act-cancel"></th>
+          <th class="col-act-delete"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="gridRows.length===0">
+          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+        </tr>
+        <tr v-for="(row, idx) in pagedRows" :key="row.menuId"
+          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+          @click="setFocused(getRealIdx(idx))">
+
+          <td class="col-id-val">{{ row.menuId > 0 ? row.menuId : 'NEW' }}</td>
+          <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
+          <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
+          <td><input class="grid-input grid-mono" v-model="row.menuCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+
+          <!-- 메뉴명 (블릿 트리) -->
+          <td style="padding:3px 6px;">
+            <div style="display:flex;align-items:center;">
+              <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
+                              fontSize: row._depth===0 ? '13px' : '12px', flexShrink:0,
+                              color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
+              <input class="grid-input" v-model="row.menuName" :disabled="row._row_status==='D'"
+                @input="onCellChange(row)" style="flex:1;" />
+            </div>
+          </td>
+
+          <!-- 상위메뉴 -->
+          <td style="padding:3px 8px;">
+            <div style="display:flex;align-items:center;gap:5px;">
+              <span v-if="row.parentId"
+                style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
+              <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
+              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
+                style="flex-shrink:0;padding:2px 7px;font-size:11px;"
+                @click.stop="openParentModal(row)">변경</button>
+            </div>
+          </td>
+
+          <td><input class="grid-input" v-model="row.menuUrl" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="/path" /></td>
+          <td>
+            <select class="grid-select" v-model="row.menuType" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              <option v-for="t in MENU_TYPES" :key="t">{{ t }}</option>
+            </select>
+          </td>
+          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td>
+            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              <option value="Y">사용</option><option value="N">미사용</option>
+            </select>
+          </td>
+          <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
+          <td class="col-act-cancel-val">
+            <button v-if="['U','I','D'].includes(row._row_status)"
+              class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
+          </td>
+          <td class="col-act-delete-val">
+            <button v-if="['N','U'].includes(row._row_status)"
+              class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <div></div>
+      <div class="pager">
+        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+      </div>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <menu-tree-modal
+    v-if="menuTreeModal.show"
+    :admin-data="adminData"
+    :exclude-id="menuTreeModal.targetRow && menuTreeModal.targetRow.menuId > 0 ? menuTreeModal.targetRow.menuId : null"
+    @select="onParentSelect"
+    @close="menuTreeModal.show=false" />
+</div>
+`,
+};

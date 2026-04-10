@@ -4,6 +4,7 @@ window.NoticeMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const searchKw = ref(''); const searchType = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -53,7 +54,7 @@ window.NoticeMng = {
       if (selectedId.value === n.noticeId) selectedId.value = null;
       props.showToast('삭제되었습니다.');
     };
-    return { searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    return { siteName, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
   },
   template: /* html */`
 <div>
@@ -78,9 +79,9 @@ window.NoticeMng = {
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>유형</th><th>제목</th><th>고정</th><th>시작일</th><th>종료일</th><th>상태</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th>ID</th><th>유형</th><th>제목</th><th>고정</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="n in pageList" :key="n.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
           <td>{{ n.noticeId }}</td>
           <td><span class="badge" :class="typeBadge(n.noticeType)">{{ n.noticeType }}</span></td>
@@ -89,6 +90,7 @@ window.NoticeMng = {
           <td>{{ n.startDate || '-' }}</td>
           <td>{{ n.endDate || '-' }}</td>
           <td><span class="badge" :class="statusBadge(n.status)">{{ n.status }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td>{{ n.regDate }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(n.noticeId)">수정</button>
