@@ -1,91 +1,241 @@
-/* ShopJoy Admin - 공통코드관리 목록 */
+/* ShopJoy Admin - 공통코드관리 (CRUD 그리드) */
 window.CodeMng = {
   name: 'CodeMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
+  props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const searchKw = ref('');
+
+    /* ── 검색 ── */
+    const searchKw        = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
-      pager.page = 1;
+      if (searchDateRange.value) {
+        const r = window.adminUtil.getDateRange(searchDateRange.value);
+        searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : '';
+      }
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
-    const searchGrp = ref('');
+    const searchGrp   = ref('');
     const searchUseYn = ref('');
-    const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+    const grpOptions  = computed(() => [...new Set(props.adminData.codes.map(c => c.codeGrp))].sort());
+    const applied     = Vue.reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
 
-    const selectedId = ref(null);
-    const loadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
-    const openNew = () => { selectedId.value = '__new__'; };
-    const closeDetail = () => { selectedId.value = null; };
-    const inlineNavigate = (pg) => { if (pg === 'codeMng') { selectedId.value = null; } };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    /* ── CRUD 그리드 데이터 ── */
+    const gridRows   = reactive([]);
+    let   _tempId    = -1;
+    const focusedIdx = ref(null);
 
-    const grpOptions = computed(() => {
-      const grps = [...new Set(props.adminData.codes.map(c => c.codeGrp))];
-      return grps.sort();
+    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark'];
+
+    const makeRow = (c) => ({
+      ...c,
+      _row_status: 'N',
+      _row_check:  false,
+      _orig: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
+               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark },
     });
 
-    const applied = Vue.reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
+    const loadGrid = () => {
+      gridRows.splice(0); focusedIdx.value = null;
+      props.adminData.codes
+        .filter(c => {
+          const kw = applied.kw.trim().toLowerCase();
+          if (kw && !c.codeGrp.toLowerCase().includes(kw)
+                 && !c.codeLabel.toLowerCase().includes(kw)
+                 && !c.codeValue.toLowerCase().includes(kw)) return false;
+          if (applied.grp   && c.codeGrp !== applied.grp)   return false;
+          if (applied.useYn && c.useYn   !== applied.useYn) return false;
+          const _d = String(c.regDate || '').slice(0, 10);
+          if (applied.dateStart && _d < applied.dateStart) return false;
+          if (applied.dateEnd   && _d > applied.dateEnd)   return false;
+          return true;
+        })
+        .forEach(c => gridRows.push(makeRow(c)));
+    };
 
-    const filtered = computed(() => props.adminData.codes.filter(c => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !c.codeGrp.toLowerCase().includes(kw) && !c.codeLabel.toLowerCase().includes(kw) && !c.codeValue.toLowerCase().includes(kw)) return false;
-      if (applied.grp && c.codeGrp !== applied.grp) return false;
-      if (applied.useYn && c.useYn !== applied.useYn) return false;
-      const _d = String(c.regDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
-      return true;
-    }));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
-      const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    });
+    loadGrid();
 
-    const useYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+
     const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        grp: searchGrp.value,
-        useYn: searchUseYn.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
-      pager.page = 1;
+      Object.assign(applied, { kw: searchKw.value, grp: searchGrp.value, useYn: searchUseYn.value,
+                                dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
+      loadGrid();
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchGrp.value = '';
-      searchUseYn.value = '';
+      searchKw.value = ''; searchGrp.value = ''; searchUseYn.value = '';
       searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
       Object.assign(applied, { kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
+      loadGrid();
     };
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (c) => {
-      const ok = await props.showConfirm('코드 삭제', `[${c.codeGrp} / ${c.codeLabel}] 코드를 삭제하시겠습니까?`);
+    /* ── 포커스 행 설정 ── */
+    const setFocused = (idx) => { focusedIdx.value = idx; };
+
+    /* ── 셀 변경 → 행상태 갱신 ── */
+    const onCellChange = (row) => {
+      if (row._row_status === 'I' || row._row_status === 'D') return;
+      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
+      row._row_status = changed ? 'U' : 'N';
+    };
+
+    /* ── 행추가: 포커스 행 아래 삽입, 없으면 끝에 추가 ── */
+    const addRow = () => {
+      const newRow = {
+        codeId: _tempId--, codeGrp: '', codeLabel: '', codeValue: '',
+        sortOrd: 1, useYn: 'Y', remark: '',
+        _row_status: 'I', _row_check: false, _orig: null,
+      };
+      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      gridRows.splice(insertAt, 0, newRow);
+      focusedIdx.value = insertAt;
+    };
+
+    /* ── 행 단건 삭제 버튼: N/U 에 표시 (I는 표시 안함) ── */
+    const deleteRow = (idx) => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+      } else {
+        row._row_status = 'D';
+        row._row_check  = false;
+      }
+    };
+
+    /* ── 취소 버튼: U/I/D 에 표시 ── */
+    const cancelRow = (idx) => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+      } else {
+        // U / D: 원래값 복원 → N
+        if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+        row._row_status = 'N';
+        row._row_check  = false;
+      }
+    };
+
+    /* ── 툴바 [취소]: 체크된 행만 취소, 없으면 변경된 전체 취소 ── */
+    const cancelChecked = () => {
+      const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.codeId));
+      if (!checkedIds.size) {
+        props.showToast('취소할 행을 선택해주세요.', 'info');
+        return;
+      }
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        const row = gridRows[i];
+        if (!checkedIds.has(row.codeId)) continue;
+        if (row._row_status === 'N') continue;
+        if (row._row_status === 'I') {
+          gridRows.splice(i, 1);
+        } else if (row._row_status === 'U' || row._row_status === 'D') {
+          if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+          row._row_status = 'N';
+        }
+      }
+    };
+
+    /* ── 체크된 행 일괄 삭제 ── */
+    const deleteRows = () => {
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        if (!gridRows[i]._row_check) continue;
+        if (gridRows[i]._row_status === 'I') {
+          gridRows.splice(i, 1);
+        } else {
+          gridRows[i]._row_status = 'D';
+        }
+      }
+    };
+
+    /* ── 저장 ── */
+    const doSave = async () => {
+      const iRows = gridRows.filter(r => r._row_status === 'I');
+      const uRows = gridRows.filter(r => r._row_status === 'U');
+      const dRows = gridRows.filter(r => r._row_status === 'D');
+      if (!iRows.length && !uRows.length && !dRows.length) {
+        props.showToast('변경된 데이터가 없습니다.', 'error'); return;
+      }
+      for (const r of [...iRows, ...uRows]) {
+        if (!r.codeGrp || !r.codeLabel || !r.codeValue) {
+          props.showToast('코드그룹, 코드라벨, 코드값은 필수 항목입니다.', 'error'); return;
+        }
+      }
+      const details = [];
+      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
+      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
+      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?',
+        { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      const idx = props.adminData.codes.findIndex(x => x.codeId === c.codeId);
-      if (idx !== -1) props.adminData.codes.splice(idx, 1);
-      if (selectedId.value === c.codeId) selectedId.value = null;
-      props.showToast('삭제되었습니다.');
+
+      dRows.forEach(r => {
+        const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) props.adminData.codes.splice(idx, 1);
+      });
+      uRows.forEach(r => {
+        const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) Object.assign(props.adminData.codes[idx],
+          { codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
+            sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark });
+      });
+      let nextId = Math.max(...props.adminData.codes.map(c => c.codeId), 0);
+      iRows.forEach(r => {
+        props.adminData.codes.push({
+          codeId: ++nextId, codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
+          sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark,
+          regDate: new Date().toISOString().slice(0, 10),
+        });
+      });
+      const toastParts = [];
+      if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
+      if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
+      if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
+      props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
+      loadGrid();
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchGrp, searchUseYn, grpOptions, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, useYnBadge, doDelete, selectedId, detailEditId, loadDetail, openNew, closeDetail, inlineNavigate };
+    /* ── 드래그 이동 ── */
+    const dragSrc  = ref(null);
+    const dragMoved = ref(false);
+    const onDragStart = (idx) => { dragSrc.value = idx; dragMoved.value = false; };
+    const onDragOver  = (e, idx) => {
+      e.preventDefault();
+      if (dragSrc.value === null || dragSrc.value === idx) return;
+      const moved = gridRows.splice(dragSrc.value, 1)[0];
+      gridRows.splice(idx, 0, moved);
+      dragSrc.value = idx;
+      dragMoved.value = true;
+    };
+    const onDragEnd = () => {
+      if (dragMoved.value) props.showToast('정렬정보가 저장되었습니다.');
+      dragSrc.value = null;
+      dragMoved.value = false;
+    };
+
+    /* ── 전체 체크 (D 행 포함) ── */
+    const checkAll = ref(false);
+    const toggleCheckAll = () => {
+      gridRows.forEach(r => { r._row_check = checkAll.value; });
+    };
+
+    const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+
+    return {
+      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
+      searchKw, searchGrp, searchUseYn, grpOptions, applied,
+      gridRows, total, focusedIdx, setFocused, onSearch, onReset, onCellChange,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      dragSrc, onDragStart, onDragOver, onDragEnd,
+      checkAll, toggleCheckAll, statusClass,
+    };
   },
   template: /* html */`
 <div>
   <div class="page-title">공통코드관리</div>
+
+  <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="코드그룹 / 라벨 / 코드값 검색" />
@@ -96,62 +246,89 @@ window.CodeMng = {
       <select v-model="searchUseYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span>
+      <input type="date" v-model="searchDateStart" class="date-range-input" />
+      <span class="date-range-sep">~</span>
+      <input type="date" v-model="searchDateEnd" class="date-range-input" />
+      <select v-model="searchDateRange" @change="onDateRangeChange">
+        <option value="">옵션선택</option>
+        <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
   </div>
+
+  <!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">코드목록 <span class="list-count">{{ total }}건</span></span>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
+        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
+        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
+        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+      </div>
     </div>
-    <table class="admin-table">
-      <thead><tr>
-        <th>ID</th><th>코드그룹 (code_grp)</th><th>코드라벨 (code_label)</th><th>코드값 (code_value)</th><th>정렬순서</th><th>사용여부</th><th>비고</th><th>사이트명</th><th style="text-align:right">관리</th>
-      </tr></thead>
+
+    <table class="admin-table crud-grid">
+      <thead>
+        <tr>
+          <th class="col-drag"></th>
+          <th class="col-id">ID</th>
+          <th class="col-status">상태</th>
+          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th>코드그룹</th>
+          <th>코드라벨</th>
+          <th>코드값</th>
+          <th class="col-ord">순서</th>
+          <th class="col-use">사용여부</th>
+          <th>비고</th>
+          <th class="col-row-actions"></th>
+        </tr>
+      </thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in pageList" :key="c.codeId" :style="selectedId===c.codeId?'background:#fff8f9;':''">
-          <td>{{ c.codeId }}</td>
-          <td><span class="title-link" @click="loadDetail(c.codeId)" :style="selectedId===c.codeId?'color:#e8587a;font-weight:700;':''">{{ c.codeGrp }}<span v-if="selectedId===c.codeId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ c.codeLabel }}</td>
-          <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">{{ c.codeValue }}</code></td>
-          <td>{{ c.sortOrd }}</td>
-          <td><span class="badge" :class="useYnBadge(c.useYn)">{{ c.useYn === 'Y' ? '사용' : '미사용' }}</span></td>
-          <td style="color:#666;font-size:12px;">{{ c.remark }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(c.codeId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>
-          </div></td>
+        <tr v-if="gridRows.length===0">
+          <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+        </tr>
+        <tr v-for="(row, idx) in gridRows" :key="row.codeId"
+          class="crud-row" :class="['status-'+row._row_status, focusedIdx===idx ? 'focused' : '']"
+          draggable="true"
+          @click="setFocused(idx)"
+          @dragstart="onDragStart(idx)"
+          @dragover="onDragOver($event, idx)"
+          @dragend="onDragEnd">
+
+          <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
+          <td class="col-id-val">{{ row.codeId > 0 ? row.codeId : 'NEW' }}</td>
+          <td class="col-status-val">
+            <span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span>
+          </td>
+          <td class="col-check-val">
+            <input type="checkbox" v-model="row._row_check" />
+          </td>
+          <td><input class="grid-input" v-model="row.codeGrp"   :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td><input class="grid-input" v-model="row.codeLabel"  :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td>
+            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              <option value="Y">사용</option><option value="N">미사용</option>
+            </select>
+          </td>
+          <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td class="row-actions">
+            <button v-if="['N','U'].includes(row._row_status)"
+              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+            <button v-if="['U','I','D'].includes(row._row_status)"
+              class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+          </td>
         </tr>
       </tbody>
     </table>
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
-      </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <div v-if="selectedId" style="border-top:2px solid #e8587a;margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
-    </div>
-    <code-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :edit-id="detailEditId" />
   </div>
 </div>
-`
+`,
 };

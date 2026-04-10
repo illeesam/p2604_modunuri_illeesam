@@ -172,19 +172,33 @@
       window.addEventListener('hashchange', readHash);
       onBeforeUnmount(() => window.removeEventListener('hashchange', readHash));
 
-      /* ── Toast ── */
-      const toast = reactive({ show: false, msg: '', type: 'success' });
-      let toastTimer = null;
+      /* ── Toast (누적 스택) ── */
+      const toasts  = reactive([]);
+      let _toastId  = 0;
+      const TOAST_DURATION = 3500;
       const showToast = (msg, type = 'success') => {
-        if (toastTimer) clearTimeout(toastTimer);
-        Object.assign(toast, { show: true, msg, type });
-        toastTimer = setTimeout(() => { toast.show = false; }, 3000);
+        const id = ++_toastId;
+        toasts.push({ id, msg, type });
+        setTimeout(() => {
+          const idx = toasts.findIndex(t => t.id === id);
+          if (idx !== -1) toasts.splice(idx, 1);
+        }, TOAST_DURATION);
+      };
+      const closeToast = (id) => {
+        const idx = toasts.findIndex(t => t.id === id);
+        if (idx !== -1) toasts.splice(idx, 1);
       };
 
       /* ── Confirm ── */
-      const confirmState = reactive({ show: false, title: '', msg: '', resolve: null });
-      const showConfirm  = (title, msg) =>
-        new Promise(r => Object.assign(confirmState, { show: true, title, msg, resolve: r }));
+      const confirmState = reactive({ show: false, title: '', msg: '', details: null, btnOk: '확인', btnCancel: '취소', resolve: null });
+      const showConfirm  = (title, msg, opts = {}) =>
+        new Promise(r => Object.assign(confirmState, {
+          show: true, title, msg,
+          details:   opts.details   || null,
+          btnOk:     opts.btnOk     || '확인',
+          btnCancel: opts.btnCancel || '취소',
+          resolve: r,
+        }));
       const closeConfirm = v => { confirmState.show = false; confirmState.resolve?.(v); };
 
       /* ── 참조 모달 ── */
@@ -333,7 +347,7 @@
         ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseAll, ctxNewWindow,
         openNewWindow, openTabsWithGroup,
         activeTop, leftMenuOpen, setTopMenu,
-        toast, showToast,
+        toasts, showToast, closeToast,
         confirmState, showConfirm, closeConfirm,
         refModal, showRefModal, closeRefModal,
         adminData: window.adminData,
@@ -585,18 +599,32 @@
   <!-- Confirm -->
   <div v-if="confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
     <div class="confirm-box">
-      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-icon">💾</div>
       <div class="confirm-title">{{ confirmState.title }}</div>
       <div class="confirm-msg">{{ confirmState.msg }}</div>
+      <!-- 상세 배지 (details 있을 때만) -->
+      <div v-if="confirmState.details && confirmState.details.length" class="confirm-details">
+        <span v-for="d in confirmState.details" :key="d.label"
+          class="badge confirm-detail-badge" :class="d.cls">{{ d.label }}</span>
+      </div>
       <div class="confirm-actions">
-        <button class="btn btn-secondary" @click="closeConfirm(false)">취소</button>
-        <button class="btn btn-danger" @click="closeConfirm(true)">확인</button>
+        <button class="btn btn-secondary" @click="closeConfirm(false)">{{ confirmState.btnCancel }}</button>
+        <button class="btn btn-primary" @click="closeConfirm(true)">{{ confirmState.btnOk }}</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div v-if="toast.show" class="toast-wrap">{{ toast.msg }}</div>
+  <!-- Toast 누적 스택 -->
+  <div class="toast-container">
+    <div v-for="t in toasts" :key="t.id"
+      class="toast-item" :class="'toast-'+t.type"
+      @click="closeToast(t.id)">
+      <span class="toast-icon">{{ t.type==='error' ? '✕' : t.type==='warning' ? '⚠' : t.type==='info' ? 'ℹ' : '✓' }}</span>
+      <span class="toast-msg">{{ t.msg }}</span>
+      <span class="toast-close-x">✕</span>
+      <div class="toast-progress"></div>
+    </div>
+  </div>
 
   <!-- 탭 컨텍스트 메뉴 -->
   <div v-if="ctxMenu.show"

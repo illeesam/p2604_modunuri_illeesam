@@ -65,6 +65,39 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .badge-orange { background: #fff7e6; color: #d46b08; }
 .badge-purple { background: #f9f0ff; color: #722ed1; }
 .badge-pink   { background: #fff0f6; color: #c41d7f; }
+.badge-xs { padding: 1px 5px !important; font-size: 10px !important; border-radius: 4px !important; font-weight: 700 !important; }
+
+/* ── CRUD 그리드 ── */
+.crud-grid td { padding: 4px 6px; vertical-align: middle; }
+.crud-grid .col-drag  { width: 28px; }
+.crud-grid .col-id    { width: 46px; }
+.crud-grid .col-status{ width: 38px; text-align: center; }
+.crud-grid .col-check { width: 32px; text-align: center; }
+.crud-grid .col-ord   { width: 58px; }
+.crud-grid .col-use   { width: 74px; }
+.crud-grid .col-id-val    { font-size: 11px; color: #aaa; text-align: center; }
+.crud-grid .col-status-val{ text-align: center; }
+.crud-grid .col-check-val { text-align: center; }
+.drag-handle { cursor: grab; color: #bbb; font-size: 16px; text-align: center; user-select: none; }
+.drag-handle:active { cursor: grabbing; color: #1677ff; }
+.grid-input { width: 100%; border: 1px solid transparent; background: transparent; padding: 4px 6px; font-size: 12px; border-radius: 4px; min-width: unset !important; transition: border-color .12s, background .12s; box-sizing: border-box; }
+.grid-input:hover:not(:disabled) { border-color: #d9d9d9; background: #fafafa; }
+.grid-input:focus { border-color: #1677ff; background: #fff; outline: none; box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
+.grid-input:disabled { color: #bbb; cursor: not-allowed; }
+.grid-select { border: 1px solid transparent; background: transparent; padding: 4px 4px; font-size: 12px; border-radius: 4px; width: 100%; }
+.grid-select:hover:not(:disabled) { border-color: #d9d9d9; }
+.grid-select:disabled { color: #bbb; cursor: not-allowed; }
+.grid-mono { font-family: monospace; font-size: 11px !important; }
+.grid-num  { text-align: right; width: 50px !important; }
+.crud-row.status-I { background: #f6ffed !important; }
+.crud-row.status-U { background: #fffbe6 !important; }
+.crud-row.status-D { background: #fff1f0 !important; }
+.crud-row.status-D td { color: #cf1322; opacity: 0.6; text-decoration: line-through; }
+.crud-row.status-D .drag-handle, .crud-row.status-D .row-actions { text-decoration: none; opacity: 1; color: inherit; }
+.crud-row.focused { outline: 2px solid #1677ff; outline-offset: -1px; }
+.col-row-actions { width: 80px; }
+.row-actions { display: flex; gap: 3px; justify-content: flex-end; white-space: nowrap; }
+.btn-xs { padding: 2px 7px !important; font-size: 11px !important; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .modal-box { background: #fff; border-radius: 12px; padding: 24px; width: 100%; max-width: 580px; max-height: 85vh; overflow-y: auto; }
@@ -78,7 +111,20 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .detail-value { flex: 1; font-size: 13px; color: #222; word-break: break-all; }
 .ref-link { color: #e8587a; cursor: pointer; font-size: 12px; text-decoration: underline; margin-left: 4px; }
 
-.toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(30,30,30,.92); color: #fff; padding: 11px 22px; border-radius: 8px; z-index: 9999; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,.2); white-space: nowrap; }
+/* ── Toast 누적 스택 ── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
+.toast-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,.13); min-width: 240px; max-width: 400px; position: relative; overflow: hidden; pointer-events: all; cursor: pointer; animation: toast-slide-in .22s ease; }
+.toast-success { background: #f6ffed; color: #389e0d; border-left: 4px solid #52c41a; }
+.toast-error   { background: #fff1f0; color: #cf1322; border-left: 4px solid #ff4d4f; }
+.toast-info    { background: #e6f4ff; color: #0958d9; border-left: 4px solid #1677ff; }
+.toast-warning { background: #fffbe6; color: #d46b08; border-left: 4px solid #faad14; }
+.toast-icon    { font-size: 15px; flex-shrink: 0; }
+.toast-msg     { flex: 1; line-height: 1.4; }
+.toast-close-x { font-size: 11px; color: #bbb; flex-shrink: 0; transition: color .12s; }
+.toast-item:hover .toast-close-x { color: #666; }
+.toast-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; opacity: 0.25; width: 100%; animation: toast-progress 3.5s linear forwards; }
+@keyframes toast-slide-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toast-progress  { from { width: 100%; } to { width: 0%; } }
 
 .tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; background: #f0f0f0; color: #555; margin: 1px; }
 
@@ -101,11 +147,14 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .widget-card .widget-type { font-size: 11px; color: #1677ff; font-weight: 600; margin-bottom: 4px; }
 .widget-card .widget-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
 
-.confirm-box { background: #fff; border-radius: 12px; padding: 28px 24px; max-width: 380px; width: 90%; text-align: center; }
-.confirm-icon { font-size: 34px; margin-bottom: 10px; }
-.confirm-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-.confirm-msg { font-size: 13px; color: #666; margin-bottom: 20px; white-space: pre-line; }
+.confirm-box { background: #fff; border-radius: 16px; padding: 32px 28px 26px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.18); }
+.confirm-icon { font-size: 42px; margin-bottom: 14px; line-height: 1; }
+.confirm-title { font-size: 17px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+.confirm-msg { font-size: 13px; color: #888; margin-bottom: 18px; white-space: pre-line; line-height: 1.6; }
+.confirm-details { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+.confirm-detail-badge { font-size: 13px !important; padding: 5px 14px !important; border-radius: 20px !important; }
 .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.confirm-actions .btn { min-width: 88px; padding: 9px 18px; font-size: 14px; }
 
 /* ── Top Navigation ── */
 .admin-top-nav { background: #1a1a2e; color: #fff; padding: 0 20px 0 8px; display: flex; align-items: center; height: 50px; gap: 2px; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
