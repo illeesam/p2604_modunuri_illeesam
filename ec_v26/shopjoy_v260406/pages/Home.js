@@ -61,7 +61,7 @@ window.Home = {
         @mouseenter="$event.currentTarget.style.borderColor='var(--blue)';$event.currentTarget.style.transform='translateY(-2px)'"
         @mouseleave="$event.currentTarget.style.borderColor='var(--border)';$event.currentTarget.style.transform='translateY(0)'">
         <div style="font-size:1.8rem;margin-bottom:8px;">{{ catEmoji(cat.categoryId) }}</div>
-        <div style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">{{ cat.categoryName }}</div>
+        <div style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">{{ cat.categoryNm }}</div>
       </button>
     </div>
   </div>
@@ -85,7 +85,7 @@ window.Home = {
         </div>
         <div style="padding:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ p.productName }}</span>
+            <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ p.prodNm }}</span>
             <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
           </div>
           <!-- Color swatches -->
@@ -118,7 +118,7 @@ window.Home = {
         </div>
         <div style="padding:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ p.productName }}</span>
+            <span style="font-weight:700;color:var(--text-primary);font-size:0.95rem;">{{ p.prodNm }}</span>
             <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
           </div>
           <div style="display:flex;gap:5px;margin-bottom:10px;">
@@ -153,7 +153,7 @@ window.Home = {
       if (!p) return '';
       const cats = (props.config && props.config.categorys) || [];
       const row = cats.find(c => c.categoryId === p.categoryId);
-      return row ? row.categoryName : p.categoryId;
+      return row ? row.categoryNm : p.categoryId;
     }
 
     function catEmoji(id) {

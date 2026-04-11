@@ -4,7 +4,7 @@ window.BbsMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchBbmId = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -29,13 +29,13 @@ window.BbsMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const bbmOptions = computed(() => props.adminData.bbms.map(b => ({ value: b.bbmId, label: b.bbmName })));
-    const bbmName = (bbmId) => { const b = props.adminData.bbms.find(x => x.bbmId === bbmId); return b ? b.bbmName : bbmId; };
+    const bbmOptions = computed(() => props.adminData.bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
+    const bbmNm = (bbmId) => { const b = props.adminData.bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
 
     const applied = reactive({ kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' });
     const filtered = computed(() => props.adminData.bbss.filter(b => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !b.title.toLowerCase().includes(kw) && !String(b.author_nm || '').toLowerCase().includes(kw)) return false;
+      if (kw && !b.title.toLowerCase().includes(kw) && !String(b.authorNm || '').toLowerCase().includes(kw)) return false;
       if (applied.bbmId && b.bbmId !== Number(applied.bbmId)) return false;
       if (applied.status && b.statusCd !== applied.status) return false;
       const d = String(b.regDate || '').slice(0, 10);
@@ -73,9 +73,9 @@ window.BbsMng = {
         },
       });
     };
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'author_nm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
 
-    return { siteName, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbmOptions, bbmName, exportExcel };
+    return { siteNm, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`
 <div>
@@ -111,14 +111,14 @@ window.BbsMng = {
         <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="b in pageList" :key="b.bbsId" :style="selectedId===b.bbsId?'background:#fff8f9;':''">
           <td>{{ b.bbsId }}</td>
-          <td><span class="badge badge-gray">{{ bbmName(b.bbmId) }}</span></td>
+          <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
           <td><span class="title-link" @click="loadDetail(b.bbsId)" :style="selectedId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="selectedId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ b.author_nm }}</td>
+          <td>{{ b.authorNm }}</td>
           <td style="text-align:center;">{{ b.viewCount }}</td>
           <td style="text-align:center;">{{ b.commentCount }}</td>
           <td style="font-size:11px;color:#888;">{{ b.attachGrpId || '-' }}</td>
           <td><span class="badge" :class="statusBadge(b.statusCd)">{{ b.statusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td>{{ b.regDate }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(b.bbsId)">수정</button>

@@ -7,7 +7,7 @@ window.ClaimDtl = {
     const isNew = computed(() => !props.editId);
 
     const form = reactive({
-      claimId: '', userId: '', userName: '', orderId: '', productName: '',
+      claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
       type: '취소', statusCd: '취소요청', reasonCd: '', reasonDetail: '',
       refundAmount: 0, refundMethodCd: '계좌환불', requestDate: '', memo: '',
     });
@@ -125,7 +125,7 @@ window.ClaimDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.userName" :readonly="viewMode" />
+        <input class="form-control" v-model="form.userNm" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-row">
@@ -144,7 +144,7 @@ window.ClaimDtl = {
     </div>
     <div class="form-group">
       <label class="form-label">상품명</label>
-      <input class="form-control" v-model="form.productName" :readonly="viewMode" />
+      <input class="form-control" v-model="form.prodNm" :readonly="viewMode" />
     </div>
     <div class="form-row">
       <div class="form-group">

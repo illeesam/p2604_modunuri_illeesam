@@ -26,9 +26,9 @@ window.DlivHist = {
     <template v-if="relatedOrder">
       <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ relatedOrder.orderId }}</span></div>
       <div class="detail-row"><span class="detail-label">회원</span>
-        <span class="detail-value"><span class="ref-link" @click="showRefModal('member', relatedOrder.userId)">{{ relatedOrder.userName }}</span></span>
+        <span class="detail-value"><span class="ref-link" @click="showRefModal('member', relatedOrder.userId)">{{ relatedOrder.userNm }}</span></span>
       </div>
-      <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ relatedOrder.productName }}</span></div>
+      <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ relatedOrder.prodNm }}</span></div>
       <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ relatedOrder.totalPrice.toLocaleString() }}원</span></div>
       <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ relatedOrder.statusCd }}</span></div>
       <div style="margin-top:14px;"><button class="btn btn-blue btn-sm" @click="navigate('ecOrderDtl',{id:relatedOrder.orderId})">주문 상세 수정</button></div>

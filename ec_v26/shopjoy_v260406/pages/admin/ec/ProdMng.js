@@ -11,7 +11,7 @@ window.ProdMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchCate = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -37,7 +37,7 @@ window.ProdMng = {
 
     const filtered = computed(() => props.adminData.products.filter(p => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !p.productName.toLowerCase().includes(kw) && !String(p.productId).includes(kw)) return false;
+      if (kw && !p.prodNm.toLowerCase().includes(kw) && !String(p.productId).includes(kw)) return false;
       if (applied.cate && p.category !== applied.cate) return false;
       if (applied.status && p.status !== applied.status) return false;
       const _d = String(p.regDate || '').slice(0, 10);
@@ -54,13 +54,13 @@ window.ProdMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const categories = computed(() => props.adminData.categories.filter(c => c.status === '활성').map(c => c.categoryName));
+    const categories = computed(() => props.adminData.categories.filter(c => c.status === '활성').map(c => c.categoryNm));
 
     /* ── 카테고리 선택 모달 ── */
     const catModal = Vue.reactive({ show: false });
     const openCatModal = () => { catModal.show = true; };
     const onCatSelect = (cat) => {
-      searchCate.value = cat.categoryName || '';
+      searchCate.value = cat.categoryNm || '';
       catModal.show = false;
     };
     const clearCate = () => { searchCate.value = ''; };
@@ -92,7 +92,7 @@ window.ProdMng = {
         method: 'delete',
         path: `products/${p.productId}`,
         confirmTitle: '삭제',
-        confirmMsg: `[${p.productName}]을 삭제하시겠습니까?`,
+        confirmMsg: `[${p.prodNm}]을 삭제하시겠습니까?`,
         showConfirm: props.showConfirm,
         showToast: props.showToast,
         setApiRes: props.setApiRes,
@@ -109,9 +109,9 @@ window.ProdMng = {
       window.open(`http://127.0.0.1:5502/ec_v26/shopjoy_v260406/index.html#page=detail&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'productId'},{label:'상품명',key:'productName'},{label:'카테고리',key:'category'},{label:'가격',key:'price'},{label:'재고',key:'stock'},{label:'브랜드',key:'brand'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '상품목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'productId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'category'},{label:'가격',key:'price'},{label:'재고',key:'stock'},{label:'브랜드',key:'brand'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '상품목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
   },
   template: /* html */`
 <div>
@@ -149,14 +149,14 @@ window.ProdMng = {
         <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="p in pageList" :key="p.productId" :style="selectedId===p.productId?'background:#fff8f9;':''">
           <td>{{ p.productId }}</td>
-          <td><span class="title-link" @click="loadDetail(p.productId)" :style="selectedId===p.productId?'color:#e8587a;font-weight:700;':''">{{ p.productName }}<span v-if="selectedId===p.productId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="loadDetail(p.productId)" :style="selectedId===p.productId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.productId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ p.category }}</td>
           <td>{{ p.price.toLocaleString() }}원</td>
           <td>{{ p.stock }}개</td>
           <td>{{ p.brand }}</td>
           <td><span class="badge" :class="statusBadge(p.status)">{{ p.status }}</span></td>
           <td>{{ p.regDate }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.productId)">👁</button>
             <button class="btn btn-blue btn-sm" @click="loadDetail(p.productId)">수정</button>

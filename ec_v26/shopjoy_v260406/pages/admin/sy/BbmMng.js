@@ -4,7 +4,7 @@ window.BbmMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
@@ -26,7 +26,7 @@ window.BbmMng = {
     const applied = reactive({ kw: '', type: '', useYn: '' });
     const filtered = computed(() => props.adminData.bbms.filter(b => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !b.bbmName.toLowerCase().includes(kw) && !b.bbmCode.toLowerCase().includes(kw)) return false;
+      if (kw && !b.bbmNm.toLowerCase().includes(kw) && !b.bbmCode.toLowerCase().includes(kw)) return false;
       if (applied.type && b.bbmType !== applied.type) return false;
       if (applied.useYn && b.useYn !== applied.useYn) return false;
       return true;
@@ -54,7 +54,7 @@ window.BbmMng = {
         method: 'delete',
         path: `bbm/${b.bbmId}`,
         confirmTitle: '삭제',
-        confirmMsg: `[${b.bbmName}]을 삭제하시겠습니까?`,
+        confirmMsg: `[${b.bbmNm}]을 삭제하시겠습니까?`,
         showConfirm: props.showConfirm,
         showToast: props.showToast,
         setApiRes: props.setApiRes,
@@ -67,9 +67,9 @@ window.BbmMng = {
       });
     };
     const bbsCount = (bbmId) => props.adminData.bbss.filter(b => b.bbmId === bbmId).length;
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmName'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { siteName, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel };
+    return { siteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel };
   },
   template: /* html */`
 <div>
@@ -100,7 +100,7 @@ window.BbmMng = {
         <tr v-for="b in pageList" :key="b.bbmId" :style="selectedId===b.bbmId?'background:#fff8f9;':''">
           <td>{{ b.bbmId }}</td>
           <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
-          <td><span class="title-link" @click="loadDetail(b.bbmId)" :style="selectedId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmName }}<span v-if="selectedId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="loadDetail(b.bbmId)" :style="selectedId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="selectedId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="typeBadge(b.bbmType)">{{ b.bbmType }}</span></td>
           <td><span class="badge" :class="commentBadge(b.allowComment)">{{ b.allowComment || '불가' }}</span></td>
           <td><span class="badge" :class="attachBadge(b.allowAttach)">{{ b.allowAttach || '불가' }}</span></td>
@@ -110,7 +110,7 @@ window.BbmMng = {
           <td style="text-align:center;">{{ bbsCount(b.bbmId) }}</td>
           <td style="text-align:center;">{{ b.sortOrd }}</td>
           <td><span class="badge" :class="ynBadge(b.useYn)">{{ b.useYn==='Y'?'사용':'미사용' }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td>{{ b.regDate }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(b.bbmId)">수정</button>

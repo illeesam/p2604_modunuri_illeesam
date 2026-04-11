@@ -76,7 +76,7 @@ window.EventDtl = {
     const prodSearch = ref('');
     const filteredProds = computed(() => props.adminData.products.filter(p => {
       const kw = prodSearch.value.trim().toLowerCase();
-      return !kw || p.productName.toLowerCase().includes(kw);
+      return !kw || p.prodNm.toLowerCase().includes(kw);
     }));
     const toggleProduct = (pid) => {
       const idx = form.targetProducts.indexOf(pid);
@@ -237,7 +237,7 @@ window.EventDtl = {
         <tbody>
           <tr v-for="p in selectedProducts" :key="p.productId">
             <td>{{ p.productId }}</td>
-            <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.productName }}</span></td>
+            <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.prodNm }}</span></td>
             <td>{{ p.category }}</td>
             <td>{{ p.price.toLocaleString() }}원</td>
             <td>{{ p.stock }}개</td>
@@ -292,7 +292,7 @@ window.EventDtl = {
       <div class="popup-prod-list">
         <label v-for="p in filteredProds" :key="p.productId" class="popup-prod-item">
           <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
-          <span>{{ p.productName }}</span>
+          <span>{{ p.prodNm }}</span>
           <span style="font-size:12px;color:#888;margin-left:auto;">{{ p.price.toLocaleString() }}원</span>
         </label>
       </div>

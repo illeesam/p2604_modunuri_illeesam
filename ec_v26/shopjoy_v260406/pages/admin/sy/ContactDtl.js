@@ -5,11 +5,11 @@ window.ContactDtl = {
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const tab = ref('content');
 
     const form = reactive({
-      userId: '', userName: '', date: '', categoryCd: '배송 문의',
+      userId: '', userNm: '', date: '', categoryCd: '배송 문의',
       title: '', content: '', statusCd: '요청', answer: '',
     });
     const errors = reactive({});
@@ -60,7 +60,7 @@ window.ContactDtl = {
 
     const onUserIdChange = () => {
       const m = props.adminData.getMember(Number(form.userId));
-      if (m) form.userName = m.member_nm;
+      if (m) form.userNm = m.memberNm;
     };
 
     /* 같은 회원의 다른 문의 */
@@ -115,7 +115,7 @@ window.ContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { isNew, tab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteName, contentEl, answerEl };
+    return { isNew, tab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>
@@ -124,7 +124,7 @@ window.ContactDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
     <div class="tab-nav">
@@ -147,7 +147,7 @@ window.ContactDtl = {
         </div>
         <div class="form-group">
           <label class="form-label">회원명</label>
-          <div class="readonly-field">{{ form.userName || '-' }}</div>
+          <div class="readonly-field">{{ form.userNm || '-' }}</div>
         </div>
       </div>
       <div class="form-row">

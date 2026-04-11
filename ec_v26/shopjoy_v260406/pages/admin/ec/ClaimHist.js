@@ -39,9 +39,9 @@ window.ClaimHist = {
         claimItems.value = [
           {
             _id: itemIdSeq++,
-            bfProductName: c.productName || '-', bfOptionName: '-',
+            bfProdNm: c.prodNm || '-', bfOptionNm: '-',
             bfQty: 1, bfPrice: 0, bfStatus: '결제완료',
-            chgProductName: '', chgOptionName: '',
+            chgProdNm: '', chgOptionNm: '',
             afStatus: c.statusCd, afMemo: '', afAdmin: '', afDate: '',
           },
         ];
@@ -53,8 +53,8 @@ window.ClaimHist = {
     const addClaimItem = () => {
       claimItems.value.push({
         _id: itemIdSeq++,
-        bfProductName: '', bfOptionName: '', bfQty: 1, bfPrice: 0, bfStatus: '결제완료',
-        chgProductName: '', chgOptionName: '',
+        bfProdNm: '', bfOptionNm: '', bfQty: 1, bfPrice: 0, bfStatus: '결제완료',
+        chgProdNm: '', chgOptionNm: '',
         afStatus: claimStatus.value, afMemo: '', afAdmin: '', afDate: '',
       });
     };
@@ -121,10 +121,10 @@ window.ClaimHist = {
           <tr v-for="(item, idx) in claimItems" :key="item._id">
             <td style="border:1px solid #e0e0e0;padding:6px;text-align:center;color:#aaa;">{{ idx + 1 }}</td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#f8fbff;">
-              <input class="form-control" v-model="item.bfProductName" style="font-size:12px;background:transparent;border-color:#91caff;" />
+              <input class="form-control" v-model="item.bfProdNm" style="font-size:12px;background:transparent;border-color:#91caff;" />
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#f8fbff;">
-              <input class="form-control" v-model="item.bfOptionName" style="font-size:12px;background:transparent;border-color:#91caff;" />
+              <input class="form-control" v-model="item.bfOptionNm" style="font-size:12px;background:transparent;border-color:#91caff;" />
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#f8fbff;">
               <input class="form-control" type="number" v-model.number="item.bfQty" style="font-size:12px;text-align:right;background:transparent;border-color:#91caff;" />
@@ -136,10 +136,10 @@ window.ClaimHist = {
               <input class="form-control" v-model="item.bfStatus" style="font-size:12px;background:transparent;border-color:#91caff;" />
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#f6ffed;">
-              <input class="form-control" v-model="item.chgProductName" placeholder="변경 후 상품명" style="font-size:12px;background:transparent;border-color:#95de64;" />
+              <input class="form-control" v-model="item.chgProdNm" placeholder="변경 후 상품명" style="font-size:12px;background:transparent;border-color:#95de64;" />
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#f6ffed;">
-              <input class="form-control" v-model="item.chgOptionName" placeholder="변경 후 옵션" style="font-size:12px;background:transparent;border-color:#95de64;" />
+              <input class="form-control" v-model="item.chgOptionNm" placeholder="변경 후 옵션" style="font-size:12px;background:transparent;border-color:#95de64;" />
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#fff5fb;">
               <select class="form-control" v-model="item.afStatus" style="font-size:12px;background:transparent;border-color:#ffadd2;">
@@ -199,9 +199,9 @@ window.ClaimHist = {
             </div>
             <div style="font-size:13px;color:#555;line-height:2;">
               <span style="color:#888;">회원</span>
-              <span class="ref-link" style="margin:0 6px;" @click="showRefModal('member', relatedOrder.userId)">{{ relatedOrder.userName }}</span>
+              <span class="ref-link" style="margin:0 6px;" @click="showRefModal('member', relatedOrder.userId)">{{ relatedOrder.userNm }}</span>
               <span style="color:#888;">주문일</span> <b style="margin-left:4px;">{{ relatedOrder.orderDate }}</b><br/>
-              <span style="color:#888;">상품</span> <b style="margin-left:4px;">{{ relatedOrder.productName }}</b><br/>
+              <span style="color:#888;">상품</span> <b style="margin-left:4px;">{{ relatedOrder.prodNm }}</b><br/>
               <span style="color:#888;">금액</span> <b style="margin-left:4px;color:#e8587a;">{{ relatedOrder.totalPrice.toLocaleString() }}원</b>
               &nbsp;·&nbsp;<span style="color:#888;">결제</span> <b style="margin-left:4px;">{{ relatedOrder.payMethodCd }}</b><br/>
               <span style="color:#888;">상태</span> <span class="badge badge-blue" style="margin-left:4px;">{{ relatedOrder.statusCd }}</span>

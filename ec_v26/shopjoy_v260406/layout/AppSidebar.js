@@ -14,10 +14,10 @@ window.AppSidebar = {
         <button v-if="!item.authRequired || (auth && auth.user)" type="button"
           @click.stop="navigate(item.menuId, { replace: true }); $emit('close-mobile')"
           class="sidebar-link" :class="{active: isMenuActive(page, item.menuId)}"
-          :data-tip="item.menuName" :aria-label="item.menuName">
+          :data-tip="item.menuNm" :aria-label="item.menuNm">
           <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
           <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">
-            {{ item.menuName }}
+            {{ item.menuNm }}
             <span v-if="item.menuId==='cart' && cartCount>0"
               style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:var(--blue);color:#fff;font-size:0.6rem;font-weight:800;padding:0 4px;margin-left:4px;">
               {{ cartCount > 99 ? '99+' : cartCount }}

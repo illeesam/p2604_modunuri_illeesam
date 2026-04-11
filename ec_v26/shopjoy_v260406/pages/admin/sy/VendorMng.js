@@ -11,7 +11,7 @@ window.VendorMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
@@ -36,7 +36,7 @@ window.VendorMng = {
 
     const filtered = computed(() => props.adminData.vendors.filter(v => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !v.vendorName.toLowerCase().includes(kw) && !v.bizNo.includes(kw)) return false;
+      if (kw && !v.vendorNm.toLowerCase().includes(kw) && !v.bizNo.includes(kw)) return false;
       if (applied.type && v.vendorType !== applied.type) return false;
       if (applied.status && v.statusCd !== applied.status) return false;
       const _d = String(v.contractDate || '').slice(0, 10);
@@ -81,7 +81,7 @@ window.VendorMng = {
         method: 'delete',
         path: `vendors/${v.vendorId}`,
         confirmTitle: '삭제',
-        confirmMsg: `[${v.vendorName}] 업체를 삭제하시겠습니까?`,
+        confirmMsg: `[${v.vendorNm}] 업체를 삭제하시겠습니까?`,
         showConfirm: props.showConfirm,
         showToast: props.showToast,
         setApiRes: props.setApiRes,
@@ -94,9 +94,9 @@ window.VendorMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorName'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -134,14 +134,14 @@ window.VendorMng = {
         <tr v-for="v in pageList" :key="v.vendorId" :style="selectedId===v.vendorId?'background:#fff8f9;':''">
           <td>{{ v.vendorId }}</td>
           <td><span class="badge" :class="typeBadge(v.vendorType)">{{ v.vendorType }}</span></td>
-          <td><span class="title-link" @click="loadDetail(v.vendorId)" :style="selectedId===v.vendorId?'color:#e8587a;font-weight:700;':''">{{ v.vendorName }}<span v-if="selectedId===v.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="loadDetail(v.vendorId)" :style="selectedId===v.vendorId?'color:#e8587a;font-weight:700;':''">{{ v.vendorNm }}<span v-if="selectedId===v.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ v.ceo }}</td>
           <td>{{ v.bizNo }}</td>
           <td>{{ v.phone }}</td>
           <td style="font-size:12px;">{{ v.email }}</td>
           <td>{{ v.contractDate }}</td>
           <td><span class="badge" :class="statusBadge(v.statusCd)">{{ v.statusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(v.vendorId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(v)">삭제</button>

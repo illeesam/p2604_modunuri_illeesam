@@ -12,7 +12,7 @@ window.OrderDetailModal = {
   props: ['show', 'order'],
   emits: ['close'],
   computed: {
-    siteName() { return window.adminCommonFilter?.site?.siteName || 'ShopJoy'; },
+    siteNm() { return window.adminUtil.getSiteNm(); },
   },
   methods: {
     statusColor(s) {
@@ -34,7 +34,7 @@ window.OrderDetailModal = {
     <!-- 헤더 -->
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div>
-        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">📦 주문 상세<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">📦 주문 상세<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ order && order.orderId }}</div>
       </div>
       <button type="button" @click="$emit('close')" aria-label="닫기"
@@ -59,7 +59,7 @@ window.OrderDetailModal = {
           :style="i < order.items.length-1 ? 'border-bottom:1px dashed var(--border);' : ''">
           <span style="font-size:1.4rem;flex-shrink:0;">{{ item.emoji }}</span>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</div>
+            <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</div>
             <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
             <div v-if="item.productCoupon && item.productCoupon.discount"
               style="margin-top:2px;font-size:0.7rem;color:#16a34a;">
@@ -131,7 +131,7 @@ window.ProductModal = {
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:1.8rem;">{{ product && product.emoji }}</span>
         <div>
-          <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">{{ product && product.productName }}</div>
+          <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">{{ product && product.prodNm }}</div>
           <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">#{{ product && product.productId }}</div>
         </div>
       </div>
@@ -244,24 +244,24 @@ window.SiteSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.adminData.sites.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return s.siteName.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k);
+      return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k);
     }));
-    return { siteName, kw, filtered };
+    return { siteNm, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="s in filtered" :key="s.siteId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ s.siteName }}</div>
+        <div class="sel-modal-item-name">{{ s.siteNm }}</div>
         <span class="sel-modal-item-id">{{ s.siteCode }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', s)">선택</button>
       </div>
@@ -277,25 +277,25 @@ window.VendorSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.adminData.vendors.filter(v => {
       if (v.vendorType !== '판매업체') return false;
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return v.vendorName.toLowerCase().includes(k) || v.bizNo.includes(k);
+      return v.vendorNm.toLowerCase().includes(k) || v.bizNo.includes(k);
     }));
-    return { siteName, kw, filtered };
+    return { siteNm, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="v in filtered" :key="v.vendorId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ v.vendorName }}</div>
+        <div class="sel-modal-item-name">{{ v.vendorNm }}</div>
         <span class="sel-modal-item-id">{{ v.vendorId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', v)">선택</button>
       </div>
@@ -311,7 +311,7 @@ window.AdminUserSelectModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed, reactive } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     /* ── 부서 트리 (depth 1부터 시작, root는 별도 렌더) ── */
     const selectedDeptId = ref(null);
@@ -327,7 +327,7 @@ window.AdminUserSelectModal = {
     const flatDeptTree = computed(() => {
       const kw = deptKw.value.trim().toLowerCase();
       const list = kw
-        ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptName.toLowerCase().includes(kw))
+        ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
         : props.adminData.depts;
       return flattenDept(buildDeptTree(list, null, 1)); /* depth 1부터 = 2레벨 */
     });
@@ -338,7 +338,7 @@ window.AdminUserSelectModal = {
       while (queue.length) {
         const id = queue.shift();
         const d = props.adminData.depts.find(x => x.deptId === id);
-        if (d) { names.add(d.deptName); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+        if (d) { names.add(d.deptNm); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
       }
       return names;
     };
@@ -377,7 +377,7 @@ window.AdminUserSelectModal = {
       emit('select', selected);
     };
 
-    return { siteName, selectedDeptId, deptKw, flatDeptTree, userKw, filtered, totalUsers, isChecked, toggleUser, allChecked, toggleAll, selectedCount, confirm };
+    return { siteNm, selectedDeptId, deptKw, flatDeptTree, userKw, filtered, totalUsers, isChecked, toggleUser, allChecked, toggleAll, selectedCount, confirm };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -387,7 +387,7 @@ window.AdminUserSelectModal = {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:15px;font-weight:800;color:#1a1a2e;">사용자 선택</span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">{{ siteName }}</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">{{ siteNm }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span v-if="selectedCount" style="font-size:12px;color:#e8587a;font-weight:700;background:#fff0f4;padding:3px 10px;border-radius:20px;">{{ selectedCount }}명 선택됨</span>
@@ -435,7 +435,7 @@ window.AdminUserSelectModal = {
               }">{{ ['●','◦','·'][Math.min(d._depth-1,2)] }}</span>
             <span style="font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
               :style="{ fontWeight: d._depth===1?'600':'400', color: selectedDeptId===d.deptId?'#fff':'#374151' }">
-              {{ d.deptName }}
+              {{ d.deptNm }}
             </span>
           </div>
           <div v-if="flatDeptTree.length===0" style="padding:20px 0;text-align:center;font-size:12px;color:#bbb;">없음</div>
@@ -523,24 +523,24 @@ window.MemberSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.adminData.members.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return m.member_nm.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
+      return m.memberNm.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
     }));
-    return { siteName, kw, filtered };
+    return { siteNm, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="m in filtered" :key="m.userId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ m.member_nm }} <span style="font-size:11px;color:#888;">{{ m.email }}</span></div>
+        <div class="sel-modal-item-name">{{ m.memberNm }} <span style="font-size:11px;color:#888;">{{ m.email }}</span></div>
         <span class="sel-modal-item-id">{{ m.userId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', m)">선택</button>
       </div>
@@ -556,24 +556,24 @@ window.OrderSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.adminData.orders.filter(o => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return o.orderId.toLowerCase().includes(k) || o.userName.toLowerCase().includes(k) || o.productName.toLowerCase().includes(k);
+      return o.orderId.toLowerCase().includes(k) || o.userNm.toLowerCase().includes(k) || o.prodNm.toLowerCase().includes(k);
     }));
-    return { siteName, kw, filtered };
+    return { siteNm, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="o in filtered" :key="o.orderId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.userName }}</span></div>
+        <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.userNm }}</span></div>
         <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">{{ o.totalPrice.toLocaleString() }}원</span>
         <button class="sel-modal-item-btn" @click="$emit('select', o)">선택</button>
       </div>
@@ -597,7 +597,7 @@ window.BbmSelectModal = {
       if (b.useYn === 'N') return false;
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return b.bbmName.toLowerCase().includes(k) || b.bbmCode.toLowerCase().includes(k) || b.bbmType.toLowerCase().includes(k);
+      return b.bbmNm.toLowerCase().includes(k) || b.bbmCode.toLowerCase().includes(k) || b.bbmType.toLowerCase().includes(k);
     }));
 
     /* 검색어 변경 시 첫 페이지로 */
@@ -612,23 +612,23 @@ window.BbmSelectModal = {
     });
     const setPage = n => { if (n >= 1 && n <= totalPages.value) page.value = n; };
 
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const typeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const scopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
 
-    return { siteName, kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge };
+    return { siteNm, kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:560px;">
-    <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ total }}건</div>
     <div class="sel-modal-list" style="min-height:200px;">
       <div v-if="pageList.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="b in pageList" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
         <div class="sel-modal-item-name" style="flex:1;min-width:0;">
-          <span>{{ b.bbmName }}</span>
+          <span>{{ b.bbmNm }}</span>
           <span class="badge" :class="typeBadge(b.bbmType)" style="margin-left:5px;font-size:10px;">{{ b.bbmType }}</span>
           <span class="badge" :class="scopeBadge(b.scopeType)" style="margin-left:3px;font-size:10px;">{{ b.scopeType }}</span>
         </div>
@@ -693,22 +693,22 @@ window.TemplatePreviewModal = {
 
     /* setup에서 tmpl을 반환해 템플릿에서 직접 접근 가능하게 */
     const fmtKey = k => '{{' + k + '}}';
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
-    return { siteName, tmpl: computed(() => props.tmpl), renderedSubject, renderedContent, isHtml, typeBadge, paramList, fmtKey };
+    return { siteNm, tmpl: computed(() => props.tmpl), renderedSubject, renderedContent, isHtml, typeBadge, paramList, fmtKey };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:700px;">
     <div class="modal-header">
-      <span class="modal-title">📄 템플릿 미리보기<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></span>
+      <span class="modal-title">📄 템플릿 미리보기<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span>
       <span class="modal-close" @click="$emit('close')">✕</span>
     </div>
 
     <!-- 템플릿 기본정보 -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:#f8f9fa;border-radius:8px;">
       <span class="badge" :class="typeBadge">{{ tmpl?.templateType }}</span>
-      <span style="font-weight:700;font-size:14px;color:#1a1a2e;">{{ tmpl?.templateName }}</span>
+      <span style="font-weight:700;font-size:14px;color:#1a1a2e;">{{ tmpl?.templateNm }}</span>
     </div>
 
     <!-- 파라미터 샘플 뱃지 -->
@@ -759,7 +759,7 @@ window.TemplateSendModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, watch } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const targetType = ref('member');
     const kw = ref('');
@@ -776,7 +776,7 @@ window.TemplateSendModal = {
     const flattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); }); return result; };
     const flatDeptTree = computed(() => {
       const k = deptKw.value.trim().toLowerCase();
-      const list = k ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptName.toLowerCase().includes(k)) : props.adminData.depts;
+      const list = k ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : props.adminData.depts;
       return flattenDept(buildDeptTree(list, null, 1));
     });
     const getDescDeptNames = (deptId) => {
@@ -785,7 +785,7 @@ window.TemplateSendModal = {
       while (queue.length) {
         const id = queue.shift();
         const d = props.adminData.depts.find(x => x.deptId === id);
-        if (d) { names.add(d.deptName); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+        if (d) { names.add(d.deptNm); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
       }
       return names;
     };
@@ -799,7 +799,7 @@ window.TemplateSendModal = {
       const k = kw.value.trim().toLowerCase();
       let list = props.adminData.members || [];
       if (selectedGrade.value) list = list.filter(m => m.grade === selectedGrade.value);
-      if (k) list = list.filter(m => m.member_nm?.toLowerCase().includes(k) || m.email?.toLowerCase().includes(k) || String(m.userId).includes(k));
+      if (k) list = list.filter(m => m.memberNm?.toLowerCase().includes(k) || m.email?.toLowerCase().includes(k) || String(m.userId).includes(k));
       return list;
     });
     const userList = computed(() => {
@@ -840,14 +840,14 @@ window.TemplateSendModal = {
       if (!selected.length) { props.showToast('발송할 수신자를 선택하세요.', 'info'); return; }
       const typeLabel = targetType.value === 'member' ? '회원' : '관리자';
       const ok = await props.showConfirm('템플릿 발송',
-        `[${props.tmpl?.templateName}] 템플릿을 선택된 ${typeLabel} ${selected.length}명에게 발송하시겠습니까?`,
+        `[${props.tmpl?.templateNm}] 템플릿을 선택된 ${typeLabel} ${selected.length}명에게 발송하시겠습니까?`,
         { btnOk: '발송', btnCancel: '취소' });
       if (!ok) return;
       props.showToast(`${typeLabel} ${selected.length}명에게 발송 요청이 완료되었습니다.`);
       emit('close');
     };
 
-    return { siteName, targetType, kw, list, selected, isSelected, toggleSelect, allChecked, toggleAll, typeBadge, gradeBadgeColor, doSend,
+    return { siteNm, targetType, kw, list, selected, isSelected, toggleSelect, allChecked, toggleAll, typeBadge, gradeBadgeColor, doSend,
              selectedDeptId, deptKw, flatDeptTree, selectedGrade, MEMBER_GRADES };
   },
   template: /* html */`
@@ -858,7 +858,7 @@ window.TemplateSendModal = {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:15px;font-weight:800;color:#1a1a2e;">📨 발송하기</span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">{{ siteName }}</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">{{ siteNm }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span v-if="selected.length" style="font-size:12px;color:#52c41a;font-weight:700;background:#f6ffed;padding:3px 10px;border-radius:20px;">{{ selected.length }}명 선택됨</span>
@@ -869,7 +869,7 @@ window.TemplateSendModal = {
     <!-- ── 템플릿 정보 바 ── -->
     <div style="display:flex;align-items:center;gap:8px;padding:9px 20px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <span class="badge" :class="typeBadge" style="flex-shrink:0;">{{ tmpl?.templateType }}</span>
-      <span style="font-weight:700;font-size:13px;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ tmpl?.templateName }}</span>
+      <span style="font-weight:700;font-size:13px;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ tmpl?.templateNm }}</span>
       <code v-if="tmpl?.templateCode" style="font-size:11px;color:#888;background:#efefef;padding:1px 8px;border-radius:4px;flex-shrink:0;">{{ tmpl.templateCode }}</code>
     </div>
 
@@ -923,7 +923,7 @@ window.TemplateSendModal = {
               </span>
               <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
                 :style="{ fontWeight:d._depth===1?'600':'400', color:selectedDeptId===d.deptId?'#fff':'#374151' }">
-                {{ d.deptName }}
+                {{ d.deptNm }}
               </span>
             </div>
           </div>
@@ -981,11 +981,11 @@ window.TemplateSendModal = {
               style="width:15px;height:15px;flex-shrink:0;accent-color:#52c41a;cursor:pointer;" />
             <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
               :style="isSelected(item)?'background:#52c41a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
-              {{ (targetType==='member' ? item.member_nm : item.name).charAt(0) }}
+              {{ (targetType==='member' ? item.memberNm : item.name).charAt(0) }}
             </div>
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
-                {{ targetType==='member' ? item.member_nm : item.name }}
+                {{ targetType==='member' ? item.memberNm : item.name }}
                 <span style="font-size:11px;color:#9ca3af;font-weight:400;">{{ item.loginId || item.email }}</span>
               </div>
               <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">
@@ -1026,15 +1026,15 @@ window.TemplateSendModal = {
 
 /* ── 부서 트리 선택 모달 ──────────────────────────────────
    Props: adminData, excludeId (선택 불가 부서 ID, 보통 자기 자신)
-   Emits: select({ deptId, deptName }), close
+   Emits: select({ deptId, deptNm }), close
    ─────────────────────────────────────────────────── */
 /* ── 메뉴 트리 선택 모달 ──────────────────────────────
    Props: adminData, excludeId
-   Emits: select({ menuId, menuName }), close
+   Emits: select({ menuId, menuNm }), close
    ─────────────────────────────────────────────────── */
 /* ── 권한 트리 선택 모달 ──────────────────────────────
    Props: adminData, excludeId
-   Emits: select({ roleId, roleName }), close
+   Emits: select({ roleId, roleNm }), close
    ─────────────────────────────────────────────────── */
 window.RoleTreeModal = {
   name: 'RoleTreeModal',
@@ -1063,20 +1063,20 @@ window.RoleTreeModal = {
       }
       const base = props.adminData.roles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
-      const list  = kwVal ? base.filter(r => r.roleName.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
+      const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
     });
-    const select = (role) => emit('select', { roleId: role.roleId, roleName: role.roleName });
-    const selectNone = () => emit('select', { roleId: null, roleName: '' });
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
-    return { siteName, kw, hoverId, flatTree, select, selectNone };
+    const select = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
+    const selectNone = () => emit('select', { roleId: null, roleNm: '' });
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위권한 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위권한 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">권한을 클릭하면 상위권한으로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1106,7 +1106,7 @@ window.RoleTreeModal = {
           {{ ['●','◦','·','-'][Math.min(r._depth,3)] }}
         </span>
         <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ r.roleName }}</span>
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ r.roleNm }}</span>
           <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ r.roleCode }}</code>
         </div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===r.roleId ? 1 : 0 }">›</span>
@@ -1155,16 +1155,16 @@ window.MenuTreeModal = {
       const base = props.adminData.menus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal
-        ? base.filter(m => m.menuName.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
+        ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
         : base;
       return flatten(buildTree(list, null, 0));
     });
 
-    const select = (menu) => emit('select', { menuId: menu.menuId, menuName: menu.menuName });
-    const selectNone = () => emit('select', { menuId: null, menuName: '' });
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const select = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
+    const selectNone = () => emit('select', { menuId: null, menuNm: '' });
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
-    return { siteName, kw, hoverId, flatTree, select, selectNone };
+    return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1173,7 +1173,7 @@ window.MenuTreeModal = {
     <!-- ── 헤더 ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위메뉴 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위메뉴 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">메뉴를 클릭하면 상위메뉴로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1224,7 +1224,7 @@ window.MenuTreeModal = {
 
         <!-- 메뉴명 + 코드 -->
         <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ m.menuName }}</span>
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ m.menuNm }}</span>
           <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ m.menuCode }}</code>
         </div>
 
@@ -1283,16 +1283,16 @@ window.DeptTreeModal = {
       const base = props.adminData.depts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal
-        ? base.filter(d => d.deptName.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
+        ? base.filter(d => d.deptNm.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
         : base;
       return flatten(buildTree(list, null, 0));
     });
 
-    const select = (dept) => emit('select', { deptId: dept.deptId, deptName: dept.deptName });
-    const selectNone = () => emit('select', { deptId: null, deptName: '' });
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const select = (dept) => emit('select', { deptId: dept.deptId, deptNm: dept.deptNm });
+    const selectNone = () => emit('select', { deptId: null, deptNm: '' });
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
-    return { siteName, kw, hoverId, flatTree, select, selectNone };
+    return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1303,7 +1303,7 @@ window.DeptTreeModal = {
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:18px;line-height:1;">🌳</span>
         <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위부서 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위부서 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
           <div style="font-size:11px;color:#aaa;margin-top:1px;">부서를 클릭하면 상위부서로 지정됩니다</div>
         </div>
       </div>
@@ -1357,7 +1357,7 @@ window.DeptTreeModal = {
 
         <!-- 부서명 + 코드 -->
         <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ d.deptName }}</span>
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ d.deptNm }}</span>
           <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ d.deptCode }}</code>
         </div>
 
@@ -1414,21 +1414,21 @@ window.CategoryTreeModal = {
       }
       const base   = props.adminData.categories.filter(c => !excSet.has(c.categoryId) && c.status === '활성');
       const kwVal  = kw.value.trim().toLowerCase();
-      const list   = kwVal ? base.filter(c => c.categoryName.toLowerCase().includes(kwVal)) : base;
+      const list   = kwVal ? base.filter(c => c.categoryNm.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
     });
 
-    const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryName: cat.categoryName });
-    const selectNone = () => emit('select', { categoryId: null, categoryName: '' });
-    const siteName   = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
-    return { siteName, kw, hoverId, flatTree, select, selectNone };
+    const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
+    const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
+    const siteNm   = computed(() => window.adminUtil.getSiteNm());
+    return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위카테고리 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteName }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위카테고리 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">카테고리를 클릭하면 상위카테고리로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1460,7 +1460,7 @@ window.CategoryTreeModal = {
           {{ ['●','◦','·','-'][Math.min(c._depth,3)] }}
         </span>
         <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ c.categoryName }}</span>
+          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ c.categoryNm }}</span>
           <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ c.depth }}단계</span>
         </div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===c.categoryId ? 1 : 0 }">›</span>

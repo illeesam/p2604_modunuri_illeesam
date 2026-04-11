@@ -9,7 +9,7 @@ window.SiteDtl = {
     const SITE_TYPES = ['이커머스', '숙박공유', '전문가연결', 'IT매칭', '부동산', '교육', '중고거래', '영화예매', '음식배달', '가격비교', '시각화', '홈페이지', '기타'];
 
     const form = reactive({
-      siteCode: '', siteType: '홈페이지', siteName: '', domain: '',
+      siteCode: '', siteType: '홈페이지', siteNm: '', domain: '',
       logoUrl: '', favicon: '', description: '',
       email: '', phone: '',
       zipcode: '', address: '', addressDetail: '',
@@ -20,7 +20,7 @@ window.SiteDtl = {
 
     const schema = yup.object({
       siteCode: yup.string().required('사이트코드를 입력해주세요.'),
-      siteName: yup.string().required('사이트명을 입력해주세요.'),
+      siteNm: yup.string().required('사이트명을 입력해주세요.'),
       domain: yup.string().required('도메인을 입력해주세요.'),
     });
 
@@ -106,8 +106,8 @@ window.SiteDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.siteName" placeholder="ShopJoy" :readonly="viewMode" :class="errors.siteName ? 'is-invalid' : ''" />
-        <span v-if="errors.siteName" class="field-error">{{ errors.siteName }}</span>
+        <input class="form-control" v-model="form.siteNm" placeholder="ShopJoy" :readonly="viewMode" :class="errors.siteNm ? 'is-invalid' : ''" />
+        <span v-if="errors.siteNm" class="field-error">{{ errors.siteNm }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">도메인 <span v-if="!viewMode" class="req">*</span></label>

@@ -68,7 +68,7 @@ window.MyCoupon = {
         <div v-if="myStore.getCouponUsedOrderItems(c)" style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px;">
           <span v-for="(item, ii) in myStore.getCouponUsedOrderItems(c)" :key="ii"
             style="font-size:0.68rem;padding:1px 6px;border-radius:8px;background:var(--bg-base);color:var(--text-muted);border:1px solid var(--border);">
-            {{ item.emoji }} {{ item.productName }}
+            {{ item.emoji }} {{ item.prodNm }}
           </span>
         </div>
       </template>

@@ -83,8 +83,8 @@ window.MyOrder = {
     });
     const claimModalProduct = computed(() => {
       if (!claimModal.order) return null;
-      const name = claimModal.order.items[claimModal.exchangeItemIdx]?.productName;
-      return props.config.products.find(p => p.productName === name) || null;
+      const name = claimModal.order.items[claimModal.exchangeItemIdx]?.prodNm;
+      return props.config.products.find(p => p.prodNm === name) || null;
     });
     const openClaimModal = (orderId, type) => {
       claimModal.show = true; claimModal.type = type; claimModal.orderId = orderId;
@@ -110,7 +110,7 @@ window.MyOrder = {
 
     /* ── 공유 모달 ── */
     const authUser = computed(() => window.shopjoyAuth.state.user);
-    const findProduct = name => props.config.products.find(p => p.productName === name) || null;
+    const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
       if (p) { myStore.productModal.product = p; myStore.productModal.show = true; }
@@ -325,10 +325,10 @@ window.MyOrder = {
         <span style="font-size:1.4rem;">{{ item.emoji }}</span>
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-            <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</span>
-            <button v-if="findProduct(item.productName)" @click="openProductModal(item.productName)"
+            <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</span>
+            <button v-if="findProduct(item.prodNm)" @click="openProductModal(item.prodNm)"
               style="font-size:0.65rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);cursor:pointer;font-weight:600;line-height:1.7;white-space:nowrap;">
-              #{{ findProduct(item.productName).productId }}
+              #{{ findProduct(item.prodNm).productId }}
             </button>
           </div>
           <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
@@ -502,7 +502,7 @@ window.MyOrder = {
               style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;text-align:left;width:100%;"
               :style="claimModal.exchangeItemIdx===idx ? 'background:var(--blue-dim);border:1.5px solid var(--blue);' : 'background:var(--bg-base);border:1.5px solid var(--border);'">
               <span style="font-size:1.2rem;">{{ item.emoji }}</span>
-              <div style="flex:1;"><div style="font-size:0.85rem;font-weight:600;" :style="claimModal.exchangeItemIdx===idx ? 'color:var(--blue);' : 'color:var(--text-primary);'">{{ item.productName }}</div><div style="font-size:0.75rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }}</div></div>
+              <div style="flex:1;"><div style="font-size:0.85rem;font-weight:600;" :style="claimModal.exchangeItemIdx===idx ? 'color:var(--blue);' : 'color:var(--text-primary);'">{{ item.prodNm }}</div><div style="font-size:0.75rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }}</div></div>
               <span v-if="claimModal.exchangeItemIdx===idx" style="color:var(--blue);">✓</span>
             </button>
           </div>

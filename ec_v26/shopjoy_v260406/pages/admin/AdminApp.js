@@ -282,8 +282,27 @@
       const selectModal    = reactive({ type: '', show: false });
       const openSelectModal  = (type) => { selectModal.type = type; selectModal.show = true; };
       const closeSelectModal = () => { selectModal.show = false; selectModal.type = ''; };
-      const onSelectItem  = (type, item) => { commonFilter[type] = item; selectModal.show = false; };
-      const clearFilter   = (type) => { commonFilter[type] = null; };
+      const onSelectItem  = (type, item) => {
+        if      (type === 'site')      commonFilter.siteId   = item?.siteId   ?? null;
+        else if (type === 'vendor')    commonFilter.vendorId = item?.vendorId  ?? null;
+        else if (type === 'adminUser') commonFilter.userId   = item?.adminUserId ?? null;
+        else if (type === 'member')    commonFilter.memberId = item?.memberId  ?? null;
+        else if (type === 'order')     commonFilter.orderId  = item?.orderId   ?? null;
+        selectModal.show = false;
+      };
+      const clearFilter   = (type) => {
+        if      (type === 'site')      commonFilter.siteId   = null;
+        else if (type === 'vendor')    commonFilter.vendorId = null;
+        else if (type === 'adminUser') commonFilter.userId   = null;
+        else if (type === 'member')    commonFilter.memberId = null;
+        else if (type === 'order')     commonFilter.orderId  = null;
+      };
+      /* 공통 필터 표시용 헬퍼 (adminData에서 조회) */
+      const filterSite      = computed(() => adminData.sites?.find(s => s.siteId   === commonFilter.siteId)   || null);
+      const filterVendor    = computed(() => adminData.vendors?.find(v => v.vendorId === commonFilter.vendorId) || null);
+      const filterAdminUser = computed(() => adminData.adminUsers?.find(u => u.adminUserId === commonFilter.userId) || null);
+      const filterMember    = computed(() => adminData.members?.find(m => m.memberId === commonFilter.memberId) || null);
+      const filterOrder     = computed(() => adminData.orders?.find(o => o.orderId  === commonFilter.orderId)  || null);
 
       /* ── 반응형: 화면 크기에 따라 사이드바 자동 열기/닫기 ── */
       const checkWidth = () => { leftMenuOpen.value = window.innerWidth >= 920; };
@@ -432,6 +451,7 @@
         refModal, showRefModal, closeRefModal,
         adminData: window.adminData,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
+        filterSite, filterVendor, filterAdminUser, filterMember, filterOrder,
         tabBarRef, scrollTabs,
         currentUser, loginModal, loginForm, regForm, loginError, userMenuShow,
         openLogin, closeLogin, doLogin, doLogout, doRegister,
@@ -645,53 +665,53 @@
         <div class="popup-sel">
           <div class="popup-sel-label">사이트 <span style="color:#e8587a;font-size:10px;">필수</span></div>
           <div class="popup-sel-row" @click="openSelectModal('site')">
-            <span v-if="commonFilter.site" class="popup-sel-name">{{ commonFilter.site.siteName }}</span>
+            <span v-if="filterSite" class="popup-sel-name">{{ filterSite.siteNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="commonFilter.site" class="popup-sel-id">{{ commonFilter.site.siteCode }}</span>
+            <span v-if="filterSite" class="popup-sel-id">{{ filterSite.siteCode }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
           <div class="popup-sel-label">판매업체
-            <span v-if="commonFilter.vendor" class="popup-sel-clear" @click.stop="clearFilter('vendor')">✕</span>
+            <span v-if="commonFilter.vendorId" class="popup-sel-clear" @click.stop="clearFilter('vendor')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('vendor')">
-            <span v-if="commonFilter.vendor" class="popup-sel-name">{{ commonFilter.vendor.vendorName }}</span>
+            <span v-if="filterVendor" class="popup-sel-name">{{ filterVendor.vendorNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="commonFilter.vendor" class="popup-sel-id">{{ commonFilter.vendor.vendorId }}</span>
+            <span v-if="filterVendor" class="popup-sel-id">{{ filterVendor.vendorId }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
           <div class="popup-sel-label">판매사용자
-            <span v-if="commonFilter.adminUser" class="popup-sel-clear" @click.stop="clearFilter('adminUser')">✕</span>
+            <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('adminUser')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('adminUser')">
-            <span v-if="commonFilter.adminUser" class="popup-sel-name">{{ commonFilter.adminUser.name }}</span>
+            <span v-if="filterAdminUser" class="popup-sel-name">{{ filterAdminUser.name }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="commonFilter.adminUser" class="popup-sel-id">{{ commonFilter.adminUser.adminUserId }}</span>
+            <span v-if="filterAdminUser" class="popup-sel-id">{{ filterAdminUser.adminUserId }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
           <div class="popup-sel-label">회원
-            <span v-if="commonFilter.member" class="popup-sel-clear" @click.stop="clearFilter('member')">✕</span>
+            <span v-if="commonFilter.memberId" class="popup-sel-clear" @click.stop="clearFilter('member')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('member')">
-            <span v-if="commonFilter.member" class="popup-sel-name">{{ commonFilter.member.member_nm }}</span>
+            <span v-if="filterMember" class="popup-sel-name">{{ filterMember.memberNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="commonFilter.member" class="popup-sel-id">{{ commonFilter.member.userId }}</span>
+            <span v-if="filterMember" class="popup-sel-id">{{ filterMember.memberId }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
           <div class="popup-sel-label">주문
-            <span v-if="commonFilter.order" class="popup-sel-clear" @click.stop="clearFilter('order')">✕</span>
+            <span v-if="commonFilter.orderId" class="popup-sel-clear" @click.stop="clearFilter('order')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('order')">
-            <span v-if="commonFilter.order" class="popup-sel-name">{{ commonFilter.order.orderId }}</span>
+            <span v-if="filterOrder" class="popup-sel-name">{{ filterOrder.orderId }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="commonFilter.order" class="popup-sel-id">{{ commonFilter.order.userName }}</span>
+            <span v-if="filterOrder" class="popup-sel-id">{{ filterOrder.userNm }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>

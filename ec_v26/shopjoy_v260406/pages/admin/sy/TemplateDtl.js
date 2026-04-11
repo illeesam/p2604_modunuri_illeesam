@@ -5,10 +5,10 @@ window.TemplateDtl = {
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
-      templateTypeCd: '메일템플릿', templateCode: '', templateName: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
+      templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
     });
     const errors = reactive({});
 
@@ -58,7 +58,7 @@ window.TemplateDtl = {
 
     const schema = yup.object({
       templateCode: yup.string().required('템플릿코드를 입력해주세요.'),
-      templateName: yup.string().required('템플릿명을 입력해주세요.'),
+      templateNm: yup.string().required('템플릿명을 입력해주세요.'),
       content: yup.string().required('내용을 입력해주세요.'),
     });
 
@@ -106,7 +106,7 @@ window.TemplateDtl = {
     const sendOpen    = ref(false);
 
     return { isNew, form, errors, save, TEMPLATE_TYPES, needSubject, isLongContent,
-             useHtmlEditor, quillEditorEl, previewOpen, sendOpen, siteName };
+             useHtmlEditor, quillEditorEl, previewOpen, sendOpen, siteNm };
   },
   template: /* html */`
 <div>
@@ -115,7 +115,7 @@ window.TemplateDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -135,8 +135,8 @@ window.TemplateDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">템플릿명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.templateName" placeholder="템플릿명 입력" :readonly="viewMode" :class="errors.templateName ? 'is-invalid' : ''" />
-        <span v-if="errors.templateName" class="field-error">{{ errors.templateName }}</span>
+        <input class="form-control" v-model="form.templateNm" placeholder="템플릿명 입력" :readonly="viewMode" :class="errors.templateNm ? 'is-invalid' : ''" />
+        <span v-if="errors.templateNm" class="field-error">{{ errors.templateNm }}</span>
       </div>
     </div>
     <div class="form-row" v-if="needSubject">
@@ -148,7 +148,7 @@ window.TemplateDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">내용 <span v-if="!viewMode" class="req">*</span>
-          <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: &#123;&#123;username&#125;&#125;, &#123;&#123;orderId&#125;&#125;, &#123;&#123;productName&#125;&#125;, &#123;&#123;trackingNo&#125;&#125; 등</span>
+          <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: &#123;&#123;username&#125;&#125;, &#123;&#123;orderId&#125;&#125;, &#123;&#123;prodNm&#125;&#125;, &#123;&#123;trackingNo&#125;&#125; 등</span>
         </label>
         <!-- HTML 에디터 (메일, 시스템알림) -->
         <template v-if="useHtmlEditor">

@@ -11,7 +11,7 @@ window.ContactMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchCategory = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -37,7 +37,7 @@ window.ContactMng = {
 
     const filtered = computed(() => props.adminData.contacts.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !c.title.toLowerCase().includes(kw) && !c.userName.toLowerCase().includes(kw)) return false;
+      if (kw && !c.title.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw)) return false;
       if (applied.category && c.categoryCd !== applied.category) return false;
       if (applied.status && c.statusCd !== applied.status) return false;
       const _d = String(c.date || '').slice(0, 10);
@@ -93,9 +93,9 @@ window.ContactMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userName'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -134,12 +134,12 @@ window.ContactMng = {
         <tr v-if="pageList.length===0"><td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="c in pageList" :key="c.inquiryId" :style="selectedId===c.inquiryId?'background:#fff8f9;':''">
           <td>{{ c.inquiryId }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userName }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="tag">{{ c.categoryCd }}</span></td>
           <td><span class="title-link" @click="loadDetail(c.inquiryId)" :style="selectedId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="selectedId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="statusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
           <td>{{ c.date.slice(0,10) }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.inquiryId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>

@@ -37,7 +37,7 @@ window.SiteMng = {
 
     const filtered = computed(() => props.adminData.sites.filter(s => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !s.siteName.toLowerCase().includes(kw) && !s.domain.toLowerCase().includes(kw) && !s.siteCode.toLowerCase().includes(kw)) return false;
+      if (kw && !s.siteNm.toLowerCase().includes(kw) && !s.domain.toLowerCase().includes(kw) && !s.siteCode.toLowerCase().includes(kw)) return false;
       if (applied.type   && s.siteType  !== applied.type)   return false;
       if (applied.status && s.statusCd    !== applied.status)  return false;
       const _d = String(s.regDate || '').slice(0, 10);
@@ -88,7 +88,7 @@ window.SiteMng = {
         method: 'delete',
         path: `sites/${s.siteId}`,
         confirmTitle: '삭제',
-        confirmMsg: `[${s.siteCode}] ${s.siteName} 사이트를 삭제하시겠습니까?`,
+        confirmMsg: `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`,
         showConfirm: props.showConfirm,
         showToast: props.showToast,
         setApiRes: props.setApiRes,
@@ -101,7 +101,7 @@ window.SiteMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteName'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
 
     return {
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
@@ -152,7 +152,7 @@ window.SiteMng = {
           <td><span class="badge" :class="typeBadge(s.siteType)" style="font-size:10px;">{{ s.siteType }}</span></td>
           <td>
             <span class="title-link" @click="loadDetail(s.siteId)" :style="selectedId===s.siteId?'color:#e8587a;font-weight:700;':''">
-              {{ s.siteName }}<span v-if="selectedId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
+              {{ s.siteNm }}<span v-if="selectedId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
             </span>
             <div style="font-size:11px;color:#888;margin-top:2px;">{{ s.description }}</div>
           </td>

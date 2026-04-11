@@ -11,7 +11,7 @@ window.ChattMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -38,7 +38,7 @@ window.ChattMng = {
 
     const filtered = computed(() => sorted.value.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !c.userName.toLowerCase().includes(kw) && !c.subject.toLowerCase().includes(kw)) return false;
+      if (kw && !c.userNm.toLowerCase().includes(kw) && !c.subject.toLowerCase().includes(kw)) return false;
       if (applied.status && c.status !== applied.status) return false;
       const _d = String(c.date || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
@@ -91,9 +91,9 @@ window.ChattMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userName'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -125,7 +125,7 @@ window.ChattMng = {
         <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="c in pageList" :key="c.chatId" :style="selectedId===c.chatId?'background:#fff8f9;':''">
           <td>{{ c.chatId }}</td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userName }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="title-link" @click="loadDetail(c.chatId)" :style="selectedId===c.chatId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="selectedId===c.chatId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888;">{{ c.lastMsg || '-' }}</td>
           <td>{{ c.messages.length }}개</td>
@@ -135,7 +135,7 @@ window.ChattMng = {
           </td>
           <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
           <td>{{ c.date }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.chatId)">보기</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>

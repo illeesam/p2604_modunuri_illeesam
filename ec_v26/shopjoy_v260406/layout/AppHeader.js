@@ -17,23 +17,23 @@ window.AppHeader = {
 
     /* ── Profile 모달 ── */
     const profileOpen = ref(false);
-    const pf = reactive({ member_nm: '', email: '', phone: '', birthdate: '', gender: '',
+    const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
                           postcode: '', address: '', addressDetail: '' });
     const openProfile = () => {
       closeUserMenu();
       const u = props.auth.user || {};
-      pf.member_nm = u.member_nm || ''; pf.email = u.email || ''; pf.phone = u.phone || '';
+      pf.memberNm = u.memberNm || ''; pf.email = u.email || ''; pf.phone = u.phone || '';
       pf.birthdate = u.birthdate || ''; pf.gender = u.gender || '';
       pf.postcode = u.postcode || ''; pf.address = u.address || '';
       pf.addressDetail = u.addressDetail || '';
       profileOpen.value = true;
     };
     const saveProfile = () => {
-      if (!pf.member_nm.trim()) return;
+      if (!pf.memberNm.trim()) return;
       const u = props.auth.user;
       if (u) {
         Object.assign(u, {
-          member_nm: pf.member_nm, phone: pf.phone, birthdate: pf.birthdate, gender: pf.gender,
+          memberNm: pf.memberNm, phone: pf.phone, birthdate: pf.birthdate, gender: pf.gender,
           postcode: pf.postcode, address: pf.address, addressDetail: pf.addressDetail,
         });
         /* Pinia store 에도 반영 */
@@ -148,7 +148,7 @@ window.AppHeader = {
     <template v-for="m in config.topMenu" :key="m.menuId">
       <span v-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
       <button v-else @click="navigate(m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
-        <span>{{ m.menuName }}</span>
+        <span>{{ m.menuNm }}</span>
       </button>
     </template>
   </nav>
@@ -169,9 +169,9 @@ window.AppHeader = {
       <button type="button" @click="toggleUserMenu"
         style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;color:var(--text-primary);font-weight:600;">
         <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">
-          {{ auth.user.member_nm.charAt(0) }}
+          {{ auth.user.memberNm.charAt(0) }}
         </span>
-        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.member_nm }}</span>
+        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.memberNm }}</span>
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
           :style="userMenuOpen?'transform:rotate(180deg);transition:0.2s;':'transition:0.2s;'"><path d="M6 9l6 6 6-6"/></svg>
       </button>
@@ -183,10 +183,10 @@ window.AppHeader = {
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0;">
-              {{ auth.user.member_nm.charAt(0) }}
+              {{ auth.user.memberNm.charAt(0) }}
             </span>
             <div style="min-width:0;">
-              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.member_nm }}</div>
+              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.memberNm }}</div>
               <div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.email }}</div>
             </div>
           </div>
@@ -253,7 +253,7 @@ window.AppHeader = {
         <!-- 이름 -->
         <div>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">이름 <span style="color:var(--blue);">*</span></div>
-          <input v-model="pf.member_nm" :style="IS" placeholder="이름">
+          <input v-model="pf.memberNm" :style="IS" placeholder="이름">
         </div>
         <!-- 이메일 (읽기전용) -->
         <div>
@@ -304,9 +304,9 @@ window.AppHeader = {
       <div style="display:flex;gap:10px;margin-top:22px;">
         <button @click="profileOpen=false"
           style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:600;">취소</button>
-        <button @click="saveProfile" :disabled="!pf.member_nm.trim()"
+        <button @click="saveProfile" :disabled="!pf.memberNm.trim()"
           style="flex:2;padding:12px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.88rem;font-weight:700;"
-          :style="!pf.member_nm.trim()?'opacity:0.5;cursor:not-allowed;':''">저장</button>
+          :style="!pf.memberNm.trim()?'opacity:0.5;cursor:not-allowed;':''">저장</button>
       </div>
     </div>
   </div>

@@ -11,7 +11,7 @@ window.OrderMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -36,7 +36,7 @@ window.OrderMng = {
 
     const filtered = computed(() => props.adminData.orders.filter(o => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userName.toLowerCase().includes(kw) && !o.productName.toLowerCase().includes(kw)) return false;
+      if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
       if (applied.status && o.statusCd !== applied.status) return false;
       const _d = String(o.orderDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
@@ -93,9 +93,9 @@ window.OrderMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userName'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -131,13 +131,13 @@ window.OrderMng = {
         <tr v-if="pageList.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="o in pageList" :key="o.orderId" :style="selectedId===o.orderId?'background:#fff8f9;':''">
           <td><span class="title-link" @click="loadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userName }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userNm }}</span></td>
           <td>{{ o.orderDate }}</td>
-          <td>{{ o.productName }}</td>
+          <td>{{ o.prodNm }}</td>
           <td>{{ o.totalPrice.toLocaleString() }}원</td>
           <td>{{ o.payMethodCd }}</td>
           <td><span class="badge" :class="statusBadge(o.statusCd)">{{ o.statusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(o.orderId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(o)">삭제</button>

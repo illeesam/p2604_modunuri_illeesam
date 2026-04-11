@@ -24,12 +24,12 @@ window.BatchMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['batchName', 'batchCode', 'cron', 'statusCd', 'description'];
+    const EDIT_FIELDS = ['batchNm', 'batchCode', 'cron', 'statusCd', 'description'];
 
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N', _row_check: false,
-      _orig: { batchName: b.batchName, batchCode: b.batchCode, cron: b.cron, statusCd: b.statusCd, description: b.description },
+      _orig: { batchNm: b.batchNm, batchCode: b.batchCode, cron: b.cron, statusCd: b.statusCd, description: b.description },
     });
 
     const loadGrid = () => {
@@ -37,7 +37,7 @@ window.BatchMng = {
       props.adminData.batches
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
-          if (kw && !b.batchName.toLowerCase().includes(kw) && !b.batchCode.toLowerCase().includes(kw)) return false;
+          if (kw && !b.batchNm.toLowerCase().includes(kw) && !b.batchCode.toLowerCase().includes(kw)) return false;
           if (applied.status && b.statusCd !== applied.status) return false;
           if (applied.runStatus && b.runStatus !== applied.runStatus) return false;
           const _d = String(b.regDate || '').slice(0, 10);
@@ -72,7 +72,7 @@ window.BatchMng = {
     const addRow = () => {
       const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        batchId: _tempId--, batchName: '', batchCode: '',
+        batchId: _tempId--, batchNm: '', batchCode: '',
         cron: ref ? ref.cron : '0 0 * * *',
         statusCd: '활성', description: '',
         lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기',
@@ -128,7 +128,7 @@ window.BatchMng = {
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.batchName || !r.batchCode || !r.cron) { props.showToast('배치명, 배치코드, Cron 표현식은 필수 항목입니다.', 'error'); return; }
+        if (!r.batchNm || !r.batchCode || !r.cron) { props.showToast('배치명, 배치코드, Cron 표현식은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
@@ -138,9 +138,9 @@ window.BatchMng = {
       if (!ok) return;
 
       dRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) props.adminData.batches.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(props.adminData.batches[i], { batchName: r.batchName, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
+      uRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(props.adminData.batches[i], { batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
       let nextId = Math.max(...props.adminData.batches.map(b => b.batchId), 0);
-      iRows.forEach(r => { props.adminData.batches.push({ batchId: ++nextId, batchName: r.batchName, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.batches.push({ batchId: ++nextId, batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
 
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
@@ -152,7 +152,7 @@ window.BatchMng = {
 
     /* ── 즉시 실행 ── */
     const runNow = async (row) => {
-      const ok = await props.showConfirm('즉시 실행', `[${row.batchName}] 배치를 즉시 실행하시겠습니까?`);
+      const ok = await props.showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
       if (!ok) return;
       const src = props.adminData.batches.find(x => x.batchId === row.batchId);
       row.runStatus = '실행중';
@@ -300,7 +300,7 @@ window.BatchMng = {
     const statusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const runBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
     const statusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const siteName     = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm     = computed(() => window.adminUtil.getSiteNm());
 
     const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
     const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
@@ -310,12 +310,12 @@ window.BatchMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'batchId'},{label:'배치명',key:'batchName'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
+      [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
       '배치목록.csv'
     );
 
     return {
-      siteName, searchKw, searchStatus, searchRunStatus, searchDateRange, searchDateStart, searchDateEnd,
+      siteNm, searchKw, searchStatus, searchRunStatus, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
@@ -404,7 +404,7 @@ window.BatchMng = {
           <td class="col-id-val">{{ row.batchId > 0 ? row.batchId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
-          <td><input class="grid-input" v-model="row.batchName" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="배치명" /></td>
+          <td><input class="grid-input" v-model="row.batchNm" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="배치명" /></td>
           <td><input class="grid-input grid-mono" v-model="row.batchCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="BATCH_CODE" style="text-transform:uppercase;" /></td>
           <td>
             <div style="display:flex;align-items:center;gap:3px;">
@@ -420,7 +420,7 @@ window.BatchMng = {
           <td><input class="grid-input" v-model="row.description" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명" /></td>
           <td style="font-size:11px;color:#555;text-align:center;white-space:nowrap;">{{ row.lastRun }}</td>
           <td style="text-align:center;"><span class="badge badge-xs" :class="runBadge(row.runStatus)">{{ row.runStatus }}</span></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
           <td style="text-align:center;">
             <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
           </td>

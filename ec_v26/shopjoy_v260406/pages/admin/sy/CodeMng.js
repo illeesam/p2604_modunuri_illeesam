@@ -226,7 +226,7 @@ window.CodeMng = {
       gridRows.forEach(r => { r._row_check = checkAll.value; });
     };
 
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
@@ -242,7 +242,7 @@ window.CodeMng = {
     );
 
     return {
-      siteName,
+      siteNm,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
       searchKw, searchGrp, searchUseYn, grpOptions, applied,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -344,7 +344,7 @@ window.CodeMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>

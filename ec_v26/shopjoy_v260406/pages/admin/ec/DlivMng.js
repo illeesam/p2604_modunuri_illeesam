@@ -11,7 +11,7 @@ window.DlivMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -41,7 +41,7 @@ window.DlivMng = {
     const filtered = computed(() => props.adminData.deliveries.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.dlivId.toLowerCase().includes(kw) && !d.orderId.toLowerCase().includes(kw)
-            && !d.userName.toLowerCase().includes(kw) && !d.receiver.toLowerCase().includes(kw)) return false;
+            && !d.userNm.toLowerCase().includes(kw) && !d.receiver.toLowerCase().includes(kw)) return false;
       if (applied.status && d.statusCd !== applied.status) return false;
       const _d = String(d.regDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
@@ -100,7 +100,7 @@ window.DlivMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -139,13 +139,13 @@ window.DlivMng = {
             </span>
           </td>
           <td><span class="ref-link" @click="showRefModal('order', d.orderId)">{{ d.orderId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', d.userId)">{{ d.userName }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', d.userId)">{{ d.userNm }}</span></td>
           <td>{{ d.receiver }}</td>
           <td>{{ d.courierCd }}</td>
           <td>{{ d.trackingNo || '-' }}</td>
           <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.address }}</td>
           <td><span class="badge" :class="statusBadge(d.statusCd)">{{ d.statusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(d.dlivId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(d)">삭제</button>

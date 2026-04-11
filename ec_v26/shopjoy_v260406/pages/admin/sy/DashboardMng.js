@@ -4,7 +4,7 @@ window.DashboardMng = {
   props: ['navigate', 'adminData', 'showToast'],
   setup(props) {
     const { computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const stats = computed(() => [
       { label: '전체 회원',   value: props.adminData.members?.length || 0,
@@ -46,7 +46,7 @@ window.DashboardMng = {
       { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
     ];
 
-    return { siteName, stats, shortcuts };
+    return { siteNm, stats, shortcuts };
   },
   template: /* html */`
 <div>

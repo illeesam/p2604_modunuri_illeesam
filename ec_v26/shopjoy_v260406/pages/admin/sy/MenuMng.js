@@ -22,7 +22,7 @@ window.MenuMng = {
     const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['menuCode', 'menuName', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];
 
     /* ── 트리 정렬 ── */
     const buildTreeRows = (items) => {
@@ -44,7 +44,7 @@ window.MenuMng = {
 
     const makeRow = (m) => ({
       ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
-      _orig: { menuCode: m.menuCode, menuName: m.menuName, parentId: m.parentId,
+      _orig: { menuCode: m.menuCode, menuNm: m.menuNm, parentId: m.parentId,
                menuUrl: m.menuUrl, menuType: m.menuType, sortOrd: m.sortOrd, useYn: m.useYn, remark: m.remark },
     });
 
@@ -52,7 +52,7 @@ window.MenuMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = props.adminData.menus.filter(m => {
         const kw = applied.kw.trim().toLowerCase();
-        if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuName.toLowerCase().includes(kw)) return false;
+        if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && m.menuType !== applied.type)  return false;
         if (applied.useYn && m.useYn    !== applied.useYn) return false;
         return true;
@@ -91,7 +91,7 @@ window.MenuMng = {
     const addRow = () => {
       const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        menuId: _tempId--, menuCode: '', menuName: '', parentId: ref ? ref.parentId : null,
+        menuId: _tempId--, menuCode: '', menuNm: '', parentId: ref ? ref.parentId : null,
         menuUrl: '', menuType: ref ? ref.menuType : '페이지',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         useYn: 'Y', remark: '',
@@ -150,7 +150,7 @@ window.MenuMng = {
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.menuCode || !r.menuName) { props.showToast('메뉴코드와 메뉴명은 필수 항목입니다.', 'error'); return; }
+        if (!r.menuCode || !r.menuNm) { props.showToast('메뉴코드와 메뉴명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
@@ -159,9 +159,9 @@ window.MenuMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => { const i = props.adminData.menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) props.adminData.menus.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(props.adminData.menus[i], { menuCode: r.menuCode, menuName: r.menuName, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
+      uRows.forEach(r => { const i = props.adminData.menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(props.adminData.menus[i], { menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
       let nextId = Math.max(...props.adminData.menus.map(m => m.menuId), 0);
-      iRows.forEach(r => { props.adminData.menus.push({ menuId: ++nextId, menuCode: r.menuCode, menuName: r.menuName, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.menus.push({ menuId: ++nextId, menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -173,10 +173,10 @@ window.MenuMng = {
     const checkAll = ref(false);
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
 
-    const parentName = (parentId) => {
+    const parentNm = (parentId) => {
       if (!parentId) return '';
       const p = props.adminData.menus.find(m => m.menuId === parentId);
-      return p ? p.menuName : `ID:${parentId}`;
+      return p ? p.menuNm : `ID:${parentId}`;
     };
 
     const menuTreeModal = Vue.reactive({ show: false, targetRow: null });
@@ -186,7 +186,7 @@ window.MenuMng = {
       menuTreeModal.show = false;
     };
 
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
@@ -196,17 +196,17 @@ window.MenuMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuName'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
       '메뉴목록.csv'
     );
 
     return {
       searchKw, searchType, searchUseYn, MENU_TYPES, applied,
-      siteName,
+      siteNm,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
-      checkAll, toggleCheckAll, parentName,
+      checkAll, toggleCheckAll, parentNm,
       menuTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, statusClass, typeClass,
       exportExcel,
@@ -283,7 +283,7 @@ window.MenuMng = {
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
                               fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
                               color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-              <input class="grid-input" v-model="row.menuName" :disabled="row._row_status==='D'"
+              <input class="grid-input" v-model="row.menuNm" :disabled="row._row_status==='D'"
                 @input="onCellChange(row)" style="flex:1;" />
             </div>
           </td>
@@ -293,7 +293,7 @@ window.MenuMng = {
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"
                 style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
+                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                 style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위메뉴 선택"
@@ -314,7 +314,7 @@ window.MenuMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>

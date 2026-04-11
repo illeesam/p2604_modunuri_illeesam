@@ -70,7 +70,7 @@ window.Products = {
     const categoryLabel = p => {
       if (!p) return '';
       const row = allCats.value.find(c => c.categoryId === p.categoryId);
-      return row ? row.categoryName : p.categoryId;
+      return row ? row.categoryNm : p.categoryId;
     };
 
     /* ── 토글 함수 ── */
@@ -91,7 +91,7 @@ window.Products = {
     const filteredProducts = computed(() => {
       let list = allProducts.value;
       const q = searchText.value.trim().toLowerCase();
-      if (q) list = list.filter(p => (p.productName || '').toLowerCase().includes(q) ||
+      if (q) list = list.filter(p => (p.prodNm || '').toLowerCase().includes(q) ||
                                      (p.tags || []).some(t => t.includes(q)));
       const pMin = priceMin.value ? parseInt(priceMin.value, 10) : 0;
       const pMax = priceMax.value ? parseInt(priceMax.value, 10) : Infinity;
@@ -201,7 +201,7 @@ window.Products = {
       :style="selCats.has(cat.categoryId)
         ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
         : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
-      {{ cat.categoryName }}
+      {{ cat.categoryNm }}
       <span v-if="selCats.has(cat.categoryId)"
         style="margin-left:4px;font-size:0.75rem;opacity:0.8;">✓</span>
     </button>
@@ -347,7 +347,7 @@ window.Products = {
       <div style="padding:16px;">
         <!-- 상품명 + 카테고리 -->
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
-          <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;flex:1;line-height:1.4;">{{ p.productName }}</span>
+          <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;flex:1;line-height:1.4;">{{ p.prodNm }}</span>
           <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">{{ categoryLabel(p) }}</span>
         </div>
 

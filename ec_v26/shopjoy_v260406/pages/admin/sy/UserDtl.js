@@ -5,7 +5,7 @@ window.UserDtl = {
   setup(props) {
     const { reactive, computed, onMounted, ref } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const form = reactive({
       loginId: '', name: '', email: '', phone: '',
@@ -52,7 +52,7 @@ window.UserDtl = {
     const openDeptModal = () => { deptModal.show = true; };
     const onDeptSelect = (dept) => {
       form.deptId   = dept.deptId;
-      form.dept     = dept.deptName;
+      form.dept     = dept.deptNm;
       deptModal.show = false;
     };
     const clearDept = () => { form.deptId = null; form.dept = ''; };
@@ -107,7 +107,7 @@ window.UserDtl = {
       });
     };
 
-    return { isNew, form, errors, save, siteName,
+    return { isNew, form, errors, save, siteNm,
              addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
              userRoles, roleTypeBadge };
@@ -119,7 +119,7 @@ window.UserDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -237,7 +237,7 @@ window.UserDtl = {
         <tr v-for="r in userRoles" :key="r.roleId">
           <td style="text-align:center;color:#888;">{{ r.roleId }}</td>
           <td><span style="font-family:monospace;font-size:11px;color:#2563eb;">{{ r.roleCode }}</span></td>
-          <td style="font-weight:600;">{{ r.roleName }}</td>
+          <td style="font-weight:600;">{{ r.roleNm }}</td>
           <td style="text-align:center;">
             <span class="badge" :class="roleTypeBadge(r.roleType)">{{ r.roleType }}</span>
           </td>

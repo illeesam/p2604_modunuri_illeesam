@@ -4,16 +4,16 @@
 
   /* ── 공통 필터 전역 상태 (window.adminCommonFilter) ── */
   window.adminCommonFilter = reactive({
-    site:      null,  // { siteId, siteCode, siteName, ... }
-    vendor:    null,  // { vendorId, vendorName, ... }
-    adminUser: null,  // { adminUserId, name, loginId, ... }
-    member:    null,  // { userId, member_nm, email, ... }
-    order:     null,  // { orderId, userName, ... }
+    siteId:   null,   // sy_site.siteId
+    vendorId: null,   // sy_vendor.vendorId
+    userId:   null,   // sy_user.userId (관리자)
+    memberId: null,   // ec_member.memberId
+    orderId:  null,   // ec_order.orderId
   });
 
   /* 기본값: 첫 번째 사이트(ShopJoy)로 초기화 */
   if (window.adminData && window.adminData.sites && window.adminData.sites.length) {
-    window.adminCommonFilter.site = window.adminData.sites[0];
+    window.adminCommonFilter.siteId = window.adminData.sites[0]?.siteId ?? null;
   }
 
   /* ── 등록기간 옵션 ── */
@@ -69,6 +69,12 @@
   }
 
   window.adminUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange };
+
+  window.adminUtil.getSiteNm = function() {
+    if (!window.adminCommonFilter.siteId) return 'ShopJoy';
+    const site = window.adminData?.sites?.find(s => s.siteId === window.adminCommonFilter.siteId);
+    return site?.siteNm || 'ShopJoy';
+  };
 
   /* ── API 호출 공통 헬퍼 ── */
   window.adminApiCall = async function(opts) {

@@ -5,7 +5,7 @@ window.RoleMng = {
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;
 
-    const siteName  = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm  = computed(() => window.adminUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const PERM_LEVELS = ['없음', '읽기', '쓰기', '관리', '차단'];
     const PERM_COLORS = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
@@ -32,7 +32,7 @@ window.RoleMng = {
     const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['roleCode', 'roleName', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'remark'];
+    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'remark'];
 
     /* ── 트리 정렬 ── */
     const buildTreeRows = (items) => {
@@ -55,7 +55,7 @@ window.RoleMng = {
     const makeRow = (r) => ({
       ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
       restrictPerm: r.restrictPerm || '없음',
-      _orig: { roleCode: r.roleCode, roleName: r.roleName, parentId: r.parentId,
+      _orig: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
                roleType: r.roleType, sortOrd: r.sortOrd, useYn: r.useYn,
                restrictPerm: r.restrictPerm || '없음', remark: r.remark },
     });
@@ -64,7 +64,7 @@ window.RoleMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = props.adminData.roles.filter(r => {
         const kw = applied.kw.trim().toLowerCase();
-        if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleName.toLowerCase().includes(kw)) return false;
+        if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && r.roleType !== applied.type)  return false;
         if (applied.useYn && r.useYn    !== applied.useYn) return false;
         return true;
@@ -106,7 +106,7 @@ window.RoleMng = {
     const addRow = () => {
       const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        roleId: _tempId--, roleCode: '', roleName: '', parentId: ref ? ref.parentId : null,
+        roleId: _tempId--, roleCode: '', roleNm: '', parentId: ref ? ref.parentId : null,
         roleType: ref ? ref.roleType : '업무',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         useYn: 'Y', restrictPerm: '없음', remark: '',
@@ -166,7 +166,7 @@ window.RoleMng = {
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.roleCode || !r.roleName) { props.showToast('권한코드와 권한명은 필수 항목입니다.', 'error'); return; }
+        if (!r.roleCode || !r.roleNm) { props.showToast('권한코드와 권한명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
@@ -180,9 +180,9 @@ window.RoleMng = {
         props.adminData.roleMenus = props.adminData.roleMenus.filter(x => x.roleId !== r.roleId);
         props.adminData.roleUsers = props.adminData.roleUsers.filter(x => x.roleId !== r.roleId);
       });
-      uRows.forEach(r => { const i = props.adminData.roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(props.adminData.roles[i], { roleCode: r.roleCode, roleName: r.roleName, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', remark: r.remark }); });
+      uRows.forEach(r => { const i = props.adminData.roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(props.adminData.roles[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', remark: r.remark }); });
       let nextId = Math.max(...props.adminData.roles.map(r => r.roleId), 0);
-      iRows.forEach(r => { props.adminData.roles.push({ roleId: ++nextId, roleCode: r.roleCode, roleName: r.roleName, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.roles.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
@@ -195,10 +195,10 @@ window.RoleMng = {
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
     const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const parentName = (parentId) => {
+    const parentNm = (parentId) => {
       if (!parentId) return '';
       const p = props.adminData.roles.find(r => r.roleId === parentId);
-      return p ? p.roleName : `ID:${parentId}`;
+      return p ? p.roleNm : `ID:${parentId}`;
     };
 
     const roleTreeModal = Vue.reactive({ show: false, targetRow: null });
@@ -223,7 +223,7 @@ window.RoleMng = {
     const menuTree = computed(() => {
       const kw = menuSearchKw.value.trim().toLowerCase();
       const all = props.adminData.menus;
-      const list = kw ? all.filter(m => m.menuName.toLowerCase().includes(kw) || m.menuCode.toLowerCase().includes(kw)) : all;
+      const list = kw ? all.filter(m => m.menuNm.toLowerCase().includes(kw) || m.menuCode.toLowerCase().includes(kw)) : all;
       return flatMenuTree(buildMenuTree(list, null, 0));
     });
 
@@ -292,27 +292,27 @@ window.RoleMng = {
       if (idx !== -1) props.adminData.roleUsers.splice(idx, 1);
     };
 
-    const selectedRoleName = computed(() => {
+    const selectedRoleNm = computed(() => {
       if (!selectedRoleId.value) return '';
       const r = props.adminData.roles.find(x => x.roleId === selectedRoleId.value);
-      return r ? r.roleName : '';
+      return r ? r.roleNm : '';
     });
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'roleId'},{label:'권한코드',key:'roleCode'},{label:'권한명',key:'roleName'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
+      [{label:'ID',key:'roleId'},{label:'권한코드',key:'roleCode'},{label:'권한명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
       '권한목록.csv'
     );
 
     return {
-      siteName, ROLE_TYPES, PERM_LEVELS, permColor, depthBullet, depthColor, statusClass,
+      siteNm, ROLE_TYPES, PERM_LEVELS, permColor, depthBullet, depthColor, statusClass,
       searchKw, searchType, searchUseYn, applied, onSearch, onReset,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
-      checkAll, toggleCheckAll, parentName,
+      checkAll, toggleCheckAll, parentNm,
       roleTreeModal, openParentModal, onParentSelect,
-      selectedRoleId, selectedRoleName,
+      selectedRoleId, selectedRoleNm,
       menuSearchKw, menuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, menuAllChecked,
       userSelectOpen, roleUsersList, onUserSelect, removeUser,
       exportExcel,
@@ -391,7 +391,7 @@ window.RoleMng = {
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
                               fontSize: row._depth===0?'7px':'12px', flexShrink:0,
                               color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-              <input class="grid-input" v-model="row.roleName" :disabled="row._row_status==='D'"
+              <input class="grid-input" v-model="row.roleNm" :disabled="row._row_status==='D'"
                 @input="onCellChange(row)" style="flex:1;" />
             </div>
           </td>
@@ -401,7 +401,7 @@ window.RoleMng = {
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"
                 style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
+                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                 style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위권한 선택"
@@ -427,7 +427,7 @@ window.RoleMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
@@ -466,7 +466,7 @@ window.RoleMng = {
         <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <b style="font-size:13px;">메뉴 접근권한</b>
-            <span v-if="selectedRoleName" style="font-size:12px;color:#e8587a;">— {{ selectedRoleName }}</span>
+            <span v-if="selectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ selectedRoleNm }}</span>
             <span v-else style="font-size:12px;color:#bbb;">권한을 선택하면 메뉴를 배분할 수 있습니다</span>
           </div>
           <div v-if="selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
@@ -499,7 +499,7 @@ window.RoleMng = {
                             color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
               {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
             </span>
-            <span style="font-size:13px;color:#333;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.menuName }}</span>
+            <span style="font-size:13px;color:#333;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.menuNm }}</span>
             <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin:0 8px;flex-shrink:0;">{{ m.menuCode }}</code>
             <!-- 권한 레벨 토글 버튼 -->
             <div style="display:flex;gap:2px;flex-shrink:0;">
@@ -524,7 +524,7 @@ window.RoleMng = {
         <div class="toolbar">
           <div>
             <b style="font-size:13px;">대상사용자</b>
-            <span v-if="selectedRoleName" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ selectedRoleName }}</span>
+            <span v-if="selectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ selectedRoleNm }}</span>
             <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">권한을 선택하면 사용자를 추가할 수 있습니다</span>
           </div>
           <button v-if="selectedRoleId" class="btn btn-primary btn-sm"

@@ -8,7 +8,7 @@ window.DlivDtl = {
     const tab = ref('info');
 
     const form = reactive({
-      dlivId: '', orderId: '', userId: '', userName: '', receiver: '',
+      dlivId: '', orderId: '', userId: '', userNm: '', receiver: '',
       address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '배송준비', regDate: '', memo: '',
     });
     const errors = reactive({});
@@ -107,7 +107,7 @@ window.DlivDtl = {
         <div class="form-group">
           <label class="form-label">회원명</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userName" :readonly="viewMode" />
+            <input class="form-control" v-model="form.userNm" :readonly="viewMode" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', form.userId)">보기</span>
           </div>
         </div>

@@ -17,7 +17,7 @@ window.DeptMng = {
     let   _tempId    = -1;
     const focusedIdx = ref(null);
 
-    const EDIT_FIELDS = ['deptCode', 'deptName', 'parentId', 'deptTypeCd', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentId', 'deptTypeCd', 'sortOrd', 'useYn', 'remark'];
     const DEPT_TYPES  = ['경영', '운영', '기술', '마케팅', 'CS', '물류', '재무', '인사', '법무', '기타'];
 
     /* ── 페이징 ── */
@@ -50,7 +50,7 @@ window.DeptMng = {
 
     const makeRow = (d) => ({
       ...d, _depth: d._depth || 0, _row_status: 'N', _row_check: false,
-      _orig: { deptCode: d.deptCode, deptName: d.deptName, parentId: d.parentId,
+      _orig: { deptCode: d.deptCode, deptNm: d.deptNm, parentId: d.parentId,
                deptTypeCd: d.deptTypeCd, sortOrd: d.sortOrd, useYn: d.useYn, remark: d.remark },
     });
 
@@ -58,7 +58,7 @@ window.DeptMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = props.adminData.depts.filter(d => {
         const kw = applied.kw.trim().toLowerCase();
-        if (kw && !d.deptCode.toLowerCase().includes(kw) && !d.deptName.toLowerCase().includes(kw)) return false;
+        if (kw && !d.deptCode.toLowerCase().includes(kw) && !d.deptNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && d.deptTypeCd !== applied.type)  return false;
         if (applied.useYn && d.useYn    !== applied.useYn) return false;
         return true;
@@ -91,7 +91,7 @@ window.DeptMng = {
     const addRow = () => {
       const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        deptId: _tempId--, deptCode: '', deptName: '', parentId: ref ? ref.parentId : null,
+        deptId: _tempId--, deptCode: '', deptNm: '', parentId: ref ? ref.parentId : null,
         deptTypeCd: ref ? ref.deptTypeCd : '운영',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         useYn: 'Y', remark: '',
@@ -150,7 +150,7 @@ window.DeptMng = {
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.deptCode || !r.deptName) { props.showToast('부서코드와 부서명은 필수 항목입니다.', 'error'); return; }
+        if (!r.deptCode || !r.deptNm) { props.showToast('부서코드와 부서명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
@@ -159,9 +159,9 @@ window.DeptMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => { const i = props.adminData.depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) props.adminData.depts.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(props.adminData.depts[i], { deptCode: r.deptCode, deptName: r.deptName, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
+      uRows.forEach(r => { const i = props.adminData.depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(props.adminData.depts[i], { deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
       let nextId = Math.max(...props.adminData.depts.map(d => d.deptId), 0);
-      iRows.forEach(r => { props.adminData.depts.push({ deptId: ++nextId, deptCode: r.deptCode, deptName: r.deptName, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.depts.push({ deptId: ++nextId, deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -173,10 +173,10 @@ window.DeptMng = {
     const checkAll = ref(false);
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
 
-    const parentName = (parentId) => {
+    const parentNm = (parentId) => {
       if (!parentId) return '';
       const p = props.adminData.depts.find(d => d.deptId === parentId);
-      return p ? p.deptName : `ID:${parentId}`;
+      return p ? p.deptNm : `ID:${parentId}`;
     };
 
     const deptTreeModal = Vue.reactive({ show: false, targetRow: null });
@@ -186,7 +186,7 @@ window.DeptMng = {
       deptTreeModal.show = false;
     };
 
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
@@ -195,17 +195,17 @@ window.DeptMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptName'},{label:'상위ID',key:'parentId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
       '부서목록.csv'
     );
 
     return {
       searchKw, searchType, searchUseYn, typeOptions, DEPT_TYPES, applied,
-      siteName,
+      siteNm,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
-      checkAll, toggleCheckAll, parentName,
+      checkAll, toggleCheckAll, parentNm,
       deptTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, statusClass,
       exportExcel,
@@ -281,7 +281,7 @@ window.DeptMng = {
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
                               fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
                               color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-              <input class="grid-input" v-model="row.deptName" :disabled="row._row_status==='D'"
+              <input class="grid-input" v-model="row.deptNm" :disabled="row._row_status==='D'"
                 @input="onCellChange(row)" style="flex:1;" />
             </div>
           </td>
@@ -291,7 +291,7 @@ window.DeptMng = {
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"
                 style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
+                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                 style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위부서 선택"
@@ -311,7 +311,7 @@ window.DeptMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>

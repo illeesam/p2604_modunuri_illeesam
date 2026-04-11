@@ -5,9 +5,9 @@ window.BbmDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const form = reactive({
-      bbmCode: '', bbmName: '', bbmType: '일반',
+      bbmCode: '', bbmNm: '', bbmType: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
       contentType: 'textarea', scopeType: '공개',
       sortOrd: 1, useYn: 'Y', remark: '',
@@ -16,7 +16,7 @@ window.BbmDtl = {
 
     const schema = yup.object({
       bbmCode: yup.string().required('게시판코드를 입력해주세요.'),
-      bbmName: yup.string().required('게시판명을 입력해주세요.'),
+      bbmNm: yup.string().required('게시판명을 입력해주세요.'),
     });
 
     onMounted(() => {
@@ -58,7 +58,7 @@ window.BbmDtl = {
       });
     };
 
-    return { isNew, form, errors, save, siteName };
+    return { isNew, form, errors, save, siteNm };
   },
   template: /* html */`
 <div>
@@ -67,7 +67,7 @@ window.BbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -78,8 +78,8 @@ window.BbmDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">게시판명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmName" placeholder="게시판명" :readonly="viewMode" :class="errors.bbmName ? 'is-invalid' : ''" />
-        <span v-if="errors.bbmName" class="field-error">{{ errors.bbmName }}</span>
+        <input class="form-control" v-model="form.bbmNm" placeholder="게시판명" :readonly="viewMode" :class="errors.bbmNm ? 'is-invalid' : ''" />
+        <span v-if="errors.bbmNm" class="field-error">{{ errors.bbmNm }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>

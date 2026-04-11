@@ -71,7 +71,7 @@ window.Detail = {
         <div class="card" style="padding:28px;position:sticky;top:76px;">
           <!-- 상품명 + 카테고리 -->
           <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-            <h1 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;">{{ product.productName }}</h1>
+            <h1 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;">{{ product.prodNm }}</h1>
             <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">{{ categoryLabel(product) }}</span>
           </div>
           <!-- 가격 -->
@@ -210,7 +210,7 @@ window.Detail = {
       if (!p) return '';
       const cats = (props.config && props.config.categorys) || [];
       const row = cats.find(c => c.categoryId === p.categoryId);
-      return row ? row.categoryName : p.categoryId;
+      return row ? row.categoryNm : p.categoryId;
     }
 
     const selectColor = c => {

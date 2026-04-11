@@ -28,7 +28,7 @@ window.BrandMng = {
     const PAGE_SIZES = [10, 20, 50, 100];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['brandCode', 'brandName', 'brandEnName', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
 
     const makeRow = (b) => ({
       ...b,
@@ -43,8 +43,8 @@ window.BrandMng = {
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !b.brandCode?.toLowerCase().includes(kw)
-                 && !b.brandName?.toLowerCase().includes(kw)
-                 && !b.brandEnName?.toLowerCase().includes(kw)) return false;
+                 && !b.brandNm?.toLowerCase().includes(kw)
+                 && !b.brandEnNm?.toLowerCase().includes(kw)) return false;
           if (applied.useYn && b.useYn !== applied.useYn) return false;
           const d = String(b.regDate || '').slice(0, 10);
           if (applied.dateStart && d < applied.dateStart) return false;
@@ -80,7 +80,7 @@ window.BrandMng = {
 
     const addRow = () => {
       const newRow = {
-        brandId: _tempId--, brandCode: '', brandName: '', brandEnName: '',
+        brandId: _tempId--, brandCode: '', brandNm: '', brandEnNm: '',
         logoUrl: '', sortOrd: gridRows.length + 1, useYn: 'Y', remark: '',
         _row_status: 'I', _row_check: false, _orig: null,
       };
@@ -139,7 +139,7 @@ window.BrandMng = {
         props.showToast('변경된 데이터가 없습니다.', 'error'); return;
       }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.brandCode || !r.brandName) {
+        if (!r.brandCode || !r.brandNm) {
           props.showToast('브랜드코드, 브랜드명은 필수 항목입니다.', 'error'); return;
         }
       }
@@ -159,13 +159,13 @@ window.BrandMng = {
       uRows.forEach(r => {
         const idx = props.adminData.brands.findIndex(b => b.brandId === r.brandId);
         if (idx !== -1) Object.assign(props.adminData.brands[idx],
-          { brandCode: r.brandCode, brandName: r.brandName, brandEnName: r.brandEnName,
+          { brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
             logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark });
       });
       let nextId = Math.max(...props.adminData.brands.map(b => b.brandId), 0);
       iRows.forEach(r => {
         props.adminData.brands.push({
-          brandId: ++nextId, brandCode: r.brandCode, brandName: r.brandName, brandEnName: r.brandEnName,
+          brandId: ++nextId, brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
           logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark,
           regDate: new Date().toISOString().slice(0, 10),
         });
@@ -211,8 +211,8 @@ window.BrandMng = {
       [
         { label: 'ID',       key: 'brandId' },
         { label: '브랜드코드', key: 'brandCode' },
-        { label: '브랜드명',  key: 'brandName' },
-        { label: '영문명',    key: 'brandEnName' },
+        { label: '브랜드명',  key: 'brandNm' },
+        { label: '영문명',    key: 'brandEnNm' },
         { label: '로고URL',   key: 'logoUrl' },
         { label: '순서',      key: 'sortOrd' },
         { label: '사용여부',  key: 'useYn' },
@@ -319,12 +319,12 @@ window.BrandMng = {
               placeholder="BRAND_CODE" />
           </td>
           <td>
-            <input class="grid-input" v-model="row.brandName"
+            <input class="grid-input" v-model="row.brandNm"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
               placeholder="브랜드명" />
           </td>
           <td>
-            <input class="grid-input" v-model="row.brandEnName"
+            <input class="grid-input" v-model="row.brandEnNm"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
               placeholder="Brand Name" />
           </td>

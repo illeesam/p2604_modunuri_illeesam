@@ -8,7 +8,7 @@ window.CacheDtl = {
     const tab = ref('info');
 
     const form = reactive({
-      userId: '', userName: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
+      userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
     });
     const errors = reactive({});
 
@@ -76,7 +76,7 @@ window.CacheDtl = {
 
     const onUserIdChange = () => {
       const m = props.adminData.getMember(Number(form.userId));
-      if (m) form.userName = m.member_nm;
+      if (m) form.userNm = m.memberNm;
     };
 
     const typeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
@@ -107,7 +107,7 @@ window.CacheDtl = {
         </div>
         <div class="form-group">
           <label class="form-label">회원명</label>
-          <div class="readonly-field">{{ form.userName || '-' }}</div>
+          <div class="readonly-field">{{ form.userNm || '-' }}</div>
         </div>
       </div>
       <div class="form-row">
@@ -153,7 +153,7 @@ window.CacheDtl = {
     <div v-show="tab==='history'">
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="showRefModal('member', Number(form.userId))">{{ form.userName }}</span> 현재 잔액
+          <span class="ref-link" @click="showRefModal('member', Number(form.userId))">{{ form.userNm }}</span> 현재 잔액
         </span>
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ totalBalance.toLocaleString() }}원</span>
       </div>

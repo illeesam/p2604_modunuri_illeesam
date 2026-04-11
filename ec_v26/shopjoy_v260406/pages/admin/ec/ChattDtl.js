@@ -57,7 +57,7 @@ window.ChattDtl = {
     });
 
     /* 신규 채팅 form */
-    const form = reactive({ userId: '', userName: '', subject: '', status: '진행중' });
+    const form = reactive({ userId: '', userNm: '', subject: '', status: '진행중' });
     const errors = reactive({});
 
     const schema = yup.object({
@@ -104,7 +104,7 @@ window.ChattDtl = {
           const m = props.adminData.getMember(Number(form.userId));
           props.adminData.chats.push({
             chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
-            userId: Number(form.userId), userName: m ? m.member_nm : form.userName,
+            userId: Number(form.userId), userNm: m ? m.memberNm : form.userNm,
             date: new Date().toISOString().slice(0, 16).replace('T', ' '),
             subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
           });
@@ -116,7 +116,7 @@ window.ChattDtl = {
 
     const onUserChange = () => {
       const m = props.adminData.getMember(Number(form.userId));
-      if (m) form.userName = m.member_nm;
+      if (m) form.userNm = m.memberNm;
     };
 
     /* 회원 채팅 목록 조회 (신규 탭) */
@@ -155,7 +155,7 @@ window.ChattDtl = {
           <div>
             <div style="font-size:15px;font-weight:700;">{{ chat.subject }}</div>
             <div style="font-size:12px;color:#888;margin-top:3px;">
-              <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userName }}</span>
+              <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userNm }}</span>
               &nbsp;·&nbsp;{{ chat.date }}
               &nbsp;·&nbsp;<span class="badge" :class="chat.status==='진행중'?'badge-green':'badge-gray'">{{ chat.status }}</span>
             </div>
@@ -194,7 +194,7 @@ window.ChattDtl = {
     <div v-show="tab==='history'">
       <div v-if="chat" style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;gap:12px;">
         <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userName }}</span> 의 다른 채팅
+          <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userNm }}</span> 의 다른 채팅
         </span>
       </div>
       <table class="admin-table" v-if="memberChats.length">
@@ -234,7 +234,7 @@ window.ChattDtl = {
           </div>
           <div class="form-group">
             <label class="form-label">회원명</label>
-            <div class="readonly-field">{{ form.userName || '-' }}</div>
+            <div class="readonly-field">{{ form.userNm || '-' }}</div>
           </div>
         </div>
         <div class="form-group">
@@ -302,7 +302,7 @@ window.ChattDtl = {
       <template v-if="refModal.data">
         <template v-if="refModal.type==='product'">
           <div class="detail-row"><span class="detail-label">상품ID</span><span class="detail-value">{{ refModal.data.productId }}</span></div>
-          <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ refModal.data.productName }}</span></div>
+          <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ refModal.data.prodNm }}</span></div>
           <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">{{ refModal.data.category }}</span></div>
           <div class="detail-row"><span class="detail-label">가격</span><span class="detail-value">{{ refModal.data.price.toLocaleString() }}원</span></div>
           <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ refModal.data.stock }}개</span></div>
@@ -310,9 +310,9 @@ window.ChattDtl = {
         </template>
         <template v-else-if="refModal.type==='order'">
           <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ refModal.data.orderId }}</span></div>
-          <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ refModal.data.userName }}</span></div>
+          <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ refModal.data.userNm }}</span></div>
           <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ refModal.data.orderDate }}</span></div>
-          <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ refModal.data.productName }}</span></div>
+          <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ refModal.data.prodNm }}</span></div>
           <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ refModal.data.totalPrice.toLocaleString() }}원</span></div>
           <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ refModal.data.status }}</span></div>
         </template>

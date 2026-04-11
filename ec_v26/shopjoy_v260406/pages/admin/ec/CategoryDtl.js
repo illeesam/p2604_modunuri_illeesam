@@ -6,12 +6,12 @@ window.CategoryDtl = {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
-      parentId: null, categoryName: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
+      parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
     });
     const errors = reactive({});
 
     const schema = yup.object({
-      categoryName: yup.string().required('카테고리명을 입력해주세요.'),
+      categoryNm: yup.string().required('카테고리명을 입력해주세요.'),
     });
 
     onMounted(() => {
@@ -82,13 +82,13 @@ window.CategoryDtl = {
         <label class="form-label">상위카테고리</label>
         <select class="form-control" v-model="form.parentId" @change="onParentChange">
           <option :value="null">없음 (최상위)</option>
-          <option v-for="c in parentOptions" :key="c.categoryId" :value="c.categoryId">{{ '　'.repeat(c.depth-1) }}{{ c.categoryName }} (depth {{ c.depth }})</option>
+          <option v-for="c in parentOptions" :key="c.categoryId" :value="c.categoryId">{{ '　'.repeat(c.depth-1) }}{{ c.categoryNm }} (depth {{ c.depth }})</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">카테고리명 <span class="req">*</span></label>
-        <input class="form-control" v-model="form.categoryName" placeholder="카테고리명" :class="errors.categoryName ? 'is-invalid' : ''" />
-        <span v-if="errors.categoryName" class="field-error">{{ errors.categoryName }}</span>
+        <input class="form-control" v-model="form.categoryNm" placeholder="카테고리명" :class="errors.categoryNm ? 'is-invalid' : ''" />
+        <span v-if="errors.categoryNm" class="field-error">{{ errors.categoryNm }}</span>
       </div>
     </div>
     <div class="form-row">

@@ -11,7 +11,7 @@ window.DispPanelMng = {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchArea = ref([]);
     const searchStatus = ref('');
     const searchDispDate = ref('');
@@ -203,7 +203,7 @@ window.DispPanelMng = {
     const openCardPreview = (d) => { cardPreviewItem.value = d; };
     const closeCardPreview = () => { cardPreviewItem.value = null; };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, CONDITION_OPTS, AUTH_GRADE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, CONDITION_OPTS, AUTH_GRADE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview };
   },
   template: /* html */`
 <div>
@@ -328,7 +328,7 @@ window.DispPanelMng = {
             </td>
             <td style="text-align:center;font-size:11px;color:#aaa;">{{ d.regDate || '-' }}</td>
             <td style="text-align:center;">
-              <span style="font-size:10px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:1px 7px;white-space:nowrap;">{{ siteName }}</span>
+              <span style="font-size:10px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:1px 7px;white-space:nowrap;">{{ siteNm }}</span>
             </td>
             <td>
               <div class="actions">
@@ -360,7 +360,7 @@ window.DispPanelMng = {
                         style="border-bottom:1px solid #e8eaed;"
                         :style="wi % 2 === 1 ? 'background:#fff;' : ''">
                         <td style="padding:4px 8px;text-align:center;color:#aaa;">{{ w.sortOrder || (wi+1) }}</td>
-                        <td style="padding:4px 8px;color:#444;">{{ w.widgetName || ('위젯 ' + (wi+1)) }}</td>
+                        <td style="padding:4px 8px;color:#444;">{{ w.widgetNm || ('위젯 ' + (wi+1)) }}</td>
                         <td style="padding:4px 8px;text-align:center;">
                           <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 7px;font-size:10px;">{{ wLabel(w.widgetType) }}</span>
                         </td>

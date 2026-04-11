@@ -31,7 +31,7 @@ window.MemberHist = {
         <tr v-for="o in memberOrders" :key="o.orderId">
           <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
           <td>{{ o.orderDate }}</td>
-          <td>{{ o.productName }}</td>
+          <td>{{ o.prodNm }}</td>
           <td>{{ o.totalPrice.toLocaleString() }}원</td>
           <td>{{ o.statusCd }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('ecOrderDtl',{id:o.orderId})">상세</button></td>

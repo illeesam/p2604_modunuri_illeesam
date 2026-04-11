@@ -50,7 +50,7 @@ window.Cart = {
               <!-- 상품 정보 -->
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;color:var(--text-primary);font-size:0.95rem;margin-bottom:4px;">
-                  {{ item.product.productName }}
+                  {{ item.product.prodNm }}
                 </div>
                 <!-- 옵션 태그 -->
                 <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
@@ -94,7 +94,7 @@ window.Cart = {
             <div v-for="(item, idx) in cart" :key="idx"
               style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
               <span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                {{ item.product.productName }} ({{ item.color.name }}/{{ item.size }}) × {{ item.qty }}
+                {{ item.product.prodNm }} ({{ item.color.name }}/{{ item.size }}) × {{ item.qty }}
               </span>
               <span style="font-weight:600;flex-shrink:0;color:var(--text-primary);">{{ formatPrice(item.product.price, item.qty) }}</span>
             </div>

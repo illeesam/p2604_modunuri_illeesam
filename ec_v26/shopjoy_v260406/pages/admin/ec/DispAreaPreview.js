@@ -4,7 +4,7 @@ window.DispAreaPreview = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     /* ── 오늘 날짜 ── */
     const today = new Date().toISOString().slice(0, 10);
@@ -228,7 +228,7 @@ window.DispAreaPreview = {
     };
 
     return {
-      today, siteName,
+      today, siteNm,
       mainTab, switchTab,
       previewDate, viewMode, showDesc, showAreaDrop,
       selectedAreas, allAreaListRaw, areaList,
@@ -257,7 +257,7 @@ window.DispAreaPreview = {
       <span style="font-size:13px;font-weight:400;color:#888;">화면영역별 전시패널 분석 및 미리보기</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
-      🌐 {{ siteName }}
+      🌐 {{ siteNm }}
     </span>
   </div>
 

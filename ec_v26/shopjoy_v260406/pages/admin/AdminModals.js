@@ -58,7 +58,7 @@ window.AdminRefModal = {
     <template v-if="s.type==='member'">
       <template v-if="memberData">
         <div class="detail-row"><span class="detail-label">회원ID</span><span class="detail-value">{{ memberData.userId }}</span></div>
-        <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ memberData.member_nm }}</span></div>
+        <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ memberData.memberNm }}</span></div>
         <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value">{{ memberData.email }}</span></div>
         <div class="detail-row"><span class="detail-label">연락처</span><span class="detail-value">{{ memberData.phone }}</span></div>
         <div class="detail-row"><span class="detail-label">등급</span><span class="detail-value"><span class="badge badge-purple">{{ memberData.gradeCd }}</span></span></div>
@@ -75,7 +75,7 @@ window.AdminRefModal = {
     <template v-else-if="s.type==='product'">
       <template v-if="productData">
         <div class="detail-row"><span class="detail-label">상품ID</span><span class="detail-value">{{ productData.productId }}</span></div>
-        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ productData.productName }}</span></div>
+        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ productData.prodNm }}</span></div>
         <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">{{ productData.category }}</span></div>
         <div class="detail-row"><span class="detail-label">가격</span><span class="detail-value">{{ productData.price.toLocaleString() }}원</span></div>
         <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ productData.stock }}개</span></div>
@@ -90,9 +90,9 @@ window.AdminRefModal = {
     <template v-else-if="s.type==='order'">
       <template v-if="orderData">
         <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ orderData.orderId }}</span></div>
-        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ orderData.userName }} (ID: {{ orderData.userId }})</span></div>
+        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ orderData.userNm }} (ID: {{ orderData.userId }})</span></div>
         <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ orderData.orderDate }}</span></div>
-        <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ orderData.productName }}</span></div>
+        <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ orderData.prodNm }}</span></div>
         <div class="detail-row"><span class="detail-label">결제금액</span><span class="detail-value">{{ orderData.totalPrice.toLocaleString() }}원</span></div>
         <div class="detail-row"><span class="detail-label">결제수단</span><span class="detail-value">{{ orderData.payMethodCd }}</span></div>
         <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(orderData.statusCd)">{{ orderData.statusCd }}</span></span></div>
@@ -104,11 +104,11 @@ window.AdminRefModal = {
     <template v-else-if="s.type==='claim'">
       <template v-if="claimData">
         <div class="detail-row"><span class="detail-label">클레임ID</span><span class="detail-value">{{ claimData.claimId }}</span></div>
-        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ claimData.userName }}</span></div>
+        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ claimData.userNm }}</span></div>
         <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ claimData.orderId }}</span></div>
         <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value"><span class="badge badge-orange">{{ claimData.type }}</span></span></div>
         <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(claimData.statusCd)">{{ claimData.statusCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ claimData.productName }}</span></div>
+        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ claimData.prodNm }}</span></div>
         <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ claimData.reasonCd }}</span></div>
         <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">{{ claimData.requestDate }}</span></div>
         <div class="detail-row" v-if="claimData.refundAmount"><span class="detail-label">환불금액</span><span class="detail-value">{{ claimData.refundAmount.toLocaleString() }}원</span></div>

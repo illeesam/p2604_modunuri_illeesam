@@ -119,7 +119,7 @@ window.Order = {
     onMounted(async () => {
       await Promise.all([loadCoupons(), loadCash()]);
       const u = window.shopjoyAuth?.state?.user;
-      if (u) { form.name = u.member_nm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
+      if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
     });
 
     const errors   = reactive({});
@@ -148,7 +148,7 @@ window.Order = {
           form: { ...form },
           items: (props.cart || []).map((i, idx) => ({
             productId:   i.product.productId,
-            productName: i.product.productName,
+            prodNm: i.product.prodNm,
             emoji:       i.product.emoji,
             color: i.color.name, size: i.size, qty: i.qty,
             price:    parsePrice(i.product.price) * i.qty,
@@ -198,7 +198,7 @@ window.Order = {
           style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
           <span style="font-size:1.5rem;">{{ item.emoji }}</span>
           <div style="flex:1;">
-            <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</div>
+            <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</div>
             <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} × {{ item.qty }}</div>
             <div v-if="item.coupon" style="font-size:0.75rem;color:var(--blue);margin-top:2px;">🎟️ {{ item.coupon }} (-{{ fmt(item.discount) }})</div>
           </div>
@@ -274,7 +274,7 @@ window.Order = {
                 background:'linear-gradient(135deg,'+item.color.hex+'33,'+item.color.hex+'11)'
               }">{{ item.product.emoji }}</div>
               <div style="flex:1;min-width:0;">
-                <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ item.product.productName }}</div>
+                <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ item.product.prodNm }}</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
                   <span style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--blue-dim);color:var(--blue);font-weight:600;">{{ item.color.name }}</span>
                   <span style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--purple-dim);color:var(--purple);font-weight:600;">{{ item.size }}</span>

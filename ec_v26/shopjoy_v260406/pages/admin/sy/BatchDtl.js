@@ -5,14 +5,14 @@ window.BatchDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const form = reactive({
-      batchName: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
+      batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
     });
     const errors = reactive({});
 
     const schema = yup.object({
-      batchName: yup.string().required('배치명을 입력해주세요.'),
+      batchNm: yup.string().required('배치명을 입력해주세요.'),
       batchCode: yup.string().required('배치코드를 입력해주세요.'),
       cron: yup.string().required('Cron 표현식을 입력해주세요.'),
     });
@@ -20,7 +20,7 @@ window.BatchDtl = {
     onMounted(() => {
       if (!isNew.value) {
         const b = props.adminData.batches.find(x => x.batchId === props.editId);
-        if (b) Object.assign(form, { batchName: b.batchName, batchCode: b.batchCode, description: b.description, cron: b.cron, statusCd: b.statusCd });
+        if (b) Object.assign(form, { batchNm: b.batchNm, batchCode: b.batchCode, description: b.description, cron: b.cron, statusCd: b.statusCd });
       }
     });
 
@@ -58,7 +58,7 @@ window.BatchDtl = {
             props.adminData.batches.push({ ...form, batchId: props.adminData.nextId(props.adminData.batches, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
           } else {
             const idx = props.adminData.batches.findIndex(x => x.batchId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchName: form.batchName, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
+            if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
           }
         },
         navigate: props.navigate,
@@ -66,7 +66,7 @@ window.BatchDtl = {
       });
     };
 
-    return { isNew, form, errors, save, CRON_PRESETS, siteName };
+    return { isNew, form, errors, save, CRON_PRESETS, siteNm };
   },
   template: /* html */`
 <div>
@@ -75,14 +75,14 @@ window.BatchDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">배치명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.batchName" placeholder="배치 이름" :readonly="viewMode" :class="errors.batchName ? 'is-invalid' : ''" />
-        <span v-if="errors.batchName" class="field-error">{{ errors.batchName }}</span>
+        <input class="form-control" v-model="form.batchNm" placeholder="배치 이름" :readonly="viewMode" :class="errors.batchNm ? 'is-invalid' : ''" />
+        <span v-if="errors.batchNm" class="field-error">{{ errors.batchNm }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">배치코드 <span v-if="!viewMode" class="req">*</span></label>

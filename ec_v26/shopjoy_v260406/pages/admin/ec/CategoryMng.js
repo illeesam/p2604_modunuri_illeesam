@@ -21,7 +21,7 @@ window.CategoryMng = {
     const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['categoryName', 'parentId', 'sortOrd', 'description', 'status', 'imgUrl'];
+    const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status', 'imgUrl'];
 
     /* ── 트리 정렬 ── */
     const buildTreeRows = (items) => {
@@ -43,7 +43,7 @@ window.CategoryMng = {
 
     const makeRow = (c) => ({
       ...c, _depth: c._depth || 0, _row_status: 'N', _row_check: false,
-      _orig: { categoryName: c.categoryName, parentId: c.parentId,
+      _orig: { categoryNm: c.categoryNm, parentId: c.parentId,
                sortOrd: c.sortOrd, description: c.description, status: c.status, imgUrl: c.imgUrl },
     });
 
@@ -51,7 +51,7 @@ window.CategoryMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = props.adminData.categories.filter(c => {
         const kw = applied.kw.trim().toLowerCase();
-        if (kw && !c.categoryName.toLowerCase().includes(kw)) return false;
+        if (kw && !c.categoryNm.toLowerCase().includes(kw)) return false;
         if (applied.depth  && String(c.depth) !== applied.depth) return false;
         if (applied.status && c.status !== applied.status) return false;
         return true;
@@ -89,7 +89,7 @@ window.CategoryMng = {
     const addRow = () => {
       const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
-        categoryId: _tempId--, categoryName: '', parentId: ref ? ref.parentId : null,
+        categoryId: _tempId--, categoryNm: '', parentId: ref ? ref.parentId : null,
         depth: ref ? (ref.parentId ? calcDepth(ref.parentId) : 1) : 1,
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         description: '', status: '활성', imgUrl: '',
@@ -155,7 +155,7 @@ window.CategoryMng = {
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.categoryName) { props.showToast('카테고리명은 필수 항목입니다.', 'error'); return; }
+        if (!r.categoryNm) { props.showToast('카테고리명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
@@ -164,9 +164,9 @@ window.CategoryMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => { const i = props.adminData.categories.findIndex(c => c.categoryId === r.categoryId); if (i !== -1) props.adminData.categories.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.categories.findIndex(c => c.categoryId === r.categoryId); if (i !== -1) Object.assign(props.adminData.categories[i], { categoryName: r.categoryName, parentId: r.parentId || null, depth: calcDepth(r.parentId), sortOrd: Number(r.sortOrd) || 1, description: r.description, status: r.status, imgUrl: r.imgUrl }); });
+      uRows.forEach(r => { const i = props.adminData.categories.findIndex(c => c.categoryId === r.categoryId); if (i !== -1) Object.assign(props.adminData.categories[i], { categoryNm: r.categoryNm, parentId: r.parentId || null, depth: calcDepth(r.parentId), sortOrd: Number(r.sortOrd) || 1, description: r.description, status: r.status, imgUrl: r.imgUrl }); });
       let nextId = Math.max(...props.adminData.categories.map(c => c.categoryId), 0);
-      iRows.forEach(r => { props.adminData.categories.push({ categoryId: ++nextId, categoryName: r.categoryName, parentId: r.parentId || null, depth: calcDepth(r.parentId), sortOrd: Number(r.sortOrd) || 1, description: r.description, status: r.status, imgUrl: r.imgUrl || '', regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.categories.push({ categoryId: ++nextId, categoryNm: r.categoryNm, parentId: r.parentId || null, depth: calcDepth(r.parentId), sortOrd: Number(r.sortOrd) || 1, description: r.description, status: r.status, imgUrl: r.imgUrl || '', regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -178,10 +178,10 @@ window.CategoryMng = {
     const checkAll = ref(false);
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
 
-    const parentName = (parentId) => {
+    const parentNm = (parentId) => {
       if (!parentId) return '';
       const p = props.adminData.categories.find(c => c.categoryId === parentId);
-      return p ? p.categoryName : `ID:${parentId}`;
+      return p ? p.categoryNm : `ID:${parentId}`;
     };
 
     /* ── 상위카테고리 선택 모달 ── */
@@ -196,7 +196,7 @@ window.CategoryMng = {
       catTreeModal.show = false;
     };
 
-    const siteName     = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm     = computed(() => window.adminUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet  = (d) => DEPTH_BULLETS[Math.min(d, 3)];
@@ -206,17 +206,17 @@ window.CategoryMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'categoryId'},{label:'카테고리명',key:'categoryName'},{label:'상위ID',key:'parentId'},{label:'순서',key:'sortOrd'},{label:'설명',key:'description'},{label:'상태',key:'status'}],
+      [{label:'ID',key:'categoryId'},{label:'카테고리명',key:'categoryNm'},{label:'상위ID',key:'parentId'},{label:'순서',key:'sortOrd'},{label:'설명',key:'description'},{label:'상태',key:'status'}],
       '카테고리목록.csv'
     );
 
     return {
       searchKw, searchDepth, searchStatus, applied,
-      siteName,
+      siteNm,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
-      checkAll, toggleCheckAll, parentName,
+      checkAll, toggleCheckAll, parentNm,
       catTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, statusClass, statusBadge,
       exportExcel,
@@ -289,7 +289,7 @@ window.CategoryMng = {
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
                               fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
                               color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-              <input class="grid-input" v-model="row.categoryName" :disabled="row._row_status==='D'"
+              <input class="grid-input" v-model="row.categoryNm" :disabled="row._row_status==='D'"
                 @input="onCellChange(row)" style="flex:1;" />
             </div>
           </td>
@@ -299,7 +299,7 @@ window.CategoryMng = {
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"
                 style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentName(row.parentId)">{{ parentName(row.parentId) }}</span>
+                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                 style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위카테고리 선택"
@@ -314,7 +314,7 @@ window.CategoryMng = {
               <option>활성</option><option>비활성</option>
             </select>
           </td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteName }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>

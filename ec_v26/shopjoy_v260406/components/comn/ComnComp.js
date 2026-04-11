@@ -9,7 +9,7 @@
      refId       : 참조 ID 문자열 (e.g. 'NOTICE-1')
      showToast   : 토스트 함수
      grpCode     : 그룹 코드 prefix (기본 'COMN_ATTACH')
-     grpName     : 그룹 이름 (기본 '첨부파일')
+     grpNm     : 그룹 이름 (기본 '첨부파일')
      maxCount    : 최대 첨부 개수 (기본 10)
      maxSizeMb   : 파일당 최대 크기 MB (기본 10)
      allowExt    : 허용 확장자 문자열, 쉼표 구분 (기본 '*' = 전체)
@@ -24,7 +24,7 @@ window.ComnAttachGrp = {
     refId:      { default: '' },
     showToast:  { type: Function, default: () => {} },
     grpCode:    { default: 'COMN_ATTACH' },
-    grpName:    { default: '첨부파일' },
+    grpNm:    { default: '첨부파일' },
     maxCount:   { default: 10 },
     maxSizeMb:  { default: 10 },
     allowExt:   { default: '*' },
@@ -82,9 +82,9 @@ window.ComnAttachGrp = {
         if (!grpId) {
           const newGrp = {
             attachGrpId:  props.adminData.nextId(props.adminData.attachGrps, 'attachGrpId'),
-            grpName:      props.grpName,
+            grpNm:      props.grpNm,
             grpCode:      props.grpCode + '_' + Date.now(),
-            description:  props.grpName + ' 자동생성 그룹',
+            description:  props.grpNm + ' 자동생성 그룹',
             maxCount:     props.maxCount,
             maxSizeMb:    props.maxSizeMb,
             allowExt:     props.allowExt,
@@ -99,8 +99,8 @@ window.ComnAttachGrp = {
         props.adminData.attaches.push({
           attachId:     props.adminData.nextId(props.adminData.attaches, 'attachId'),
           attachGrpId:  grpId,
-          attachGrpName: props.grpName,
-          fileName:     file.name,
+          attachGrpNm: props.grpNm,
+          fileNm:     file.name,
           fileSize:     file.size,
           fileExt:      ext,
           url:          '/uploads/comn/' + file.name,
@@ -145,7 +145,7 @@ window.ComnAttachGrp = {
   <div v-if="files.length" class="comn-attach-list">
     <div v-for="f in files" :key="f.attachId" class="comn-attach-item">
       <span class="comn-attach-icon">{{ extIcon(f.fileExt) }}</span>
-      <span class="comn-attach-name" :title="f.fileName">{{ f.fileName }}</span>
+      <span class="comn-attach-name" :title="f.fileNm">{{ f.fileNm }}</span>
       <span class="comn-attach-size">{{ fmtSize(f.fileSize) }}</span>
       <button class="comn-attach-del" @click.stop="removeFile(f.attachId)" title="삭제">✕</button>
     </div>

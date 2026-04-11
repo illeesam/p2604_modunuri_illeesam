@@ -5,7 +5,7 @@ window.CodeDtl = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
     const form = reactive({
       codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
     });
@@ -56,7 +56,7 @@ window.CodeDtl = {
       });
     };
 
-    return { isNew, form, errors, save, siteName };
+    return { isNew, form, errors, save, siteNm };
   },
   template: /* html */`
 <div>
@@ -65,7 +65,7 @@ window.CodeDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
     <div class="form-row">

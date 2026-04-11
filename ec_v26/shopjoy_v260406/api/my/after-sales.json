@@ -10,7 +10,7 @@
     "refundAmount": 89000,
     "refundNote": "캐쉬 20,000원 · 계좌이체 69,000원 환불 완료",
     "items": [
-      { "productName": "퀼티드 숏 점퍼", "emoji": "🧤", "color": "블랙", "size": "M", "qty": 1, "price": 89000 }
+      { "prodNm": "퀼티드 숏 점퍼", "emoji": "🧤", "color": "블랙", "size": "M", "qty": 1, "price": 89000 }
     ]
   },
   {
@@ -25,7 +25,7 @@
     "courier": "CJ대한통운",
     "trackingNo": "RT9988776655",
     "items": [
-      { "productName": "케이블 니트 스웨터", "emoji": "🧶", "color": "버건디", "size": "M", "qty": 1, "price": 49000 }
+      { "prodNm": "케이블 니트 스웨터", "emoji": "🧶", "color": "버건디", "size": "M", "qty": 1, "price": 49000 }
     ]
   },
   {
@@ -40,7 +40,7 @@
     "refundAmount": 45000,
     "refundNote": "상품 회수 확인 후 계좌이체 전액 환불",
     "items": [
-      { "productName": "스트라이프 린넨 셔츠", "emoji": "👔", "color": "베이지브라운", "size": "M", "qty": 1, "price": 45000 }
+      { "prodNm": "스트라이프 린넨 셔츠", "emoji": "👔", "color": "베이지브라운", "size": "M", "qty": 1, "price": 45000 }
     ]
   },
   {
@@ -52,11 +52,11 @@
     "requestedAt": "2026-03-01 13:45",
     "reason": "한 사이즈 크게 교환 희망",
     "exchange": {
-      "from": { "productName": "슬림핏 데님 진", "emoji": "👖", "color": "블랙", "size": "XL", "qty": 1, "price": 59900 },
-      "to": { "productName": "슬림핏 데님 진", "emoji": "👖", "color": "블랙", "size": "L", "qty": 1, "price": 59900 }
+      "from": { "prodNm": "슬림핏 데님 진", "emoji": "👖", "color": "블랙", "size": "XL", "qty": 1, "price": 59900 },
+      "to": { "prodNm": "슬림핏 데님 진", "emoji": "👖", "color": "블랙", "size": "L", "qty": 1, "price": 59900 }
     },
     "items": [
-      { "productName": "슬림핏 데님 진", "emoji": "👖", "color": "블랙", "size": "XL", "qty": 1, "price": 59900 }
+      { "prodNm": "슬림핏 데님 진", "emoji": "👖", "color": "블랙", "size": "XL", "qty": 1, "price": 59900 }
     ],
     "courier": "한진택배",
     "trackingNo": "EX5566778899"
@@ -70,11 +70,11 @@
     "requestedAt": "2026-01-22 18:10",
     "completedAt": "2026-01-28 11:00",
     "exchange": {
-      "from": { "productName": "슬림핏 데님 진", "emoji": "👖", "color": "라이트블루", "size": "M", "qty": 1, "price": 59900 },
-      "to": { "productName": "슬림핏 데님 진", "emoji": "👖", "color": "미드블루", "size": "M", "qty": 1, "price": 59900 }
+      "from": { "prodNm": "슬림핏 데님 진", "emoji": "👖", "color": "라이트블루", "size": "M", "qty": 1, "price": 59900 },
+      "to": { "prodNm": "슬림핏 데님 진", "emoji": "👖", "color": "미드블루", "size": "M", "qty": 1, "price": 59900 }
     },
     "items": [
-      { "productName": "슬림핏 데님 진", "emoji": "👖", "color": "라이트블루", "size": "M", "qty": 1, "price": 59900 }
+      { "prodNm": "슬림핏 데님 진", "emoji": "👖", "color": "라이트블루", "size": "M", "qty": 1, "price": 59900 }
     ]
   },
   {
@@ -86,7 +86,7 @@
     "requestedAt": "2026-04-05 08:50",
     "refundNote": "입금 전 주문으로 취소 접수 · 환불 없음",
     "items": [
-      { "productName": "플로럴 미디 드레스", "emoji": "👗", "color": "화이트플로럴", "size": "S", "qty": 1, "price": 79000 }
+      { "prodNm": "플로럴 미디 드레스", "emoji": "👗", "color": "화이트플로럴", "size": "S", "qty": 1, "price": 79000 }
     ]
   }
 ]

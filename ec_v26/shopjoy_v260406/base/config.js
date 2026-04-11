@@ -12,55 +12,55 @@ window.SITE_CONFIG = {
     "holder": "송성일"
   },
   "topMenu": [
-    { "icon": "🏠", "menuId": "home",     "menuName": "홈" },
-    { "icon": "🗂️", "menuId": "products", "menuName": "상품목록" },
-    { "icon": "📝", "menuId": "order",    "menuName": "주문하기" },
-    { "icon": "📞", "menuId": "contact",  "menuName": "고객센터" },
-    { "icon": "❓", "menuId": "faq",      "menuName": "FAQ" },
+    { "icon": "🏠", "menuId": "home",     "menuNm": "홈" },
+    { "icon": "🗂️", "menuId": "products", "menuNm": "상품목록" },
+    { "icon": "📝", "menuId": "order",    "menuNm": "주문하기" },
+    { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
+    { "icon": "❓", "menuId": "faq",      "menuNm": "FAQ" },
     { "menuId": "divider-disp", "type": "divider" },
-    { "menuId": "dispUi01", "menuName": "전시ui1" },
-    { "menuId": "dispUi02", "menuName": "전시ui2" },
-    { "menuId": "dispUi03", "menuName": "전시ui3" },
-    { "menuId": "dispUi04", "menuName": "전시ui4" },
-    { "menuId": "dispUi05", "menuName": "전시ui5" },
-    { "menuId": "dispUi06", "menuName": "전시ui6" }
+    { "menuId": "dispUi01", "menuNm": "전시ui1" },
+    { "menuId": "dispUi02", "menuNm": "전시ui2" },
+    { "menuId": "dispUi03", "menuNm": "전시ui3" },
+    { "menuId": "dispUi04", "menuNm": "전시ui4" },
+    { "menuId": "dispUi05", "menuNm": "전시ui5" },
+    { "menuId": "dispUi06", "menuNm": "전시ui6" }
   ],
   "sidebarMenu": [
     {
       "section": "쇼핑",
       "items": [
-        { "icon": "🏠", "menuId": "home",     "menuName": "홈" },
-        { "icon": "🗂️", "menuId": "products", "menuName": "상품목록" }
+        { "icon": "🏠", "menuId": "home",     "menuNm": "홈" },
+        { "icon": "🗂️", "menuId": "products", "menuNm": "상품목록" }
       ]
     },
     {
       "section": "구매",
       "items": [
-        { "icon": "📝", "menuId": "order", "menuName": "주문하기" },
-        { "icon": "👤", "menuId": "myOrder", "menuName": "마이페이지", "authRequired": true }
+        { "icon": "📝", "menuId": "order", "menuNm": "주문하기" },
+        { "icon": "👤", "menuId": "myOrder", "menuNm": "마이페이지", "authRequired": true }
       ]
     },
     {
       "section": "고객지원",
       "items": [
-        { "icon": "📞", "menuId": "contact",  "menuName": "고객센터" },
-        { "icon": "❓", "menuId": "faq",      "menuName": "FAQ" },
-        { "icon": "📍", "menuId": "location", "menuName": "위치안내" },
-        { "icon": "🏢", "menuId": "about",    "menuName": "회사소개" }
+        { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
+        { "icon": "❓", "menuId": "faq",      "menuNm": "FAQ" },
+        { "icon": "📍", "menuId": "location", "menuNm": "위치안내" },
+        { "icon": "🏢", "menuId": "about",    "menuNm": "회사소개" }
       ]
     }
   ],
   "categorys": [
-    { "categoryId": "tops",       "categoryName": "상의" },
-    { "categoryId": "bottoms",    "categoryName": "하의" },
-    { "categoryId": "outer",      "categoryName": "아우터" },
-    { "categoryId": "dress",      "categoryName": "원피스" },
-    { "categoryId": "acc",        "categoryName": "악세서리" }
+    { "categoryId": "tops",       "categoryNm": "상의" },
+    { "categoryId": "bottoms",    "categoryNm": "하의" },
+    { "categoryId": "outer",      "categoryNm": "아우터" },
+    { "categoryId": "dress",      "categoryNm": "원피스" },
+    { "categoryId": "acc",        "categoryNm": "악세서리" }
   ],
   "products": [
     {
       "productId": 1,
-      "productName": "오버사이즈 코튼 티셔츠",
+      "prodNm": "오버사이즈 코튼 티셔츠",
       "categoryId": "tops",
       "price": "29,900원",
       "desc": "부드러운 100% 코튼 소재의 여유로운 오버핏 티셔츠. 데일리룩으로 완벽한 베이직 아이템.",
@@ -77,7 +77,7 @@ window.SITE_CONFIG = {
     },
     {
       "productId": 2,
-      "productName": "슬림핏 데님 진",
+      "prodNm": "슬림핏 데님 진",
       "categoryId": "bottoms",
       "price": "59,900원",
       "desc": "클래식한 슬림핏 데님. 신축성 있는 소재로 활동성이 뛰어나며 어떤 상의와도 잘 어울립니다.",
@@ -94,7 +94,7 @@ window.SITE_CONFIG = {
     },
     {
       "productId": 3,
-      "productName": "울 블렌드 롱코트",
+      "prodNm": "울 블렌드 롱코트",
       "categoryId": "outer",
       "price": "119,000원",
       "desc": "고급 울 혼방 소재로 제작한 클래식 롱코트. 세련된 실루엣으로 어떤 코디에도 품격을 더합니다.",
@@ -111,7 +111,7 @@ window.SITE_CONFIG = {
     },
     {
       "productId": 4,
-      "productName": "플로럴 미디 드레스",
+      "prodNm": "플로럴 미디 드레스",
       "categoryId": "dress",
       "price": "79,000원",
       "desc": "화사한 플로럴 패턴의 미디 기장 드레스. 봄·여름 나들이 및 특별한 날에 어울리는 로맨틱한 아이템.",
@@ -127,7 +127,7 @@ window.SITE_CONFIG = {
     },
     {
       "productId": 5,
-      "productName": "스트라이프 린넨 셔츠",
+      "prodNm": "스트라이프 린넨 셔츠",
       "categoryId": "tops",
       "price": "45,000원",
       "desc": "시원한 린넨 소재에 클래식한 스트라이프 패턴. 여름철 가볍고 시원하게 입을 수 있는 셔츠.",
@@ -143,7 +143,7 @@ window.SITE_CONFIG = {
     },
     {
       "productId": 6,
-      "productName": "카고 와이드 팬츠",
+      "prodNm": "카고 와이드 팬츠",
       "categoryId": "bottoms",
       "price": "55,000원",
       "desc": "트렌디한 카고 디테일의 와이드 팬츠. 넉넉한 핏으로 편안하면서도 스타일리시한 룩을 완성합니다.",
@@ -160,7 +160,7 @@ window.SITE_CONFIG = {
     },
     {
       "productId": 7,
-      "productName": "퀼티드 숏 점퍼",
+      "prodNm": "퀼티드 숏 점퍼",
       "categoryId": "outer",
       "price": "89,000원",
       "desc": "보온성이 뛰어난 퀼티드 숏 점퍼. 캐주얼하면서도 세련된 디자인으로 데일리 아우터로 활용하세요.",
@@ -177,7 +177,7 @@ window.SITE_CONFIG = {
     },
     {
       "productId": 8,
-      "productName": "케이블 니트 스웨터",
+      "prodNm": "케이블 니트 스웨터",
       "categoryId": "tops",
       "price": "49,000원",
       "desc": "포근한 케이블 니트 패턴의 스웨터. 가을·겨울 필수 아이템으로 다양한 하의와 코디하기 좋습니다.",

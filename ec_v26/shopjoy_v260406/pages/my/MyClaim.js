@@ -11,7 +11,7 @@ window.MyClaim = {
     const paginate = myStore.paginate;
 
     const authUser = computed(() => window.shopjoyAuth.state.user);
-    const findProduct = name => props.config.products.find(p => p.productName === name) || null;
+    const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
       if (p) { myStore.productModal.product = p; myStore.productModal.show = true; }
@@ -143,10 +143,10 @@ window.MyClaim = {
       <span style="font-size:1.4rem;">{{ item.emoji }}</span>
       <div style="flex:1;">
         <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-          <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.productName }}</span>
-          <button v-if="findProduct(item.productName)" @click="openProductModal(item.productName)"
+          <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</span>
+          <button v-if="findProduct(item.prodNm)" @click="openProductModal(item.prodNm)"
             style="font-size:0.65rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);cursor:pointer;font-weight:600;line-height:1.7;white-space:nowrap;">
-            #{{ findProduct(item.productName).productId }}
+            #{{ findProduct(item.prodNm).productId }}
           </button>
         </div>
         <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>

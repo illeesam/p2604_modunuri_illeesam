@@ -9,11 +9,11 @@ window.AttachMng = {
     const onDateRangeChange = () => {
       if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
     };
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     /* ── 첨부그룹 ── */
     const selectedGrpId = ref(null);
-    const grpForm = reactive({ grpName: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
+    const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     const grpEditId = ref(null);
     const grpEditMode = ref(false);
 
@@ -21,14 +21,14 @@ window.AttachMng = {
 
     const openGrpNew = () => {
       grpEditId.value = null; grpEditMode.value = true;
-      Object.assign(grpForm, { grpName: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
+      Object.assign(grpForm, { grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     };
     const openGrpEdit = (g) => {
       grpEditId.value = g.attachGrpId; grpEditMode.value = true;
       Object.assign(grpForm, { ...g });
     };
     const saveGrp = () => {
-      if (!grpForm.grpName || !grpForm.grpCode) { props.showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
+      if (!grpForm.grpNm || !grpForm.grpCode) { props.showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       if (grpEditId.value === null) {
         props.adminData.attachGrps.push({ ...grpForm, attachGrpId: props.adminData.nextId(props.adminData.attachGrps, 'attachGrpId'), regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('그룹이 등록되었습니다.');
@@ -40,7 +40,7 @@ window.AttachMng = {
       grpEditMode.value = false;
     };
     const deleteGrp = async (g) => {
-      const ok = await props.showConfirm('그룹 삭제', `[${g.grpName}] 그룹을 삭제하시겠습니까?`);
+      const ok = await props.showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = props.adminData.attachGrps.findIndex(x => x.attachGrpId === g.attachGrpId);
       if (idx !== -1) props.adminData.attachGrps.splice(idx, 1);
@@ -50,7 +50,7 @@ window.AttachMng = {
 
     /* ── 첨부파일 ── */
     const searchKw = ref('');
-    const fileForm = reactive({ attachGrpId: null, fileName: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
+    const fileForm = reactive({ attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
     const fileEditId = ref(null);
     const fileEditMode = ref(false);
 
@@ -59,7 +59,7 @@ window.AttachMng = {
     const filteredFiles = computed(() => props.adminData.attaches.filter(a => {
       if (selectedGrpId.value && a.attachGrpId !== selectedGrpId.value) return false;
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !a.fileName.toLowerCase().includes(kw) && !a.refId.toLowerCase().includes(kw)) return false;
+      if (kw && !a.fileNm.toLowerCase().includes(kw) && !a.refId.toLowerCase().includes(kw)) return false;
       const _d = String(a.regDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -81,27 +81,27 @@ window.AttachMng = {
 
     const openFileNew = () => {
       fileEditId.value = null; fileEditMode.value = true;
-      Object.assign(fileForm, { attachGrpId: selectedGrpId.value, fileName: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
+      Object.assign(fileForm, { attachGrpId: selectedGrpId.value, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
     };
     const openFileEdit = (a) => {
       fileEditId.value = a.attachId; fileEditMode.value = true;
       Object.assign(fileForm, { ...a });
     };
     const saveFile = () => {
-      if (!fileForm.fileName || !fileForm.attachGrpId) { props.showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
+      if (!fileForm.fileNm || !fileForm.attachGrpId) { props.showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       const grp = props.adminData.attachGrps.find(g => g.attachGrpId === fileForm.attachGrpId);
       if (fileEditId.value === null) {
-        props.adminData.attaches.push({ ...fileForm, attachId: props.adminData.nextId(props.adminData.attaches, 'attachId'), attachGrpName: grp?.grpName || '', regDate: new Date().toISOString().slice(0, 10) });
+        props.adminData.attaches.push({ ...fileForm, attachId: props.adminData.nextId(props.adminData.attaches, 'attachId'), attachGrpNm: grp?.grpNm || '', regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('파일이 등록되었습니다.');
       } else {
         const idx = props.adminData.attaches.findIndex(x => x.attachId === fileEditId.value);
-        if (idx !== -1) Object.assign(props.adminData.attaches[idx], { ...fileForm, attachGrpName: grp?.grpName || '' });
+        if (idx !== -1) Object.assign(props.adminData.attaches[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
         props.showToast('저장되었습니다.');
       }
       fileEditMode.value = false;
     };
     const deleteFile = async (a) => {
-      const ok = await props.showConfirm('파일 삭제', `[${a.fileName}] 파일을 삭제하시겠습니까?`);
+      const ok = await props.showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = props.adminData.attaches.findIndex(x => x.attachId === a.attachId);
       if (idx !== -1) props.adminData.attaches.splice(idx, 1);
@@ -117,7 +117,7 @@ window.AttachMng = {
     const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
     return {
-      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName,
+      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, saveGrp, deleteGrp,
       searchKw, fileForm, fileEditId, fileEditMode, applied, filteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
       fmtSize, statusBadge,
@@ -141,7 +141,7 @@ window.AttachMng = {
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{{ grpEditId===null ? '그룹 등록' : '그룹 수정' }}</div>
           <div class="form-group" style="margin-bottom:6px;">
             <label class="form-label" style="font-size:12px;">그룹명 <span class="req">*</span></label>
-            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.grpName" placeholder="그룹명" />
+            <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.grpNm" placeholder="그룹명" />
           </div>
           <div class="form-group" style="margin-bottom:6px;">
             <label class="form-label" style="font-size:12px;">그룹코드 <span class="req">*</span></label>
@@ -180,7 +180,7 @@ window.AttachMng = {
           @click="selectGrp(g.attachGrpId)">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div style="font-size:13px;font-weight:600;color:#333;">{{ g.grpName }}</div>
+              <div style="font-size:13px;font-weight:600;color:#333;">{{ g.grpNm }}</div>
               <div style="font-size:11px;color:#888;margin-top:2px;">{{ g.grpCode }} | 최대 {{ g.maxCount }}개 / {{ g.maxSizeMb }}MB</div>
             </div>
             <div style="display:flex;gap:4px;" @click.stop>
@@ -191,7 +191,7 @@ window.AttachMng = {
           <div style="margin-top:4px;">
             <span class="badge" :class="statusBadge(g.status)" style="font-size:10px;">{{ g.status }}</span>
             <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.allowExt }}</span>
-            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ siteName }}</span>
+            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ siteNm }}</span>
           </div>
         </div>
         <div v-if="!adminData.attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">그룹이 없습니다.</div>
@@ -204,7 +204,7 @@ window.AttachMng = {
         <div class="toolbar">
           <b style="font-size:14px;">첨부파일관리
             <span v-if="selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:6px;">
-              ({{ adminData.attachGrps.find(g=>g.attachGrpId===selectedGrpId)?.grpName }})
+              ({{ adminData.attachGrps.find(g=>g.attachGrpId===selectedGrpId)?.grpNm }})
             </span>
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -227,12 +227,12 @@ window.AttachMng = {
               <label class="form-label" style="font-size:12px;">첨부그룹 <span class="req">*</span></label>
               <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model.number="fileForm.attachGrpId">
                 <option :value="null">그룹 선택</option>
-                <option v-for="g in adminData.attachGrps" :key="g.attachGrpId" :value="g.attachGrpId">{{ g.grpName }}</option>
+                <option v-for="g in adminData.attachGrps" :key="g.attachGrpId" :value="g.attachGrpId">{{ g.grpNm }}</option>
               </select>
             </div>
             <div class="form-group" style="flex:2;min-width:200px;margin-bottom:6px;">
               <label class="form-label" style="font-size:12px;">파일명 <span class="req">*</span></label>
-              <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="fileForm.fileName" placeholder="파일명.jpg" />
+              <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="fileForm.fileNm" placeholder="파일명.jpg" />
             </div>
             <div class="form-group" style="flex:1;min-width:100px;margin-bottom:6px;">
               <label class="form-label" style="font-size:12px;">확장자</label>
@@ -267,14 +267,14 @@ window.AttachMng = {
             <tr v-if="filteredFiles.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
             <tr v-for="a in filteredFiles" :key="a.attachId">
               <td>{{ a.attachId }}</td>
-              <td><span style="font-size:11px;color:#666;">{{ a.attachGrpName }}</span></td>
-              <td style="font-size:12px;word-break:break-all;">{{ a.fileName }}</td>
+              <td><span style="font-size:11px;color:#666;">{{ a.attachGrpNm }}</span></td>
+              <td style="font-size:12px;word-break:break-all;">{{ a.fileNm }}</td>
               <td style="font-size:12px;">{{ fmtSize(a.fileSize) }}</td>
               <td><span style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;">{{ a.fileExt }}</span></td>
               <td style="font-size:12px;color:#666;">{{ a.refId }}</td>
               <td style="font-size:12px;color:#888;">{{ a.memo }}</td>
               <td style="font-size:12px;">{{ a.regDate }}</td>
-              <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
+              <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
               <td><div class="actions">
                 <button class="btn btn-blue btn-sm" @click="openFileEdit(a)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="deleteFile(a)">삭제</button>

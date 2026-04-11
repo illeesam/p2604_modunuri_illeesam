@@ -9,7 +9,7 @@ window.OrderDtl = {
     const ORDER_STEPS = ['주문완료', '결제완료', '배송준비중', '배송중', '배송완료', '완료'];
 
     const form = reactive({
-      orderId: '', userId: '', userName: '', orderDate: '', productName: '',
+      orderId: '', userId: '', userNm: '', orderDate: '', prodNm: '',
       totalPrice: 0, payMethodCd: '계좌이체', statusCd: '주문완료', memo: '',
     });
     const errors = reactive({});
@@ -133,7 +133,7 @@ window.OrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.userName" :readonly="viewMode" />
+        <input class="form-control" v-model="form.userNm" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">주문일시</label>
@@ -142,7 +142,7 @@ window.OrderDtl = {
     </div>
     <div class="form-group">
       <label class="form-label">상품</label>
-      <input class="form-control" v-model="form.productName" placeholder="상품명" :readonly="viewMode" />
+      <input class="form-control" v-model="form.prodNm" placeholder="상품명" :readonly="viewMode" />
     </div>
     <div class="form-row">
       <div class="form-group">

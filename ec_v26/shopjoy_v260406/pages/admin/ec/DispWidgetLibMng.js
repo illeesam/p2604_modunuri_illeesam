@@ -4,7 +4,7 @@ window.DispWidgetLibMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const WIDGET_TYPES = [
       { value: 'image_banner',   label: '이미지 배너' },
@@ -114,7 +114,7 @@ window.DispWidgetLibMng = {
       filtered, totalCount, pageList, totalPages, pageNumbers,
       doSearch, doReset,
       selectedId, openMode, detailEditId, detailKey,
-      siteName,
+      siteNm,
       loadDetail, openNew, closeDetail, inlineNavigate,
       contentSummary, statusCls,
     };
@@ -199,7 +199,7 @@ window.DispWidgetLibMng = {
           <td style="text-align:center;"><span class="badge" :class="statusCls(d.status)">{{ d.status }}</span></td>
           <td style="text-align:center;font-size:12px;color:#aaa;">{{ d.regDate }}</td>
           <td style="text-align:center;">
-            <span style="font-size:10px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:1px 7px;white-space:nowrap;">{{ siteName }}</span>
+            <span style="font-size:10px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:1px 7px;white-space:nowrap;">{{ siteNm }}</span>
           </td>
           <td style="text-align:center;">
             <button @click.stop="loadDetail(d.libId)" class="btn btn-sm btn-outline" style="font-size:11px;padding:2px 10px;">수정</button>

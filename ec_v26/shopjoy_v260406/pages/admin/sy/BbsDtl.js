@@ -5,14 +5,14 @@ window.BbsDtl = {
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     /* ── 선택된 게시판 정보 ── */
     const selectedBbm = ref(null);
 
     /* ── 폼 ── */
     const form = reactive({
-      bbmId: null, title: '', author_nm: '', statusCd: '게시',
+      bbmId: null, title: '', authorNm: '', statusCd: '게시',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
     const errors = reactive({});
@@ -33,7 +33,7 @@ window.BbsDtl = {
       form.bbmId = b.bbmId;
       /* 게시판 변경 시 레이아웃 초기화 */
       form.title       = '';
-      form.author_nm      = '';
+      form.authorNm      = '';
       form.statusCd    = '게시';
       form.attachGrpId = null;
       form.contentHtml = '';
@@ -123,7 +123,7 @@ window.BbsDtl = {
 
     return {
       isNew, form, errors, selectedBbm, contentType, allowAttach, attachMaxCount,
-      showBbmModal, showBbmDetail, onBbmSelect, save, siteName,
+      showBbmModal, showBbmDetail, onBbmSelect, save, siteNm,
     };
   },
   template: /* html */`
@@ -133,7 +133,7 @@ window.BbsDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
 
@@ -154,7 +154,7 @@ window.BbsDtl = {
 
         <!-- 선택된 게시판 표시 -->
         <span v-if="selectedBbm" style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <b style="color:#1a1a2e;">{{ selectedBbm.bbmName }}</b>
+          <b style="color:#1a1a2e;">{{ selectedBbm.bbmNm }}</b>
           <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:4px;">{{ selectedBbm.bbmCode }}</code>
           <span style="font-size:11px;color:#bbb;">ID: {{ selectedBbm.bbmId }}</span>
         </span>
@@ -172,7 +172,7 @@ window.BbsDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">작성자</label>
-        <input class="form-control" v-model="form.author_nm" placeholder="작성자명" :readonly="viewMode" />
+        <input class="form-control" v-model="form.authorNm" placeholder="작성자명" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
@@ -255,7 +255,7 @@ window.BbsDtl = {
       </div>
       <div class="detail-row"><span class="detail-label">게시판ID</span><span class="detail-value">{{ selectedBbm.bbmId }}</span></div>
       <div class="detail-row"><span class="detail-label">게시판코드</span><span class="detail-value"><code style="font-size:12px;">{{ selectedBbm.bbmCode }}</code></span></div>
-      <div class="detail-row"><span class="detail-label">게시판명</span><span class="detail-value">{{ selectedBbm.bbmName }}</span></div>
+      <div class="detail-row"><span class="detail-label">게시판명</span><span class="detail-value">{{ selectedBbm.bbmNm }}</span></div>
       <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value">{{ selectedBbm.bbmType }}</span></div>
       <div class="detail-row"><span class="detail-label">댓글허용</span><span class="detail-value">{{ selectedBbm.allowComment }}</span></div>
       <div class="detail-row"><span class="detail-label">첨부허용</span><span class="detail-value">{{ selectedBbm.allowAttach }}</span></div>

@@ -2,15 +2,15 @@
   {
     "claimId": "CLM-2026-013", "orderId": "ORD-2026-013", "type": "취소", "status": "취소요청",
     "requestDate": "2026-04-06 11:23", "reason": "단순변심", "reasonDetail": "다른 색상으로 재주문하려 합니다.",
-    "items": [{ "productName": "오버사이즈 코튼 티셔츠", "emoji": "👕", "color": "화이트", "size": "L", "qty": 1, "price": 29900 }],
+    "items": [{ "prodNm": "오버사이즈 코튼 티셔츠", "emoji": "👕", "color": "화이트", "size": "L", "qty": 1, "price": 29900 }],
     "refundAmount": 29900, "refundMethod": "카드취소"
   },
   {
     "claimId": "CLM-2026-012", "orderId": "ORD-2026-012", "type": "취소", "status": "취소처리중",
     "requestDate": "2026-04-04 09:47", "reason": "주문실수", "reasonDetail": "사이즈를 잘못 선택했습니다.",
     "items": [
-      { "productName": "슬림핏 데님 진", "emoji": "👖", "color": "다크블루", "size": "XS", "qty": 1, "price": 59900 },
-      { "productName": "캔버스 토트백", "emoji": "👜", "color": "블랙", "size": "FREE", "qty": 1, "price": 35000 }
+      { "prodNm": "슬림핏 데님 진", "emoji": "👖", "color": "다크블루", "size": "XS", "qty": 1, "price": 59900 },
+      { "prodNm": "캔버스 토트백", "emoji": "👜", "color": "블랙", "size": "FREE", "qty": 1, "price": 35000 }
     ],
     "refundAmount": 94900, "refundMethod": "계좌환불",
     "refundDetails": [
@@ -21,7 +21,7 @@
     "claimId": "CLM-2026-011", "orderId": "ORD-2026-011", "type": "취소", "status": "취소완료",
     "requestDate": "2026-04-01 15:08", "completeDate": "2026-04-02 10:22",
     "reason": "배송지연", "reasonDetail": "예상 배송일보다 너무 늦어 취소합니다.",
-    "items": [{ "productName": "울 블렌드 롱코트", "emoji": "🧥", "color": "카멜", "size": "M", "qty": 1, "price": 119000 }],
+    "items": [{ "prodNm": "울 블렌드 롱코트", "emoji": "🧥", "color": "카멜", "size": "M", "qty": 1, "price": 119000 }],
     "refundAmount": 119000, "refundMethod": "계좌환불",
     "refundDetails": [
       { "datetime": "2026-04-02 10:22", "type": "계좌환불", "amount": 119000, "name": "홍길동", "account": "카카오뱅크 3333-27-****567" }
@@ -31,7 +31,7 @@
     "claimId": "CLM-2026-010", "orderId": "ORD-2026-010", "type": "취소", "status": "취소완료",
     "requestDate": "2026-03-28 18:34", "completeDate": "2026-03-29 11:05",
     "reason": "타사 구매", "reasonDetail": "오프라인 매장에서 직접 구매했습니다.",
-    "items": [{ "productName": "레더룩 라이더 재킷", "emoji": "🧥", "color": "블랙", "size": "L", "qty": 1, "price": 139000 }],
+    "items": [{ "prodNm": "레더룩 라이더 재킷", "emoji": "🧥", "color": "블랙", "size": "L", "qty": 1, "price": 139000 }],
     "refundAmount": 139000, "refundMethod": "카드취소",
     "refundDetails": [
       { "datetime": "2026-03-29 11:05", "type": "카드취소", "amount": 139000, "name": "홍길동", "account": "국민카드 ****-****-****-7823" }
@@ -40,19 +40,19 @@
   {
     "claimId": "CLM-2026-009", "orderId": "ORD-2026-009", "type": "반품", "status": "반품요청",
     "requestDate": "2026-04-05 20:11", "reason": "상품불량", "reasonDetail": "박음질 부분이 뜯어져 있습니다.",
-    "items": [{ "productName": "퀼티드 숏 점퍼", "emoji": "🧥", "color": "올리브", "size": "M", "qty": 1, "price": 89000 }],
+    "items": [{ "prodNm": "퀼티드 숏 점퍼", "emoji": "🧥", "color": "올리브", "size": "M", "qty": 1, "price": 89000 }],
     "refundAmount": 89000, "refundMethod": "계좌환불", "pickupDate": "2026-04-08"
   },
   {
     "claimId": "CLM-2026-008", "orderId": "ORD-2026-008", "type": "반품", "status": "수거예정",
     "requestDate": "2026-04-03 13:52", "reason": "사이즈 불일치", "reasonDetail": "실제 착용 시 핏이 맞지 않습니다.",
-    "items": [{ "productName": "리넨 오버핏 블레이저", "emoji": "🧥", "color": "베이지", "size": "S", "qty": 1, "price": 95000 }],
+    "items": [{ "prodNm": "리넨 오버핏 블레이저", "emoji": "🧥", "color": "베이지", "size": "S", "qty": 1, "price": 95000 }],
     "refundAmount": 95000, "refundMethod": "계좌환불", "courier": "CJ대한통운", "pickupDate": "2026-04-07"
   },
   {
     "claimId": "CLM-2026-007", "orderId": "ORD-2026-007", "type": "반품", "status": "수거완료",
     "requestDate": "2026-03-30 08:29", "reason": "색상 상이", "reasonDetail": "상품 사진과 실제 색상이 많이 다릅니다.",
-    "items": [{ "productName": "플로럴 미디 드레스", "emoji": "👗", "color": "핑크플로럴", "size": "S", "qty": 1, "price": 79000 }],
+    "items": [{ "prodNm": "플로럴 미디 드레스", "emoji": "👗", "color": "핑크플로럴", "size": "S", "qty": 1, "price": 79000 }],
     "refundAmount": 79000, "refundMethod": "카드취소", "courier": "롯데택배", "trackingNo": "556677889900",
     "refundDetails": [
       { "datetime": "2026-04-02 14:00", "type": "환불예정", "amount": 79000, "name": "홍길동", "account": "신한카드 ****-****-****-4521" }
@@ -61,7 +61,7 @@
   {
     "claimId": "CLM-2026-006", "orderId": "ORD-2026-006", "type": "반품", "status": "환불처리중",
     "requestDate": "2026-03-25 16:44", "reason": "상품불량", "reasonDetail": "지퍼가 제대로 작동하지 않습니다.",
-    "items": [{ "productName": "후드 집업 스웨트셔츠", "emoji": "🧥", "color": "차콜", "size": "L", "qty": 1, "price": 69000 }],
+    "items": [{ "prodNm": "후드 집업 스웨트셔츠", "emoji": "🧥", "color": "차콜", "size": "L", "qty": 1, "price": 69000 }],
     "refundAmount": 69000, "refundMethod": "계좌환불", "courier": "한진택배", "trackingNo": "334455667788",
     "refundDetails": [
       { "datetime": "2026-03-28 10:15", "type": "환불처리중", "amount": 69000, "name": "홍길동", "account": "카카오뱅크 3333-27-****567" }
@@ -71,7 +71,7 @@
     "claimId": "CLM-2026-005", "orderId": "ORD-2026-005", "type": "반품", "status": "환불완료",
     "requestDate": "2026-03-18 10:17", "completeDate": "2026-03-24 14:33",
     "reason": "단순변심", "reasonDetail": "착용해보니 스타일이 맞지 않습니다.",
-    "items": [{ "productName": "맥시 롱 원피스", "emoji": "👗", "color": "블랙", "size": "M", "qty": 1, "price": 88000 }],
+    "items": [{ "prodNm": "맥시 롱 원피스", "emoji": "👗", "color": "블랙", "size": "M", "qty": 1, "price": 88000 }],
     "refundAmount": 88000, "refundMethod": "계좌환불", "courier": "CJ대한통운", "trackingNo": "112233445566",
     "refundDetails": [
       { "datetime": "2026-03-24 14:33", "type": "계좌환불", "amount": 88000, "name": "홍길동", "account": "카카오뱅크 3333-27-****567" }
@@ -80,19 +80,19 @@
   {
     "claimId": "CLM-2026-004", "orderId": "ORD-2026-004", "type": "교환", "status": "교환요청",
     "requestDate": "2026-04-06 22:05", "reason": "사이즈 불일치", "reasonDetail": "S 사이즈가 너무 작아 M으로 교환 원합니다.",
-    "items": [{ "productName": "케이블 니트 스웨터", "emoji": "🧶", "color": "아이보리", "size": "S", "qty": 1, "price": 49000 }],
+    "items": [{ "prodNm": "케이블 니트 스웨터", "emoji": "🧶", "color": "아이보리", "size": "S", "qty": 1, "price": 49000 }],
     "exchangeSize": "M", "pickupDate": "2026-04-09"
   },
   {
     "claimId": "CLM-2026-003", "orderId": "ORD-2026-003", "type": "교환", "status": "수거예정",
     "requestDate": "2026-04-02 07:38", "reason": "색상 변경", "reasonDetail": "블랙 대신 그레이 색상으로 교환 원합니다.",
-    "items": [{ "productName": "조거 스웻 팬츠", "emoji": "🩳", "color": "블랙", "size": "M", "qty": 1, "price": 38000 }],
+    "items": [{ "prodNm": "조거 스웻 팬츠", "emoji": "🩳", "color": "블랙", "size": "M", "qty": 1, "price": 38000 }],
     "exchangeColor": "그레이", "courier": "CJ대한통운", "pickupDate": "2026-04-06"
   },
   {
     "claimId": "CLM-2026-002", "orderId": "ORD-2026-002", "type": "교환", "status": "발송완료",
     "requestDate": "2026-03-26 19:51", "reason": "사이즈 불일치", "reasonDetail": "M이 약간 작아 L로 교환합니다.",
-    "items": [{ "productName": "체크 플란넬 셔츠", "emoji": "👔", "color": "블루체크", "size": "M", "qty": 1, "price": 52000 }],
+    "items": [{ "prodNm": "체크 플란넬 셔츠", "emoji": "👔", "color": "블루체크", "size": "M", "qty": 1, "price": 52000 }],
     "exchangeSize": "L", "courier": "롯데택배", "trackingNo": "998877665544",
     "exchangeCourier": "CJ대한통운", "exchangeTrackingNo": "123456789012"
   },
@@ -100,7 +100,7 @@
     "claimId": "CLM-2026-001", "orderId": "ORD-2026-001", "type": "교환", "status": "교환완료",
     "requestDate": "2026-03-15 12:44", "completeDate": "2026-03-22 16:09",
     "reason": "상품불량", "reasonDetail": "실밥이 나와 있어 교환 요청했습니다.",
-    "items": [{ "productName": "스트라이프 린넨 셔츠", "emoji": "👔", "color": "화이트네이비", "size": "L", "qty": 1, "price": 45000 }],
+    "items": [{ "prodNm": "스트라이프 린넨 셔츠", "emoji": "👔", "color": "화이트네이비", "size": "L", "qty": 1, "price": 45000 }],
     "exchangeSize": "L", "courier": "한진택배", "trackingNo": "556644332211",
     "exchangeCourier": "CJ대한통운", "exchangeTrackingNo": "998811223344"
   }

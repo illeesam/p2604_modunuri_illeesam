@@ -11,7 +11,7 @@ window.BatchHist = {
     const PAGE_SIZES = [5, 10, 20, 50];
 
     const batchOptions = computed(() =>
-      props.adminData.batches.map(b => ({ batchId: b.batchId, label: b.batchName }))
+      props.adminData.batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
     const filtered = computed(() => {
@@ -100,7 +100,7 @@ window.BatchHist = {
         <!-- 데이터 행 -->
         <tr :style="log.runStatus==='실패' ? 'background:#fff5f5;' : log.runStatus==='실행중' ? 'background:#f0f8ff;' : ''">
           <td style="color:#aaa;">{{ log.logId }}</td>
-          <td style="font-weight:500;">{{ log.batchName }}</td>
+          <td style="font-weight:500;">{{ log.batchNm }}</td>
           <td><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ log.batchCode }}</code></td>
           <td style="color:#555;font-family:monospace;font-size:11px;">{{ log.runAt }}</td>
           <td style="text-align:center;color:#666;">{{ fmtDuration(log.duration) }}</td>
@@ -129,7 +129,7 @@ window.BatchHist = {
               <div style="display:flex;gap:24px;margin-bottom:10px;flex-wrap:wrap;">
                 <div>
                   <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">배치명</span>
-                  <span style="font-size:12px;font-weight:600;color:#333;">{{ log.batchName }}</span>
+                  <span style="font-size:12px;font-weight:600;color:#333;">{{ log.batchNm }}</span>
                 </div>
                 <div>
                   <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">배치코드</span>

@@ -21,7 +21,7 @@ window.ProdHist = {
           { date: p.regDate || '2026-01-01', before: '-', after: p.status, admin: '관리자' },
         ];
         changeHistory.value = [
-          { date: p.regDate || '2026-01-01', field: '등록', before: '-', after: p.productName, admin: '관리자' },
+          { date: p.regDate || '2026-01-01', field: '등록', before: '-', after: p.prodNm, admin: '관리자' },
         ];
         priceHistory.value = [
           { date: p.regDate || '2026-01-01', field: '판매가', before: '-', after: String(p.price), admin: '관리자' },
@@ -32,7 +32,7 @@ window.ProdHist = {
     const relatedOrders = computed(() => {
       const p = props.adminData.getProduct(props.prodId);
       if (!p) return [];
-      return props.adminData.orders.filter(o => o.productName && p.productName && o.productName.includes(p.productName.slice(0, 8)));
+      return props.adminData.orders.filter(o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
     return { botTab, stockHistory, statusHistory, changeHistory, priceHistory, relatedOrders };
@@ -65,7 +65,7 @@ window.ProdHist = {
       <tbody>
         <tr v-for="o in relatedOrders" :key="o.orderId">
           <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userName }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userNm }}</span></td>
           <td>{{ o.orderDate.slice(0,10) }}</td>
           <td>{{ o.totalPrice.toLocaleString() }}원</td>
           <td>{{ o.status }}</td>

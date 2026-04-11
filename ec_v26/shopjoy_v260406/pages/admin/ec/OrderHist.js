@@ -11,7 +11,7 @@ window.OrderHist = {
       const o = props.adminData.orders.find(x => x.orderId === props.orderId);
       if (o) {
         orderItems.value = [
-          { no: 1, productName: o.productName, optionName: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
+          { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
         ];
       }
     });
@@ -51,8 +51,8 @@ window.OrderHist = {
       <tbody>
         <tr v-for="item in orderItems" :key="item.no">
           <td>{{ item.no }}</td>
-          <td>{{ item.productName }}</td>
-          <td>{{ item.optionName }}</td>
+          <td>{{ item.prodNm }}</td>
+          <td>{{ item.optionNm }}</td>
           <td>{{ item.qty }}</td>
           <td>{{ item.unitPrice.toLocaleString() }}원</td>
           <td style="font-weight:600;">{{ item.totalPrice.toLocaleString() }}원</td>
@@ -98,7 +98,7 @@ window.OrderHist = {
       <tbody>
         <tr v-for="c in relatedClaims" :key="c.claimId">
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userName }}</span></td>
+          <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td>{{ c.type }}</td>
           <td>{{ c.statusCd }}</td>
           <td>{{ c.reasonCd }}</td>

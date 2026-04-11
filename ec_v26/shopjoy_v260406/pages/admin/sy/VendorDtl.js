@@ -5,10 +5,10 @@ window.VendorDtl = {
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
+    const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const form = reactive({
-      vendorType: '판매업체', vendorName: '', ceo: '', bizNo: '', phone: '', email: '',
+      vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
       zipcode: '', address: '', addressDetail: '',
       contractDate: '', statusCd: '활성', memo: '',
     });
@@ -19,7 +19,7 @@ window.VendorDtl = {
     let _qMemo = null;
 
     const schema = yup.object({
-      vendorName: yup.string().required('업체명을 입력해주세요.'),
+      vendorNm: yup.string().required('업체명을 입력해주세요.'),
       bizNo: yup.string().required('사업자등록번호를 입력해주세요.'),
     });
 
@@ -92,7 +92,7 @@ window.VendorDtl = {
       });
     };
 
-    return { isNew, form, errors, save, siteName, addrDetailRef, openKakaoPostcode, memoEl };
+    return { isNew, form, errors, save, siteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
 <div>
@@ -101,7 +101,7 @@ window.VendorDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteName }}</div>
+        <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -113,8 +113,8 @@ window.VendorDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">업체명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.vendorName" placeholder="업체명" :readonly="viewMode" :class="errors.vendorName ? 'is-invalid' : ''" />
-        <span v-if="errors.vendorName" class="field-error">{{ errors.vendorName }}</span>
+        <input class="form-control" v-model="form.vendorNm" placeholder="업체명" :readonly="viewMode" :class="errors.vendorNm ? 'is-invalid' : ''" />
+        <span v-if="errors.vendorNm" class="field-error">{{ errors.vendorNm }}</span>
       </div>
     </div>
     <div class="form-row">

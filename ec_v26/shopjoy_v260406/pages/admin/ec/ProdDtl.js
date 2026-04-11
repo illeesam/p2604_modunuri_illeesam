@@ -8,7 +8,7 @@ window.ProdDtl = {
     const topTab = ref('info');
 
     const form = reactive({
-      productName: '', category: '상의', price: 0, stock: 0,
+      prodNm: '', category: '상의', price: 0, stock: 0,
       brand: 'ShopJoy', status: '판매중', regDate: '', description: '',
       colors: '', sizes: '',
       // 옵션설정
@@ -21,7 +21,7 @@ window.ProdDtl = {
     const errors = reactive({});
 
     const schema = yup.object({
-      productName: yup.string().required('상품명을 입력해주세요.'),
+      prodNm: yup.string().required('상품명을 입력해주세요.'),
       price: yup.number().typeError('숫자를 입력해주세요.').required('가격을 입력해주세요.').min(1, '가격은 1원 이상이어야 합니다.'),
     });
 
@@ -220,8 +220,8 @@ window.ProdDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">상품명 <span v-if="!viewMode" class="req">*</span></label>
-          <input class="form-control" v-model="form.productName" placeholder="상품명" :readonly="viewMode" :class="errors.productName ? 'is-invalid' : ''" />
-          <span v-if="errors.productName" class="field-error">{{ errors.productName }}</span>
+          <input class="form-control" v-model="form.prodNm" placeholder="상품명" :readonly="viewMode" :class="errors.prodNm ? 'is-invalid' : ''" />
+          <span v-if="errors.prodNm" class="field-error">{{ errors.prodNm }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">카테고리</label>
@@ -424,7 +424,7 @@ window.ProdDtl = {
         <tbody>
           <tr v-for="p in relatedProducts" :key="p.productId">
             <td>{{ p.productId }}</td>
-            <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.productName }}</span></td>
+            <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.prodNm }}</span></td>
             <td>{{ p.category }}</td>
             <td>{{ p.price.toLocaleString() }}원</td>
             <td>{{ p.stock }}개</td>
