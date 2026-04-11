@@ -58,7 +58,7 @@ window.AdminRefModal = {
     <template v-if="s.type==='member'">
       <template v-if="memberData">
         <div class="detail-row"><span class="detail-label">회원ID</span><span class="detail-value">{{ memberData.userId }}</span></div>
-        <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ memberData.name }}</span></div>
+        <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ memberData.member_nm }}</span></div>
         <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value">{{ memberData.email }}</span></div>
         <div class="detail-row"><span class="detail-label">연락처</span><span class="detail-value">{{ memberData.phone }}</span></div>
         <div class="detail-row"><span class="detail-label">등급</span><span class="detail-value"><span class="badge badge-purple">{{ memberData.gradeCd }}</span></span></div>

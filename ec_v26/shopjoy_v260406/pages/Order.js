@@ -119,7 +119,7 @@ window.Order = {
     onMounted(async () => {
       await Promise.all([loadCoupons(), loadCash()]);
       const u = window.shopjoyAuth?.state?.user;
-      if (u) { form.name = u.name || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
+      if (u) { form.name = u.member_nm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
     });
 
     const errors   = reactive({});

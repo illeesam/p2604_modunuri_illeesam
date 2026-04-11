@@ -72,7 +72,7 @@ window.AlarmMng = {
         },
       });
     };
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channel'},{label:'내용',key:'content'},{label:'상태',key:'statusCd'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channel_cd'},{label:'내용',key:'content'},{label:'상태',key:'statusCd'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
 
     return { siteName, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, targetBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -110,7 +110,7 @@ window.AlarmMng = {
           <td><span class="badge" :class="typeBadge(a.alarmTypeCd)">{{ a.alarmTypeCd }}</span></td>
           <td><span class="title-link" @click="loadDetail(a.alarmId)" :style="selectedId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.title }}<span v-if="selectedId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.message }}</td>
-          <td><span class="badge" :class="targetBadge(a.targetType)">{{ a.targetType }}</span></td>
+          <td><span class="badge" :class="targetBadge(a.target_type_cd)">{{ a.target_type_cd }}</span></td>
           <td>{{ a.sendDate || '-' }}</td>
           <td><span class="badge" :class="statusBadge(a.statusCd)">{{ a.statusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>

@@ -53,7 +53,7 @@
       const res = await window.axiosApi.get('base/users.json');
       const u = res.data.find(x => x.email === email && x.password === password);
       if (u) {
-        const user  = { userId: u.userId, email: u.email, name: u.name, phone: u.phone };
+        const user  = { userId: u.userId, email: u.email, member_nm: u.member_nm, phone: u.phone };
         const token = _mkToken();
         _store.setSession(user, token);
         _sync();
@@ -80,8 +80,8 @@
   };
 
   /* ── 회원가입 ── */
-  const signup = (name, email, phone, extra = {}) => {
-    const user = { userId: 'u_' + Date.now(), email, name, phone, ...extra };
+  const signup = (member_nm, email, phone, extra = {}) => {
+    const user = { userId: 'u_' + Date.now(), email, member_nm, phone, ...extra };
     _store.setSession(user, _mkToken());
     _sync();
     return { ok: true };

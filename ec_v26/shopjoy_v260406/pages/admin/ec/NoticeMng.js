@@ -34,7 +34,7 @@ window.NoticeMng = {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !n.title.toLowerCase().includes(kw)) return false;
       if (applied.type && n.noticeType !== applied.type) return false;
-      if (applied.status && n.status !== applied.status) return false;
+      if (applied.status && n.status_cd !== applied.status) return false;
       const d = String(n.regDate || '').slice(0, 10);
       if (applied.dateStart && d < applied.dateStart) return false;
       if (applied.dateEnd && d > applied.dateEnd) return false;
@@ -71,7 +71,7 @@ window.NoticeMng = {
         },
       });
     };
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'noticeId'},{label:'제목',key:'title'},{label:'유형',key:'noticeType'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'등록일',key:'regDate'}], '공지목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'noticeId'},{label:'제목',key:'title'},{label:'유형',key:'noticeType'},{label:'상태',key:'status_cd'},{label:'조회수',key:'viewCount'},{label:'등록일',key:'regDate'}], '공지목록.csv');
 
     return { siteName, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -111,7 +111,7 @@ window.NoticeMng = {
           <td><span class="badge" :class="n.isFixed?'badge-red':'badge-gray'">{{ n.isFixed ? '고정' : '-' }}</span></td>
           <td>{{ n.startDate || '-' }}</td>
           <td>{{ n.endDate || '-' }}</td>
-          <td><span class="badge" :class="statusBadge(n.status)">{{ n.status }}</span></td>
+          <td><span class="badge" :class="statusBadge(n.status_cd)">{{ n.status_cd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td>{{ n.regDate }}</td>
           <td><div class="actions">

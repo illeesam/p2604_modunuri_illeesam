@@ -12,7 +12,7 @@ window.BbsDtl = {
 
     /* ── 폼 ── */
     const form = reactive({
-      bbmId: null, title: '', author: '', statusCd: '게시',
+      bbmId: null, title: '', author_nm: '', statusCd: '게시',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
     const errors = reactive({});
@@ -33,7 +33,7 @@ window.BbsDtl = {
       form.bbmId = b.bbmId;
       /* 게시판 변경 시 레이아웃 초기화 */
       form.title       = '';
-      form.author      = '';
+      form.author_nm      = '';
       form.statusCd    = '게시';
       form.attachGrpId = null;
       form.contentHtml = '';
@@ -172,7 +172,7 @@ window.BbsDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">작성자</label>
-        <input class="form-control" v-model="form.author" placeholder="작성자명" :readonly="viewMode" />
+        <input class="form-control" v-model="form.author_nm" placeholder="작성자명" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>

@@ -37,7 +37,7 @@ window.MemberMng = {
 
     const filtered = computed(() => props.adminData.members.filter(m => {
       const kw = applied.kw.trim().toLowerCase();
-      if (kw && !m.name.toLowerCase().includes(kw) && !m.email.toLowerCase().includes(kw) && !String(m.userId).includes(kw)) return false;
+      if (kw && !m.member_nm.toLowerCase().includes(kw) && !m.email.toLowerCase().includes(kw) && !String(m.userId).includes(kw)) return false;
       if (applied.grade && m.gradeCd !== applied.grade) return false;
       if (applied.status && m.statusCd !== applied.status) return false;
       const _d = String(m.joinDate || '').slice(0, 10);
@@ -82,7 +82,7 @@ window.MemberMng = {
         method: 'delete',
         path: `members/${m.userId}`,
         confirmTitle: '삭제',
-        confirmMsg: `[${m.name}] 회원을 삭제하시겠습니까?`,
+        confirmMsg: `[${m.member_nm}] 회원을 삭제하시겠습니까?`,
         showConfirm: props.showConfirm,
         showToast: props.showToast,
         setApiRes: props.setApiRes,
@@ -95,7 +95,7 @@ window.MemberMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'userId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'userId'},{label:'이름',key:'member_nm'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, gradeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -130,7 +130,7 @@ window.MemberMng = {
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="m in pageList" :key="m.userId" :style="selectedId===m.userId?'background:#fff8f9;':''">
           <td>{{ m.userId }}</td>
-          <td><span class="title-link" @click="loadView(m.userId)" :style="selectedId===m.userId?'color:#e8587a;font-weight:700;':''">{{ m.name }}<span v-if="selectedId===m.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="loadView(m.userId)" :style="selectedId===m.userId?'color:#e8587a;font-weight:700;':''">{{ m.member_nm }}<span v-if="selectedId===m.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ m.email }}</td>
           <td>{{ m.phone }}</td>
           <td><span class="badge" :class="gradeBadge(m.gradeCd)">{{ m.gradeCd }}</span></td>

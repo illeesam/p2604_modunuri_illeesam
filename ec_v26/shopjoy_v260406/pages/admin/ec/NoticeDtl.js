@@ -7,7 +7,7 @@ window.NoticeDtl = {
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       title: '', noticeType: '일반', isFixed: false,
-      startDate: '', endDate: '', status: '게시', contentHtml: '',
+      startDate: '', endDate: '', status_cd: '게시', contentHtml: '',
       attachGrpId: null,
     });
     const errors = reactive({});
@@ -86,7 +86,7 @@ window.NoticeDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.status_cd" :disabled="viewMode">
           <option>게시</option><option>예약</option><option>종료</option><option>임시</option>
         </select>
       </div>

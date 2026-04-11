@@ -4,14 +4,14 @@
 
   window.adminData = reactive({
     members: [
-      { userId: 1, email: 'user1@demo.com', name: '홍길동', phone: '010-1111-1111', grade: 'VIP', status: '활성', joinDate: '2025-11-01', lastLogin: '2026-04-07', orderCount: 25, totalPurchase: 1280000 },
-      { userId: 2, email: 'user2@demo.com', name: '이영희', phone: '010-2222-2222', grade: '일반', status: '활성', joinDate: '2026-01-15', lastLogin: '2026-04-05', orderCount: 8, totalPurchase: 340000 },
-      { userId: 3, email: 'user3@demo.com', name: '박민준', phone: '010-3333-3333', grade: '우수', status: '활성', joinDate: '2026-02-20', lastLogin: '2026-04-03', orderCount: 14, totalPurchase: 720000 },
-      { userId: 4, email: 'user4@demo.com', name: '김수현', phone: '010-4444-4444', grade: '일반', status: '활성', joinDate: '2026-03-01', lastLogin: '2026-04-06', orderCount: 3, totalPurchase: 98000 },
-      { userId: 5, email: 'user5@demo.com', name: '최지우', phone: '010-5555-5555', grade: '일반', status: '정지', joinDate: '2025-12-10', lastLogin: '2026-03-20', orderCount: 2, totalPurchase: 45000 },
-      { userId: 6, email: 'user6@demo.com', name: '정민호', phone: '010-6666-6666', grade: '우수', status: '활성', joinDate: '2026-01-05', lastLogin: '2026-04-07', orderCount: 11, totalPurchase: 560000 },
-      { userId: 7, email: 'user7@demo.com', name: '강예은', phone: '010-7777-7777', grade: '일반', status: '활성', joinDate: '2026-02-14', lastLogin: '2026-04-01', orderCount: 5, totalPurchase: 210000 },
-      { userId: 8, email: 'user8@demo.com', name: '윤성준', phone: '010-8888-8888', grade: 'VIP', status: '활성', joinDate: '2025-10-20', lastLogin: '2026-04-07', orderCount: 32, totalPurchase: 2100000 },
+      { userId: 1, email: 'user1@demo.com', member_nm: '홍길동', phone: '010-1111-1111', grade: 'VIP', status: '활성', joinDate: '2025-11-01', lastLogin: '2026-04-07', orderCount: 25, totalPurchase: 1280000 },
+      { userId: 2, email: 'user2@demo.com', member_nm: '이영희', phone: '010-2222-2222', grade: '일반', status: '활성', joinDate: '2026-01-15', lastLogin: '2026-04-05', orderCount: 8, totalPurchase: 340000 },
+      { userId: 3, email: 'user3@demo.com', member_nm: '박민준', phone: '010-3333-3333', grade: '우수', status: '활성', joinDate: '2026-02-20', lastLogin: '2026-04-03', orderCount: 14, totalPurchase: 720000 },
+      { userId: 4, email: 'user4@demo.com', member_nm: '김수현', phone: '010-4444-4444', grade: '일반', status: '활성', joinDate: '2026-03-01', lastLogin: '2026-04-06', orderCount: 3, totalPurchase: 98000 },
+      { userId: 5, email: 'user5@demo.com', member_nm: '최지우', phone: '010-5555-5555', grade: '일반', status: '정지', joinDate: '2025-12-10', lastLogin: '2026-03-20', orderCount: 2, totalPurchase: 45000 },
+      { userId: 6, email: 'user6@demo.com', member_nm: '정민호', phone: '010-6666-6666', grade: '우수', status: '활성', joinDate: '2026-01-05', lastLogin: '2026-04-07', orderCount: 11, totalPurchase: 560000 },
+      { userId: 7, email: 'user7@demo.com', member_nm: '강예은', phone: '010-7777-7777', grade: '일반', status: '활성', joinDate: '2026-02-14', lastLogin: '2026-04-01', orderCount: 5, totalPurchase: 210000 },
+      { userId: 8, email: 'user8@demo.com', member_nm: '윤성준', phone: '010-8888-8888', grade: 'VIP', status: '활성', joinDate: '2025-10-20', lastLogin: '2026-04-07', orderCount: 32, totalPurchase: 2100000 },
     ],
 
     products: [
@@ -1325,19 +1325,19 @@
     ],
 
     notices: [
-      { noticeId: 1, title: '서비스 점검 안내 (4월 15일 새벽 2시~4시)', noticeType: '시스템', isFixed: true,  startDate: '2026-04-14', endDate: '2026-04-15', status: '게시',  contentHtml: '<p>서비스 점검이 예정되어 있습니다.</p>', regDate: '2026-04-10' },
-      { noticeId: 2, title: '봄 시즌 기획전 오픈 안내',                 noticeType: '이벤트', isFixed: false, startDate: '2026-04-01', endDate: '2026-05-31', status: '게시',  contentHtml: '<p>봄 기획전이 시작되었습니다.</p>',        regDate: '2026-03-28' },
-      { noticeId: 3, title: '개인정보처리방침 개정 안내',               noticeType: '일반',   isFixed: false, startDate: '2026-03-01', endDate: '',           status: '게시',  contentHtml: '<p>개인정보처리방침이 개정되었습니다.</p>',  regDate: '2026-02-25' },
-      { noticeId: 4, title: '긴급 보안 업데이트 안내',                  noticeType: '긴급',   isFixed: true,  startDate: '2026-02-10', endDate: '2026-02-15', status: '종료',  contentHtml: '<p>보안 업데이트가 완료되었습니다.</p>',     regDate: '2026-02-10' },
-      { noticeId: 5, title: '신규 결제수단 추가 안내',                  noticeType: '일반',   isFixed: false, startDate: '',           endDate: '',           status: '임시',  contentHtml: '',                                          regDate: '2026-04-09' },
+      { noticeId: 1, title: '서비스 점검 안내 (4월 15일 새벽 2시~4시)', noticeType: '시스템', isFixed: true,  startDate: '2026-04-14', endDate: '2026-04-15', status_cd: '게시',  contentHtml: '<p>서비스 점검이 예정되어 있습니다.</p>', regDate: '2026-04-10' },
+      { noticeId: 2, title: '봄 시즌 기획전 오픈 안내',                 noticeType: '이벤트', isFixed: false, startDate: '2026-04-01', endDate: '2026-05-31', status_cd: '게시',  contentHtml: '<p>봄 기획전이 시작되었습니다.</p>',        regDate: '2026-03-28' },
+      { noticeId: 3, title: '개인정보처리방침 개정 안내',               noticeType: '일반',   isFixed: false, startDate: '2026-03-01', endDate: '',           status_cd: '게시',  contentHtml: '<p>개인정보처리방침이 개정되었습니다.</p>',  regDate: '2026-02-25' },
+      { noticeId: 4, title: '긴급 보안 업데이트 안내',                  noticeType: '긴급',   isFixed: true,  startDate: '2026-02-10', endDate: '2026-02-15', status_cd: '종료',  contentHtml: '<p>보안 업데이트가 완료되었습니다.</p>',     regDate: '2026-02-10' },
+      { noticeId: 5, title: '신규 결제수단 추가 안내',                  noticeType: '일반',   isFixed: false, startDate: '',           endDate: '',           status_cd: '임시',  contentHtml: '',                                          regDate: '2026-04-09' },
     ],
 
     alarms: [
-      { alarmId: 1, title: '주문 배송 출발 알림',      alarmType: '푸시',   targetType: '전체', targetId: '', message: '고객님의 주문이 배송 출발되었습니다.',       sendDate: '2026-04-10 09:00', status: '발송완료', regDate: '2026-04-10' },
-      { alarmId: 2, title: 'VIP 특별 할인 쿠폰 지급', alarmType: '이메일', targetType: 'VIP',  targetId: '', message: 'VIP 고객님께 특별 할인 쿠폰을 드립니다.',     sendDate: '2026-04-08 10:00', status: '발송완료', regDate: '2026-04-07' },
-      { alarmId: 3, title: '봄 신상 입고 알림',        alarmType: '푸시',   targetType: '전체', targetId: '', message: '봄 시즌 신상품이 입고되었습니다.',             sendDate: '2026-04-15 09:00', status: '예약',     regDate: '2026-04-10' },
-      { alarmId: 4, title: '포인트 소멸 예정 안내',    alarmType: 'SMS',    targetType: '일반', targetId: '', message: '보유하신 포인트가 30일 후 소멸 예정입니다.',  sendDate: '2026-03-31 08:00', status: '발송완료', regDate: '2026-03-30' },
-      { alarmId: 5, title: '시스템 점검 알림',         alarmType: '인앱',   targetType: '전체', targetId: '', message: '4월 15일 새벽 서비스 점검이 예정되어 있습니다.', sendDate: '', status: '임시',     regDate: '2026-04-09' },
+      { alarmId: 1, title: '주문 배송 출발 알림',      alarmType: '푸시',   target_type_cd: '전체', targetId: '', message: '고객님의 주문이 배송 출발되었습니다.',       sendDate: '2026-04-10 09:00', status_cd: '발송완료', regDate: '2026-04-10' },
+      { alarmId: 2, title: 'VIP 특별 할인 쿠폰 지급', alarmType: '이메일', target_type_cd: 'VIP',  targetId: '', message: 'VIP 고객님께 특별 할인 쿠폰을 드립니다.',     sendDate: '2026-04-08 10:00', status_cd: '발송완료', regDate: '2026-04-07' },
+      { alarmId: 3, title: '봄 신상 입고 알림',        alarmType: '푸시',   target_type_cd: '전체', targetId: '', message: '봄 시즌 신상품이 입고되었습니다.',             sendDate: '2026-04-15 09:00', status_cd: '예약',     regDate: '2026-04-10' },
+      { alarmId: 4, title: '포인트 소멸 예정 안내',    alarmType: 'SMS',    target_type_cd: '일반', targetId: '', message: '보유하신 포인트가 30일 후 소멸 예정입니다.',  sendDate: '2026-03-31 08:00', status_cd: '발송완료', regDate: '2026-03-30' },
+      { alarmId: 5, title: '시스템 점검 알림',         alarmType: '인앱',   target_type_cd: '전체', targetId: '', message: '4월 15일 새벽 서비스 점검이 예정되어 있습니다.', sendDate: '', status_cd: '임시',     regDate: '2026-04-09' },
     ],
 
     bbms: [
@@ -1360,68 +1360,68 @@
 
     bbss: [
       /* ── 공지사항 (bbmId:1 / 공지 / htmleditor / 첨부목록) ── */
-      { bbsId:  1, bbmId:  1, title: '4월 서비스 점검 안내 (새벽 2시~4시)',      author: '관리자', viewCount: 3420, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '<p>4월 15일 새벽 2~4시 서비스 점검이 예정되어 있습니다. 양해 부탁드립니다.</p>',                                             regDate: '2026-04-10' },
-      { bbsId:  2, bbmId:  1, title: '개인정보처리방침 개정 공지',               author: '관리자', viewCount: 1280, commentCount: 0, attachGrpId: 'GRP-0101', status: '게시',  contentHtml: '<p>2026년 3월 1일부로 개인정보처리방침이 개정됩니다. 주요 변경사항을 확인해 주세요.</p>',                                         regDate: '2026-02-25' },
-      { bbsId:  3, bbmId:  1, title: '5월 황금연휴 배송 지연 안내',              author: '관리자', viewCount:  560, commentCount: 0, attachGrpId: '',          status: '임시',  contentHtml: '<p>5월 1일~6일 황금연휴 기간 배송이 지연될 수 있습니다.</p>',                                                                      regDate: '2026-04-09' },
+      { bbsId:  1, bbmId:  1, title: '4월 서비스 점검 안내 (새벽 2시~4시)',      author_nm: '관리자',viewCount: 3420, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>4월 15일 새벽 2~4시 서비스 점검이 예정되어 있습니다. 양해 부탁드립니다.</p>',                                             regDate: '2026-04-10' },
+      { bbsId:  2, bbmId:  1, title: '개인정보처리방침 개정 공지',               author_nm: '관리자',viewCount: 1280, commentCount: 0, attachGrpId: 'GRP-0101', status_cd: '게시',  contentHtml: '<p>2026년 3월 1일부로 개인정보처리방침이 개정됩니다. 주요 변경사항을 확인해 주세요.</p>',                                         regDate: '2026-02-25' },
+      { bbsId:  3, bbmId:  1, title: '5월 황금연휴 배송 지연 안내',              author_nm: '관리자',viewCount:  560, commentCount: 0, attachGrpId: '',          status_cd: '임시',  contentHtml: '<p>5월 1일~6일 황금연휴 기간 배송이 지연될 수 있습니다.</p>',                                                                      regDate: '2026-04-09' },
 
       /* ── 이벤트 공지 (bbmId:6 / 공지 / htmleditor / 첨부목록) ── */
-      { bbsId:  4, bbmId:  6, title: '봄 맞이 신상품 론칭 이벤트 당첨자 발표',   author: '마케팅팀', viewCount: 4850, commentCount: 0, attachGrpId: 'GRP-0102', status: '게시',  contentHtml: '<p>봄 이벤트에 참여해 주신 고객님께 감사드립니다.</p>',                                                                             regDate: '2026-04-05' },
-      { bbsId:  5, bbmId:  6, title: 'VIP 회원 전용 시크릿 세일 안내',           author: '마케팅팀', viewCount: 2310, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '<p>VIP 회원님께만 드리는 특별 할인 혜택입니다.</p>',                                                                                 regDate: '2026-04-01' },
-      { bbsId:  6, bbmId:  6, title: '여름 시즌 프리뷰 이벤트 (5월 1일 오픈)',   author: '마케팅팀', viewCount:    0, commentCount: 0, attachGrpId: '',          status: '예약',  contentHtml: '<p>여름 신상품을 미리 만나보세요!</p>',                                                                                                regDate: '2026-04-09' },
+      { bbsId:  4, bbmId:  6, title: '봄 맞이 신상품 론칭 이벤트 당첨자 발표',   author_nm: '마케팅팀', viewCount: 4850, commentCount: 0, attachGrpId: 'GRP-0102', status_cd: '게시',  contentHtml: '<p>봄 이벤트에 참여해 주신 고객님께 감사드립니다.</p>',                                                                             regDate: '2026-04-05' },
+      { bbsId:  5, bbmId:  6, title: 'VIP 회원 전용 시크릿 세일 안내',           author_nm: '마케팅팀', viewCount: 2310, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>VIP 회원님께만 드리는 특별 할인 혜택입니다.</p>',                                                                                 regDate: '2026-04-01' },
+      { bbsId:  6, bbmId:  6, title: '여름 시즌 프리뷰 이벤트 (5월 1일 오픈)',   author_nm: '마케팅팀', viewCount:    0, commentCount: 0, attachGrpId: '',          status_cd: '예약',  contentHtml: '<p>여름 신상품을 미리 만나보세요!</p>',                                                                                                regDate: '2026-04-09' },
 
       /* ── FAQ (bbmId:2 / FAQ / htmleditor / 첨부불가) ── */
-      { bbsId:  7, bbmId:  2, title: '배송은 얼마나 걸리나요?',                  author: '고객지원팀', viewCount: 5200, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '<p>평균 2~3 영업일이 소요됩니다. 도서산간 지역은 추가 1~2일이 소요됩니다.</p>',                                                    regDate: '2025-06-01' },
-      { bbsId:  8, bbmId:  2, title: '교환/반품은 어떻게 하나요?',               author: '고객지원팀', viewCount: 4870, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '<p>상품 수령 후 7일 이내 교환/반품 신청이 가능합니다. 단, 사용 흔적이 있는 경우 불가합니다.</p>',                                   regDate: '2025-06-01' },
-      { bbsId:  9, bbmId:  2, title: '캐시는 어떻게 사용하나요?',                author: '고객지원팀', viewCount: 2140, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '<p>주문 결제 시 캐시를 현금처럼 사용하실 수 있습니다. 최소 사용금액은 1,000원입니다.</p>',                                           regDate: '2025-07-01' },
-      { bbsId: 10, bbmId:  2, title: '회원 등급은 어떻게 올라가나요?',           author: '고객지원팀', viewCount: 1680, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '<p>월 구매 실적 기준으로 자동 산정됩니다. VIP: 50만원 이상, 우수: 20만원 이상, 일반: 그 외</p>',                                    regDate: '2025-08-01' },
+      { bbsId:  7, bbmId:  2, title: '배송은 얼마나 걸리나요?',                  author_nm: '고객지원팀', viewCount: 5200, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>평균 2~3 영업일이 소요됩니다. 도서산간 지역은 추가 1~2일이 소요됩니다.</p>',                                                    regDate: '2025-06-01' },
+      { bbsId:  8, bbmId:  2, title: '교환/반품은 어떻게 하나요?',               author_nm: '고객지원팀', viewCount: 4870, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>상품 수령 후 7일 이내 교환/반품 신청이 가능합니다. 단, 사용 흔적이 있는 경우 불가합니다.</p>',                                   regDate: '2025-06-01' },
+      { bbsId:  9, bbmId:  2, title: '캐시는 어떻게 사용하나요?',                author_nm: '고객지원팀', viewCount: 2140, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>주문 결제 시 캐시를 현금처럼 사용하실 수 있습니다. 최소 사용금액은 1,000원입니다.</p>',                                           regDate: '2025-07-01' },
+      { bbsId: 10, bbmId:  2, title: '회원 등급은 어떻게 올라가나요?',           author_nm: '고객지원팀', viewCount: 1680, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>월 구매 실적 기준으로 자동 산정됩니다. VIP: 50만원 이상, 우수: 20만원 이상, 일반: 그 외</p>',                                    regDate: '2025-08-01' },
 
       /* ── 내부 FAQ (bbmId:12 / FAQ / htmleditor / 회사공개) ── */
-      { bbsId: 11, bbmId: 12, title: '[내부] 주문관리 시스템 사용 매뉴얼',       author: '시스템팀', viewCount:  320, commentCount: 0, attachGrpId: 'GRP-0103', status: '게시',  contentHtml: '<p>관리자용 주문관리 시스템 사용법을 안내합니다.</p>',                                                                                regDate: '2026-01-10' },
-      { bbsId: 12, bbmId: 12, title: '[내부] 클레임 처리 표준 절차',             author: '운영팀',   viewCount:  215, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '<p>클레임 접수부터 처리 완료까지의 표준 절차를 안내합니다.</p>',                                                                      regDate: '2026-02-01' },
+      { bbsId: 11, bbmId: 12, title: '[내부] 주문관리 시스템 사용 매뉴얼',       author_nm: '시스템팀', viewCount:  320, commentCount: 0, attachGrpId: 'GRP-0103', status_cd: '게시',  contentHtml: '<p>관리자용 주문관리 시스템 사용법을 안내합니다.</p>',                                                                                regDate: '2026-01-10' },
+      { bbsId: 12, bbmId: 12, title: '[내부] 클레임 처리 표준 절차',             author_nm: '운영팀',   viewCount:  215, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>클레임 접수부터 처리 완료까지의 표준 절차를 안내합니다.</p>',                                                                      regDate: '2026-02-01' },
 
       /* ── 1:1 문의 (bbmId:3 / QnA / textarea / 개인 / 대댓글) ── */
-      { bbsId: 13, bbmId:  3, title: '주문한 상품이 아직 도착하지 않았어요',     author: '홍길동', viewCount:   15, commentCount: 2, attachGrpId: 'GRP-0051', status: '게시',  contentHtml: '주문번호 ORD-2026-025, 주문일로부터 5일이 지났는데 배송이 안 됩니다.',                                                               regDate: '2026-04-08' },
-      { bbsId: 14, bbmId:  3, title: '사이즈 교환 요청드립니다',                 author: '이영희', viewCount:    9, commentCount: 1, attachGrpId: '',          status: '게시',  contentHtml: '오버사이즈 코튼 티셔츠 M사이즈 → L사이즈로 교환 요청합니다.',                                                                         regDate: '2026-04-07' },
-      { bbsId: 15, bbmId:  3, title: '쿠폰 적용이 안 되는데요',                  author: '박민준', viewCount:    4, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: 'VIP 전용 쿠폰인데 결제창에서 적용이 안 됩니다.',                                                                                      regDate: '2026-04-09' },
+      { bbsId: 13, bbmId:  3, title: '주문한 상품이 아직 도착하지 않았어요',     author_nm: '홍길동', viewCount:   15, commentCount: 2, attachGrpId: 'GRP-0051', status_cd: '게시',  contentHtml: '주문번호 ORD-2026-025, 주문일로부터 5일이 지났는데 배송이 안 됩니다.',                                                               regDate: '2026-04-08' },
+      { bbsId: 14, bbmId:  3, title: '사이즈 교환 요청드립니다',                 author_nm: '이영희', viewCount:    9, commentCount: 1, attachGrpId: '',          status_cd: '게시',  contentHtml: '오버사이즈 코튼 티셔츠 M사이즈 → L사이즈로 교환 요청합니다.',                                                                         regDate: '2026-04-07' },
+      { bbsId: 15, bbmId:  3, title: '쿠폰 적용이 안 되는데요',                  author_nm: '박민준', viewCount:    4, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: 'VIP 전용 쿠폰인데 결제창에서 적용이 안 됩니다.',                                                                                      regDate: '2026-04-09' },
 
       /* ── 상품 문의 (bbmId:9 / QnA / textarea / 공개 / 댓글) ── */
-      { bbsId: 16, bbmId:  9, title: '오버사이즈 티셔츠 사이즈 문의',            author: '김수현', viewCount:   88, commentCount: 1, attachGrpId: '',          status: '게시',  contentHtml: '평소 M 사이즈 입는데 오버사이즈면 S로 사도 되나요?',                                                                                 regDate: '2026-04-06' },
-      { bbsId: 17, bbmId:  9, title: '울 블렌드 롱코트 소재 문의',               author: '최지우', viewCount:   54, commentCount: 1, attachGrpId: '',          status: '게시',  contentHtml: '울 함량이 몇 %인지 알고 싶습니다. 세탁 방법도 알려주세요.',                                                                           regDate: '2026-04-04' },
-      { bbsId: 18, bbmId:  9, title: '데님 진 재입고 예정 문의',                  author: '정민호', viewCount:   32, commentCount: 0, attachGrpId: '',          status: '게시',  contentHtml: '슬림핏 데님 진 30 사이즈 품절인데 재입고 예정 있나요?',                                                                               regDate: '2026-04-03' },
+      { bbsId: 16, bbmId:  9, title: '오버사이즈 티셔츠 사이즈 문의',            author_nm: '김수현', viewCount:   88, commentCount: 1, attachGrpId: '',          status_cd: '게시',  contentHtml: '평소 M 사이즈 입는데 오버사이즈면 S로 사도 되나요?',                                                                                 regDate: '2026-04-06' },
+      { bbsId: 17, bbmId:  9, title: '울 블렌드 롱코트 소재 문의',               author_nm: '최지우', viewCount:   54, commentCount: 1, attachGrpId: '',          status_cd: '게시',  contentHtml: '울 함량이 몇 %인지 알고 싶습니다. 세탁 방법도 알려주세요.',                                                                           regDate: '2026-04-04' },
+      { bbsId: 18, bbmId:  9, title: '데님 진 재입고 예정 문의',                  author_nm: '정민호', viewCount:   32, commentCount: 0, attachGrpId: '',          status_cd: '게시',  contentHtml: '슬림핏 데님 진 30 사이즈 품절인데 재입고 예정 있나요?',                                                                               regDate: '2026-04-03' },
 
       /* ── 배송 문의 (bbmId:10 / QnA / textarea / 개인 / 댓글) ── */
-      { bbsId: 19, bbmId: 10, title: '배송 조회가 안 됩니다',                    author: '강예은', viewCount:    6, commentCount: 1, attachGrpId: 'GRP-0104', status: '게시',  contentHtml: '송장번호로 조회해도 운송장 정보가 없다고 나옵니다.',                                                                                   regDate: '2026-04-07' },
-      { bbsId: 20, bbmId: 10, title: '도서산간 지역 배송 가능한가요?',            author: '윤성준', viewCount:   18, commentCount: 1, attachGrpId: '',          status: '게시',  contentHtml: '제주도 거주인데 추가 배송비가 얼마인지 알고 싶습니다.',                                                                               regDate: '2026-04-02' },
+      { bbsId: 19, bbmId: 10, title: '배송 조회가 안 됩니다',                    author_nm: '강예은', viewCount:    6, commentCount: 1, attachGrpId: 'GRP-0104', status_cd: '게시',  contentHtml: '송장번호로 조회해도 운송장 정보가 없다고 나옵니다.',                                                                                   regDate: '2026-04-07' },
+      { bbsId: 20, bbmId: 10, title: '도서산간 지역 배송 가능한가요?',            author_nm: '윤성준', viewCount:   18, commentCount: 1, attachGrpId: '',          status_cd: '게시',  contentHtml: '제주도 거주인데 추가 배송비가 얼마인지 알고 싶습니다.',                                                                               regDate: '2026-04-02' },
 
       /* ── 사진 갤러리 (bbmId:4 / 갤러리 / textarea / 첨부목록 / 댓글) ── */
-      { bbsId: 21, bbmId:  4, title: '봄 코디 공유해요 :) 오버핏 룩',            author: '박민준', viewCount:  845, commentCount: 12, attachGrpId: 'GRP-0052', status: '게시',  contentHtml: '오버사이즈 코튼 티셔츠 + 카고 팬츠 조합입니다!',                                                                                    regDate: '2026-04-05' },
-      { bbsId: 22, bbmId:  4, title: '데일리 미니멀 룩 어때요?',                 author: '이영희', viewCount:  620, commentCount:  8, attachGrpId: 'GRP-0053', status: '게시',  contentHtml: '슬림핏 데님에 린넨 셔츠 매치했어요.',                                                                                                 regDate: '2026-04-03' },
-      { bbsId: 23, bbmId:  4, title: '아우터 레이어드 코디',                      author: '홍길동', viewCount:  390, commentCount:  5, attachGrpId: 'GRP-0054', status: '게시',  contentHtml: '울 블렌드 롱코트 레이어드 스타일링입니다.',                                                                                            regDate: '2026-03-28' },
+      { bbsId: 21, bbmId:  4, title: '봄 코디 공유해요 :) 오버핏 룩',            author_nm: '박민준', viewCount:  845, commentCount: 12, attachGrpId: 'GRP-0052', status_cd: '게시',  contentHtml: '오버사이즈 코튼 티셔츠 + 카고 팬츠 조합입니다!',                                                                                    regDate: '2026-04-05' },
+      { bbsId: 22, bbmId:  4, title: '데일리 미니멀 룩 어때요?',                 author_nm: '이영희', viewCount:  620, commentCount:  8, attachGrpId: 'GRP-0053', status_cd: '게시',  contentHtml: '슬림핏 데님에 린넨 셔츠 매치했어요.',                                                                                                 regDate: '2026-04-03' },
+      { bbsId: 23, bbmId:  4, title: '아우터 레이어드 코디',                      author_nm: '홍길동', viewCount:  390, commentCount:  5, attachGrpId: 'GRP-0054', status_cd: '게시',  contentHtml: '울 블렌드 롱코트 레이어드 스타일링입니다.',                                                                                            regDate: '2026-03-28' },
 
       /* ── 코디 공유 (bbmId:8 / 갤러리 / textarea / 첨부목록 / 대댓글) ── */
-      { bbsId: 24, bbmId:  8, title: '봄 원피스 + 가방 조합 어때요?',            author: '강예은', viewCount:  510, commentCount: 15, attachGrpId: 'GRP-0055', status: '게시',  contentHtml: '플로럴 미디 드레스에 캔버스 토트백 매치!',                                                                                             regDate: '2026-04-06' },
-      { bbsId: 25, bbmId:  8, title: '캐주얼 스트릿 룩',                          author: '최지우', viewCount:  280, commentCount:  7, attachGrpId: 'GRP-0056', status: '게시',  contentHtml: '후드 집업 + 조거 팬츠 편안한 데일리 룩입니다.',                                                                                       regDate: '2026-04-02' },
+      { bbsId: 24, bbmId:  8, title: '봄 원피스 + 가방 조합 어때요?',            author_nm: '강예은', viewCount:  510, commentCount: 15, attachGrpId: 'GRP-0055', status_cd: '게시',  contentHtml: '플로럴 미디 드레스에 캔버스 토트백 매치!',                                                                                             regDate: '2026-04-06' },
+      { bbsId: 25, bbmId:  8, title: '캐주얼 스트릿 룩',                          author_nm: '최지우', viewCount:  280, commentCount:  7, attachGrpId: 'GRP-0056', status_cd: '게시',  contentHtml: '후드 집업 + 조거 팬츠 편안한 데일리 룩입니다.',                                                                                       regDate: '2026-04-02' },
 
       /* ── 상품 리뷰 (bbmId:5 / 일반 / textarea / 첨부1개 / 댓글) ── */
-      { bbsId: 26, bbmId:  5, title: '오버사이즈 티셔츠 재구매예요!',             author: '정민호', viewCount:  230, commentCount:  3, attachGrpId: 'GRP-0057', status: '게시',  contentHtml: '소재도 좋고 핏도 완벽해요. 세탁 후에도 변형 없이 좋습니다.',                                                                         regDate: '2026-04-04' },
-      { bbsId: 27, bbmId:  5, title: '울 블렌드 롱코트 ★★★★★',              author: '김수현', viewCount:  180, commentCount:  2, attachGrpId: '',          status: '게시',  contentHtml: '생각보다 훨씬 고급스럽고 따뜻해요. 강추합니다!',                                                                                      regDate: '2026-03-30' },
-      { bbsId: 28, bbmId:  5, title: '데님 진 사이즈 참고하세요',                 author: '윤성준', viewCount:  145, commentCount:  1, attachGrpId: '',          status: '게시',  contentHtml: '허벅지 있는 분은 한 사이즈 업 추천드려요.',                                                                                           regDate: '2026-03-25' },
+      { bbsId: 26, bbmId:  5, title: '오버사이즈 티셔츠 재구매예요!',             author_nm: '정민호', viewCount:  230, commentCount:  3, attachGrpId: 'GRP-0057', status_cd: '게시',  contentHtml: '소재도 좋고 핏도 완벽해요. 세탁 후에도 변형 없이 좋습니다.',                                                                         regDate: '2026-04-04' },
+      { bbsId: 27, bbmId:  5, title: '울 블렌드 롱코트 ★★★★★',              author_nm: '김수현', viewCount:  180, commentCount:  2, attachGrpId: '',          status_cd: '게시',  contentHtml: '생각보다 훨씬 고급스럽고 따뜻해요. 강추합니다!',                                                                                      regDate: '2026-03-30' },
+      { bbsId: 28, bbmId:  5, title: '데님 진 사이즈 참고하세요',                 author_nm: '윤성준', viewCount:  145, commentCount:  1, attachGrpId: '',          status_cd: '게시',  contentHtml: '허벅지 있는 분은 한 사이즈 업 추천드려요.',                                                                                           regDate: '2026-03-25' },
 
       /* ── 커뮤니티 (bbmId:7 / 일반 / htmleditor / 첨부목록 / 대댓글) ── */
-      { bbsId: 29, bbmId:  7, title: '올봄 트렌드 아이템 뭐 구매하셨나요?',      author: '박민준', viewCount:  760, commentCount: 23, attachGrpId: '',          status: '게시',  contentHtml: '<p>저는 린넨 오버핏 블레이저 구매했는데 너무 마음에 들어요!</p>',                                                                   regDate: '2026-04-07' },
-      { bbsId: 30, bbmId:  7, title: '쇼핑조이 적립금 어떻게 활용하세요?',       author: '이영희', viewCount:  430, commentCount: 11, attachGrpId: '',          status: '게시',  contentHtml: '<p>캐시 소멸 전에 알뜰하게 쓰는 방법 공유해요.</p>',                                                                                 regDate: '2026-04-03' },
+      { bbsId: 29, bbmId:  7, title: '올봄 트렌드 아이템 뭐 구매하셨나요?',      author_nm: '박민준', viewCount:  760, commentCount: 23, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>저는 린넨 오버핏 블레이저 구매했는데 너무 마음에 들어요!</p>',                                                                   regDate: '2026-04-07' },
+      { bbsId: 30, bbmId:  7, title: '쇼핑조이 적립금 어떻게 활용하세요?',       author_nm: '이영희', viewCount:  430, commentCount: 11, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>캐시 소멸 전에 알뜰하게 쓰는 방법 공유해요.</p>',                                                                                 regDate: '2026-04-03' },
 
       /* ── 영상 갤러리 (bbmId:14 / 갤러리 / htmleditor / 첨부목록 / 댓글) ── */
-      { bbsId: 31, bbmId: 14, title: '2026 SS 컬렉션 런웨이 영상',               author: '브랜드팀', viewCount: 1240, commentCount:  8, attachGrpId: 'GRP-0058', status: '게시',  contentHtml: '<p>2026 봄/여름 컬렉션 런웨이 영상을 공개합니다.</p>',                                                                              regDate: '2026-03-20' },
-      { bbsId: 32, bbmId: 14, title: '스타일링 TIP 영상 시리즈 #1',              author: '브랜드팀', viewCount:  890, commentCount:  4, attachGrpId: 'GRP-0059', status: '게시',  contentHtml: '<p>오버핏 코디 스타일링 팁을 영상으로 준비했습니다.</p>',                                                                             regDate: '2026-03-15' },
+      { bbsId: 31, bbmId: 14, title: '2026 SS 컬렉션 런웨이 영상',               author_nm: '브랜드팀', viewCount: 1240, commentCount:  8, attachGrpId: 'GRP-0058', status_cd: '게시',  contentHtml: '<p>2026 봄/여름 컬렉션 런웨이 영상을 공개합니다.</p>',                                                                              regDate: '2026-03-20' },
+      { bbsId: 32, bbmId: 14, title: '스타일링 TIP 영상 시리즈 #1',              author_nm: '브랜드팀', viewCount:  890, commentCount:  4, attachGrpId: 'GRP-0059', status_cd: '게시',  contentHtml: '<p>오버핏 코디 스타일링 팁을 영상으로 준비했습니다.</p>',                                                                             regDate: '2026-03-15' },
 
       /* ── 파트너 공지 (bbmId:11 / 공지 / htmleditor / 회사 / 첨부목록) ── */
-      { bbsId: 33, bbmId: 11, title: '[파트너] 2분기 입점 수수료 정산 일정',     author: '정산팀', viewCount:  145, commentCount:  0, attachGrpId: 'GRP-0060', status: '게시',  contentHtml: '<p>2026년 2분기 수수료 정산 일정을 공지합니다.</p>',                                                                                 regDate: '2026-04-01' },
-      { bbsId: 34, bbmId: 11, title: '[파트너] 배송 정책 변경 안내',              author: '운영팀', viewCount:   98, commentCount:  0, attachGrpId: '',          status: '게시',  contentHtml: '<p>2026년 5월부로 배송 정책이 변경됩니다.</p>',                                                                                       regDate: '2026-03-28' },
+      { bbsId: 33, bbmId: 11, title: '[파트너] 2분기 입점 수수료 정산 일정',     author_nm: '정산팀', viewCount:  145, commentCount:  0, attachGrpId: 'GRP-0060', status_cd: '게시',  contentHtml: '<p>2026년 2분기 수수료 정산 일정을 공지합니다.</p>',                                                                                 regDate: '2026-04-01' },
+      { bbsId: 34, bbmId: 11, title: '[파트너] 배송 정책 변경 안내',              author_nm: '운영팀', viewCount:   98, commentCount:  0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>2026년 5월부로 배송 정책이 변경됩니다.</p>',                                                                                       regDate: '2026-03-28' },
 
       /* ── 보도자료 (bbmId:13 / 일반 / htmleditor / 공개 / 첨부목록) ── */
-      { bbsId: 35, bbmId: 13, title: 'ShopJoy, 2026 상반기 거래액 500억 돌파',   author: '홍보팀', viewCount: 2800, commentCount:  0, attachGrpId: 'GRP-0061', status: '게시',  contentHtml: '<p>ShopJoy가 2026년 상반기 거래액 500억원을 돌파했다고 밝혔습니다.</p>',                                                             regDate: '2026-04-08' },
-      { bbsId: 36, bbmId: 13, title: 'ShopJoy, 친환경 패키징 도입 발표',         author: '홍보팀', viewCount: 1650, commentCount:  0, attachGrpId: '',          status: '게시',  contentHtml: '<p>ShopJoy는 2026년 하반기부터 전 상품 친환경 패키징을 도입한다고 발표했습니다.</p>',                                                  regDate: '2026-03-22' },
+      { bbsId: 35, bbmId: 13, title: 'ShopJoy, 2026 상반기 거래액 500억 돌파',   author_nm: '홍보팀', viewCount: 2800, commentCount:  0, attachGrpId: 'GRP-0061', status_cd: '게시',  contentHtml: '<p>ShopJoy가 2026년 상반기 거래액 500억원을 돌파했다고 밝혔습니다.</p>',                                                             regDate: '2026-04-08' },
+      { bbsId: 36, bbmId: 13, title: 'ShopJoy, 친환경 패키징 도입 발표',         author_nm: '홍보팀', viewCount: 1650, commentCount:  0, attachGrpId: '',          status_cd: '게시',  contentHtml: '<p>ShopJoy는 2026년 하반기부터 전 상품 친환경 패키징을 도입한다고 발표했습니다.</p>',                                                  regDate: '2026-03-22' },
     ],
 
     depts: [
@@ -1530,23 +1530,23 @@
     ],
 
     sendHistory: [
-      { sendId: 1,  userId: 1, sendDate: '2026-04-06 09:00', channel: '카카오',  title: '주문 접수 안내',         status: '발송완료' },
-      { sendId: 2,  userId: 1, sendDate: '2026-04-05 14:35', channel: 'SMS',    title: '주문 결제 확인',          status: '발송완료' },
-      { sendId: 3,  userId: 1, sendDate: '2026-04-04 11:00', channel: '이메일', title: '클레임 접수 안내',         status: '발송완료' },
-      { sendId: 4,  userId: 1, sendDate: '2026-03-23 09:30', channel: '카카오', title: '배송 출발 안내',           status: '발송완료' },
-      { sendId: 5,  userId: 1, sendDate: '2026-03-15 10:00', channel: 'SMS',    title: '이벤트 쿠폰 발급 안내',    status: '발송완료' },
-      { sendId: 6,  userId: 1, sendDate: '2026-03-01 09:00', channel: '이메일', title: '봄맞이 신상품 론칭 안내',  status: '발송완료' },
-      { sendId: 7,  userId: 2, sendDate: '2026-04-03 10:00', channel: '카카오', title: '배송 준비중 안내',         status: '발송완료' },
-      { sendId: 8,  userId: 2, sendDate: '2026-03-30 09:00', channel: 'SMS',    title: '문의 답변 안내',           status: '발송완료' },
-      { sendId: 9,  userId: 3, sendDate: '2026-03-29 11:00', channel: '카카오', title: '배송 완료 안내',           status: '발송완료' },
-      { sendId: 10, userId: 3, sendDate: '2026-03-01 09:00', channel: '이메일', title: '봄맞이 신상품 론칭 안내',  status: '실패' },
-      { sendId: 11, userId: 4, sendDate: '2026-03-19 09:00', channel: '카카오', title: '배송 완료 안내',           status: '발송완료' },
-      { sendId: 12, userId: 4, sendDate: '2026-03-25 10:30', channel: 'SMS',    title: '문의 답변 안내',           status: '발송완료' },
-      { sendId: 13, userId: 6, sendDate: '2026-04-01 09:00', channel: '이메일', title: 'VIP 회원 특별 혜택 안내',  status: '발송완료' },
-      { sendId: 14, userId: 6, sendDate: '2026-03-08 09:00', channel: '카카오', title: '배송 완료 안내',           status: '발송완료' },
-      { sendId: 15, userId: 8, sendDate: '2026-04-05 09:00', channel: '이메일', title: 'VIP 회원 전용 특별 혜택',  status: '발송완료' },
-      { sendId: 16, userId: 8, sendDate: '2026-02-23 11:00', channel: '카카오', title: '배송 완료 안내',           status: '발송완료' },
-      { sendId: 17, userId: 1, sendDate: '2025-11-10 09:00', channel: '이메일', title: '연말 특별 이벤트 안내',    status: '발송완료' },
+      { sendId: 1,  userId: 1, sendDate: '2026-04-06 09:00', channel_cd: '카카오',  title: '주문 접수 안내',         status_cd: '발송완료' },
+      { sendId: 2,  userId: 1, sendDate: '2026-04-05 14:35', channel_cd: 'SMS',    title: '주문 결제 확인',          status_cd: '발송완료' },
+      { sendId: 3,  userId: 1, sendDate: '2026-04-04 11:00', channel_cd: '이메일', title: '클레임 접수 안내',         status_cd: '발송완료' },
+      { sendId: 4,  userId: 1, sendDate: '2026-03-23 09:30', channel_cd: '카카오', title: '배송 출발 안내',           status_cd: '발송완료' },
+      { sendId: 5,  userId: 1, sendDate: '2026-03-15 10:00', channel_cd: 'SMS',    title: '이벤트 쿠폰 발급 안내',    status_cd: '발송완료' },
+      { sendId: 6,  userId: 1, sendDate: '2026-03-01 09:00', channel_cd: '이메일', title: '봄맞이 신상품 론칭 안내',  status_cd: '발송완료' },
+      { sendId: 7,  userId: 2, sendDate: '2026-04-03 10:00', channel_cd: '카카오', title: '배송 준비중 안내',         status_cd: '발송완료' },
+      { sendId: 8,  userId: 2, sendDate: '2026-03-30 09:00', channel_cd: 'SMS',    title: '문의 답변 안내',           status_cd: '발송완료' },
+      { sendId: 9,  userId: 3, sendDate: '2026-03-29 11:00', channel_cd: '카카오', title: '배송 완료 안내',           status_cd: '발송완료' },
+      { sendId: 10, userId: 3, sendDate: '2026-03-01 09:00', channel_cd: '이메일', title: '봄맞이 신상품 론칭 안내',  status_cd: '실패' },
+      { sendId: 11, userId: 4, sendDate: '2026-03-19 09:00', channel_cd: '카카오', title: '배송 완료 안내',           status_cd: '발송완료' },
+      { sendId: 12, userId: 4, sendDate: '2026-03-25 10:30', channel_cd: 'SMS',    title: '문의 답변 안내',           status_cd: '발송완료' },
+      { sendId: 13, userId: 6, sendDate: '2026-04-01 09:00', channel_cd: '이메일', title: 'VIP 회원 특별 혜택 안내',  status_cd: '발송완료' },
+      { sendId: 14, userId: 6, sendDate: '2026-03-08 09:00', channel_cd: '카카오', title: '배송 완료 안내',           status_cd: '발송완료' },
+      { sendId: 15, userId: 8, sendDate: '2026-04-05 09:00', channel_cd: '이메일', title: 'VIP 회원 전용 특별 혜택',  status_cd: '발송완료' },
+      { sendId: 16, userId: 8, sendDate: '2026-02-23 11:00', channel_cd: '카카오', title: '배송 완료 안내',           status_cd: '발송완료' },
+      { sendId: 17, userId: 1, sendDate: '2025-11-10 09:00', channel_cd: '이메일', title: '연말 특별 이벤트 안내',    status_cd: '발송완료' },
     ],
 
     /* ── 유틸 ── */

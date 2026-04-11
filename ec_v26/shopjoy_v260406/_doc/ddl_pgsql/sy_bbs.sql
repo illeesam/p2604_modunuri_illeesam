@@ -8,7 +8,7 @@ CREATE TABLE sy_bbs (
     bbm_id          VARCHAR(16)     NOT NULL,
     parent_bbs_id   VARCHAR(16),                            -- 답글 시 부모글 ID
     member_id       VARCHAR(16),
-    author          VARCHAR(50),
+    author_nm          VARCHAR(50),
     title           VARCHAR(200)    NOT NULL,
     content_html    TEXT,
     attach_grp_id   VARCHAR(16),
@@ -16,7 +16,7 @@ CREATE TABLE sy_bbs (
     like_count      INTEGER         DEFAULT 0,
     comment_count   INTEGER         DEFAULT 0,
     is_fixed        CHAR(1)         DEFAULT 'N',
-    status          VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/DELETED/HIDDEN
+    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/DELETED/HIDDEN
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -30,7 +30,7 @@ COMMENT ON COLUMN sy_bbs.site_id           IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_bbs.bbm_id            IS '게시판ID';
 COMMENT ON COLUMN sy_bbs.parent_bbs_id     IS '부모게시물ID (답글)';
 COMMENT ON COLUMN sy_bbs.member_id         IS '작성자 회원ID';
-COMMENT ON COLUMN sy_bbs.author            IS '작성자명';
+COMMENT ON COLUMN sy_bbs.author_nm            IS '작성자명';
 COMMENT ON COLUMN sy_bbs.title             IS '제목';
 COMMENT ON COLUMN sy_bbs.content_html      IS '내용 (HTML)';
 COMMENT ON COLUMN sy_bbs.attach_grp_id     IS '첨부파일그룹ID';
@@ -38,7 +38,7 @@ COMMENT ON COLUMN sy_bbs.view_count        IS '조회수';
 COMMENT ON COLUMN sy_bbs.like_count        IS '좋아요수';
 COMMENT ON COLUMN sy_bbs.comment_count     IS '댓글수';
 COMMENT ON COLUMN sy_bbs.is_fixed          IS '상단고정 Y/N';
-COMMENT ON COLUMN sy_bbs.status            IS '상태 (ACTIVE/DELETED/HIDDEN)';
+COMMENT ON COLUMN sy_bbs.status_cd         IS '상태 (ACTIVE/DELETED/HIDDEN)';
 COMMENT ON COLUMN sy_bbs.reg_by            IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_bbs.reg_date          IS '등록일';
 COMMENT ON COLUMN sy_bbs.upd_by            IS '수정자 (sy_user.user_id)';

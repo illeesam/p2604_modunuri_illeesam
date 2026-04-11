@@ -12,7 +12,7 @@ CREATE TABLE ec_notice (
     attach_grp_id   VARCHAR(16),
     start_date      TIMESTAMP,
     end_date        TIMESTAMP,
-    status          VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/INACTIVE
+    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/INACTIVE
     view_count      INTEGER         DEFAULT 0,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -31,7 +31,7 @@ COMMENT ON COLUMN ec_notice.content_html  IS '내용 (HTML)';
 COMMENT ON COLUMN ec_notice.attach_grp_id IS '첨부파일그룹ID';
 COMMENT ON COLUMN ec_notice.start_date    IS '노출시작일';
 COMMENT ON COLUMN ec_notice.end_date      IS '노출종료일';
-COMMENT ON COLUMN ec_notice.status        IS '상태 (ACTIVE/INACTIVE)';
+COMMENT ON COLUMN ec_notice.status_cd     IS '상태 (ACTIVE/INACTIVE)';
 COMMENT ON COLUMN ec_notice.view_count    IS '조회수';
 COMMENT ON COLUMN ec_notice.reg_by        IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_notice.reg_date      IS '등록일';

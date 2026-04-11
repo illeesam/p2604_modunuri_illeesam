@@ -528,7 +528,7 @@ window.MemberSelectModal = {
     const filtered = computed(() => props.adminData.members.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return m.name.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
+      return m.member_nm.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
     }));
     return { siteName, kw, filtered };
   },
@@ -540,7 +540,7 @@ window.MemberSelectModal = {
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="m in filtered" :key="m.userId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ m.name }} <span style="font-size:11px;color:#888;">{{ m.email }}</span></div>
+        <div class="sel-modal-item-name">{{ m.member_nm }} <span style="font-size:11px;color:#888;">{{ m.email }}</span></div>
         <span class="sel-modal-item-id">{{ m.userId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', m)">선택</button>
       </div>
@@ -799,7 +799,7 @@ window.TemplateSendModal = {
       const k = kw.value.trim().toLowerCase();
       let list = props.adminData.members || [];
       if (selectedGrade.value) list = list.filter(m => m.grade === selectedGrade.value);
-      if (k) list = list.filter(m => m.name?.toLowerCase().includes(k) || m.email?.toLowerCase().includes(k) || String(m.userId).includes(k));
+      if (k) list = list.filter(m => m.member_nm?.toLowerCase().includes(k) || m.email?.toLowerCase().includes(k) || String(m.userId).includes(k));
       return list;
     });
     const userList = computed(() => {
@@ -981,11 +981,11 @@ window.TemplateSendModal = {
               style="width:15px;height:15px;flex-shrink:0;accent-color:#52c41a;cursor:pointer;" />
             <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
               :style="isSelected(item)?'background:#52c41a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
-              {{ item.name.charAt(0) }}
+              {{ (targetType==='member' ? item.member_nm : item.name).charAt(0) }}
             </div>
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
-                {{ item.name }}
+                {{ targetType==='member' ? item.member_nm : item.name }}
                 <span style="font-size:11px;color:#9ca3af;font-weight:400;">{{ item.loginId || item.email }}</span>
               </div>
               <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">

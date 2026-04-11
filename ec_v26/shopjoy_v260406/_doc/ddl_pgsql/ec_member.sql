@@ -7,7 +7,7 @@ CREATE TABLE ec_member (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     email           VARCHAR(100)    NOT NULL,
     password        VARCHAR(255)    NOT NULL,
-    name            VARCHAR(50)     NOT NULL,
+    member_nm            VARCHAR(50)     NOT NULL,
     phone           VARCHAR(20),
     gender          VARCHAR(1),                             -- M/F
     birth_date      DATE,
@@ -18,9 +18,9 @@ CREATE TABLE ec_member (
     order_count     INTEGER         DEFAULT 0,
     total_purchase  BIGINT          DEFAULT 0,
     cache_balance   BIGINT          DEFAULT 0,
-    zip_code        VARCHAR(10),
-    addr            VARCHAR(200),
-    addr_detail     VARCHAR(200),
+    zip_cd        VARCHAR(10),
+    address            VARCHAR(200),
+    address_detail     VARCHAR(200),
     memo            TEXT,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -35,7 +35,7 @@ COMMENT ON COLUMN ec_member.member_id      IS '회원ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN ec_member.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_member.email          IS '이메일 (로그인 ID)';
 COMMENT ON COLUMN ec_member.password       IS '비밀번호 (bcrypt)';
-COMMENT ON COLUMN ec_member.name           IS '이름';
+COMMENT ON COLUMN ec_member.member_nm           IS '이름';
 COMMENT ON COLUMN ec_member.phone          IS '연락처';
 COMMENT ON COLUMN ec_member.gender         IS '성별 M/F';
 COMMENT ON COLUMN ec_member.birth_date     IS '생년월일';
@@ -46,9 +46,9 @@ COMMENT ON COLUMN ec_member.last_login     IS '최근 로그인';
 COMMENT ON COLUMN ec_member.order_count    IS '주문 건수';
 COMMENT ON COLUMN ec_member.total_purchase IS '누적 구매금액';
 COMMENT ON COLUMN ec_member.cache_balance  IS '적립금 잔액';
-COMMENT ON COLUMN ec_member.zip_code       IS '우편번호';
-COMMENT ON COLUMN ec_member.addr           IS '주소';
-COMMENT ON COLUMN ec_member.addr_detail    IS '상세주소';
+COMMENT ON COLUMN ec_member.zip_cd       IS '우편번호';
+COMMENT ON COLUMN ec_member.address           IS '주소';
+COMMENT ON COLUMN ec_member.address_detail    IS '상세주소';
 COMMENT ON COLUMN ec_member.memo           IS '메모';
 COMMENT ON COLUMN ec_member.reg_by         IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_member.reg_date       IS '등록일';

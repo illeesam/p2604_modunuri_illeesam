@@ -6,7 +6,7 @@ window.MemberDtl = {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
-      email: '', name: '', phone: '', gradeCd: '일반', statusCd: '활성',
+      email: '', member_nm: '', phone: '', gradeCd: '일반', statusCd: '활성',
       joinDate: '', lastLogin: '', orderCount: 0, totalPurchase: 0, memo: '',
     });
     const errors = reactive({});
@@ -16,7 +16,7 @@ window.MemberDtl = {
 
     const schema = yup.object({
       email: yup.string().required('이메일을 입력해주세요.').email('올바른 이메일 형식이 아닙니다.'),
-      name:  yup.string().required('이름을 입력해주세요.'),
+      member_nm:  yup.string().required('이름을 입력해주세요.'),
     });
 
     onMounted(async () => {
@@ -88,8 +88,8 @@ window.MemberDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">이름 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.name" placeholder="이름" :readonly="viewMode" :class="errors.name ? 'is-invalid' : ''" />
-        <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
+        <input class="form-control" v-model="form.member_nm" placeholder="이름" :readonly="viewMode" :class="errors.member_nm ? 'is-invalid' : ''" />
+        <span v-if="errors.member_nm" class="field-error">{{ errors.member_nm }}</span>
       </div>
     </div>
     <div class="form-row">

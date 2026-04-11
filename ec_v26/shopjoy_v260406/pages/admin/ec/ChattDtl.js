@@ -104,7 +104,7 @@ window.ChattDtl = {
           const m = props.adminData.getMember(Number(form.userId));
           props.adminData.chats.push({
             chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
-            userId: Number(form.userId), userName: m ? m.name : form.userName,
+            userId: Number(form.userId), userName: m ? m.member_nm : form.userName,
             date: new Date().toISOString().slice(0, 16).replace('T', ' '),
             subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
           });
@@ -116,7 +116,7 @@ window.ChattDtl = {
 
     const onUserChange = () => {
       const m = props.adminData.getMember(Number(form.userId));
-      if (m) form.userName = m.name;
+      if (m) form.userName = m.member_nm;
     };
 
     /* 회원 채팅 목록 조회 (신규 탭) */

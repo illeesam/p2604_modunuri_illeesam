@@ -76,7 +76,7 @@ window.CacheDtl = {
 
     const onUserIdChange = () => {
       const m = props.adminData.getMember(Number(form.userId));
-      if (m) form.userName = m.name;
+      if (m) form.userName = m.member_nm;
     };
 
     const typeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');

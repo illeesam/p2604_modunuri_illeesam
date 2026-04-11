@@ -149,7 +149,7 @@
         const kw = memberModal.keyword.trim().toLowerCase();
         memberModal.list = kw
           ? props.adminData.members.filter(m =>
-              m.name.includes(kw) || m.email.toLowerCase().includes(kw) || (m.phone || '').includes(kw))
+              m.member_nm.includes(kw) || m.email.toLowerCase().includes(kw) || (m.phone || '').includes(kw))
           : [...props.adminData.members];
       };
       const selectMember = (m) => {
@@ -282,12 +282,12 @@
       <div style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;">
         <!-- 아바타 -->
         <div :style="'width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;'+(customer.grade==='VIP'?'background:linear-gradient(135deg,#9c27b0,#e040fb);':customer.grade==='우수'?'background:linear-gradient(135deg,#1976d2,#42a5f5);':'background:linear-gradient(135deg,#78909c,#b0bec5);')">
-          {{ customer.name[0] }}
+          {{ customer.member_nm[0] }}
         </div>
         <!-- 이름/등급/상태 -->
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-size:20px;font-weight:700;color:#212121;">{{ customer.name }}</span>
+            <span style="font-size:20px;font-weight:700;color:#212121;">{{ customer.member_nm }}</span>
             <span :class="'badge '+(customer.grade==='VIP'?'badge-purple':customer.grade==='우수'?'badge-blue':'badge-gray')" style="font-size:12px;">{{ customer.grade }}</span>
             <span :class="'badge '+(customer.status==='활성'?'badge-green':'badge-red')" style="font-size:12px;">{{ customer.status }}</span>
           </div>
@@ -562,9 +562,9 @@
               </tr>
               <tr v-for="s in custSendHist" :key="s.sendId">
                 <td style="color:#888;white-space:nowrap;">{{ s.sendDate }}</td>
-                <td><span :class="'badge '+channelCls(s.channel)">{{ s.channel }}</span></td>
+                <td><span :class="'badge '+channelCls(s.channel_cd)">{{ s.channel_cd }}</span></td>
                 <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;" :title="s.title">{{ s.title }}</td>
-                <td><span :class="'badge '+badgeCls(s.status)">{{ s.status }}</span></td>
+                <td><span :class="'badge '+badgeCls(s.status_cd)">{{ s.status_cd }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -606,7 +606,7 @@
               @mouseenter="$event.currentTarget.style.background='#f5f8ff'"
               @mouseleave="$event.currentTarget.style.background=''">
               <td style="color:#888;">{{ m.userId }}</td>
-              <td style="font-weight:600;color:#212121;">{{ m.name }}</td>
+              <td style="font-weight:600;color:#212121;">{{ m.member_nm }}</td>
               <td>{{ m.email }}</td>
               <td>{{ m.phone || '-' }}</td>
               <td><span :class="'badge '+(m.grade==='VIP'?'badge-purple':m.grade==='우수'?'badge-blue':'badge-gray')">{{ m.grade }}</span></td>

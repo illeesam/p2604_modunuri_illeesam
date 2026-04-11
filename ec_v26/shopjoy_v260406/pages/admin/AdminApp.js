@@ -678,7 +678,7 @@
             <span v-if="commonFilter.member" class="popup-sel-clear" @click.stop="clearFilter('member')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('member')">
-            <span v-if="commonFilter.member" class="popup-sel-name">{{ commonFilter.member.name }}</span>
+            <span v-if="commonFilter.member" class="popup-sel-name">{{ commonFilter.member.member_nm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="commonFilter.member" class="popup-sel-id">{{ commonFilter.member.userId }}</span>
             <span class="popup-sel-btn">🔍</span>

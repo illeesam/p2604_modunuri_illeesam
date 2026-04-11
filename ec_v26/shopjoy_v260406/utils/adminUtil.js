@@ -7,7 +7,7 @@
     site:      null,  // { siteId, siteCode, siteName, ... }
     vendor:    null,  // { vendorId, vendorName, ... }
     adminUser: null,  // { adminUserId, name, loginId, ... }
-    member:    null,  // { userId, name, email, ... }
+    member:    null,  // { userId, member_nm, email, ... }
     order:     null,  // { orderId, userName, ... }
   });
 

@@ -19,7 +19,7 @@ window.Login = {
       if (!form.email || !form.password) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
       const r = await window.shopjoyAuth.login(form.email, form.password);
       if (r.ok) {
-        props.showToast(window.shopjoyAuth.state.user.name + '님, 환영합니다!', 'success');
+        props.showToast(window.shopjoyAuth.state.user.member_nm + '님, 환영합니다!', 'success');
         emit('close');
       } else { loginErr.value = r.msg; }
     };
@@ -28,7 +28,7 @@ window.Login = {
     const doSocial = provider => {
       // 로그인 탭에서 클릭 → 바로 로그인
       window.shopjoyAuth.loginSocial(provider);
-      props.showToast(window.shopjoyAuth.state.user.name + '님, 환영합니다!', 'success');
+      props.showToast(window.shopjoyAuth.state.user.member_nm + '님, 환영합니다!', 'success');
       emit('close');
     };
 
@@ -50,7 +50,7 @@ window.Login = {
 
     /* ── 공통 회원가입 필드 ── */
     const _initSf = () => reactive({
-      name: '', email: '', emailCode: '', emailSent: false, emailVerified: false,
+      member_nm: '', email: '', emailCode: '', emailSent: false, emailVerified: false,
       phone: '', phoneCode: '', phoneSent: false, phoneVerified: false,
       password: '', password2: '',
       // 선택 정보
@@ -96,12 +96,12 @@ window.Login = {
     /* ── 일반 회원가입 제출 ── */
     const doSignup = () => {
       signupErr.value = '';
-      if (!sf.name.trim())      { signupErr.value = '이름을 입력하세요.'; return; }
+      if (!sf.member_nm.trim())      { signupErr.value = '이름을 입력하세요.'; return; }
       if (!sf.emailVerified)    { signupErr.value = '이메일 인증이 필요합니다.'; return; }
       if (!sf.phoneVerified)    { signupErr.value = '휴대폰 인증이 필요합니다.'; return; }
       if (sf.password.length < 6){ signupErr.value = '비밀번호는 6자 이상이어야 합니다.'; return; }
       if (sf.password !== sf.password2){ signupErr.value = '비밀번호가 일치하지 않습니다.'; return; }
-      window.shopjoyAuth.signup(sf.name, sf.email, sf.phone, {
+      window.shopjoyAuth.signup(sf.member_nm, sf.email, sf.phone, {
         postcode: sf.postcode, address: sf.address, addressDetail: sf.addressDetail,
         birthdate: sf.birthdate, gender: sf.gender,
       });
@@ -277,7 +277,7 @@ window.Login = {
       <!-- 필수 -->
       <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">필수 정보</div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-        <input v-model="sf.name" type="text" placeholder="이름 *" :style="IS">
+        <input v-model="sf.member_nm" type="text" placeholder="이름 *" :style="IS">
 
         <!-- 이메일 인증 -->
         <div>

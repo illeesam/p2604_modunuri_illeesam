@@ -60,7 +60,7 @@ window.ContactDtl = {
 
     const onUserIdChange = () => {
       const m = props.adminData.getMember(Number(form.userId));
-      if (m) form.userName = m.name;
+      if (m) form.userName = m.member_nm;
     };
 
     /* 같은 회원의 다른 문의 */
