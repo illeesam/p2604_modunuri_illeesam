@@ -823,9 +823,9 @@ window.Sample14 = {
       <template v-else-if="activeTab==='grid2'||activeTab==='grid3'||activeTab==='grid4'">
         <div :style="{ display:'grid',
           gridTemplateColumns: {
-            grid2: 'repeat(auto-fill,minmax(max(calc(50% - 4px),250px),1fr))',
-            grid3: 'repeat(auto-fill,minmax(max(calc(33.333% - 5.333px),200px),1fr))',
-            grid4: 'repeat(auto-fill,minmax(max(calc(25% - 6px),163px),1fr))'
+            grid2: 'repeat(auto-fill,minmax(max(calc(50% - 4px),288px),1fr))',
+            grid3: 'repeat(auto-fill,minmax(max(calc(33.333% - 5.333px),230px),1fr))',
+            grid4: 'repeat(auto-fill,minmax(max(calc(25% - 6px),187px),1fr))'
           }[activeTab],
           gap: '8px' }">
           <div v-for="(cell, ci) in gridCells[activeTab]" :key="ci"
