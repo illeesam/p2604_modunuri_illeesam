@@ -117,7 +117,7 @@ window.Sample07 = {
         method:     node.method,
         desc:       node.desc || '',
         reqMethod:  node.method,
-        reqUrl:     node.url,
+        reqUrl:     node.url  || '',
         reqBody:    node.body || '',
         reqTab:     (['POST','PUT','PATCH'].includes(node.method) && node.body) ? 'body' : 'params',
         reqParams:  reactive([...(node.params||[]).map(p=>({...p})), {k:'',v:''}]),
@@ -191,6 +191,8 @@ window.Sample07 = {
 
     const openAutoPopup = (tab, evt) => {
       evt.stopPropagation();
+      // 이미 자동실행 중이면 토글(끄기)
+      if (tab.autoMs) { startAutoRun(tab, 0, ''); return; }
       if (autoPopupTabId.value === tab.tabId) { autoPopupTabId.value = null; return; }
       const rect = evt.currentTarget.getBoundingClientRect();
       autoPopupPos.top  = rect.top;
@@ -224,15 +226,45 @@ window.Sample07 = {
       autoPopupTabId.value = null;
     };
 
-    /* ===== Send (active tab 기준) ===== */
+    /* ===== Toast ===== */
+    const TOAST_MS = 20000;
+    const toasts   = reactive([]);
+    let _toastSeq  = 0;
+    const safeStr  = v => (v != null ? String(v) : '');
+
+    const pushToast = ({ type, tabLabel, method, url, status, resJson }) => {
+      const id  = ++_toastSeq;
+      const t   = reactive({ id, seq: id, type, tabLabel, method, url, status, resJson, jsonOpen: false, progress: 100 });
+      toasts.push(t);
+      const startMs = Date.now();
+      const tick = setInterval(() => {
+        const elapsed = Date.now() - startMs;
+        t.progress = Math.max(0, Math.round((1 - elapsed / TOAST_MS) * 100));
+        if (elapsed >= TOAST_MS) {
+          clearInterval(tick);
+          const idx = toasts.findIndex(x => x.id === id);
+          if (idx !== -1) toasts.splice(idx, 1);
+        }
+      }, 200);
+      t._tick = tick;
+    };
+    const closeToast = (id) => {
+      const idx = toasts.findIndex(x => x.id === id);
+      if (idx !== -1) {
+        clearInterval(toasts[idx]._tick);
+        toasts.splice(idx, 1);
+      }
+    };
+
+    /* ===== Send ===== */
     const buildUrl = (tab) => {
       let base = tab.reqUrl.trim();
       if (!base.startsWith('http')) {
         base = hostUrl.value.replace(/\/$/, '') + (base.startsWith('/') ? base : '/' + base);
       }
-      const params = tab.reqParams.filter(p => p.k.trim());
+      const params = tab.reqParams.filter(p => safeStr(p.k).trim());
       if (params.length) {
-        const qs = params.map(p => `${encodeURIComponent(p.k)}=${encodeURIComponent(p.v)}`).join('&');
+        const qs = params.map(p => `${encodeURIComponent(safeStr(p.k))}=${encodeURIComponent(safeStr(p.v))}`).join('&');
         base += (base.includes('?') ? '&' : '?') + qs;
       }
       return base;
@@ -240,20 +272,20 @@ window.Sample07 = {
 
     const doSend = async (targetTab) => {
       const tab = targetTab || activeTab.value;
-      if (!tab || !tab.reqUrl.trim()) return;
+      if (!tab || !tab.reqUrl?.trim()) return;
       tab.sending = true;
       tab.resJson = ''; tab.resStatus = null; tab.resTime = null; tab.resData = null;
       const finalUrl = buildUrl(tab);
       const method   = tab.reqMethod.toLowerCase();
       const t0 = Date.now();
       const headers = {};
-      defHeaders.filter(h => h.k.trim()).forEach(h => { headers[h.k] = h.v; });
-      tab.reqHeaders.filter(h => h.k.trim()).forEach(h => { headers[h.k] = h.v; });
+      defHeaders.filter(h => safeStr(h.k).trim()).forEach(h => { headers[safeStr(h.k)] = safeStr(h.v); });
+      tab.reqHeaders.filter(h => safeStr(h.k).trim()).forEach(h => { headers[safeStr(h.k)] = safeStr(h.v); });
       if (token.value.trim()) headers['Authorization'] = `Bearer ${token.value.trim()}`;
       let status = null, elapsed = null;
       try {
         const config = { method, url: finalUrl, headers };
-        if (['post','put','patch'].includes(method) && tab.reqBody.trim()) {
+        if (['post','put','patch'].includes(method) && tab.reqBody?.trim()) {
           try { config.data = JSON.parse(tab.reqBody); } catch { config.data = tab.reqBody; }
         }
         const res = await axios(config);
@@ -267,21 +299,102 @@ window.Sample07 = {
         tab.resData = errData; tab.resJson = JSON.stringify(errData, null, 2);
       } finally {
         tab.sending = false;
-        history.unshift({ id: Date.now(), method: tab.reqMethod, url: finalUrl, status, time: elapsed, ts: new Date().toLocaleTimeString(), resJson: tab.resJson, tabLabel: tab.tabLabel });
+        const _now = new Date();
+        const _ts  = _now.toTimeString().slice(0, 8);
+        const _safeReqParams   = (tab.reqParams  || []).filter(p => safeStr(p.k).trim()).map(p => ({ k: safeStr(p.k), v: safeStr(p.v) }));
+        const _safeReqHeaders  = (tab.reqHeaders || []).filter(h => safeStr(h.k).trim()).map(h => ({ k: safeStr(h.k), v: safeStr(h.v) }));
+        history.unshift({
+          id: Date.now(), method: tab.reqMethod, url: finalUrl,
+          status, time: elapsed, ts: _ts, tabLabel: tab.tabLabel,
+          resJson: tab.resJson,
+          reqInfo: {
+            method: tab.reqMethod, url: tab.reqUrl,
+            params: _safeReqParams, headers: _safeReqHeaders,
+            body: tab.reqBody,
+            token: token.value,
+            host: hostUrl.value,
+            defHeaders: defHeaders.filter(h => safeStr(h.k).trim()).map(h => ({ k: safeStr(h.k), v: safeStr(h.v) })),
+          },
+        });
         if (history.length > 50) history.splice(50);
+        // toast 알림
+        if (status !== null) {
+          pushToast({
+            type:     status >= 200 && status < 300 ? 'info' : 'error',
+            tabLabel: tab.tabLabel,
+            method:   tab.reqMethod,
+            url:      finalUrl,
+            status,
+            resJson:  tab.resJson,
+          });
+        }
       }
     };
 
     /* ===== History ===== */
-    const history    = reactive([]);
-    const histSelIdx = ref(null);
-    const histModal  = ref(null);  // 상세 모달
+    const history      = reactive([]);
+    const histSelIdx   = ref(null);
+    const histModal    = ref(null);
+    const histModalTab = ref('req');  // 'req' | 'res'
+
+    // 편집용 복사본 (histModal 원본은 건드리지 않음)
+    const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
 
     const selectHistory = (h, idx) => {
-      histSelIdx.value = idx;
-      histModal.value  = h;
+      histSelIdx.value   = idx;
+      histModal.value    = h;
+      histModalTab.value = 'req';
+      // editReq 에 딥카피
+      editReq.method  = h.reqInfo.method  || '';
+      editReq.host    = h.reqInfo.host    || '';
+      editReq.url     = h.reqInfo.url     || '';
+      editReq.token   = h.reqInfo.token   || '';
+      editReq.body    = h.reqInfo.body    || '';
+      editReq.params  = (h.reqInfo.params  || []).map(p  => ({k:p.k,  v:p.v}));
+      editReq.headers = (h.reqInfo.headers || []).map(h2 => ({k:h2.k, v:h2.v}));
     };
     const closeHistModal = () => { histModal.value = null; };
+
+    const histResJson     = ref('');
+    const histResSending  = ref(false);
+    const histResStatus   = ref(null);
+    const histResTime     = ref(null);
+    const histResTs       = ref('');
+    const histResProgress = ref(0);  // 0~100, 전송 중 진행 표시
+
+    const resendHist = async () => {
+      if (!activeTab.value) return;
+      const tab = activeTab.value;
+      tab.reqMethod = editReq.method;
+      tab.reqUrl    = editReq.url;
+      tab.reqBody   = editReq.body || '';
+      tab.reqParams.splice(0, tab.reqParams.length, ...editReq.params.map(p=>({...p})), {k:'',v:''});
+      tab.reqHeaders.splice(0, tab.reqHeaders.length, ...editReq.headers.map(h=>({...h})), {k:'',v:''});
+      if (editReq.token) token.value   = editReq.token;
+      if (editReq.host)  hostUrl.value = editReq.host;
+      // 응답 초기화 + 전송 시작
+      histResJson.value     = '';
+      histResStatus.value   = null;
+      histResTime.value     = null;
+      histResTs.value       = '';
+      histResProgress.value = 0;
+      histResSending.value  = true;
+      // progress 애니메이션: 0→85 느리게, 나머지는 완료 후 100
+      const _start = Date.now();
+      const _tick = setInterval(() => {
+        const elapsed = Date.now() - _start;
+        // 5초 안에 85까지 수렴
+        histResProgress.value = Math.min(85, Math.round((elapsed / 5000) * 85));
+      }, 80);
+      await doSend(tab);
+      clearInterval(_tick);
+      histResProgress.value = 100;
+      histResSending.value  = false;
+      histResJson.value     = tab.resJson;
+      histResStatus.value   = tab.resStatus;
+      histResTime.value     = tab.resTime;
+      histResTs.value       = new Date().toTimeString().slice(0, 8);
+    };
 
     /* ===== Response Grid (active tab) ===== */
     const resGridCols = computed(() => {
@@ -298,6 +411,19 @@ window.Sample07 = {
       if (Array.isArray(d?.list)) return d.list;
       return [];
     });
+
+    /* ===== Quick Run ===== */
+    const quickRun = (node, evt) => {
+      evt.stopPropagation();
+      // 기존 탭 있으면 재사용, 없으면 새 탭
+      let tab = openTabs.find(t => t.nodeId === node.id);
+      if (!tab) {
+        tab = makeTab(node);
+        openTabs.push(tab);
+      }
+      activeTabId.value = tab.tabId;
+      doSend(tab);
+    };
 
     /* ===== Helpers ===== */
     const addRow    = arr => arr.push({ k: '', v: '' });
@@ -332,9 +458,10 @@ window.Sample07 = {
       flatTree, treeSearch, toggleNode, selectApiNode, treeLoaded, appFilter, APP_META,
       openTabs, activeTabId, activeTab, closeTab, closeAllTabs,
       settingsOpen, hostUrl, token, defHeaders, lsItems, refreshLs,
-      doSend, history, histSelIdx, histModal, selectHistory, closeHistModal,
+      toasts, closeToast,
+      doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResSending, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
       resGridCols, resGridRows,
-      addRow, removeRow, methodStyle, statusStyle, methodDot,
+      addRow, removeRow, methodStyle, statusStyle, methodDot, quickRun,
       // 자동실행
       autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
@@ -371,8 +498,8 @@ window.Sample07 = {
         @click="item.n.type==='req' ? selectApiNode(item.n) : toggleNode(item.n)"
         style="display:flex;align-items:center;gap:3px;padding:3px 6px;cursor:pointer;white-space:nowrap;overflow:hidden;transition:background .1s;user-select:none;"
         :style="'padding-left:'+(6+item.depth*11)+'px;'+(openTabs.some(t=>t.nodeId===item.n.id)?'color:#1a73e8;':'')"
-        @mouseenter="e=>e.currentTarget.style.background='#eef2ff'"
-        @mouseleave="e=>e.currentTarget.style.background=''">
+        @mouseenter="e=>{ e.currentTarget.style.background='#eef2ff'; const b=e.currentTarget.querySelector('.tree-run-btn'); if(b) b.style.opacity='1'; }"
+        @mouseleave="e=>{ e.currentTarget.style.background=''; const b=e.currentTarget.querySelector('.tree-run-btn'); if(b) b.style.opacity='0'; }">
         <span style="flex-shrink:0;font-size:9px;color:#bbb;width:8px;text-align:center;">
           <template v-if="item.n.type==='app'">{{ item.n.open?'▼':'▶' }}</template>
           <template v-else-if="item.n.type==='folder'">{{ item.n.open?'▾':'▸' }}</template>
@@ -386,7 +513,10 @@ window.Sample07 = {
         </template>
         <template v-else>
           <span style="font-size:9px;padding:1px 3px;border-radius:2px;font-weight:700;flex-shrink:0;min-width:38px;text-align:center;" :style="methodStyle(item.n.method)">{{ item.n.method }}</span>
-          <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;" :title="item.n.url">{{ item.n.label }}</span>
+          <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;flex:1;" :title="item.n.url">{{ item.n.label }}</span>
+          <button @click.stop="quickRun(item.n, $event)" title="바로 실행"
+            style="flex-shrink:0;border:none;background:none;cursor:pointer;font-size:10px;color:#bbb;padding:1px 3px;border-radius:3px;line-height:1;opacity:0;transition:opacity .1s;"
+            class="tree-run-btn">▶</button>
         </template>
       </div>
     </div>
@@ -525,14 +655,20 @@ window.Sample07 = {
         ⚙ 공통 설정
         <span style="font-size:10px;font-weight:400;color:#aaa;margin-left:6px;">변경사항은 localStorage에 자동 저장</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+      <!-- 1행: HOST URL + BEARER TOKEN -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
         <div>
           <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">Host URL</div>
           <input v-model="hostUrl" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;font-family:monospace;" />
-          <div style="font-size:10px;font-weight:700;color:#888;margin:8px 0 3px;text-transform:uppercase;">🔑 Bearer Token</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">🔑 Bearer Token</div>
           <input v-model="token" placeholder="eyJhbGci…" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;font-family:monospace;" />
           <div v-if="token" style="font-size:10px;color:#1a73e8;margin-top:3px;">✔ Authorization 헤더에 자동 추가</div>
         </div>
+      </div>
+      <!-- 2행: 기본 Headers + LocalStorage -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
         <div>
           <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">기본 Headers</div>
           <div v-for="(h,i) in defHeaders" :key="i" style="display:flex;gap:3px;margin-bottom:3px;">
@@ -581,9 +717,9 @@ window.Sample07 = {
             :style="methodStyle(activeTab.reqMethod)">
             <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
           </select>
-          <input v-model="activeTab.reqUrl" placeholder="URL" @keyup.enter="doSend"
+          <input v-model="activeTab.reqUrl" placeholder="URL" @keyup.enter="doSend()"
             style="flex:1;font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:5px;outline:none;font-family:monospace;min-width:0;" />
-          <button @click="doSend" :disabled="activeTab.sending"
+          <button @click="doSend()" :disabled="activeTab.sending"
             style="font-size:12px;padding:5px 20px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:700;white-space:nowrap;flex-shrink:0;"
             :style="activeTab.sending?'opacity:.55;cursor:not-allowed;':''">
             {{ activeTab.sending ? '전송 중…' : '▶ 전송' }}
@@ -693,26 +829,35 @@ window.Sample07 = {
         <table style="width:100%;border-collapse:collapse;font-size:11px;">
           <thead style="position:sticky;top:0;background:#f8f9fa;z-index:1;">
             <tr style="border-bottom:1px solid #e0e0e0;">
-              <th style="padding:3px 6px;width:28px;text-align:center;font-weight:600;color:#bbb;font-size:10px;">#</th>
-              <th style="padding:3px 8px;width:72px;text-align:center;font-weight:600;color:#666;">메서드</th>
+              <th style="padding:3px 6px;width:32px;text-align:center;font-weight:600;color:#bbb;font-size:10px;">#</th>
+              <th style="padding:3px 8px;width:68px;text-align:center;font-weight:600;color:#666;">메서드</th>
+              <th style="padding:3px 8px;width:110px;text-align:left;font-weight:600;color:#666;">탭명</th>
               <th style="padding:3px 8px;text-align:left;font-weight:600;color:#666;">URL</th>
               <th style="padding:3px 8px;width:50px;text-align:center;font-weight:600;color:#666;">상태</th>
               <th style="padding:3px 8px;width:64px;text-align:center;font-weight:600;color:#666;">응답시간</th>
-              <th style="padding:3px 8px;width:68px;text-align:center;font-weight:600;color:#666;">시간</th>
+              <th style="padding:3px 8px;width:68px;text-align:center;font-weight:600;color:#666;">요청시간</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="!history.length"><td colspan="6" style="text-align:center;padding:12px;color:#ccc;">전송 이력이 없습니다</td></tr>
+            <tr v-if="!history.length"><td colspan="7" style="text-align:center;padding:12px;color:#ccc;">전송 이력이 없습니다</td></tr>
             <tr v-for="(h,i) in history" :key="h.id"
               @click="selectHistory(h,i)"
               style="cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
               :style="histSelIdx===i?'background:#e8f0fe;':''"
               @mouseenter="e=>{ if(histSelIdx!==i) e.currentTarget.style.background='#f5f5f5'; }"
               @mouseleave="e=>{ e.currentTarget.style.background=histSelIdx===i?'#e8f0fe':''; }">
-              <td style="text-align:center;padding:2px 6px;color:#ccc;font-size:10px;">{{ history.length - i }}</td>
+              <!-- 번호 + 상태 원 -->
+              <td style="text-align:center;padding:2px 6px;">
+                <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#999;">
+                  <span v-if="h.status && h.status<300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;"></span>
+                  <span v-else-if="h.status && h.status>=300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>
+                  {{ history.length - i }}
+                </span>
+              </td>
               <td style="text-align:center;padding:2px 8px;">
                 <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;" :style="methodStyle(h.method)">{{ h.method }}</span>
               </td>
+              <td style="padding:2px 8px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;font-size:10px;" :title="h.tabLabel">{{ h.tabLabel }}</td>
               <td style="padding:2px 8px;font-family:monospace;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;">{{ h.url }}</td>
               <td style="text-align:center;padding:2px 8px;" :style="statusStyle(h.status)">{{ h.status||'-' }}</td>
               <td style="text-align:center;padding:2px 8px;color:#888;">{{ h.time }}ms</td>
@@ -726,42 +871,188 @@ window.Sample07 = {
     <!-- History 상세 모달 -->
     <template v-if="histModal">
       <div @click="closeHistModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);"></div>
-      <div style="position:fixed;z-index:9001;top:50%;left:50%;transform:translate(-50%,-50%);width:680px;max-width:94vw;max-height:80vh;background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;">
-        <!-- 헤더 -->
-        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px;flex-shrink:0;background:#f8f9fa;">
+      <div style="position:fixed;z-index:9001;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;max-width:96vw;max-height:86vh;background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;">
+        <!-- 제목 헤더 -->
+        <div style="padding:10px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px;flex-shrink:0;background:#f8f9fa;">
+          <span style="font-size:12px;font-weight:800;color:#555;">전송이력상세</span>
+          <span style="position:relative;font-size:11px;font-weight:700;color:#888;padding:0 6px;">
+            <span v-if="histModal.status && histModal.status<300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#22c55e;"></span>
+            <span v-else-if="histModal.status && histModal.status>=300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>
+            #{{ history.length - histSelIdx }}
+          </span>
           <span style="font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;" :style="methodStyle(histModal.method)">{{ histModal.method }}</span>
-          <span style="font-size:12px;font-family:monospace;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="histModal.url">{{ histModal.url }}</span>
+          <span style="font-size:11px;font-family:monospace;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="histModal.url">{{ histModal.url }}</span>
           <button @click="closeHistModal" style="border:none;background:none;cursor:pointer;font-size:16px;color:#aaa;padding:0;line-height:1;flex-shrink:0;">✕</button>
         </div>
-        <!-- 메타 정보 -->
-        <div style="padding:8px 16px;border-bottom:1px solid #f0f0f0;display:flex;gap:20px;flex-shrink:0;background:#fff;">
-          <div>
-            <span style="font-size:10px;color:#aaa;">상태</span>
-            <span style="font-size:13px;font-weight:700;margin-left:6px;" :style="statusStyle(histModal.status)">{{ histModal.status || '-' }}</span>
-          </div>
-          <div>
-            <span style="font-size:10px;color:#aaa;">응답시간</span>
-            <span style="font-size:13px;font-weight:600;margin-left:6px;color:#555;">{{ histModal.time }}ms</span>
-          </div>
-          <div>
-            <span style="font-size:10px;color:#aaa;">시간</span>
-            <span style="font-size:12px;margin-left:6px;color:#888;">{{ histModal.ts }}</span>
-          </div>
-          <div v-if="histModal.tabLabel" style="flex:1;overflow:hidden;">
-            <span style="font-size:10px;color:#aaa;">탭</span>
-            <span style="font-size:11px;margin-left:6px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ histModal.tabLabel }}</span>
-          </div>
+        <!-- 탭명 -->
+        <div v-if="histModal.tabLabel" style="padding:3px 16px;background:#fff;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa;flex-shrink:0;">
+          탭: <span style="color:#666;">{{ histModal.tabLabel }}</span>
         </div>
-        <!-- 응답 본문 -->
-        <div style="flex:1;overflow:auto;padding:12px 16px;background:#fafafa;">
-          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;margin-bottom:6px;">Response Body</div>
-          <pre v-if="histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fff;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histModal.resJson }}</pre>
-          <div v-else style="text-align:center;padding:30px;color:#ccc;font-size:12px;">응답 본문 없음</div>
+        <!-- 좌/우 2컬럼 본문 -->
+        <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
+          <!-- 좌: 요청 (편집 가능) -->
+          <div style="width:50%;flex-shrink:0;border-right:1px solid #e8e8e8;overflow-y:auto;padding:12px 14px;background:#fafafa;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+              <span style="font-size:10px;font-weight:800;color:#1a73e8;text-transform:uppercase;letter-spacing:.05em;">요청</span>
+              <span style="font-size:10px;color:#aaa;">{{ histModal.ts }}</span>
+              <span style="flex:1;"></span>
+              <button @click="resendHist" :disabled="histResSending"
+                style="font-size:11px;font-weight:700;padding:4px 14px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;white-space:nowrap;"
+                :style="histResSending?'opacity:.55;cursor:not-allowed;':''">
+                {{ histResSending ? '전송 중…' : '▶ 재전송' }}
+              </button>
+            </div>
+            <!-- 메서드 -->
+            <div style="margin-bottom:7px;">
+              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">메서드</div>
+              <select v-model="editReq.method"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;font-weight:700;color:#333;outline:none;cursor:pointer;">
+                <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+              </select>
+            </div>
+            <!-- HOST -->
+            <div style="margin-bottom:7px;">
+              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">HOST</div>
+              <input v-model="editReq.host"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#555;outline:none;" />
+            </div>
+            <!-- URL -->
+            <div style="margin-bottom:7px;">
+              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">URL</div>
+              <input v-model="editReq.url"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#333;outline:none;" />
+            </div>
+            <!-- TOKEN -->
+            <div style="margin-bottom:7px;">
+              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">🔑 Bearer Token</div>
+              <input v-model="editReq.token" placeholder="(없음)"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#555;outline:none;" />
+            </div>
+            <!-- HEADERS -->
+            <div style="margin-bottom:7px;">
+              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
+                <span>Headers <span style="font-size:9px;font-weight:400;color:#aaa;">({{ editReq.headers.length }}개)</span></span>
+                <button @click="editReq.headers.push({k:'',v:''})"
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">+ 추가</button>
+              </div>
+              <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
+                <div v-if="!editReq.headers.length" style="padding:6px 10px;font-size:11px;color:#bbb;">(없음)</div>
+                <div v-for="(h,i) in editReq.headers" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
+                  <input v-model="h.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
+                  <input v-model="h.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
+                  <button @click="editReq.headers.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">✕</button>
+                </div>
+              </div>
+            </div>
+            <!-- PARAMS -->
+            <div style="margin-bottom:7px;">
+              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
+                <span>Parameters <span style="font-size:9px;font-weight:400;color:#aaa;">({{ editReq.params.length }}개)</span></span>
+                <button @click="editReq.params.push({k:'',v:''})"
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">+ 추가</button>
+              </div>
+              <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
+                <div v-if="!editReq.params.length" style="padding:6px 10px;font-size:11px;color:#bbb;">(없음)</div>
+                <div v-for="(p,i) in editReq.params" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
+                  <input v-model="p.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
+                  <input v-model="p.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
+                  <button @click="editReq.params.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">✕</button>
+                </div>
+              </div>
+            </div>
+            <!-- BODY -->
+            <div>
+              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">Body</div>
+              <textarea v-model="editReq.body" placeholder="(없음)"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#333;outline:none;resize:vertical;min-height:60px;line-height:1.5;"></textarea>
+            </div>
+          </div>
+          <!-- 우: 응답 -->
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#fff;overflow:hidden;">
+            <!-- 응답 헤더 + progress bar (고정) -->
+            <div style="flex-shrink:0;padding:12px 14px 0;border-bottom:1px solid #f0f0f0;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:10px;font-weight:800;color:#e8587a;text-transform:uppercase;letter-spacing:.05em;">응답</span>
+                <span style="flex:1;"></span>
+                <template v-if="histResSending">
+                  <span style="font-size:10px;color:#1a73e8;font-weight:600;">전송 중… {{ histResProgress }}%</span>
+                </template>
+                <template v-else-if="histResStatus">
+                  <span style="font-size:12px;font-weight:800;" :style="histResStatus<300?'color:#166534;':histResStatus<400?'color:#92400e;':'color:#991b1b;'">{{ histResStatus }}</span>
+                  <span style="font-size:10px;color:#888;">{{ histResTime }}ms</span>
+                  <span style="font-size:10px;color:#aaa;">{{ histResTs }}</span>
+                  <span style="font-size:9px;color:#1a73e8;background:#e8f0fe;padding:1px 5px;border-radius:3px;font-weight:600;">재전송</span>
+                </template>
+                <template v-else-if="histModal.status">
+                  <span style="font-size:12px;font-weight:800;" :style="histModal.status<300?'color:#166534;':histModal.status<400?'color:#92400e;':'color:#991b1b;'">{{ histModal.status }}</span>
+                  <span style="font-size:10px;color:#888;">{{ histModal.time }}ms</span>
+                  <span style="font-size:10px;color:#aaa;">{{ histModal.ts }}</span>
+                </template>
+              </div>
+              <!-- progress bar -->
+              <div style="height:6px;background:#f0f0f0;border-radius:0;margin:0 -14px;overflow:hidden;">
+                <div style="height:100%;transition:width .08s linear;"
+                  :style="histResSending ? 'background:#e8587a;width:'+histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
+                ></div>
+              </div>
+            </div>
+            <!-- 응답 본문 스크롤 영역 -->
+            <div style="flex:1;overflow-y:auto;padding:12px 14px;">
+              <pre v-if="!histResSending && histResJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histResJson }}</pre>
+              <pre v-else-if="!histResSending && !histResJson && histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histModal.resJson }}</pre>
+              <div v-else-if="!histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">응답 본문 없음</div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
 
   </div><!-- /Main Panel -->
+
+  <!-- ━━━ Toast 알림 (우측 하단) ━━━ -->
+  <div style="position:fixed;right:16px;bottom:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;">
+    <div v-for="t in toasts" :key="t.id"
+      style="pointer-events:all;width:380px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.22);overflow:hidden;font-size:11px;"
+      :style="t.type==='error'?'border:1px solid #fca5a5;':'border:1px solid #86efac;'">
+      <!-- 헤더바 -->
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;"
+        :style="t.type==='error'?'background:#fee2e2;':'background:#dcfce7;'">
+        <!-- 번호 배지 -->
+        <span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;flex-shrink:0;"
+          :style="t.type==='error'?'background:#ef4444;color:#fff;':'background:#22c55e;color:#fff;'">{{ t.seq }}</span>
+        <span style="font-size:13px;flex-shrink:0;">{{ t.type==='error' ? '🔴' : '🟢' }}</span>
+        <span style="font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:11px;"
+          :title="t.tabLabel">{{ t.tabLabel }}</span>
+        <button @click="closeToast(t.id)"
+          style="border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">✕</button>
+      </div>
+      <!-- progress bar -->
+      <div style="height:3px;background:#e5e7eb;">
+        <div style="height:100%;transition:width .2s linear;"
+          :style="(t.type==='error'?'background:#ef4444;':'background:#22c55e;')+'width:'+t.progress+'%;'"></div>
+      </div>
+      <!-- URL 행 -->
+      <div style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:#fff;border-bottom:1px solid #f0f0f0;">
+        <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;flex-shrink:0;"
+          :style="t.method==='GET'?'background:#dcfce7;color:#166534;':t.method==='POST'?'background:#dbeafe;color:#1e40af;':t.method==='PUT'?'background:#fef3c7;color:#92400e;':t.method==='DELETE'?'background:#fee2e2;color:#991b1b;':'background:#f3e8ff;color:#6b21a8;'">{{ t.method }}</span>
+        <span style="font-family:monospace;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px;" :title="t.url">{{ t.url }}</span>
+        <span style="font-weight:700;flex-shrink:0;font-size:12px;"
+          :style="t.status<300?'color:#166534;':t.status<400?'color:#92400e;':'color:#991b1b;'">{{ t.status }}</span>
+      </div>
+      <!-- JSON 접힌/펼친 -->
+      <div style="background:#f9f9f9;">
+        <div @click="t.jsonOpen=!t.jsonOpen"
+          style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;color:#888;font-size:10px;">
+          <span>응답 JSON</span>
+          <span style="font-size:9px;">{{ t.jsonOpen ? '▲ 접기' : '▼ 펼치기' }}</span>
+        </div>
+        <div v-if="t.jsonOpen" style="max-height:160px;overflow:auto;padding:0 10px 8px;">
+          <pre style="margin:0;font-size:10px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.5;">{{ t.resJson || '(없음)' }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
   `,
 };
