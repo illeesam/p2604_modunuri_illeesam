@@ -20,7 +20,7 @@ window.AppSidebar = {
 
     const SAMPLE0_ITEMS = [
       { menuId: 'sample01', menuNm: '01.gridCrud' },
-      { menuId: 'sample02', menuNm: '02.gridScroll' },
+      { menuId: 'sample02', menuNm: '02.infinity_scroll' },
       { menuId: 'sample03', menuNm: '03.comps' },
       { menuId: 'sample04', menuNm: '04.modals' },
       { menuId: 'sample05', menuNm: '05.store' },

@@ -1,27 +1,497 @@
 [
-  {"reqId":1,"reqNm":"회원 목록 조회","method":"GET","url":"/api/members","group":"회원","status":"활성","regDate":"2024-01-05"},
-  {"reqId":2,"reqNm":"회원 상세 조회","method":"GET","url":"/api/members/{id}","group":"회원","status":"활성","regDate":"2024-01-05"},
-  {"reqId":3,"reqNm":"회원 등록","method":"POST","url":"/api/members","group":"회원","status":"활성","regDate":"2024-01-06"},
-  {"reqId":4,"reqNm":"회원 수정","method":"PUT","url":"/api/members/{id}","group":"회원","status":"활성","regDate":"2024-01-06"},
-  {"reqId":5,"reqNm":"회원 삭제","method":"DELETE","url":"/api/members/{id}","group":"회원","status":"비활성","regDate":"2024-01-07"},
-  {"reqId":6,"reqNm":"상품 목록 조회","method":"GET","url":"/api/products","group":"상품","status":"활성","regDate":"2024-01-10"},
-  {"reqId":7,"reqNm":"상품 상세 조회","method":"GET","url":"/api/products/{id}","group":"상품","status":"활성","regDate":"2024-01-10"},
-  {"reqId":8,"reqNm":"상품 등록","method":"POST","url":"/api/products","group":"상품","status":"활성","regDate":"2024-01-11"},
-  {"reqId":9,"reqNm":"상품 수정","method":"PATCH","url":"/api/products/{id}","group":"상품","status":"활성","regDate":"2024-01-11"},
-  {"reqId":10,"reqNm":"상품 삭제","method":"DELETE","url":"/api/products/{id}","group":"상품","status":"비활성","regDate":"2024-01-12"},
-  {"reqId":11,"reqNm":"주문 목록 조회","method":"GET","url":"/api/orders","group":"주문","status":"활성","regDate":"2024-01-15"},
-  {"reqId":12,"reqNm":"주문 생성","method":"POST","url":"/api/orders","group":"주문","status":"활성","regDate":"2024-01-15"},
-  {"reqId":13,"reqNm":"주문 상태 변경","method":"PATCH","url":"/api/orders/{id}/status","group":"주문","status":"활성","regDate":"2024-01-16"},
-  {"reqId":14,"reqNm":"주문 취소","method":"POST","url":"/api/orders/{id}/cancel","group":"주문","status":"활성","regDate":"2024-01-16"},
-  {"reqId":15,"reqNm":"장바구니 조회","method":"GET","url":"/api/cart","group":"장바구니","status":"활성","regDate":"2024-01-20"},
-  {"reqId":16,"reqNm":"장바구니 추가","method":"POST","url":"/api/cart/items","group":"장바구니","status":"활성","regDate":"2024-01-20"},
-  {"reqId":17,"reqNm":"장바구니 항목 삭제","method":"DELETE","url":"/api/cart/items/{id}","group":"장바구니","status":"활성","regDate":"2024-01-21"},
-  {"reqId":18,"reqNm":"로그인","method":"POST","url":"/api/auth/login","group":"인증","status":"활성","regDate":"2024-02-01"},
-  {"reqId":19,"reqNm":"로그아웃","method":"POST","url":"/api/auth/logout","group":"인증","status":"활성","regDate":"2024-02-01"},
-  {"reqId":20,"reqNm":"토큰 갱신","method":"POST","url":"/api/auth/refresh","group":"인증","status":"활성","regDate":"2024-02-02"},
-  {"reqId":21,"reqNm":"쿠폰 목록 조회","method":"GET","url":"/api/coupons","group":"쿠폰","status":"활성","regDate":"2024-02-05"},
-  {"reqId":22,"reqNm":"쿠폰 발급","method":"POST","url":"/api/coupons/issue","group":"쿠폰","status":"활성","regDate":"2024-02-05"},
-  {"reqId":23,"reqNm":"카테고리 목록 조회","method":"GET","url":"/api/categories","group":"카테고리","status":"활성","regDate":"2024-02-10"},
-  {"reqId":24,"reqNm":"파일 업로드","method":"POST","url":"/api/files/upload","group":"파일","status":"비활성","regDate":"2024-02-15"},
-  {"reqId":25,"reqNm":"헬스체크","method":"GET","url":"/api/health","group":"시스템","status":"활성","regDate":"2024-02-20"}
+  {
+    "id": "sf", "appId": "front", "label": "shopjoy front", "type": "app", "open": true,
+    "children": [
+      {
+        "id": "sf_home", "label": "홈", "type": "folder", "open": true,
+        "children": [
+          {"id":"sf_home_main",   "label":"메인 홈",    "type":"req","method":"GET", "url":"/api/front/home",            "desc":"메인 홈 정보"},
+          {"id":"sf_notice_list", "label":"공지사항",   "type":"req","method":"GET", "url":"/api/front/ec/notice",        "desc":"공지사항 목록","params":[{"k":"page","v":"1"},{"k":"size","v":"10"}]},
+          {"id":"sf_event_list",  "label":"이벤트",     "type":"req","method":"GET", "url":"/api/front/ec/event",         "desc":"이벤트 목록","params":[{"k":"page","v":"1"}]},
+          {"id":"sf_faq_list",    "label":"FAQ",        "type":"req","method":"GET", "url":"/api/front/sy/bbs/faq",       "desc":"FAQ 게시물 목록","params":[{"k":"page","v":"1"}]}
+        ]
+      },
+      {
+        "id": "sf_prod", "label": "상품", "type": "folder", "open": false,
+        "children": [
+          {"id":"sf_cat",         "label":"카테고리 목록", "type":"req","method":"GET", "url":"/api/front/ec/category",   "desc":"카테고리 트리 조회"},
+          {"id":"sf_prod_list",   "label":"상품 목록",   "type":"req","method":"GET", "url":"/api/front/ec/prod",         "desc":"상품 목록 조회","params":[{"k":"page","v":"1"},{"k":"size","v":"20"},{"k":"categoryId","v":""},{"k":"sort","v":"regDate"}]},
+          {"id":"sf_prod_dtl",    "label":"상품 상세",   "type":"req","method":"GET", "url":"/api/front/ec/prod/PROD0001","desc":"상품 상세 조회"},
+          {"id":"sf_prod_srch",   "label":"상품 검색",   "type":"req","method":"GET", "url":"/api/front/ec/prod/search",  "desc":"상품 키워드 검색","params":[{"k":"keyword","v":"청바지"},{"k":"page","v":"1"}]},
+          {"id":"sf_prod_review", "label":"상품 리뷰",   "type":"req","method":"GET", "url":"/api/front/ec/prod/PROD0001/review","desc":"상품 리뷰 목록","params":[{"k":"page","v":"1"}]}
+        ]
+      },
+      {
+        "id": "sf_cart", "label": "장바구니", "type": "folder", "open": false,
+        "children": [
+          {"id":"sf_cart_get",  "label":"장바구니 조회", "type":"req","method":"GET",    "url":"/api/front/ec/cart",        "desc":"장바구니 목록"},
+          {"id":"sf_cart_add",  "label":"상품 추가",    "type":"req","method":"POST",   "url":"/api/front/ec/cart",        "desc":"장바구니 상품 추가","body":"{\n  \"prodId\": \"PROD0001\",\n  \"skuId\": \"SKU0001\",\n  \"qty\": 1\n}"},
+          {"id":"sf_cart_upd",  "label":"수량 변경",    "type":"req","method":"PUT",    "url":"/api/front/ec/cart/CART0001","desc":"장바구니 수량 변경","body":"{\n  \"qty\": 2\n}"},
+          {"id":"sf_cart_del",  "label":"항목 삭제",    "type":"req","method":"DELETE", "url":"/api/front/ec/cart/CART0001","desc":"장바구니 항목 삭제"}
+        ]
+      },
+      {
+        "id": "sf_order", "label": "주문", "type": "folder", "open": false,
+        "children": [
+          {"id":"sf_order_list",   "label":"주문 목록", "type":"req","method":"GET",  "url":"/api/front/ec/order",              "desc":"내 주문 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""}]},
+          {"id":"sf_order_dtl",    "label":"주문 상세", "type":"req","method":"GET",  "url":"/api/front/ec/order/ORD0001",      "desc":"주문 상세"},
+          {"id":"sf_order_new",    "label":"주문 생성", "type":"req","method":"POST", "url":"/api/front/ec/order",              "desc":"주문 생성","body":"{\n  \"cartIds\": [\"CART0001\"],\n  \"payMethodCd\": \"CARD\",\n  \"couponId\": null,\n  \"cacheUse\": 0,\n  \"recvNm\": \"홍길동\",\n  \"recvPhone\": \"010-1234-5678\",\n  \"recvZip\": \"12345\",\n  \"recvAddr\": \"서울시 강남구\",\n  \"recvAddrDetail\": \"101호\",\n  \"recvMemo\": \"문앞에 놔주세요\"\n}"},
+          {"id":"sf_order_cancel", "label":"주문 취소", "type":"req","method":"PUT",  "url":"/api/front/ec/order/ORD0001/cancel","desc":"주문 취소","body":"{\n  \"reason\": \"단순변심\"\n}"}
+        ]
+      },
+      {
+        "id": "sf_my", "label": "마이페이지", "type": "folder", "open": false,
+        "children": [
+          {"id":"sf_my_info",    "label":"내 정보",      "type":"req","method":"GET", "url":"/api/front/ec/member/me",         "desc":"내 프로필 조회"},
+          {"id":"sf_my_upd",     "label":"정보 수정",    "type":"req","method":"PUT", "url":"/api/front/ec/member/me",         "desc":"프로필 수정","body":"{\n  \"memberNm\": \"홍길동\",\n  \"phone\": \"010-1234-5678\",\n  \"zipCd\": \"12345\",\n  \"address\": \"서울시 강남구\"\n}"},
+          {"id":"sf_my_coupon",  "label":"쿠폰 목록",    "type":"req","method":"GET", "url":"/api/front/ec/member/me/coupon",  "desc":"내 쿠폰 목록","params":[{"k":"useYn","v":""}]},
+          {"id":"sf_my_cache",   "label":"적립금 내역",  "type":"req","method":"GET", "url":"/api/front/ec/member/me/cache",   "desc":"적립금 내역","params":[{"k":"page","v":"1"}]},
+          {"id":"sf_my_claim",   "label":"클레임 목록",  "type":"req","method":"GET", "url":"/api/front/ec/claim",             "desc":"내 클레임 목록","params":[{"k":"page","v":"1"}]},
+          {"id":"sf_my_claim_new","label":"클레임 신청", "type":"req","method":"POST","url":"/api/front/ec/claim",             "desc":"클레임 신청","body":"{\n  \"orderId\": \"ORD0001\",\n  \"orderItemId\": \"ITEM0001\",\n  \"claimTypeCd\": \"RETURN\",\n  \"reasonCd\": \"CHANGE_MIND\",\n  \"reasonDetail\": \"단순 변심\",\n  \"qty\": 1\n}"}
+        ]
+      },
+      {
+        "id": "sf_auth", "label": "인증", "type": "folder", "open": false,
+        "children": [
+          {"id":"sf_auth_login",   "label":"로그인",        "type":"req","method":"POST", "url":"/api/front/auth/login",   "desc":"회원 로그인","body":"{\n  \"email\": \"test@example.com\",\n  \"password\": \"1234\"\n}"},
+          {"id":"sf_auth_logout",  "label":"로그아웃",      "type":"req","method":"POST", "url":"/api/front/auth/logout",  "desc":"로그아웃"},
+          {"id":"sf_auth_refresh", "label":"토큰 갱신",     "type":"req","method":"POST", "url":"/api/front/auth/refresh", "desc":"액세스 토큰 갱신","body":"{\n  \"refreshToken\": \"\"\n}"},
+          {"id":"sf_auth_join",    "label":"회원가입",      "type":"req","method":"POST", "url":"/api/front/auth/join",    "desc":"회원가입","body":"{\n  \"email\": \"new@example.com\",\n  \"password\": \"1234\",\n  \"memberNm\": \"홍길동\",\n  \"phone\": \"010-1234-5678\"\n}"},
+          {"id":"sf_auth_pw",      "label":"비밀번호 변경", "type":"req","method":"PUT",  "url":"/api/front/auth/password","desc":"비밀번호 변경","body":"{\n  \"oldPw\": \"1234\",\n  \"newPw\": \"5678\"\n}"}
+        ]
+      },
+      {
+        "id": "sf_chatt", "label": "채팅 (고객)", "type": "folder", "open": false,
+        "children": [
+          {"id":"sf_chatt_list", "label":"채팅방 목록",  "type":"req","method":"GET",  "url":"/api/front/ec/chatt",               "desc":"내 채팅방 목록"},
+          {"id":"sf_chatt_new",  "label":"채팅 시작",   "type":"req","method":"POST", "url":"/api/front/ec/chatt",               "desc":"채팅방 생성","body":"{\n  \"subject\": \"상품 문의드립니다.\"\n}"},
+          {"id":"sf_chatt_msg",  "label":"메시지 목록", "type":"req","method":"GET",  "url":"/api/front/ec/chatt/CHAT0001/msg",  "desc":"메시지 목록","params":[{"k":"page","v":"1"},{"k":"size","v":"50"}]},
+          {"id":"sf_chatt_send", "label":"메시지 전송", "type":"req","method":"POST", "url":"/api/front/ec/chatt/CHAT0001/msg",  "desc":"메시지 전송","body":"{\n  \"msgText\": \"안녕하세요. 문의드립니다.\"\n}"},
+          {"id":"sf_alarm_list", "label":"알림 목록",   "type":"req","method":"GET",  "url":"/api/front/sy/alarm",               "desc":"내 알림 목록","params":[{"k":"read","v":""},{"k":"page","v":"1"}]},
+          {"id":"sf_alarm_read", "label":"알림 읽음",   "type":"req","method":"PUT",  "url":"/api/front/sy/alarm/ALRM0001/read", "desc":"알림 읽음 처리"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sa", "appId": "admin", "label": "shopjoy admin", "type": "app", "open": true,
+    "children": [
+      {
+        "id": "sa_auth", "label": "관리자 인증", "type": "folder", "open": false,
+        "children": [
+          {"id":"sa_auth_login",   "label":"관리자 로그인",  "type":"req","method":"POST", "url":"/api/admin/auth/login",   "desc":"관리자 로그인","body":"{\n  \"loginId\": \"admin\",\n  \"password\": \"1234\"\n}"},
+          {"id":"sa_auth_logout",  "label":"관리자 로그아웃","type":"req","method":"POST", "url":"/api/admin/auth/logout",  "desc":"관리자 로그아웃"},
+          {"id":"sa_auth_refresh", "label":"토큰 갱신",      "type":"req","method":"POST", "url":"/api/admin/auth/refresh", "desc":"액세스 토큰 갱신","body":"{\n  \"refreshToken\": \"\"\n}"},
+          {"id":"sa_auth_me",      "label":"내 정보",        "type":"req","method":"GET",  "url":"/api/admin/auth/me",      "desc":"현재 로그인 관리자 정보"}
+        ]
+      },
+      {
+        "id": "sa_ec_prod_grp", "label": "EC 상품", "type": "folder", "open": false,
+        "children": [
+          {
+            "id": "sa_category", "label": "카테고리관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_cat_list", "label":"카테고리 목록", "type":"req","method":"GET",    "url":"/api/admin/ec/category",              "desc":"카테고리 전체 목록","params":[{"k":"depth","v":""},{"k":"parentCategoryId","v":""}]},
+              {"id":"sa_cat_dtl",  "label":"카테고리 상세", "type":"req","method":"GET",    "url":"/api/admin/ec/category/CAT0001",      "desc":"카테고리 상세"},
+              {"id":"sa_cat_add",  "label":"카테고리 등록", "type":"req","method":"POST",   "url":"/api/admin/ec/category",              "desc":"카테고리 등록","body":"{\n  \"parentCategoryId\": null,\n  \"categoryNm\": \"신규카테고리\",\n  \"depth\": 1,\n  \"sortOrd\": 1,\n  \"statusCd\": \"USE\"\n}"},
+              {"id":"sa_cat_upd",  "label":"카테고리 수정", "type":"req","method":"PUT",    "url":"/api/admin/ec/category/CAT0001",      "desc":"카테고리 수정","body":"{\n  \"categoryNm\": \"수정카테고리\",\n  \"sortOrd\": 2,\n  \"statusCd\": \"USE\"\n}"},
+              {"id":"sa_cat_del",  "label":"카테고리 삭제", "type":"req","method":"DELETE", "url":"/api/admin/ec/category/CAT0001",      "desc":"카테고리 삭제"}
+            ]
+          },
+          {
+            "id": "sa_prod", "label": "상품관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_prod_list", "label":"상품 목록",    "type":"req","method":"GET",    "url":"/api/admin/ec/prod",              "desc":"상품 목록","params":[{"k":"page","v":"1"},{"k":"size","v":"20"},{"k":"categoryId","v":""},{"k":"statusCd","v":""},{"k":"keyword","v":""}]},
+              {"id":"sa_prod_dtl",  "label":"상품 상세",    "type":"req","method":"GET",    "url":"/api/admin/ec/prod/PROD0001",     "desc":"상품 상세"},
+              {"id":"sa_prod_add",  "label":"상품 등록",    "type":"req","method":"POST",   "url":"/api/admin/ec/prod",              "desc":"상품 등록","body":"{\n  \"categoryId\": \"CAT0001\",\n  \"brandId\": \"BRD0001\",\n  \"vendorId\": \"VND0001\",\n  \"prodNm\": \"신규상품\",\n  \"prodCode\": \"P001\",\n  \"price\": 50000,\n  \"salePrice\": 39000,\n  \"stock\": 100,\n  \"statusCd\": \"SALE\",\n  \"isNew\": \"Y\",\n  \"isBest\": \"N\"\n}"},
+              {"id":"sa_prod_upd",  "label":"상품 수정",    "type":"req","method":"PUT",    "url":"/api/admin/ec/prod/PROD0001",     "desc":"상품 수정","body":"{\n  \"salePrice\": 35000,\n  \"stock\": 50,\n  \"statusCd\": \"SALE\"\n}"},
+              {"id":"sa_prod_del",  "label":"상품 삭제",    "type":"req","method":"DELETE", "url":"/api/admin/ec/prod/PROD0001",     "desc":"상품 삭제"},
+              {"id":"sa_prod_img",  "label":"상품 이미지",  "type":"req","method":"GET",    "url":"/api/admin/ec/prod/PROD0001/img", "desc":"상품 이미지 목록"},
+              {"id":"sa_prod_opt",  "label":"상품 옵션",    "type":"req","method":"GET",    "url":"/api/admin/ec/prod/PROD0001/opt", "desc":"옵션그룹/옵션값 목록"},
+              {"id":"sa_prod_sku",  "label":"SKU 목록",     "type":"req","method":"GET",    "url":"/api/admin/ec/prod/PROD0001/sku", "desc":"SKU 조합 목록"},
+              {"id":"sa_prod_hist", "label":"상품 이력",    "type":"req","method":"GET",    "url":"/api/admin/ec/prod/PROD0001/hist","desc":"상품 변경 이력","params":[{"k":"page","v":"1"}]}
+            ]
+          },
+          {
+            "id": "sa_brand", "label": "브랜드관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_brand_list", "label":"브랜드 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/brand",             "desc":"브랜드 목록","params":[{"k":"useYn","v":""},{"k":"keyword","v":""}]},
+              {"id":"sa_brand_add",  "label":"브랜드 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/brand",             "desc":"브랜드 등록","body":"{\n  \"brandCode\": \"BR001\",\n  \"brandNm\": \"신규브랜드\",\n  \"brandEnNm\": \"New Brand\",\n  \"vendorId\": \"VND0001\",\n  \"sortOrd\": 1,\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_brand_upd",  "label":"브랜드 수정", "type":"req","method":"PUT",    "url":"/api/admin/sy/brand/BRD0001",     "desc":"브랜드 수정","body":"{\n  \"brandNm\": \"수정브랜드\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_brand_del",  "label":"브랜드 삭제", "type":"req","method":"DELETE", "url":"/api/admin/sy/brand/BRD0001",     "desc":"브랜드 삭제"}
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sa_ec_member_grp", "label": "EC 회원", "type": "folder", "open": false,
+        "children": [
+          {
+            "id": "sa_member", "label": "회원관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_member_list",  "label":"회원 목록",     "type":"req","method":"GET",    "url":"/api/admin/ec/member",                  "desc":"회원 목록","params":[{"k":"page","v":"1"},{"k":"size","v":"20"},{"k":"gradeCd","v":""},{"k":"statusCd","v":""},{"k":"keyword","v":""}]},
+              {"id":"sa_member_dtl",   "label":"회원 상세",     "type":"req","method":"GET",    "url":"/api/admin/ec/member/MBR0001",           "desc":"회원 상세"},
+              {"id":"sa_member_add",   "label":"회원 등록",     "type":"req","method":"POST",   "url":"/api/admin/ec/member",                  "desc":"회원 등록","body":"{\n  \"email\": \"test@test.com\",\n  \"password\": \"1234\",\n  \"memberNm\": \"홍길동\",\n  \"phone\": \"010-1234-5678\",\n  \"gradeCd\": \"NORMAL\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_member_upd",   "label":"회원 수정",     "type":"req","method":"PUT",    "url":"/api/admin/ec/member/MBR0001",           "desc":"회원 수정","body":"{\n  \"gradeCd\": \"VIP\",\n  \"statusCd\": \"ACTIVE\",\n  \"memo\": \"VIP 회원\"\n}"},
+              {"id":"sa_member_del",   "label":"회원 삭제",     "type":"req","method":"DELETE", "url":"/api/admin/ec/member/MBR0001",           "desc":"회원 삭제"},
+              {"id":"sa_member_login", "label":"로그인 이력",   "type":"req","method":"GET",    "url":"/api/admin/ec/member/MBR0001/login-hist","desc":"회원 로그인 이력","params":[{"k":"page","v":"1"}]}
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sa_ec_order_grp", "label": "EC 주문", "type": "folder", "open": false,
+        "children": [
+          {
+            "id": "sa_order", "label": "주문관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_order_list",   "label":"주문 목록",    "type":"req","method":"GET", "url":"/api/admin/ec/order",                 "desc":"주문 목록","params":[{"k":"page","v":"1"},{"k":"size","v":"20"},{"k":"statusCd","v":""},{"k":"memberId","v":""},{"k":"startDate","v":""},{"k":"endDate","v":""}]},
+              {"id":"sa_order_dtl",    "label":"주문 상세",    "type":"req","method":"GET", "url":"/api/admin/ec/order/ORD0001",         "desc":"주문 상세"},
+              {"id":"sa_order_status", "label":"상태 변경",    "type":"req","method":"PUT", "url":"/api/admin/ec/order/ORD0001/status",  "desc":"주문 상태 변경","body":"{\n  \"statusCd\": \"SHIPPING\",\n  \"memo\": \"처리 완료\"\n}"},
+              {"id":"sa_order_hist",   "label":"주문 이력",    "type":"req","method":"GET", "url":"/api/admin/ec/order/ORD0001/hist",    "desc":"주문 상태 이력","params":[{"k":"page","v":"1"}]}
+            ]
+          },
+          {
+            "id": "sa_claim", "label": "클레임관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_claim_list", "label":"클레임 목록", "type":"req","method":"GET", "url":"/api/admin/ec/claim",              "desc":"클레임 목록","params":[{"k":"page","v":"1"},{"k":"claimTypeCd","v":""},{"k":"statusCd","v":""}]},
+              {"id":"sa_claim_dtl",  "label":"클레임 상세", "type":"req","method":"GET", "url":"/api/admin/ec/claim/CLM0001",      "desc":"클레임 상세"},
+              {"id":"sa_claim_proc", "label":"클레임 처리", "type":"req","method":"PUT", "url":"/api/admin/ec/claim/CLM0001/proc", "desc":"클레임 처리","body":"{\n  \"statusCd\": \"COMPLETED\",\n  \"refundMethodCd\": \"CARD\",\n  \"refundAmount\": 39000,\n  \"memo\": \"처리 완료\"\n}"},
+              {"id":"sa_claim_hist", "label":"클레임 이력", "type":"req","method":"GET", "url":"/api/admin/ec/claim/CLM0001/hist", "desc":"클레임 이력"}
+            ]
+          },
+          {
+            "id": "sa_dliv", "label": "배송관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_dliv_list",     "label":"배송 목록",    "type":"req","method":"GET", "url":"/api/admin/ec/dliv",                  "desc":"배송 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""},{"k":"keyword","v":""}]},
+              {"id":"sa_dliv_dtl",      "label":"배송 상세",    "type":"req","method":"GET", "url":"/api/admin/ec/dliv/DLV0001",          "desc":"배송 상세"},
+              {"id":"sa_dliv_add",      "label":"배송 등록",    "type":"req","method":"POST","url":"/api/admin/ec/dliv",                  "desc":"배송 등록","body":"{\n  \"orderId\": \"ORD0001\",\n  \"vendorId\": \"VND0001\",\n  \"courierCd\": \"CJ\",\n  \"trackingNo\": \"123456789012\"\n}"},
+              {"id":"sa_dliv_tracking", "label":"운송장 입력",  "type":"req","method":"PUT", "url":"/api/admin/ec/dliv/DLV0001/tracking", "desc":"운송장 번호 입력","body":"{\n  \"courierCd\": \"CJ\",\n  \"trackingNo\": \"123456789012\"\n}"},
+              {"id":"sa_dliv_hist",     "label":"배송 이력",    "type":"req","method":"GET", "url":"/api/admin/ec/dliv/DLV0001/hist",     "desc":"배송 상태 이력"}
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sa_ec_mkt_grp", "label": "EC 마케팅", "type": "folder", "open": false,
+        "children": [
+          {
+            "id": "sa_coupon", "label": "쿠폰관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_coupon_list",  "label":"쿠폰 목록",   "type":"req","method":"GET",    "url":"/api/admin/ec/coupon",                "desc":"쿠폰 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""},{"k":"keyword","v":""}]},
+              {"id":"sa_coupon_dtl",   "label":"쿠폰 상세",   "type":"req","method":"GET",    "url":"/api/admin/ec/coupon/CPN0001",         "desc":"쿠폰 상세"},
+              {"id":"sa_coupon_add",   "label":"쿠폰 등록",   "type":"req","method":"POST",   "url":"/api/admin/ec/coupon",                "desc":"쿠폰 등록","body":"{\n  \"couponCode\": \"SUMMER10\",\n  \"couponNm\": \"여름할인10%\",\n  \"discountTypeCd\": \"RATE\",\n  \"discountValue\": 10,\n  \"minOrder\": 30000,\n  \"maxDiscount\": 5000,\n  \"issueTo\": \"ALL\",\n  \"startDate\": \"2026-06-01T00:00:00\",\n  \"endDate\": \"2026-08-31T23:59:59\"\n}"},
+              {"id":"sa_coupon_upd",   "label":"쿠폰 수정",   "type":"req","method":"PUT",    "url":"/api/admin/ec/coupon/CPN0001",         "desc":"쿠폰 수정","body":"{\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_coupon_del",   "label":"쿠폰 삭제",   "type":"req","method":"DELETE", "url":"/api/admin/ec/coupon/CPN0001",         "desc":"쿠폰 삭제"},
+              {"id":"sa_coupon_issue", "label":"발급 목록",   "type":"req","method":"GET",    "url":"/api/admin/ec/coupon/CPN0001/issue",   "desc":"쿠폰 발급 목록","params":[{"k":"page","v":"1"},{"k":"useYn","v":""}]},
+              {"id":"sa_coupon_usage", "label":"사용 이력",   "type":"req","method":"GET",    "url":"/api/admin/ec/coupon/CPN0001/usage",   "desc":"쿠폰 사용 이력","params":[{"k":"page","v":"1"}]}
+            ]
+          },
+          {
+            "id": "sa_event", "label": "이벤트관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_event_list", "label":"이벤트 목록", "type":"req","method":"GET",    "url":"/api/admin/ec/event",             "desc":"이벤트 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""}]},
+              {"id":"sa_event_dtl",  "label":"이벤트 상세", "type":"req","method":"GET",    "url":"/api/admin/ec/event/EVT0001",     "desc":"이벤트 상세"},
+              {"id":"sa_event_add",  "label":"이벤트 등록", "type":"req","method":"POST",   "url":"/api/admin/ec/event",             "desc":"이벤트 등록","body":"{\n  \"title\": \"여름 특가전\",\n  \"eventTypeCd\": \"DISCOUNT\",\n  \"startDate\": \"2026-06-01T00:00:00\",\n  \"endDate\": \"2026-08-31T23:59:59\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_event_upd",  "label":"이벤트 수정", "type":"req","method":"PUT",    "url":"/api/admin/ec/event/EVT0001",     "desc":"이벤트 수정","body":"{\n  \"statusCd\": \"CLOSED\"\n}"},
+              {"id":"sa_event_del",  "label":"이벤트 삭제", "type":"req","method":"DELETE", "url":"/api/admin/ec/event/EVT0001",     "desc":"이벤트 삭제"}
+            ]
+          },
+          {
+            "id": "sa_cache", "label": "적립금관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_cache_list", "label":"적립금 내역", "type":"req","method":"GET",  "url":"/api/admin/ec/cache",             "desc":"적립금 내역","params":[{"k":"page","v":"1"},{"k":"memberId","v":""},{"k":"cacheTypeCd","v":""}]},
+              {"id":"sa_cache_add",  "label":"적립금 지급", "type":"req","method":"POST", "url":"/api/admin/ec/cache",             "desc":"적립금 수동 지급","body":"{\n  \"memberId\": \"MBR0001\",\n  \"cacheTypeCd\": \"MANUAL\",\n  \"amount\": 5000,\n  \"description\": \"이벤트 적립금 지급\",\n  \"expireDate\": \"2026-12-31\"\n}"}
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sa_ec_disp_grp", "label": "EC 전시", "type": "folder", "open": false,
+        "children": [
+          {
+            "id": "sa_disp_area", "label": "전시영역관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_area_list", "label":"전시영역 목록", "type":"req","method":"GET",  "url":"/api/admin/ec/disp/area",         "desc":"전시영역 목록","params":[{"k":"useYn","v":"Y"}]},
+              {"id":"sa_area_add",  "label":"전시영역 등록", "type":"req","method":"POST", "url":"/api/admin/ec/disp/area",         "desc":"전시영역 등록","body":"{\n  \"areaCd\": \"MAIN_BANNER\",\n  \"areaNm\": \"메인 배너\",\n  \"areaType\": \"BANNER\",\n  \"sortOrd\": 1,\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_area_upd",  "label":"전시영역 수정", "type":"req","method":"PUT",  "url":"/api/admin/ec/disp/area/AREA0001","desc":"전시영역 수정","body":"{\n  \"areaNm\": \"메인 배너\",\n  \"useYn\": \"Y\"\n}"}
+            ]
+          },
+          {
+            "id": "sa_disp_panel", "label": "전시패널관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_panel_list", "label":"패널 목록", "type":"req","method":"GET",    "url":"/api/admin/ec/disp/panel",              "desc":"전시 패널 목록","params":[{"k":"areaCd","v":""},{"k":"statusCd","v":""},{"k":"page","v":"1"}]},
+              {"id":"sa_panel_dtl",  "label":"패널 상세", "type":"req","method":"GET",    "url":"/api/admin/ec/disp/panel/PNL0001",      "desc":"전시 패널 상세"},
+              {"id":"sa_panel_add",  "label":"패널 등록", "type":"req","method":"POST",   "url":"/api/admin/ec/disp/panel",              "desc":"전시 패널 등록","body":"{\n  \"areaCd\": \"MAIN_BANNER\",\n  \"panelNm\": \"신규패널\",\n  \"widgetTypeCd\": \"IMAGE_BANNER\",\n  \"sortOrd\": 1,\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_panel_upd",  "label":"패널 수정", "type":"req","method":"PUT",    "url":"/api/admin/ec/disp/panel/PNL0001",      "desc":"전시 패널 수정","body":"{\n  \"panelNm\": \"수정패널\",\n  \"statusCd\": \"INACTIVE\"\n}"},
+              {"id":"sa_panel_del",  "label":"패널 삭제", "type":"req","method":"DELETE", "url":"/api/admin/ec/disp/panel/PNL0001",      "desc":"전시 패널 삭제"}
+            ]
+          },
+          {
+            "id": "sa_widget_lib", "label": "위젯 라이브러리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_wlib_list", "label":"위젯 목록", "type":"req","method":"GET",    "url":"/api/admin/ec/disp/widget-lib",         "desc":"위젯 라이브러리 목록","params":[{"k":"widgetType","v":""},{"k":"useYn","v":"Y"}]},
+              {"id":"sa_wlib_add",  "label":"위젯 등록", "type":"req","method":"POST",   "url":"/api/admin/ec/disp/widget-lib",         "desc":"위젯 라이브러리 등록","body":"{\n  \"widgetCode\": \"MY_WIDGET\",\n  \"widgetNm\": \"커스텀위젯\",\n  \"widgetType\": \"HTML\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_wlib_upd",  "label":"위젯 수정", "type":"req","method":"PUT",    "url":"/api/admin/ec/disp/widget-lib/WLB0001", "desc":"위젯 라이브러리 수정","body":"{\n  \"widgetNm\": \"수정위젯\",\n  \"useYn\": \"Y\"\n}"}
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sa_ec_cs_grp", "label": "EC CS", "type": "folder", "open": false,
+        "children": [
+          {
+            "id": "sa_notice", "label": "공지사항관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_notice_list", "label":"공지사항 목록", "type":"req","method":"GET",    "url":"/api/admin/ec/notice",              "desc":"공지사항 목록","params":[{"k":"page","v":"1"},{"k":"noticeTypeCd","v":""},{"k":"statusCd","v":""}]},
+              {"id":"sa_notice_dtl",  "label":"공지사항 상세", "type":"req","method":"GET",    "url":"/api/admin/ec/notice/NTC0001",      "desc":"공지사항 상세"},
+              {"id":"sa_notice_add",  "label":"공지사항 등록", "type":"req","method":"POST",   "url":"/api/admin/ec/notice",              "desc":"공지사항 등록","body":"{\n  \"title\": \"서비스 점검 안내\",\n  \"noticeTypeCd\": \"SYSTEM\",\n  \"isFixed\": \"N\",\n  \"contentHtml\": \"<p>점검 안내</p>\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_notice_upd",  "label":"공지사항 수정", "type":"req","method":"PUT",    "url":"/api/admin/ec/notice/NTC0001",      "desc":"공지사항 수정","body":"{\n  \"title\": \"수정된 공지\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_notice_del",  "label":"공지사항 삭제", "type":"req","method":"DELETE", "url":"/api/admin/ec/notice/NTC0001",      "desc":"공지사항 삭제"}
+            ]
+          },
+          {
+            "id": "sa_contact", "label": "1:1 문의관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_contact_list",   "label":"문의 목록", "type":"req","method":"GET", "url":"/api/admin/sy/contact",                   "desc":"1:1 문의 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""},{"k":"categoryCd","v":""}]},
+              {"id":"sa_contact_dtl",    "label":"문의 상세", "type":"req","method":"GET", "url":"/api/admin/sy/contact/CON0001",            "desc":"문의 상세"},
+              {"id":"sa_contact_answer", "label":"답변 등록", "type":"req","method":"PUT", "url":"/api/admin/sy/contact/CON0001/answer",     "desc":"문의 답변 등록","body":"{\n  \"answer\": \"문의 주셔서 감사합니다. 처리해 드리겠습니다.\"\n}"}
+            ]
+          },
+          {
+            "id": "sa_chatt_admin", "label": "채팅관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_chatt_list", "label":"채팅방 목록",  "type":"req","method":"GET",  "url":"/api/admin/ec/chatt",                  "desc":"채팅방 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""}]},
+              {"id":"sa_chatt_dtl",  "label":"채팅방 상세",  "type":"req","method":"GET",  "url":"/api/admin/ec/chatt/CHAT0001",          "desc":"채팅방 상세"},
+              {"id":"sa_chatt_msg",  "label":"메시지 목록",  "type":"req","method":"GET",  "url":"/api/admin/ec/chatt/CHAT0001/msg",      "desc":"채팅 메시지 목록","params":[{"k":"page","v":"1"}]},
+              {"id":"sa_chatt_send", "label":"메시지 전송",  "type":"req","method":"POST", "url":"/api/admin/ec/chatt/CHAT0001/msg",      "desc":"관리자 메시지 전송","body":"{\n  \"msgText\": \"안녕하세요. 확인 후 처리해 드리겠습니다.\",\n  \"sender\": \"ADMIN\"\n}"},
+              {"id":"sa_chatt_close","label":"채팅 종료",    "type":"req","method":"PUT",  "url":"/api/admin/ec/chatt/CHAT0001/close",    "desc":"채팅방 종료"}
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sa_sy_grp", "label": "SY 시스템", "type": "folder", "open": false,
+        "children": [
+          {
+            "id": "sa_site", "label": "사이트관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_site_list", "label":"사이트 목록", "type":"req","method":"GET", "url":"/api/admin/sy/site",             "desc":"사이트 목록","params":[{"k":"statusCd","v":""}]},
+              {"id":"sa_site_dtl",  "label":"사이트 상세", "type":"req","method":"GET", "url":"/api/admin/sy/site/SITE0001",    "desc":"사이트 상세"},
+              {"id":"sa_site_upd",  "label":"사이트 수정", "type":"req","method":"PUT", "url":"/api/admin/sy/site/SITE0001",    "desc":"사이트 설정 수정","body":"{\n  \"siteNm\": \"ShopJoy\",\n  \"email\": \"admin@shopjoy.com\",\n  \"phone\": \"02-1234-5678\"\n}"}
+            ]
+          },
+          {
+            "id": "sa_user", "label": "사용자관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_user_list",  "label":"사용자 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/user",              "desc":"관리자 사용자 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""},{"k":"deptId","v":""},{"k":"roleId","v":""}]},
+              {"id":"sa_user_dtl",   "label":"사용자 상세", "type":"req","method":"GET",    "url":"/api/admin/sy/user/USR0001",      "desc":"사용자 상세"},
+              {"id":"sa_user_add",   "label":"사용자 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/user",              "desc":"사용자 등록","body":"{\n  \"loginId\": \"newuser\",\n  \"password\": \"1234\",\n  \"userNm\": \"신규사용자\",\n  \"email\": \"new@shopjoy.com\",\n  \"phone\": \"010-0000-0000\",\n  \"deptId\": \"DEPT0001\",\n  \"roleId\": \"ROLE0001\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_user_upd",   "label":"사용자 수정", "type":"req","method":"PUT",    "url":"/api/admin/sy/user/USR0001",      "desc":"사용자 수정","body":"{\n  \"roleId\": \"ROLE0002\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_user_del",   "label":"사용자 삭제", "type":"req","method":"DELETE", "url":"/api/admin/sy/user/USR0001",      "desc":"사용자 삭제"},
+              {"id":"sa_user_login", "label":"로그인 이력", "type":"req","method":"GET",    "url":"/api/admin/sy/user/USR0001/login-hist","desc":"사용자 로그인 이력","params":[{"k":"page","v":"1"}]}
+            ]
+          },
+          {
+            "id": "sa_role", "label": "역할관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_role_list", "label":"역할 목록",    "type":"req","method":"GET",    "url":"/api/admin/sy/role",              "desc":"역할 목록","params":[{"k":"useYn","v":""}]},
+              {"id":"sa_role_add",  "label":"역할 등록",    "type":"req","method":"POST",   "url":"/api/admin/sy/role",              "desc":"역할 등록","body":"{\n  \"roleCode\": \"MANAGER\",\n  \"roleNm\": \"중간관리자\",\n  \"roleType\": \"ADMIN\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_role_upd",  "label":"역할 수정",    "type":"req","method":"PUT",    "url":"/api/admin/sy/role/ROLE0001",     "desc":"역할 수정","body":"{\n  \"roleNm\": \"수정역할\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_role_del",  "label":"역할 삭제",    "type":"req","method":"DELETE", "url":"/api/admin/sy/role/ROLE0001",     "desc":"역할 삭제"},
+              {"id":"sa_role_menu", "label":"역할 메뉴권한","type":"req","method":"GET",    "url":"/api/admin/sy/role/ROLE0001/menu","desc":"역할 메뉴 권한 조회"},
+              {"id":"sa_role_menu_upd","label":"메뉴권한 저장","type":"req","method":"PUT", "url":"/api/admin/sy/role/ROLE0001/menu","desc":"역할 메뉴 권한 저장","body":"{\n  \"menuIds\": [\"MENU0001\",\"MENU0002\"],\n  \"permLevel\": 2\n}"}
+            ]
+          },
+          {
+            "id": "sa_dept", "label": "부서관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_dept_list", "label":"부서 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/dept",          "desc":"부서 목록","params":[{"k":"useYn","v":""}]},
+              {"id":"sa_dept_add",  "label":"부서 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/dept",          "desc":"부서 등록","body":"{\n  \"deptCode\": \"DEV\",\n  \"deptNm\": \"개발팀\",\n  \"parentDeptId\": null,\n  \"deptTypeCd\": \"DEV\",\n  \"sortOrd\": 1,\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_dept_upd",  "label":"부서 수정", "type":"req","method":"PUT",    "url":"/api/admin/sy/dept/DEPT0001", "desc":"부서 수정","body":"{\n  \"deptNm\": \"수정팀\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_dept_del",  "label":"부서 삭제", "type":"req","method":"DELETE", "url":"/api/admin/sy/dept/DEPT0001", "desc":"부서 삭제"}
+            ]
+          },
+          {
+            "id": "sa_menu", "label": "메뉴관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_menu_list", "label":"메뉴 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/menu",          "desc":"메뉴 전체 목록","params":[{"k":"useYn","v":""}]},
+              {"id":"sa_menu_add",  "label":"메뉴 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/menu",          "desc":"메뉴 등록","body":"{\n  \"menuCode\": \"PROD_MGT\",\n  \"menuNm\": \"상품관리\",\n  \"menuUrl\": \"/admin/product\",\n  \"menuType\": \"LINK\",\n  \"sortOrd\": 1,\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_menu_upd",  "label":"메뉴 수정", "type":"req","method":"PUT",    "url":"/api/admin/sy/menu/MENU0001", "desc":"메뉴 수정","body":"{\n  \"menuNm\": \"수정메뉴\",\n  \"sortOrd\": 2\n}"},
+              {"id":"sa_menu_del",  "label":"메뉴 삭제", "type":"req","method":"DELETE", "url":"/api/admin/sy/menu/MENU0001", "desc":"메뉴 삭제"}
+            ]
+          },
+          {
+            "id": "sa_code", "label": "코드관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_code_grp_list", "label":"코드그룹 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/code",                          "desc":"코드그룹 목록","params":[{"k":"useYn","v":""},{"k":"keyword","v":""}]},
+              {"id":"sa_code_grp_add",  "label":"코드그룹 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/code",                          "desc":"코드그룹 등록","body":"{\n  \"codeGrp\": \"MY_CODE\",\n  \"grpNm\": \"커스텀코드\",\n  \"description\": \"설명\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_code_list",     "label":"코드 목록",     "type":"req","method":"GET",    "url":"/api/admin/sy/code/MEMBER_GRADE",             "desc":"코드그룹별 코드 목록","params":[{"k":"useYn","v":""}]},
+              {"id":"sa_code_add",      "label":"코드 등록",     "type":"req","method":"POST",   "url":"/api/admin/sy/code/MEMBER_GRADE",             "desc":"코드 등록","body":"{\n  \"codeValue\": \"DIAMOND\",\n  \"codeLabel\": \"다이아몬드\",\n  \"sortOrd\": 4,\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_code_upd",      "label":"코드 수정",     "type":"req","method":"PUT",    "url":"/api/admin/sy/code/MEMBER_GRADE/VIP",         "desc":"코드 수정","body":"{\n  \"codeLabel\": \"VIP회원\",\n  \"sortOrd\": 3,\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_code_del",      "label":"코드 삭제",     "type":"req","method":"DELETE", "url":"/api/admin/sy/code/MEMBER_GRADE/DIAMOND",     "desc":"코드 삭제"}
+            ]
+          },
+          {
+            "id": "sa_vendor", "label": "업체관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_vendor_list", "label":"업체 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/vendor",           "desc":"업체 목록","params":[{"k":"page","v":"1"},{"k":"vendorType","v":""},{"k":"statusCd","v":""}]},
+              {"id":"sa_vendor_dtl",  "label":"업체 상세", "type":"req","method":"GET",    "url":"/api/admin/sy/vendor/VND0001",   "desc":"업체 상세"},
+              {"id":"sa_vendor_add",  "label":"업체 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/vendor",           "desc":"업체 등록","body":"{\n  \"vendorType\": \"SELLER\",\n  \"vendorNm\": \"신규업체\",\n  \"vendorCode\": \"VND001\",\n  \"bizNo\": \"123-45-67890\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_vendor_upd",  "label":"업체 수정", "type":"req","method":"PUT",    "url":"/api/admin/sy/vendor/VND0001",   "desc":"업체 수정","body":"{\n  \"statusCd\": \"ACTIVE\",\n  \"memo\": \"메모\"\n}"},
+              {"id":"sa_vendor_del",  "label":"업체 삭제", "type":"req","method":"DELETE", "url":"/api/admin/sy/vendor/VND0001",   "desc":"업체 삭제"}
+            ]
+          },
+          {
+            "id": "sa_attach", "label": "첨부파일관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_attach_grp",  "label":"첨부그룹 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/attach/grp",      "desc":"첨부파일 그룹 목록","params":[{"k":"refType","v":""},{"k":"refId","v":""}]},
+              {"id":"sa_attach_list", "label":"첨부파일 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/attach",          "desc":"첨부파일 목록","params":[{"k":"attachGrpId","v":""}]},
+              {"id":"sa_attach_up",   "label":"파일 업로드",   "type":"req","method":"POST",   "url":"/api/admin/sy/attach",          "desc":"파일 업로드 (multipart/form-data)"},
+              {"id":"sa_attach_del",  "label":"파일 삭제",     "type":"req","method":"DELETE", "url":"/api/admin/sy/attach/ATT0001",  "desc":"첨부파일 삭제"}
+            ]
+          },
+          {
+            "id": "sa_alarm", "label": "알림관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_alarm_list", "label":"알림 목록",   "type":"req","method":"GET",  "url":"/api/admin/sy/alarm",                "desc":"알림 목록","params":[{"k":"page","v":"1"},{"k":"statusCd","v":""},{"k":"channelCd","v":""}]},
+              {"id":"sa_alarm_add",  "label":"알림 등록",   "type":"req","method":"POST", "url":"/api/admin/sy/alarm",                "desc":"알림 등록","body":"{\n  \"title\": \"주문완료 알림\",\n  \"alarmTypeCd\": \"ORDER\",\n  \"channelCd\": \"SMS\",\n  \"targetTypeCd\": \"MEMBER\",\n  \"message\": \"주문이 완료되었습니다.\"\n}"},
+              {"id":"sa_alarm_hist", "label":"발송 이력",   "type":"req","method":"GET",  "url":"/api/admin/sy/alarm/ALRM0001/hist",  "desc":"알림 발송 이력","params":[{"k":"page","v":"1"}]}
+            ]
+          },
+          {
+            "id": "sa_template", "label": "템플릿관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_tmpl_list", "label":"템플릿 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/template",          "desc":"알림 템플릿 목록","params":[{"k":"templateTypeCd","v":""},{"k":"useYn","v":""}]},
+              {"id":"sa_tmpl_add",  "label":"템플릿 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/template",          "desc":"템플릿 등록","body":"{\n  \"templateTypeCd\": \"SMS\",\n  \"templateCode\": \"ORDER_COMPLETE\",\n  \"templateNm\": \"주문완료 SMS\",\n  \"subject\": \"주문완료\",\n  \"content\": \"[ShopJoy] #{orderId} 주문이 완료되었습니다.\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_tmpl_upd",  "label":"템플릿 수정", "type":"req","method":"PUT",    "url":"/api/admin/sy/template/TMPL0001", "desc":"템플릿 수정","body":"{\n  \"content\": \"수정된 내용\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_tmpl_del",  "label":"템플릿 삭제", "type":"req","method":"DELETE", "url":"/api/admin/sy/template/TMPL0001", "desc":"템플릿 삭제"}
+            ]
+          },
+          {
+            "id": "sa_batch", "label": "배치관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_batch_list", "label":"배치 목록",   "type":"req","method":"GET",  "url":"/api/admin/sy/batch",                "desc":"배치 목록","params":[{"k":"statusCd","v":""}]},
+              {"id":"sa_batch_run",  "label":"배치 수동실행","type":"req","method":"POST", "url":"/api/admin/sy/batch/BCH0001/run",    "desc":"배치 수동 실행"},
+              {"id":"sa_batch_hist", "label":"실행 이력",   "type":"req","method":"GET",  "url":"/api/admin/sy/batch/BCH0001/hist",   "desc":"배치 실행 이력","params":[{"k":"page","v":"1"}]}
+            ]
+          },
+          {
+            "id": "sa_bbs", "label": "게시판관리", "type": "folder", "open": false,
+            "children": [
+              {"id":"sa_bbm_list", "label":"게시판 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/bbm",              "desc":"게시판 목록","params":[{"k":"useYn","v":""}]},
+              {"id":"sa_bbm_add",  "label":"게시판 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/bbm",              "desc":"게시판 등록","body":"{\n  \"bbmCode\": \"FAQ\",\n  \"bbmNm\": \"FAQ\",\n  \"bbmType\": \"FAQ\",\n  \"allowComment\": \"N\",\n  \"useYn\": \"Y\"\n}"},
+              {"id":"sa_bbs_list", "label":"게시물 목록", "type":"req","method":"GET",    "url":"/api/admin/sy/bbs",              "desc":"게시물 목록","params":[{"k":"page","v":"1"},{"k":"bbmId","v":""},{"k":"statusCd","v":""}]},
+              {"id":"sa_bbs_dtl",  "label":"게시물 상세", "type":"req","method":"GET",    "url":"/api/admin/sy/bbs/BBS0001",      "desc":"게시물 상세"},
+              {"id":"sa_bbs_add",  "label":"게시물 등록", "type":"req","method":"POST",   "url":"/api/admin/sy/bbs",              "desc":"게시물 등록","body":"{\n  \"bbmId\": \"BBM0001\",\n  \"title\": \"자주묻는질문\",\n  \"contentHtml\": \"<p>내용</p>\",\n  \"isFixed\": \"N\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_bbs_upd",  "label":"게시물 수정", "type":"req","method":"PUT",    "url":"/api/admin/sy/bbs/BBS0001",      "desc":"게시물 수정","body":"{\n  \"title\": \"수정제목\",\n  \"statusCd\": \"ACTIVE\"\n}"},
+              {"id":"sa_bbs_del",  "label":"게시물 삭제", "type":"req","method":"DELETE", "url":"/api/admin/sy/bbs/BBS0001",      "desc":"게시물 삭제"}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sm", "appId": "samples", "label": "samples", "type": "app", "open": true,
+    "children": [
+      {
+        "id": "sm_pub", "label": "공개 API (CRUD)", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_pub_posts",    "label":"Posts 목록",    "type":"req","method":"GET",    "url":"https://jsonplaceholder.typicode.com/posts",    "desc":"JSONPlaceholder Posts 목록","params":[{"k":"_page","v":"1"},{"k":"_limit","v":"10"}]},
+          {"id":"sm_pub_post_dtl", "label":"Post 상세",     "type":"req","method":"GET",    "url":"https://jsonplaceholder.typicode.com/posts/1",  "desc":"Post 상세"},
+          {"id":"sm_pub_post_add", "label":"Post 등록",     "type":"req","method":"POST",   "url":"https://jsonplaceholder.typicode.com/posts",    "desc":"Post 등록","body":"{\n  \"title\": \"foo\",\n  \"body\": \"bar\",\n  \"userId\": 1\n}"},
+          {"id":"sm_pub_post_upd", "label":"Post 수정",     "type":"req","method":"PUT",    "url":"https://jsonplaceholder.typicode.com/posts/1",  "desc":"Post 수정","body":"{\n  \"id\": 1,\n  \"title\": \"updated title\",\n  \"body\": \"updated body\",\n  \"userId\": 1\n}"},
+          {"id":"sm_pub_post_del", "label":"Post 삭제",     "type":"req","method":"DELETE", "url":"https://jsonplaceholder.typicode.com/posts/1",  "desc":"Post 삭제"},
+          {"id":"sm_pub_users",    "label":"Users 목록",    "type":"req","method":"GET",    "url":"https://jsonplaceholder.typicode.com/users",    "desc":"Users 목록"},
+          {"id":"sm_pub_todos",    "label":"Todos 목록",    "type":"req","method":"GET",    "url":"https://jsonplaceholder.typicode.com/todos",    "desc":"Todos 목록","params":[{"k":"_limit","v":"10"}]},
+          {"id":"sm_pub_comments", "label":"Comments 목록", "type":"req","method":"GET",    "url":"https://jsonplaceholder.typicode.com/comments", "desc":"Comments 목록","params":[{"k":"postId","v":"1"}]},
+          {"id":"sm_pub_dog",      "label":"랜덤 강아지",   "type":"req","method":"GET",    "url":"https://dog.ceo/api/breeds/image/random",       "desc":"랜덤 강아지 이미지"},
+          {"id":"sm_pub_cat",      "label":"고양이 팩트",   "type":"req","method":"GET",    "url":"https://catfact.ninja/fact",                    "desc":"랜덤 고양이 팩트"},
+          {"id":"sm_pub_ip",       "label":"내 IP 조회",    "type":"req","method":"GET",    "url":"https://api.ipify.org",                         "desc":"현재 공인 IP 조회","params":[{"k":"format","v":"json"}]},
+          {"id":"sm_pub_uuid",     "label":"UUID 생성",     "type":"req","method":"GET",    "url":"https://httpbin.org/uuid",                      "desc":"랜덤 UUID 생성"}
+        ]
+      },
+      {
+        "id": "sm_chat", "label": "채팅 샘플", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_chat_rooms",    "label":"채팅방 목록",  "type":"req","method":"GET",    "url":"/api/sample/chat/rooms",              "desc":"채팅방 목록","params":[{"k":"page","v":"1"},{"k":"type","v":""}]},
+          {"id":"sm_chat_room_new", "label":"채팅방 생성",  "type":"req","method":"POST",   "url":"/api/sample/chat/rooms",              "desc":"채팅방 생성","body":"{\n  \"roomNm\": \"테스트채팅방\",\n  \"type\": \"GROUP\",\n  \"participants\": [\"USR0001\",\"USR0002\"]\n}"},
+          {"id":"sm_chat_msgs",     "label":"메시지 목록",  "type":"req","method":"GET",    "url":"/api/sample/chat/rooms/1/messages",   "desc":"메시지 목록","params":[{"k":"page","v":"1"},{"k":"size","v":"50"}]},
+          {"id":"sm_chat_send",     "label":"메시지 전송",  "type":"req","method":"POST",   "url":"/api/sample/chat/rooms/1/messages",   "desc":"메시지 전송","body":"{\n  \"message\": \"안녕하세요\",\n  \"type\": \"TEXT\"\n}"},
+          {"id":"sm_chat_read",     "label":"읽음 처리",    "type":"req","method":"PUT",    "url":"/api/sample/chat/rooms/1/read",       "desc":"채팅방 메시지 읽음 처리"},
+          {"id":"sm_chat_leave",    "label":"채팅방 퇴장",  "type":"req","method":"DELETE", "url":"/api/sample/chat/rooms/1/members/me", "desc":"채팅방 퇴장"}
+        ]
+      },
+      {
+        "id": "sm_video", "label": "화상 샘플", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_video_rooms",  "label":"화상방 목록",  "type":"req","method":"GET",    "url":"/api/sample/video/rooms",       "desc":"화상방 목록"},
+          {"id":"sm_video_create", "label":"화상방 생성",  "type":"req","method":"POST",   "url":"/api/sample/video/rooms",       "desc":"화상방 생성","body":"{\n  \"roomNm\": \"팀회의\",\n  \"maxParticipants\": 10,\n  \"isPublic\": false\n}"},
+          {"id":"sm_video_join",   "label":"화상방 참여",  "type":"req","method":"POST",   "url":"/api/sample/video/rooms/1/join","desc":"화상방 참여 토큰 발급","body":"{\n  \"displayName\": \"홍길동\"\n}"},
+          {"id":"sm_video_token",  "label":"WebRTC 토큰",  "type":"req","method":"POST",   "url":"/api/sample/video/token",       "desc":"WebRTC 연결 토큰 발급","body":"{\n  \"roomId\": \"ROOM0001\",\n  \"identity\": \"user_홍길동\"\n}"},
+          {"id":"sm_video_end",    "label":"화상방 종료",  "type":"req","method":"DELETE", "url":"/api/sample/video/rooms/1",     "desc":"화상방 종료"}
+        ]
+      },
+      {
+        "id": "sm_file", "label": "파일업로드 샘플", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_file_up1",   "label":"단일 파일업로드", "type":"req","method":"POST",   "url":"/api/sample/upload/single",   "desc":"단일 파일업로드 (multipart/form-data)"},
+          {"id":"sm_file_upm",   "label":"다중 파일업로드", "type":"req","method":"POST",   "url":"/api/sample/upload/multiple", "desc":"다중 파일업로드 (multipart/form-data)"},
+          {"id":"sm_file_list",  "label":"파일 목록",       "type":"req","method":"GET",    "url":"/api/sample/files",           "desc":"업로드된 파일 목록","params":[{"k":"page","v":"1"},{"k":"fileExt","v":""}]},
+          {"id":"sm_file_dtl",   "label":"파일 상세",       "type":"req","method":"GET",    "url":"/api/sample/files/FILE0001",  "desc":"파일 상세"},
+          {"id":"sm_file_del",   "label":"파일 삭제",       "type":"req","method":"DELETE", "url":"/api/sample/files/FILE0001",  "desc":"파일 삭제"},
+          {"id":"sm_img_resize", "label":"이미지 리사이즈", "type":"req","method":"POST",   "url":"/api/sample/upload/resize",   "desc":"이미지 리사이즈","body":"{\n  \"fileId\": \"FILE0001\",\n  \"width\": 300,\n  \"height\": 300,\n  \"fit\": \"cover\"\n}"}
+        ]
+      },
+      {
+        "id": "sm_noti", "label": "알림 샘플", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_noti_list",    "label":"알림 목록",       "type":"req","method":"GET",  "url":"/api/sample/notifications",              "desc":"알림 목록","params":[{"k":"read","v":""},{"k":"page","v":"1"}]},
+          {"id":"sm_noti_cnt",     "label":"읽지않은 알림수", "type":"req","method":"GET",  "url":"/api/sample/notifications/unread/count",  "desc":"안읽은 알림 수"},
+          {"id":"sm_noti_read1",   "label":"알림 읽음",       "type":"req","method":"PUT",  "url":"/api/sample/notifications/ALRM0001/read", "desc":"단건 읽음 처리"},
+          {"id":"sm_noti_readall", "label":"전체 읽음",       "type":"req","method":"PUT",  "url":"/api/sample/notifications/read-all",      "desc":"전체 읽음 처리"},
+          {"id":"sm_noti_del",     "label":"알림 삭제",       "type":"req","method":"DELETE","url":"/api/sample/notifications/ALRM0001",     "desc":"알림 삭제"},
+          {"id":"sm_noti_fcm",     "label":"FCM 푸시 전송",   "type":"req","method":"POST", "url":"/api/sample/notifications/push/fcm",      "desc":"FCM 푸시 전송","body":"{\n  \"token\": \"FCM_DEVICE_TOKEN\",\n  \"title\": \"테스트 알림\",\n  \"body\": \"알림 내용입니다.\",\n  \"data\": {\"orderId\": \"ORD0001\"}\n}"},
+          {"id":"sm_noti_sms",     "label":"SMS 전송",        "type":"req","method":"POST", "url":"/api/sample/notifications/push/sms",      "desc":"SMS 발송 테스트","body":"{\n  \"phone\": \"010-1234-5678\",\n  \"message\": \"[ShopJoy] 테스트 메시지입니다.\"\n}"},
+          {"id":"sm_noti_sse",     "label":"SSE 구독",        "type":"req","method":"GET",  "url":"/api/sample/notifications/sse",           "desc":"Server-Sent Events 구독","params":[{"k":"token","v":""}]}
+        ]
+      },
+      {
+        "id": "sm_vod", "label": "동영상 플레이어", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_vod_list",     "label":"동영상 목록",   "type":"req","method":"GET",  "url":"/api/sample/videos",              "desc":"동영상 목록","params":[{"k":"page","v":"1"},{"k":"category","v":""}]},
+          {"id":"sm_vod_dtl",      "label":"동영상 상세",   "type":"req","method":"GET",  "url":"/api/sample/videos/VID0001",      "desc":"동영상 상세"},
+          {"id":"sm_vod_stream",   "label":"스트림 정보",   "type":"req","method":"GET",  "url":"/api/sample/videos/VID0001/stream","desc":"HLS 스트림 URL 조회"},
+          {"id":"sm_vod_thumb",    "label":"썸네일 목록",   "type":"req","method":"GET",  "url":"/api/sample/videos/VID0001/thumb","desc":"동영상 썸네일 목록"},
+          {"id":"sm_vod_subtitle", "label":"자막 목록",     "type":"req","method":"GET",  "url":"/api/sample/videos/VID0001/sub",  "desc":"동영상 자막 목록"},
+          {"id":"sm_vod_playlog",  "label":"재생 기록",     "type":"req","method":"POST", "url":"/api/sample/videos/VID0001/play-log","desc":"재생 로그 기록","body":"{\n  \"position\": 120,\n  \"duration\": 3600,\n  \"completed\": false\n}"},
+          {"id":"sm_picsum",       "label":"Picsum 이미지", "type":"req","method":"GET",  "url":"https://picsum.photos/v2/list",   "desc":"Picsum 이미지 목록","params":[{"k":"page","v":"1"},{"k":"limit","v":"10"}]}
+        ]
+      },
+      {
+        "id": "sm_cdn", "label": "CDN 이미지", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_cdn_list",    "label":"CDN 이미지 목록",    "type":"req","method":"GET",    "url":"/api/sample/cdn/images",       "desc":"CDN 이미지 목록","params":[{"k":"page","v":"1"},{"k":"folder","v":""}]},
+          {"id":"sm_cdn_up",      "label":"이미지 업로드",      "type":"req","method":"POST",   "url":"/api/sample/cdn/images",       "desc":"CDN 이미지 업로드 (multipart/form-data)"},
+          {"id":"sm_cdn_del",     "label":"이미지 삭제",        "type":"req","method":"DELETE", "url":"/api/sample/cdn/images/IMG001","desc":"CDN 이미지 삭제"},
+          {"id":"sm_cdn_folder",  "label":"폴더 목록",          "type":"req","method":"GET",    "url":"/api/sample/cdn/folders",      "desc":"CDN 폴더 목록"},
+          {"id":"sm_cdn_picsum",  "label":"Picsum 랜덤",        "type":"req","method":"GET",    "url":"https://picsum.photos/640/480","desc":"랜덤 이미지 (640x480)"},
+          {"id":"sm_cdn_unsplash","label":"Unsplash 검색",      "type":"req","method":"GET",    "url":"https://api.unsplash.com/search/photos","desc":"Unsplash 이미지 검색","params":[{"k":"query","v":"nature"},{"k":"per_page","v":"10"}]}
+        ]
+      },
+      {
+        "id": "sm_ws", "label": "WebSocket / SSE", "type": "folder", "open": false,
+        "children": [
+          {"id":"sm_ws_health", "label":"WS 헬스체크",    "type":"req","method":"GET",  "url":"/api/sample/ws/health",       "desc":"WebSocket 서버 상태 확인"},
+          {"id":"sm_ws_rooms",  "label":"WS 채널 목록",   "type":"req","method":"GET",  "url":"/api/sample/ws/channels",     "desc":"WebSocket 채널 목록"},
+          {"id":"sm_sse_sub",   "label":"SSE 구독",       "type":"req","method":"GET",  "url":"/api/sample/sse/subscribe",   "desc":"SSE 이벤트 구독","params":[{"k":"channel","v":"global"},{"k":"token","v":""}]},
+          {"id":"sm_sse_pub",   "label":"SSE 이벤트 발행","type":"req","method":"POST", "url":"/api/sample/sse/publish",     "desc":"SSE 이벤트 발행","body":"{\n  \"channel\": \"global\",\n  \"event\": \"notice\",\n  \"data\": {\"msg\": \"테스트 메시지\"}\n}"},
+          {"id":"sm_http_echo", "label":"HTTP Echo",      "type":"req","method":"POST", "url":"https://httpbin.org/post",    "desc":"POST 요청 에코","body":"{\n  \"test\": \"hello\",\n  \"num\": 123\n}"},
+          {"id":"sm_http_get",  "label":"HTTP GET Echo",  "type":"req","method":"GET",  "url":"https://httpbin.org/get",     "desc":"GET 요청 에코","params":[{"k":"foo","v":"bar"}]},
+          {"id":"sm_http_delay","label":"지연 응답",       "type":"req","method":"GET",  "url":"https://httpbin.org/delay/2", "desc":"2초 지연 후 응답"}
+        ]
+      }
+    ]
+  }
 ]
