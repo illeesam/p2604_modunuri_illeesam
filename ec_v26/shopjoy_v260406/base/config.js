@@ -48,6 +48,17 @@ window.SITE_CONFIG = {
         { "icon": "📍", "menuId": "location", "menuNm": "위치안내" },
         { "icon": "🏢", "menuId": "about",    "menuNm": "회사소개" }
       ]
+    },
+    {
+      "section": "샘플 전시",
+      "items": [
+        { "icon": "🖼", "menuId": "dispUi01", "menuNm": "전시ui01" },
+        { "icon": "🖼", "menuId": "dispUi02", "menuNm": "전시ui02" },
+        { "icon": "🖼", "menuId": "dispUi03", "menuNm": "전시ui03" },
+        { "icon": "🖼", "menuId": "dispUi04", "menuNm": "전시ui04" },
+        { "icon": "🖼", "menuId": "dispUi05", "menuNm": "전시ui05" },
+        { "icon": "🖼", "menuId": "dispUi06", "menuNm": "전시ui06" }
+      ]
     }
   ],
   "categorys": [
