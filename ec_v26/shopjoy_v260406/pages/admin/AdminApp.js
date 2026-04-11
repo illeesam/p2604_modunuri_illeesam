@@ -67,6 +67,41 @@
       /* ── 탭 관리 ── */
       const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
       const activeTabId = computed(() => toTabId(page.value));
+      const refreshKeys = reactive({});  // pageId → 재마운트 카운터
+
+      /* ── 탭 고정 (keep-alive 시뮬레이션) ── */
+      const keptTabIds = reactive(new Set());
+      const toggleKeep = (tabId) => {
+        if (keptTabIds.has(tabId)) keptTabIds.delete(tabId);
+        else keptTabIds.add(tabId);
+      };
+      const PAGE_COMP_MAP = {
+        'dashboard':'dashboard-mng', 'ecMemberMng':'member-mng', 'ecMemberDtl':'member-dtl',
+        'ecProdMng':'prod-mng', 'ecProdDtl':'prod-dtl',
+        'ecOrderMng':'order-mng', 'ecOrderDtl':'order-dtl',
+        'ecClaimMng':'claim-mng', 'ecClaimDtl':'claim-dtl',
+        'ecDlivMng':'dliv-mng', 'ecDlivDtl':'dliv-dtl',
+        'ecCouponMng':'coupon-mng', 'ecCouponDtl':'coupon-dtl',
+        'ecCacheMng':'cache-mng', 'ecCacheDtl':'cache-dtl',
+        'ecDispPanelMng':'disp-panel-mng', 'ecDispAreaPreview':'disp-area-preview',
+        'ecDispPanelDtl':'disp-panel-dtl',
+        'ecDispWidgetLibMng':'disp-widget-lib-mng', 'ecDispWidgetLibDtl':'disp-widget-lib-dtl',
+        'ecEventMng':'event-mng', 'ecEventDtl':'event-dtl',
+        'ecCustInfoMng':'cust-info-mng',
+        'syContactMng':'contact-mng', 'syContactDtl':'contact-dtl',
+        'ecChattMng':'chatt-mng', 'ecChattDtl':'chatt-dtl',
+        'sySiteMng':'site-mng', 'sySiteDtl':'site-dtl',
+        'syCodeMng':'code-mng', 'syCodeDtl':'code-dtl',
+        'syBrandMng':'brand-mng', 'syAttachMng':'attach-mng',
+        'syTemplateMng':'template-mng', 'syTemplateDtl':'template-dtl',
+        'syVendorMng':'vendor-mng', 'syVendorDtl':'vendor-dtl',
+        'ecCategoryMng':'category-mng', 'ecCategoryDtl':'category-dtl',
+        'syUserMng':'user-mng', 'syUserDtl':'user-dtl',
+        'syBatchMng':'batch-mng', 'syBatchDtl':'batch-dtl',
+        'syDeptMng':'dept-mng', 'syMenuMng':'menu-mng', 'syRoleMng':'role-mng',
+        'ecNoticeMng':'notice-mng', 'syAlarmMng':'alarm-mng',
+        'syBbmMng':'bbm-mng', 'syBbsMng':'bbs-mng',
+      };
 
       const addTab = (mngId) => {
         if (!openTabs.find(t => t.id === mngId)) {
@@ -78,6 +113,7 @@
         if (evt) evt.stopPropagation();
         const idx = openTabs.findIndex(t => t.id === tabId);
         if (idx === -1) return;
+        keptTabIds.delete(tabId);
         openTabs.splice(idx, 1);
         if (activeTabId.value === tabId) {
           const next = openTabs[Math.min(idx, openTabs.length - 1)];
@@ -113,6 +149,14 @@
       };
       const ctxCloseAll = () => {
         const tab = openTabs.find(t => t.id === ctxMenu.tabId);
+        keptTabIds.clear();
+        openTabs.splice(0);
+        if (tab) { openTabs.push(tab); navigate(tab.id); }
+        closeCtxMenu();
+      };
+      const ctxCloseOthers = () => {
+        const tab = openTabs.find(t => t.id === ctxMenu.tabId);
+        openTabs.forEach(t => { if (t.id !== ctxMenu.tabId) keptTabIds.delete(t.id); });
         openTabs.splice(0);
         if (tab) { openTabs.push(tab); navigate(tab.id); }
         closeCtxMenu();
@@ -120,6 +164,17 @@
       const ctxNewWindow = () => {
         window.open(`${location.pathname}${location.search}#page=${ctxMenu.tabId}`, '_blank');
         closeCtxMenu();
+      };
+      const ctxRefresh = () => {
+        const id = ctxMenu.tabId;
+        closeCtxMenu();
+        if (keptTabIds.has(id)) {
+          keptTabIds.delete(id);
+          Vue.nextTick(() => keptTabIds.add(id));
+        } else {
+          refreshKeys[id] = (refreshKeys[id] || 0) + 1;
+          if (page.value !== id) navigate(id);
+        }
       };
 
       /* ── 새창 열기 ── */
@@ -167,6 +222,9 @@
         editId.value    = opts.id ?? null;
         if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
         addTab(toTabId(pg));
+        // 즐겨찾기 keep 설정이 있으면 자동으로 탭 고정
+        const tabId = toTabId(pg);
+        if (favKeepSet.has(tabId)) keptTabIds.add(tabId);
         const p2 = new URLSearchParams();
         p2.set('page', pg);
         if (opts.id != null) p2.set('id', opts.id);
@@ -333,12 +391,22 @@
 
       /* ── 즐겨찾기 ── */
       const favorites = reactive([]);
+      const favKeepSet = reactive(new Set()); // 즐겨찾기별 keep 설정
       const sidebarTab = ref('open');
       const isFav = (pgId) => favorites.includes(pgId);
       const toggleFav = (pgId) => {
         const idx = favorites.indexOf(pgId);
         if (idx === -1) favorites.push(pgId);
-        else favorites.splice(idx, 1);
+        else { favorites.splice(idx, 1); favKeepSet.delete(pgId); }
+      };
+      const toggleFavKeep = (pgId) => {
+        if (favKeepSet.has(pgId)) favKeepSet.delete(pgId);
+        else favKeepSet.add(pgId);
+        // 현재 열려있는 탭이면 keptTabIds에도 즉시 반영
+        if (openTabs.find(t => t.id === pgId)) {
+          if (favKeepSet.has(pgId)) keptTabIds.add(pgId);
+          else keptTabIds.delete(pgId);
+        }
       };
       const favList = computed(() =>
         favorites.map(pgId => {
@@ -354,9 +422,9 @@
       return {
         page, editId, navigate,
         TOP_MENUS, LEFT_MENUS, AUTH_METHODS,
-        openTabs, closeTab, activeTabId,
+        openTabs, closeTab, activeTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
         ctxMenu, showCtxMenu, closeCtxMenu,
-        ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseAll, ctxNewWindow,
+        ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseOthers, ctxCloseAll, ctxNewWindow, ctxRefresh,
         openNewWindow, openTabsWithGroup,
         activeTop, leftMenuOpen, setTopMenu,
         toasts, showToast, closeToast,
@@ -369,7 +437,7 @@
         openLogin, closeLogin, doLogin, doLogout, doRegister,
         profileModal, profileForm, openProfile, saveProfile,
         pwModal, pwForm, pwError, openPwChange, savePwChange,
-        favorites, sidebarTab, isFav, toggleFav, favList,
+        favorites, favKeepSet, sidebarTab, isFav, toggleFav, favList, toggleFavKeep,
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
       };
@@ -421,7 +489,11 @@
         class="admin-tab" :class="{active: activeTabId===tab.id}"
         @click="navigate(tab.id)"
         @contextmenu.prevent="showCtxMenu($event, tab.id)">
-        <span>{{ tab.label }}</span>
+        <span @click.stop="toggleKeep(tab.id)"
+          :title="keptTabIds.has(tab.id) ? '고정 해제' : '고정 (탭 전환 시 상태 유지)'"
+          style="font-size:9px;cursor:pointer;margin-right:3px;transition:all .15s;flex-shrink:0;line-height:1;"
+          :style="keptTabIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'">📌</span>
+        <span class="tab-label">{{ tab.label }}</span>
         <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
       </div>
     </div>
@@ -455,6 +527,10 @@
             <div v-for="fav in favList" :key="fav.id"
               class="left-nav-open-item" :class="{active: activeTabId===fav.id}"
               @click="navigate(fav.id)">
+              <span @click.stop="toggleFavKeep(fav.id)"
+                :title="favKeepSet.has(fav.id) ? '고정 해제' : '고정 (열 때 상태 유지)'"
+                style="font-size:9px;cursor:pointer;margin-right:4px;flex-shrink:0;transition:all .15s;"
+                :style="favKeepSet.has(fav.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.22;color:#999;'">📌</span>
               <span class="left-nav-open-path">
                 <span class="left-nav-open-group">{{ fav.topLabel }}</span>
                 <span class="left-nav-open-sep"> › </span>
@@ -493,6 +569,18 @@
     <!-- Main Content -->
     <div class="admin-main">
       <div class="admin-wrap">
+        <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
+        <component
+          v-for="keptId in keptTabIds" :key="'kept_' + keptId"
+          :is="PAGE_COMP_MAP[keptId]"
+          v-show="page === keptId"
+          :navigate="navigate" :admin-data="adminData"
+          :show-ref-modal="showRefModal" :show-toast="showToast"
+          :show-confirm="showConfirm" :set-api-res="setApiRes"
+          :edit-id="editId"
+        />
+        <!-- 비고정 현재 탭: 전환 시 재마운트 -->
+        <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
         <dashboard-mng v-if="page==='dashboard'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" />
         <member-mng  v-else-if="page==='ecMemberMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <member-dtl  v-else-if="page==='ecMemberDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
@@ -543,6 +631,7 @@
         <alarm-mng   v-else-if="page==='syAlarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <bbm-mng     v-else-if="page==='syBbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <bbs-mng     v-else-if="page==='syBbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        </div><!-- /비고정 탭 래퍼 -->
       </div>
     </div>
 
@@ -676,10 +765,12 @@
     <div class="tab-ctx-item" @click="ctxClose">현재 닫기</div>
     <div class="tab-ctx-item" @click="ctxCloseLeft">왼쪽 닫기</div>
     <div class="tab-ctx-item" @click="ctxCloseRight">오른쪽 닫기</div>
+    <div class="tab-ctx-item" @click="ctxCloseOthers">기타 닫기</div>
     <div class="tab-ctx-sep"></div>
     <div class="tab-ctx-item" @click="ctxCloseAll">전체 닫기</div>
     <div class="tab-ctx-sep"></div>
     <div class="tab-ctx-item" @click="ctxNewWindow">↗ 새창</div>
+    <div class="tab-ctx-item" @click="ctxRefresh">↺ 새로고침</div>
   </div>
 
   <!-- 프로필 모달 -->

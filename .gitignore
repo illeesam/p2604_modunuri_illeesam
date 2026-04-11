@@ -1,1 +1,4 @@
 node_modules/
+
+# Claude generated images
+**/image/CLAUDE/

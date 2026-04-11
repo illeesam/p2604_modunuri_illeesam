@@ -89,8 +89,53 @@ window.DispArea = {
     <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ panels.length }}개</span>
   </div>
 
+  <!-- ── 리스트 모드 ── -->
+  <div v-if="mode==='list'"
+    style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
+    <div v-if="panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">
+      이 영역에 등록된 패널이 없습니다.
+    </div>
+    <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
+          <th style="padding:6px 10px;text-align:center;width:50px;font-weight:600;color:#666;">#ID</th>
+          <th style="padding:6px 10px;font-weight:600;color:#666;">패널명</th>
+          <th style="padding:6px 10px;text-align:center;width:60px;font-weight:600;color:#666;">상태</th>
+          <th style="padding:6px 10px;text-align:center;width:110px;font-weight:600;color:#666;">노출조건</th>
+          <th style="padding:6px 10px;text-align:center;width:50px;font-weight:600;color:#666;">인증</th>
+          <th style="padding:6px 10px;text-align:center;width:70px;font-weight:600;color:#666;">등급</th>
+          <th style="padding:6px 10px;font-weight:600;color:#666;width:200px;">전시기간</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="p in panels" :key="p.dispId" style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:6px 10px;text-align:center;color:#aaa;">#{{ padId(p.dispId) }}</td>
+          <td style="padding:6px 10px;font-weight:600;color:#222;">{{ p.name }}</td>
+          <td style="padding:6px 10px;text-align:center;"><span class="badge" :class="statusCls(p.status)" style="font-size:10px;">{{ p.status }}</span></td>
+          <td style="padding:6px 10px;text-align:center;">
+            <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;white-space:nowrap;">{{ p.condition || '항상 표시' }}</span>
+          </td>
+          <td style="padding:6px 10px;text-align:center;">
+            <span v-if="p.authRequired" style="font-size:10px;background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">필요</span>
+            <span v-else style="color:#ccc;font-size:11px;">-</span>
+          </td>
+          <td style="padding:6px 10px;text-align:center;">
+            <span v-if="p.authGrade" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;">{{ p.authGrade }}↑</span>
+            <span v-else style="color:#ccc;font-size:11px;">-</span>
+          </td>
+          <td style="padding:6px 10px;color:#888;font-size:11px;">
+            <template v-if="p.dispStartDate || p.dispEndDate">
+              {{ p.dispStartDate || '∞' }} ~ {{ p.dispEndDate || '∞' }}
+            </template>
+            <span v-else style="color:#ccc;">기간 없음</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- ── 카드 모드 ── -->
-  <div v-if="mode==='card'"
+  <div v-else-if="mode==='card'"
     style="display:flex;flex-wrap:wrap;gap:12px;padding:18px 14px 14px;background:#f8f8f8;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;min-height:80px;">
     <div v-if="panels.length===0" style="color:#ccc;font-size:13px;padding:16px;width:100%;text-align:center;">
       이 영역에 등록된 패널이 없습니다.
