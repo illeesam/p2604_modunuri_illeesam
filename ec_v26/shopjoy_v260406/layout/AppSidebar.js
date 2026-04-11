@@ -25,7 +25,7 @@ window.AppSidebar = {
       { menuId: 'sample04', menuNm: '04.modals' },
       { menuId: 'sample05', menuNm: '05.store' },
       { menuId: 'sample06', menuNm: '06.login_token' },
-      { menuId: 'sample07', menuNm: '07' },
+      { menuId: 'sample07', menuNm: '07.postman' },
       { menuId: 'sample08', menuNm: '08' },
       { menuId: 'sample09', menuNm: '09' },
     ];
