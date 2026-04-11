@@ -164,7 +164,10 @@
     let restoring = true;
     const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'location', 'about',
       'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
-      'dispUi01', 'dispUi02', 'dispUi03', 'dispUi04', 'dispUi05', 'dispUi06'];
+      'dispUi01', 'dispUi02', 'dispUi03', 'dispUi04', 'dispUi05', 'dispUi06',
+      'sample01','sample02','sample03','sample04','sample05','sample06','sample07',
+      'sample08','sample09','sample10','sample11','sample12','sample13','sample14',
+      'sample21','sample22','sample23'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = rawHash.includes('page=');
@@ -361,6 +364,23 @@
       <disp-ui04 v-else-if="page==='dispUi04'" />
       <disp-ui05 v-else-if="page==='dispUi05'" />
       <disp-ui06 v-else-if="page==='dispUi06'" />
+      <sample01 v-else-if="page==='sample01'" />
+      <sample02 v-else-if="page==='sample02'" />
+      <sample03 v-else-if="page==='sample03'" />
+      <sample04 v-else-if="page==='sample04'" />
+      <sample05 v-else-if="page==='sample05'" />
+      <sample06 v-else-if="page==='sample06'" />
+      <sample07 v-else-if="page==='sample07'" />
+      <sample08 v-else-if="page==='sample08'" />
+      <sample09 v-else-if="page==='sample09'" />
+      <sample10 v-else-if="page==='sample10'" />
+      <sample11 v-else-if="page==='sample11'" />
+      <sample12 v-else-if="page==='sample12'" />
+      <sample13 v-else-if="page==='sample13'" />
+      <sample14 v-else-if="page==='sample14'" />
+      <sample21 v-else-if="page==='sample21'" />
+      <sample22 v-else-if="page==='sample22'" />
+      <sample23 v-else-if="page==='sample23'" />
 
       <app-footer :config="config" :navigate="navigate" />
     </main>
@@ -424,12 +444,30 @@
   .component('Login',        window.Login)
   .component('LocationPage', window.Location)
   .component('AboutPage',    window.About)
+  .component('DispWidget', window.DispWidget)
   .component('DispUi01', window.DispUi01)
   .component('DispUi02', window.DispUi02)
   .component('DispUi03', window.DispUi03)
   .component('DispUi04', window.DispUi04)
   .component('DispUi05', window.DispUi05)
   .component('DispUi06', window.DispUi06)
+  .component('Sample01', window.Sample01)
+  .component('Sample02', window.Sample02)
+  .component('Sample03', window.Sample03)
+  .component('Sample04', window.Sample04)
+  .component('Sample05', window.Sample05)
+  .component('Sample06', window.Sample06)
+  .component('Sample07', window.Sample07)
+  .component('Sample08', window.Sample08)
+  .component('Sample09', window.Sample09)
+  .component('Sample10', window.Sample10)
+  .component('Sample11', window.Sample11)
+  .component('Sample12', window.Sample12)
+  .component('Sample13', window.Sample13)
+  .component('Sample14', window.Sample14)
+  .component('Sample21', window.Sample21)
+  .component('Sample22', window.Sample22)
+  .component('Sample23', window.Sample23)
   .use(pinia)
   .mount('#app');
 })();
