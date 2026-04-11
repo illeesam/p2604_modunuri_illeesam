@@ -207,7 +207,7 @@ window.DispPanelMng = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">전시관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
+  <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="패널명 / 영역코드 검색" />

@@ -51,7 +51,7 @@ window.DispPanelDtl = {
     ]);
 
     const TAB_LABELS = [
-      { key: 'info', label: '패널정보' },
+      { key: 'info', label: '패널기본정보' },
       { key: 'tab1', label: '위젯 1' },
       { key: 'tab2', label: '위젯 2' },
       { key: 'tab3', label: '위젯 3' },

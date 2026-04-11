@@ -318,11 +318,13 @@ window.DispAreaPreview = {
         <span style="font-size:12px;font-weight:600;color:#555;">보기</span>
         <div style="display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
           <button @click="viewMode='list'" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
-            :style="viewMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 리스트항목</button>
+            :style="viewMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 패널리스트목록형식</button>
           <button @click="viewMode='card'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="viewMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">🖼 카드항목</button>
+            :style="viewMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">🖼 패널목록카드형식</button>
           <button @click="viewMode='expand'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="viewMode==='expand' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 상세정보</button>
+            :style="viewMode==='expand' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 패널-위젯 상세보기</button>
+          <button @click="viewMode='area_detail'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+            :style="viewMode==='area_detail' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊟ 영역-위젯 상세보기</button>
         </div>
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;" :style="mainTab!=='preview' ? 'opacity:.4;' : ''"></div>
@@ -398,12 +400,12 @@ window.DispAreaPreview = {
     <button @click="switchTab('struct')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
       :style="mainTab==='struct' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-      🌲 구조 선택 미리보기
+      🌲 영역-위젯 구조 보기
     </button>
     <button @click="switchTab('source')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;"
       :style="mainTab==='source' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-      &lt;/&gt; 소스 구조
+      &lt;/&gt; 영역-위젯 소스보기
     </button>
   </div>
 
