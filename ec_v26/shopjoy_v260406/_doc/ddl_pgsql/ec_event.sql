@@ -4,6 +4,7 @@
 -- ============================================================
 CREATE TABLE ec_event (
     event_id        VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     title           VARCHAR(200)    NOT NULL,
     event_type_cd   VARCHAR(30),                            -- 코드: EVENT_TYPE
     content_html    TEXT,
@@ -15,13 +16,16 @@ CREATE TABLE ec_event (
     status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: EVENT_STATUS
     view_count      INTEGER         DEFAULT 0,
     memo            TEXT,
+    reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     PRIMARY KEY (event_id)
 );
 
 COMMENT ON TABLE  ec_event                IS '이벤트';
 COMMENT ON COLUMN ec_event.event_id       IS '이벤트ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN ec_event.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_event.title          IS '이벤트 제목';
 COMMENT ON COLUMN ec_event.event_type_cd  IS '이벤트유형 (코드: EVENT_TYPE)';
 COMMENT ON COLUMN ec_event.content_html   IS '내용 (HTML)';
@@ -33,22 +37,34 @@ COMMENT ON COLUMN ec_event.end_date       IS '종료일';
 COMMENT ON COLUMN ec_event.status_cd      IS '상태 (코드: EVENT_STATUS)';
 COMMENT ON COLUMN ec_event.view_count     IS '조회수';
 COMMENT ON COLUMN ec_event.memo           IS '메모';
+COMMENT ON COLUMN ec_event.reg_by         IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_event.reg_date       IS '등록일';
+COMMENT ON COLUMN ec_event.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_event.upd_date       IS '수정일';
 
 -- 이벤트 대상 상품
 CREATE TABLE ec_event_prod (
     event_prod_id   VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     event_id        VARCHAR(16)     NOT NULL,
     prod_id         VARCHAR(16)     NOT NULL,
     sort_ord        INTEGER         DEFAULT 0,
     discount_rate   INTEGER         DEFAULT 0,              -- 이벤트 할인율(%)
+    reg_by          VARCHAR(16),
+    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
+    upd_date        TIMESTAMP,
     PRIMARY KEY (event_prod_id)
 );
 
 COMMENT ON TABLE  ec_event_prod                IS '이벤트 대상상품';
 COMMENT ON COLUMN ec_event_prod.event_prod_id  IS '이벤트상품ID';
+COMMENT ON COLUMN ec_event_prod.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_event_prod.event_id       IS '이벤트ID';
 COMMENT ON COLUMN ec_event_prod.prod_id        IS '상품ID';
 COMMENT ON COLUMN ec_event_prod.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN ec_event_prod.discount_rate  IS '이벤트할인율(%)';
+COMMENT ON COLUMN ec_event_prod.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_event_prod.reg_date       IS '등록일';
+COMMENT ON COLUMN ec_event_prod.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_event_prod.upd_date       IS '수정일';

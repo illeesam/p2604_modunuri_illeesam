@@ -39,7 +39,7 @@ window.ClaimMng = {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.claimId.toLowerCase().includes(kw) && !c.userName.toLowerCase().includes(kw) && !c.productName.toLowerCase().includes(kw)) return false;
       if (applied.type && c.type !== applied.type) return false;
-      if (applied.status && c.status !== applied.status) return false;
+      if (applied.status && c.statusCd !== applied.status) return false;
       const _d = String(c.requestDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -100,7 +100,7 @@ window.ClaimMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userName'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'status'},{label:'상품명',key:'productName'},{label:'사유',key:'reason'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userName'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'productName'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -144,8 +144,8 @@ window.ClaimMng = {
           <td><span class="ref-link" @click="showRefModal('order', c.orderId)">{{ c.orderId }}</span></td>
           <td>{{ c.productName }}</td>
           <td><span class="badge" :class="typeBadge(c.type)">{{ c.type }}</span></td>
-          <td>{{ c.reason }}</td>
-          <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
+          <td>{{ c.reasonCd }}</td>
+          <td><span class="badge" :class="statusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
           <td>{{ c.requestDate.slice(0,10) }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">

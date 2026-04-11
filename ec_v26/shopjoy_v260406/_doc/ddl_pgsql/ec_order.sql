@@ -4,8 +4,9 @@
 -- ============================================================
 CREATE TABLE ec_order (
     order_id        VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     member_id       VARCHAR(16)     NOT NULL,
-    member_name     VARCHAR(50),
+    member_nm       VARCHAR(50),
     order_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     total_price     BIGINT          DEFAULT 0,
     discount_amt    BIGINT          DEFAULT 0,
@@ -15,7 +16,7 @@ CREATE TABLE ec_order (
     pay_method_cd   VARCHAR(20),                            -- 코드: PAY_METHOD
     pay_date        TIMESTAMP,
     status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: ORDER_STATUS
-    recv_name       VARCHAR(50),
+    recv_nm         VARCHAR(50),
     recv_phone      VARCHAR(20),
     recv_zip        VARCHAR(10),
     recv_addr       VARCHAR(200),
@@ -23,15 +24,18 @@ CREATE TABLE ec_order (
     recv_memo       VARCHAR(200),
     coupon_id       VARCHAR(16),
     memo            TEXT,
+    reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     PRIMARY KEY (order_id)
 );
 
 COMMENT ON TABLE  ec_order                  IS '주문';
 COMMENT ON COLUMN ec_order.order_id         IS '주문ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN ec_order.site_id          IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_order.member_id        IS '회원ID';
-COMMENT ON COLUMN ec_order.member_name      IS '주문자명';
+COMMENT ON COLUMN ec_order.member_nm        IS '주문자명';
 COMMENT ON COLUMN ec_order.order_date       IS '주문일시';
 COMMENT ON COLUMN ec_order.total_price      IS '상품합계';
 COMMENT ON COLUMN ec_order.discount_amt     IS '할인금액';
@@ -41,7 +45,7 @@ COMMENT ON COLUMN ec_order.pay_price        IS '실결제금액';
 COMMENT ON COLUMN ec_order.pay_method_cd    IS '결제수단 (코드: PAY_METHOD)';
 COMMENT ON COLUMN ec_order.pay_date         IS '결제일시';
 COMMENT ON COLUMN ec_order.status_cd        IS '주문상태 (코드: ORDER_STATUS)';
-COMMENT ON COLUMN ec_order.recv_name        IS '수령자명';
+COMMENT ON COLUMN ec_order.recv_nm          IS '수령자명';
 COMMENT ON COLUMN ec_order.recv_phone       IS '수령자연락처';
 COMMENT ON COLUMN ec_order.recv_zip         IS '수령자우편번호';
 COMMENT ON COLUMN ec_order.recv_addr        IS '수령자주소';
@@ -49,52 +53,79 @@ COMMENT ON COLUMN ec_order.recv_addr_detail IS '수령자상세주소';
 COMMENT ON COLUMN ec_order.recv_memo        IS '배송메모';
 COMMENT ON COLUMN ec_order.coupon_id        IS '사용쿠폰ID';
 COMMENT ON COLUMN ec_order.memo             IS '관리메모';
+COMMENT ON COLUMN ec_order.reg_by           IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_order.reg_date         IS '등록일';
+COMMENT ON COLUMN ec_order.upd_by           IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_order.upd_date         IS '수정일';
 
 -- 주문 상품
 CREATE TABLE ec_order_item (
     order_item_id   VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     order_id        VARCHAR(16)     NOT NULL,
     prod_id         VARCHAR(16)     NOT NULL,
-    prod_name       VARCHAR(200),
-    prod_option     VARCHAR(200),
+    sku_id          VARCHAR(16),                            -- ec_prod_opt_sku.sku_id
+    opt_id_1    VARCHAR(16),                            -- 옵션1 값ID (ec_prod_opt)
+    opt_id_2    VARCHAR(16),                            -- 옵션2 값ID (ec_prod_opt)
     unit_price      BIGINT          DEFAULT 0,
-    qty             INTEGER         DEFAULT 1,
+    order_qty       INTEGER         DEFAULT 1,              -- 주문수량
+    cancel_qty      INTEGER         DEFAULT 0,              -- 취소수량
+    complet_qty     INTEGER         DEFAULT 0,              -- 판매완료수량
     item_price      BIGINT          DEFAULT 0,
     status_cd       VARCHAR(20)     DEFAULT 'NORMAL',       -- 코드: ORDER_STATUS
+    reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
+    upd_date        TIMESTAMP,
     PRIMARY KEY (order_item_id)
 );
 
 COMMENT ON TABLE  ec_order_item               IS '주문상품';
 COMMENT ON COLUMN ec_order_item.order_item_id IS '주문상품ID';
+COMMENT ON COLUMN ec_order_item.site_id       IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_order_item.order_id      IS '주문ID';
 COMMENT ON COLUMN ec_order_item.prod_id       IS '상품ID';
-COMMENT ON COLUMN ec_order_item.prod_name     IS '상품명 (주문시점 스냅샷)';
-COMMENT ON COLUMN ec_order_item.prod_option   IS '옵션 (주문시점 스냅샷)';
-COMMENT ON COLUMN ec_order_item.unit_price    IS '단가';
-COMMENT ON COLUMN ec_order_item.qty           IS '수량';
-COMMENT ON COLUMN ec_order_item.item_price    IS '소계';
+COMMENT ON COLUMN ec_order_item.sku_id        IS 'SKU ID (ec_prod_opt_sku.sku_id, 무옵션 시 NULL)';
+COMMENT ON COLUMN ec_order_item.opt_id_1  IS '옵션1 값ID (ec_prod_opt.opt_id)';
+COMMENT ON COLUMN ec_order_item.opt_id_2  IS '옵션2 값ID (ec_prod_opt.opt_id)';
+COMMENT ON COLUMN ec_order_item.unit_price    IS '단가 (옵션 추가금액 포함)';
+COMMENT ON COLUMN ec_order_item.order_qty     IS '주문수량';
+COMMENT ON COLUMN ec_order_item.cancel_qty    IS '취소수량';
+COMMENT ON COLUMN ec_order_item.complet_qty   IS '판매완료수량';
+COMMENT ON COLUMN ec_order_item.item_price    IS '소계 (unit_price × order_qty)';
 COMMENT ON COLUMN ec_order_item.status_cd     IS '품목상태 (코드: ORDER_STATUS)';
+COMMENT ON COLUMN ec_order_item.reg_by        IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order_item.reg_date      IS '등록일';
+COMMENT ON COLUMN ec_order_item.upd_by        IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order_item.upd_date      IS '수정일';
 
 -- 주문 상태 이력
 CREATE TABLE ec_order_hist (
     order_hist_id   VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     order_id        VARCHAR(16)     NOT NULL,
     before_status   VARCHAR(20),
     after_status    VARCHAR(20),
     memo            VARCHAR(300),
     proc_by         VARCHAR(16),
     proc_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    reg_by          VARCHAR(16),
+    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
+    upd_date        TIMESTAMP,
     PRIMARY KEY (order_hist_id)
 );
 
 COMMENT ON TABLE  ec_order_hist               IS '주문 상태 이력';
 COMMENT ON COLUMN ec_order_hist.order_hist_id IS '이력ID';
+COMMENT ON COLUMN ec_order_hist.site_id       IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_order_hist.order_id      IS '주문ID';
 COMMENT ON COLUMN ec_order_hist.before_status IS '이전상태';
 COMMENT ON COLUMN ec_order_hist.after_status  IS '변경상태';
 COMMENT ON COLUMN ec_order_hist.memo          IS '처리메모';
 COMMENT ON COLUMN ec_order_hist.proc_by       IS '처리자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_order_hist.proc_date     IS '처리일시';
+COMMENT ON COLUMN ec_order_hist.reg_by        IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order_hist.reg_date      IS '등록일';
+COMMENT ON COLUMN ec_order_hist.upd_by        IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order_hist.upd_date      IS '수정일';

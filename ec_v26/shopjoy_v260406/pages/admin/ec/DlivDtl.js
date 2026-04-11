@@ -9,7 +9,7 @@ window.DlivDtl = {
 
     const form = reactive({
       dlivId: '', orderId: '', userId: '', userName: '', receiver: '',
-      address: '', phone: '', courier: '', trackingNo: '', status: '배송준비', regDate: '', memo: '',
+      address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '배송준비', regDate: '', memo: '',
     });
     const errors = reactive({});
 
@@ -127,7 +127,7 @@ window.DlivDtl = {
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status" :disabled="viewMode">
+          <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
             <option>배송준비</option><option>배송중</option><option>배송완료</option><option>반송</option>
           </select>
         </div>
@@ -154,7 +154,7 @@ window.DlivDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">택배사</label>
-          <select class="form-control" v-model="form.courier" :disabled="viewMode">
+          <select class="form-control" v-model="form.courierCd" :disabled="viewMode">
             <option value="">선택</option><option>CJ대한통운</option><option>롯데택배</option><option>한진택배</option><option>우체국</option><option>배송예정</option>
           </select>
         </div>
@@ -163,11 +163,11 @@ window.DlivDtl = {
           <input class="form-control" v-model="form.trackingNo" placeholder="운송장번호" :readonly="viewMode" />
         </div>
       </div>
-      <div v-if="form.courier && form.trackingNo" style="margin-top:12px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
+      <div v-if="form.courierCd && form.trackingNo" style="margin-top:12px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
         <div style="font-size:13px;color:#555;margin-bottom:8px;">택배 추적 링크</div>
-        <a v-if="form.courier==='CJ대한통운'" :href="'https://trace.cjlogistics.com/next/tracking.html?wblNo='+form.trackingNo" target="_blank" class="btn btn-blue btn-sm">CJ대한통운 조회</a>
-        <a v-else-if="form.courier==='롯데택배'" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.trackingNo" target="_blank" class="btn btn-blue btn-sm">롯데택배 조회</a>
-        <a v-else-if="form.courier==='한진택배'" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.trackingNo" target="_blank" class="btn btn-blue btn-sm">한진택배 조회</a>
+        <a v-if="form.courierCd==='CJ대한통운'" :href="'https://trace.cjlogistics.com/next/tracking.html?wblNo='+form.trackingNo" target="_blank" class="btn btn-blue btn-sm">CJ대한통운 조회</a>
+        <a v-else-if="form.courierCd==='롯데택배'" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.trackingNo" target="_blank" class="btn btn-blue btn-sm">롯데택배 조회</a>
+        <a v-else-if="form.courierCd==='한진택배'" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.trackingNo" target="_blank" class="btn btn-blue btn-sm">한진택배 조회</a>
         <span v-else style="font-size:13px;color:#888;">해당 택배사 링크 없음</span>
       </div>
       <div v-else style="color:#aaa;font-size:13px;padding:20px;text-align:center;">택배사와 운송장번호를 입력하면 조회 링크가 표시됩니다.</div>

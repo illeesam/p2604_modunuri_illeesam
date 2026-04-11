@@ -11,7 +11,7 @@ window.ClaimHist = {
     let itemIdSeq = 1;
 
     /* 처리 정보 로컬 폼 */
-    const processForm = reactive({ refundAmount: 0, refundMethod: '계좌환불', memo: '' });
+    const processForm = reactive({ refundAmount: 0, refundMethodCd: '계좌환불', memo: '' });
 
     /* 클레임 유형별 단계 */
     const claimType = ref('취소');
@@ -30,10 +30,10 @@ window.ClaimHist = {
       const c = props.adminData.getClaim(props.claimId);
       if (c) {
         claimType.value  = c.type || '취소';
-        claimStatus.value = c.status || '';
+        claimStatus.value = c.statusCd || '';
         Object.assign(processForm, {
           refundAmount: c.refundAmount || 0,
-          refundMethod: c.refundMethod || '계좌환불',
+          refundMethodCd: c.refundMethodCd || '계좌환불',
           memo: c.memo || '',
         });
         claimItems.value = [
@@ -42,7 +42,7 @@ window.ClaimHist = {
             bfProductName: c.productName || '-', bfOptionName: '-',
             bfQty: 1, bfPrice: 0, bfStatus: '결제완료',
             chgProductName: '', chgOptionName: '',
-            afStatus: c.status, afMemo: '', afAdmin: '', afDate: '',
+            afStatus: c.statusCd, afMemo: '', afAdmin: '', afDate: '',
           },
         ];
         relatedOrder.value = props.adminData.getOrder(c.orderId);
@@ -67,7 +67,7 @@ window.ClaimHist = {
       const idx = props.adminData.claims.findIndex(c => c.claimId === props.claimId);
       if (idx !== -1) Object.assign(props.adminData.claims[idx], {
         refundAmount: Number(processForm.refundAmount),
-        refundMethod: processForm.refundMethod,
+        refundMethodCd: processForm.refundMethodCd,
         memo: processForm.memo,
       });
       props.showToast('저장되었습니다.');
@@ -174,7 +174,7 @@ window.ClaimHist = {
       </div>
       <div class="form-group">
         <label class="form-label">환불방법</label>
-        <select class="form-control" v-model="processForm.refundMethod">
+        <select class="form-control" v-model="processForm.refundMethodCd">
           <option>계좌환불</option><option>카드취소</option><option>캐쉬환불</option>
         </select>
       </div>
@@ -203,8 +203,8 @@ window.ClaimHist = {
               <span style="color:#888;">주문일</span> <b style="margin-left:4px;">{{ relatedOrder.orderDate }}</b><br/>
               <span style="color:#888;">상품</span> <b style="margin-left:4px;">{{ relatedOrder.productName }}</b><br/>
               <span style="color:#888;">금액</span> <b style="margin-left:4px;color:#e8587a;">{{ relatedOrder.totalPrice.toLocaleString() }}원</b>
-              &nbsp;·&nbsp;<span style="color:#888;">결제</span> <b style="margin-left:4px;">{{ relatedOrder.payMethod }}</b><br/>
-              <span style="color:#888;">상태</span> <span class="badge badge-blue" style="margin-left:4px;">{{ relatedOrder.status }}</span>
+              &nbsp;·&nbsp;<span style="color:#888;">결제</span> <b style="margin-left:4px;">{{ relatedOrder.payMethodCd }}</b><br/>
+              <span style="color:#888;">상태</span> <span class="badge badge-blue" style="margin-left:4px;">{{ relatedOrder.statusCd }}</span>
             </div>
           </div>
           <button class="btn btn-blue btn-sm" @click="navigate('ecOrderDtl',{id:relatedOrder.orderId})">주문 수정</button>
@@ -216,9 +216,9 @@ window.ClaimHist = {
           <div style="line-height:2;color:#444;">
             <span style="color:#888;">수령인</span> <b style="margin-left:4px;">{{ relatedDliv.receiver }}</b>
             &nbsp;·&nbsp;<span style="color:#888;">배송지</span> <b style="margin-left:4px;">{{ relatedDliv.address }}</b><br/>
-            <span style="color:#888;">택배사</span> <b style="margin-left:4px;">{{ relatedDliv.courier }}</b>
+            <span style="color:#888;">택배사</span> <b style="margin-left:4px;">{{ relatedDliv.courierCd }}</b>
             &nbsp;·&nbsp;<span style="color:#888;">운송장</span> <b style="margin-left:4px;">{{ relatedDliv.trackingNo || '-' }}</b>
-            &nbsp;·&nbsp;<span class="badge badge-green">{{ relatedDliv.status }}</span>
+            &nbsp;·&nbsp;<span class="badge badge-green">{{ relatedDliv.statusCd }}</span>
           </div>
           <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="navigate('ecDlivDtl',{id:relatedDliv.dlivId})">배송 수정</button>
         </div>

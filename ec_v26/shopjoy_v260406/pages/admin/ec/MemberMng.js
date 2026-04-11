@@ -38,8 +38,8 @@ window.MemberMng = {
     const filtered = computed(() => props.adminData.members.filter(m => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !m.name.toLowerCase().includes(kw) && !m.email.toLowerCase().includes(kw) && !String(m.userId).includes(kw)) return false;
-      if (applied.grade && m.grade !== applied.grade) return false;
-      if (applied.status && m.status !== applied.status) return false;
+      if (applied.grade && m.gradeCd !== applied.grade) return false;
+      if (applied.status && m.statusCd !== applied.status) return false;
       const _d = String(m.joinDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -95,7 +95,7 @@ window.MemberMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'userId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'grade'},{label:'상태',key:'status'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'userId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, gradeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -133,8 +133,8 @@ window.MemberMng = {
           <td><span class="title-link" @click="loadView(m.userId)" :style="selectedId===m.userId?'color:#e8587a;font-weight:700;':''">{{ m.name }}<span v-if="selectedId===m.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ m.email }}</td>
           <td>{{ m.phone }}</td>
-          <td><span class="badge" :class="gradeBadge(m.grade)">{{ m.grade }}</span></td>
-          <td><span class="badge" :class="statusBadge(m.status)">{{ m.status }}</span></td>
+          <td><span class="badge" :class="gradeBadge(m.gradeCd)">{{ m.gradeCd }}</span></td>
+          <td><span class="badge" :class="statusBadge(m.statusCd)">{{ m.statusCd }}</span></td>
           <td>{{ m.joinDate }}</td>
           <td>{{ m.orderCount }}건</td>
           <td>{{ m.totalPurchase.toLocaleString() }}원</td>

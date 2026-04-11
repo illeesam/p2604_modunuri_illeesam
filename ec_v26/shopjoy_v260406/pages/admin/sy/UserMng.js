@@ -38,7 +38,7 @@ window.UserMng = {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
       if (applied.role && u.role !== applied.role) return false;
-      if (applied.status && u.status !== applied.status) return false;
+      if (applied.status && u.statusCd !== applied.status) return false;
       const _d = String(u.regDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -95,7 +95,7 @@ window.UserMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'adminUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'status'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'adminUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -140,7 +140,7 @@ window.UserMng = {
           <td>{{ u.phone }}</td>
           <td><span class="badge" :class="roleBadge(u.role)">{{ u.role }}</span></td>
           <td style="font-size:12px;color:#666;">{{ u.dept }}</td>
-          <td><span class="badge" :class="statusBadge(u.status)">{{ u.status }}</span></td>
+          <td><span class="badge" :class="statusBadge(u.statusCd)">{{ u.statusCd }}</span></td>
           <td style="font-size:12px;color:#888;">{{ u.lastLogin }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">

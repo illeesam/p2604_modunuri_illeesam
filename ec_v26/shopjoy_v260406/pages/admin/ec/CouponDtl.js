@@ -8,9 +8,9 @@ window.CouponDtl = {
     const tab = ref('info');
 
     const form = reactive({
-      code: '', name: '', discountType: 'amount', discountValue: 0,
+      code: '', name: '', discountTypeCd: 'amount', discountValue: 0,
       minOrder: 0, expiry: '', issueTo: '전체', issueCount: 0, useCount: 0,
-      status: '활성', applicableTo: '전체 상품', memo: '',
+      statusCd: '활성', applicableTo: '전체 상품', memo: '',
     });
     const errors = reactive({});
 

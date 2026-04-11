@@ -295,15 +295,641 @@
       ];
     })(),
 
-    displays: [
-      { dispId: 1, area: 'HOME_BANNER', name: '메인 배너 - 봄맞이 세일', widgetType: 'image_banner', dispType: '이미지', clickAction: 'navigate', clickTarget: '/products', condition: '항상 표시', authRequired: false, sortOrder: 1, status: '활성', regDate: '2026-03-01' },
-      { dispId: 2, area: 'HOME_PRODUCT', name: '신상품 추천 슬라이더', widgetType: 'product_slider', dispType: '상품목록', clickAction: 'navigate', clickTarget: '/detail', condition: '항상 표시', authRequired: false, sortOrder: 2, status: '활성', regDate: '2026-03-05' },
-      { dispId: 3, area: 'HOME_CHART', name: '주간 베스트 차트', widgetType: 'chart_bar', dispType: '차트', clickAction: 'none', clickTarget: '', condition: '항상 표시', authRequired: false, sortOrder: 3, status: '활성', regDate: '2026-03-10' },
-      { dispId: 4, area: 'SIDEBAR_TOP', name: 'VIP 전용 배너', widgetType: 'image_banner', dispType: '이미지', clickAction: 'navigate', clickTarget: '/events', condition: '로그인+VIP', authRequired: true, authGrade: 'VIP', sortOrder: 1, status: '활성', regDate: '2026-03-15' },
-      { dispId: 5, area: 'PRODUCT_TOP', name: '오늘의 할인 위젯', widgetType: 'text_banner', dispType: '텍스트', clickAction: 'event', clickTarget: 'showCoupon', condition: '로그인 필요', authRequired: true, sortOrder: 1, status: '활성', regDate: '2026-03-20' },
-      { dispId: 6, area: 'MY_PAGE', name: '등급별 혜택 안내', widgetType: 'info_card', dispType: '정보카드', clickAction: 'none', clickTarget: '', condition: '로그인 필요', authRequired: true, sortOrder: 1, status: '활성', regDate: '2026-04-01' },
-      { dispId: 7, area: 'HOME_BANNER', name: '앱 전용 팝업', widgetType: 'popup', dispType: '팝업', clickAction: 'navigate', clickTarget: '/app-download', condition: '비로그인', authRequired: false, sortOrder: 4, status: '비활성', regDate: '2026-04-05' },
-    ],
+    displays: (() => {
+      const W = (sortOrder, widgetName, widgetType, clickAction='none', clickTarget='', status='활성') =>
+        ({ sortOrder, widgetName, widgetType, clickAction, clickTarget, status });
+      const P = (dispId, area, name, widgetType, condition, authRequired, sortOrder, status, regDate, rows, extra={}) =>
+        ({ dispId, area, name, widgetType, condition, authRequired, sortOrder, status, regDate, rows, ...extra });
+
+      return [
+        /* ───────────── HOME_BANNER (홈 메인배너) ───────────── */
+        P( 1,'HOME_BANNER','봄 시즌 메인 슬라이드 배너','image_banner','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'봄맞이 세일 메인이미지','image_banner','navigate','/sale'),
+          W(2,'봄 시즌 카피 텍스트','text_banner','none',''),
+          W(3,'신규가입 5,000원 쿠폰','coupon','event','issueCoupon'),
+          W(4,'봄맞이 이벤트 배너','event_banner','navigate','/events/1'),
+          W(5,'봄 컬렉션 HTML 안내','html_editor','none',''),
+        ],{ dispStartDate:'2026-03-01', dispEndDate:'2026-05-31' }),
+
+        P( 2,'HOME_BANNER','여름 프리뷰 배너 슬라이더','image_banner','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'여름 신상 프리뷰 이미지','image_banner','navigate','/summer'),
+          W(2,'신상품 슬라이더 (여름)','product_slider','navigate','/products?season=summer'),
+          W(3,'여름 시즌 텍스트','text_banner','none',''),
+          W(4,'여름 이벤트 배너','event_banner','navigate','/events/4'),
+          W(5,'앱 전용 팝업','popup','navigate','/app-download'),
+        ],{ dispStartDate:'2026-05-01', dispEndDate:'2026-07-31' }),
+
+        P( 3,'HOME_BANNER','VIP 전용 특별 혜택 배너','image_banner','로그인+VIP',true,3,'활성','2026-03-10',[
+          W(1,'VIP 전용 이미지 배너','image_banner','navigate','/vip'),
+          W(2,'VIP 적립금 안내 배너','cache_banner','none',''),
+          W(3,'VIP 쿠폰 자동 발급','coupon','event','issueVipCoupon'),
+          W(4,'VIP 혜택 정보카드','info_card','none',''),
+          W(5,'VIP 전용 단품 상품','product','navigate','/detail/6'),
+        ],{ authGrade:'VIP' }),
+
+        P( 4,'HOME_BANNER','블랙프라이데이 특가 배너','image_banner','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'블랙프라이데이 메인 배너','image_banner','navigate','/bf'),
+          W(2,'특가 쿠폰 발급','coupon','event','issueBfCoupon'),
+          W(3,'특가 상품 슬라이더','product_slider','navigate','/products?tag=bf'),
+          W(4,'카운트다운 텍스트','text_banner','none',''),
+          W(5,'이벤트 배너','event_banner','navigate','/events/2'),
+        ],{ dispStartDate:'2026-11-25', dispEndDate:'2026-11-29' }),
+
+        P( 5,'HOME_BANNER','신규회원 환영 배너','image_banner','비로그인 전용',false,5,'활성','2026-03-20',[
+          W(1,'신규회원 환영 이미지','image_banner','navigate','/join'),
+          W(2,'가입 혜택 텍스트','text_banner','none',''),
+          W(3,'신규가입 쿠폰','coupon','event','issueWelcomeCoupon'),
+          W(4,'혜택 HTML 안내','html_editor','none',''),
+          W(5,'혜택 정보카드','info_card','none',''),
+        ]),
+
+        P( 6,'HOME_BANNER','주말 특가 팝업','popup','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'주말 특가 팝업','popup','navigate','/sale'),
+          W(2,'주말 이미지 배너','image_banner','navigate','/sale'),
+          W(3,'특가 쿠폰','coupon','event','issueWeekendCoupon'),
+          W(4,'특가 텍스트','text_banner','none',''),
+          W(5,'주말 이벤트','event_banner','navigate','/events'),
+        ],{ dispStartDate:'2026-04-12', dispEndDate:'2026-04-13' }),
+
+        P( 7,'HOME_BANNER','앱 다운로드 유도 배너','image_banner','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'앱 다운로드 이미지','image_banner','navigate','/app'),
+          W(2,'앱 소개 텍스트','text_banner','none',''),
+          W(3,'앱 HTML 배너','html_editor','none',''),
+          W(4,'앱 안내 정보카드','info_card','none',''),
+          W(5,'앱 위젯 임베드','widget_embed','none',''),
+        ]),
+
+        /* ───────────── HOME_PRODUCT (홈 상품영역) ───────────── */
+        P( 8,'HOME_PRODUCT','신상품 추천 섹션','product_slider','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'신상품 슬라이더','product_slider','navigate','/products?isNew=Y'),
+          W(2,'최신 여성복 조건상품','cond_product','navigate','/products?cate=women'),
+          W(3,'시그니처 코트 단품','product','navigate','/detail/1'),
+          W(4,'신상품 텍스트 안내','text_banner','none',''),
+          W(5,'신상품 이벤트','event_banner','navigate','/events/1'),
+        ]),
+
+        P( 9,'HOME_PRODUCT','베스트셀러 섹션','product_slider','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'베스트셀러 슬라이더','product_slider','navigate','/products?sort=best'),
+          W(2,'주간 베스트 차트','chart_bar','none',''),
+          W(3,'베스트 단품 상품','product','navigate','/detail/2'),
+          W(4,'베스트 조건상품','cond_product','navigate','/products?sort=popular'),
+          W(5,'베스트 텍스트','text_banner','none',''),
+        ]),
+
+        P(10,'HOME_PRODUCT','오늘의 특가 섹션','cond_product','항상 표시',false,3,'활성','2026-03-10',[
+          W(1,'할인상품 조건상품','cond_product','navigate','/products?tag=sale'),
+          W(2,'오늘의 쿠폰','coupon','event','issueDailyCoupon'),
+          W(3,'할인 슬라이더','product_slider','navigate','/products?tag=sale'),
+          W(4,'특가 텍스트 배너','text_banner','none',''),
+          W(5,'적립금 캐시 배너','cache_banner','none',''),
+        ]),
+
+        P(11,'HOME_PRODUCT','카테고리별 추천 섹션','product_slider','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'여성 카테고리 슬라이더','product_slider','navigate','/products?cate=women'),
+          W(2,'남성 카테고리 슬라이더','product_slider','navigate','/products?cate=men'),
+          W(3,'아우터 조건상품','cond_product','navigate','/products?cate=outer'),
+          W(4,'카테고리 이미지 배너','image_banner','navigate','/products'),
+          W(5,'카테고리 HTML 안내','html_editor','none',''),
+        ]),
+
+        P(12,'HOME_PRODUCT','VIP 큐레이션 섹션','product_slider','로그인+VIP',true,5,'활성','2026-03-20',[
+          W(1,'VIP 전용 슬라이더','product_slider','navigate','/products?grade=vip'),
+          W(2,'VIP 조건상품','cond_product','navigate','/products?grade=vip'),
+          W(3,'VIP 전용 쿠폰','coupon','event','issueVipCoupon'),
+          W(4,'VIP 혜택 정보카드','info_card','none',''),
+          W(5,'VIP 적립금 배너','cache_banner','none',''),
+        ],{ authGrade:'VIP' }),
+
+        P(13,'HOME_PRODUCT','재입고 알림 섹션','cond_product','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'재입고 조건상품','cond_product','navigate','/products?tag=restock'),
+          W(2,'재입고 슬라이더','product_slider','navigate','/products?tag=restock'),
+          W(3,'재입고 알림 텍스트','text_banner','none',''),
+          W(4,'재입고 정보카드','info_card','none',''),
+          W(5,'알림 위젯 임베드','widget_embed','none',''),
+        ]),
+
+        P(14,'HOME_PRODUCT','기획전 상품 섹션','event_banner','항상 표시',false,7,'활성','2026-04-05',[
+          W(1,'기획전 이벤트 배너','event_banner','navigate','/events/2'),
+          W(2,'기획전 상품 슬라이더','product_slider','navigate','/products?tag=special'),
+          W(3,'기획전 조건상품','cond_product','navigate','/products?tag=special'),
+          W(4,'기획전 쿠폰','coupon','event','issueSpecialCoupon'),
+          W(5,'기획전 HTML 안내','html_editor','none',''),
+        ]),
+
+        /* ───────────── HOME_CHART (홈 차트) ───────────── */
+        P(15,'HOME_CHART','주간 베스트 차트','chart_bar','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'주간 베스트 바차트','chart_bar','none',''),
+          W(2,'매출 라인차트','chart_line','none',''),
+          W(3,'베스트 정보카드','info_card','none',''),
+          W(4,'베스트 단품 상품','product','navigate','/detail/1'),
+          W(5,'차트 텍스트 안내','text_banner','none',''),
+        ]),
+
+        P(16,'HOME_CHART','월간 매출 트렌드','chart_line','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'월간 매출 라인차트','chart_line','none',''),
+          W(2,'카테고리별 바차트','chart_bar','none',''),
+          W(3,'매출 파이차트','chart_pie','none',''),
+          W(4,'매출 정보카드','info_card','none',''),
+          W(5,'트렌드 텍스트','text_banner','none',''),
+        ]),
+
+        P(17,'HOME_CHART','카테고리별 판매 분포','chart_pie','항상 표시',false,3,'활성','2026-03-10',[
+          W(1,'카테고리 파이차트','chart_pie','none',''),
+          W(2,'카테고리 바차트','chart_bar','none',''),
+          W(3,'카테고리 정보카드','info_card','none',''),
+          W(4,'카테고리 조건상품','cond_product','navigate','/products'),
+          W(5,'분석 HTML 안내','html_editor','none',''),
+        ]),
+
+        P(18,'HOME_CHART','브랜드 인기 순위','chart_bar','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'브랜드 순위 바차트','chart_bar','none',''),
+          W(2,'브랜드 정보카드','info_card','none',''),
+          W(3,'브랜드 상품 슬라이더','product_slider','navigate','/products?brand=1'),
+          W(4,'브랜드 이미지 배너','image_banner','navigate','/brand'),
+          W(5,'브랜드 텍스트','text_banner','none',''),
+        ]),
+
+        P(19,'HOME_CHART','연령별 구매 패턴','chart_pie','항상 표시',false,5,'활성','2026-03-20',[
+          W(1,'연령별 파이차트','chart_pie','none',''),
+          W(2,'구매 패턴 라인차트','chart_line','none',''),
+          W(3,'패턴 정보카드','info_card','none',''),
+          W(4,'패턴 텍스트','text_banner','none',''),
+          W(5,'분석 HTML','html_editor','none',''),
+        ]),
+
+        P(20,'HOME_CHART','실시간 방문자 현황','chart_line','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'방문자 라인차트','chart_line','none',''),
+          W(2,'방문 정보카드','info_card','none',''),
+          W(3,'방문 텍스트 안내','text_banner','none',''),
+          W(4,'위젯 임베드','widget_embed','none',''),
+          W(5,'분석 HTML','html_editor','none',''),
+        ]),
+
+        P(21,'HOME_CHART','상품 리뷰 분석 차트','chart_bar','로그인 필요',true,7,'비활성','2026-04-05',[
+          W(1,'리뷰 바차트','chart_bar','none',''),
+          W(2,'리뷰 파이차트','chart_pie','none',''),
+          W(3,'리뷰 정보카드','info_card','none',''),
+          W(4,'리뷰 조건상품','cond_product','navigate','/products?sort=review'),
+          W(5,'리뷰 텍스트','text_banner','none',''),
+        ]),
+
+        /* ───────────── HOME_EVENT (홈 이벤트) ───────────── */
+        P(22,'HOME_EVENT','봄 시즌 이벤트 배너','event_banner','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'봄맞이 이벤트 배너','event_banner','navigate','/events/1'),
+          W(2,'봄 이미지 배너','image_banner','navigate','/events/1'),
+          W(3,'봄 상품 슬라이더','product_slider','navigate','/products?season=spring'),
+          W(4,'봄 쿠폰 발급','coupon','event','issueSpringCoupon'),
+          W(5,'봄 이벤트 텍스트','text_banner','none',''),
+        ],{ dispStartDate:'2026-03-01', dispEndDate:'2026-05-31' }),
+
+        P(23,'HOME_EVENT','VIP 사은행사 배너','event_banner','로그인+VIP',true,2,'활성','2026-03-05',[
+          W(1,'VIP 사은 이벤트 배너','event_banner','navigate','/events/2'),
+          W(2,'VIP 사은 쿠폰','coupon','event','issueVipGiftCoupon'),
+          W(3,'VIP 적립금 배너','cache_banner','none',''),
+          W(4,'VIP 단품 상품','product','navigate','/detail/6'),
+          W(5,'VIP 혜택 정보카드','info_card','none',''),
+        ],{ authGrade:'VIP' }),
+
+        P(24,'HOME_EVENT','리뷰 작성 이벤트','event_banner','로그인 필요',true,3,'활성','2026-03-10',[
+          W(1,'리뷰 이벤트 배너','event_banner','navigate','/events'),
+          W(2,'리뷰 참여 HTML','html_editor','none',''),
+          W(3,'리뷰 혜택 정보카드','info_card','none',''),
+          W(4,'리뷰 텍스트 안내','text_banner','none',''),
+          W(5,'리뷰 상품 슬라이더','product_slider','navigate','/products'),
+        ]),
+
+        P(25,'HOME_EVENT','럭키드로우 이벤트','event_banner','로그인 필요',true,4,'활성','2026-03-15',[
+          W(1,'럭키드로우 배너','event_banner','navigate','/events'),
+          W(2,'럭키드로우 이미지','image_banner','navigate','/events'),
+          W(3,'이벤트 HTML 안내','html_editor','none',''),
+          W(4,'럭키드로우 텍스트','text_banner','none',''),
+          W(5,'이벤트 팝업','popup','navigate','/events'),
+        ]),
+
+        P(26,'HOME_EVENT','친구추천 이벤트','event_banner','로그인 필요',true,5,'활성','2026-03-20',[
+          W(1,'친구추천 이벤트 배너','event_banner','navigate','/events'),
+          W(2,'추천 HTML 안내','html_editor','none',''),
+          W(3,'추천 쿠폰 발급','coupon','event','issueReferralCoupon'),
+          W(4,'추천 혜택 정보카드','info_card','none',''),
+          W(5,'추천 텍스트','text_banner','none',''),
+        ]),
+
+        P(27,'HOME_EVENT','생일 축하 이벤트','event_banner','로그인 필요',true,6,'활성','2026-04-01',[
+          W(1,'생일 이벤트 배너','event_banner','navigate','/events'),
+          W(2,'생일 쿠폰','coupon','event','issueBirthCoupon'),
+          W(3,'생일 적립금','cache_banner','none',''),
+          W(4,'생일 HTML 안내','html_editor','none',''),
+          W(5,'생일 정보카드','info_card','none',''),
+        ]),
+
+        P(28,'HOME_EVENT','시즌오프 이벤트 배너','event_banner','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'시즌오프 이벤트 배너','event_banner','navigate','/events'),
+          W(2,'시즌오프 슬라이더','product_slider','navigate','/products?tag=seasonoff'),
+          W(3,'시즌오프 쿠폰','coupon','event','issueSeasonOffCoupon'),
+          W(4,'시즌오프 이미지','image_banner','navigate','/sale'),
+          W(5,'시즌오프 텍스트','text_banner','none',''),
+        ],{ dispStartDate:'2026-01-01', dispEndDate:'2026-02-28' }),
+
+        /* ───────────── SIDEBAR_TOP (사이드바 상단) ───────────── */
+        P(29,'SIDEBAR_TOP','VIP 혜택 안내 위젯','info_card','로그인+VIP',true,1,'활성','2026-03-01',[
+          W(1,'VIP 혜택 정보카드','info_card','none',''),
+          W(2,'VIP 적립금 배너','cache_banner','none',''),
+          W(3,'VIP 쿠폰','coupon','event','issueVipCoupon'),
+          W(4,'VIP 이미지 배너','image_banner','navigate','/vip'),
+          W(5,'VIP 텍스트 안내','text_banner','none',''),
+        ],{ authGrade:'VIP' }),
+
+        P(30,'SIDEBAR_TOP','오늘의 추천 상품 위젯','product','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'오늘의 단품 추천','product','navigate','/detail/1'),
+          W(2,'추천 조건상품','cond_product','navigate','/products?sort=recommend'),
+          W(3,'추천 텍스트','text_banner','none',''),
+          W(4,'추천 이미지','image_banner','navigate','/products'),
+          W(5,'추천 쿠폰','coupon','event','issueRecommendCoupon'),
+        ]),
+
+        P(31,'SIDEBAR_TOP','쿠폰 발급 위젯','coupon','로그인 필요',true,3,'활성','2026-03-10',[
+          W(1,'쿠폰 발급 위젯','coupon','event','issueSidebarCoupon'),
+          W(2,'쿠폰 텍스트 안내','text_banner','none',''),
+          W(3,'쿠폰 HTML','html_editor','none',''),
+          W(4,'쿠폰 정보카드','info_card','none',''),
+          W(5,'적립금 배너','cache_banner','none',''),
+        ]),
+
+        P(32,'SIDEBAR_TOP','이벤트 안내 배너','event_banner','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'사이드바 이벤트 배너','event_banner','navigate','/events'),
+          W(2,'이벤트 이미지','image_banner','navigate','/events'),
+          W(3,'이벤트 텍스트','text_banner','none',''),
+          W(4,'이벤트 쿠폰','coupon','event','issueEventCoupon'),
+          W(5,'이벤트 HTML','html_editor','none',''),
+        ]),
+
+        P(33,'SIDEBAR_TOP','파일 다운로드 안내','file','항상 표시',false,5,'활성','2026-03-20',[
+          W(1,'사이즈가이드 파일','file','navigate','/files/size-guide.pdf'),
+          W(2,'파일 목록','file_list','navigate','/files'),
+          W(3,'다운로드 정보카드','info_card','none',''),
+          W(4,'안내 텍스트','text_banner','none',''),
+          W(5,'안내 HTML','html_editor','none',''),
+        ]),
+
+        P(34,'SIDEBAR_TOP','실시간 인기 상품 차트','chart_bar','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'인기 바차트','chart_bar','none',''),
+          W(2,'인기 조건상품','cond_product','navigate','/products?sort=popular'),
+          W(3,'인기 단품','product','navigate','/detail/2'),
+          W(4,'인기 텍스트','text_banner','none',''),
+          W(5,'인기 정보카드','info_card','none',''),
+        ]),
+
+        P(35,'SIDEBAR_TOP','위젯 임베드 섹션','widget_embed','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'외부 위젯 임베드','widget_embed','none',''),
+          W(2,'임베드 HTML','html_editor','none',''),
+          W(3,'임베드 정보카드','info_card','none',''),
+          W(4,'임베드 텍스트','text_banner','none',''),
+          W(5,'임베드 이미지','image_banner','none',''),
+        ]),
+
+        /* ───────────── PRODUCT_TOP (상품 상단) ───────────── */
+        P(36,'PRODUCT_TOP','오늘의 할인 쿠폰 위젯','text_banner','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'오늘의 할인 텍스트','text_banner','none',''),
+          W(2,'즉시 할인 쿠폰','coupon','event','issueSaleCoupon'),
+          W(3,'할인 조건상품','cond_product','navigate','/products?tag=sale'),
+          W(4,'할인 정보카드','info_card','none',''),
+          W(5,'적립금 배너','cache_banner','none',''),
+        ]),
+
+        P(37,'PRODUCT_TOP','카테고리 추천 배너','image_banner','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'카테고리 이미지 배너','image_banner','navigate','/products'),
+          W(2,'카테고리 조건상품','cond_product','navigate','/products'),
+          W(3,'카테고리 슬라이더','product_slider','navigate','/products'),
+          W(4,'카테고리 텍스트','text_banner','none',''),
+          W(5,'카테고리 이벤트','event_banner','navigate','/events'),
+        ]),
+
+        P(38,'PRODUCT_TOP','브랜드 스토리 섹션','html_editor','항상 표시',false,3,'활성','2026-03-10',[
+          W(1,'브랜드 HTML 스토리','html_editor','none',''),
+          W(2,'브랜드 이미지 배너','image_banner','navigate','/brand'),
+          W(3,'브랜드 상품 슬라이더','product_slider','navigate','/products?brand=1'),
+          W(4,'브랜드 정보카드','info_card','none',''),
+          W(5,'브랜드 텍스트','text_banner','none',''),
+        ]),
+
+        P(39,'PRODUCT_TOP','리뷰 하이라이트','chart_bar','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'리뷰 바차트','chart_bar','none',''),
+          W(2,'리뷰 정보카드','info_card','none',''),
+          W(3,'리뷰 텍스트','text_banner','none',''),
+          W(4,'리뷰 조건상품','cond_product','navigate','/products?sort=review'),
+          W(5,'리뷰 HTML','html_editor','none',''),
+        ]),
+
+        P(40,'PRODUCT_TOP','쿠폰·혜택 안내 위젯','coupon','로그인 필요',true,5,'활성','2026-03-20',[
+          W(1,'로그인 쿠폰','coupon','event','issueLoginCoupon'),
+          W(2,'로그인 적립금','cache_banner','none',''),
+          W(3,'혜택 정보카드','info_card','none',''),
+          W(4,'혜택 텍스트','text_banner','none',''),
+          W(5,'혜택 이벤트 배너','event_banner','navigate','/events'),
+        ]),
+
+        P(41,'PRODUCT_TOP','관련 상품 추천 슬라이더','product_slider','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'관련상품 슬라이더','product_slider','navigate','/products'),
+          W(2,'함께구매 조건상품','cond_product','navigate','/products'),
+          W(3,'추천 단품','product','navigate','/detail/3'),
+          W(4,'추천 이미지 배너','image_banner','navigate','/products'),
+          W(5,'추천 텍스트','text_banner','none',''),
+        ]),
+
+        P(42,'PRODUCT_TOP','프로모션 팝업 위젯','popup','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'프로모션 팝업','popup','navigate','/sale'),
+          W(2,'프로모션 쿠폰','coupon','event','issuePromoPopupCoupon'),
+          W(3,'프로모션 이미지','image_banner','navigate','/sale'),
+          W(4,'프로모션 텍스트','text_banner','none',''),
+          W(5,'프로모션 이벤트','event_banner','navigate','/events'),
+        ]),
+
+        /* ───────────── MY_PAGE (마이페이지) ───────────── */
+        P(43,'MY_PAGE','등급별 혜택 안내 위젯','info_card','로그인 필요',true,1,'활성','2026-03-01',[
+          W(1,'등급 혜택 정보카드','info_card','none',''),
+          W(2,'적립금 현황 배너','cache_banner','none',''),
+          W(3,'등급업 쿠폰','coupon','event','issueGradeCoupon'),
+          W(4,'등급 바차트','chart_bar','none',''),
+          W(5,'등급 텍스트 안내','text_banner','none',''),
+        ]),
+
+        P(44,'MY_PAGE','적립금 현황 위젯','cache_banner','로그인 필요',true,2,'활성','2026-03-05',[
+          W(1,'적립금 배너','cache_banner','none',''),
+          W(2,'적립금 정보카드','info_card','none',''),
+          W(3,'적립금 라인차트','chart_line','none',''),
+          W(4,'적립금 사용 텍스트','text_banner','none',''),
+          W(5,'적립금 쿠폰','coupon','event','issueCacheRewardCoupon'),
+        ]),
+
+        P(45,'MY_PAGE','주문 현황 요약 위젯','info_card','로그인 필요',true,3,'활성','2026-03-10',[
+          W(1,'주문 현황 정보카드','info_card','none',''),
+          W(2,'주문 바차트','chart_bar','none',''),
+          W(3,'주문 텍스트','text_banner','none',''),
+          W(4,'재구매 조건상품','cond_product','navigate','/products'),
+          W(5,'주문 HTML 안내','html_editor','none',''),
+        ]),
+
+        P(46,'MY_PAGE','쿠폰 보관함 위젯','coupon','로그인 필요',true,4,'활성','2026-03-15',[
+          W(1,'보유 쿠폰 위젯','coupon','navigate','/my/coupons'),
+          W(2,'쿠폰 정보카드','info_card','none',''),
+          W(3,'쿠폰 텍스트 안내','text_banner','none',''),
+          W(4,'적립금 배너','cache_banner','none',''),
+          W(5,'쿠폰 이벤트','event_banner','navigate','/events'),
+        ]),
+
+        P(47,'MY_PAGE','VIP 전용 혜택 위젯','info_card','로그인+VIP',true,5,'활성','2026-03-20',[
+          W(1,'VIP 혜택 정보카드','info_card','none',''),
+          W(2,'VIP 쿠폰 발급','coupon','event','issueMyVipCoupon'),
+          W(3,'VIP 적립금 배너','cache_banner','none',''),
+          W(4,'VIP 이벤트 배너','event_banner','navigate','/events/2'),
+          W(5,'VIP 이미지 배너','image_banner','navigate','/vip'),
+        ],{ authGrade:'VIP' }),
+
+        P(48,'MY_PAGE','최근 본 상품 위젯','cond_product','로그인 필요',true,6,'활성','2026-04-01',[
+          W(1,'최근 본 조건상품','cond_product','navigate','/products'),
+          W(2,'최근 본 슬라이더','product_slider','navigate','/products'),
+          W(3,'최근 단품','product','navigate','/detail/1'),
+          W(4,'추천 텍스트','text_banner','none',''),
+          W(5,'추천 정보카드','info_card','none',''),
+        ]),
+
+        P(49,'MY_PAGE','적립금 내역 차트 위젯','chart_line','로그인 필요',true,7,'활성','2026-04-05',[
+          W(1,'적립금 라인차트','chart_line','none',''),
+          W(2,'적립금 바차트','chart_bar','none',''),
+          W(3,'적립금 정보카드','info_card','none',''),
+          W(4,'적립금 텍스트','text_banner','none',''),
+          W(5,'적립금 현황 배너','cache_banner','none',''),
+        ]),
+
+        /* ───────────── SIDEBAR_MID (사이드바 중단) ───────────── */
+        P(50,'SIDEBAR_MID','신상품 미니 슬라이더','product_slider','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'신상품 미니 슬라이더','product_slider','navigate','/products?isNew=Y'),
+          W(2,'신상품 조건상품','cond_product','navigate','/products?isNew=Y'),
+          W(3,'신상품 단품 추천','product','navigate','/detail/4'),
+          W(4,'신상품 텍스트','text_banner','none',''),
+          W(5,'신상품 이벤트','event_banner','navigate','/events/1'),
+        ]),
+
+        P(51,'SIDEBAR_MID','이벤트 퀵 배너','event_banner','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'이벤트 배너','event_banner','navigate','/events'),
+          W(2,'이벤트 이미지','image_banner','navigate','/events'),
+          W(3,'이벤트 텍스트','text_banner','none',''),
+          W(4,'이벤트 쿠폰','coupon','event','issueEventMidCoupon'),
+          W(5,'이벤트 정보카드','info_card','none',''),
+        ]),
+
+        P(52,'SIDEBAR_MID','적립금 퀵 배너','cache_banner','로그인 필요',true,3,'활성','2026-03-10',[
+          W(1,'적립금 잔액 배너','cache_banner','none',''),
+          W(2,'적립금 라인차트','chart_line','none',''),
+          W(3,'적립금 정보카드','info_card','none',''),
+          W(4,'적립금 텍스트','text_banner','none',''),
+          W(5,'적립금 쿠폰','coupon','event','issueCacheMidCoupon'),
+        ]),
+
+        P(53,'SIDEBAR_MID','브랜드 미니 배너','image_banner','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'브랜드 이미지 배너','image_banner','navigate','/brand'),
+          W(2,'브랜드 상품 슬라이더','product_slider','navigate','/products?brand=1'),
+          W(3,'브랜드 정보카드','info_card','none',''),
+          W(4,'브랜드 텍스트','text_banner','none',''),
+          W(5,'브랜드 파이차트','chart_pie','none',''),
+        ]),
+
+        P(54,'SIDEBAR_MID','리뷰 요약 위젯','chart_bar','항상 표시',false,5,'활성','2026-03-20',[
+          W(1,'리뷰 바차트','chart_bar','none',''),
+          W(2,'리뷰 정보카드','info_card','none',''),
+          W(3,'리뷰 텍스트','text_banner','none',''),
+          W(4,'리뷰 상품 슬라이더','product_slider','navigate','/products?sort=review'),
+          W(5,'리뷰 HTML 요약','html_editor','none',''),
+        ]),
+
+        P(55,'SIDEBAR_MID','파일·다운로드 위젯','file_list','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'파일 목록','file_list','navigate','/files'),
+          W(2,'사이즈가이드 파일','file','navigate','/files/size-guide.pdf'),
+          W(3,'파일 정보카드','info_card','none',''),
+          W(4,'파일 텍스트','text_banner','none',''),
+          W(5,'파일 HTML 안내','html_editor','none',''),
+        ]),
+
+        P(56,'SIDEBAR_MID','외부 위젯 임베드 섹션','widget_embed','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'날씨 위젯 임베드','widget_embed','none',''),
+          W(2,'환율 위젯 임베드','widget_embed','none',''),
+          W(3,'위젯 정보카드','info_card','none',''),
+          W(4,'위젯 텍스트','text_banner','none',''),
+          W(5,'위젯 HTML','html_editor','none',''),
+        ]),
+
+        /* ───────────── SIDEBAR_BOT (사이드바 하단) ───────────── */
+        P(57,'SIDEBAR_BOT','SNS 팔로우 위젯','html_editor','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'SNS 링크 HTML','html_editor','none',''),
+          W(2,'SNS 이미지 배너','image_banner','navigate','https://instagram.com'),
+          W(3,'SNS 텍스트','text_banner','none',''),
+          W(4,'SNS 정보카드','info_card','none',''),
+          W(5,'SNS 위젯 임베드','widget_embed','none',''),
+        ]),
+
+        P(58,'SIDEBAR_BOT','고객센터 안내 위젯','info_card','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'고객센터 정보카드','info_card','none',''),
+          W(2,'고객센터 텍스트','text_banner','none',''),
+          W(3,'고객센터 HTML','html_editor','none',''),
+          W(4,'카카오채널 위젯','widget_embed','none',''),
+          W(5,'고객센터 이미지','image_banner','navigate','/contact'),
+        ]),
+
+        P(59,'SIDEBAR_BOT','배송정책 안내 위젯','text_banner','항상 표시',false,3,'활성','2026-03-10',[
+          W(1,'배송정책 텍스트','text_banner','none',''),
+          W(2,'배송정책 HTML','html_editor','none',''),
+          W(3,'배송 정보카드','info_card','none',''),
+          W(4,'배송 파일 가이드','file','navigate','/files/dliv-guide.pdf'),
+          W(5,'반품정책 텍스트','text_banner','none',''),
+        ]),
+
+        P(60,'SIDEBAR_BOT','베스트 리뷰 위젯','chart_pie','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'리뷰 파이차트','chart_pie','none',''),
+          W(2,'리뷰 정보카드','info_card','none',''),
+          W(3,'리뷰 바차트','chart_bar','none',''),
+          W(4,'리뷰 텍스트','text_banner','none',''),
+          W(5,'리뷰 상품 슬라이더','product_slider','navigate','/products?sort=review'),
+        ]),
+
+        P(61,'SIDEBAR_BOT','팝업 광고 위젯','popup','항상 표시',false,5,'활성','2026-03-20',[
+          W(1,'사이드바 팝업','popup','navigate','/sale'),
+          W(2,'팝업 이미지','image_banner','navigate','/sale'),
+          W(3,'팝업 텍스트','text_banner','none',''),
+          W(4,'팝업 쿠폰','coupon','event','issueSideBotPopupCoupon'),
+          W(5,'팝업 HTML','html_editor','none',''),
+        ]),
+
+        P(62,'SIDEBAR_BOT','이달의 특가 상품','cond_product','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'이달의 특가 조건상품','cond_product','navigate','/products?tag=monthly'),
+          W(2,'특가 슬라이더','product_slider','navigate','/products?tag=monthly'),
+          W(3,'특가 텍스트','text_banner','none',''),
+          W(4,'특가 쿠폰','coupon','event','issueMonthlyBotCoupon'),
+          W(5,'특가 이미지 배너','image_banner','navigate','/sale'),
+        ]),
+
+        P(63,'SIDEBAR_BOT','뉴스레터 구독 위젯','html_editor','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'구독 HTML 폼','html_editor','none',''),
+          W(2,'구독 텍스트','text_banner','none',''),
+          W(3,'구독 정보카드','info_card','none',''),
+          W(4,'구독 이미지','image_banner','none',''),
+          W(5,'구독 위젯','widget_embed','none',''),
+        ]),
+
+        /* ───────────── PRODUCT_BTM (상품 하단) ───────────── */
+        P(64,'PRODUCT_BTM','함께 구매한 상품 섹션','product_slider','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'함께구매 슬라이더','product_slider','navigate','/products'),
+          W(2,'함께구매 조건상품','cond_product','navigate','/products'),
+          W(3,'함께구매 단품','product','navigate','/detail/5'),
+          W(4,'함께구매 텍스트','text_banner','none',''),
+          W(5,'함께구매 이미지','image_banner','navigate','/products'),
+        ]),
+
+        P(65,'PRODUCT_BTM','최근 본 상품 섹션','cond_product','로그인 필요',true,2,'활성','2026-03-05',[
+          W(1,'최근 본 조건상품','cond_product','navigate','/products'),
+          W(2,'최근 본 슬라이더','product_slider','navigate','/products'),
+          W(3,'최근 본 정보카드','info_card','none',''),
+          W(4,'최근 본 텍스트','text_banner','none',''),
+          W(5,'최근 본 이벤트','event_banner','navigate','/events'),
+        ]),
+
+        P(66,'PRODUCT_BTM','브랜드 추천 상품 섹션','product_slider','항상 표시',false,3,'활성','2026-03-10',[
+          W(1,'브랜드 상품 슬라이더','product_slider','navigate','/products?brand=1'),
+          W(2,'브랜드 이미지 배너','image_banner','navigate','/brand'),
+          W(3,'브랜드 조건상품','cond_product','navigate','/products?brand=1'),
+          W(4,'브랜드 정보카드','info_card','none',''),
+          W(5,'브랜드 텍스트','text_banner','none',''),
+        ]),
+
+        P(67,'PRODUCT_BTM','상품 리뷰 차트 섹션','chart_bar','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'리뷰 바차트','chart_bar','none',''),
+          W(2,'리뷰 파이차트','chart_pie','none',''),
+          W(3,'리뷰 정보카드','info_card','none',''),
+          W(4,'리뷰 텍스트','text_banner','none',''),
+          W(5,'리뷰 HTML 요약','html_editor','none',''),
+        ]),
+
+        P(68,'PRODUCT_BTM','하단 이벤트 배너 섹션','event_banner','항상 표시',false,5,'활성','2026-03-20',[
+          W(1,'하단 이벤트 배너','event_banner','navigate','/events'),
+          W(2,'하단 이미지 배너','image_banner','navigate','/events'),
+          W(3,'하단 쿠폰 발급','coupon','event','issueBtmEventCoupon'),
+          W(4,'하단 텍스트 안내','text_banner','none',''),
+          W(5,'하단 HTML 안내','html_editor','none',''),
+        ]),
+
+        P(69,'PRODUCT_BTM','Q&A·고객문의 위젯','html_editor','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'Q&A HTML 위젯','html_editor','none',''),
+          W(2,'문의 정보카드','info_card','none',''),
+          W(3,'문의 텍스트','text_banner','none',''),
+          W(4,'카카오채널 위젯','widget_embed','none',''),
+          W(5,'문의 이미지 배너','image_banner','navigate','/contact'),
+        ]),
+
+        P(70,'PRODUCT_BTM','상품 비교 팝업 위젯','popup','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'비교 팝업','popup','none',''),
+          W(2,'비교 조건상품','cond_product','navigate','/products'),
+          W(3,'비교 정보카드','info_card','none',''),
+          W(4,'비교 텍스트','text_banner','none',''),
+          W(5,'비교 HTML','html_editor','none',''),
+        ]),
+
+        /* ───────────── FOOTER (푸터) ───────────── */
+        P(71,'FOOTER','푸터 회사 소개 위젯','html_editor','항상 표시',false,1,'활성','2026-03-01',[
+          W(1,'회사소개 HTML','html_editor','none',''),
+          W(2,'회사소개 텍스트','text_banner','none',''),
+          W(3,'회사소개 이미지','image_banner','navigate','/about'),
+          W(4,'로고 이미지 배너','image_banner','navigate','/'),
+          W(5,'대표자 정보카드','info_card','none',''),
+        ]),
+
+        P(72,'FOOTER','푸터 SNS 링크 위젯','html_editor','항상 표시',false,2,'활성','2026-03-05',[
+          W(1,'SNS 링크 HTML','html_editor','none',''),
+          W(2,'인스타그램 위젯','widget_embed','none',''),
+          W(3,'유튜브 위젯','widget_embed','none',''),
+          W(4,'SNS 이미지 배너','image_banner','none',''),
+          W(5,'SNS 텍스트','text_banner','none',''),
+        ]),
+
+        P(73,'FOOTER','푸터 고객센터 정보 위젯','info_card','항상 표시',false,3,'활성','2026-03-10',[
+          W(1,'고객센터 정보카드','info_card','none',''),
+          W(2,'운영시간 텍스트','text_banner','none',''),
+          W(3,'고객센터 HTML','html_editor','none',''),
+          W(4,'카카오채널 위젯','widget_embed','none',''),
+          W(5,'전화 이미지 배너','image_banner','navigate','/contact'),
+        ]),
+
+        P(74,'FOOTER','푸터 이용약관 링크 위젯','html_editor','항상 표시',false,4,'활성','2026-03-15',[
+          W(1,'약관 링크 HTML','html_editor','none',''),
+          W(2,'개인정보처리방침 텍스트','text_banner','none',''),
+          W(3,'이용약관 파일','file','navigate','/files/terms.pdf'),
+          W(4,'약관 정보카드','info_card','none',''),
+          W(5,'파일 목록','file_list','navigate','/files'),
+        ]),
+
+        P(75,'FOOTER','푸터 배송·반품 안내 위젯','text_banner','항상 표시',false,5,'활성','2026-03-20',[
+          W(1,'배송안내 텍스트','text_banner','none',''),
+          W(2,'반품안내 텍스트','text_banner','none',''),
+          W(3,'배송안내 HTML','html_editor','none',''),
+          W(4,'배송안내 파일','file','navigate','/files/dliv-guide.pdf'),
+          W(5,'배송 정보카드','info_card','none',''),
+        ]),
+
+        P(76,'FOOTER','푸터 결제수단 안내 위젯','html_editor','항상 표시',false,6,'활성','2026-04-01',[
+          W(1,'결제수단 HTML','html_editor','none',''),
+          W(2,'결제수단 이미지','image_banner','none',''),
+          W(3,'결제 정보카드','info_card','none',''),
+          W(4,'결제 텍스트','text_banner','none',''),
+          W(5,'결제 위젯 임베드','widget_embed','none',''),
+        ]),
+
+        P(77,'FOOTER','푸터 뉴스레터·앱 다운로드 위젯','html_editor','항상 표시',false,7,'비활성','2026-04-05',[
+          W(1,'뉴스레터 구독 HTML','html_editor','none',''),
+          W(2,'앱 다운로드 이미지','image_banner','navigate','/app'),
+          W(3,'앱 텍스트 안내','text_banner','none',''),
+          W(4,'앱 정보카드','info_card','none',''),
+          W(5,'앱 위젯 임베드','widget_embed','none',''),
+        ]),
+      ];
+    })(),
 
     events: [
       { eventId: 1, title: '봄맞이 신상품 론칭 이벤트', content1: '<p>봄을 맞아 새로운 컬렉션을 소개합니다!</p>', content2: '<p>특별 할인 혜택을 누려보세요.</p>', content3: '', content4: '', content5: '', targetProducts: [1, 2, 3], authRequired: false, startDate: '2026-03-01', endDate: '2026-05-31', status: '진행중', regDate: '2026-02-25' },

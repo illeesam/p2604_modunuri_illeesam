@@ -9,7 +9,7 @@ window.DeptMng = {
     const searchKw    = ref('');
     const searchType  = ref('');
     const searchUseYn = ref('');
-    const typeOptions = computed(() => [...new Set(props.adminData.depts.map(d => d.deptType))].sort());
+    const typeOptions = computed(() => [...new Set(props.adminData.depts.map(d => d.deptTypeCd))].sort());
     const applied = Vue.reactive({ kw: '', type: '', useYn: '' });
 
     /* ── CRUD 그리드 ── */
@@ -17,7 +17,7 @@ window.DeptMng = {
     let   _tempId    = -1;
     const focusedIdx = ref(null);
 
-    const EDIT_FIELDS = ['deptCode', 'deptName', 'parentId', 'deptType', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['deptCode', 'deptName', 'parentId', 'deptTypeCd', 'sortOrd', 'useYn', 'remark'];
     const DEPT_TYPES  = ['경영', '운영', '기술', '마케팅', 'CS', '물류', '재무', '인사', '법무', '기타'];
 
     /* ── 페이징 ── */
@@ -51,7 +51,7 @@ window.DeptMng = {
     const makeRow = (d) => ({
       ...d, _depth: d._depth || 0, _row_status: 'N', _row_check: false,
       _orig: { deptCode: d.deptCode, deptName: d.deptName, parentId: d.parentId,
-               deptType: d.deptType, sortOrd: d.sortOrd, useYn: d.useYn, remark: d.remark },
+               deptTypeCd: d.deptTypeCd, sortOrd: d.sortOrd, useYn: d.useYn, remark: d.remark },
     });
 
     const loadGrid = () => {
@@ -59,7 +59,7 @@ window.DeptMng = {
       const filtered = props.adminData.depts.filter(d => {
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !d.deptCode.toLowerCase().includes(kw) && !d.deptName.toLowerCase().includes(kw)) return false;
-        if (applied.type  && d.deptType !== applied.type)  return false;
+        if (applied.type  && d.deptTypeCd !== applied.type)  return false;
         if (applied.useYn && d.useYn    !== applied.useYn) return false;
         return true;
       });
@@ -92,7 +92,7 @@ window.DeptMng = {
       const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
         deptId: _tempId--, deptCode: '', deptName: '', parentId: ref ? ref.parentId : null,
-        deptType: ref ? ref.deptType : '운영',
+        deptTypeCd: ref ? ref.deptTypeCd : '운영',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         useYn: 'Y', remark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
@@ -159,9 +159,9 @@ window.DeptMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => { const i = props.adminData.depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) props.adminData.depts.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(props.adminData.depts[i], { deptCode: r.deptCode, deptName: r.deptName, parentId: r.parentId || null, deptType: r.deptType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
+      uRows.forEach(r => { const i = props.adminData.depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(props.adminData.depts[i], { deptCode: r.deptCode, deptName: r.deptName, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
       let nextId = Math.max(...props.adminData.depts.map(d => d.deptId), 0);
-      iRows.forEach(r => { props.adminData.depts.push({ deptId: ++nextId, deptCode: r.deptCode, deptName: r.deptName, parentId: r.parentId || null, deptType: r.deptType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.depts.push({ deptId: ++nextId, deptCode: r.deptCode, deptName: r.deptName, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -195,7 +195,7 @@ window.DeptMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptName'},{label:'상위ID',key:'parentId'},{label:'유형',key:'deptType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptName'},{label:'상위ID',key:'parentId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
       '부서목록.csv'
     );
 
@@ -300,7 +300,7 @@ window.DeptMng = {
           </td>
 
           <td>
-            <select class="grid-select" v-model="row.deptType" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+            <select class="grid-select" v-model="row.deptTypeCd" :disabled="row._row_status==='D'" @change="onCellChange(row)">
               <option v-for="t in DEPT_TYPES" :key="t">{{ t }}</option>
             </select>
           </td>

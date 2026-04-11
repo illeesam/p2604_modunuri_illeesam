@@ -4,6 +4,7 @@
 -- ============================================================
 CREATE TABLE ec_notice (
     notice_id       VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     title           VARCHAR(200)    NOT NULL,
     notice_type_cd  VARCHAR(30),                            -- 코드: NOTICE_TYPE
     is_fixed        CHAR(1)         DEFAULT 'N',            -- 상단고정 Y/N
@@ -15,12 +16,14 @@ CREATE TABLE ec_notice (
     view_count      INTEGER         DEFAULT 0,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     PRIMARY KEY (notice_id)
 );
 
 COMMENT ON TABLE  ec_notice               IS '공지사항';
 COMMENT ON COLUMN ec_notice.notice_id     IS '공지ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN ec_notice.site_id       IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_notice.title         IS '제목';
 COMMENT ON COLUMN ec_notice.notice_type_cd IS '공지유형 (코드: NOTICE_TYPE)';
 COMMENT ON COLUMN ec_notice.is_fixed      IS '상단고정 Y/N';
@@ -32,4 +35,5 @@ COMMENT ON COLUMN ec_notice.status        IS '상태 (ACTIVE/INACTIVE)';
 COMMENT ON COLUMN ec_notice.view_count    IS '조회수';
 COMMENT ON COLUMN ec_notice.reg_by        IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_notice.reg_date      IS '등록일';
+COMMENT ON COLUMN ec_notice.upd_by        IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_notice.upd_date      IS '수정일';

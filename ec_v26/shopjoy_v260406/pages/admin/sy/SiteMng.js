@@ -39,7 +39,7 @@ window.SiteMng = {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !s.siteName.toLowerCase().includes(kw) && !s.domain.toLowerCase().includes(kw) && !s.siteCode.toLowerCase().includes(kw)) return false;
       if (applied.type   && s.siteType  !== applied.type)   return false;
-      if (applied.status && s.status    !== applied.status)  return false;
+      if (applied.status && s.statusCd    !== applied.status)  return false;
       const _d = String(s.regDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -101,7 +101,7 @@ window.SiteMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteName'},{label:'도메인',key:'domain'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteName'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
 
     return {
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
@@ -161,7 +161,7 @@ window.SiteMng = {
           <td style="font-size:12px;">{{ s.phone }}</td>
           <td style="font-size:12px;">{{ s.ceo }}</td>
           <td style="font-size:12px;">{{ s.regDate }}</td>
-          <td><span class="badge" :class="statusBadge(s.status)">{{ s.status }}</span></td>
+          <td><span class="badge" :class="statusBadge(s.statusCd)">{{ s.statusCd }}</span></td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(s.siteId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(s)">삭제</button>

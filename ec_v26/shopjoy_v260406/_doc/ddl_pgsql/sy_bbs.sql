@@ -4,6 +4,7 @@
 -- ============================================================
 CREATE TABLE sy_bbs (
     bbs_id          VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     bbm_id          VARCHAR(16)     NOT NULL,
     parent_bbs_id   VARCHAR(16),                            -- 답글 시 부모글 ID
     member_id       VARCHAR(16),
@@ -16,13 +17,16 @@ CREATE TABLE sy_bbs (
     comment_count   INTEGER         DEFAULT 0,
     is_fixed        CHAR(1)         DEFAULT 'N',
     status          VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/DELETED/HIDDEN
+    reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     PRIMARY KEY (bbs_id)
 );
 
 COMMENT ON TABLE  sy_bbs                   IS '게시물';
 COMMENT ON COLUMN sy_bbs.bbs_id            IS '게시물ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_bbs.site_id           IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_bbs.bbm_id            IS '게시판ID';
 COMMENT ON COLUMN sy_bbs.parent_bbs_id     IS '부모게시물ID (답글)';
 COMMENT ON COLUMN sy_bbs.member_id         IS '작성자 회원ID';
@@ -35,5 +39,7 @@ COMMENT ON COLUMN sy_bbs.like_count        IS '좋아요수';
 COMMENT ON COLUMN sy_bbs.comment_count     IS '댓글수';
 COMMENT ON COLUMN sy_bbs.is_fixed          IS '상단고정 Y/N';
 COMMENT ON COLUMN sy_bbs.status            IS '상태 (ACTIVE/DELETED/HIDDEN)';
+COMMENT ON COLUMN sy_bbs.reg_by            IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_bbs.reg_date          IS '등록일';
+COMMENT ON COLUMN sy_bbs.upd_by            IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_bbs.upd_date          IS '수정일';

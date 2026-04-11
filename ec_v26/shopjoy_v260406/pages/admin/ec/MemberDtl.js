@@ -6,7 +6,7 @@ window.MemberDtl = {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
-      email: '', name: '', phone: '', grade: '일반', status: '활성',
+      email: '', name: '', phone: '', gradeCd: '일반', statusCd: '활성',
       joinDate: '', lastLogin: '', orderCount: 0, totalPurchase: 0, memo: '',
     });
     const errors = reactive({});
@@ -99,7 +99,7 @@ window.MemberDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">등급</label>
-        <select class="form-control" v-model="form.grade" :disabled="viewMode">
+        <select class="form-control" v-model="form.gradeCd" :disabled="viewMode">
           <option>일반</option><option>우수</option><option>VIP</option>
         </select>
       </div>
@@ -107,7 +107,7 @@ window.MemberDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option>활성</option><option>정지</option>
         </select>
       </div>

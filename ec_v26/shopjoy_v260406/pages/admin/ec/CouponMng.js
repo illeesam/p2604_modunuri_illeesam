@@ -37,7 +37,7 @@ window.CouponMng = {
     const filtered = computed(() => props.adminData.coupons.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.name.toLowerCase().includes(kw) && !c.code.toLowerCase().includes(kw)) return false;
-      if (applied.status && c.status !== applied.status) return false;
+      if (applied.status && c.statusCd !== applied.status) return false;
       const _d = String(c.expiry || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -52,7 +52,7 @@ window.CouponMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const discountLabel = c => c.discountType === 'rate' ? c.discountValue + '%' : c.discountType === 'shipping' ? '무료배송' : c.discountValue.toLocaleString() + '원';
+    const discountLabel = c => c.discountTypeCd === 'rate' ? c.discountValue + '%' : c.discountTypeCd === 'shipping' ? '무료배송' : c.discountValue.toLocaleString() + '원';
     const statusBadge = s => ({ '활성': 'badge-green', '만료': 'badge-red', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = () => {
       Object.assign(applied, {
@@ -91,7 +91,7 @@ window.CouponMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponName'},{label:'유형',key:'couponType'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'status'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponName'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, discountLabel, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -130,7 +130,7 @@ window.CouponMng = {
           <td>{{ c.issueTo }}</td>
           <td>{{ c.issueCount }} / {{ c.useCount }}</td>
           <td>{{ c.expiry }}</td>
-          <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
+          <td><span class="badge" :class="statusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.couponId)">수정</button>

@@ -37,7 +37,7 @@ window.OrderMng = {
     const filtered = computed(() => props.adminData.orders.filter(o => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userName.toLowerCase().includes(kw) && !o.productName.toLowerCase().includes(kw)) return false;
-      if (applied.status && o.status !== applied.status) return false;
+      if (applied.status && o.statusCd !== applied.status) return false;
       const _d = String(o.orderDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -93,7 +93,7 @@ window.OrderMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userName'},{label:'상태',key:'status'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethod'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userName'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -135,8 +135,8 @@ window.OrderMng = {
           <td>{{ o.orderDate }}</td>
           <td>{{ o.productName }}</td>
           <td>{{ o.totalPrice.toLocaleString() }}원</td>
-          <td>{{ o.payMethod }}</td>
-          <td><span class="badge" :class="statusBadge(o.status)">{{ o.status }}</span></td>
+          <td>{{ o.payMethodCd }}</td>
+          <td><span class="badge" :class="statusBadge(o.statusCd)">{{ o.statusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(o.orderId)">수정</button>

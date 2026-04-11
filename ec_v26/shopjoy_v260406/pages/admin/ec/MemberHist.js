@@ -33,7 +33,7 @@ window.MemberHist = {
           <td>{{ o.orderDate }}</td>
           <td>{{ o.productName }}</td>
           <td>{{ o.totalPrice.toLocaleString() }}원</td>
-          <td>{{ o.status }}</td>
+          <td>{{ o.statusCd }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('ecOrderDtl',{id:o.orderId})">상세</button></td>
         </tr>
       </tbody>
@@ -50,8 +50,8 @@ window.MemberHist = {
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('order', c.orderId)">{{ c.orderId }}</span></td>
           <td>{{ c.type }}</td>
-          <td>{{ c.status }}</td>
-          <td>{{ c.reason }}</td>
+          <td>{{ c.statusCd }}</td>
+          <td>{{ c.reasonCd }}</td>
           <td>{{ c.requestDate.slice(0,10) }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('ecClaimDtl',{id:c.claimId})">상세</button></td>
         </tr>

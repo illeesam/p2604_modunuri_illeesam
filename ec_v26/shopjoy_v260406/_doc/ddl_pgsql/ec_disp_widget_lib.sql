@@ -4,8 +4,9 @@
 -- ============================================================
 CREATE TABLE ec_disp_widget_lib (
     widget_lib_id   VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     widget_code     VARCHAR(50)     NOT NULL,
-    widget_name     VARCHAR(100)    NOT NULL,
+    widget_nm       VARCHAR(100)    NOT NULL,
     widget_type     VARCHAR(30)     NOT NULL,               -- BANNER/PRODUCT/CATEGORY/HTML/SLIDER
     description     TEXT,
     thumbnail_url   VARCHAR(500),
@@ -14,7 +15,9 @@ CREATE TABLE ec_disp_widget_lib (
     is_system       CHAR(1)         DEFAULT 'N',            -- 시스템 기본 위젯 Y/N
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
+    reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     PRIMARY KEY (widget_lib_id),
     UNIQUE (widget_code)
@@ -22,8 +25,9 @@ CREATE TABLE ec_disp_widget_lib (
 
 COMMENT ON TABLE  ec_disp_widget_lib                IS '디스플레이 위젯 라이브러리';
 COMMENT ON COLUMN ec_disp_widget_lib.widget_lib_id  IS '위젯라이브러리ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN ec_disp_widget_lib.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_disp_widget_lib.widget_code    IS '위젯코드';
-COMMENT ON COLUMN ec_disp_widget_lib.widget_name    IS '위젯명';
+COMMENT ON COLUMN ec_disp_widget_lib.widget_nm      IS '위젯명';
 COMMENT ON COLUMN ec_disp_widget_lib.widget_type    IS '위젯유형 (BANNER/PRODUCT/CATEGORY/HTML/SLIDER)';
 COMMENT ON COLUMN ec_disp_widget_lib.description    IS '설명';
 COMMENT ON COLUMN ec_disp_widget_lib.thumbnail_url  IS '미리보기 썸네일URL';
@@ -32,5 +36,7 @@ COMMENT ON COLUMN ec_disp_widget_lib.config_schema  IS '설정 스키마 (JSON)'
 COMMENT ON COLUMN ec_disp_widget_lib.is_system      IS '시스템기본위젯 Y/N';
 COMMENT ON COLUMN ec_disp_widget_lib.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN ec_disp_widget_lib.use_yn         IS '사용여부 Y/N';
+COMMENT ON COLUMN ec_disp_widget_lib.reg_by         IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_disp_widget_lib.reg_date       IS '등록일';
+COMMENT ON COLUMN ec_disp_widget_lib.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_disp_widget_lib.upd_date       IS '수정일';

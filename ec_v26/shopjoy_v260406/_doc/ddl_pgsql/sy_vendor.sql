@@ -4,8 +4,9 @@
 -- ============================================================
 CREATE TABLE sy_vendor (
     vendor_id       VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
     vendor_type     VARCHAR(20)     NOT NULL,               -- SELLER/COURIER/BOTH
-    vendor_name     VARCHAR(100)    NOT NULL,
+    vendor_nm       VARCHAR(100)    NOT NULL,
     vendor_code     VARCHAR(50),
     ceo             VARCHAR(50),
     biz_no          VARCHAR(20),
@@ -21,15 +22,18 @@ CREATE TABLE sy_vendor (
     bank_account    VARCHAR(50),
     bank_holder     VARCHAR(50),
     memo            TEXT,
+    reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     PRIMARY KEY (vendor_id)
 );
 
 COMMENT ON TABLE  sy_vendor                IS '업체';
 COMMENT ON COLUMN sy_vendor.vendor_id      IS '업체ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_vendor.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_vendor.vendor_type    IS '업체유형 (SELLER/COURIER/BOTH)';
-COMMENT ON COLUMN sy_vendor.vendor_name    IS '업체명';
+COMMENT ON COLUMN sy_vendor.vendor_nm      IS '업체명';
 COMMENT ON COLUMN sy_vendor.vendor_code    IS '업체코드';
 COMMENT ON COLUMN sy_vendor.ceo            IS '대표자명';
 COMMENT ON COLUMN sy_vendor.biz_no         IS '사업자번호';
@@ -45,5 +49,7 @@ COMMENT ON COLUMN sy_vendor.bank_name      IS '은행명';
 COMMENT ON COLUMN sy_vendor.bank_account   IS '계좌번호';
 COMMENT ON COLUMN sy_vendor.bank_holder    IS '예금주';
 COMMENT ON COLUMN sy_vendor.memo           IS '메모';
+COMMENT ON COLUMN sy_vendor.reg_by         IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_vendor.reg_date       IS '등록일';
+COMMENT ON COLUMN sy_vendor.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_vendor.upd_date       IS '수정일';

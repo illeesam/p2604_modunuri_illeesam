@@ -12,7 +12,7 @@ window.BbsDtl = {
 
     /* ── 폼 ── */
     const form = reactive({
-      bbmId: null, title: '', author: '', status: '게시',
+      bbmId: null, title: '', author: '', statusCd: '게시',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
     const errors = reactive({});
@@ -34,7 +34,7 @@ window.BbsDtl = {
       /* 게시판 변경 시 레이아웃 초기화 */
       form.title       = '';
       form.author      = '';
-      form.status      = '게시';
+      form.statusCd    = '게시';
       form.attachGrpId = null;
       form.contentHtml = '';
       /* Quill 내용 초기화 */
@@ -176,7 +176,7 @@ window.BbsDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option>게시</option><option>임시</option><option>비공개</option><option>삭제</option>
         </select>
       </div>

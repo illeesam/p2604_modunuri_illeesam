@@ -9,8 +9,8 @@ window.ContactDtl = {
     const tab = ref('content');
 
     const form = reactive({
-      userId: '', userName: '', date: '', category: '배송 문의',
-      title: '', content: '', status: '요청', answer: '',
+      userId: '', userName: '', date: '', categoryCd: '배송 문의',
+      title: '', content: '', statusCd: '요청', answer: '',
     });
     const errors = reactive({});
 
@@ -109,7 +109,7 @@ window.ContactDtl = {
         const idx = props.adminData.contacts.findIndex(x => x.inquiryId === props.editId);
         if (idx !== -1) {
           props.adminData.contacts[idx].answer = form.answer;
-          if (form.answer) props.adminData.contacts[idx].status = '답변완료';
+          if (form.answer) props.adminData.contacts[idx].statusCd = '답변완료';
         }
       }
       props.showToast('답변이 저장되었습니다.');
@@ -153,14 +153,14 @@ window.ContactDtl = {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">카테고리</label>
-          <select class="form-control" v-model="form.category" :disabled="viewMode">
+          <select class="form-control" v-model="form.categoryCd" :disabled="viewMode">
             <option>배송 문의</option><option>상품 문의</option><option>교환·반품 문의</option>
             <option>주문·결제 문의</option><option>기타 문의</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status" :disabled="viewMode">
+          <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
             <option>요청</option><option>처리중</option><option>답변완료</option><option>취소됨</option>
           </select>
         </div>
@@ -191,7 +191,7 @@ window.ContactDtl = {
     <!-- 답변 -->
     <div v-show="tab==='answer'">
       <div v-if="!isNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
-        <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.category }} · {{ form.date }}</div>
+        <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.categoryCd }} · {{ form.date }}</div>
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.title }}</div>
         <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.content }}</div>
       </div>
@@ -219,9 +219,9 @@ window.ContactDtl = {
         <thead><tr><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
         <tbody>
           <tr v-for="c in memberContacts" :key="c.inquiryId">
-            <td><span class="tag">{{ c.category }}</span></td>
+            <td><span class="tag">{{ c.categoryCd }}</span></td>
             <td>{{ c.title }}</td>
-            <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
+            <td><span class="badge" :class="statusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
             <td>{{ c.date.slice(0,10) }}</td>
             <td><button class="btn btn-blue btn-sm" @click="navigate('syContactDtl',{id:c.inquiryId})">상세</button></td>
           </tr>

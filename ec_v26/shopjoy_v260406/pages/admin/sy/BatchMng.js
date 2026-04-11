@@ -24,12 +24,12 @@ window.BatchMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['batchName', 'batchCode', 'cron', 'status', 'description'];
+    const EDIT_FIELDS = ['batchName', 'batchCode', 'cron', 'statusCd', 'description'];
 
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N', _row_check: false,
-      _orig: { batchName: b.batchName, batchCode: b.batchCode, cron: b.cron, status: b.status, description: b.description },
+      _orig: { batchName: b.batchName, batchCode: b.batchCode, cron: b.cron, statusCd: b.statusCd, description: b.description },
     });
 
     const loadGrid = () => {
@@ -38,7 +38,7 @@ window.BatchMng = {
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !b.batchName.toLowerCase().includes(kw) && !b.batchCode.toLowerCase().includes(kw)) return false;
-          if (applied.status && b.status !== applied.status) return false;
+          if (applied.status && b.statusCd !== applied.status) return false;
           if (applied.runStatus && b.runStatus !== applied.runStatus) return false;
           const _d = String(b.regDate || '').slice(0, 10);
           if (applied.dateStart && _d < applied.dateStart) return false;
@@ -74,7 +74,7 @@ window.BatchMng = {
       const newRow = {
         batchId: _tempId--, batchName: '', batchCode: '',
         cron: ref ? ref.cron : '0 0 * * *',
-        status: '활성', description: '',
+        statusCd: '활성', description: '',
         lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기',
         _row_status: 'I', _row_check: false, _orig: null,
       };
@@ -138,9 +138,9 @@ window.BatchMng = {
       if (!ok) return;
 
       dRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) props.adminData.batches.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(props.adminData.batches[i], { batchName: r.batchName, batchCode: r.batchCode, cron: r.cron, status: r.status, description: r.description }); });
+      uRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(props.adminData.batches[i], { batchName: r.batchName, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
       let nextId = Math.max(...props.adminData.batches.map(b => b.batchId), 0);
-      iRows.forEach(r => { props.adminData.batches.push({ batchId: ++nextId, batchName: r.batchName, batchCode: r.batchCode, cron: r.cron, status: r.status, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.batches.push({ batchId: ++nextId, batchName: r.batchName, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
 
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
@@ -310,7 +310,7 @@ window.BatchMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'batchId'},{label:'배치명',key:'batchName'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'status'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
+      [{label:'ID',key:'batchId'},{label:'배치명',key:'batchName'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
       '배치목록.csv'
     );
 
@@ -413,7 +413,7 @@ window.BatchMng = {
             </div>
           </td>
           <td>
-            <select class="grid-select" v-model="row.status" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
+            <select class="grid-select" v-model="row.statusCd" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
               <option>활성</option><option>비활성</option>
             </select>
           </td>

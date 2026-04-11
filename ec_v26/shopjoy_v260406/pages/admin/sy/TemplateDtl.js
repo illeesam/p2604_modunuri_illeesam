@@ -8,12 +8,12 @@ window.TemplateDtl = {
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
-      templateType: '메일템플릿', templateCode: '', templateName: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
+      templateTypeCd: '메일템플릿', templateCode: '', templateName: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
     });
     const errors = reactive({});
 
     /* ── Quill (메일, 시스템알림) ── */
-    const useHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateType));
+    const useHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateTypeCd));
     const quillEditorEl = ref(null);
     let _quill = null;
 
@@ -98,8 +98,8 @@ window.TemplateDtl = {
       });
     };
 
-    const needSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateType));
-    const isLongContent = computed(() => ['MMS템플릿'].includes(form.templateType));
+    const needSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));
+    const isLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
     /* 미리보기 / 발송 모달 */
     const previewOpen = ref(false);
@@ -121,7 +121,7 @@ window.TemplateDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">템플릿유형 <span v-if="!viewMode" class="req">*</span></label>
-        <select class="form-control" v-model="form.templateType" :disabled="viewMode">
+        <select class="form-control" v-model="form.templateTypeCd" :disabled="viewMode">
           <option v-for="t in TEMPLATE_TYPES" :key="t">{{ t }}</option>
         </select>
       </div>

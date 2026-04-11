@@ -7,8 +7,8 @@ window.AlarmDtl = {
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
-      title: '', alarmType: '푸시', targetType: '전체', targetId: '',
-      message: '', sendDate: '', status: '임시',
+      title: '', alarmTypeCd: '푸시', targetType: '전체', targetId: '',
+      message: '', sendDate: '', statusCd: '임시',
     });
     const errors = reactive({});
 
@@ -76,13 +76,13 @@ window.AlarmDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.alarmType" :disabled="viewMode">
+        <select class="form-control" v-model="form.alarmTypeCd" :disabled="viewMode">
           <option>푸시</option><option>이메일</option><option>SMS</option><option>인앱</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option>임시</option><option>예약</option><option>발송완료</option><option>실패</option>
         </select>
       </div>

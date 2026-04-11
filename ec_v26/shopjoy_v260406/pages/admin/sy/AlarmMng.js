@@ -33,8 +33,8 @@ window.AlarmMng = {
     const filtered = computed(() => props.adminData.alarms.filter(a => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !a.title.toLowerCase().includes(kw) && !a.message.toLowerCase().includes(kw)) return false;
-      if (applied.type && a.alarmType !== applied.type) return false;
-      if (applied.status && a.status !== applied.status) return false;
+      if (applied.type && a.alarmTypeCd !== applied.type) return false;
+      if (applied.status && a.statusCd !== applied.status) return false;
       const d = String(a.sendDate || a.regDate || '').slice(0, 10);
       if (applied.dateStart && d < applied.dateStart) return false;
       if (applied.dateEnd && d > applied.dateEnd) return false;
@@ -72,7 +72,7 @@ window.AlarmMng = {
         },
       });
     };
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmType'},{label:'채널',key:'channel'},{label:'내용',key:'content'},{label:'상태',key:'status'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channel'},{label:'내용',key:'content'},{label:'상태',key:'statusCd'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
 
     return { siteName, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, targetBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -107,12 +107,12 @@ window.AlarmMng = {
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="a in pageList" :key="a.alarmId" :style="selectedId===a.alarmId?'background:#fff8f9;':''">
           <td>{{ a.alarmId }}</td>
-          <td><span class="badge" :class="typeBadge(a.alarmType)">{{ a.alarmType }}</span></td>
+          <td><span class="badge" :class="typeBadge(a.alarmTypeCd)">{{ a.alarmTypeCd }}</span></td>
           <td><span class="title-link" @click="loadDetail(a.alarmId)" :style="selectedId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.title }}<span v-if="selectedId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.message }}</td>
           <td><span class="badge" :class="targetBadge(a.targetType)">{{ a.targetType }}</span></td>
           <td>{{ a.sendDate || '-' }}</td>
-          <td><span class="badge" :class="statusBadge(a.status)">{{ a.status }}</span></td>
+          <td><span class="badge" :class="statusBadge(a.statusCd)">{{ a.statusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td>{{ a.regDate }}</td>
           <td><div class="actions">

@@ -30,7 +30,7 @@ window.DlivHist = {
       </div>
       <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ relatedOrder.productName }}</span></div>
       <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ relatedOrder.totalPrice.toLocaleString() }}원</span></div>
-      <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ relatedOrder.status }}</span></div>
+      <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ relatedOrder.statusCd }}</span></div>
       <div style="margin-top:14px;"><button class="btn btn-blue btn-sm" @click="navigate('ecOrderDtl',{id:relatedOrder.orderId})">주문 상세 수정</button></div>
     </template>
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문 정보가 없습니다.</div>
@@ -43,7 +43,7 @@ window.DlivHist = {
       <tbody>
         <tr v-for="c in relatedClaims" :key="c.claimId">
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
-          <td>{{ c.type }}</td><td>{{ c.status }}</td><td>{{ c.reason }}</td>
+          <td>{{ c.type }}</td><td>{{ c.statusCd }}</td><td>{{ c.reasonCd }}</td>
           <td>{{ c.requestDate.slice(0,10) }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('ecClaimDtl',{id:c.claimId})">상세</button></td>
         </tr>

@@ -7,7 +7,7 @@ window.BatchDtl = {
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
     const form = reactive({
-      batchName: '', batchCode: '', description: '', cron: '0 0 * * *', status: '활성',
+      batchName: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
     });
     const errors = reactive({});
 
@@ -20,7 +20,7 @@ window.BatchDtl = {
     onMounted(() => {
       if (!isNew.value) {
         const b = props.adminData.batches.find(x => x.batchId === props.editId);
-        if (b) Object.assign(form, { batchName: b.batchName, batchCode: b.batchCode, description: b.description, cron: b.cron, status: b.status });
+        if (b) Object.assign(form, { batchName: b.batchName, batchCode: b.batchCode, description: b.description, cron: b.cron, statusCd: b.statusCd });
       }
     });
 
@@ -58,7 +58,7 @@ window.BatchDtl = {
             props.adminData.batches.push({ ...form, batchId: props.adminData.nextId(props.adminData.batches, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
           } else {
             const idx = props.adminData.batches.findIndex(x => x.batchId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchName: form.batchName, batchCode: form.batchCode, description: form.description, cron: form.cron, status: form.status });
+            if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchName: form.batchName, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
           }
         },
         navigate: props.navigate,
@@ -117,7 +117,7 @@ window.BatchDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">활성여부</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option>활성</option><option>비활성</option>
         </select>
       </div>

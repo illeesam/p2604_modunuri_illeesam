@@ -49,7 +49,7 @@ window.TemplateMng = {
     const filtered = computed(() => props.adminData.templates.filter(t => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !t.templateName.toLowerCase().includes(kw) && !t.subject.toLowerCase().includes(kw)) return false;
-      if (applied.type && t.templateType !== applied.type) return false;
+      if (applied.type && t.templateTypeCd !== applied.type) return false;
       if (applied.useYn && t.useYn !== applied.useYn) return false;
       const _d = String(t.regDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
@@ -111,7 +111,7 @@ window.TemplateMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateName'},{label:'유형',key:'templateType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateName'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, useYnBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
   },
@@ -151,7 +151,7 @@ window.TemplateMng = {
         <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="t in pageList" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
           <td>{{ t.templateId }}</td>
-          <td><span class="badge" :class="typeBadge(t.templateType)">{{ t.templateType }}</span></td>
+          <td><span class="badge" :class="typeBadge(t.templateTypeCd)">{{ t.templateTypeCd }}</span></td>
           <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ t.templateCode || '-' }}</code></td>
           <td><span class="title-link" @click="loadDetail(t.templateId)" :style="selectedId===t.templateId?'color:#e8587a;font-weight:700;':''">{{ t.templateName }}<span v-if="selectedId===t.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;color:#555;">{{ t.subject || '-' }}</td>

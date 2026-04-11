@@ -10,7 +10,7 @@ window.VendorDtl = {
     const form = reactive({
       vendorType: '판매업체', vendorName: '', ceo: '', bizNo: '', phone: '', email: '',
       zipcode: '', address: '', addressDetail: '',
-      contractDate: '', status: '활성', memo: '',
+      contractDate: '', statusCd: '활성', memo: '',
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);
@@ -161,7 +161,7 @@ window.VendorDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option>활성</option><option>비활성</option>
         </select>
       </div>

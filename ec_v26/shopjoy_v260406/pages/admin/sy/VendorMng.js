@@ -38,7 +38,7 @@ window.VendorMng = {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !v.vendorName.toLowerCase().includes(kw) && !v.bizNo.includes(kw)) return false;
       if (applied.type && v.vendorType !== applied.type) return false;
-      if (applied.status && v.status !== applied.status) return false;
+      if (applied.status && v.statusCd !== applied.status) return false;
       const _d = String(v.contractDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
       if (applied.dateEnd && _d > applied.dateEnd) return false;
@@ -94,7 +94,7 @@ window.VendorMng = {
       });
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorName'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'status'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorName'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteName, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -140,7 +140,7 @@ window.VendorMng = {
           <td>{{ v.phone }}</td>
           <td style="font-size:12px;">{{ v.email }}</td>
           <td>{{ v.contractDate }}</td>
-          <td><span class="badge" :class="statusBadge(v.status)">{{ v.status }}</span></td>
+          <td><span class="badge" :class="statusBadge(v.statusCd)">{{ v.statusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ siteName }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(v.vendorId)">수정</button>

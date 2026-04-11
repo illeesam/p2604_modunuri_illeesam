@@ -10,7 +10,7 @@ window.OrderDtl = {
 
     const form = reactive({
       orderId: '', userId: '', userName: '', orderDate: '', productName: '',
-      totalPrice: 0, payMethod: '계좌이체', status: '주문완료', memo: '',
+      totalPrice: 0, payMethodCd: '계좌이체', statusCd: '주문완료', memo: '',
     });
     const errors = reactive({});
 
@@ -42,11 +42,11 @@ window.OrderDtl = {
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const currentStepIdx = computed(() => {
-      const idx = ORDER_STEPS.indexOf(form.status);
+      const idx = ORDER_STEPS.indexOf(form.statusCd);
       return idx !== -1 ? idx : -1;
     });
 
-    const isCanceled = computed(() => form.status === '취소됨');
+    const isCanceled = computed(() => form.statusCd === '취소됨');
 
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -151,7 +151,7 @@ window.OrderDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">결제수단</label>
-        <select class="form-control" v-model="form.payMethod" :disabled="viewMode">
+        <select class="form-control" v-model="form.payMethodCd" :disabled="viewMode">
           <option>계좌이체</option><option>카드결제</option><option>캐쉬</option><option>혼합결제</option>
         </select>
       </div>
@@ -159,7 +159,7 @@ window.OrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option>주문완료</option><option>결제완료</option><option>배송준비중</option>
           <option>배송중</option><option>배송완료</option><option>완료</option><option>취소됨</option>
         </select>

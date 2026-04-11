@@ -8,8 +8,8 @@ window.ClaimDtl = {
 
     const form = reactive({
       claimId: '', userId: '', userName: '', orderId: '', productName: '',
-      type: '취소', status: '취소요청', reason: '', reasonDetail: '',
-      refundAmount: 0, refundMethod: '계좌환불', requestDate: '', memo: '',
+      type: '취소', statusCd: '취소요청', reasonCd: '', reasonDetail: '',
+      refundAmount: 0, refundMethodCd: '계좌환불', requestDate: '', memo: '',
     });
     const errors = reactive({});
 
@@ -25,7 +25,7 @@ window.ClaimDtl = {
       '교환': ['교환요청', '수거예정', '수거완료', '발송완료', '교환완료'],
     }[form.type] || []));
 
-    const currentStepIdx = computed(() => CLAIM_STEPS.value.indexOf(form.status));
+    const currentStepIdx = computed(() => CLAIM_STEPS.value.indexOf(form.statusCd));
     const statusOptions   = computed(() => CLAIM_STEPS.value);
 
     onMounted(() => {
@@ -137,7 +137,7 @@ window.ClaimDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">처리 상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option v-for="s in statusOptions" :key="s">{{ s }}</option>
         </select>
       </div>
@@ -149,7 +149,7 @@ window.ClaimDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사유</label>
-        <input class="form-control" v-model="form.reason" :readonly="viewMode" />
+        <input class="form-control" v-model="form.reasonCd" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">신청일</label>

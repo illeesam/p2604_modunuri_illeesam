@@ -61,8 +61,8 @@ window.AdminRefModal = {
         <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ memberData.name }}</span></div>
         <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value">{{ memberData.email }}</span></div>
         <div class="detail-row"><span class="detail-label">연락처</span><span class="detail-value">{{ memberData.phone }}</span></div>
-        <div class="detail-row"><span class="detail-label">등급</span><span class="detail-value"><span class="badge badge-purple">{{ memberData.grade }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(memberData.status)">{{ memberData.status }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">등급</span><span class="detail-value"><span class="badge badge-purple">{{ memberData.gradeCd }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(memberData.statusCd)">{{ memberData.statusCd }}</span></span></div>
         <div class="detail-row"><span class="detail-label">가입일</span><span class="detail-value">{{ memberData.joinDate }}</span></div>
         <div class="detail-row"><span class="detail-label">최근 로그인</span><span class="detail-value">{{ memberData.lastLogin }}</span></div>
         <div class="detail-row"><span class="detail-label">주문수</span><span class="detail-value">{{ memberData.orderCount }}건</span></div>
@@ -80,7 +80,7 @@ window.AdminRefModal = {
         <div class="detail-row"><span class="detail-label">가격</span><span class="detail-value">{{ productData.price.toLocaleString() }}원</span></div>
         <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ productData.stock }}개</span></div>
         <div class="detail-row"><span class="detail-label">브랜드</span><span class="detail-value">{{ productData.brand }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(productData.status)">{{ productData.status }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(productData.statusCd)">{{ productData.statusCd }}</span></span></div>
         <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-value">{{ productData.regDate }}</span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">상품 정보를 찾을 수 없습니다.</div>
@@ -94,8 +94,8 @@ window.AdminRefModal = {
         <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ orderData.orderDate }}</span></div>
         <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ orderData.productName }}</span></div>
         <div class="detail-row"><span class="detail-label">결제금액</span><span class="detail-value">{{ orderData.totalPrice.toLocaleString() }}원</span></div>
-        <div class="detail-row"><span class="detail-label">결제수단</span><span class="detail-value">{{ orderData.payMethod }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(orderData.status)">{{ orderData.status }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">결제수단</span><span class="detail-value">{{ orderData.payMethodCd }}</span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(orderData.statusCd)">{{ orderData.statusCd }}</span></span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">주문 정보를 찾을 수 없습니다.</div>
     </template>
@@ -107,9 +107,9 @@ window.AdminRefModal = {
         <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ claimData.userName }}</span></div>
         <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ claimData.orderId }}</span></div>
         <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value"><span class="badge badge-orange">{{ claimData.type }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(claimData.status)">{{ claimData.status }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(claimData.statusCd)">{{ claimData.statusCd }}</span></span></div>
         <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ claimData.productName }}</span></div>
-        <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ claimData.reason }}</span></div>
+        <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ claimData.reasonCd }}</span></div>
         <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">{{ claimData.requestDate }}</span></div>
         <div class="detail-row" v-if="claimData.refundAmount"><span class="detail-label">환불금액</span><span class="detail-value">{{ claimData.refundAmount.toLocaleString() }}원</span></div>
       </template>
@@ -122,11 +122,11 @@ window.AdminRefModal = {
         <div class="detail-row"><span class="detail-label">쿠폰ID</span><span class="detail-value">{{ couponData.couponId }}</span></div>
         <div class="detail-row"><span class="detail-label">쿠폰명</span><span class="detail-value">{{ couponData.name }}</span></div>
         <div class="detail-row"><span class="detail-label">코드</span><span class="detail-value">{{ couponData.code }}</span></div>
-        <div class="detail-row"><span class="detail-label">할인</span><span class="detail-value">{{ couponData.discountType==='rate'?couponData.discountValue+'%':couponData.discountType==='shipping'?'무료배송':couponData.discountValue.toLocaleString()+'원' }}</span></div>
+        <div class="detail-row"><span class="detail-label">할인</span><span class="detail-value">{{ couponData.discountTypeCd==='rate'?couponData.discountValue+'%':couponData.discountTypeCd==='shipping'?'무료배송':couponData.discountValue.toLocaleString()+'원' }}</span></div>
         <div class="detail-row"><span class="detail-label">최소주문</span><span class="detail-value">{{ couponData.minOrder ? couponData.minOrder.toLocaleString()+'원 이상' : '제한없음' }}</span></div>
         <div class="detail-row"><span class="detail-label">발급대상</span><span class="detail-value">{{ couponData.issueTo }}</span></div>
         <div class="detail-row"><span class="detail-label">만료일</span><span class="detail-value">{{ couponData.expiry }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(couponData.status)">{{ couponData.status }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(couponData.statusCd)">{{ couponData.statusCd }}</span></span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">쿠폰 정보를 찾을 수 없습니다.</div>
     </template>

@@ -11,7 +11,7 @@ window.OrderHist = {
       const o = props.adminData.orders.find(x => x.orderId === props.orderId);
       if (o) {
         orderItems.value = [
-          { no: 1, productName: o.productName, optionName: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, status: o.status },
+          { no: 1, productName: o.productName, optionName: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
         ];
       }
     });
@@ -23,7 +23,7 @@ window.OrderHist = {
       const o = props.adminData.orders.find(x => x.orderId === props.orderId);
       return [
         { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '배송준비중', location: '물류센터', memo: '상품 포장 완료' },
-        { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courier || '-', memo: '출고 완료' },
+        { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courierCd || '-', memo: '출고 완료' },
       ].filter(h => h.date !== '-');
     });
 
@@ -56,7 +56,7 @@ window.OrderHist = {
           <td>{{ item.qty }}</td>
           <td>{{ item.unitPrice.toLocaleString() }}원</td>
           <td style="font-weight:600;">{{ item.totalPrice.toLocaleString() }}원</td>
-          <td>{{ item.status }}</td>
+          <td>{{ item.statusCd }}</td>
           <td><button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button></td>
         </tr>
       </tbody>
@@ -100,8 +100,8 @@ window.OrderHist = {
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userName }}</span></td>
           <td>{{ c.type }}</td>
-          <td>{{ c.status }}</td>
-          <td>{{ c.reason }}</td>
+          <td>{{ c.statusCd }}</td>
+          <td>{{ c.reasonCd }}</td>
           <td>{{ c.requestDate.slice(0,10) }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('ecClaimDtl',{id:c.claimId})">상세</button></td>
         </tr>

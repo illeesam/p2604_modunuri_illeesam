@@ -13,7 +13,7 @@ window.SiteDtl = {
       logoUrl: '', favicon: '', description: '',
       email: '', phone: '',
       zipcode: '', address: '', addressDetail: '',
-      businessNo: '', ceo: '', status: '운영중',
+      businessNo: '', ceo: '', statusCd: '운영중',
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);
@@ -170,7 +170,7 @@ window.SiteDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">운영상태</label>
-        <select class="form-control" v-model="form.status" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
           <option>운영중</option><option>점검중</option><option>비활성</option>
         </select>
       </div>

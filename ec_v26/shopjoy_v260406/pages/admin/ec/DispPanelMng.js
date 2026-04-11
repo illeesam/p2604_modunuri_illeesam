@@ -12,7 +12,7 @@ window.DispPanelMng = {
       pager.page = 1;
     };
     const siteName = computed(() => window.adminCommonFilter?.site?.siteName || 'ShopJoy');
-    const searchArea = ref('');
+    const searchArea = ref([]);
     const searchStatus = ref('');
     const searchDispDate = ref('');
     const searchDispTime = ref('');
@@ -68,12 +68,12 @@ window.DispPanelMng = {
       return '-';
     };
 
-    const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '' });
+    const applied = Vue.reactive({ kw: '', area: [], status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '' });
 
     const filtered = computed(() => props.adminData.displays.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
-      if (applied.area && d.area !== applied.area) return false;
+      if (applied.area.length && !applied.area.includes(d.area)) return false;
       if (applied.status && d.status !== applied.status) return false;
       const _d = String(d.regDate || '').slice(0, 10);
       if (applied.dateStart && _d < applied.dateStart) return false;
@@ -143,12 +143,12 @@ window.DispPanelMng = {
     };
     const onReset = () => {
       searchKw.value = '';
-      searchArea.value = '';
+      searchArea.value = [];
       searchStatus.value = '';
       searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
       searchDispDate.value = ''; searchDispTime.value = '';
       searchCondition.value = ''; searchAuthRequired.value = ''; searchAuthGrade.value = '';
-      Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '' });
+      Object.assign(applied, { kw: '', area: [], status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '' });
       pager.page = 1;
     };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
@@ -211,7 +211,12 @@ window.DispPanelMng = {
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="패널명 / 영역코드 검색" />
-      <select v-model="searchArea"><option value="">영역 전체</option><option v-for="a in areas" :key="a.codeValue" :value="a.codeValue">{{ a.codeValue }}  {{ a.codeLabel }}</option></select>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span style="font-size:10px;color:#888;font-weight:500;">전시영역미리보기의 영역조건</span>
+        <select v-model="searchArea" multiple style="min-width:180px;height:72px;font-size:12px;border:1px solid #d0d0d0;border-radius:6px;padding:2px 4px;">
+          <option v-for="a in areas" :key="a.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
+        </select>
+      </div>
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
@@ -260,6 +265,7 @@ window.DispPanelMng = {
           <th style="width:44px;">ID</th>
           <th>패널명</th>
           <th style="width:160px;">화면영역</th>
+          <th style="width:48px;text-align:center;">순서</th>
           <th style="width:64px;text-align:center;">상태</th>
           <th style="width:96px;text-align:center;">노출조건</th>
           <th style="width:52px;text-align:center;">인증</th>
@@ -271,7 +277,7 @@ window.DispPanelMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <template v-for="d in pageList" :key="d.dispId">
           <tr :style="selectedId===d.dispId?'background:#fff8f9;':''">
             <td style="text-align:center;padding:0;">
@@ -294,6 +300,7 @@ window.DispPanelMng = {
                 <span style="font-size:11px;color:#888;">{{ areaLabel(d.area) }}</span>
               </div>
             </td>
+            <td style="text-align:center;font-size:13px;font-weight:600;color:#555;">{{ d.sortOrder ?? '-' }}</td>
             <td style="text-align:center;"><span class="badge" :class="statusBadge(d.status)">{{ d.status }}</span></td>
             <td style="text-align:center;">
               <span style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 8px;white-space:nowrap;">
@@ -334,7 +341,7 @@ window.DispPanelMng = {
           </tr>
           <!-- 위젯 펼치기 서브 행 -->
           <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
-            <td colspan="11" style="padding:0;background:#f8f9fb;border-top:none;">
+            <td colspan="12" style="padding:0;background:#f8f9fb;border-top:none;">
               <div style="padding:10px 16px 12px 44px;">
                 <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">▸ 위젯 구성</div>
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">
