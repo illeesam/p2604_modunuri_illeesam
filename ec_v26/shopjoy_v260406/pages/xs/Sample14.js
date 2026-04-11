@@ -348,6 +348,25 @@ window.Sample14 = {
       }
     };
 
+    /* 위젯 정보 팝오버 */
+    const popoverKey    = ref(null);
+    const popoverWidget = ref(null);
+    const popoverArea   = ref(null);
+    const popoverPanel  = ref(null);
+    const popoverPos    = reactive({ top: 0, left: 0 });
+    const showWidgetInfo = (w, p, area, key, evt) => {
+      evt.stopPropagation();
+      if (popoverKey.value === key) { popoverKey.value = null; return; }
+      const rect = evt.currentTarget.getBoundingClientRect();
+      popoverPos.top  = rect.bottom + 6;
+      popoverPos.left = Math.min(rect.left, window.innerWidth - 316);
+      popoverWidget.value = w;
+      popoverArea.value   = area;
+      popoverPanel.value  = p;
+      popoverKey.value    = key;
+    };
+    const closePopover = () => { popoverKey.value = null; };
+
     /* 초기화 */
     initExpand();
 
@@ -374,6 +393,8 @@ window.Sample14 = {
       onDashDrop, onDashItemMd, onDashResizeMd, onDashMm, onDashMu, removeDashItem,
       clearPreview,
       wLabel, wIcon,
+      popoverKey, popoverWidget, popoverArea, popoverPanel, popoverPos,
+      showWidgetInfo, closePopover,
     };
   },
   template: /* html */`
@@ -554,6 +575,10 @@ window.Sample14 = {
                   <span style="font-size:10px;">{{ wIcon(w.widgetType) }}</span>
                   <span style="font-size:11px;color:#e65100;">{{ wLabel(w.widgetType) }}</span>
                   <span v-if="w.widgetNm" style="font-size:10px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
+                  <button @click.stop="showWidgetInfo(w, p, area, p.dispId+'_'+wi, $event)"
+                    style="border:none;background:none;cursor:pointer;font-size:13px;padding:0 2px;line-height:1;margin-left:auto;flex-shrink:0;transition:color .1s;"
+                    :style="popoverKey===p.dispId+'_'+wi?'color:#1a73e8;opacity:1;':'color:#aaa;opacity:.6;'"
+                    title="위젯 정보 보기">ⓘ</button>
                 </div>
               </div>
             </div>
@@ -1072,6 +1097,128 @@ window.Sample14 = {
           </div>
         </div>
       </template><!-- /dashboard -->
+    </div>
+  </div>
+
+  <!-- 위젯 정보 팝오버 backdrop -->
+  <div v-if="popoverKey" @click="closePopover" style="position:fixed;inset:0;z-index:199;"></div>
+
+  <!-- 위젯 정보 팝오버 -->
+  <div v-if="popoverKey && popoverWidget"
+    style="position:fixed;z-index:200;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.16);width:300px;max-height:460px;overflow-y:auto;"
+    :style="{ top: popoverPos.top + 'px', left: popoverPos.left + 'px' }">
+    <!-- 팝오버 헤더 -->
+    <div :style="'padding:10px 14px;background:'+wColor(popoverWidget.widgetType)+';border-radius:10px 10px 0 0;display:flex;align-items:center;gap:8px;'">
+      <span style="font-size:18px;">{{ wIcon(popoverWidget.widgetType) }}</span>
+      <div style="flex:1;overflow:hidden;">
+        <div style="font-size:12px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ wLabel(popoverWidget.widgetType) }}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ popoverWidget.widgetNm }}</div>
+      </div>
+      <button @click="closePopover" style="background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;border-radius:4px;width:20px;height:20px;padding:0;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">×</button>
+    </div>
+    <!-- 메타 정보 -->
+    <div style="padding:7px 14px;border-bottom:1px solid #f0f0f0;display:flex;flex-direction:column;gap:2px;">
+      <div style="font-size:10px;color:#888;">영역: <span style="color:#333;font-weight:600;">{{ popoverArea ? popoverArea.codeLabel : '' }}</span></div>
+      <div style="font-size:10px;color:#888;">패널: <span style="color:#333;font-weight:600;">{{ popoverPanel ? popoverPanel.name : '' }}</span></div>
+    </div>
+    <!-- 컨텐츠 미리보기 -->
+    <div style="padding:12px 14px;">
+      <div v-if="popoverWidget.widgetType==='image_banner'" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:24px 16px;text-align:center;color:#fff;">
+        <div style="font-size:28px;">🖼</div>
+        <div style="font-size:13px;font-weight:700;margin-top:6px;">{{ popoverWidget.widgetNm }}</div>
+        <div v-if="popoverWidget.clickTarget" style="font-size:10px;opacity:.8;margin-top:4px;background:rgba(255,255,255,.2);border-radius:10px;padding:2px 10px;display:inline-block;">→ {{ popoverWidget.clickTarget }}</div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='product_slider'">
+        <div style="display:flex;gap:6px;overflow:hidden;">
+          <div v-for="n in 3" :key="n" style="flex:0 0 80px;border:1px solid #ececec;border-radius:6px;overflow:hidden;">
+            <div style="height:60px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);display:flex;align-items:center;justify-content:center;font-size:20px;">📦</div>
+            <div style="padding:5px 6px;"><div style="font-size:9px;color:#555;">상품명</div><div style="font-size:10px;font-weight:700;color:#e8587a;">₩00,000</div></div>
+          </div>
+        </div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='product'" style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:72px;height:72px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">📦</div>
+        <div><div style="font-size:10px;color:#aaa;margin-bottom:2px;">단품 상품</div><div style="font-size:12px;font-weight:700;color:#222;margin-bottom:3px;">상품명</div><div style="font-size:14px;font-weight:800;color:#e8587a;">₩00,000</div></div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='cond_product'">
+        <div v-for="n in 3" :key="n" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f5f5;">
+          <div style="width:36px;height:36px;background:#f0f0f0;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📦</div>
+          <div><div style="font-size:10px;color:#444;">상품명 {{ n }}</div><div style="font-size:11px;font-weight:700;color:#e8587a;">₩00,000</div></div>
+        </div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='chart_bar'">
+        <div style="display:flex;align-items:flex-end;gap:4px;height:80px;border-bottom:1px solid #eee;">
+          <div v-for="(h,ci) in [55,78,42,88,65,92,70]" :key="ci" style="flex:1;border-radius:3px 3px 0 0;" :style="'height:'+h+'%;background:linear-gradient(180deg,#667eea,#764ba2);'"></div>
+        </div>
+        <div style="display:flex;justify-content:space-around;margin-top:4px;">
+          <span v-for="d in ['월','화','수','목','금','토','일']" :key="d" style="font-size:9px;color:#aaa;">{{ d }}</span>
+        </div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='chart_line'">
+        <svg viewBox="0 0 240 80" style="width:100%;height:80px;">
+          <polyline points="0,64 34,46 68,56 102,18 136,32 170,10 204,22 240,16" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <polyline points="0,64 34,46 68,56 102,18 136,32 170,10 204,22 240,16 240,80 0,80" fill="#667eea" opacity=".1"/>
+        </svg>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='chart_pie'" style="display:flex;align-items:center;gap:14px;">
+        <svg viewBox="0 0 100 100" style="width:80px;height:80px;flex-shrink:0;">
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#667eea" stroke-width="24" stroke-dasharray="72 28" stroke-dashoffset="25"/>
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#f6ad55" stroke-width="24" stroke-dasharray="17 83" stroke-dashoffset="-47"/>
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#68d391" stroke-width="24" stroke-dasharray="11 89" stroke-dashoffset="-64"/>
+        </svg>
+        <div>
+          <div v-for="(item,idx) in [['카테고리A','#667eea','72%'],['카테고리B','#f6ad55','17%'],['기타','#68d391','11%']]" :key="idx" style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
+            <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;" :style="'background:'+item[1]+';'"></div>
+            <span style="font-size:10px;color:#555;">{{ item[0] }}</span><span style="font-size:10px;font-weight:700;margin-left:4px;">{{ item[2] }}</span>
+          </div>
+        </div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='text_banner'" style="background:#f8f9fa;border-left:4px solid #667eea;border-radius:0 7px 7px 0;padding:12px 14px;">
+        <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px;">{{ popoverWidget.widgetNm }}</div>
+        <div style="font-size:11px;color:#666;line-height:1.6;">텍스트 배너 컨텐츠가 이 영역에 표시됩니다.</div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='info_card'" style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:7px;padding:16px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:30px;">ℹ</div>
+        <div><div style="font-size:11px;font-weight:700;color:#1565c0;margin-bottom:3px;">{{ popoverWidget.widgetNm }}</div><div style="font-size:10px;color:#1976d2;line-height:1.5;">정보 카드 컨텐츠 영역입니다.</div></div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='popup'" style="border:1px solid #e0e0e0;border-radius:7px;overflow:hidden;">
+        <div style="background:#f5f5f5;padding:7px 12px;display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;"><span style="font-size:10px;font-weight:700;color:#555;">팝업</span><span style="color:#aaa;">×</span></div>
+        <div style="padding:18px;text-align:center;"><div style="font-size:24px;margin-bottom:6px;">💬</div><div style="font-size:12px;font-weight:700;color:#333;">{{ popoverWidget.widgetNm }}</div></div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='file'" style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:7px;padding:12px 14px;">
+        <span style="font-size:26px;">📎</span>
+        <div><div style="font-size:11px;font-weight:700;color:#333;">{{ popoverWidget.widgetNm }}</div><div style="font-size:10px;color:#999;margin-top:2px;">파일 다운로드</div></div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='file_list'">
+        <div v-for="n in 3" :key="n" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0;">
+          <span style="font-size:16px;">📁</span><span style="font-size:10px;color:#555;flex:1;">파일명_{{ n }}.pdf</span><span style="font-size:9px;color:#aaa;">1.{{ n }}MB</span>
+        </div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='coupon'" style="border:2px dashed #e8587a;border-radius:7px;padding:14px;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fff5f7,#fce4ec);">
+        <div style="font-size:30px;">🎟</div>
+        <div style="flex:1;"><div style="font-size:12px;font-weight:800;color:#c2185b;margin-bottom:2px;">{{ popoverWidget.widgetNm }}</div><div style="font-size:10px;color:#e8587a;">쿠폰 발급 이벤트</div></div>
+        <div style="background:#e8587a;color:#fff;border-radius:6px;padding:7px 11px;font-size:11px;font-weight:700;white-space:nowrap;">쿠폰 받기</div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='html_editor'" style="background:#1e1e2e;border-radius:7px;padding:12px;font-family:monospace;font-size:10px;color:#a9b7c6;line-height:1.7;">
+        <span style="color:#cc7832;">&lt;div&gt;</span><br>&nbsp;&nbsp;HTML 컨텐츠 ({{ popoverWidget.widgetNm }})<br><span style="color:#cc7832;">&lt;/div&gt;</span>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='event_banner'" style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:7px;padding:20px;text-align:center;color:#fff;">
+        <div style="font-size:22px;margin-bottom:6px;">🎉</div>
+        <div style="font-size:13px;font-weight:800;letter-spacing:.5px;">{{ popoverWidget.widgetNm }}</div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='cache_banner'" style="background:linear-gradient(135deg,#f6d365,#fda085);border-radius:7px;padding:16px;display:flex;align-items:center;gap:12px;color:#fff;">
+        <div style="font-size:30px;">💰</div>
+        <div><div style="font-size:11px;opacity:.85;margin-bottom:2px;">적립금 / 캐시</div><div style="font-size:18px;font-weight:800;">+0,000P</div></div>
+      </div>
+      <div v-else-if="popoverWidget.widgetType==='widget_embed'" style="border:2px dashed #a0aec0;border-radius:7px;padding:20px;text-align:center;background:#f7fafc;">
+        <div style="font-size:24px;margin-bottom:6px;">🧩</div>
+        <div style="font-size:12px;font-weight:700;color:#4a5568;margin-bottom:2px;">{{ popoverWidget.widgetNm }}</div>
+        <div style="font-size:10px;color:#a0aec0;">외부 위젯 임베드 영역</div>
+      </div>
+      <div v-else style="background:#f5f5f5;border-radius:7px;padding:16px;text-align:center;color:#888;">
+        <div style="font-size:22px;margin-bottom:4px;">{{ wIcon(popoverWidget.widgetType) }}</div>
+        <div style="font-size:11px;">{{ wLabel(popoverWidget.widgetType) }}</div>
+      </div>
     </div>
   </div>
 
