@@ -16,7 +16,14 @@ window.SITE_CONFIG = {
     { "icon": "🗂️", "menuId": "products", "menuName": "상품목록" },
     { "icon": "📝", "menuId": "order",    "menuName": "주문하기" },
     { "icon": "📞", "menuId": "contact",  "menuName": "고객센터" },
-    { "icon": "❓", "menuId": "faq",      "menuName": "FAQ" }
+    { "icon": "❓", "menuId": "faq",      "menuName": "FAQ" },
+    { "menuId": "divider-disp", "type": "divider" },
+    { "menuId": "dispUi01", "menuName": "전시ui1" },
+    { "menuId": "dispUi02", "menuName": "전시ui2" },
+    { "menuId": "dispUi03", "menuName": "전시ui3" },
+    { "menuId": "dispUi04", "menuName": "전시ui4" },
+    { "menuId": "dispUi05", "menuName": "전시ui5" },
+    { "menuId": "dispUi06", "menuName": "전시ui6" }
   ],
   "sidebarMenu": [
     {

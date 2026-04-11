@@ -7,11 +7,11 @@ Vue.js 기반 풀스택 이커머스 플랫폼으로, 사용자 페이스(Front 
 ```
 shopjoy_v260406/
 ├── base/                          # 핵심 앱 구성
-│   ├── app.js                    # Vue 메인 앱 인스턴스
-│   ├── config.js                 # 전역 설정
+│   ├── app.js                    # Vue 메인 앱 인스턴스 (테마, 라우팅, 장바구니, 인증)
+│   ├── config.js                 # 전역 설정 (사이트정보, 메뉴, 카테고리, 상품, FAQ)
 │   ├── shopjoyAuth.js            # 인증 로직
-│   └── stores/                   # 상태 관리 (Pinia/Vuex)
-│       ├── authStore.js          # 인증 상태
+│   └── stores/                   # 상태 관리 (Pinia)
+│       ├── authStore.js          # 인증 상태 (token, user, isLoggedIn)
 │       └── myStore.js            # 사용자 정보 상태
 ├── pages/                         # Vue 페이지 컴포넌트
 │   ├── Home.js                   # 홈페이지
@@ -33,15 +33,41 @@ shopjoy_v260406/
 │   │   └── MyCache.js            # 캐시
 │   └── admin/                    # 관리자 페이지
 │       ├── AdminApp.js           # 관리자 메인 앱 (showToast, showConfirm, setApiRes, apiResPanel)
-│       ├── AdminData.js          # 데이터 관리
+│       ├── AdminData.js          # 모의 데이터 및 헬퍼 메서드
 │       ├── AdminModals.js        # 모달 관리
-│       ├── ec/                   # 이커머스 관리 화면
-│       │   ├── *Mng.js           # 목록 (MemberMng, ProdMng, OrderMng 등)
-│       │   ├── *Dtl.js           # 상세/등록 (MemberDtl, ProdDtl 등)
-│       │   └── *Hist.js          # 이력 컴포넌트 (MemberHist, OrderHist 등)
-│       └── sy/                   # 시스템 관리 화면
-│           ├── *Mng.js           # 목록
-│           └── *Dtl.js           # 상세/등록
+│       ├── ec/                   # 이커머스 관리 화면 (34 files)
+│       │   ├── MemberMng/Dtl/Hist.js     # 회원
+│       │   ├── ProdMng/Dtl/Hist.js       # 상품
+│       │   ├── CategoryMng/Dtl.js        # 카테고리
+│       │   ├── OrderMng/Dtl/Hist.js      # 주문
+│       │   ├── DlivMng/Dtl/Hist.js       # 배송
+│       │   ├── ClaimMng/Dtl/Hist.js      # 클레임
+│       │   ├── CouponMng/Dtl.js          # 쿠폰
+│       │   ├── EventMng/Dtl.js           # 이벤트
+│       │   ├── CacheMng/Dtl.js           # 캐시
+│       │   ├── ChattMng/Dtl.js           # 채팅
+│       │   ├── NoticeMng/Dtl.js          # 공지
+│       │   ├── CustInfoMng.js            # 고객종합정보
+│       │   ├── DispPanelMng/Dtl.js       # 디스플레이 패널
+│       │   ├── DispWidgetLibMng/Dtl.js   # 디스플레이 위젯 라이브러리
+│       │   └── DispAreaPreview.js        # 디스플레이 영역 미리보기
+│       └── sy/                   # 시스템 관리 화면 (27 files)
+│           ├── DashboardMng.js           # 대시보드
+│           ├── UserMng/Dtl.js            # 사용자(관리자 계정)
+│           ├── RoleMng.js                # 권한
+│           ├── MenuMng.js                # 메뉴
+│           ├── SiteMng/Dtl.js            # 사이트
+│           ├── VendorMng/Dtl.js          # 업체
+│           ├── BrandMng.js               # 브랜드
+│           ├── DeptMng.js                # 부서
+│           ├── CodeMng/Dtl.js            # 코드
+│           ├── ContactMng/Dtl.js         # 고객문의
+│           ├── BbsMng/Dtl.js             # 게시판 글
+│           ├── BbmMng/Dtl.js             # 게시판 관리
+│           ├── AlarmMng/Dtl.js           # 알림
+│           ├── TemplateMng/Dtl.js        # 템플릿
+│           ├── BatchMng/Dtl/Hist.js      # 배치
+│           └── AttachMng.js              # 첨부파일
 ├── layout/                        # 레이아웃 컴포넌트
 │   ├── AppHeader.js              # 헤더
 │   ├── AppFooter.js              # 푸터
@@ -50,11 +76,13 @@ shopjoy_v260406/
 ├── components/                    # 재사용 가능한 UI 컴포넌트
 │   ├── modals/
 │   │   └── BaseModal.js          # 기본 모달
-│   ├── panels/
-│   │   └── DispPanel.js          # 디스플레이 패널
-│   └── widgets/
+│   ├── comn/
+│   │   └── ComnComp.js           # 공통 컴포넌트 유틸
+│   └── disp/
+│       ├── DispArea.js           # 디스플레이 영역
+│       ├── DispPanel.js          # 디스플레이 패널
 │       └── DispWidget.js         # 디스플레이 위젯
-├── api/                           # 모의 API 데이터
+├── api/                           # 모의 API 데이터 (JSON)
 │   ├── base/
 │   │   ├── users.json            # 사용자 데이터
 │   │   └── site-config.json      # 사이트 설정
@@ -69,8 +97,8 @@ shopjoy_v260406/
 │       ├── inquiries.json        # 문의 데이터
 │       └── after-sales.json      # 애프터세일 데이터
 ├── utils/                         # 유틸리티 함수
-│   ├── axiosUtil.js              # Axios 설정 및 요청/응답 인터셉터 (window.axiosApi)
-│   ├── adminUtil.js              # 관리자 공통 유틸 (window.adminUtil, window.adminApiCall)
+│   ├── axiosUtil.js              # Axios 설정 (window.axiosApi)
+│   ├── adminUtil.js              # 관리자 공통 유틸 (window.adminCommonFilter, window.adminApiCall)
 │   └── cmUtil.js                 # 공통 유틸리티
 ├── assets/                        # 정적 자산
 │   ├── css/
@@ -80,6 +108,11 @@ shopjoy_v260406/
 │   └── cdn/
 │       ├── axios.js              # Axios 라이브러리
 │       └── yup.js                # Yup 유효성 검사 shim (로컬, CDN 불필요)
+├── js/                            # JS 유틸 (js/index.js 등)
+├── image/                         # 이미지 자산
+├── _doc/                          # 문서 및 SQL
+│   ├── ddl_pgsql/                # PostgreSQL DDL 스키마
+│   └── sample_insert_pgsql/      # 테스트 데이터 INSERT 쿼리
 ├── index.html                     # 사용자 페이스 HTML
 ├── admin.html                     # 관리자 페이스 HTML
 └── settings.json                  # 로컬 설정
@@ -90,57 +123,73 @@ shopjoy_v260406/
 ### 인증 (Authentication)
 - **파일**: `base/shopjoyAuth.js`, `base/stores/authStore.js`
 - 사용자 로그인/로그아웃
-- 토큰 기반 인증
+- 토큰 기반 인증 (localStorage: `shopjoy_token`, `shopjoy_user`)
 - 권한 관리 (일반 사용자, 관리자)
+- 마이페이지 접근 제어 (로그인 필요)
 
 ### 상태 관리 (State Management)
-- `authStore.js` - 인증 정보
-- `myStore.js` - 사용자 정보, 주문, 장바구니 등
+- `authStore.js` - 인증 정보 (Pinia)
+- `myStore.js` - 사용자 정보, 주문, 장바구니 등 (Pinia)
 
 ### API 통신
 - **파일**: `utils/axiosUtil.js`
-- REST API 요청 처리
-- 요청/응답 인터셉터
-- 에러 처리
+- `window.axiosApi` - `.get()`, `.post()`, `.put()`, `.patch()`, `.delete()`
+- 경로 자동 prefix: `api/`
 
-### 관리자 기능
+### 관리자 기능 (ec/)
 - 회원 관리 (MemberMng, MemberDtl, MemberHist)
 - 상품 관리 (ProdMng, ProdDtl, ProdHist)
+- 카테고리 관리 (CategoryMng, CategoryDtl)
 - 주문 관리 (OrderMng, OrderDtl, OrderHist)
 - 배송 관리 (DlivMng, DlivDtl, DlivHist)
 - 클레임 관리 (ClaimMng, ClaimDtl, ClaimHist)
 - 쿠폰 관리 (CouponMng, CouponDtl)
 - 이벤트 관리 (EventMng, EventDtl)
-- 채팅/고객지원 (ChattMng, ChattDtl, ContactMng, ContactDtl)
 - 캐시 관리 (CacheMng, CacheDtl)
-- 디스플레이 관리 (DispMng, DispDtl)
-- 카테고리/공지/알림/게시판/배치/사용자 등 sy/ 모듈
+- 채팅 관리 (ChattMng, ChattDtl)
+- 공지 관리 (NoticeMng, NoticeDtl)
+- 고객종합정보 (CustInfoMng)
+- 디스플레이 관리 (DispPanelMng/Dtl, DispWidgetLibMng/Dtl, DispAreaPreview)
+
+### 관리자 기능 (sy/)
+- 대시보드 (DashboardMng)
+- 사용자/권한/메뉴 (UserMng/Dtl, RoleMng, MenuMng)
+- 사이트/업체/브랜드/부서 (SiteMng/Dtl, VendorMng/Dtl, BrandMng, DeptMng)
+- 코드 관리 (CodeMng, CodeDtl)
+- 고객문의 (ContactMng, ContactDtl)
+- 게시판 (BbsMng/Dtl, BbmMng/Dtl)
+- 알림/템플릿 (AlarmMng/Dtl, TemplateMng/Dtl)
+- 배치 (BatchMng, BatchDtl, BatchHist)
+- 첨부파일 (AttachMng)
 
 ## ⚙️ 개발 설정
 
 ### 로컬 설정 (settings.json)
 ```json
 {
-  "model": "sonnet",                    // Claude 모델 설정
-  "MAX_THINIING_TOKENS": 10000,         // 최대 thinking 토큰
-  "CLAUDE_CODE_SUBAGETNT_MODEL": "haiku" // 서브에이전트 모델
+  "model": "sonnet",
+  "MAX_THINIING_TOKENS": 10000,
+  "CLAUDE_CODE_SUBAGETNT_MODEL": "haiku"
 }
 ```
 
 ### 엔트리 포인트
 - **사용자 페이스**: `index.html` + `base/app.js`
+  - Daum 주소 API (카카오), js/index.js 포함
 - **관리자 페이스**: `admin.html` + `pages/admin/AdminApp.js`
+  - Quill 에디터(v1.3.7), yup.js 포함
 
 ## 📝 코딩 컨벤션
 
 ### 파일 및 폴더 네이밍
-- 컴포넌트: PascalCase (예: `ProductDetail.js`)
+- 컴포넌트: PascalCase (예: `MemberDtl.js`)
 - 유틸/스토어: camelCase (예: `axiosUtil.js`)
 - 폴더: lowercase (예: `pages`, `components`, `utils`)
 
 ### Vue 컴포넌트 구조
 - 각 페이지/컴포넌트는 독립적인 JavaScript 파일
-- Pinia 또는 Vuex를 사용한 상태 관리
+- Pinia 사용한 상태 관리 (프론트)
+- 관리자는 Vue reactive 직접 사용
 - 컴포넌트 간 통신은 props, emit, 또는 store 활용
 
 ## 🚀 개발 가이드
@@ -159,7 +208,7 @@ shopjoy_v260406/
 
 ### 관리자 컴포넌트 Props 규칙
 - **Mng**: `['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes']`
-- **Dtl**: `['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId']`
+- **Dtl**: `['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode']`
 - **Hist**: `['navigate', 'adminData', 'showRefModal', 'showToast', '<entityId>']`
 - Mng 파일 내에서 Dtl을 인라인 임베드할 때 `:show-confirm="showConfirm" :set-api-res="setApiRes"` 반드시 전달
 
@@ -183,6 +232,12 @@ await window.adminApiCall({
 ```
 - 성공: 자동 dismiss toast
 - 오류: 시간제한 없는 persistent error toast + 우하단 API 응답 패널 자동 표시
+
+### adminUtil.js 주요 기능
+- `window.adminCommonFilter` - 공통 필터 상태 (site, vendor, adminUser, member, order)
+- `window.adminApiCall()` - 확인→로컬반영→API→토스트 패턴
+- 날짜 범위 프리셋 11종 (1day ~ all)
+- `exportCsv()` - CSV 다운로드
 
 ### Yup 유효성 검사 패턴
 ```js
@@ -208,21 +263,23 @@ try {
 
 ## 📦 주요 라이브러리
 - **Vue.js 3** - UI 프레임워크 (CDN global build, `const { ref, reactive, computed } = Vue`)
+- **Pinia** - 상태 관리 (프론트 전용, CDN)
 - **Axios** - HTTP 클라이언트 (`assets/cdn/axios.js`, `window.axiosApi` 래퍼)
 - **Yup** - 유효성 검사 (`assets/cdn/yup.js` 로컬 shim, `window.yup`)
-- **Quill** - 리치 텍스트 에디터 (CDN)
+- **Quill** - 리치 텍스트 에디터 (CDN v1.3.7, 관리자 전용)
+- **Daum 주소 API** - 카카오 주소 검색 (프론트 전용)
 
 ## 🔗 중요한 파일
 | 파일 | 역할 |
 |------|------|
-| `base/app.js` | Vue 앱 초기화 |
+| `base/app.js` | Vue 앱 초기화 (테마, 라우팅, 장바구니, 인증) |
 | `base/config.js` | 전역 설정 및 라우트 |
 | `base/shopjoyAuth.js` | 인증 로직 |
 | `utils/axiosUtil.js` | API 통신 (`window.axiosApi`) |
-| `utils/adminUtil.js` | 관리자 유틸 (`window.adminUtil`, `window.adminApiCall`) |
+| `utils/adminUtil.js` | 관리자 유틸 (`window.adminCommonFilter`, `window.adminApiCall`) |
 | `assets/cdn/yup.js` | Yup 로컬 shim (`window.yup`) |
-| `base/stores/authStore.js` | 인증 상태 관리 |
-| `base/stores/myStore.js` | 사용자 상태 관리 |
+| `base/stores/authStore.js` | 인증 상태 관리 (Pinia) |
+| `base/stores/myStore.js` | 사용자 상태 관리 (Pinia) |
 | `pages/admin/AdminApp.js` | 관리자 메인 진입점 (showToast/showConfirm/setApiRes/apiResPanel) |
 | `pages/admin/AdminData.js` | 관리자 모의 데이터 및 헬퍼 메서드 |
 | `assets/css/backOfficeStyle.css` | 관리자 스타일 (is-invalid, field-error, form-actions 등) |
@@ -230,82 +287,17 @@ try {
 ## 🌳 Git 및 배포
 
 ### Git 관리
-- **Repository**: GitHub (`master` branch에 자동 푸시)
+- **Repository**: GitHub (`main` branch)
 - **주요 branches**:
-  - `master` - 프로덕션 버전
-  - `develop` - 개발 버전
-  - `feature/*` - 기능 개발 브랜치
+  - `main` - 프로덕션 버전
 
 ### 배포 프로세스
-
-#### 1️⃣ 개발 환경 배포
-```bash
-# 로컬 개발 서버 실행
-npm run dev
-
-# 또는 Live Server로 index.html, admin.html 실행
-```
-
-#### 2️⃣ 스테이징 배포
-```bash
-# develop 브랜치에서 빌드
-npm run build:staging
-
-# 번들된 파일:
-# - dist/frontend/ (사용자 페이스)
-# - dist/admin/ (관리자 페이스)
-```
-
-#### 3️⃣ 프로덕션 배포
-```bash
-# master 브랜치에서 빌드
-npm run build:production
-
-# 수동 배포:
-# 1. dist/ 폴더의 파일을 프로덕션 서버로 전송
-# 2. 웹 서버 설정 확인 (SPA 라우팅)
-# 3. 헬스 체크: https://shopjoy.example.com (또는 현재 도메인)
-```
-
-#### 4️⃣ 자동 배포 (CI/CD)
-- **GitHub Actions 워크플로우**:
-  1. `master` 브랜치에 푸시
-  2. 테스트 실행
-  3. 빌드 생성
-  4. 프로덕션 서버로 자동 배포
-
-### 배포 체크리스트
-- [ ] 모든 기능 테스트 완료
-- [ ] 성능 최적화 확인 (번들 사이즈, 로딩 시간)
-- [ ] 브라우저 호환성 검증 (Chrome, Firefox, Safari, Edge)
-- [ ] 모바일 반응형 테스트
-- [ ] 보안 검사 (XSS, CSRF, 민감 정보 노출)
-- [ ] 데이터베이스 마이그레이션 준비
-- [ ] API 엔드포인트 동작 확인
-- [ ] 에러 로깅 및 모니터링 설정
-- [ ] 롤백 계획 수립
-
-### 환경 변수 설정
-각 배포 환경별로 `.env` 파일 설정:
-```env
-# 개발 환경
-VITE_API_BASE=http://localhost:3000/api
-VITE_ENV=development
-
-# 스테이징
-VITE_API_BASE=https://staging-api.shopjoy.example.com
-VITE_ENV=staging
-
-# 프로덕션
-VITE_API_BASE=https://api.shopjoy.example.com
-VITE_ENV=production
-```
+Live Server로 `index.html`, `admin.html` 실행 (빌드 단계 없음, CDN 기반 SPA)
 
 ### 배포 관련 폴더
-- `_doc/deployment/` - 배포 가이드 및 스크립트
-- `_doc/ddl/` - 데이터베이스 스키마 (테이블별 DDL)
-- `_doc/sample_insert/` - 테스트 데이터 INSERT 쿼리
+- `_doc/ddl_pgsql/` - PostgreSQL 데이터베이스 스키마 (테이블별 DDL)
+- `_doc/sample_insert_pgsql/` - 테스트 데이터 INSERT 쿼리
 
 ---
 
-**마지막 업데이트**: 2026-04-10 (API 통합, Hist 분리, Yup shim, adminApiCall 패턴 추가)
+**마지막 업데이트**: 2026-04-11 (프로젝트 구조 현행화: ec/sy 모듈 전체 목록, components/disp 구조, adminCommonFilter, viewMode prop, ddl_pgsql 경로 등)

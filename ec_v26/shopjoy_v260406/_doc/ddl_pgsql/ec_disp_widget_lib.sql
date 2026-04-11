@@ -1,0 +1,36 @@
+-- ============================================================
+-- ec_disp_widget_lib : 디스플레이 위젯 라이브러리
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ============================================================
+CREATE TABLE ec_disp_widget_lib (
+    widget_lib_id   VARCHAR(16)     NOT NULL,
+    widget_code     VARCHAR(50)     NOT NULL,
+    widget_name     VARCHAR(100)    NOT NULL,
+    widget_type     VARCHAR(30)     NOT NULL,               -- BANNER/PRODUCT/CATEGORY/HTML/SLIDER
+    description     TEXT,
+    thumbnail_url   VARCHAR(500),
+    template_html   TEXT,                                   -- 위젯 기본 HTML 템플릿
+    config_schema   TEXT,                                   -- 설정 스키마 (JSON)
+    is_system       CHAR(1)         DEFAULT 'N',            -- 시스템 기본 위젯 Y/N
+    sort_ord        INTEGER         DEFAULT 0,
+    use_yn          CHAR(1)         DEFAULT 'Y',
+    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_date        TIMESTAMP,
+    PRIMARY KEY (widget_lib_id),
+    UNIQUE (widget_code)
+);
+
+COMMENT ON TABLE  ec_disp_widget_lib                IS '디스플레이 위젯 라이브러리';
+COMMENT ON COLUMN ec_disp_widget_lib.widget_lib_id  IS '위젯라이브러리ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN ec_disp_widget_lib.widget_code    IS '위젯코드';
+COMMENT ON COLUMN ec_disp_widget_lib.widget_name    IS '위젯명';
+COMMENT ON COLUMN ec_disp_widget_lib.widget_type    IS '위젯유형 (BANNER/PRODUCT/CATEGORY/HTML/SLIDER)';
+COMMENT ON COLUMN ec_disp_widget_lib.description    IS '설명';
+COMMENT ON COLUMN ec_disp_widget_lib.thumbnail_url  IS '미리보기 썸네일URL';
+COMMENT ON COLUMN ec_disp_widget_lib.template_html  IS '위젯 HTML 템플릿';
+COMMENT ON COLUMN ec_disp_widget_lib.config_schema  IS '설정 스키마 (JSON)';
+COMMENT ON COLUMN ec_disp_widget_lib.is_system      IS '시스템기본위젯 Y/N';
+COMMENT ON COLUMN ec_disp_widget_lib.sort_ord       IS '정렬순서';
+COMMENT ON COLUMN ec_disp_widget_lib.use_yn         IS '사용여부 Y/N';
+COMMENT ON COLUMN ec_disp_widget_lib.reg_date       IS '등록일';
+COMMENT ON COLUMN ec_disp_widget_lib.upd_date       IS '수정일';

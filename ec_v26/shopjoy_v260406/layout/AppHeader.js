@@ -145,10 +145,12 @@ window.AppHeader = {
 
   <!-- Top nav -->
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
-    <button v-for="m in config.topMenu" :key="m.menuId" @click="navigate(m.menuId)"
-      class="nav-link" :class="{active: page===m.menuId}">
-      <span>{{ m.menuName }}</span>
-    </button>
+    <template v-for="m in config.topMenu" :key="m.menuId">
+      <span v-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
+      <button v-else @click="navigate(m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
+        <span>{{ m.menuName }}</span>
+      </button>
+    </template>
   </nav>
 
   <!-- 우측: 로그인/유저 → 테마 순 -->

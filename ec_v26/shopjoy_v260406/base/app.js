@@ -163,7 +163,8 @@
     /* ── URL state ── */
     let restoring = true;
     const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'location', 'about',
-      'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
+      'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
+      'dispUi01', 'dispUi02', 'dispUi03', 'dispUi04', 'dispUi05', 'dispUi06'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = rawHash.includes('page=');
@@ -354,6 +355,12 @@
         v-else-if="page==='myChatt'"
         :navigate="navigate" :cart-count="cartCount"
       />
+      <disp-ui01 v-else-if="page==='dispUi01'" />
+      <disp-ui02 v-else-if="page==='dispUi02'" />
+      <disp-ui03 v-else-if="page==='dispUi03'" />
+      <disp-ui04 v-else-if="page==='dispUi04'" />
+      <disp-ui05 v-else-if="page==='dispUi05'" />
+      <disp-ui06 v-else-if="page==='dispUi06'" />
 
       <app-footer :config="config" :navigate="navigate" />
     </main>
@@ -417,6 +424,12 @@
   .component('Login',        window.Login)
   .component('LocationPage', window.Location)
   .component('AboutPage',    window.About)
+  .component('DispUi01', window.DispUi01)
+  .component('DispUi02', window.DispUi02)
+  .component('DispUi03', window.DispUi03)
+  .component('DispUi04', window.DispUi04)
+  .component('DispUi05', window.DispUi05)
+  .component('DispUi06', window.DispUi06)
   .use(pinia)
   .mount('#app');
 })();

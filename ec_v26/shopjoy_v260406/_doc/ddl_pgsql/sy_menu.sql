@@ -1,0 +1,34 @@
+-- ============================================================
+-- sy_menu : 메뉴
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ============================================================
+CREATE TABLE sy_menu (
+    menu_id         VARCHAR(16)     NOT NULL,
+    menu_code       VARCHAR(50)     NOT NULL,
+    menu_name       VARCHAR(100)    NOT NULL,
+    parent_id       VARCHAR(16),
+    menu_url        VARCHAR(200),
+    menu_type       VARCHAR(20)     DEFAULT 'PAGE',         -- PAGE/FOLDER/LINK
+    icon_class      VARCHAR(100),
+    sort_ord        INTEGER         DEFAULT 0,
+    use_yn          CHAR(1)         DEFAULT 'Y',
+    remark          VARCHAR(300),
+    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_date        TIMESTAMP,
+    PRIMARY KEY (menu_id),
+    UNIQUE (menu_code)
+);
+
+COMMENT ON TABLE  sy_menu                IS '메뉴';
+COMMENT ON COLUMN sy_menu.menu_id        IS '메뉴ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_menu.menu_code      IS '메뉴코드';
+COMMENT ON COLUMN sy_menu.menu_name      IS '메뉴명';
+COMMENT ON COLUMN sy_menu.parent_id      IS '상위메뉴ID';
+COMMENT ON COLUMN sy_menu.menu_url       IS '메뉴URL';
+COMMENT ON COLUMN sy_menu.menu_type      IS '메뉴유형 (PAGE/FOLDER/LINK)';
+COMMENT ON COLUMN sy_menu.icon_class     IS '아이콘 CSS 클래스';
+COMMENT ON COLUMN sy_menu.sort_ord       IS '정렬순서';
+COMMENT ON COLUMN sy_menu.use_yn         IS '사용여부 Y/N';
+COMMENT ON COLUMN sy_menu.remark         IS '비고';
+COMMENT ON COLUMN sy_menu.reg_date       IS '등록일';
+COMMENT ON COLUMN sy_menu.upd_date       IS '수정일';
