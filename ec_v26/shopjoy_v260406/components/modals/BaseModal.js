@@ -1589,3 +1589,181 @@ window.DispPreviewModal = {
   </div>
 </div>`,
 };
+
+/* ── 카테고리 멀티선택 모달 (사용자 페이스 Sample용) ────────────
+   Props: show (Boolean), selectedIds (Array of categoryId)
+   Emits: close, apply (Array of categoryId)
+   window.adminData.categories 직접 참조 (props 없음)
+   트리 구조: 전체(root) > 루트노드(체크+[+/-]) > 자식노드(체크)
+   ─────────────────────────────────────────────────────────── */
+window.CategorySelectModal = {
+  name: 'CategorySelectModal',
+  props: {
+    show:        { type: Boolean, default: false },
+    selectedIds: { type: Array,   default: () => [] },
+  },
+  emits: ['close', 'apply'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed, watch, watchEffect } = Vue;
+
+    const kw = ref('');
+
+    const allCats = computed(() =>
+      ((window.adminData || {}).categories || [])
+        .filter(c => c.status === '활성')
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+    );
+
+    /* 루트/자식 */
+    const roots = computed(() => {
+      const kwv = kw.value.trim().toLowerCase();
+      let list = allCats.value;
+      if (kwv) {
+        const matchIds = new Set(list.filter(c => c.categoryNm.toLowerCase().includes(kwv)).map(c => c.categoryId));
+        list = list.filter(c => matchIds.has(c.categoryId) || matchIds.has(c.parentId));
+      }
+      return list.filter(c => !c.parentId);
+    });
+
+    const childrenOf = (parentId) => {
+      const kwv = kw.value.trim().toLowerCase();
+      let list = allCats.value.filter(c => c.parentId === parentId);
+      if (kwv) list = list.filter(c => c.categoryNm.toLowerCase().includes(kwv));
+      return list;
+    };
+
+    /* 펼침 상태 — 루트는 기본 펼침 */
+    const expanded = reactive(new Set());
+    const toggleExpand = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    watchEffect(() => { roots.value.forEach(r => expanded.add(r.categoryId)); });
+
+    /* 선택 상태 (로컬 복사) */
+    const localSel = reactive(new Set());
+    watch(() => props.show, (v) => {
+      if (v) { localSel.clear(); props.selectedIds.forEach(id => localSel.add(id)); }
+    }, { immediate: true });
+
+    /* 전체 선택 */
+    const allIds = computed(() => {
+      const ids = [];
+      roots.value.forEach(r => { ids.push(r.categoryId); childrenOf(r.categoryId).forEach(c => ids.push(c.categoryId)); });
+      return ids;
+    });
+    const isAllOn  = computed(() => allIds.value.length > 0 && allIds.value.every(id => localSel.has(id)));
+    const isSomeOn = computed(() => !isAllOn.value && allIds.value.some(id => localSel.has(id)));
+    const toggleAll = () => { if (isAllOn.value) allIds.value.forEach(id => localSel.delete(id)); else allIds.value.forEach(id => localSel.add(id)); };
+
+    /* 루트 선택 (자식 포함) */
+    const toggleRoot = (root) => {
+      const ch = childrenOf(root.categoryId);
+      const allOn = localSel.has(root.categoryId) && ch.every(c => localSel.has(c.categoryId));
+      if (allOn) { localSel.delete(root.categoryId); ch.forEach(c => localSel.delete(c.categoryId)); }
+      else       { localSel.add(root.categoryId);    ch.forEach(c => localSel.add(c.categoryId)); }
+    };
+    const isRootFull = (root) => localSel.has(root.categoryId) && childrenOf(root.categoryId).every(c => localSel.has(c.categoryId));
+    const isRootPart = (root) => !isRootFull(root) && (localSel.has(root.categoryId) || childrenOf(root.categoryId).some(c => localSel.has(c.categoryId)));
+
+    /* 자식 선택 */
+    const toggleChild = (id) => { if (localSel.has(id)) localSel.delete(id); else localSel.add(id); };
+
+    const reset = () => localSel.clear();
+    const apply = () => { emit('apply', [...localSel]); emit('close'); };
+
+    return { kw, roots, childrenOf, expanded, toggleExpand, localSel, toggleChild, toggleRoot, toggleAll, isRootFull, isRootPart, isAllOn, isSomeOn, reset, apply };
+  },
+  template: /* html */`
+<div v-if="show" style="position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="$emit('close')">
+  <div style="background:#fff;border-radius:10px;width:340px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.22);" @click.stop>
+
+    <!-- 헤더 -->
+    <div style="padding:11px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span style="font-size:13px;font-weight:700;color:#222;">📂 카테고리 선택</span>
+      <button @click="$emit('close')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#aaa;padding:2px 5px;line-height:1;">✕</button>
+    </div>
+
+    <!-- 검색 -->
+    <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <input v-model="kw" type="text" placeholder="카테고리명 검색" style="width:100%;box-sizing:border-box;font-size:12px;padding:4px 9px;border:1px solid #ddd;border-radius:5px;outline:none;" />
+    </div>
+
+    <!-- 트리 목록 -->
+    <div style="flex:1;overflow-y:auto;padding:4px 0;">
+      <div v-if="roots.length===0" style="text-align:center;padding:30px;font-size:12px;color:#bbb;">검색 결과 없음</div>
+
+      <!-- ① 전체 노드 -->
+      <div @click="toggleAll"
+        style="display:flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;user-select:none;"
+        :style="isAllOn?'background:#fff4f6;':''">
+        <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+          :style="isAllOn?'border-color:#e8587a;background:#e8587a;':isSomeOn?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
+          <span v-if="isAllOn"  style="color:#fff;font-size:9px;line-height:1;">✓</span>
+          <span v-else-if="isSomeOn" style="color:#e8587a;font-size:11px;font-weight:900;line-height:1;margin-top:-1px;">−</span>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:#333;">전체</span>
+      </div>
+
+      <!-- ② 루트 + 자식 트리 -->
+      <div style="position:relative;padding-left:12px;">
+        <!-- 레벨1 세로선 (전체 → 루트들) -->
+        <div style="position:absolute;left:19px;top:0;bottom:14px;width:1px;background:#d0d0d0;"></div>
+
+        <div v-for="root in roots" :key="root.categoryId">
+          <!-- 루트 행 -->
+          <div style="display:flex;align-items:center;gap:4px;padding:5px 8px;cursor:pointer;user-select:none;"
+            :style="isRootFull(root)?'background:#fff4f6;':isRootPart(root)?'background:#fffbf4;':''">
+            <!-- 수평 연결선 -->
+            <div style="width:12px;height:1px;background:#d0d0d0;flex-shrink:0;"></div>
+            <!-- [+]/[-] 펼침 버튼 -->
+            <span @click.stop="toggleExpand(root.categoryId)"
+              style="width:13px;height:13px;border:1px solid #bbb;border-radius:2px;background:#f5f5f5;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#666;cursor:pointer;flex-shrink:0;line-height:1;">
+              {{ expanded.has(root.categoryId) ? '−' : '+' }}
+            </span>
+            <!-- 체크박스 -->
+            <div @click.stop="toggleRoot(root)"
+              style="width:13px;height:13px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+              :style="isRootFull(root)?'border-color:#e8587a;background:#e8587a;':isRootPart(root)?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
+              <span v-if="isRootFull(root)" style="color:#fff;font-size:8px;line-height:1;">✓</span>
+              <span v-else-if="isRootPart(root)" style="color:#e8587a;font-size:10px;font-weight:900;line-height:1;margin-top:-1px;">−</span>
+            </div>
+            <!-- 라벨 -->
+            <span @click.stop="toggleRoot(root)" style="font-size:12px;font-weight:700;color:#222;flex:1;">{{ root.categoryNm }}</span>
+          </div>
+
+          <!-- 자식 행들 -->
+          <template v-if="expanded.has(root.categoryId)">
+            <div style="position:relative;padding-left:26px;">
+              <!-- 레벨2 세로선 (루트 → 자식들) -->
+              <div style="position:absolute;left:33px;top:0;bottom:14px;width:1px;background:#d0d0d0;"></div>
+
+              <div v-for="child in childrenOf(root.categoryId)" :key="child.categoryId"
+                @click="toggleChild(child.categoryId)"
+                style="display:flex;align-items:center;gap:4px;padding:4px 8px;cursor:pointer;user-select:none;"
+                :style="localSel.has(child.categoryId)?'background:#fff4f6;':''">
+                <!-- 수평 연결선 -->
+                <div style="width:12px;height:1px;background:#d0d0d0;flex-shrink:0;"></div>
+                <!-- 리프 공간 (expand 버튼 자리) -->
+                <span style="width:13px;flex-shrink:0;"></span>
+                <!-- 체크박스 -->
+                <div style="width:13px;height:13px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+                  :style="localSel.has(child.categoryId)?'border-color:#e8587a;background:#e8587a;':'border-color:#aaa;background:#fff;'">
+                  <span v-if="localSel.has(child.categoryId)" style="color:#fff;font-size:8px;line-height:1;">✓</span>
+                </div>
+                <!-- 라벨 -->
+                <span style="font-size:12px;color:#333;flex:1;">{{ child.categoryNm }}</span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 버튼 -->
+    <div style="padding:9px 12px;border-top:1px solid #e0e0e0;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:11px;color:#aaa;flex:1;">{{ localSel.size }}개 선택</span>
+      <button @click="reset" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;">초기화</button>
+      <button @click="apply" style="font-size:12px;padding:4px 16px;border:none;border-radius:6px;background:#e8587a;color:#fff;font-weight:700;cursor:pointer;">적용</button>
+    </div>
+  </div>
+</div>
+  `,
+};
