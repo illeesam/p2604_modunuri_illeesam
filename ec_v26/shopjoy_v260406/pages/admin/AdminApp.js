@@ -1004,7 +1004,7 @@
   .component('DeptMng',    window.DeptMng)
   .component('MenuMng',    window.MenuMng)
   .component('RoleMng',    window.RoleMng)
-  .component('ComnAttachGrp', window.ComnAttachGrp)
+  .component('BaseAttachGrp', window.BaseAttachGrp)
   .component('NoticeMng',  window.NoticeMng)
   .component('NoticeDtl',  window.NoticeDtl)
   .component('AlarmMng',   window.AlarmMng)
