@@ -142,7 +142,8 @@ window.MyClaim = {
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
 
     <!-- 카드 헤더 -->
-    <div class="my-order-card-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;"
+      :style="'background:linear-gradient(135deg,'+({'취소':'rgba(220,38,38,0.22)','반품':'rgba(249,115,22,0.13)','교환':'rgba(59,130,246,0.13)'}[c.type]||'rgba(156,95,163,0.13)')+' 0%,rgba(255,255,255,0.6) 60%,rgba(255,255,255,0) 100%);'">
       <div>
         <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ c.claimId }}</span>
         <button @click="openOrderModal(c.orderId)"

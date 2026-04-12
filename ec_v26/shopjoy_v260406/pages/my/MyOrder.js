@@ -230,7 +230,8 @@ window.MyOrder = {
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
 
     <!-- 주문 헤더 -->
-    <div class="my-order-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;"
+      style="background:linear-gradient(135deg,rgba(34,197,94,0.15) 0%,rgba(255,255,255,0.6) 60%,rgba(255,255,255,0) 100%);">
       <div>
         <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ o.orderId }}</span>
         <span style="margin-left:10px;font-size:0.78rem;color:var(--text-muted);">주문일: {{ o.orderDate }}</span>
