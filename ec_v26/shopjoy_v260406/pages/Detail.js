@@ -531,7 +531,7 @@ window.Detail = {
                   :style="{
                     padding:'7px 14px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                     cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
-                    border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '1.5px solid var(--border)' : '1.5px solid #e0e0e0',
+                    border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '2px solid var(--border)' : '2px solid #e0e0e0',
                     background: selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-card)' : '#f5f5f5',
                     color: selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
                     fontWeight: selectedSize===s ? '700' : '500',
@@ -959,15 +959,22 @@ window.Detail = {
         <!-- 사이즈 (FREE면 숨김) -->
         <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈<span style="color:var(--blue);margin-left:2px;">*</span></span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">사이즈<span style="margin-left:2px;">*</span></span>
+              <span v-if="sizeError" style="font-size:0.75rem;color:#ef4444;font-weight:500;">필수 선택</span>
+            </div>
             <button @click="showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <div :style="{
+            display:'flex', flexWrap:'wrap', gap:'6px', padding:'8px',
+            border: sizeError ? '1px solid #ef4444' : '1px solid transparent',
+            borderRadius:'6px', transition:'border-color .2s',
+          }">
             <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
               :style="{
                 padding:'7px 16px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                 cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
-                border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '1.5px solid var(--border)' : '1.5px solid #e0e0e0',
+                border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '2px solid var(--border)' : '2px solid #e0e0e0',
                 background: selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-base)' : '#f5f5f5',
                 color: selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
                 fontWeight: selectedSize===s ? '700' : '500',
@@ -978,7 +985,6 @@ window.Detail = {
               <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
             </button>
           </div>
-          <div v-if="sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ sizeError }}</div>
         </div>
 
         <!-- 수량 -->

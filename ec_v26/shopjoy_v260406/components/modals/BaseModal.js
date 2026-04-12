@@ -295,12 +295,10 @@ window.ProductModal = {
       <!-- 색상 -->
       <div v-if="product.opt1s && product.opt1s.length" style="margin-bottom:14px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <span :style="{ fontSize:'0.75rem', fontWeight:'600', letterSpacing:'0.5px', color: errColor ? '#ef4444' : '#999' }">
-            색상 <span v-if="errColor" style="font-size:0.7rem;font-weight:400;">필수 선택</span>
-          </span>
+          <span style="font-size:0.75rem;font-weight:600;color:#999;letter-spacing:0.5px;">색상</span>
           <span v-if="selColor" style="font-size:0.75rem;color:#555;">{{ selColor.name }}</span>
         </div>
-        <div :style="{ display:'flex', gap:'8px', flexWrap:'wrap', padding:'8px', borderRadius:'4px', border: errColor ? '1px solid #fca5a5' : '1px solid transparent', background: errColor ? '#fff5f5' : 'transparent', transition:'all .2s' }">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button v-for="c in product.opt1s" :key="c.name" @click="selColor=c; errColor=false; selThumb=0"
             :style="{
               width:'28px', height:'28px', borderRadius:'50%', background:c.hex, cursor:'pointer',
@@ -309,20 +307,24 @@ window.ProductModal = {
               outlineOffset: '-4px', boxSizing:'border-box', transition:'border .15s',
             }" :title="c.name"></button>
         </div>
+        <p v-if="errColor" style="margin:6px 0 0;font-size:0.75rem;color:#ef4444;">색상을 선택해주세요.</p>
       </div>
 
       <!-- 사이즈 -->
       <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <span :style="{ fontSize:'0.75rem', fontWeight:'600', letterSpacing:'0.5px', color: errSize ? '#ef4444' : '#999' }">
-            사이즈 <span v-if="errSize" style="font-size:0.7rem;font-weight:400;">필수 선택</span>
-          </span>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span :style="{ fontSize:'0.75rem', fontWeight:'600', letterSpacing:'0.5px', color: errSize ? '#ef4444' : '#999' }">사이즈</span>
+          <span v-if="errSize" style="font-size:0.72rem;color:#ef4444;font-weight:500;">필수 선택</span>
         </div>
-        <div :style="{ display:'flex', gap:'6px', flexWrap:'wrap', padding:'8px', borderRadius:'4px', border: errSize ? '1px solid #fca5a5' : '1px solid transparent', background: errSize ? '#fff5f5' : 'transparent', transition:'all .2s' }">
+        <div :style="{
+          display:'flex', gap:'6px', flexWrap:'wrap', padding:'8px',
+          border: errSize ? '1px solid #ef4444' : '1px solid transparent',
+          borderRadius:'3px', transition:'border-color .2s',
+        }">
           <button v-for="s in product.opt2s" :key="s" @click="selSize=s; errSize=false"
             :style="{
               padding:'5px 14px', borderRadius:'2px', cursor:'pointer', fontSize:'0.8rem',
-              border: selSize===s ? '2px solid #1a1a1a' : '1px solid #ddd',
+              border: selSize===s ? '2px solid #1a1a1a' : '2px solid #ddd',
               background: selSize===s ? '#1a1a1a' : '#fff',
               color: selSize===s ? '#fff' : '#555',
               fontWeight: selSize===s ? '700' : '400', transition:'all .15s',
