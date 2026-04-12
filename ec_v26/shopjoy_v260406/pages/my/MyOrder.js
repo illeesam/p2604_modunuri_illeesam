@@ -317,10 +317,10 @@ window.MyOrder = {
                 <button v-if="claimsByOrderId[o.orderId].trackingNo && step==='수거완료' &&
                     myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf(claimsByOrderId[o.orderId].status) >= myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf('수거완료')"
                   @click.stop="openTracking2(claimsByOrderId[o.orderId].courier, claimsByOrderId[o.orderId].trackingNo)"
-                  style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">↩ 수거</button>
+                  style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">{{ (claimsByOrderId[o.orderId].courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}수거</button>
                 <button v-if="claimsByOrderId[o.orderId].status===step && claimsByOrderId[o.orderId].exchangeTrackingNo && ['발송완료','교환완료'].includes(step)"
                   @click.stop="openTracking2(claimsByOrderId[o.orderId].exchangeCourier, claimsByOrderId[o.orderId].exchangeTrackingNo)"
-                  style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">📦 교환</button>
+                  style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">{{ (claimsByOrderId[o.orderId].exchangeCourier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}발송</button>
               </div>
               <div v-if="si < myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].length-1"
                 style="height:1.5px;flex:1;margin-bottom:13px;flex-shrink:0;min-width:6px;"
