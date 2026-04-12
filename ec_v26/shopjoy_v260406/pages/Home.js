@@ -90,10 +90,10 @@ window.Home = {
           </div>
           <!-- Color swatches -->
           <div style="display:flex;gap:5px;margin-bottom:10px;">
-            <div v-for="c in p.colors.slice(0,5)" :key="c.name"
+            <div v-for="c in (p.opt1s||[]).slice(0,5)" :key="c.name"
               :style="{ width:'16px', height:'16px', borderRadius:'50%', background:c.hex, border:'1.5px solid rgba(0,0,0,0.1)', flexShrink:0 }"
               :title="c.name"></div>
-            <span v-if="p.colors.length>5" style="font-size:0.7rem;color:var(--text-muted);line-height:16px;">+{{ p.colors.length-5 }}</span>
+            <span v-if="(p.opt1s||[]).length>5" style="font-size:0.7rem;color:var(--text-muted);line-height:16px;">+{{ (p.opt1s||[]).length-5 }}</span>
           </div>
           <div style="font-size:0.9rem;font-weight:800;color:var(--blue);">{{ p.price }}</div>
         </div>
@@ -122,7 +122,7 @@ window.Home = {
             <span class="badge badge-cat">{{ categoryLabel(p) }}</span>
           </div>
           <div style="display:flex;gap:5px;margin-bottom:10px;">
-            <div v-for="c in p.colors.slice(0,5)" :key="c.name"
+            <div v-for="c in (p.opt1s||[]).slice(0,5)" :key="c.name"
               :style="{ width:'16px', height:'16px', borderRadius:'50%', background:c.hex, border:'1.5px solid rgba(0,0,0,0.1)', flexShrink:0 }"
               :title="c.name"></div>
           </div>

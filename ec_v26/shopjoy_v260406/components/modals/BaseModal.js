@@ -144,19 +144,19 @@ window.ProductModal = {
         <span v-if="product.badge" style="font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:20px;background:var(--blue);color:#fff;">{{ product.badge }}</span>
       </div>
       <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;padding:10px 14px;background:var(--bg-base);border-radius:8px;">{{ product.desc }}</div>
-      <div v-if="product.colors && product.colors.length">
+      <div v-if="product.opt1s && product.opt1s.length">
         <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:8px;">색상</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          <div v-for="col in product.colors" :key="col.name" style="display:flex;align-items:center;gap:5px;">
+          <div v-for="col in product.opt1s" :key="col.name" style="display:flex;align-items:center;gap:5px;">
             <span style="width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.12);" :style="'background:'+col.hex"></span>
             <span style="font-size:0.78rem;color:var(--text-secondary);">{{ col.name }}</span>
           </div>
         </div>
       </div>
-      <div v-if="product.sizes && product.sizes.length">
+      <div v-if="product.opt2s && product.opt2s.length">
         <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:8px;">사이즈</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <span v-for="sz in product.sizes" :key="sz" style="padding:3px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);background:var(--bg-base);">{{ sz }}</span>
+          <span v-for="sz in product.opt2s" :key="sz" style="padding:3px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);background:var(--bg-base);">{{ sz }}</span>
         </div>
       </div>
       <div v-if="product.tags && product.tags.length" style="display:flex;flex-wrap:wrap;gap:6px;">

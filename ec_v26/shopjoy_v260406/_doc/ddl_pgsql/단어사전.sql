@@ -1,0 +1,154 @@
+-- ============================================================
+-- 단어사전 : 컬럼/테이블 약어 정의
+-- 규칙: 약어는 소문자 snake_case 기준
+-- ============================================================
+
+-- 단어약어          한글명
+-- ------------------------------------------------
+-- id               아이디 (식별자)
+-- nm               이름 / 명칭
+-- cd               코드
+-- no               번호
+-- yn               여부 (Y/N)
+-- cnt              건수 / 개수
+-- qty              수량
+-- amt              금액
+-- price            가격
+-- rate             비율 (%)
+-- ord              순서 (정렬)
+-- dt               일자 (DATE형)
+-- date             일시 (TIMESTAMP형)
+-- url              URL 경로
+-- html             HTML 내용
+-- ip               IP 주소
+-- memo             메모 / 비고
+-- desc             설명
+-- content          본문 내용
+-- title            제목
+-- type             유형
+-- status           상태
+-- result           결과
+-- method           수단 / 방식
+-- grp              그룹
+-- val              값
+-- key              키
+-- code             코드값 (문자)
+-- info             정보
+-- use              사용
+-- reg              등록
+-- upd              수정 / 업데이트
+-- del              삭제
+-- proc             처리
+-- chg              변경
+-- req              요청
+-- res              응답
+-- log              로그
+-- hist             이력
+-- snap             스냅샷
+-- ------------------------------------------------
+-- by               처리자 ID (sy_user.user_id 참조)
+-- ------------------------------------------------
+
+-- [ 도메인 접두사 ]
+-- 단어약어          한글명
+-- ------------------------------------------------
+-- sy_              시스템 (공통/관리)
+-- ec_              이커머스 (쇼핑몰)
+-- ------------------------------------------------
+
+-- [ 주요 엔티티 약어 ]
+-- 단어약어          한글명
+-- ------------------------------------------------
+-- site             사이트
+-- user             관리자 사용자
+-- dept             부서
+-- role             역할
+-- menu             메뉴
+-- brand            브랜드
+-- vendor           업체 / 공급사
+-- member           회원
+-- prod             상품
+-- category         카테고리
+-- opt              옵션
+-- sku              SKU (재고관리단위)
+-- img              이미지
+-- cart             장바구니
+-- order            주문
+-- order_item       주문상품
+-- dliv             배송
+-- claim            클레임 (취소/반품/교환)
+-- coupon           쿠폰
+-- issue            발급
+-- usage            사용이력
+-- cache            적립금
+-- review           리뷰
+-- media            미디어 (이미지/동영상)
+-- reply            댓글
+-- event            이벤트
+-- notice           공지사항
+-- contact          문의
+-- chatt            채팅
+-- disp             전시
+-- panel            패널
+-- widget           위젯
+-- attach           첨부파일
+-- batch            배치
+-- alarm            알림
+-- bbs              게시판
+-- bbm              게시판 메시지
+-- template         템플릿
+-- code             공통코드
+-- ------------------------------------------------
+
+-- [ 주소/연락처 관련 ]
+-- 단어약어          한글명
+-- ------------------------------------------------
+-- zip              우편번호
+-- addr             주소
+-- addr_detail      상세주소
+-- phone            연락처 (전화번호)
+-- email            이메일
+-- recv             수령자 (수취인)
+-- ------------------------------------------------
+
+-- [ 금액/결제 관련 ]
+-- 단어약어          한글명
+-- ------------------------------------------------
+-- unit_price       단가
+-- sale_price       판매가
+-- item_price       소계 (단가 × 수량)
+-- total_price      합계금액
+-- pay_price        실결제금액
+-- discount_amt     할인금액
+-- coupon_discount  쿠폰할인금액
+-- refund_amount    환불금액
+-- add_price        옵션 추가금액
+-- min_order        최소주문금액
+-- max_discount     최대할인한도
+-- cache_use        적립금 사용
+-- cache_give       적립금 지급
+-- cache_balance    적립금 잔액
+-- pay_method       결제수단
+-- ------------------------------------------------
+
+-- [ 공통 코드 목록 ]
+-- 코드그룹              코드값 예시
+-- ------------------------------------------------
+-- USER_STATUS          ACTIVE / INACTIVE / LOCKED
+-- MEMBER_STATUS        ACTIVE / INACTIVE / WITHDRAWN / LOCKED
+-- MEMBER_GRADE         BASIC / SILVER / GOLD / VIP
+-- PRODUCT_STATUS       ACTIVE / INACTIVE / SOLDOUT / DELETED
+-- ORDER_STATUS         PENDING / PAID / PREPARING / SHIPPED / DELIVERED / CANCELLED / REFUNDED
+-- CLAIM_TYPE           CANCEL / RETURN / EXCHANGE
+-- CLAIM_STATUS         REQUESTED / PROCESSING / COMPLETED / REJECTED
+-- CLAIM_REASON         CHANGE_MIND / DEFECT / WRONG_ITEM / OTHER
+-- COUPON_TYPE          RATE / FIXED
+-- COUPON_STATUS        ACTIVE / INACTIVE / EXPIRED
+-- CART_STATUS          ACTIVE / ORDERED / EXPIRED
+-- REVIEW_STATUS        ACTIVE / HIDDEN / DELETED
+-- REFUND_METHOD        CARD / ACCOUNT / CACHE
+-- PAY_METHOD           CARD / ACCOUNT / CACHE / KAKAO / NAVER / TOSS
+-- LOGIN_RESULT         SUCCESS / FAIL_PWD / FAIL_LOCKED / FAIL_NOT_FOUND
+-- MEDIA_TYPE           IMAGE / VIDEO
+-- DISP_AREA            (전시영역코드 — 사이트별 정의)
+-- ------------------------------------------------

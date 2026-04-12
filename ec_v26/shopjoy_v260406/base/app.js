@@ -39,8 +39,41 @@
       }
     };
 
+    /* ── 바로구매 즉시주문 상태 (장바구니와 독립) ── */
+    const instantOrder = ref(null);
+    /* ── 장바구니 선택 주문 (cartIds) ── */
+    const cartIds = ref(null);
+
+    /* instantOrder → URL 해시 파라미터 변환 */
+    const _instantOrderToParams = (io) => {
+      if (!io) return {};
+      return {
+        prodId: io.product?.productId ?? '',
+        opt1Nm: io.color?.name        ?? '',   // 색상명 (colorId 없으므로 name 사용)
+        opt2Id: io.size               ?? '',
+        qty:    io.qty                ?? 1,
+      };
+    };
+
+    /* URL 해시 파라미터 → instantOrder 재구성 */
+    const _instantOrderFromParams = (params) => {
+      const prodId = Number(params.get('prodId'));
+      if (!prodId) return null;
+      const product = products.find(p => Number(p.productId) === prodId);
+      if (!product) return null;
+      const opt1Nm = params.get('opt1Nm') || '';
+      const color  = product.opt1s?.find(c => c.name === opt1Nm) || null;
+      const size   = params.get('opt2Id') || null;
+      const qty    = Math.max(1, Number(params.get('qty')) || 1);
+      return { product, color, size, qty };
+    };
+
     const navigate = (id, opts = {}) => {
       if (opts && opts.replace) replaceNextHash = true;
+      if (opts && opts.instantOrder !== undefined) instantOrder.value = opts.instantOrder;
+      else if (id !== 'order') instantOrder.value = null;
+      if (opts && opts.cartIds !== undefined) cartIds.value = opts.cartIds;
+      else if (id !== 'order') cartIds.value = null;
       if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
       window.scrollTo(0, 0);
@@ -81,6 +114,14 @@
     /* ── Cart ── */
     const cart = reactive([]);
 
+    /* 임의 ID 생성: yymmddHHMMSS + rand4 */
+    const genId = () => {
+      const d = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      return [d.getFullYear()%100,d.getMonth()+1,d.getDate(),d.getHours(),d.getMinutes(),d.getSeconds()].map(pad).join('')
+        + Math.random().toString(36).slice(2,6).toUpperCase();
+    };
+
     // 로컬스토리지에서 장바구니 복원
     try {
       const saved = localStorage.getItem('shopjoy_cart');
@@ -90,8 +131,8 @@
           parsed.forEach(item => {
             const p = products.find(x => x.productId === item.productId);
             if (p && item.color && item.size) {
-              const color = p.colors.find(c => c.name === item.color.name) || item.color;
-              cart.push({ product: p, color, size: item.size, qty: item.qty || 1 });
+              const color = p.opt1s.find(c => c.name === item.color.name) || item.color;
+              cart.push({ cartId: item.cartId || genId(), product: p, color, size: item.size, qty: item.qty || 1 });
             }
           });
         }
@@ -101,7 +142,7 @@
     const saveCart = () => {
       try {
         localStorage.setItem('shopjoy_cart', JSON.stringify(
-          cart.map(i => ({ productId: i.product.productId, color: i.color, size: i.size, qty: i.qty }))
+          cart.map(i => ({ cartId: i.cartId, productId: i.product.productId, color: i.color, size: i.size, qty: i.qty }))
         ));
       } catch (e) {}
     };
@@ -117,7 +158,7 @@
       if (existing) {
         existing.qty += qty;
       } else {
-        cart.push({ product, color, size, qty });
+        cart.push({ cartId: genId(), product, color, size, qty });
       }
       saveCart();
       showToast(`장바구니에 담았습니다! (${color.name} / ${size})`, 'success');
@@ -183,6 +224,12 @@
           if (sp && validPages.includes(sp) && (!isMyPage(sp) || isLoggedIn)) page.value = sp;
         } catch (e) {}
       }
+      /* 바로구매 URL 파라미터 복원 */
+      if (page.value === 'order' && hasPageParam) {
+        instantOrder.value = _instantOrderFromParams(params);
+        const cids = params.get('cartIds');
+        if (cids) cartIds.value = cids.split(',').filter(Boolean);
+      }
       const hpid = hasPageParam ? params?.get('pid') : null;
       const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
       if (!Number.isNaN(pid)) {
@@ -207,6 +254,14 @@
         const params = new URLSearchParams(rawHash);
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage)) page.value = hPage;
+        if (hPage === 'order') {
+          instantOrder.value = _instantOrderFromParams(params);
+          const cids = params.get('cartIds');
+          cartIds.value = cids ? cids.split(',').filter(Boolean) : null;
+        } else if (hPage && hPage !== 'order') {
+          instantOrder.value = null;
+          cartIds.value = null;
+        }
         const hpid = params.get('pid');
         const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
         if (!Number.isNaN(pid)) {
@@ -225,6 +280,13 @@
       if (id === 'detail') {
         params.set('pid', selectedProduct.value?.productId ?? '');
         if (selectedProduct.value?.productId != null) sessionStorage.setItem('shopjoy_pid', String(selectedProduct.value.productId));
+      }
+      if (id === 'order' && instantOrder.value) {
+        const io = _instantOrderToParams(instantOrder.value);
+        Object.entries(io).forEach(([k, v]) => params.set(k, v));
+      }
+      if (id === 'order' && cartIds.value?.length) {
+        params.set('cartIds', cartIds.value.join(','));
       }
       const hash = params.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
@@ -265,6 +327,7 @@
       confirmState, showConfirm, closeConfirm,
       products, selectedProduct, selectProduct,
       cart, cartCount, addToCart, removeFromCart, updateCartQty, clearCart,
+      instantOrder, cartIds,
       config: window.SITE_CONFIG,
       auth, showLogin, onShowLogin, onLogout,
     };
@@ -311,6 +374,7 @@
       <order
         v-else-if="page==='order'"
         :navigate="navigate" :config="config" :cart="cart"
+        :instant-order="instantOrder" :cart-ids="cartIds"
         :show-toast="showToast" :show-alert="showAlert" :clear-cart="clearCart"
       />
       <contact

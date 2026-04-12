@@ -1,202 +1,42 @@
-/* ShopJoy - Detail (색상/사이즈 필수 선택) */
+/* ShopJoy - Detail (상품 상세 리뉴얼) */
 window.Detail = {
   name: 'Detail',
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert'],
-  emits: [],
-  template: /* html */ `
-<div class="page-wrap">
-  <button @click="navigate('products')" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:24px;padding:0;transition:color 0.2s;"
-    @mouseenter="$event.currentTarget.style.color='var(--blue)'"
-    @mouseleave="$event.currentTarget.style.color='var(--text-muted)'">
-    ← 상품 목록으로
-  </button>
-
-  <template v-if="product">
-    <div style="display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;" class="detail-grid">
-
-      <!-- 왼쪽: 이미지 + 상품 정보 -->
-      <div>
-        <!-- 상품 이미지 -->
-        <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
-          <div :style="{
-            height:'320px', display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:'9rem',
-            background: selectedColor
-              ? 'linear-gradient(135deg,' + selectedColor.hex + '33, ' + selectedColor.hex + '11)'
-              : 'linear-gradient(135deg,var(--blue-dim),var(--green-dim))',
-            position:'relative', transition:'background 0.4s ease'
-          }">
-            {{ product.emoji }}
-            <div v-if="product.badge"
-              style="position:absolute;top:16px;left:16px;">
-              <span v-if="product.badge==='NEW'" class="badge badge-new" style="font-size:0.8rem;padding:4px 12px;">NEW</span>
-              <span v-else-if="product.badge==='인기'" class="badge badge-hot" style="font-size:0.8rem;padding:4px 12px;">인기</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 상품 설명 -->
-        <div class="card" style="padding:28px;margin-bottom:20px;">
-          <h2 style="font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📋 상품 설명</h2>
-          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.8;margin-bottom:16px;">{{ product.desc }}</p>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span v-for="t in product.tags" :key="t" class="tag"># {{ t }}</span>
-          </div>
-        </div>
-
-        <!-- 관리 안내 -->
-        <div class="card" style="padding:28px;">
-          <h2 style="font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🧺 세탁 및 관리</h2>
-          <div class="info-row">
-            <span class="info-icon">💧</span>
-            <div><div class="info-label">세탁 방법</div><div class="info-val">찬물 손세탁 또는 세탁기 약세탁 권장</div></div>
-          </div>
-          <div class="info-row">
-            <span class="info-icon">🌡️</span>
-            <div><div class="info-label">건조 방법</div><div class="info-val">그늘에서 자연 건조 (드라이기 금지)</div></div>
-          </div>
-          <div class="info-row">
-            <span class="info-icon">👕</span>
-            <div><div class="info-label">다림질</div><div class="info-val">낮은 온도로 뒤집어 다림질</div></div>
-          </div>
-          <div class="info-row">
-            <span class="info-icon">🚫</span>
-            <div><div class="info-label">주의사항</div><div class="info-val">표백제 사용 금지, 드라이클리닝 권장 안함</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 오른쪽: 구매 옵션 -->
-      <div>
-        <div class="card" style="padding:28px;position:sticky;top:76px;">
-          <!-- 상품명 + 카테고리 -->
-          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-            <h1 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;">{{ product.prodNm }}</h1>
-            <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">{{ categoryLabel(product) }}</span>
-          </div>
-          <!-- 가격 -->
-          <div style="font-size:1.6rem;font-weight:900;color:var(--blue);margin-bottom:24px;">{{ product.price }}</div>
-
-          <!-- ① 색상 선택 (필수) -->
-          <div style="margin-bottom:20px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <label class="form-label" style="margin:0;">색상 선택<span class="form-required">*</span></label>
-              <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;">
-              <button v-for="c in product.colors" :key="c.name"
-                class="color-swatch"
-                :class="{selected: selectedColor && selectedColor.name===c.name}"
-                :style="{ background: c.hex, border: '2px solid ' + (c.hex === '#f5f0eb' || c.hex === '#f5f5f0' || c.hex === '#f5f5f5' || c.hex === '#f5f0e8' || c.hex === '#f5f0e0' ? 'rgba(0,0,0,0.15)' : 'transparent') }"
-                :title="c.name"
-                @click="selectColor(c)"
-                style="width:32px;height:32px;">
-              </button>
-            </div>
-            <div v-if="colorError" class="form-error" style="margin-top:6px;">{{ colorError }}</div>
-          </div>
-
-          <!-- ② 사이즈 선택 (필수) -->
-          <div style="margin-bottom:20px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <label class="form-label" style="margin:0;">사이즈 선택<span class="form-required">*</span></label>
-              <button @click="showSizeGuide=true"
-                style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
-                사이즈 가이드
-              </button>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;">
-              <button v-for="s in product.sizes" :key="s"
-                class="size-btn"
-                :class="{selected: selectedSize===s}"
-                @click="selectSize(s)">{{ s }}</button>
-            </div>
-            <div v-if="sizeError" class="form-error" style="margin-top:6px;">{{ sizeError }}</div>
-          </div>
-
-          <!-- ③ 수량 -->
-          <div style="margin-bottom:24px;">
-            <label class="form-label">수량</label>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <button class="qty-btn" @click="qty>1&&qty--">−</button>
-              <span class="qty-val">{{ qty }}</span>
-              <button class="qty-btn" @click="qty++">+</button>
-            </div>
-          </div>
-
-          <!-- 선택 요약 -->
-          <div v-if="selectedColor || selectedSize" style="background:var(--bg-base);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:0.82rem;color:var(--text-secondary);line-height:1.7;">
-            <div v-if="selectedColor"><span style="font-weight:600;">색상:</span> {{ selectedColor.name }}</div>
-            <div v-if="selectedSize"><span style="font-weight:600;">사이즈:</span> {{ selectedSize }}</div>
-            <div><span style="font-weight:600;">수량:</span> {{ qty }}개</div>
-          </div>
-
-          <!-- 버튼 -->
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;" @click="handleAddToCart">
-              🛒 장바구니 담기
-            </button>
-            <button class="btn-outline" style="width:100%;padding:14px;font-size:0.95rem;" @click="handleBuyNow">
-              ⚡ 바로 구매하기
-            </button>
-            <button @click="navigate('contact')"
-              style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:4px 0;">
-              상품 문의하기
-            </button>
-          </div>
-
-          <!-- 배송 안내 -->
-          <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:6px;">
-            <div style="display:flex;gap:8px;"><span>🚚</span><span>결제 확인 후 <strong>1~2 영업일</strong> 내 출고</span></div>
-            <div style="display:flex;gap:8px;"><span>↩️</span><span>수령 후 <strong>7일 이내</strong> 교환·반품 가능</span></div>
-            <div style="display:flex;gap:8px;"><span>💳</span><span>결제: <strong>계좌이체</strong></span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <!-- 사이즈 가이드 모달 -->
-  <div v-if="showSizeGuide" class="modal-overlay" @click.self="showSizeGuide=false">
-    <div class="modal-box" style="max-width:480px;text-align:left;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <span style="font-weight:800;font-size:1rem;color:var(--text-primary);">📏 사이즈 가이드</span>
-        <button @click="showSizeGuide=false" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);padding:0;line-height:1;">✕</button>
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
-        <thead>
-          <tr style="background:var(--blue-dim);">
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);border-radius:6px 0 0 0;">사이즈</th>
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">어깨 (cm)</th>
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">가슴 (cm)</th>
-            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);border-radius:0 6px 0 0;">총장 (cm)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row, i) in sizeGuideRows" :key="i" :style="{ background: i%2===0 ? 'transparent' : 'var(--bg-base)' }">
-            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--text-primary);">{{ row[0] }}</td>
-            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[1] }}</td>
-            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[2] }}</td>
-            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[3] }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);line-height:1.6;">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
-      <button class="btn-blue" @click="showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
-    </div>
-  </div>
-</div>
-  `,
   setup(props) {
-    const { ref } = Vue;
+    const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;
 
+    /* ── 이미지 갤러리 ── */
+    const selectedImg = ref(0);
+    const zoomOpen    = ref(false);
+
+    /* ── 구매 옵션 ── */
     const selectedColor = ref(null);
     const selectedSize  = ref(null);
-    const qty = ref(1);
-    const colorError = ref('');
-    const sizeError  = ref('');
+    const qty           = ref(1);
+    const colorError    = ref('');
+    const sizeError     = ref('');
     const showSizeGuide = ref(false);
 
+    /* ── 탭 ── */
+    const TABS = [
+      { id: 'detail', label: '상세정보' },
+      { id: 'size',   label: '사이즈' },
+      { id: 'review', label: '상품평' },
+      { id: 'style',  label: '스타일' },
+    ];
+    const activeTab    = ref('detail');
+    const tabBarRef    = ref(null);
+    const detailSecRef = ref(null);
+    const sizeSecRef   = ref(null);
+    const reviewSecRef = ref(null);
+    const styleSecRef  = ref(null);
+
+    /* ── 상품평 ── */
+    const reviewFilter   = ref('최신순');
+    const photoPopupOpen = ref(false);
+    const selectedReview = ref(null);
+
+    /* ── 사이즈 가이드 ── */
     const sizeGuideRows = [
       ['XS', '36', '82', '60'],
       ['S',  '38', '86', '62'],
@@ -206,22 +46,167 @@ window.Detail = {
       ['XXL','46', '108','70'],
     ];
 
-    function categoryLabel(p) {
+    /* ── 스타일 추천 ── */
+    const styleItems = [
+      { emoji: '👖', label: '캐주얼 룩',  desc: '데님 팬츠 + 스니커즈' },
+      { emoji: '👗', label: '페미닌 룩',  desc: '플로럴 스커트와 매치' },
+      { emoji: '🧥', label: '레이어드 룩', desc: '오버핏 자켓과 함께' },
+      { emoji: '👟', label: '스포티 룩',  desc: '트랙 팬츠 + 스니커즈' },
+    ];
+
+    /* ── 가상 이미지 목록 ── */
+    const mockImages = computed(() => {
+      const p = props.product;
+      if (!p) return [];
+      const imgs = [{ bg: 'linear-gradient(135deg,var(--blue-dim),var(--green-dim))', label: '기본' }];
+      (p.opt1s || []).slice(0, 4).forEach(c => {
+        imgs.push({ bg: `linear-gradient(135deg,${c.hex}66,${c.hex}22)`, hex: c.hex, label: c.name });
+      });
+      return imgs;
+    });
+
+    /* ── 가상 리뷰 ── */
+    const MOCK_NAMES = ['김민지','이수진','박지현','정다운','최예린','강하늘','윤서연','오지은','임채원','한소희'];
+    const MOCK_COMMENTS = [
+      '생각보다 훨씬 예뻐요! 색감도 사진이랑 같고 소재도 정말 좋아요. 재구매 의사 있어요.',
+      '배송도 빠르고 상품 품질이 너무 좋아요. 착용감이 편하고 핏이 예쁘게 나와요.',
+      '사진보다 실제로 더 예쁜 것 같아요. 선물용으로 샀는데 상대방도 너무 좋아했어요.',
+      '소재가 고급스럽고 마감이 깔끔해요. 세탁 후에도 형태가 잘 유지됩니다.',
+      '핏이 너무 이뻐요! 처음엔 사이즈 고민했는데 평소 사이즈 딱 맞게 왔어요.',
+      '색이 진짜 예뻐서 매일 입고 싶어요. 여름에 입기 딱 좋은 소재입니다.',
+      '가격 대비 퀄리티가 정말 좋아요. 주변에서도 어디서 샀냐고 많이 물어봐요.',
+      '다음에도 또 구매할 것 같아요. 배송도 빠르고 포장도 꼼꼼하게 되어 있었어요.',
+      '입어보니 핏이 정말 이쁘고 소재도 좋아요. 여러 색상 다 사고 싶네요.',
+      '기대보다 훨씬 마음에 들어요. 실제 착용해보니 사진보다 더 예쁜 것 같아요.',
+    ];
+
+    const mockReviews = computed(() => {
+      const p = props.product;
+      if (!p) return [];
+      const pid    = p.productId || 1;
+      const colors = p.opt1s || [];
+      const sizes  = p.opt2s  || ['S', 'M', 'L'];
+      return MOCK_NAMES.map((name, i) => {
+        const seed  = (pid * 7 + i * 13) % 10;
+        const cIdx  = (pid + i) % Math.max(1, colors.length);
+        const month = String(Math.min(9, 1 + (i % 4) + (pid % 3))).padStart(2, '0');
+        const day   = String(5 + (seed * 3) % 22).padStart(2, '0');
+        return {
+          id:         i + 1,
+          maskedName: name[0] + '*' + (name.length > 2 ? name.slice(-1) : '*'),
+          rating:     seed < 6 ? 5 : seed < 9 ? 4 : 3,
+          date:       `2026.${month}.${day}`,
+          sizeInfo:   sizes[i % sizes.length],
+          colorInfo:  colors[cIdx]?.name || '기본',
+          text:       MOCK_COMMENTS[i],
+          hasPhoto:   i < 5,
+          photoHex:   colors[cIdx]?.hex || '#e8587a',
+          helpful:    (pid * 3 + i * 7) % 38,
+        };
+      });
+    });
+
+    const reviewsWithPhoto = computed(() => mockReviews.value.filter(r => r.hasPhoto));
+
+    const filteredReviews = computed(() => {
+      const list = [...mockReviews.value];
+      if (reviewFilter.value === '별점높은순') return list.sort((a, b) => b.rating - a.rating);
+      if (reviewFilter.value === '별점낮은순') return list.sort((a, b) => a.rating - b.rating);
+      if (reviewFilter.value === '도움순')     return list.sort((a, b) => b.helpful - a.helpful);
+      return list;
+    });
+
+    const avgRating = computed(() => {
+      const r = mockReviews.value;
+      return r.length ? (r.reduce((s, x) => s + x.rating, 0) / r.length).toFixed(1) : '0.0';
+    });
+
+    const ratingDist = computed(() =>
+      [5, 4, 3, 2, 1].map(star => ({
+        star,
+        count: mockReviews.value.filter(x => x.rating === star).length,
+        pct:   mockReviews.value.length
+          ? Math.round(mockReviews.value.filter(x => x.rating === star).length / mockReviews.value.length * 100)
+          : 0,
+      }))
+    );
+
+    /* ── 별점 렌더 ── */
+    const stars = n => {
+      const v = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
+      return '★'.repeat(v) + '☆'.repeat(5 - v);
+    };
+
+    /* ── 탭 스크롤 ── */
+    const scrollToTab = (tabId) => {
+      const map = { detail: detailSecRef, size: sizeSecRef, review: reviewSecRef, style: styleSecRef };
+      const el  = map[tabId]?.value;
+      if (!el) return;
+      const tabH = (tabBarRef.value?.offsetHeight || 44) + 76;
+      const top  = el.getBoundingClientRect().top + window.scrollY - tabH - 4;
+      window.scrollTo({ top, behavior: 'smooth' });
+      activeTab.value = tabId;
+    };
+
+    const onScroll = () => {
+      const tabBottom = tabBarRef.value
+        ? tabBarRef.value.getBoundingClientRect().bottom + 10
+        : 130;
+      const sections = [
+        { id: 'style',  ref: styleSecRef },
+        { id: 'review', ref: reviewSecRef },
+        { id: 'size',   ref: sizeSecRef },
+        { id: 'detail', ref: detailSecRef },
+      ];
+      for (const s of sections) {
+        if (s.ref.value && s.ref.value.getBoundingClientRect().top <= tabBottom) {
+          activeTab.value = s.id;
+          break;
+        }
+      }
+    };
+
+    onMounted(() => {
+      window.addEventListener('scroll', onScroll, { passive: true });
+      /* 진입 시 첫 번째 색상 자동 선택 */
+      if (props.product?.opt1s?.[0]) selectedColor.value = props.product.opt1s[0];
+    });
+    onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
+
+    watch(() => props.product, (p) => {
+      selectedColor.value = p?.opt1s?.[0] || null;
+      selectedSize.value  = null;
+      qty.value           = 1;
+      selectedImg.value   = 0;
+      activeTab.value     = 'detail';
+      quickBuyOpen.value  = false;
+      window.scrollTo(0, 0);
+    });
+
+    /* ── 카테고리 라벨 ── */
+    const categoryLabel = p => {
       if (!p) return '';
-      const cats = (props.config && props.config.categorys) || [];
-      const row = cats.find(c => c.categoryId === p.categoryId);
-      return row ? row.categoryNm : p.categoryId;
-    }
-
-    const selectColor = c => {
-      selectedColor.value = c;
-      colorError.value = '';
+      return (props.config?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
     };
 
-    const selectSize = s => {
-      selectedSize.value = s;
-      sizeError.value = '';
-    };
+    /* ── 드로어 (바로구매 / 장바구니 공용) ── */
+    const quickBuyOpen = ref(false);
+    const drawerMode   = ref('buy'); // 'buy' | 'cart'
+
+    /* 바로구매 총 금액 (숫자 파싱) */
+    const quickBuyTotal = computed(() => {
+      const p = props.product;
+      if (!p) return '';
+      const numStr = String(p.price || '').replace(/[^0-9]/g, '');
+      const num = Number(numStr);
+      if (!num) return p.price;
+      const total = num * qty.value;
+      return total.toLocaleString('ko-KR') + '원';
+    });
+
+    /* ── 구매 로직 ── */
+    const selectColor = c => { selectedColor.value = c; colorError.value = ''; };
+    const selectSize  = s => { selectedSize.value  = s; sizeError.value  = ''; };
 
     const validate = () => {
       let ok = true;
@@ -233,22 +218,612 @@ window.Detail = {
     const handleAddToCart = () => {
       if (!validate()) return;
       props.addToCart(props.product, selectedColor.value, selectedSize.value, qty.value);
-      // reset
-      selectedColor.value = null;
+      selectedColor.value = props.product?.opt1s?.[0] || null;
       selectedSize.value  = null;
       qty.value = 1;
     };
 
-    const handleBuyNow = () => {
+    /* 바로구매: 현재 상품 정보를 파라메터로 전달 (장바구니 미변경) */
+    const execBuyNow = () => {
       if (!validate()) return;
-      props.addToCart(props.product, selectedColor.value, selectedSize.value, qty.value);
-      props.navigate('cart');
+      quickBuyOpen.value = false;
+      props.navigate('order', {
+        instantOrder: {
+          product: props.product,
+          color: selectedColor.value,
+          size: selectedSize.value,
+          qty: qty.value,
+        }
+      });
     };
 
-    return {
-      selectedColor, selectedSize, qty, colorError, sizeError, showSizeGuide,
-      sizeGuideRows, categoryLabel, selectColor, selectSize,
-      handleAddToCart, handleBuyNow,
+    /* 드로어 장바구니 담기 */
+    const execCartFromDrawer = () => {
+      if (!validate()) return;
+      props.addToCart(props.product, selectedColor.value, selectedSize.value, qty.value);
+      quickBuyOpen.value = false;
+      selectedColor.value = props.product?.opt1s?.[0] || null;
+      selectedSize.value  = null;
+      qty.value = 1;
     };
-  }
+
+    /* 메인 패널 "바로 구매하기" → 바로구매 실행 */
+    const handleBuyNow = () => execBuyNow();
+
+    /* 하단 바 "바로구매" → 드로어 열기 */
+    const openQuickBuy  = () => { drawerMode.value = 'buy';  quickBuyOpen.value = true; };
+    const openCartDrawer = () => { drawerMode.value = 'cart'; quickBuyOpen.value = true; };
+
+    return {
+      selectedImg, zoomOpen,
+      selectedColor, selectedSize, qty, colorError, sizeError, showSizeGuide,
+      TABS, activeTab, tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, styleSecRef,
+      reviewFilter, photoPopupOpen, selectedReview,
+      sizeGuideRows, styleItems,
+      mockImages, mockReviews, reviewsWithPhoto, filteredReviews, avgRating, ratingDist,
+      quickBuyOpen, drawerMode, quickBuyTotal,
+      scrollToTab, categoryLabel, stars,
+      selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
+    };
+  },
+
+  template: /* html */ `
+<div style="padding-bottom:72px;">
+
+  <!-- 뒤로 -->
+  <div class="page-wrap" style="padding-top:20px;padding-bottom:0;">
+    <button @click="navigate('products')"
+      style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:20px;padding:0;transition:color .2s;"
+      @mouseenter="$event.currentTarget.style.color='var(--blue)'"
+      @mouseleave="$event.currentTarget.style.color='var(--text-muted)'">
+      ← 상품 목록으로
+    </button>
+  </div>
+
+  <template v-if="product">
+    <!-- ══ 상단: 갤러리 + 구매 옵션 ══ -->
+    <div class="page-wrap" style="padding-bottom:0;">
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;" class="detail-grid">
+
+        <!-- 좌: 이미지 갤러리 -->
+        <div style="display:flex;gap:12px;">
+
+          <!-- 썸네일 세로 목록 -->
+          <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+            <div v-for="(img,i) in mockImages" :key="i"
+              @click="selectedImg=i"
+              :style="{
+                width:'64px',height:'64px',borderRadius:'8px',
+                background:img.bg,cursor:'pointer',
+                border:selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
+                display:'flex',alignItems:'center',justifyContent:'center',
+                fontSize:'1.4rem',transition:'border-color .15s',flexShrink:0,
+              }">
+              {{ product.emoji }}
+            </div>
+          </div>
+
+          <!-- 메인 이미지 -->
+          <div style="flex:1;cursor:zoom-in;position:relative;" @click="zoomOpen=true">
+            <div :style="{
+              borderRadius:'12px',border:'1px solid var(--border)',
+              background:mockImages[selectedImg]?.bg||'var(--bg-base)',
+              minHeight:'420px',display:'flex',alignItems:'center',justifyContent:'center',
+              fontSize:'8rem',position:'relative',transition:'background .3s',
+            }">
+              {{ product.emoji }}
+              <div v-if="product.badge" style="position:absolute;top:14px;left:14px;">
+                <span v-if="product.badge==='NEW'"
+                  style="background:var(--blue);color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">NEW</span>
+                <span v-else-if="product.badge==='인기'"
+                  style="background:#ff6b35;color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">인기</span>
+              </div>
+              <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.35);color:#fff;border-radius:6px;padding:4px 10px;font-size:0.75rem;display:flex;align-items:center;gap:4px;">
+                🔍 확대
+              </div>
+            </div>
+          </div>
+        </div><!-- /gallery -->
+
+        <!-- 우: 구매 옵션 -->
+        <div>
+          <div class="card" style="padding:28px;position:sticky;top:76px;">
+
+            <!-- 상품명 + 카테고리 -->
+            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+              <h1 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;line-height:1.3;">{{ product.prodNm }}</h1>
+              <span style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--blue-dim);color:var(--blue);flex-shrink:0;white-space:nowrap;">{{ categoryLabel(product) }}</span>
+            </div>
+
+            <!-- 별점 미리보기 -->
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+              <span style="color:#f59e0b;font-size:0.82rem;">{{ stars(avgRating) }}</span>
+              <span style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">{{ avgRating }}</span>
+              <span style="font-size:0.78rem;color:var(--text-muted);">({{ mockReviews.length }})</span>
+            </div>
+
+            <!-- 가격 -->
+            <div style="font-size:1.7rem;font-weight:900;color:var(--blue);margin-bottom:24px;">{{ product.price }}</div>
+
+            <!-- 색상 선택 -->
+            <div style="margin-bottom:20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">색상 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
+                <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <button v-for="c in product.opt1s" :key="c.name" @click="selectColor(c)"
+                  :title="c.name"
+                  :style="{
+                    width:'30px',height:'30px',borderRadius:'50%',cursor:'pointer',
+                    background:c.hex,
+                    border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
+                    outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
+                    outlineOffset:'-4px',boxSizing:'border-box',transition:'border .15s',
+                  }">
+                </button>
+              </div>
+              <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
+            </div>
+
+            <!-- 사이즈 선택 -->
+            <div style="margin-bottom:20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
+                <button @click="showSizeGuide=true"
+                  style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
+                  사이즈 가이드
+                </button>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
+                  :style="{
+                    padding:'7px 14px',borderRadius:'6px',cursor:'pointer',fontSize:'0.82rem',
+                    border:selectedSize===s?'2px solid var(--blue)':'1.5px solid var(--border)',
+                    background:selectedSize===s?'var(--blue-dim)':'var(--bg-card)',
+                    color:selectedSize===s?'var(--blue)':'var(--text-secondary)',
+                    fontWeight:selectedSize===s?'700':'500',
+                    transition:'all .15s',
+                  }">{{ s }}</button>
+              </div>
+              <div v-if="sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ sizeError }}</div>
+            </div>
+
+            <!-- 수량 -->
+            <div style="margin-bottom:20px;">
+              <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">수량</label>
+              <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
+                <button @click="qty>1&&qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">−</button>
+                <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ qty }}</span>
+                <button @click="qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">+</button>
+              </div>
+            </div>
+
+            <!-- 선택 요약 -->
+            <div v-if="selectedColor||selectedSize"
+              style="background:var(--bg-base);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;">
+              <div v-if="selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ selectedColor.name }}</div>
+              <div v-if="selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ selectedSize }}</div>
+              <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ qty }}개</div>
+            </div>
+
+            <!-- 버튼 -->
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+              <button class="btn-blue" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleAddToCart">🛒 장바구니 담기</button>
+              <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="execBuyNow">⚡ 바로구매</button>
+              <button @click="navigate('contact')"
+                style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:4px 0;text-align:center;">
+                상품 문의하기
+              </button>
+            </div>
+
+            <!-- 배송 안내 -->
+            <div style="padding-top:14px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:5px;">
+              <div style="display:flex;gap:8px;"><span>🚚</span><span>결제 확인 후 <strong>1~2 영업일</strong> 내 출고</span></div>
+              <div style="display:flex;gap:8px;"><span>↩️</span><span>수령 후 <strong>7일 이내</strong> 교환·반품 가능</span></div>
+              <div style="display:flex;gap:8px;"><span>💳</span><span>결제: <strong>계좌이체</strong></span></div>
+            </div>
+          </div>
+        </div><!-- /purchase -->
+      </div>
+    </div><!-- /page-wrap top -->
+
+    <!-- ══ 스티키 탭 바 ══ -->
+    <div ref="tabBarRef"
+      style="position:sticky;top:56px;z-index:50;background:var(--bg-card);border-top:1px solid var(--border);border-bottom:2px solid var(--border);margin-top:24px;">
+      <div class="page-wrap" style="padding-top:0;padding-bottom:0;display:flex;justify-content:center;">
+        <button v-for="tab in TABS" :key="tab.id" @click="scrollToTab(tab.id)"
+          :style="{
+            padding:'13px 22px',background:'none',cursor:'pointer',
+            border:'none',
+            borderBottom:activeTab===tab.id?'2px solid var(--blue)':'2px solid transparent',
+            color:activeTab===tab.id?'var(--blue)':'var(--text-secondary)',
+            fontWeight:activeTab===tab.id?'700':'500',
+            fontSize:'0.88rem',transition:'all .15s',whiteSpace:'nowrap',
+            marginBottom:'-2px',
+          }">{{ tab.label }}</button>
+      </div>
+    </div>
+
+    <!-- ══ 탭 섹션들 ══ -->
+    <div class="page-wrap" style="padding-top:0;">
+
+      <!-- 상세정보 -->
+      <div ref="detailSecRef" style="padding-top:32px;">
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">상세정보</div>
+
+        <div class="card" style="padding:28px;margin-bottom:14px;">
+          <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📋 상품 설명</h2>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.9;margin-bottom:16px;">{{ product.desc }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span v-for="t in product.tags" :key="t"
+              style="padding:4px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:20px;font-size:0.78rem;color:var(--text-secondary);"># {{ t }}</span>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px;">
+          <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🧺 세탁 및 관리</h2>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div v-for="item in [
+              {icon:'💧',label:'세탁 방법',val:'찬물 손세탁 또는 세탁기 약세탁 권장'},
+              {icon:'🌡️',label:'건조 방법',val:'그늘에서 자연 건조 (드라이기 금지)'},
+              {icon:'👕',label:'다림질',val:'낮은 온도로 뒤집어 다림질'},
+              {icon:'🚫',label:'주의사항',val:'표백제 사용 금지, 드라이클리닝 권장 안함'},
+            ]" :key="item.label" style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="font-size:1.05rem;flex-shrink:0;width:26px;text-align:center;">{{ item.icon }}</span>
+              <div>
+                <div style="font-size:0.76rem;color:var(--text-muted);margin-bottom:2px;">{{ item.label }}</div>
+                <div style="font-size:0.87rem;color:var(--text-secondary);">{{ item.val }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 사이즈 -->
+      <div ref="sizeSecRef" style="padding-top:40px;">
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">사이즈</div>
+        <div class="card" style="padding:28px;">
+          <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">📏 사이즈 가이드</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.82rem;min-width:320px;">
+              <thead>
+                <tr style="background:var(--blue-dim);">
+                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">사이즈</th>
+                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">어깨 (cm)</th>
+                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">가슴 (cm)</th>
+                  <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--blue);">총장 (cm)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row,i) in sizeGuideRows" :key="i" :style="{background:i%2===0?'transparent':'var(--bg-base)'}">
+                  <td style="padding:10px 16px;text-align:center;font-weight:700;color:var(--text-primary);">{{ row[0] }}</td>
+                  <td style="padding:10px 16px;text-align:center;color:var(--text-secondary);">{{ row[1] }}</td>
+                  <td style="padding:10px 16px;text-align:center;color:var(--text-secondary);">{{ row[2] }}</td>
+                  <td style="padding:10px 16px;text-align:center;color:var(--text-secondary);">{{ row[3] }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
+        </div>
+      </div>
+
+      <!-- 상품평 -->
+      <div ref="reviewSecRef" style="padding-top:40px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
+          <span style="font-size:1rem;font-weight:800;color:var(--text-primary);">상품평</span>
+          <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">{{ mockReviews.length }}</span>
+        </div>
+
+        <!-- 평점 요약 -->
+        <div class="card" style="padding:24px;margin-bottom:14px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
+          <div style="text-align:center;flex-shrink:0;min-width:90px;">
+            <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">{{ avgRating }}</div>
+            <div style="color:#f59e0b;font-size:1rem;margin:6px 0;">{{ stars(avgRating) }}</div>
+            <div style="font-size:0.76rem;color:var(--text-muted);">{{ mockReviews.length }}개 리뷰</div>
+          </div>
+          <div style="flex:1;min-width:180px;">
+            <div v-for="d in ratingDist" :key="d.star" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+              <span style="font-size:0.76rem;color:var(--text-muted);width:22px;text-align:right;flex-shrink:0;">{{ d.star }}★</span>
+              <div style="flex:1;height:7px;background:var(--bg-base);border-radius:4px;overflow:hidden;">
+                <div :style="{width:d.pct+'%',height:'100%',background:'#f59e0b',borderRadius:'4px'}"></div>
+              </div>
+              <span style="font-size:0.76rem;color:var(--text-muted);width:36px;flex-shrink:0;">{{ d.pct }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 포토 리뷰 목록 -->
+        <div v-if="reviewsWithPhoto.length" class="card" style="padding:20px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
+              포토&동영상 상품평 <span style="color:var(--blue);">{{ reviewsWithPhoto.length }}</span>
+            </span>
+            <button @click="photoPopupOpen=true"
+              style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
+              [+] 모아보기
+            </button>
+          </div>
+          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
+            <div v-for="r in reviewsWithPhoto" :key="r.id"
+              @click="selectedReview=r"
+              :style="{
+                width:'80px',height:'80px',flexShrink:0,borderRadius:'8px',cursor:'pointer',
+                background:r.photoHex+'cc',border:'1px solid var(--border)',
+                display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.8rem',
+                transition:'opacity .15s',
+              }"
+              @mouseenter="$event.currentTarget.style.opacity='.75'"
+              @mouseleave="$event.currentTarget.style.opacity='1'">
+              {{ product.emoji }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 정렬 -->
+        <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
+          <button v-for="f in ['최신순','별점높은순','별점낮은순','도움순']" :key="f"
+            @click="reviewFilter=f"
+            :style="{
+              padding:'5px 14px',border:reviewFilter===f?'1.5px solid var(--blue)':'1.5px solid var(--border)',
+              borderRadius:'20px',cursor:'pointer',fontSize:'0.8rem',
+              background:reviewFilter===f?'var(--blue-dim)':'var(--bg-card)',
+              color:reviewFilter===f?'var(--blue)':'var(--text-secondary)',
+              fontWeight:reviewFilter===f?'700':'400',
+            }">{{ f }}</button>
+        </div>
+
+        <!-- 리뷰 목록 -->
+        <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div v-for="(r,i) in filteredReviews" :key="r.id"
+            :style="{padding:'20px',borderTop:i===0?'none':'1px solid var(--border)',background:'var(--bg-card)'}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;">
+              <span style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">{{ r.maskedName }}</span>
+              <span style="color:#f59e0b;font-size:0.82rem;">{{ stars(r.rating) }}</span>
+              <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ r.date }}</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+              <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">사이즈: {{ r.sizeInfo }}</span>
+              <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">색상: {{ r.colorInfo }}</span>
+            </div>
+            <div v-if="r.hasPhoto" style="margin-bottom:10px;">
+              <div @click="selectedReview=r"
+                :style="{
+                  width:'72px',height:'72px',borderRadius:'8px',cursor:'pointer',
+                  background:r.photoHex+'cc',border:'1px solid var(--border)',
+                  display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'1.6rem',
+                }">{{ product.emoji }}</div>
+            </div>
+            <p style="font-size:0.87rem;color:var(--text-secondary);line-height:1.75;margin-bottom:10px;">{{ r.text }}</p>
+            <div style="font-size:0.75rem;color:var(--text-muted);">
+              도움이 돼요 <span style="font-weight:700;color:var(--text-secondary);">({{ r.helpful }})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 스타일 -->
+      <div ref="styleSecRef" style="padding-top:40px;padding-bottom:20px;">
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">스타일</div>
+        <div class="card" style="padding:28px;">
+          <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">🎨 이런 코디 어때요?</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+            <div v-for="s in styleItems" :key="s.label"
+              style="background:var(--bg-base);border-radius:10px;padding:18px;text-align:center;">
+              <div style="font-size:2rem;margin-bottom:8px;">{{ s.emoji }}</div>
+              <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;">{{ s.label }}</div>
+              <div style="font-size:0.77rem;color:var(--text-muted);">{{ s.desc }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-wrap sections -->
+  </template>
+
+  <!-- ══ 이미지 확대 모달 ══ -->
+  <div v-if="zoomOpen && product" @click="zoomOpen=false"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;align-items:center;justify-content:center;cursor:zoom-out;">
+    <div :style="{
+      width:'340px',height:'340px',borderRadius:'20px',
+      background:mockImages[selectedImg]?.bg||'var(--bg-base)',
+      display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12rem',
+    }" @click.stop></div>
+    <button @click="zoomOpen=false"
+      style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.4rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+  </div>
+
+  <!-- ══ 포토 전체 팝업 ══ -->
+  <div v-if="photoPopupOpen && product" @click.self="photoPopupOpen=false"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;padding:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">포토&동영상 상품평 {{ reviewsWithPhoto.length }}</span>
+        <button @click="photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+        <div v-for="r in reviewsWithPhoto" :key="r.id"
+          @click="selectedReview=r;photoPopupOpen=false"
+          :style="{
+            aspectRatio:'1',borderRadius:'8px',cursor:'pointer',
+            background:r.photoHex+'cc',border:'1px solid var(--border)',
+            display:'flex',alignItems:'center',justifyContent:'center',fontSize:'2.4rem',
+            transition:'opacity .15s',
+          }"
+          @mouseenter="$event.currentTarget.style.opacity='.75'"
+          @mouseleave="$event.currentTarget.style.opacity='1'">
+          {{ product.emoji }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 포토 리뷰 개별 팝업 ══ -->
+  <div v-if="selectedReview && product" @click.self="selectedReview=null"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:201;display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">포토&동영상 상품평</span>
+        <button @click="selectedReview=null" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
+      </div>
+      <div :style="{
+        borderRadius:'12px',border:'1px solid var(--border)',
+        background:selectedReview.photoHex+'cc',
+        height:'220px',display:'flex',alignItems:'center',justifyContent:'center',
+        fontSize:'6rem',marginBottom:'20px',
+      }">{{ product.emoji }}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+        <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ selectedReview.maskedName }}</span>
+        <span style="color:#f59e0b;font-size:0.85rem;">{{ stars(selectedReview.rating) }}</span>
+        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ selectedReview.date }}</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">사이즈: {{ selectedReview.sizeInfo }}</span>
+        <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">색상: {{ selectedReview.colorInfo }}</span>
+      </div>
+      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">{{ selectedReview.text }}</p>
+      <div style="font-size:0.78rem;color:var(--text-muted);">
+        도움이 돼요 <span style="font-weight:700;color:var(--text-secondary);">({{ selectedReview.helpful }})</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 사이즈 가이드 모달 ══ -->
+  <div v-if="showSizeGuide" class="modal-overlay" @click.self="showSizeGuide=false">
+    <div class="modal-box" style="max-width:480px;text-align:left;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <span style="font-weight:800;font-size:1rem;color:var(--text-primary);">📏 사이즈 가이드</span>
+        <button @click="showSizeGuide=false" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+        <thead>
+          <tr style="background:var(--blue-dim);">
+            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">사이즈</th>
+            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">어깨</th>
+            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">가슴</th>
+            <th style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">총장</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row,i) in sizeGuideRows" :key="i" :style="{background:i%2===0?'transparent':'var(--bg-base)'}">
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--text-primary);">{{ row[0] }}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[1] }}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[2] }}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--text-secondary);">{{ row[3] }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
+      <button class="btn-blue" @click="showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
+    </div>
+  </div>
+
+  <!-- ══ 고정 하단 바 ══ -->
+  <div v-if="product"
+    style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg-card);border-top:1px solid var(--border);padding:10px 24px;display:flex;justify-content:center;align-items:center;box-shadow:0 -4px 20px rgba(0,0,0,0.08);">
+    <div style="display:flex;align-items:center;gap:16px;max-width:760px;width:100%;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
+        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);">{{ product.price }}</div>
+      </div>
+      <button class="btn-outline" style="padding:10px 22px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openCartDrawer">🛒 장바구니</button>
+      <button class="btn-blue"    style="padding:10px 28px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openQuickBuy">바로구매</button>
+    </div>
+  </div>
+
+  <!-- ══ 바로구매 드로어 (우측) ══ -->
+  <template v-if="quickBuyOpen && product">
+    <!-- 딤 오버레이 -->
+    <div @click="quickBuyOpen=false"
+      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:150;transition:opacity .25s;"></div>
+
+    <!-- 드로어 패널 -->
+    <div style="position:fixed;top:0;right:0;bottom:0;width:360px;max-width:92vw;z-index:151;background:var(--bg-card);box-shadow:-8px 0 32px rgba(0,0,0,0.14);display:flex;flex-direction:column;overflow:hidden;">
+
+      <!-- 헤더 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">{{ drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}</span>
+        <button @click="quickBuyOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">✕</button>
+      </div>
+
+      <!-- 스크롤 영역 -->
+      <div style="flex:1;overflow-y:auto;padding:20px;">
+
+        <!-- 색상 -->
+        <div style="margin-bottom:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">색상<span style="color:var(--blue);margin-left:2px;">*</span></span>
+            <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button v-for="c in product.opt1s" :key="c.name" @click="selectColor(c)" :title="c.name"
+              :style="{
+                width:'30px',height:'30px',borderRadius:'50%',cursor:'pointer',
+                background:c.hex,
+                border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
+                outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
+                outlineOffset:'-4px',boxSizing:'border-box',
+              }">
+            </button>
+          </div>
+          <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
+        </div>
+
+        <!-- 사이즈 -->
+        <div style="margin-bottom:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈<span style="color:var(--blue);margin-left:2px;">*</span></span>
+            <button @click="showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
+              :style="{
+                padding:'7px 16px',borderRadius:'6px',cursor:'pointer',fontSize:'0.82rem',
+                border:selectedSize===s?'2px solid var(--blue)':'1.5px solid var(--border)',
+                background:selectedSize===s?'var(--blue-dim)':'var(--bg-base)',
+                color:selectedSize===s?'var(--blue)':'var(--text-secondary)',
+                fontWeight:selectedSize===s?'700':'500',
+              }">{{ s }}</button>
+          </div>
+          <div v-if="sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ sizeError }}</div>
+        </div>
+
+        <!-- 수량 -->
+        <div style="margin-bottom:24px;">
+          <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">수량</span>
+          <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
+            <button @click="qty>1&&qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">−</button>
+            <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ qty }}</span>
+            <button @click="qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">+</button>
+          </div>
+        </div>
+
+        <!-- 선택 요약 -->
+        <div v-if="selectedColor||selectedSize"
+          style="background:var(--bg-base);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;border:1px solid var(--border);">
+          <div v-if="selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ selectedColor.name }}</div>
+          <div v-if="selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ selectedSize }}</div>
+          <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ qty }}개</div>
+        </div>
+      </div>
+
+      <!-- 하단: 총액 + 버튼 -->
+      <div style="flex-shrink:0;padding:16px 20px;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <span style="font-size:0.85rem;color:var(--text-muted);">총 주문금액</span>
+          <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">{{ quickBuyTotal }}</span>
+        </div>
+        <button v-if="drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execCartFromDrawer">
+          🛒 장바구니 담기
+        </button>
+        <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execBuyNow">
+          ⚡ 바로구매
+        </button>
+      </div>
+    </div>
+  </template>
+
+</div>
+  `,
 };

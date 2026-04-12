@@ -1,5 +1,5 @@
 -- ============================================================
--- sy_batch : 배치 / sy_batch_hist : 배치 실행 이력
+-- sy_batch : 배치 / sy_batch_log : 배치 실행 로그
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE sy_batch (
@@ -45,9 +45,9 @@ COMMENT ON COLUMN sy_batch.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_batch.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_batch.upd_date       IS '수정일';
 
--- 배치 실행 이력
-CREATE TABLE sy_batch_hist (
-    batch_hist_id   VARCHAR(16)     NOT NULL,
+-- 배치 실행 로그
+CREATE TABLE sy_batch_log (
+    batch_log_id    VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
     batch_id        VARCHAR(16)     NOT NULL,
     batch_code      VARCHAR(50),
@@ -64,24 +64,28 @@ CREATE TABLE sy_batch_hist (
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
-    PRIMARY KEY (batch_hist_id)
+    PRIMARY KEY (batch_log_id)
 );
 
-COMMENT ON TABLE  sy_batch_hist               IS '배치 실행 이력';
-COMMENT ON COLUMN sy_batch_hist.batch_hist_id IS '이력ID';
-COMMENT ON COLUMN sy_batch_hist.site_id       IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN sy_batch_hist.batch_id      IS '배치ID';
-COMMENT ON COLUMN sy_batch_hist.batch_code    IS '배치코드';
-COMMENT ON COLUMN sy_batch_hist.batch_nm      IS '배치명';
-COMMENT ON COLUMN sy_batch_hist.run_at        IS '실행시작일시';
-COMMENT ON COLUMN sy_batch_hist.end_at        IS '실행종료일시';
-COMMENT ON COLUMN sy_batch_hist.duration_ms   IS '실행시간(ms)';
-COMMENT ON COLUMN sy_batch_hist.run_status    IS '실행결과 (SUCCESS/FAILED/TIMEOUT)';
-COMMENT ON COLUMN sy_batch_hist.proc_count    IS '처리건수';
-COMMENT ON COLUMN sy_batch_hist.error_count   IS '오류건수';
-COMMENT ON COLUMN sy_batch_hist.message       IS '결과메시지';
-COMMENT ON COLUMN sy_batch_hist.detail        IS '상세로그 (JSON)';
-COMMENT ON COLUMN sy_batch_hist.reg_by        IS '등록자 (sy_user.user_id)';
-COMMENT ON COLUMN sy_batch_hist.reg_date      IS '등록일';
-COMMENT ON COLUMN sy_batch_hist.upd_by        IS '수정자 (sy_user.user_id)';
-COMMENT ON COLUMN sy_batch_hist.upd_date      IS '수정일';
+COMMENT ON TABLE  sy_batch_log               IS '배치 실행 로그';
+COMMENT ON COLUMN sy_batch_log.batch_log_id  IS '로그ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_batch_log.site_id       IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN sy_batch_log.batch_id      IS '배치ID';
+COMMENT ON COLUMN sy_batch_log.batch_code    IS '배치코드';
+COMMENT ON COLUMN sy_batch_log.batch_nm      IS '배치명';
+COMMENT ON COLUMN sy_batch_log.run_at        IS '실행시작일시';
+COMMENT ON COLUMN sy_batch_log.end_at        IS '실행종료일시';
+COMMENT ON COLUMN sy_batch_log.duration_ms   IS '실행시간(ms)';
+COMMENT ON COLUMN sy_batch_log.run_status    IS '실행결과 (SUCCESS/FAILED/TIMEOUT)';
+COMMENT ON COLUMN sy_batch_log.proc_count    IS '처리건수';
+COMMENT ON COLUMN sy_batch_log.error_count   IS '오류건수';
+COMMENT ON COLUMN sy_batch_log.message       IS '결과메시지';
+COMMENT ON COLUMN sy_batch_log.detail        IS '상세로그 (JSON)';
+COMMENT ON COLUMN sy_batch_log.reg_by        IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_batch_log.reg_date      IS '등록일';
+COMMENT ON COLUMN sy_batch_log.upd_by        IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_batch_log.upd_date      IS '수정일';
+
+CREATE INDEX idx_sy_batch_log_batch  ON sy_batch_log (batch_id);
+CREATE INDEX idx_sy_batch_log_date   ON sy_batch_log (run_at);
+CREATE INDEX idx_sy_batch_log_status ON sy_batch_log (run_status);

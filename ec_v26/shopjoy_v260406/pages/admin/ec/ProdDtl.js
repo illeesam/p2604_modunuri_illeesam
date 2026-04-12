@@ -10,7 +10,7 @@ window.ProdDtl = {
     const form = reactive({
       prodNm: '', category: '상의', price: 0, stock: 0,
       brand: 'ShopJoy', status: '판매중', regDate: '', description: '',
-      colors: '', sizes: '',
+      opt1s: '', opt2s: '',
       // 옵션설정
       optionUse: false, optionGroups: '',
       // 연관상품
@@ -25,12 +25,12 @@ window.ProdDtl = {
       price: yup.number().typeError('숫자를 입력해주세요.').required('가격을 입력해주세요.').min(1, '가격은 1원 이상이어야 합니다.'),
     });
 
-    /* 상품 이미지 목록 [{ id, previewUrl, isMain, colors, sizes }] */
+    /* 상품 이미지 목록 [{ id, previewUrl, isMain, opt1s, opt2s }] */
     const images = ref([]);
     let imgIdSeq = 1;
 
     const addImageByUrl = () => {
-      images.value.push({ id: imgIdSeq++, previewUrl: '', isMain: images.value.length === 0, colors: '', sizes: '' });
+      images.value.push({ id: imgIdSeq++, previewUrl: '', isMain: images.value.length === 0, opt1s: '', opt2s: '' });
     };
 
     const onFileChange = (e) => {
@@ -38,7 +38,7 @@ window.ProdDtl = {
       files.forEach(file => {
         const reader = new FileReader();
         reader.onload = (ev) => {
-          images.value.push({ id: imgIdSeq++, previewUrl: ev.target.result, isMain: images.value.length === 0, colors: '', sizes: '' });
+          images.value.push({ id: imgIdSeq++, previewUrl: ev.target.result, isMain: images.value.length === 0, opt1s: '', opt2s: '' });
         };
         reader.readAsDataURL(file);
       });
@@ -120,7 +120,7 @@ window.ProdDtl = {
         if (p && p.images && p.images.length) {
           images.value = p.images.map(img => ({ ...img, id: imgIdSeq++ }));
         } else if (p && p.mainImage) {
-          images.value = [{ id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, colors: '', sizes: '' }];
+          images.value = [{ id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, opt1s: '', opt2s: '' }];
         }
         // 판매계획 로드
         if (p && p.salePlans && p.salePlans.length) {
@@ -276,11 +276,11 @@ window.ProdDtl = {
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">색상 (쉼표 구분)</label>
-            <input class="form-control" v-model="form.colors" placeholder="블랙, 화이트, 베이지" :readonly="viewMode" />
+            <input class="form-control" v-model="form.opt1s" placeholder="블랙, 화이트, 베이지" :readonly="viewMode" />
           </div>
           <div class="form-group">
             <label class="form-label">사이즈 (쉼표 구분)</label>
-            <input class="form-control" v-model="form.sizes" placeholder="XS, S, M, L, XL" :readonly="viewMode" />
+            <input class="form-control" v-model="form.opt2s" placeholder="XS, S, M, L, XL" :readonly="viewMode" />
           </div>
         </div>
         <div class="form-group">
@@ -288,12 +288,12 @@ window.ProdDtl = {
           <input class="form-control" v-model="form.optionGroups" placeholder="색상, 사이즈, 소재" :readonly="viewMode" />
         </div>
         <!-- 옵션 조합 미리보기 -->
-        <div v-if="form.colors || form.sizes" style="margin-top:12px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
+        <div v-if="form.opt1s || form.opt2s" style="margin-top:12px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
           <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px;">옵션 미리보기</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span v-for="c in (form.colors||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="c"
+            <span v-for="c in (form.opt1s||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="c"
               class="tag" style="background:#fde8ee;color:#e8587a;">{{ c }}</span>
-            <span v-for="s in (form.sizes||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="s"
+            <span v-for="s in (form.opt2s||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="s"
               class="tag" style="background:#e6f4ff;color:#1677ff;">{{ s }}</span>
           </div>
         </div>
@@ -372,19 +372,19 @@ window.ProdDtl = {
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <div class="form-group" style="flex:1;min-width:120px;margin-bottom:8px;">
               <label class="form-label" style="font-size:11px;">색상 <span style="color:#aaa;">(쉼표 구분)</span></label>
-              <input class="form-control" v-model="img.colors" placeholder="블랙, 화이트" style="font-size:12px;" :readonly="viewMode" />
+              <input class="form-control" v-model="img.opt1s" placeholder="블랙, 화이트" style="font-size:12px;" :readonly="viewMode" />
             </div>
             <div class="form-group" style="flex:1;min-width:120px;margin-bottom:8px;">
               <label class="form-label" style="font-size:11px;">사이즈 <span style="color:#aaa;">(쉼표 구분)</span></label>
-              <input class="form-control" v-model="img.sizes" placeholder="S, M, L" style="font-size:12px;" :readonly="viewMode" />
+              <input class="form-control" v-model="img.opt2s" placeholder="S, M, L" style="font-size:12px;" :readonly="viewMode" />
             </div>
           </div>
 
           <!-- 색상/사이즈 태그 미리보기 -->
-          <div v-if="img.colors || img.sizes" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
-            <span v-for="c in (img.colors||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="'c'+c"
+          <div v-if="img.opt1s || img.opt2s" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
+            <span v-for="c in (img.opt1s||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="'c'+c"
               class="tag" style="font-size:11px;background:#fde8ee;color:#e8587a;padding:2px 7px;">{{ c }}</span>
-            <span v-for="s in (img.sizes||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="'s'+s"
+            <span v-for="s in (img.opt2s||'').split(',').map(s=>s.trim()).filter(Boolean)" :key="'s'+s"
               class="tag" style="font-size:11px;background:#e6f4ff;color:#1677ff;padding:2px 7px;">{{ s }}</span>
           </div>
         </div>

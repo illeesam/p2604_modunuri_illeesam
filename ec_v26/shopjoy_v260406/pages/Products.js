@@ -47,13 +47,13 @@ window.Products = {
     /* ── 필터 옵션 (로드된 상품 기반) ── */
     const allColors = computed(() => {
       const map = new Map();
-      allProducts.value.forEach(p => p.colors.forEach(c => { if (!map.has(c.name)) map.set(c.name, c); }));
+      allProducts.value.forEach(p => (p.opt1s || []).forEach(c => { if (!map.has(c.name)) map.set(c.name, c); }));
       return [...map.values()];
     });
     const sizeOrder = ['FREE','XS','S','M','L','XL','XXL','XXXL'];
     const allSizes = computed(() => {
       const seen = new Set();
-      allProducts.value.forEach(p => p.sizes.forEach(s => seen.add(s)));
+      allProducts.value.forEach(p => (p.opt2s || []).forEach(s => seen.add(s)));
       return [...seen].sort((a, b) => {
         const ai = sizeOrder.indexOf(a); const bi = sizeOrder.indexOf(b);
         if (ai < 0 && bi < 0) return a.localeCompare(b);
@@ -97,8 +97,8 @@ window.Products = {
       const pMax = priceMax.value ? parseInt(priceMax.value, 10) : Infinity;
       if (pMin > 0 || pMax < Infinity) list = list.filter(p => p.priceNum >= pMin && p.priceNum <= pMax);
       if (selCats.value.size   > 0) list = list.filter(p => selCats.value.has(p.categoryId));
-      if (selColors.value.size > 0) list = list.filter(p => p.colors.some(c => selColors.value.has(c.name)));
-      if (selSizes.value.size  > 0) list = list.filter(p => p.sizes.some(s => selSizes.value.has(s)));
+      if (selColors.value.size > 0) list = list.filter(p => (p.opt1s || []).some(c => selColors.value.has(c.name)));
+      if (selSizes.value.size  > 0) list = list.filter(p => (p.opt2s || []).some(s => selSizes.value.has(s)));
       return list;
     });
 
@@ -356,17 +356,17 @@ window.Products = {
 
         <!-- 색상 스와치 -->
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
-          <div v-for="c in p.colors.slice(0,6)" :key="c.name"
+          <div v-for="c in (p.opt1s||[]).slice(0,6)" :key="c.name"
             :style="{ width:'16px', height:'16px', borderRadius:'50%', background:c.hex, border:'1.5px solid rgba(0,0,0,0.12)', flexShrink:0 }"
             :title="c.name"></div>
-          <span v-if="p.colors.length>6" style="font-size:0.68rem;color:var(--text-muted);">+{{ p.colors.length-6 }}</span>
+          <span v-if="(p.opt1s||[]).length>6" style="font-size:0.68rem;color:var(--text-muted);">+{{ (p.opt1s||[]).length-6 }}</span>
         </div>
 
         <!-- 사이즈 -->
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">
-          <span v-for="s in p.sizes.slice(0,5)" :key="s"
+          <span v-for="s in (p.opt2s||[]).slice(0,5)" :key="s"
             style="font-size:0.68rem;padding:2px 5px;border-radius:4px;border:1px solid var(--border);color:var(--text-muted);">{{ s }}</span>
-          <span v-if="p.sizes.length>5" style="font-size:0.68rem;color:var(--text-muted);">+{{ p.sizes.length-5 }}</span>
+          <span v-if="(p.opt2s||[]).length>5" style="font-size:0.68rem;color:var(--text-muted);">+{{ (p.opt2s||[]).length-5 }}</span>
         </div>
 
         <!-- 가격 영역 -->

@@ -134,8 +134,8 @@ window.Sample04 = {
       productId: 'PRD-1001', prodNm: '프리미엄 코튼 티셔츠', emoji: '👕',
       price: '58,000원', badge: '베스트셀러',
       desc: '고급 코튼 소재로 제작된 프리미엄 티셔츠. 통기성이 우수하고 세탁 후에도 형태가 유지됩니다.',
-      colors: [{ name: '화이트', hex: '#f8f9fa' }, { name: '블랙', hex: '#212529' }, { name: '네이비', hex: '#1e3a5f' }],
-      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      opt1s: [{ name: '화이트', hex: '#f8f9fa' }, { name: '블랙', hex: '#212529' }, { name: '네이비', hex: '#1e3a5f' }],
+      opt2s: ['S', 'M', 'L', 'XL', 'XXL'],
       tags: ['베스트셀러', '신상품', '코튼100%'],
     };
     const demoUser   = { name: '홍길동', phone: '010-1234-5678', email: 'hong@shopjoy.kr' };

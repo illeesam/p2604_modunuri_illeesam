@@ -509,18 +509,18 @@ window.MyOrder = {
         </div>
         <div v-if="claimModal.type==='exchange'" style="display:flex;flex-direction:column;gap:10px;">
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">교환 옵션 <span style="color:#ef4444;">*</span></div>
-          <div v-if="claimModalProduct && claimModalProduct.sizes">
+          <div v-if="claimModalProduct && claimModalProduct.opt2s">
             <div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;">사이즈</div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;">
-              <button v-for="sz in claimModalProduct.sizes" :key="sz" @click="claimModal.exchangeSize = claimModal.exchangeSize===sz ? '' : sz"
+              <button v-for="sz in claimModalProduct.opt2s" :key="sz" @click="claimModal.exchangeSize = claimModal.exchangeSize===sz ? '' : sz"
                 style="padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;"
                 :style="claimModal.exchangeSize===sz ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">{{ sz }}</button>
             </div>
           </div>
-          <div v-if="claimModalProduct && claimModalProduct.colors">
+          <div v-if="claimModalProduct && claimModalProduct.opt1s">
             <div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;">색상</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;">
-              <button v-for="col in claimModalProduct.colors" :key="col.name" @click="claimModal.exchangeColor = claimModal.exchangeColor===col.name ? '' : col.name"
+              <button v-for="col in claimModalProduct.opt1s" :key="col.name" @click="claimModal.exchangeColor = claimModal.exchangeColor===col.name ? '' : col.name"
                 style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;"
                 :style="claimModal.exchangeColor===col.name ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
                 <span style="width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,0.15);" :style="'background:'+col.hex"></span>{{ col.name }}

@@ -1,7 +1,7 @@
 /* ShopJoy - Order */
 window.Order = {
   name: 'Order',
-  props: ['navigate', 'config', 'cart', 'showToast', 'showAlert', 'clearCart'],
+  props: ['navigate', 'config', 'cart', 'instantOrder', 'cartIds', 'showToast', 'showAlert', 'clearCart'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
 
@@ -81,12 +81,20 @@ window.Order = {
       } catch (e) {}
     };
 
+    /* ── 주문 대상: 바로구매 > 선택장바구니(cartIds) > 전체장바구니 ── */
+    const orderItems = computed(() => {
+      if (props.instantOrder) return [props.instantOrder];
+      const cart = props.cart || [];
+      if (props.cartIds?.length) return cart.filter(i => props.cartIds.includes(i.cartId));
+      return cart;
+    });
+
     /* ── 금액 계산 ── */
     const cartTotal = computed(() =>
-      (props.cart || []).reduce((s, i) => s + parsePrice(i.product.price) * i.qty, 0)
+      orderItems.value.reduce((s, i) => s + parsePrice(i.product.price) * i.qty, 0)
     );
     const totalCouponDiscount = computed(() =>
-      (props.cart || []).reduce((s, item, idx) =>
+      orderItems.value.reduce((s, item, idx) =>
         s + calcCouponDiscount(selectedCoupons.value[idx], item), 0)
     );
     /* 배송비: 기본 0원, 배송비 쿠폰은 표시용 */
@@ -146,7 +154,7 @@ window.Order = {
           orderId,
           orderDate: new Date().toISOString().slice(0, 10),
           form: { ...form },
-          items: (props.cart || []).map((i, idx) => ({
+          items: orderItems.value.map((i, idx) => ({
             productId:   i.product.productId,
             prodNm: i.product.prodNm,
             emoji:       i.product.emoji,
@@ -164,13 +172,14 @@ window.Order = {
         if (window.axiosApi) await window.axiosApi.post('order-intake.json', payload).catch(() => {});
         resultData.value = payload;
         view.value = 'result';
-        props.clearCart();
+        if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음
         cashBalance.value = Math.max(0, cashBalance.value - appliedCash.value);
       } finally { submitting.value = false; }
     };
 
     return {
       view, resultData,
+      orderItems,
       form, errors, clearErr, submitting, submitOrder, openKakaoAddr,
       parsePrice, fmt,
       cartTotal, totalCouponDiscount, shippingFee, appliedCash, finalPrice,
@@ -252,7 +261,7 @@ window.Order = {
       <p class="section-subtitle">결제는 <span class="gradient-text" style="font-weight:800;">계좌이체</span>로 진행됩니다.</p>
     </div>
 
-    <div v-if="cart.length===0" style="text-align:center;padding:80px 20px;">
+    <div v-if="orderItems.length===0" style="text-align:center;padding:80px 20px;">
       <div style="font-size:4rem;margin-bottom:20px;">📦</div>
       <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">주문할 상품이 없어요.</p>
       <button class="btn-blue" @click="navigate('products')" style="padding:12px 28px;">상품 보러가기</button>
@@ -261,22 +270,22 @@ window.Order = {
     <template v-else>
       <!-- ── 주문 상품 + 쿠폰 ── -->
       <div class="card" style="padding:20px;margin-bottom:20px;">
-        <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🛍️ 주문 상품 ({{ cart.length }})</h2>
+        <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🛍️ 주문 상품 ({{ orderItems.length }})</h2>
         <div style="display:flex;flex-direction:column;gap:14px;">
-          <div v-for="(item, idx) in cart" :key="idx"
+          <div v-for="(item, idx) in orderItems" :key="idx"
             style="padding-bottom:14px;"
-            :style="idx<cart.length-1?'border-bottom:1px solid var(--border);':''">
+            :style="idx<orderItems.length-1?'border-bottom:1px solid var(--border);':''">
             <!-- 상품 행 -->
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
               <div :style="{
                 width:'52px',height:'52px',borderRadius:'10px',flexShrink:0,
                 display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.8rem',
-                background:'linear-gradient(135deg,'+item.color.hex+'33,'+item.color.hex+'11)'
+                background: item.color ? 'linear-gradient(135deg,'+item.color.hex+'33,'+item.color.hex+'11)' : 'var(--bg-base)'
               }">{{ item.product.emoji }}</div>
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ item.product.prodNm }}</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
-                  <span style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--blue-dim);color:var(--blue);font-weight:600;">{{ item.color.name }}</span>
+                  <span v-if="item.color" style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--blue-dim);color:var(--blue);font-weight:600;">{{ item.color.name }}</span>
                   <span style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--purple-dim);color:var(--purple);font-weight:600;">{{ item.size }}</span>
                   <span style="font-size:0.75rem;padding:1px 8px;border-radius:10px;background:var(--bg-base);color:var(--text-secondary);font-weight:600;">× {{ item.qty }}</span>
                 </div>
@@ -485,7 +494,7 @@ window.Order = {
           <div style="flex:1;"><div style="font-size:0.88rem;font-weight:600;color:var(--text-secondary);">쿠폰 사용 안 함</div></div>
         </div>
         <template v-if="couponPopup.targetIdx!==null">
-          <div v-for="c in productCoupons(cart[couponPopup.targetIdx])" :key="c.couponId"
+          <div v-for="c in productCoupons(orderItems[couponPopup.targetIdx])" :key="c.couponId"
             @click="applyCoupon(c)"
             style="padding:14px;border-radius:8px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:12px;"
             :style="selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId?'border-color:var(--blue);background:var(--blue-dim);':''">
@@ -498,7 +507,7 @@ window.Order = {
             </div>
             <div style="font-size:1rem;font-weight:800;color:var(--blue);flex-shrink:0;">{{ discountLabel(c) }}</div>
           </div>
-          <div v-if="!productCoupons(cart[couponPopup.targetIdx]).length"
+          <div v-if="!productCoupons(orderItems[couponPopup.targetIdx]).length"
             style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.88rem;">
             이 상품에 적용 가능한 쿠폰이 없습니다.
           </div>
