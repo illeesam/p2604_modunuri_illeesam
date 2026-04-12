@@ -260,21 +260,19 @@ window.Home = {
     const cartModalMode = ref(false);
 
     /* ── 홈 그리드 반응형 CSS 주입 ── */
+    /* max-width 컨테이너가 최대 열 수를 자연 제한:
+       카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열
+       상품     max-width:1080px / minmax(220px) → 최대 4열, 좁아지면 3→2→1열
+       블로그   max-width:1080px / minmax(300px) → 최대 3열, 좁아지면 2→1열  */
     onMounted(() => {
       if (!document.getElementById('home-grid-styles')) {
         const s = document.createElement('style');
         s.id = 'home-grid-styles';
         s.textContent = `
-          .home-cat-grid  { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-          .home-prod-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
-          .home-sale-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
-          .home-blog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
-          @media(max-width:600px){
-            .home-cat-grid  { gap:10px; }
-            .home-prod-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
-            .home-sale-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
-            .home-blog-grid { grid-template-columns:1fr; gap:14px; }
-          }
+          .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+          .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
         `;
         document.head.appendChild(s);
       }
