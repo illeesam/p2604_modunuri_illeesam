@@ -74,27 +74,34 @@ window.Home = {
         @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
         @click="selectProduct(p)">
-        <div style="background:#f8f6f3;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
-          @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
-          @mouseleave="isLiked(p.productId) || ($event.currentTarget.querySelector('.prod-hover').style.opacity='0')">
+        <div style="background:#f5f5f5;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
+          @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1';$event.currentTarget.querySelector('.prod-like').style.opacity='1'"
+          @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0';isLiked(p.productId)||($event.currentTarget.querySelector('.prod-like').style.opacity='0')">
           <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
           <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;"
             :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355', color:'#fff' }">{{ p.badge }}</span>
-          <!-- hover 아이콘: 좋아요 / 장바구니 / 빠른보기 -->
-          <div class="prod-hover" :style="{ opacity: isLiked(p.productId) ? '1' : '0', transition:'opacity .25s', position:'absolute', right:'12px', top:'12px', display:'flex', flexDirection:'column', gap:'6px' }">
-            <button @click.stop="toggleLike(p.productId)" style="width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="위시리스트">
-              <svg width="14" height="14" viewBox="0 0 24 24" :fill="isLiked(p.productId)?'#ef4444':'none'" :stroke="isLiked(p.productId)?'#ef4444':'#555'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          <!-- 좋아요 (좋아요 상태면 항상 표시) -->
+          <button @click.stop="toggleLike(p.productId)"
+            :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2, opacity: isLiked(p.productId) ? '1' : '0', transition:'opacity .2s' }"
+            class="prod-like" title="위시리스트">
+            <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.productId)?'#ef4444':'none'" :stroke="isLiked(p.productId)?'#ef4444':'#555'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
+          <!-- 장바구니 + 빠른보기 (hover 시에만) -->
+          <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
+            <button @click.stop="quickViewProduct=p; cartModalMode=true" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             </button>
-            <button @click.stop="selectProduct(p)" style="width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-            </button>
-            <button @click.stop="quickViewProduct=p" style="width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <button @click.stop="quickViewProduct=p; cartModalMode=false" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
           </div>
         </div>
         <div style="font-size:0.88rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">{{ p.prodNm }}</div>
-        <div style="font-size:0.85rem;color:#888;">{{ p.price }}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:0.88rem;font-weight:700;color:#1a1a1a;">{{ p.price }}</span>
+          <span v-if="p.originalPrice" style="font-size:0.78rem;color:#bbb;text-decoration:line-through;">{{ p.originalPrice.toLocaleString ? p.originalPrice.toLocaleString() + '원' : p.originalPrice }}</span>
+          <span v-if="p.originalPrice && p.priceNum" style="font-size:0.75rem;font-weight:700;color:#ef4444;">{{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%</span>
+        </div>
       </div>
     </div>
     <div style="text-align:center;margin-top:32px;">
@@ -107,18 +114,101 @@ window.Home = {
     </div>
   </div>
 
-  <!-- ══ Banner (중간 배너) ══ -->
-  <div style="position:relative;overflow:hidden;height:280px;margin-bottom:48px;">
-    <img src="assets/cdn/prod/img/shop/banner/banner-big-1.jpg" alt="Banner"
-      style="width:100%;height:100%;object-fit:cover;object-position:center;" />
-    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
-      <h2 style="font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:1px;">시즌 컬렉션</h2>
-      <button @click="navigate('products')"
-        style="padding:12px 36px;font-size:0.82rem;font-weight:600;letter-spacing:1px;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
-        @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
-        @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
-        지금 쇼핑하기
-      </button>
+  <!-- ══ 2열 프로모션 배너 ══ -->
+  <div style="max-width:1100px;margin:0 auto;padding:0 32px 60px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <!-- 배너 1 -->
+      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:380px;">
+        <img src="assets/cdn/prod/img/shop/banner/banner-big-1.jpg" alt="프로모션"
+          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
+        <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
+          <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">프리미엄 컬렉션</div>
+          <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">핸드메이드<br>프리미엄 아이템</h3>
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">장인의 손길이 담긴<br>특별한 컬렉션을 만나보세요.</p>
+          <button @click="navigate('products')"
+            style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
+            @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
+            @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
+            쇼핑하기 →
+          </button>
+        </div>
+      </div>
+      <!-- 배너 2 -->
+      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:380px;">
+        <img src="assets/cdn/prod/img/shop/banner/banner-big-2.jpg" alt="프로모션"
+          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
+        <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
+          <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">시즌 한정 상품</div>
+          <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">2026 S/S<br>신상품 컬렉션</h3>
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">올 봄·여름 시즌을 빛낼<br>새로운 아이템이 도착했습니다.</p>
+          <button @click="navigate('products')"
+            style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
+            @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
+            @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
+            쇼핑하기 →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 할인 상품 (Sale Off) ══ -->
+  <div style="max-width:1100px;margin:0 auto;padding:0 32px 48px;">
+    <div style="text-align:center;margin-bottom:36px;">
+      <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">할인 상품</h2>
+      <p style="font-size:0.85rem;color:#999;">특별 할인 중인 인기 상품을 놓치지 마세요</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:24px;">
+      <div v-for="p in saleProducts" :key="'sale'+p.productId"
+        style="cursor:pointer;text-align:center;transition:transform .25s;"
+        @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
+        @mouseleave="$event.currentTarget.style.transform=''"
+        @click="selectProduct(p)">
+        <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
+          <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
+          <span v-if="p.originalPrice && p.priceNum" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
+            -{{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
+          </span>
+        </div>
+        <div style="font-size:0.85rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">{{ p.prodNm }}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+          <span style="font-size:0.85rem;font-weight:700;color:#1a1a1a;">{{ p.price }}</span>
+          <span style="font-size:0.75rem;color:#bbb;text-decoration:line-through;">{{ p.originalPrice.toLocaleString ? p.originalPrice.toLocaleString() + '원' : p.originalPrice }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 브랜드 로고 ══ -->
+  <div style="max-width:900px;margin:0 auto;padding:24px 32px 48px;border-top:1px solid #eee;border-bottom:1px solid #eee;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap;opacity:0.45;">
+      <img v-for="i in 5" :key="i" :src="'assets/cdn/prod/img/client/brand-' + i + '.webp'" style="height:30px;object-fit:contain;filter:grayscale(1);" />
+    </div>
+  </div>
+
+  <!-- ══ 블로그 포스트 ══ -->
+  <div style="max-width:1100px;margin:0 auto;padding:48px 32px;">
+    <div style="text-align:center;margin-bottom:36px;">
+      <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">블로그</h2>
+      <p style="font-size:0.85rem;color:#999;">스타일링 팁과 패션 트렌드를 확인해보세요</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:24px;">
+      <div v-for="i in 3" :key="'blog'+i"
+        style="cursor:pointer;transition:transform .25s;"
+        @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
+        @mouseleave="$event.currentTarget.style.transform=''"
+        @click="navigate('blog')">
+        <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;margin-bottom:14px;">
+          <img :src="'assets/cdn/prod/img/blog/blog-' + i + '.jpg'" :alt="'블로그 ' + i"
+            style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
+            @mouseenter="$event.target.style.transform='scale(1.05)'"
+            @mouseleave="$event.target.style.transform=''" />
+        </div>
+        <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">{{ ['2026.04.10', '2026.04.08', '2026.04.05'][i-1] }}</div>
+        <h3 style="font-size:0.95rem;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.4;">{{ ['봄 시즌 스타일링 가이드', '트렌드 컬러 활용법', '미니멀 옷장 정리법'][i-1] }}</h3>
+        <p style="font-size:0.8rem;color:#888;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ ['올봄 트렌디한 코디를 완성하는 핵심 아이템과 스타일링 팁을 소개합니다.', '시즌 컬러를 활용한 다양한 코디 방법을 알아봅니다.', '효율적인 옷장 정리법과 캡슐 워드로브 구성 팁을 공개합니다.'][i-1] }}</p>
+        <span style="font-size:0.78rem;font-weight:600;color:#1a1a1a;text-decoration:underline;">자세히 보기 →</span>
+      </div>
     </div>
   </div>
 
@@ -126,18 +216,13 @@ window.Home = {
   <product-modal
     :show="!!quickViewProduct"
     :product="quickViewProduct"
-    :navigate="(page) => { selectProduct(quickViewProduct); quickViewProduct=null; }"
+    :cart-mode="cartModalMode"
+    :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); quickViewProduct=null; } else { selectProduct(quickViewProduct); quickViewProduct=null; } }"
     :toggle-like="toggleLike"
     :is-liked="isLiked"
-    @close="quickViewProduct=null"
+    @close="quickViewProduct=null; cartModalMode=false"
   />
 
-  <!-- ══ 브랜드 로고 (Outstock 하단 클라이언트) ══ -->
-  <div style="max-width:900px;margin:0 auto;padding:24px 32px 60px;">
-    <div style="display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;opacity:0.5;">
-      <img v-for="i in 5" :key="i" :src="'assets/cdn/prod/img/client/brand-' + i + '.webp'" style="height:28px;object-fit:contain;filter:grayscale(1);" />
-    </div>
-  </div>
 
 </div>
   `,
@@ -164,9 +249,15 @@ window.Home = {
       (props.products || []).filter(p => p.badge === '인기').slice(0, 3)
     );
 
+    /* ── 할인 상품 ── */
+    const saleProducts = computed(() =>
+      (props.products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
+    );
+
     /* ── 빠른보기 모달 ── */
     const { ref, onMounted, onBeforeUnmount } = Vue;
     const quickViewProduct = ref(null);
+    const cartModalMode = ref(false);
 
     /* ── 홈 상품 8개 ── */
     const allHomeProducts = computed(() => {
@@ -187,6 +278,6 @@ window.Home = {
     onMounted(startBannerTimer);
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    return { categoryLabel, catEmoji, newProducts, bestProducts, allHomeProducts, quickViewProduct, bannerIdx, banners, setBanner };
+    return { categoryLabel, catEmoji, newProducts, bestProducts, allHomeProducts, saleProducts, quickViewProduct, cartModalMode, bannerIdx, banners, setBanner };
   }
 };

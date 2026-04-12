@@ -119,58 +119,280 @@ window.OrderDetailModal = {
    ─────────────────────────────────────────────────── */
 window.ProductModal = {
   name: 'ProductModal',
-  props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked'],
+  props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked', 'addToCart', 'cartMode'],
   emits: ['close'],
+  setup(props) {
+    const { ref, watch, computed } = Vue;
+    const selColor  = ref(null);
+    const selSize   = ref(null);
+    const qty       = ref(1);
+    const inCart    = ref(false);
+    const selThumb  = ref(0);
+    const toastMsg  = ref('');
+    const toastShow = ref(false);
+    let toastTimer  = null;
+
+    /* 내부 토스트 */
+    const fireToast = (msg) => {
+      toastMsg.value  = msg;
+      toastShow.value = true;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toastShow.value = false; }, 2400);
+    };
+
+    /* 상품 변경 시 초기화 */
+    watch(() => props.product, (p) => {
+      selColor.value = p?.opt1s?.[0] || null;
+      selSize.value  = null;
+      qty.value      = 1;
+      inCart.value   = false;
+      selThumb.value = 0;
+    }, { immediate: true });
+
+    /* 썸네일 목록 — 색상 선택 시 해당 색상 인덱스 기준으로 이미지 3장 순환 */
+    const thumbImgs = computed(() => {
+      const p = props.product;
+      if (!p) return [];
+      const IMG = 'assets/cdn/prod/img/shop/product';
+      const colorIdx = Math.max(0, (p.opt1s || []).findIndex(c => c === selColor.value));
+      const pid = parseInt(p.productId) || 1;
+      if (pid <= 12) {
+        return [0, 1, 2].map(off => {
+          const n = ((pid - 1 + colorIdx + off) % 12) + 1;
+          return `${IMG}/fashion/fashion-${n}.webp`;
+        });
+      } else {
+        const base = ((pid - 1) % 23) + 1;
+        return [0, 1, 2].map(off => {
+          const n = ((base - 1 + colorIdx + off) % 23) + 1;
+          return `${IMG}/product_${n}.png`;
+        });
+      }
+    });
+
+    /* 평점 — productId 기반 목 데이터 */
+    const rating = computed(() => {
+      const scores = [4.8, 4.5, 4.7, 4.2, 4.9, 4.3, 4.6, 4.1, 4.4, 4.8, 4.7, 4.5];
+      const counts = [24, 18, 31,  9, 42, 15, 27,  8, 33, 19, 11, 28];
+      const idx = ((parseInt(props.product?.productId) || 1) - 1) % 12;
+      return { score: scores[idx], count: counts[idx] };
+    });
+
+    /* 별점 문자열 */
+    const starStr = computed(() => {
+      const r = Math.round(rating.value.score);
+      return '★'.repeat(r) + '☆'.repeat(5 - r);
+    });
+
+    /* 좋아요 토글 */
+    const handleLike = () => {
+      if (!props.product) return;
+      const wasLiked = props.isLiked && props.isLiked(props.product.productId);
+      props.toggleLike && props.toggleLike(props.product.productId);
+      fireToast(wasLiked ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
+    };
+
+    /* 옵션 에러 상태 */
+    const errColor = ref(false);
+    const errSize  = ref(false);
+
+    /* 옵션 필수 검증 */
+    const needsColor = () => props.product?.opt1s?.length > 0;
+    const needsSize  = () => {
+      const s = props.product?.opt2s;
+      return s && s.length > 0 && !(s.length === 1 && s[0] === 'FREE');
+    };
+    const validate = () => {
+      errColor.value = needsColor() && !selColor.value;
+      errSize.value  = needsSize()  && !selSize.value;
+      if (errColor.value || errSize.value) {
+        const missing = [errColor.value && '색상', errSize.value && '사이즈'].filter(Boolean).join(', ');
+        fireToast(`${missing}을(를) 선택해주세요.`);
+        return false;
+      }
+      return true;
+    };
+
+    /* 장바구니 추가 (검증 포함) */
+    const handleCart = () => {
+      if (!validate()) return false;
+      inCart.value = !inCart.value;
+      fireToast(inCart.value ? '장바구니에 추가했습니다.' : '장바구니에서 제거했습니다.');
+      return true;
+    };
+
+    /* 바로구매 검증 */
+    const handleBuyNow = (navigateFn) => {
+      if (!validate()) return false;
+      navigateFn && navigateFn('order', { instantOrder: { product: props.product, color: selColor.value, size: selSize.value, qty: qty.value } });
+      return true;
+    };
+
+    return { selColor, selSize, qty, inCart, selThumb, thumbImgs, rating, starStr,
+             toastMsg, toastShow, errColor, errSize, handleLike, handleCart, handleBuyNow };
+  },
   template: /* html */ `
 <div v-if="show"
   style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;"
   @click.self="$emit('close')">
-  <div style="background:#fff;border-radius:8px;width:100%;max-width:800px;max-height:85vh;overflow-y:auto;display:flex;"
-    @click.stop role="dialog" aria-modal="true">
-    <!-- 좌: 이미지 -->
-    <div v-if="product" style="flex:1;min-width:300px;background:#f8f6f3;display:flex;align-items:center;justify-content:center;padding:32px;">
-      <img v-if="product.image" :src="product.image" :alt="product.prodNm" style="max-width:100%;max-height:400px;object-fit:contain;" />
+
+  <!-- 내부 토스트 -->
+  <transition name="fade">
+    <div v-if="toastShow"
+      style="position:fixed;bottom:36px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 28px;border-radius:4px;font-size:0.84rem;z-index:500;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.3);pointer-events:none;">
+      {{ toastMsg }}
     </div>
+  </transition>
+
+  <div style="background:#fff;border-radius:8px;width:100%;max-width:840px;max-height:90vh;overflow:hidden;display:flex;"
+    @click.stop role="dialog" aria-modal="true">
+
+    <!-- 좌: 이미지 + 썸네일 -->
+    <div v-if="product" style="flex:0 0 360px;background:#f5f5f5;display:flex;flex-direction:column;padding:28px 24px 20px;">
+      <!-- 메인 이미지 -->
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:280px;">
+        <img v-if="thumbImgs[selThumb]" :src="thumbImgs[selThumb]" :alt="product.prodNm"
+          style="max-width:100%;max-height:300px;object-fit:contain;" />
+      </div>
+      <!-- 썸네일 목록 -->
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+        <div v-for="(img, i) in thumbImgs" :key="i" @click="selThumb=i"
+          :style="{
+            width:'68px', height:'68px', background:'#fff', cursor:'pointer', boxSizing:'border-box',
+            border: selThumb===i ? '2px solid #1a1a1a' : '2px solid transparent',
+            padding:'4px', borderRadius:'2px', transition:'border-color .15s',
+          }">
+          <img :src="img" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+      </div>
+    </div>
+
     <!-- 우: 정보 -->
-    <div v-if="product" style="flex:1;min-width:280px;padding:32px;position:relative;">
+    <div v-if="product" style="flex:1;min-width:0;padding:28px 28px 24px;position:relative;display:flex;flex-direction:column;overflow-y:auto;">
       <button @click="$emit('close')"
-        style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#999;">✕</button>
-      <h2 style="font-size:1.2rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">{{ product.prodNm }}</h2>
-      <div style="font-size:1.3rem;font-weight:800;color:#1a1a1a;margin-bottom:16px;">{{ product.price }}</div>
-      <p style="font-size:0.85rem;color:#666;line-height:1.7;margin-bottom:20px;">{{ product.desc }}</p>
+        style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#bbb;line-height:1;">✕</button>
+
+      <!-- 상품명 -->
+      <h2 style="font-size:1.15rem;font-weight:700;color:#1a1a1a;margin-bottom:6px;padding-right:28px;line-height:1.4;">{{ product.prodNm }}</h2>
+
+      <!-- 평점 -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+        <span style="color:#f59e0b;font-size:0.88rem;letter-spacing:1px;">{{ starStr }}</span>
+        <span style="font-size:0.78rem;font-weight:600;color:#555;">{{ rating.score }}</span>
+        <span style="font-size:0.75rem;color:#aaa;">({{ rating.count }}개 리뷰)</span>
+      </div>
+
+      <!-- 가격 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f0f0f0;">
+        <span style="font-size:1.3rem;font-weight:800;color:#1a1a1a;">{{ product.price }}</span>
+        <span v-if="product.originalPrice" style="font-size:0.85rem;color:#bbb;text-decoration:line-through;">{{ product.originalPrice.toLocaleString ? product.originalPrice.toLocaleString() + '원' : product.originalPrice }}</span>
+        <span v-if="product.originalPrice && product.priceNum" style="font-size:0.8rem;font-weight:700;color:#ef4444;">{{ Math.round((1 - product.priceNum / product.originalPrice) * 100) }}%</span>
+      </div>
+
+      <!-- 설명 -->
+      <p style="font-size:0.84rem;color:#666;line-height:1.75;margin-bottom:16px;">{{ product.desc }}</p>
+
       <!-- 색상 -->
-      <div v-if="product.opt1s && product.opt1s.length" style="margin-bottom:16px;">
-        <div style="font-size:0.78rem;font-weight:600;color:#999;margin-bottom:8px;">색상</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <div v-for="c in product.opt1s" :key="c.name"
-            :style="{ width:'24px', height:'24px', borderRadius:'50%', background:c.hex, border:'1.5px solid rgba(0,0,0,0.12)' }"
-            :title="c.name"></div>
+      <div v-if="product.opt1s && product.opt1s.length" style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span :style="{ fontSize:'0.75rem', fontWeight:'600', letterSpacing:'0.5px', color: errColor ? '#ef4444' : '#999' }">
+            색상 <span v-if="errColor" style="font-size:0.7rem;font-weight:400;">필수 선택</span>
+          </span>
+          <span v-if="selColor" style="font-size:0.75rem;color:#555;">{{ selColor.name }}</span>
+        </div>
+        <div :style="{ display:'flex', gap:'8px', flexWrap:'wrap', padding:'8px', borderRadius:'4px', border: errColor ? '1px solid #fca5a5' : '1px solid transparent', background: errColor ? '#fff5f5' : 'transparent', transition:'all .2s' }">
+          <button v-for="c in product.opt1s" :key="c.name" @click="selColor=c; errColor=false; selThumb=0"
+            :style="{
+              width:'28px', height:'28px', borderRadius:'50%', background:c.hex, cursor:'pointer',
+              border: selColor&&selColor.name===c.name ? '3px solid #1a1a1a' : '2px solid rgba(0,0,0,0.12)',
+              outline: selColor&&selColor.name===c.name ? '2px solid #fff' : 'none',
+              outlineOffset: '-4px', boxSizing:'border-box', transition:'border .15s',
+            }" :title="c.name"></button>
         </div>
       </div>
+
       <!-- 사이즈 -->
-      <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
-        <div style="font-size:0.78rem;font-weight:600;color:#999;margin-bottom:8px;">사이즈</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <span v-for="s in product.opt2s" :key="s"
-            style="padding:4px 12px;border:1px solid #ddd;border-radius:2px;font-size:0.8rem;color:#555;">{{ s }}</span>
+      <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span :style="{ fontSize:'0.75rem', fontWeight:'600', letterSpacing:'0.5px', color: errSize ? '#ef4444' : '#999' }">
+            사이즈 <span v-if="errSize" style="font-size:0.7rem;font-weight:400;">필수 선택</span>
+          </span>
+        </div>
+        <div :style="{ display:'flex', gap:'6px', flexWrap:'wrap', padding:'8px', borderRadius:'4px', border: errSize ? '1px solid #fca5a5' : '1px solid transparent', background: errSize ? '#fff5f5' : 'transparent', transition:'all .2s' }">
+          <button v-for="s in product.opt2s" :key="s" @click="selSize=s; errSize=false"
+            :style="{
+              padding:'5px 14px', borderRadius:'2px', cursor:'pointer', fontSize:'0.8rem',
+              border: selSize===s ? '2px solid #1a1a1a' : '1px solid #ddd',
+              background: selSize===s ? '#1a1a1a' : '#fff',
+              color: selSize===s ? '#fff' : '#555',
+              fontWeight: selSize===s ? '700' : '400', transition:'all .15s',
+            }">{{ s }}</button>
         </div>
       </div>
+
       <!-- 태그 -->
-      <div v-if="product.tags && product.tags.length" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;">
+      <div v-if="product.tags && product.tags.length" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
         <span v-for="t in product.tags" :key="t"
           style="padding:2px 10px;background:#f5f5f5;border-radius:20px;font-size:0.72rem;color:#888;">#{{ t }}</span>
       </div>
-      <!-- 버튼 -->
-      <div style="display:flex;gap:10px;">
-        <button class="btn-blue" @click="navigate && navigate('detail');$emit('close')" style="flex:1;padding:12px;">상세보기</button>
-        <button v-if="toggleLike" @click="toggleLike(product.productId)"
-          style="width:44px;height:44px;border:1.5px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-          <svg width="18" height="18" viewBox="0 0 24 24"
-            :fill="isLiked && isLiked(product.productId) ? '#ef4444' : 'none'"
-            :stroke="isLiked && isLiked(product.productId) ? '#ef4444' : '#999'" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-        </button>
+
+      <!-- 수량 -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-top:4px;">
+        <span style="font-size:0.75rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;">수량</span>
+        <div style="display:flex;align-items:center;border:1.5px solid #ddd;border-radius:2px;">
+          <button @click="qty>1&&qty--"
+            style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">−</button>
+          <span style="min-width:36px;text-align:center;font-size:0.88rem;font-weight:600;color:#1a1a1a;padding:0 4px;">{{ qty }}</span>
+          <button @click="qty++"
+            style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">+</button>
+        </div>
+      </div>
+
+      <!-- 하단 버튼 -->
+      <div style="margin-top:auto;">
+        <!-- 장바구니 모드: 장바구니 추가 버튼만 -->
+        <template v-if="cartMode">
+          <button @click="handleCart() && $emit('close')"
+            style="width:100%;padding:13px;font-size:0.9rem;font-weight:700;background:#1a1a1a;color:#fff;border:none;border-radius:2px;cursor:pointer;letter-spacing:0.3px;">
+            🛒 장바구니 추가
+          </button>
+        </template>
+        <!-- 일반 모드: 전체 버튼 -->
+        <template v-else>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-blue" @click="navigate && navigate('detail');$emit('close')"
+              style="flex:1;padding:12px;font-size:0.85rem;">상세보기</button>
+            <button class="btn-outline" @click="handleBuyNow(navigate) && $emit('close')"
+              style="flex:1;padding:12px;font-size:0.85rem;">바로구매</button>
+            <!-- 좋아요 토글 -->
+            <button @click="handleLike"
+              :style="{
+                width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
+                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
+                border: isLiked && isLiked(product.productId) ? '1.5px solid #ef4444' : '1.5px solid #ddd',
+                background: isLiked && isLiked(product.productId) ? '#fff5f5' : '#fff',
+              }">
+              <svg width="18" height="18" viewBox="0 0 24 24"
+                :fill="isLiked && isLiked(product.productId) ? '#ef4444' : 'none'"
+                :stroke="isLiked && isLiked(product.productId) ? '#ef4444' : '#999'" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <!-- 장바구니 토글 -->
+            <button @click="handleCart"
+              :style="{
+                width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
+                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
+                border: inCart ? '1.5px solid #1a1a1a' : '1.5px solid #ddd',
+                background: inCart ? '#1a1a1a' : '#fff',
+              }">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="inCart ? '#fff' : '#999'" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+            </button>
+          </div>
+        </template>
       </div>
     </div>
   </div>

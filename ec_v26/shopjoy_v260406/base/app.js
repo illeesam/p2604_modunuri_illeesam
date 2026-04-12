@@ -125,6 +125,10 @@
           p.images = [p.image, `${_IMG}/product_${(n % 23) + 1}.png`];
         }
       }
+      /* priceNum 보정 */
+      if (!p.priceNum && p.price) {
+        p.priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''), 10) || 0;
+      }
       return p;
     };
     const products = window.SITE_CONFIG.products;
