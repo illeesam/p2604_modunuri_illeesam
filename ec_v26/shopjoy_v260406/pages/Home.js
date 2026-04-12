@@ -7,23 +7,23 @@ window.Home = {
 <div>
 
   <!-- ══ Hero Banner Slider ══ -->
-  <section style="position:relative;overflow:hidden;background:#f5f3f0;min-height:520px;display:flex;align-items:center;">
+  <section style="position:relative;overflow:hidden;background:#f5f3f0;min-height:320px;display:flex;align-items:center;flex-wrap:wrap;">
     <!-- 좌: 텍스트 (슬라이드별) -->
-    <div style="position:relative;z-index:2;flex:1;padding:80px 60px 80px 48px;max-width:480px;">
-      <h1 style="font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:300;line-height:1.3;color:#1a1a1a;margin-bottom:20px;letter-spacing:-0.5px;">
+    <div style="position:relative;z-index:2;flex:1 1 260px;padding:clamp(28px,6vw,80px) clamp(20px,5vw,60px) clamp(28px,6vw,80px) clamp(20px,5vw,48px);min-width:0;">
+      <h1 style="font-size:clamp(1.4rem,3.5vw,2.6rem);font-weight:300;line-height:1.3;color:#1a1a1a;margin-bottom:16px;letter-spacing:-0.5px;">
         {{ banners[bannerIdx].title }}<br><span style="font-weight:700;">{{ banners[bannerIdx].sub }}</span>
       </h1>
-      <p style="font-size:0.88rem;color:#888;line-height:1.8;margin-bottom:32px;max-width:360px;">
+      <p style="font-size:0.85rem;color:#888;line-height:1.8;margin-bottom:28px;max-width:360px;">
         {{ banners[bannerIdx].desc }}
       </p>
       <button @click="navigate('products')"
-        style="padding:14px 36px;font-size:0.85rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;cursor:pointer;transition:all .25s;"
+        style="padding:12px 28px;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;cursor:pointer;transition:all .25s;"
         @mouseenter="$event.target.style.background='#1a1a1a';$event.target.style.color='#fff'"
         @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#1a1a1a'">
         쇼핑 시작하기
       </button>
       <!-- 인디케이터 (클릭 가능) -->
-      <div style="display:flex;gap:8px;margin-top:36px;">
+      <div style="display:flex;gap:8px;margin-top:28px;">
         <span v-for="(b, i) in banners" :key="i" @click="setBanner(i)"
           :style="{
             width: '24px', height: '3px', borderRadius: '2px', cursor: 'pointer', transition: 'background .3s',
@@ -32,11 +32,11 @@ window.Home = {
       </div>
     </div>
     <!-- 우: 이미지 (페이드 전환) -->
-    <div style="flex:1;position:relative;min-height:520px;display:flex;align-items:center;justify-content:center;">
+    <div style="flex:1 1 160px;position:relative;min-height:280px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
       <img v-for="(b, i) in banners" :key="i" :src="b.img" :alt="b.title"
         :style="{
           position: i === 0 ? 'relative' : 'absolute',
-          maxHeight: '480px', maxWidth: '100%', objectFit: 'contain', zIndex: 1,
+          maxHeight: '420px', maxWidth: '100%', objectFit: 'contain', zIndex: 1,
           opacity: bannerIdx === i ? '1' : '0',
           transition: 'opacity 0.8s ease',
         }" />
@@ -44,31 +44,31 @@ window.Home = {
   </section>
 
   <!-- ══ Category Cards (Outstock 스타일) ══ -->
-  <div style="padding:0 32px;margin:-40px auto 0;max-width:960px;position:relative;z-index:3;">
-    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;">
+  <div style="padding:0 clamp(12px,3vw,32px);margin:-40px auto 0;max-width:820px;position:relative;z-index:3;">
+    <div class="home-cat-grid">
       <div v-for="(cat, ci) in (config.categorys || []).slice(0,3)" :key="cat.categoryId"
         @click="navigate('products')"
-        style="background:#fff;border-radius:12px;padding:20px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.08);display:flex;align-items:center;gap:16px;transition:transform .2s,box-shadow .2s;"
-        @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,0.12)'"
-        @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 4px 20px rgba(0,0,0,0.08)'">
-        <div style="width:70px;height:70px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
+        style="background:#fff;border-radius:14px;padding:clamp(14px,3vw,24px);cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,0.09);display:flex;align-items:center;gap:clamp(10px,2vw,20px);transition:transform .2s,box-shadow .2s;"
+        @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,0.14)'"
+        @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 4px 24px rgba(0,0,0,0.09)'">
+        <div style="width:clamp(56px,8vw,88px);height:clamp(56px,8vw,88px);border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
           <img :src="'assets/cdn/prod/img/shop/product/sm/pro-sm-' + (ci*3+1) + '.jpg'" style="width:100%;height:100%;object-fit:cover;" />
         </div>
         <div>
-          <div style="font-size:0.92rem;font-weight:700;color:#1a1a1a;margin-bottom:3px;">{{ cat.categoryNm }}</div>
-          <div style="font-size:0.75rem;color:#999;">바로가기 →</div>
+          <div style="font-size:clamp(0.88rem,2vw,1.05rem);font-weight:700;color:#1a1a1a;margin-bottom:4px;">{{ cat.categoryNm }}</div>
+          <div style="font-size:clamp(0.7rem,1.5vw,0.8rem);color:#999;">바로가기 →</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ══ 인기 상품 (8개) ══ -->
-  <div style="max-width:1100px;margin:0 auto;padding:60px 32px 48px;">
-    <div style="text-align:center;margin-bottom:36px;">
+  <div style="max-width:1080px;margin:0 auto;padding:48px clamp(12px,3vw,32px) 40px;">
+    <div style="text-align:center;margin-bottom:28px;">
       <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">인기 상품</h2>
       <p style="font-size:0.85rem;color:#999;">고객들이 사랑하는 트렌디한 아이템을 만나보세요</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:24px;">
+    <div class="home-prod-grid">
       <div v-for="p in allHomeProducts" :key="p.productId"
         style="cursor:pointer;transition:transform .25s,box-shadow .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
@@ -115,10 +115,10 @@ window.Home = {
   </div>
 
   <!-- ══ 2열 프로모션 배너 ══ -->
-  <div style="max-width:1100px;margin:0 auto;padding:0 32px 60px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <div style="max-width:1100px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 48px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);">
       <!-- 배너 1 -->
-      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:380px;">
+      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
         <img src="assets/cdn/prod/img/shop/banner/banner-big-1.jpg" alt="프로모션"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
         <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
@@ -134,7 +134,7 @@ window.Home = {
         </div>
       </div>
       <!-- 배너 2 -->
-      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:380px;">
+      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
         <img src="assets/cdn/prod/img/shop/banner/banner-big-2.jpg" alt="프로모션"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
         <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
@@ -153,12 +153,12 @@ window.Home = {
   </div>
 
   <!-- ══ 할인 상품 (Sale Off) ══ -->
-  <div style="max-width:1100px;margin:0 auto;padding:0 32px 48px;">
-    <div style="text-align:center;margin-bottom:36px;">
+  <div style="max-width:1080px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 40px;">
+    <div style="text-align:center;margin-bottom:28px;">
       <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">할인 상품</h2>
       <p style="font-size:0.85rem;color:#999;">특별 할인 중인 인기 상품을 놓치지 마세요</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:24px;">
+    <div class="home-sale-grid">
       <div v-for="p in saleProducts" :key="'sale'+p.productId"
         style="cursor:pointer;text-align:center;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
@@ -180,19 +180,19 @@ window.Home = {
   </div>
 
   <!-- ══ 브랜드 로고 ══ -->
-  <div style="max-width:900px;margin:0 auto;padding:24px 32px 48px;border-top:1px solid #eee;border-bottom:1px solid #eee;">
-    <div style="display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap;opacity:0.45;">
+  <div style="max-width:900px;margin:0 auto;padding:20px clamp(12px,3vw,32px) 40px;border-top:1px solid #eee;border-bottom:1px solid #eee;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,48px);flex-wrap:wrap;opacity:0.45;">
       <img v-for="i in 5" :key="i" :src="'assets/cdn/prod/img/client/brand-' + i + '.webp'" style="height:30px;object-fit:contain;filter:grayscale(1);" />
     </div>
   </div>
 
   <!-- ══ 블로그 포스트 ══ -->
-  <div style="max-width:1100px;margin:0 auto;padding:48px 32px;">
-    <div style="text-align:center;margin-bottom:36px;">
+  <div style="max-width:1080px;margin:0 auto;padding:40px clamp(12px,3vw,32px) 48px;">
+    <div style="text-align:center;margin-bottom:28px;">
       <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">블로그</h2>
       <p style="font-size:0.85rem;color:#999;">스타일링 팁과 패션 트렌드를 확인해보세요</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:24px;">
+    <div class="home-blog-grid">
       <div v-for="i in 3" :key="'blog'+i"
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
@@ -258,6 +258,27 @@ window.Home = {
     const { ref, onMounted, onBeforeUnmount } = Vue;
     const quickViewProduct = ref(null);
     const cartModalMode = ref(false);
+
+    /* ── 홈 그리드 반응형 CSS 주입 ── */
+    onMounted(() => {
+      if (!document.getElementById('home-grid-styles')) {
+        const s = document.createElement('style');
+        s.id = 'home-grid-styles';
+        s.textContent = `
+          .home-cat-grid  { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+          .home-prod-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+          .home-sale-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+          .home-blog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+          @media(max-width:600px){
+            .home-cat-grid  { gap:10px; }
+            .home-prod-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+            .home-sale-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+            .home-blog-grid { grid-template-columns:1fr; gap:14px; }
+          }
+        `;
+        document.head.appendChild(s);
+      }
+    });
 
     /* ── 홈 상품 8개 ── */
     const allHomeProducts = computed(() => {

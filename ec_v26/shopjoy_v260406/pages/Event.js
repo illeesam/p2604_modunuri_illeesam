@@ -6,99 +6,180 @@ window.Event = {
     const { ref, computed } = Vue;
 
     const activeTab = ref('ongoing'); // ongoing | ended
+    const sortBy    = ref('latest');  // latest | deadline
 
     const events = ref([
-      { id: 1, title: '봄 베스트 상품 달력이벤트 70% 혜택', thumb: '', status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.30', tag: '할인', tagColor: '#e8587a', desc: '봄 시즌 베스트 상품을 최대 70% 할인된 가격으로 만나보세요.' },
-      { id: 2, title: '4월 신한카드 특시할인', thumb: '', status: 'ongoing', startDate: '2026.04.08', endDate: '2026.04.30', tag: '카드혜택', tagColor: '#3b82f6', desc: '신한카드로 결제 시 즉시 10% 할인 혜택을 드립니다.' },
-      { id: 3, title: '4월 더플러스 : 봄 쇼핑 3만원 추가 혜택', thumb: '', status: 'ongoing', startDate: '2026.04.06', endDate: '2026.04.12', tag: '적립', tagColor: '#8b5cf6', desc: '장바구니 한번 더 추가 혜택을 드려요.' },
-      { id: 4, title: '더플러스 서울점 : Sunlit Breeze', thumb: '', status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.20', tag: '매장', tagColor: '#10b981', desc: '서울점에서 만나는 특별 이벤트.' },
-      { id: 5, title: '신상품 출시 기념 구매 혜택', thumb: '', status: 'ongoing', startDate: '2026.04.10', endDate: '2026.04.25', tag: '신상품', tagColor: '#f59e0b', desc: '신상품 구매 시 추가 할인 및 사은품 증정.' },
-      { id: 6, title: '2026 S/S 컬렉션 선공개', thumb: '', status: 'ongoing', startDate: '2026.04.15', endDate: '2026.04.30', tag: '패션', tagColor: '#ec4899', desc: '2026 봄여름 시즌 컬렉션을 미리 만나보세요.' },
-      { id: 7, title: '더핸드썸 THE 클럽 멤버십 혜택', thumb: '', status: 'ended', startDate: '2026.03.01', endDate: '2026.03.31', tag: '멤버십', tagColor: '#6b7280', desc: 'THE 클럽 가입 시 특별 혜택을 제공합니다.' },
-      { id: 8, title: '겨울 시즌오프 최대 80% SALE', thumb: '', status: 'ended', startDate: '2026.02.10', endDate: '2026.03.10', tag: '세일', tagColor: '#6b7280', desc: '겨울 시즌 마감 특별 할인.' },
+      {
+        id: 1, title: '봄 베스트 상품 달력이벤트 70% 혜택',
+        status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.30',
+        tag: '할인', tagColor: '#e8587a',
+        bannerBg: '#111', bannerText: '#fff',
+        bannerLine1: '26° Spring', bannerLine2: 'SALE', bannerStyle: 'sale',
+      },
+      {
+        id: 2, title: '4월 신한카드 특시할인',
+        status: 'ongoing', startDate: '2026.04.08', endDate: '2026.04.30',
+        tag: '카드혜택', tagColor: '#3b82f6',
+        bannerBg: '#FDE047', bannerText: '#1a1a1a',
+        bannerLine1: '신한카드', bannerLine2: '즉시할인 10%', bannerStyle: 'card',
+      },
+      {
+        id: 3, title: '4월 더플러스 : 봄 쇼핑 3만원 추가 혜택',
+        status: 'ongoing', startDate: '2026.04.06', endDate: '2026.04.12',
+        tag: '적립', tagColor: '#8b5cf6',
+        bannerBg: '#0f172a', bannerText: '#38bdf8',
+        bannerLine1: 'PLUS+', bannerLine2: '봄 쇼핑 혜택', bannerStyle: 'plus',
+      },
+      {
+        id: 4, title: '더플러스 서울점 : Sunlit Breeze',
+        status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.20',
+        tag: '매장', tagColor: '#10b981',
+        bannerBg: '#f0fdf4', bannerText: '#064e3b',
+        bannerLine1: 'Sunlit', bannerLine2: 'Breeze', bannerStyle: 'nature',
+      },
+      {
+        id: 5, title: '신상품 출시 기념 구매 혜택',
+        status: 'ongoing', startDate: '2026.04.10', endDate: '2026.04.25',
+        tag: '신상품', tagColor: '#f59e0b',
+        bannerBg: '#1e1b4b', bannerText: '#fff',
+        bannerLine1: 'NEW', bannerLine2: 'ARRIVALS', bannerStyle: 'new',
+      },
+      {
+        id: 6, title: '2026 S/S 컬렉션 선공개',
+        status: 'ongoing', startDate: '2026.04.15', endDate: '2026.04.30',
+        tag: '패션', tagColor: '#ec4899',
+        bannerBg: '#fdf2f8', bannerText: '#831843',
+        bannerLine1: '2026 S/S', bannerLine2: 'COLLECTION', bannerStyle: 'collection',
+      },
+      {
+        id: 7, title: '더핸드썸 THE 클럽 멤버십 혜택',
+        status: 'ended', startDate: '2026.03.01', endDate: '2026.03.31',
+        tag: '멤버십', tagColor: '#6b7280',
+        bannerBg: '#1f2937', bannerText: '#d1d5db',
+        bannerLine1: 'THE CLUB', bannerLine2: 'MEMBERSHIP', bannerStyle: 'club',
+      },
+      {
+        id: 8, title: '겨울 시즌오프 최대 80% SALE',
+        status: 'ended', startDate: '2026.02.10', endDate: '2026.03.10',
+        tag: '세일', tagColor: '#6b7280',
+        bannerBg: '#374151', bannerText: '#f9fafb',
+        bannerLine1: 'SEASON OFF', bannerLine2: 'UP TO 80%', bannerStyle: 'off',
+      },
     ]);
 
-    const filteredEvents = computed(() =>
-      events.value.filter(e => activeTab.value === 'ongoing' ? e.status === 'ongoing' : e.status === 'ended')
-    );
+    const filteredEvents = computed(() => {
+      let list = events.value.filter(e =>
+        activeTab.value === 'ongoing' ? e.status === 'ongoing' : e.status === 'ended'
+      );
+      if (sortBy.value === 'deadline') {
+        list = [...list].sort((a, b) => a.endDate.localeCompare(b.endDate));
+      }
+      return list;
+    });
 
     const ongoingCount = computed(() => events.value.filter(e => e.status === 'ongoing').length);
     const endedCount   = computed(() => events.value.filter(e => e.status === 'ended').length);
 
-    /* 목업 배경 그라데이션 */
-    const gradients = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-      'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-      'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
-    ];
-    const eventBg = (id) => gradients[(id - 1) % gradients.length];
-
-    return { activeTab, filteredEvents, ongoingCount, endedCount, eventBg };
+    return { activeTab, sortBy, filteredEvents, ongoingCount, endedCount };
   },
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- 헤더 -->
-  <div style="margin-bottom:32px;">
-    <div style="display:inline-block;padding:4px 14px;border-radius:20px;background:var(--blue-dim);color:var(--blue);font-size:0.75rem;font-weight:700;margin-bottom:14px;">EVENT</div>
-    <h1 class="section-title" style="font-size:2rem;margin-bottom:10px;">이벤트</h1>
-    <p class="section-subtitle">다양한 혜택과 이벤트를 확인해보세요.</p>
+  <!-- 페이지 타이틀 배너 -->
+  <div style="position:relative;overflow:hidden;height:220px;margin:-36px -32px 36px;display:flex;align-items:center;justify-content:center;">
+    <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="이벤트"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
+    <div style="position:relative;z-index:1;text-align:center;">
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.65);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Promotion</div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#fff;letter-spacing:-0.5px;margin-bottom:8px;">이벤트</h1>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(255,255,255,0.65);">
+        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
+        <span>/</span><span style="color:#fff;">이벤트</span>
+      </div>
+    </div>
   </div>
 
-  <!-- 탭 -->
-  <div style="display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid var(--border);">
-    <button @click="activeTab='ongoing'"
-      :style="{
-        padding:'12px 28px', background:'none', border:'none', cursor:'pointer',
-        fontSize:'0.9rem', fontWeight: activeTab==='ongoing' ? '700' : '500',
-        color: activeTab==='ongoing' ? 'var(--blue)' : 'var(--text-muted)',
-        borderBottom: activeTab==='ongoing' ? '2px solid var(--blue)' : '2px solid transparent',
-        marginBottom: '-2px',
-      }">진행중 ({{ ongoingCount }})</button>
-    <button @click="activeTab='ended'"
-      :style="{
-        padding:'12px 28px', background:'none', border:'none', cursor:'pointer',
-        fontSize:'0.9rem', fontWeight: activeTab==='ended' ? '700' : '500',
-        color: activeTab==='ended' ? 'var(--blue)' : 'var(--text-muted)',
-        borderBottom: activeTab==='ended' ? '2px solid var(--blue)' : '2px solid transparent',
-        marginBottom: '-2px',
-      }">종료됨 ({{ endedCount }})</button>
+  <!-- 탭 + 정렬 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);margin-bottom:28px;">
+    <!-- 탭 -->
+    <div style="display:flex;gap:0;">
+      <button @click="activeTab='ongoing'"
+        :style="{
+          padding:'12px 24px', background:'none', border:'none', cursor:'pointer',
+          fontSize:'0.88rem', fontWeight: activeTab==='ongoing' ? '700' : '500',
+          color: activeTab==='ongoing' ? 'var(--text-primary)' : 'var(--text-muted)',
+          borderBottom: activeTab==='ongoing' ? '2px solid var(--text-primary)' : '2px solid transparent',
+          marginBottom: '-1px',
+        }">진행중 ({{ ongoingCount }})</button>
+      <button @click="activeTab='ended'"
+        :style="{
+          padding:'12px 24px', background:'none', border:'none', cursor:'pointer',
+          fontSize:'0.88rem', fontWeight: activeTab==='ended' ? '700' : '500',
+          color: activeTab==='ended' ? 'var(--text-primary)' : 'var(--text-muted)',
+          borderBottom: activeTab==='ended' ? '2px solid var(--text-primary)' : '2px solid transparent',
+          marginBottom: '-1px',
+        }">당첨자 발표</button>
+    </div>
+    <!-- 정렬 -->
+    <div style="display:flex;gap:0;padding-bottom:2px;">
+      <button @click="sortBy='latest'"
+        :style="{
+          padding:'6px 14px', background:'none', border:'none', cursor:'pointer',
+          fontSize:'0.8rem',
+          color: sortBy==='latest' ? 'var(--text-primary)' : 'var(--text-muted)',
+          fontWeight: sortBy==='latest' ? '700' : '400',
+          borderRight:'1px solid var(--border)',
+        }">최근등록순</button>
+      <button @click="sortBy='deadline'"
+        :style="{
+          padding:'6px 14px', background:'none', border:'none', cursor:'pointer',
+          fontSize:'0.8rem',
+          color: sortBy==='deadline' ? 'var(--text-primary)' : 'var(--text-muted)',
+          fontWeight: sortBy==='deadline' ? '700' : '400',
+        }">마감임박순</button>
+    </div>
   </div>
 
   <!-- 이벤트 그리드 -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:20px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
     <div v-for="ev in filteredEvents" :key="ev.id"
-      class="card" style="overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
+      style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
       @click="navigate('eventView', { eventId: ev.id })"
-      @mouseenter="$event.currentTarget.style.transform='translateY(-4px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'"
+      @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'"
       @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
 
-      <!-- 썸네일 -->
-      <div :style="{
-        height:'180px', background: eventBg(ev.id),
-        display:'flex', alignItems:'center', justifyContent:'center',
-        fontSize:'2.5rem', color:'rgba(255,255,255,0.9)', fontWeight:'900',
-        letterSpacing:'-1px', textShadow:'0 2px 8px rgba(0,0,0,0.15)',
-        position:'relative',
-      }">
-        <span style="opacity:0.85;">{{ ev.title.slice(0, 6) }}</span>
-        <span v-if="ev.status==='ended'"
-          style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;font-weight:700;letter-spacing:2px;">종료</span>
+      <!-- 이벤트 배너 썸네일 -->
+      <div :style="{ height:'170px', background: ev.bannerBg, position:'relative', overflow:'hidden',
+                     display:'flex', flexDirection:'column', alignItems:'flex-start', justifyContent:'flex-end', padding:'16px' }">
+        <!-- 배너 텍스트 -->
+        <div :style="{ color: ev.bannerText, position:'relative', zIndex:1 }">
+          <div style="font-size:0.72rem;opacity:0.7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">
+            {{ ev.startDate }} ~ {{ ev.endDate }}
+          </div>
+          <div :style="{ fontSize:'1.05rem', fontWeight:'900', lineHeight:'1.25', letterSpacing:'-0.5px' }">
+            {{ ev.bannerLine1 }}
+          </div>
+          <div :style="{ fontSize:'1.45rem', fontWeight:'900', lineHeight:'1.2', letterSpacing:'-0.5px' }">
+            {{ ev.bannerLine2 }}
+          </div>
+        </div>
+        <!-- 종료 오버레이 -->
+        <div v-if="ev.status==='ended'"
+          style="position:absolute;inset:0;background:rgba(0,0,0,0.52);display:flex;align-items:center;justify-content:center;">
+          <span style="color:#fff;font-size:0.85rem;font-weight:700;letter-spacing:3px;border:1px solid rgba(255,255,255,0.6);padding:5px 14px;">CLOSED</span>
+        </div>
       </div>
 
-      <!-- 정보 -->
-      <div style="padding:16px 18px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <span :style="{ padding:'2px 8px', borderRadius:'4px', fontSize:'0.7rem', fontWeight:'700', color:'#fff', background: ev.tagColor }">{{ ev.tag }}</span>
-          <span style="font-size:0.72rem;color:var(--text-muted);">{{ ev.startDate }} ~ {{ ev.endDate }}</span>
+      <!-- 카드 정보 -->
+      <div style="padding:14px 14px 16px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+          <span :style="{ padding:'2px 7px', borderRadius:'2px', fontSize:'0.68rem', fontWeight:'700', color:'#fff', background: ev.tagColor }">{{ ev.tag }}</span>
         </div>
-        <div style="font-size:0.92rem;font-weight:700;color:var(--text-primary);line-height:1.4;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ ev.title }}</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">{{ ev.desc }}</div>
+        <div style="font-size:0.87rem;font-weight:600;color:var(--text-primary);line-height:1.45;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ ev.title }}
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">{{ ev.startDate }} ~ {{ ev.endDate }}</div>
       </div>
     </div>
   </div>

@@ -5,10 +5,19 @@ window.Faq = {
   emits: [],
   template: /* html */ `
 <div class="page-wrap">
-  <div style="margin-bottom:32px;">
-    <div style="display:inline-block;padding:4px 14px;border-radius:20px;background:var(--purple-dim);color:var(--purple);font-size:0.75rem;font-weight:700;margin-bottom:14px;">FAQ</div>
-    <h1 class="section-title" style="font-size:2rem;margin-bottom:10px;">자주 묻는 <span class="gradient-text">질문</span></h1>
-    <p class="section-subtitle">ShopJoy 쇼핑 관련 자주 문의하시는 내용을 정리했습니다.</p>
+  <!-- 페이지 타이틀 배너 -->
+  <div style="position:relative;overflow:hidden;height:220px;margin:-36px -32px 36px;display:flex;align-items:center;justify-content:center;">
+    <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="FAQ"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
+    <div style="position:relative;z-index:1;text-align:center;">
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.65);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Support</div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#fff;letter-spacing:-0.5px;margin-bottom:8px;">FAQ</h1>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(255,255,255,0.65);">
+        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
+        <span>/</span><span style="color:#fff;">FAQ</span>
+      </div>
+    </div>
   </div>
   <div class="card" style="padding:8px 28px;margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">

@@ -15,10 +15,19 @@ window.Like = {
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- 헤더 -->
-  <div style="margin-bottom:32px;">
-    <h1 style="font-size:1.5rem;font-weight:800;color:var(--text-primary);margin-bottom:8px;">위시리스트</h1>
-    <p style="font-size:0.88rem;color:var(--text-muted);">좋아요한 상품을 모아보세요</p>
+  <!-- 페이지 타이틀 배너 -->
+  <div style="position:relative;overflow:hidden;height:220px;margin:-36px -32px 36px;display:flex;align-items:center;justify-content:center;">
+    <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="위시리스트"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
+    <div style="position:relative;z-index:1;text-align:center;">
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.65);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">My</div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#fff;letter-spacing:-0.5px;margin-bottom:8px;">위시리스트</h1>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(255,255,255,0.65);">
+        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
+        <span>/</span><span style="color:#fff;">위시리스트</span>
+      </div>
+    </div>
   </div>
 
   <!-- 상품 목록 -->

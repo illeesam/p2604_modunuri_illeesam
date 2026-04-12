@@ -277,6 +277,13 @@
         const cids = params.get('cartIds');
         if (cids) cartIds.value = cids.split(',').filter(Boolean);
       }
+      /* 이벤트/블로그 상세 ID 복원 */
+      if (hasPageParam) {
+        const hEventId = params.get('eventId');
+        const hEditId  = params.get('editId');
+        if (hEventId) viewEditId.value = Number(hEventId) || hEventId;
+        else if (hEditId) viewEditId.value = Number(hEditId) || hEditId;
+      }
       const hpid = hasPageParam ? params?.get('pid') : null;
       const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
       if (!Number.isNaN(pid)) {
@@ -315,6 +322,10 @@
           const f = products.find(x => Number(x.productId) === pid);
           if (f) selectedProduct.value = f;
         }
+        const hEventId = params.get('eventId');
+        const hEditId  = params.get('editId');
+        if (hEventId) viewEditId.value = Number(hEventId) || hEventId;
+        else if (hEditId) viewEditId.value = Number(hEditId) || hEditId;
       } catch(e) {}
       setTimeout(() => { syncingFromHash = false; }, 0);
     };
@@ -334,6 +345,12 @@
       }
       if (id === 'order' && cartIds.value?.length) {
         params.set('cartIds', cartIds.value.join(','));
+      }
+      if (id === 'eventView' && viewEditId.value != null) {
+        params.set('eventId', viewEditId.value);
+      }
+      if ((id === 'blogView' || id === 'blogEdit') && viewEditId.value != null) {
+        params.set('editId', viewEditId.value);
       }
       const hash = params.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
