@@ -2,7 +2,7 @@
 window.AppHeader = {
   name: 'AppHeader',
   props: ['page', 'theme', 'sidebarOpen', 'mobileOpen', 'config', 'navigate',
-          'toggleTheme', 'cartCount', 'auth', 'onShowLogin', 'onLogout'],
+          'toggleTheme', 'cartCount', 'likeCount', 'auth', 'onShowLogin', 'onLogout'],
   emits: ['toggle-sidebar', 'toggle-mobile'],
   setup(props) {
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
@@ -242,7 +242,21 @@ window.AppHeader = {
       </div>
     </div>
 
-    <!-- 장바구니: 아이콘 + 뱃지(개수), 로그인/유저 오른쪽 -->
+    <!-- 좋아요(위시리스트) 아이콘 -->
+    <button type="button" @click="navigate('like'); closeUserMenu()"
+      style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
+      title="위시리스트"
+      @mouseenter="$event.currentTarget.style.borderColor='var(--blue)';$event.currentTarget.style.background='var(--blue-dim)'"
+      @mouseleave="$event.currentTarget.style.borderColor='var(--border)';$event.currentTarget.style.background='var(--bg-card)'">
+      <span style="position:relative;display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+        <span v-if="likeCount > 0" class="header-cart-badge">{{ likeCount > 99 ? '99+' : likeCount }}</span>
+      </span>
+    </button>
+
+    <!-- 장바구니: 아이콘 + 뱃지(개수) -->
     <button type="button" @click="navigate('cart'); closeUserMenu()"
       class="header-cart-link"
       style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"

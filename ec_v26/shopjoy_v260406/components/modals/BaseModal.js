@@ -119,52 +119,59 @@ window.OrderDetailModal = {
    ─────────────────────────────────────────────────── */
 window.ProductModal = {
   name: 'ProductModal',
-  props: ['show', 'product'],
+  props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked'],
   emits: ['close'],
   template: /* html */ `
 <div v-if="show"
-  style="position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:400;display:flex;align-items:center;justify-content:center;padding:16px;"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;"
   @click.self="$emit('close')">
-  <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.28);border:1px solid var(--border);overflow:hidden;"
+  <div style="background:#fff;border-radius:8px;width:100%;max-width:800px;max-height:85vh;overflow-y:auto;display:flex;"
     @click.stop role="dialog" aria-modal="true">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:1.8rem;">{{ product && product.emoji }}</span>
-        <div>
-          <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">{{ product && product.prodNm }}</div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">#{{ product && product.productId }}</div>
-        </div>
-      </div>
-      <button type="button" @click="$emit('close')" aria-label="닫기"
-        style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;flex-shrink:0;">✕</button>
+    <!-- 좌: 이미지 -->
+    <div v-if="product" style="flex:1;min-width:300px;background:#f8f6f3;display:flex;align-items:center;justify-content:center;padding:32px;">
+      <img v-if="product.image" :src="product.image" :alt="product.prodNm" style="max-width:100%;max-height:400px;object-fit:contain;" />
     </div>
-    <div v-if="product" style="padding:18px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">{{ product.price }}</span>
-        <span v-if="product.badge" style="font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:20px;background:var(--blue);color:#fff;">{{ product.badge }}</span>
-      </div>
-      <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;padding:10px 14px;background:var(--bg-base);border-radius:8px;">{{ product.desc }}</div>
-      <div v-if="product.opt1s && product.opt1s.length">
-        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:8px;">색상</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          <div v-for="col in product.opt1s" :key="col.name" style="display:flex;align-items:center;gap:5px;">
-            <span style="width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.12);" :style="'background:'+col.hex"></span>
-            <span style="font-size:0.78rem;color:var(--text-secondary);">{{ col.name }}</span>
-          </div>
+    <!-- 우: 정보 -->
+    <div v-if="product" style="flex:1;min-width:280px;padding:32px;position:relative;">
+      <button @click="$emit('close')"
+        style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#999;">✕</button>
+      <h2 style="font-size:1.2rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">{{ product.prodNm }}</h2>
+      <div style="font-size:1.3rem;font-weight:800;color:#1a1a1a;margin-bottom:16px;">{{ product.price }}</div>
+      <p style="font-size:0.85rem;color:#666;line-height:1.7;margin-bottom:20px;">{{ product.desc }}</p>
+      <!-- 색상 -->
+      <div v-if="product.opt1s && product.opt1s.length" style="margin-bottom:16px;">
+        <div style="font-size:0.78rem;font-weight:600;color:#999;margin-bottom:8px;">색상</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <div v-for="c in product.opt1s" :key="c.name"
+            :style="{ width:'24px', height:'24px', borderRadius:'50%', background:c.hex, border:'1.5px solid rgba(0,0,0,0.12)' }"
+            :title="c.name"></div>
         </div>
       </div>
-      <div v-if="product.opt2s && product.opt2s.length">
-        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:8px;">사이즈</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <span v-for="sz in product.opt2s" :key="sz" style="padding:3px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);background:var(--bg-base);">{{ sz }}</span>
+      <!-- 사이즈 -->
+      <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
+        <div style="font-size:0.78rem;font-weight:600;color:#999;margin-bottom:8px;">사이즈</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span v-for="s in product.opt2s" :key="s"
+            style="padding:4px 12px;border:1px solid #ddd;border-radius:2px;font-size:0.8rem;color:#555;">{{ s }}</span>
         </div>
       </div>
-      <div v-if="product.tags && product.tags.length" style="display:flex;flex-wrap:wrap;gap:6px;">
-        <span v-for="tag in product.tags" :key="tag" style="padding:2px 9px;border-radius:20px;font-size:0.72rem;font-weight:600;background:var(--blue-dim);color:var(--blue);">#{{ tag }}</span>
+      <!-- 태그 -->
+      <div v-if="product.tags && product.tags.length" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;">
+        <span v-for="t in product.tags" :key="t"
+          style="padding:2px 10px;background:#f5f5f5;border-radius:20px;font-size:0.72rem;color:#888;">#{{ t }}</span>
       </div>
-    </div>
-    <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-      <button type="button" @click="$emit('close')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">닫기</button>
+      <!-- 버튼 -->
+      <div style="display:flex;gap:10px;">
+        <button class="btn-blue" @click="navigate && navigate('detail');$emit('close')" style="flex:1;padding:12px;">상세보기</button>
+        <button v-if="toggleLike" @click="toggleLike(product.productId)"
+          style="width:44px;height:44px;border:1.5px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24"
+            :fill="isLiked && isLiked(product.productId) ? '#ef4444' : 'none'"
+            :stroke="isLiked && isLiked(product.productId) ? '#ef4444' : '#999'" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </div>

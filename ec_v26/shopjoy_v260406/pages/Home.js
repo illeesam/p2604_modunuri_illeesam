@@ -1,7 +1,7 @@
 /* ShopJoy - Home */
 window.Home = {
   name: 'Home',
-  props: ['navigate', 'config', 'products', 'selectProduct'],
+  props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   emits: [],
   template: /* html */ `
 <div>
@@ -62,49 +62,41 @@ window.Home = {
     </div>
   </div>
 
-  <!-- ══ Trending Products ══ -->
-  <div style="max-width:1100px;margin:0 auto;padding:60px 32px 36px;">
+  <!-- ══ 인기 상품 (8개) ══ -->
+  <div style="max-width:1100px;margin:0 auto;padding:60px 32px 48px;">
     <div style="text-align:center;margin-bottom:36px;">
       <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">인기 상품</h2>
       <p style="font-size:0.85rem;color:#999;">고객들이 사랑하는 트렌디한 아이템을 만나보세요</p>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:24px;">
-      <div v-for="p in newProducts.slice(0,4)" :key="p.productId"
-        style="cursor:pointer;text-align:center;" @click="selectProduct(p)">
-        <div style="background:var(--bg-base);border-radius:0;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
-          @mouseenter="$event.currentTarget.style.background='#f9f9f7'"
-          @mouseleave="$event.currentTarget.style.background='#fff'">
-          <img v-if="p.image" :src="p.image" :alt="p.prodNm"
-            style="width:100%;height:100%;object-fit:contain;transition:transform .3s;"
-            @mouseenter="$event.target.style.transform='scale(1.05)'"
-            @mouseleave="$event.target.style.transform=''" />
+      <div v-for="p in allHomeProducts" :key="p.productId"
+        style="cursor:pointer;transition:transform .25s,box-shadow .25s;"
+        @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
+        @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
+        @click="selectProduct(p)">
+        <div style="background:#f8f6f3;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
+          @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
+          @mouseleave="isLiked(p.productId) || ($event.currentTarget.querySelector('.prod-hover').style.opacity='0')">
+          <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
           <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;"
-            :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#e8587a', color:'#fff' }">{{ p.badge }}</span>
+            :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355', color:'#fff' }">{{ p.badge }}</span>
+          <!-- hover 아이콘: 좋아요 / 장바구니 / 빠른보기 -->
+          <div class="prod-hover" :style="{ opacity: isLiked(p.productId) ? '1' : '0', transition:'opacity .25s', position:'absolute', right:'12px', top:'12px', display:'flex', flexDirection:'column', gap:'6px' }">
+            <button @click.stop="toggleLike(p.productId)" style="width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="위시리스트">
+              <svg width="14" height="14" viewBox="0 0 24 24" :fill="isLiked(p.productId)?'#ef4444':'none'" :stroke="isLiked(p.productId)?'#ef4444':'#555'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+            <button @click.stop="selectProduct(p)" style="width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            </button>
+            <button @click.stop="quickViewProduct=p" style="width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+          </div>
         </div>
         <div style="font-size:0.88rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">{{ p.prodNm }}</div>
         <div style="font-size:0.85rem;color:#888;">{{ p.price }}</div>
       </div>
     </div>
-  </div>
-
-  <!-- ══ 하단 4개 (2행) ══ -->
-  <div style="max-width:1100px;margin:0 auto;padding:0 32px 48px;">
-    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:24px;">
-      <div v-for="p in bestProducts.slice(0,4)" :key="p.productId"
-        style="cursor:pointer;text-align:center;" @click="selectProduct(p)">
-        <div style="background:#fff;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
-          @mouseenter="$event.currentTarget.style.background='#f9f9f7'"
-          @mouseleave="$event.currentTarget.style.background='#fff'">
-          <img v-if="p.image" :src="p.image" :alt="p.prodNm"
-            style="width:100%;height:100%;object-fit:contain;transition:transform .3s;"
-            @mouseenter="$event.target.style.transform='scale(1.05)'"
-            @mouseleave="$event.target.style.transform=''" />
-        </div>
-        <div style="font-size:0.88rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">{{ p.prodNm }}</div>
-        <div style="font-size:0.85rem;color:#888;">{{ p.price }}</div>
-      </div>
-    </div>
-    <!-- LOAD MORE -->
     <div style="text-align:center;margin-top:32px;">
       <button @click="navigate('products')"
         style="padding:12px 40px;font-size:0.82rem;font-weight:600;letter-spacing:0.5px;border:1.5px solid #ddd;background:transparent;color:#666;cursor:pointer;transition:all .2s;"
@@ -129,6 +121,16 @@ window.Home = {
       </button>
     </div>
   </div>
+
+  <!-- ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ -->
+  <product-modal
+    :show="!!quickViewProduct"
+    :product="quickViewProduct"
+    :navigate="(page) => { selectProduct(quickViewProduct); quickViewProduct=null; }"
+    :toggle-like="toggleLike"
+    :is-liked="isLiked"
+    @close="quickViewProduct=null"
+  />
 
   <!-- ══ 브랜드 로고 (Outstock 하단 클라이언트) ══ -->
   <div style="max-width:900px;margin:0 auto;padding:24px 32px 60px;">
@@ -162,8 +164,17 @@ window.Home = {
       (props.products || []).filter(p => p.badge === '인기').slice(0, 3)
     );
 
-    /* ── 배너 슬라이더 ── */
+    /* ── 빠른보기 모달 ── */
     const { ref, onMounted, onBeforeUnmount } = Vue;
+    const quickViewProduct = ref(null);
+
+    /* ── 홈 상품 8개 ── */
+    const allHomeProducts = computed(() => {
+      const all = props.products || [];
+      return all.slice(0, 8);
+    });
+
+    /* ── 배너 슬라이더 ── */
     const bannerIdx = ref(0);
     const banners = [
       { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
@@ -176,6 +187,6 @@ window.Home = {
     onMounted(startBannerTimer);
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    return { categoryLabel, catEmoji, newProducts, bestProducts, bannerIdx, banners, setBanner };
+    return { categoryLabel, catEmoji, newProducts, bestProducts, allHomeProducts, quickViewProduct, bannerIdx, banners, setBanner };
   }
 };

@@ -136,6 +136,22 @@
       navigate('detail');
     };
 
+    /* ── Likes (좋아요/위시리스트) ── */
+    const likes = ref(new Set());
+    try {
+      const savedLikes = localStorage.getItem('shopjoy_likes');
+      if (savedLikes) likes.value = new Set(JSON.parse(savedLikes));
+    } catch (e) {}
+    const saveLikes = () => { try { localStorage.setItem('shopjoy_likes', JSON.stringify([...likes.value])); } catch (e) {} };
+    const toggleLike = (productId) => {
+      const s = new Set(likes.value);
+      if (s.has(productId)) s.delete(productId); else s.add(productId);
+      likes.value = s;
+      saveLikes();
+    };
+    const isLiked = (productId) => likes.value.has(productId);
+    const likeCount = computed(() => likes.value.size);
+
     /* ── Cart ── */
     const cart = reactive([]);
 
@@ -229,7 +245,7 @@
     /* ── URL state ── */
     let restoring = true;
     const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq',
-      'event', 'eventView', 'blog', 'blogView', 'blogEdit',
+      'event', 'eventView', 'blog', 'blogView', 'blogEdit', 'like',
       'location', 'about',
       'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
       'dispUi01', 'dispUi02', 'dispUi03', 'dispUi04', 'dispUi05', 'dispUi06',
@@ -354,6 +370,7 @@
       confirmState, showConfirm, closeConfirm,
       products, selectedProduct, selectProduct,
       cart, cartCount, addToCart, removeFromCart, updateCartQty, clearCart,
+      likes, toggleLike, isLiked, likeCount,
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, showLogin, onShowLogin, onLogout,
@@ -365,7 +382,7 @@
 
   <app-header
     :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
-    :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cartCount"
+    :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cartCount" :like-count="likeCount"
     :auth="auth" :on-show-login="onShowLogin" :on-logout="onLogout"
     @toggle-sidebar="sidebarOpen=!sidebarOpen" @toggle-mobile="toggleMobileMenu"
   />
@@ -382,6 +399,7 @@
       <home
         v-if="page==='home'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
+        :toggle-like="toggleLike" :is-liked="isLiked"
       />
       <products
         v-else-if="page==='products'"
@@ -431,6 +449,11 @@
       <blog-edit
         v-else-if="page==='blogEdit'"
         :navigate="navigate" :config="config" :edit-id="viewEditId" :show-toast="showToast"
+      />
+      <like-page
+        v-else-if="page==='like'"
+        :navigate="navigate" :config="config" :products="products"
+        :likes="likes" :toggle-like="toggleLike" :select-product="selectProduct"
       />
       <location-page
         v-else-if="page==='location'"
@@ -558,6 +581,7 @@
   .component('BlogPage',    window.Blog)
   .component('BlogView',    window.BlogView)
   .component('BlogEdit',    window.BlogEdit)
+  .component('LikePage',     window.Like)
   .component('LocationPage', window.Location)
   .component('AboutPage',    window.About)
   .component('DispWidget', window.DispWidget)
