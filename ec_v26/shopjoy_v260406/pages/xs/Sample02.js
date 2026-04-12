@@ -31,22 +31,24 @@ window.Sample02 = {
       _orig: { productNm: d.productNm, category: d.category, price: d.price, stock: d.stock, status: d.status },
     });
 
-    /* ── 무한스크롤 ── */
-    const visibleCount = ref(10);
-    const visibleRows  = computed(() => gridRows.slice(0, visibleCount.value));
-    const hasMore      = computed(() => visibleCount.value < gridRows.length);
-    const loadMore     = () => { visibleCount.value = Math.min(visibleCount.value + 10, gridRows.length); };
+    /* ── 무한스크롤 (IntersectionObserver) ── */
+    const visibleCount  = ref(10);
+    const sentinelEl    = ref(null);   // 템플릿 ref: "더 불러오기" 요소
+    const visibleRows   = computed(() => gridRows.slice(0, visibleCount.value));
+    const hasMore       = computed(() => visibleCount.value < gridRows.length);
+    const loadMore      = () => { visibleCount.value = Math.min(visibleCount.value + 10, gridRows.length); };
 
-    // 스크롤 컨테이너: <main class="layout-main" style="overflow-y:auto">
-    let _scrollEl = null;
-    const onScroll = () => {
-      if (!hasMore.value || !_scrollEl) return;
-      if (_scrollEl.scrollTop + _scrollEl.clientHeight >= _scrollEl.scrollHeight - 120) loadMore();
+    let _observer = null;
+    const setupObserver = () => {
+      if (_observer) _observer.disconnect();
+      _observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && hasMore.value) loadMore();
+      }, { threshold: 0.1 });
+      if (sentinelEl.value) _observer.observe(sentinelEl.value);
     };
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; visibleCount.value = 10;
-      if (_scrollEl) _scrollEl.scrollTop = 0;
       allData.filter(d => {
         const kw = applied.kw.toLowerCase();
         if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
@@ -57,22 +59,20 @@ window.Sample02 = {
     };
 
     onMounted(async () => {
-      _scrollEl = document.querySelector('.layout-main');
-      if (_scrollEl) _scrollEl.addEventListener('scroll', onScroll);
-
       try {
         const r = await window.axiosApi.get('xs/sample02.json');
         (r.data || []).forEach(d => allData.push(d));
         loadGrid();
+        Vue.nextTick(setupObserver);
       } catch { showToast('데이터 로딩 실패', 'error'); }
     });
 
     onUnmounted(() => {
-      if (_scrollEl) _scrollEl.removeEventListener('scroll', onScroll);
+      if (_observer) _observer.disconnect();
     });
 
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, category: searchCategory.value, status: searchStatus.value }); loadGrid(); };
-    const onReset  = () => { searchKw.value = ''; searchCategory.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', category: '', status: '' }); loadGrid(); };
+    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, category: searchCategory.value, status: searchStatus.value }); loadGrid(); Vue.nextTick(setupObserver); };
+    const onReset  = () => { searchKw.value = ''; searchCategory.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', category: '', status: '' }); loadGrid(); Vue.nextTick(setupObserver); };
 
     const setFocused   = idx => { focusedIdx.value = idx; };
     const onCellChange = row => {
@@ -159,7 +159,7 @@ window.Sample02 = {
 
     return {
       toast, searchKw, searchCategory, searchStatus, CATEGORY_OPTS, onSearch, onReset,
-      gridRows, visibleRows, total, visibleCount, hasMore, loadMore,
+      gridRows, visibleRows, total, visibleCount, hasMore, loadMore, sentinelEl,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, doSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
@@ -293,8 +293,8 @@ window.Sample02 = {
       </table>
     </div>
 
-    <!-- 로딩 표시 -->
-    <div v-if="hasMore" style="padding:14px;text-align:center;font-size:12px;color:#aaa;border-top:1px solid #f5f5f5;">
+    <!-- 로딩 표시 (IntersectionObserver sentinel) -->
+    <div v-if="hasMore" ref="sentinelEl" style="padding:14px;text-align:center;font-size:12px;color:#aaa;border-top:1px solid #f5f5f5;">
       <span style="display:inline-flex;align-items:center;gap:6px;">
         <span style="display:inline-block;width:14px;height:14px;border:2px solid #e8587a;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span>
         스크롤하여 더 불러오기 ({{ visibleCount }} / {{ gridRows.length }}건)
