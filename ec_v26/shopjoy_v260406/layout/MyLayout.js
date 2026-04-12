@@ -133,7 +133,7 @@ window.MyLayout = {
     return { MY_TABS, tabCounts, goTab };
   },
   template: /* html */ `
-<div style="padding:0 20px 24px;max-width:960px;margin:0 auto;">
+<div style="padding:0 20px 24px;max-width:1100px;margin:0 auto;">
 
   <!-- 페이지 타이틀 배너 -->
   <div style="position:relative;overflow:hidden;height:220px;margin:0 -20px 28px;display:flex;align-items:center;justify-content:center;">
