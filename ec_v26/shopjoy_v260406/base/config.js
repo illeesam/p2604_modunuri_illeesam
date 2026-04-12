@@ -17,6 +17,8 @@ window.SITE_CONFIG = {
     { "icon": "📝", "menuId": "order",    "menuNm": "주문하기" },
     { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
     { "icon": "❓", "menuId": "faq",      "menuNm": "FAQ" },
+    { "icon": "🎉", "menuId": "event",   "menuNm": "이벤트" },
+    { "icon": "📖", "menuId": "blog",    "menuNm": "블로그" },
     { "menuId": "divider-disp", "type": "divider" },
     { "menuId": "dispUi01", "menuNm": "전시ui1" },
     { "menuId": "dispUi02", "menuNm": "전시ui2" },
@@ -46,7 +48,9 @@ window.SITE_CONFIG = {
         { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
         { "icon": "❓", "menuId": "faq",      "menuNm": "FAQ" },
         { "icon": "📍", "menuId": "location", "menuNm": "위치안내" },
-        { "icon": "🏢", "menuId": "about",    "menuNm": "회사소개" }
+        { "icon": "🏢", "menuId": "about",    "menuNm": "회사소개" },
+        { "icon": "🎉", "menuId": "event",    "menuNm": "이벤트" },
+        { "icon": "📖", "menuId": "blog",     "menuNm": "블로그" }
       ]
     },
     {

@@ -26,6 +26,8 @@ window.Detail = {
     ];
     const activeTab    = ref('detail');
     const tabBarRef    = ref(null);
+    const buyBtnRef    = ref(null);
+    const showBottomBar = ref(false);
     const detailSecRef = ref(null);
     const sizeSecRef   = ref(null);
     const reviewSecRef = ref(null);
@@ -54,15 +56,19 @@ window.Detail = {
       { emoji: '👟', label: '스포티 룩',  desc: '트랙 팬츠 + 스니커즈' },
     ];
 
-    /* ── 가상 이미지 목록 ── */
+    /* ── 가상 이미지 목록 (선택 색상 기준) ── */
     const mockImages = computed(() => {
       const p = props.product;
       if (!p) return [];
-      const imgs = [{ bg: 'linear-gradient(135deg,var(--blue-dim),var(--green-dim))', label: '기본' }];
-      (p.opt1s || []).slice(0, 4).forEach(c => {
-        imgs.push({ bg: `linear-gradient(135deg,${c.hex}66,${c.hex}22)`, hex: c.hex, label: c.name });
-      });
-      return imgs;
+      const c = selectedColor.value;
+      const hex = c?.hex || '#c8c8c8';
+      const nm  = c?.name || '기본';
+      return [
+        { bg: `linear-gradient(135deg,${hex}55,${hex}18)`, label: nm + ' 정면' },
+        { bg: `linear-gradient(180deg,${hex}44,${hex}11)`, label: nm + ' 측면' },
+        { bg: `linear-gradient(225deg,${hex}55,${hex}18)`, label: nm + ' 후면' },
+        { bg: `linear-gradient(90deg,${hex}33,${hex}0a)`,  label: nm + ' 디테일' },
+      ];
     });
 
     /* ── 가상 리뷰 ── */
@@ -137,21 +143,65 @@ window.Detail = {
       return '★'.repeat(v) + '☆'.repeat(5 - v);
     };
 
-    /* ── 탭 스크롤 ── */
+    /* ── 탭 고정 + 스크롤 ── */
+    let scrollEl = null;
+    const getScrollEl = () => scrollEl || (scrollEl = document.querySelector('.layout-main')) || window;
+
+    const tabFixed     = ref(false);
+    const tabFixedTop  = ref(0);
+    const tabFixedLeft = ref(0);
+    const tabFixedW    = ref(0);
+    const tabPlaceholderH = ref(0);
+    let tabNaturalScrollTop = 0;   // 탭바가 fixed 되기 직전의 scrollTop
+
+    const updateTabFixedPos = () => {
+      const main = getScrollEl();
+      if (!main.getBoundingClientRect) return;
+      const r = main.getBoundingClientRect();
+      tabFixedTop.value  = r.top;
+      tabFixedLeft.value = r.left;
+      tabFixedW.value    = r.width;
+    };
+
     const scrollToTab = (tabId) => {
       const map = { detail: detailSecRef, size: sizeSecRef, review: reviewSecRef, style: styleSecRef };
       const el  = map[tabId]?.value;
       if (!el) return;
-      const tabH = (tabBarRef.value?.offsetHeight || 44) + 76;
-      const top  = el.getBoundingClientRect().top + window.scrollY - tabH - 4;
-      window.scrollTo({ top, behavior: 'smooth' });
+      const main = getScrollEl();
+      const mainTop = main.getBoundingClientRect ? main.getBoundingClientRect().top : 0;
+      const tabH = (tabBarRef.value?.offsetHeight || 44) + 4;
+      const top  = main.scrollTop + (el.getBoundingClientRect().top - mainTop) - tabH;
+      main.scrollTo({ top, behavior: 'smooth' });
       activeTab.value = tabId;
     };
 
     const onScroll = () => {
-      const tabBottom = tabBarRef.value
-        ? tabBarRef.value.getBoundingClientRect().bottom + 10
-        : 130;
+      const main = getScrollEl();
+      const bar  = tabBarRef.value;
+      if (!bar || !main.getBoundingClientRect) return;
+
+      const mainTop = main.getBoundingClientRect().top;
+
+      /* ── fixed 전환 ── */
+      if (!tabFixed.value) {
+        if (bar.getBoundingClientRect().top <= mainTop) {
+          tabPlaceholderH.value = bar.offsetHeight;
+          tabNaturalScrollTop   = main.scrollTop;
+          updateTabFixedPos();
+          tabFixed.value = true;
+        }
+      } else {
+        if (main.scrollTop < tabNaturalScrollTop) {
+          tabFixed.value = false;
+        }
+      }
+
+      /* ── 하단 바 표시: 구매 버튼이 화면 밖으로 나가면 표시 ── */
+      const btn = buyBtnRef.value;
+      showBottomBar.value = btn ? btn.getBoundingClientRect().bottom < mainTop : false;
+
+      /* ── 활성 탭 ── */
+      const anchor = mainTop + (bar.offsetHeight || 44) + 10;
       const sections = [
         { id: 'style',  ref: styleSecRef },
         { id: 'review', ref: reviewSecRef },
@@ -159,7 +209,7 @@ window.Detail = {
         { id: 'detail', ref: detailSecRef },
       ];
       for (const s of sections) {
-        if (s.ref.value && s.ref.value.getBoundingClientRect().top <= tabBottom) {
+        if (s.ref.value && s.ref.value.getBoundingClientRect().top <= anchor) {
           activeTab.value = s.id;
           break;
         }
@@ -167,11 +217,14 @@ window.Detail = {
     };
 
     onMounted(() => {
-      window.addEventListener('scroll', onScroll, { passive: true });
-      /* 진입 시 첫 번째 색상 자동 선택 */
+      const main = getScrollEl();
+      main.addEventListener('scroll', onScroll, { passive: true });
       if (props.product?.opt1s?.[0]) selectedColor.value = props.product.opt1s[0];
     });
-    onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
+    onBeforeUnmount(() => {
+      const main = getScrollEl();
+      main.removeEventListener('scroll', onScroll);
+    });
 
     watch(() => props.product, (p) => {
       selectedColor.value = p?.opt1s?.[0] || null;
@@ -180,7 +233,8 @@ window.Detail = {
       selectedImg.value   = 0;
       activeTab.value     = 'detail';
       quickBuyOpen.value  = false;
-      window.scrollTo(0, 0);
+      tabFixed.value      = false;
+      getScrollEl().scrollTo(0, 0);
     });
 
     /* ── 카테고리 라벨 ── */
@@ -205,7 +259,7 @@ window.Detail = {
     });
 
     /* ── 구매 로직 ── */
-    const selectColor = c => { selectedColor.value = c; colorError.value = ''; };
+    const selectColor = c => { selectedColor.value = c; colorError.value = ''; selectedImg.value = 0; };
     const selectSize  = s => { selectedSize.value  = s; sizeError.value  = ''; };
 
     const validate = () => {
@@ -261,8 +315,10 @@ window.Detail = {
       reviewFilter, photoPopupOpen, selectedReview,
       sizeGuideRows, styleItems,
       mockImages, mockReviews, reviewsWithPhoto, filteredReviews, avgRating, ratingDist,
+      tabFixed, tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
       quickBuyOpen, drawerMode, quickBuyTotal,
       scrollToTab, categoryLabel, stars,
+      buyBtnRef, showBottomBar,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
     };
   },
@@ -327,7 +383,7 @@ window.Detail = {
 
         <!-- 우: 구매 옵션 -->
         <div>
-          <div class="card" style="padding:28px;position:sticky;top:76px;">
+          <div class="card" style="padding:28px;position:sticky;top:20px;">
 
             <!-- 상품명 + 카테고리 -->
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
@@ -408,7 +464,7 @@ window.Detail = {
             </div>
 
             <!-- 버튼 -->
-            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+            <div ref="buyBtnRef" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
               <button class="btn-blue" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleAddToCart">🛒 장바구니 담기</button>
               <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="execBuyNow">⚡ 바로구매</button>
               <button @click="navigate('contact')"
@@ -428,9 +484,20 @@ window.Detail = {
       </div>
     </div><!-- /page-wrap top -->
 
-    <!-- ══ 스티키 탭 바 ══ -->
+    <!-- ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ -->
+    <div v-if="tabFixed" :style="{ height: tabPlaceholderH + 'px', marginTop:'24px' }"></div>
     <div ref="tabBarRef"
-      style="position:sticky;top:56px;z-index:50;background:var(--bg-card);border-top:1px solid var(--border);border-bottom:2px solid var(--border);margin-top:24px;">
+      :style="tabFixed ? {
+        position:'fixed', top:tabFixedTop+'px', left:tabFixedLeft+'px', width:tabFixedW+'px',
+        zIndex:55, background:'var(--bg-card)',
+        borderBottom:'2px solid var(--border)',
+        boxShadow:'0 2px 8px rgba(0,0,0,0.08)',
+      } : {
+        position:'relative',
+        zIndex:50, background:'var(--bg-card)',
+        borderTop:'1px solid var(--border)', borderBottom:'2px solid var(--border)',
+        marginTop:'24px',
+      }">
       <div class="page-wrap" style="padding-top:0;padding-bottom:0;display:flex;justify-content:center;">
         <button v-for="tab in TABS" :key="tab.id" @click="scrollToTab(tab.id)"
           :style="{

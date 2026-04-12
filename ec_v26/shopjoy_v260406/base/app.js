@@ -43,6 +43,8 @@
     const instantOrder = ref(null);
     /* ── 장바구니 선택 주문 (cartIds) ── */
     const cartIds = ref(null);
+    /* ── 서브페이지 editId (이벤트상세, 블로그상세/수정 등) ── */
+    const viewEditId = ref(null);
 
     /* instantOrder → URL 해시 파라미터 변환 */
     const _instantOrderToParams = (io) => {
@@ -74,6 +76,9 @@
       else if (id !== 'order') instantOrder.value = null;
       if (opts && opts.cartIds !== undefined) cartIds.value = opts.cartIds;
       else if (id !== 'order') cartIds.value = null;
+      if (opts && opts.editId !== undefined) viewEditId.value = opts.editId;
+      else if (opts && opts.eventId !== undefined) viewEditId.value = opts.eventId;
+      else viewEditId.value = null;
       if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
       window.scrollTo(0, 0);
@@ -203,7 +208,9 @@
 
     /* ── URL state ── */
     let restoring = true;
-    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq', 'location', 'about',
+    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq',
+      'event', 'eventView', 'blog', 'blogView', 'blogEdit',
+      'location', 'about',
       'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
       'dispUi01', 'dispUi02', 'dispUi03', 'dispUi04', 'dispUi05', 'dispUi06',
       'sample01','sample02','sample03','sample04','sample05','sample06','sample07',
@@ -327,7 +334,7 @@
       confirmState, showConfirm, closeConfirm,
       products, selectedProduct, selectProduct,
       cart, cartCount, addToCart, removeFromCart, updateCartQty, clearCart,
-      instantOrder, cartIds,
+      instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, showLogin, onShowLogin, onLogout,
     };
@@ -384,6 +391,26 @@
       <faq
         v-else-if="page==='faq'"
         :navigate="navigate" :config="config"
+      />
+      <event-page
+        v-else-if="page==='event'"
+        :navigate="navigate" :config="config"
+      />
+      <event-view
+        v-else-if="page==='eventView'"
+        :navigate="navigate" :config="config" :edit-id="viewEditId"
+      />
+      <blog-page
+        v-else-if="page==='blog'"
+        :navigate="navigate" :config="config"
+      />
+      <blog-view
+        v-else-if="page==='blogView'"
+        :navigate="navigate" :config="config" :edit-id="viewEditId"
+      />
+      <blog-edit
+        v-else-if="page==='blogEdit'"
+        :navigate="navigate" :config="config" :edit-id="viewEditId" :show-toast="showToast"
       />
       <location-page
         v-else-if="page==='location'"
@@ -506,6 +533,11 @@
   .component('MyContact', window.MyContact)
   .component('MyChatt',   window.MyChatt)
   .component('Login',        window.Login)
+  .component('EventPage',   window.Event)
+  .component('EventView',   window.EventView)
+  .component('BlogPage',    window.Blog)
+  .component('BlogView',    window.BlogView)
+  .component('BlogEdit',    window.BlogEdit)
   .component('LocationPage', window.Location)
   .component('AboutPage',    window.About)
   .component('DispWidget', window.DispWidget)

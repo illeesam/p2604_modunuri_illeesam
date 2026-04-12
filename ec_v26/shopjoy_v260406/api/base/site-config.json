@@ -16,6 +16,8 @@
     { "icon": "📝", "menuId": "order",    "menuNm": "주문하기" },
     { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
     { "icon": "❓", "menuId": "faq",      "menuNm": "FAQ" },
+    { "icon": "🎉", "menuId": "event",   "menuNm": "이벤트" },
+    { "icon": "📖", "menuId": "blog",    "menuNm": "블로그" },
     { "menuId": "divider-disp", "type": "divider" },
     { "menuId": "dispUi01", "menuNm": "전시ui01" },
     { "menuId": "dispUi02", "menuNm": "전시ui02" },
@@ -45,7 +47,9 @@
         { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
         { "icon": "❓", "menuId": "faq",      "menuNm": "FAQ" },
         { "icon": "📍", "menuId": "location", "menuNm": "위치안내" },
-        { "icon": "🏢", "menuId": "about",    "menuNm": "회사소개" }
+        { "icon": "🏢", "menuId": "about",    "menuNm": "회사소개" },
+        { "icon": "🎉", "menuId": "event",    "menuNm": "이벤트" },
+        { "icon": "📖", "menuId": "blog",     "menuNm": "블로그" }
       ]
     },
     {
@@ -76,13 +80,13 @@
       "desc": "부드러운 100% 코튼 소재의 여유로운 오버핏 티셔츠. 데일리룩으로 완벽한 베이직 아이템.",
       "emoji": "👕",
       "badge": "NEW",
-      "colors": [
+      "opt1s": [
         { "name": "블랙",   "hex": "#1a1a1a" },
         { "name": "화이트", "hex": "#f5f0eb" },
         { "name": "네이비", "hex": "#1e3a5f" },
         { "name": "베이지", "hex": "#d4b896" }
       ],
-      "sizes": ["XS", "S", "M", "L", "XL"],
+      "opt2s": ["XS", "S", "M", "L", "XL"],
       "tags": ["코튼", "오버핏", "베이직"]
     },
     {
@@ -93,13 +97,13 @@
       "desc": "클래식한 슬림핏 데님. 신축성 있는 소재로 활동성이 뛰어나며 어떤 상의와도 잘 어울립니다.",
       "emoji": "👖",
       "badge": "인기",
-      "colors": [
+      "opt1s": [
         { "name": "라이트블루", "hex": "#7bafd4" },
         { "name": "미드블루",   "hex": "#3f6fa8" },
         { "name": "다크블루",   "hex": "#1e3a5f" },
         { "name": "블랙",       "hex": "#1a1a1a" }
       ],
-      "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+      "opt2s": ["XS", "S", "M", "L", "XL", "XXL"],
       "tags": ["데님", "슬림핏", "스트레치"]
     },
     {
@@ -110,13 +114,13 @@
       "desc": "고급 울 혼방 소재로 제작한 클래식 롱코트. 세련된 실루엣으로 어떤 코디에도 품격을 더합니다.",
       "emoji": "🧥",
       "badge": "",
-      "colors": [
+      "opt1s": [
         { "name": "카멜",  "hex": "#c19a6b" },
         { "name": "블랙",  "hex": "#1a1a1a" },
         { "name": "차콜",  "hex": "#3a3a3a" },
         { "name": "크림",  "hex": "#f5f0e8" }
       ],
-      "sizes": ["S", "M", "L", "XL"],
+      "opt2s": ["S", "M", "L", "XL"],
       "tags": ["울", "롱코트", "클래식"]
     },
     {
@@ -127,12 +131,12 @@
       "desc": "화사한 플로럴 패턴의 미디 기장 드레스. 봄·여름 나들이 및 특별한 날에 어울리는 로맨틱한 아이템.",
       "emoji": "👗",
       "badge": "NEW",
-      "colors": [
+      "opt1s": [
         { "name": "핑크플로럴",   "hex": "#e8a0b4" },
         { "name": "블루플로럴",   "hex": "#a0b8e8" },
         { "name": "화이트플로럴", "hex": "#f5f5f0" }
       ],
-      "sizes": ["XS", "S", "M", "L"],
+      "opt2s": ["XS", "S", "M", "L"],
       "tags": ["플로럴", "미디기장", "로맨틱"]
     },
     {
@@ -143,12 +147,12 @@
       "desc": "시원한 린넨 소재에 클래식한 스트라이프 패턴. 여름철 가볍고 시원하게 입을 수 있는 셔츠.",
       "emoji": "👔",
       "badge": "",
-      "colors": [
+      "opt1s": [
         { "name": "화이트네이비", "hex": "#e8eef5" },
         { "name": "베이지브라운", "hex": "#e8ddd0" },
         { "name": "화이트블랙",   "hex": "#f0f0f0" }
       ],
-      "sizes": ["S", "M", "L", "XL", "XXL"],
+      "opt2s": ["S", "M", "L", "XL", "XXL"],
       "tags": ["린넨", "스트라이프", "여름"]
     },
     {
@@ -159,13 +163,13 @@
       "desc": "트렌디한 카고 디테일의 와이드 팬츠. 넉넉한 핏으로 편안하면서도 스타일리시한 룩을 완성합니다.",
       "emoji": "🩳",
       "badge": "인기",
-      "colors": [
+      "opt1s": [
         { "name": "카키",   "hex": "#6b7c4a" },
         { "name": "블랙",   "hex": "#1a1a1a" },
         { "name": "베이지", "hex": "#d4c4a8" },
         { "name": "그레이", "hex": "#8a8a8a" }
       ],
-      "sizes": ["XS", "S", "M", "L", "XL"],
+      "opt2s": ["XS", "S", "M", "L", "XL"],
       "tags": ["카고", "와이드핏", "트렌디"]
     },
     {
@@ -176,13 +180,13 @@
       "desc": "보온성이 뛰어난 퀼티드 숏 점퍼. 캐주얼하면서도 세련된 디자인으로 데일리 아우터로 활용하세요.",
       "emoji": "🧤",
       "badge": "",
-      "colors": [
+      "opt1s": [
         { "name": "블랙",   "hex": "#1a1a1a" },
         { "name": "올리브", "hex": "#5a6a3a" },
         { "name": "버건디", "hex": "#7a1a2a" },
         { "name": "크림",   "hex": "#f5f0e8" }
       ],
-      "sizes": ["S", "M", "L", "XL"],
+      "opt2s": ["S", "M", "L", "XL"],
       "tags": ["퀼티드", "숏점퍼", "보온"]
     },
     {
@@ -193,14 +197,14 @@
       "desc": "포근한 케이블 니트 패턴의 스웨터. 가을·겨울 필수 아이템으로 다양한 하의와 코디하기 좋습니다.",
       "emoji": "🧶",
       "badge": "",
-      "colors": [
+      "opt1s": [
         { "name": "아이보리", "hex": "#f5f0e0" },
         { "name": "카멜",     "hex": "#c19a6b" },
         { "name": "그레이",   "hex": "#8a8a8a" },
         { "name": "버건디",   "hex": "#7a1a2a" },
         { "name": "네이비",   "hex": "#1e3a5f" }
       ],
-      "sizes": ["XS", "S", "M", "L", "XL"],
+      "opt2s": ["XS", "S", "M", "L", "XL"],
       "tags": ["니트", "케이블", "가을겨울"]
     }
   ],
