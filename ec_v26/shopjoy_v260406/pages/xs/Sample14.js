@@ -220,22 +220,50 @@ window.Sample14 = {
     });
 
     const dragSrc      = ref(null);
+    const dragSrcList  = ref(null);
     const dropZoneIdx  = ref(-1);
 
     const onWidgetDragStart = (w, p, area, evt) => {
-      dragSrc.value = { ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel };
+      dragSrc.value     = { ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel };
+      dragSrcList.value = null;
       evt.dataTransfer.effectAllowed = 'copy';
     };
-    const onDragEnd = () => { dragSrc.value = null; dropZoneIdx.value = -1; };
+    const onAreaNodeDragStart = (area, evt) => {
+      const widgets = (area.panels || []).flatMap(p =>
+        (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }))
+      );
+      dragSrcList.value = widgets;
+      dragSrc.value     = null;
+      evt.dataTransfer.effectAllowed = 'copy';
+      evt.dataTransfer.setData('text/plain', 'area:' + widgets.length);
+    };
+    const onPanelNodeDragStart = (p, area, evt) => {
+      const widgets = (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }));
+      dragSrcList.value = widgets;
+      dragSrc.value     = null;
+      evt.dataTransfer.effectAllowed = 'copy';
+      evt.dataTransfer.setData('text/plain', 'panel:' + widgets.length);
+    };
+    const onDragEnd = () => { dragSrc.value = null; dragSrcList.value = null; dropZoneIdx.value = -1; };
 
-    /* grid2/3/4 */
-    const onCellDrop = (tab, ci, evt) => {
-      evt.preventDefault();
-      if (!dragSrc.value) return;
-      const cells = gridCells[tab];
-      cells[ci] = { widget: { ...dragSrc.value } };
-      // drop 후 빈 행 2개 유지
-      const cols = GRID_COLS[tab];
+    /* ── span 팝업 ── */
+    const spanPopupIdx = ref(-1); // 'tab_ci' 형태 키
+    const toggleSpanPopup = (e, tab, ci) => {
+      e.stopPropagation();
+      const key = tab + '_' + ci;
+      spanPopupIdx.value = spanPopupIdx.value === key ? null : key;
+    };
+    const closeSpanPopup = () => { spanPopupIdx.value = null; };
+    const setSpan = (tab, ci, axis, delta) => {
+      const cell = gridCells[tab][ci];
+      if (!cell || !cell.widget) return;
+      const maxCol = GRID_COLS[tab] || 1;
+      if (axis === 'col') cell.colSpan = Math.max(1, Math.min(maxCol, (cell.colSpan || 1) + delta));
+      if (axis === 'row') cell.rowSpan = Math.max(1, Math.min(4,      (cell.rowSpan || 1) + delta));
+    };
+
+    /* 빈 행 2개 유지 헬퍼 */
+    const ensureTrailingRows = (cells, cols) => {
       let emptyRows = 0;
       const totalRows = Math.ceil(cells.length / cols);
       for (let r = totalRows - 1; r >= 0; r--) {
@@ -246,6 +274,40 @@ window.Sample14 = {
         for (let c = 0; c < cols; c++) cells.push({ widget: null });
         emptyRows++;
       }
+    };
+
+    /* grid2/3/4 */
+    const onCellDrop = (tab, ci, evt) => {
+      evt.preventDefault();
+      const cols = GRID_COLS[tab];
+      const cells = gridCells[tab];
+
+      if (dragSrcList.value) {
+        const list = dragSrcList.value;
+        if (list.length > 40) {
+          window.alert(`위젯이 ${list.length}개입니다. 한 번에 최대 40개까지만 배치할 수 있습니다.`);
+          dragSrcList.value = null; dropZoneIdx.value = -1; return;
+        }
+        /* ci부터 순서대로 빈 슬롯에 배치 */
+        let placed = 0;
+        for (let i = ci; i < cells.length && placed < list.length; i++) {
+          if (!cells[i].widget) { cells[i] = { widget: { ...list[placed++] }, colSpan: 1, rowSpan: 1 }; }
+        }
+        /* 아직 남은 경우 뒤에 행 추가하며 배치 */
+        while (placed < list.length) {
+          const startIdx = cells.length;
+          for (let c = 0; c < cols; c++) cells.push({ widget: null });
+          for (let c = 0; c < cols && placed < list.length; c++) {
+            cells[startIdx + c] = { widget: { ...list[placed++] }, colSpan: 1, rowSpan: 1 };
+          }
+        }
+        ensureTrailingRows(cells, cols);
+        dragSrcList.value = null; dropZoneIdx.value = -1; return;
+      }
+
+      if (!dragSrc.value) return;
+      cells[ci] = { widget: { ...dragSrc.value }, colSpan: 1, rowSpan: 1 };
+      ensureTrailingRows(cells, cols);
       dragSrc.value = null;
       dropZoneIdx.value = -1;
     };
@@ -254,9 +316,24 @@ window.Sample14 = {
     /* dashboard */
     const onDashDrop = (evt) => {
       evt.preventDefault();
-      if (!dragSrc.value) return;
       const rect = evt.currentTarget.getBoundingClientRect();
       const snap = DASH_SNAP;
+
+      if (dragSrcList.value) {
+        const list = dragSrcList.value;
+        if (list.length > 40) {
+          window.alert(`위젯이 ${list.length}개입니다. 한 번에 최대 40개까지만 배치할 수 있습니다.`);
+          dragSrcList.value = null; dropZoneIdx.value = -1; return;
+        }
+        let baseX = Math.max(0, Math.round((evt.clientX - rect.left - 80) / snap) * snap);
+        let baseY = Math.max(0, Math.round((evt.clientY - rect.top  - 14) / snap) * snap);
+        list.forEach((w, i) => {
+          dashItems.push({ widget: { ...w }, x: baseX + (i % 4) * 220, y: baseY + Math.floor(i / 4) * 180, w: 200, h: 160 });
+        });
+        dragSrcList.value = null; dropZoneIdx.value = -1; return;
+      }
+
+      if (!dragSrc.value) return;
       const x = Math.max(0, Math.round((evt.clientX - rect.left - 80) / snap) * snap);
       const y = Math.max(0, Math.round((evt.clientY - rect.top  - 14) / snap) * snap);
       dashItems.push({ widget: { ...dragSrc.value }, x, y, w: 200, h: 160 });
@@ -365,7 +442,8 @@ window.Sample14 = {
       checkedWidgetList,
       TABS, activeTab, GRID_COLS, gridCells, wColor,
       previewWidgets, dragSrc, dropZoneIdx,
-      onWidgetDragStart, onDragEnd,
+      onWidgetDragStart, onAreaNodeDragStart, onPanelNodeDragStart, onDragEnd,
+      spanPopupIdx, toggleSpanPopup, closeSpanPopup, setSpan,
       onCellDrop, removeCellWidget,
       dashItems, dashDrag, dashResize,
       onDashDrop, onDashItemMd, onDashResizeMd, onDashMm, onDashMu, removeDashItem,
@@ -503,7 +581,10 @@ window.Sample14 = {
 
       <div v-for="area in structAreaList" :key="area.codeValue" style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;overflow:hidden;">
         <!-- 영역 헤더 -->
-        <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:pointer;"
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:grab;user-select:none;"
+          draggable="true"
+          @dragstart="onAreaNodeDragStart(area, $event)"
+          @dragend="onDragEnd"
           @click="toggleAreaExpand(area.codeValue)">
           <div @click.stop="checkAreaAll(area)" style="width:15px;height:15px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
             :style="isAreaAllChecked(area)?'border-color:#f6ad55;background:#f6ad55;':'border-color:rgba(255,255,255,.4);background:transparent;'">
@@ -521,7 +602,10 @@ window.Sample14 = {
           <div v-if="area.panels.length===0" style="padding:12px 18px;font-size:12px;color:#bbb;">해당 날짜 활성 패널 없음</div>
 
           <div v-for="(p, pi) in area.panels" :key="p.dispId" @click="togglePanel(p)"
-            style="display:flex;align-items:flex-start;gap:8px;padding:8px 14px;cursor:pointer;border-top:1px solid #f0f0f0;transition:background .1s;"
+            draggable="true"
+            @dragstart.stop="onPanelNodeDragStart(p, area, $event)"
+            @dragend="onDragEnd"
+            style="display:flex;align-items:flex-start;gap:8px;padding:8px 14px;cursor:grab;user-select:none;border-top:1px solid #f0f0f0;transition:background .1s;"
             :style="checkedPanels.has(p.dispId)?'background:#fff8e1;':''">
             <!-- 패널 체크박스 -->
             <div style="margin-top:2px;width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -631,7 +715,7 @@ window.Sample14 = {
 
       <!-- ===== grid1 / grid2 / grid3 / grid4 =====  -->
       <template v-if="GRID_COLS[activeTab]">
-        <div :style="{ display:'grid', gridTemplateColumns: autoGridCols, gap: '8px' }">
+        <div @click="closeSpanPopup" :style="{ display:'grid', gridTemplateColumns: autoGridCols, gap: '8px' }">
           <template v-for="(cell, ci) in gridCells[activeTab]" :key="ci">
           <div v-if="!showRealContent || cell.widget"
             @dragover.prevent="dropZoneIdx=ci"
@@ -641,7 +725,9 @@ window.Sample14 = {
               cell.widget
                 ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e0e0e0;background:#fff;min-height:130px;')
                 : dropZoneIdx===ci ? 'border:2px dashed #1a73e8;background:#e8f0fe;min-height:60px;'
-                                   : 'border:2px dashed #e0e0e0;background:#fafafa;min-height:60px;'
+                                   : 'border:2px dashed #e0e0e0;background:#fafafa;min-height:60px;',
+              cell.widget && (cell.colSpan||1) > 1 ? { gridColumn: 'span ' + (cell.colSpan||1) } : {},
+              cell.widget && (cell.rowSpan||1) > 1 ? { gridRow:    'span ' + (cell.rowSpan||1) } : {},
             ]"
             style="border-radius:8px;overflow:hidden;transition:border .15s,background .15s;position:relative;">
             <!-- 위젯 있음 -->
@@ -652,9 +738,43 @@ window.Sample14 = {
                 <div style="display:flex;align-items:center;gap:4px;padding:5px 8px 0;margin-bottom:4px;">
                   <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 4px;white-space:nowrap;flex-shrink:0;">{{ wIcon(cell.widget.widgetType) }} {{ wLabel(cell.widget.widgetType) }}</span>
                   <span style="font-size:10px;font-weight:600;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cell.widget.widgetNm }}</span>
+                  <button @click="toggleSpanPopup($event, activeTab, ci)"
+                    :title="'열 ' + (cell.colSpan||1) + ' × 행 ' + (cell.rowSpan||1)"
+                    style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid #e0e0e0;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
+                    :style="spanPopupIdx===activeTab+'_'+ci ? 'background:#1a73e8;color:#fff;border-color:#1a73e8;' : 'background:#f9fafb;color:#888;'">⚙</button>
                   <button @click="removeCellWidget(activeTab, ci)" style="border:none;background:none;color:#ccc;cursor:pointer;font-size:15px;padding:0;line-height:1;flex-shrink:0;">×</button>
                 </div>
                 <div style="font-size:9px;color:#bbb;margin-bottom:4px;padding:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cell.widget._area }} · {{ cell.widget._panelNm }}</div>
+                <!-- span 설정 팝업 -->
+                <div v-if="spanPopupIdx===activeTab+'_'+ci" @click.stop
+                  style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
+                    <button @click="closeSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">✕</button>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                    <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
+                    <button @click="setSpan(activeTab,ci,'col',-1)" :disabled="(cell.colSpan||1)<=1"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(cell.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
+                    <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1a73e8;">{{ cell.colSpan||1 }}</span>
+                    <button @click="setSpan(activeTab,ci,'col',+1)" :disabled="(cell.colSpan||1)>=(GRID_COLS[activeTab]||1)"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(cell.colSpan||1)>=(GRID_COLS[activeTab]||1)?'opacity:.3;cursor:default;':''">+</button>
+                    <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[activeTab]||1 }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
+                    <button @click="setSpan(activeTab,ci,'row',-1)" :disabled="(cell.rowSpan||1)<=1"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(cell.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
+                    <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1a73e8;">{{ cell.rowSpan||1 }}</span>
+                    <button @click="setSpan(activeTab,ci,'row',+1)" :disabled="(cell.rowSpan||1)>=4"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(cell.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">+</button>
+                    <span style="font-size:10px;color:#9ca3af;">/ 4</span>
+                  </div>
+                </div>
               </template>
               <!-- 실제컨텐츠 ON 시 ×버튼만 -->
               <template v-else>

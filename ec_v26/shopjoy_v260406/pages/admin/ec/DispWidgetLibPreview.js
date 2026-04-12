@@ -284,7 +284,7 @@ window.DispWidgetLibPreview = {
           if (i >= arr.length) {
             for (let c = 0; c < cols; c++) arr.push(null);
           }
-          if (!arr[i]) { arr.splice(i, 1, { ...nodeLibs[placed] }); placed++; }
+          if (!arr[i]) { arr.splice(i, 1, { ...nodeLibs[placed], colSpan: 1, rowSpan: 1 }); placed++; }
           i++;
         }
         autoExpand(tabId);
@@ -295,10 +295,27 @@ window.DispWidgetLibPreview = {
       const lib = window._dragWidgetLib;
       if (!lib) return;
       const tabId = previewGrid.value;
-      tabSlots[tabId].splice(idx, 1, { ...lib });
+      tabSlots[tabId].splice(idx, 1, { ...lib, colSpan: 1, rowSpan: 1 });
       autoExpand(tabId);
     };
     const removeSlot = (idx) => { tabSlots[previewGrid.value].splice(idx, 1, null); };
+
+    /* ── colspan / rowspan 조절 ── */
+    const setSpan = (idx, axis, delta) => {
+      const slot = tabSlots[previewGrid.value][idx];
+      if (!slot) return;
+      const maxCol = GRID_COLS[previewGrid.value] || 1;
+      if (axis === 'col') slot.colSpan = Math.max(1, Math.min(maxCol, (slot.colSpan || 1) + delta));
+      if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan || 1) + delta));
+    };
+
+    /* ── span 팝업 ── */
+    const spanPopupIdx = ref(-1);
+    const toggleSpanPopup = (e, idx) => {
+      e.stopPropagation();
+      spanPopupIdx.value = spanPopupIdx.value === idx ? -1 : idx;
+    };
+    const closeSpanPopup = () => { spanPopupIdx.value = -1; };
 
     /* ── 대시보드: 자유 배치 + 크기 조절 ── */
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
@@ -404,7 +421,8 @@ window.DispWidgetLibPreview = {
       previewGrid, GRID_TABS,
       viewportMode, autoGridCols, showRealContent,
       tabSlots, currentSlots,
-      dragOverIdx, onDragOver, onDragLeave, onDrop, removeSlot,
+      dragOverIdx, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
+      spanPopupIdx, toggleSpanPopup, closeSpanPopup,
       dashItems, dashCanvas, dashDragOver,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
@@ -530,7 +548,7 @@ window.DispWidgetLibPreview = {
       </div>
 
       <!-- ── 그리드 캔버스 (grid1~4) ── -->
-      <div v-if="previewGrid!=='dashboard'" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
+      <div v-if="previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
         <!-- 뷰포트 래퍼 -->
         <div :style="{
           width: VIEWPORT[viewportMode].width || '100%',
@@ -561,11 +579,15 @@ window.DispWidgetLibPreview = {
                 @dragleave="onDragLeave"
                 @drop="onDrop($event, idx)"
                 style="border-radius:8px;transition:all .15s;position:relative;"
-                :style="dragOverIdx===idx
-                  ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;'
-                  : slot
-                    ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
-                    : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;'">
+                :style="[
+                  dragOverIdx===idx
+                    ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;'
+                    : slot
+                      ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
+                      : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
+                  slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {},
+                  slot && (slot.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
+                ]">
 
                 <!-- 비어있음 -->
                 <div v-if="!slot && dragOverIdx!==idx"
@@ -587,8 +609,47 @@ window.DispWidgetLibPreview = {
                     <span style="font-size:12px;">{{ wIcon(slot.widgetType) }}</span>
                     <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetType) }}</span>
                     <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.name }}</span>
+                    <!-- span 설정 아이콘 -->
+                    <button @click="toggleSpanPopup($event, idx)"
+                      :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
+                      style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
+                      :style="spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">⚙</button>
                     <button @click="removeSlot(idx)"
                       style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+                  </div>
+
+                  <!-- span 설정 레이어 팝업 -->
+                  <div v-if="spanPopupIdx===idx" @click.stop
+                    style="position:absolute;top:36px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
+                    <!-- 닫기 -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                      <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
+                      <button @click="closeSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">✕</button>
+                    </div>
+                    <!-- 열(colspan) -->
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                      <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
+                      <button @click="setSpan(idx,'col',-1)" :disabled="(slot.colSpan||1)<=1"
+                        style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                        :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
+                      <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
+                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)"
+                        style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                        :style="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
+                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[previewGrid]||1 }}</span>
+                    </div>
+                    <!-- 행(rowspan) -->
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
+                      <button @click="setSpan(idx,'row',-1)" :disabled="(slot.rowSpan||1)<=1"
+                        style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                        :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
+                      <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.rowSpan||1 }}</span>
+                      <button @click="setSpan(idx,'row',+1)" :disabled="(slot.rowSpan||1)>=4"
+                        style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                        :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">+</button>
+                      <span style="font-size:10px;color:#9ca3af;">/ 4</span>
+                    </div>
                   </div>
                   <!-- 실제컨텐츠 ON: ×버튼만 -->
                   <div v-else style="position:relative;">
