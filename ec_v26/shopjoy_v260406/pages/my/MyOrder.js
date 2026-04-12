@@ -271,7 +271,7 @@ window.MyOrder = {
               :style="o.status===step.status ? 'color:#16a34a;font-weight:800;'
                 : myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) > si ? 'color:var(--text-secondary);font-weight:600;'
                 : 'color:var(--text-muted);'">{{ step.label || step.status }}</div>
-            <button v-if="o.status===step.status && o.trackingNo && myStore.SHOW_COURIER.includes(step.status)"
+            <button v-if="step.status==='배송완료' && o.trackingNo && myStore.SHOW_COURIER.includes(o.status)"
               @click.stop="openTracking(o.courier, o.trackingNo)"
               style="margin-top:3px;padding:1px 6px;border-radius:4px;border:1px solid #86efac;background:#dcfce7;color:#15803d;cursor:pointer;font-size:0.58rem;font-weight:700;white-space:nowrap;">
               {{ (o.courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}배송
@@ -318,7 +318,7 @@ window.MyOrder = {
                     myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf(claimsByOrderId[o.orderId].status) >= myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf('수거완료')"
                   @click.stop="openTracking2(claimsByOrderId[o.orderId].courier, claimsByOrderId[o.orderId].trackingNo)"
                   style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">{{ (claimsByOrderId[o.orderId].courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}수거</button>
-                <button v-if="claimsByOrderId[o.orderId].status===step && claimsByOrderId[o.orderId].exchangeTrackingNo && ['발송완료','교환완료'].includes(step)"
+                <button v-if="step==='발송완료' && claimsByOrderId[o.orderId].exchangeTrackingNo && ['발송완료','교환완료'].includes(claimsByOrderId[o.orderId].status)"
                   @click.stop="openTracking2(claimsByOrderId[o.orderId].exchangeCourier, claimsByOrderId[o.orderId].exchangeTrackingNo)"
                   style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">{{ (claimsByOrderId[o.orderId].exchangeCourier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}발송</button>
               </div>
