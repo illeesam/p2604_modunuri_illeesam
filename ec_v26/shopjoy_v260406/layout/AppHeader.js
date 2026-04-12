@@ -135,11 +135,37 @@ window.AppHeader = {
   </button>
 
   <!-- Logo -->
-  <button @click="navigate('home')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;flex-shrink:0;padding:0;">
-    <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:1rem;">👗</div>
+  <button @click="navigate('home')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0;">
+    <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- 모래 -->
+      <ellipse cx="30" cy="92" rx="22" ry="6" fill="#d4a017"/>
+      <ellipse cx="30" cy="92" rx="18" ry="4" fill="#e6b422"/>
+      <!-- 줄기 -->
+      <path d="M30 90 Q25 60 35 30" stroke="#b8860b" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M30 90 Q25 60 35 30" stroke="#d4a017" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- 잎 -->
+      <path d="M35 30 Q55 10 75 18" stroke="#228B22" stroke-width="2.5" fill="none"/>
+      <path d="M35 30 Q60 15 78 25" stroke="#2d8f2d" stroke-width="2" fill="none"/>
+      <path d="M35 30 Q50 5 70 8" stroke="#1a7a1a" stroke-width="2.5" fill="none"/>
+      <path d="M35 30 Q20 8 5 15" stroke="#228B22" stroke-width="2.5" fill="none"/>
+      <path d="M35 30 Q15 12 3 22" stroke="#2d8f2d" stroke-width="2" fill="none"/>
+      <path d="M35 30 Q25 5 10 5" stroke="#1a7a1a" stroke-width="2.5" fill="none"/>
+      <path d="M35 30 Q35 8 40 3" stroke="#228B22" stroke-width="2" fill="none"/>
+      <!-- 열매 -->
+      <circle cx="40" cy="34" r="5" fill="#8B008B"/>
+      <circle cx="48" cy="38" r="5" fill="#dc2626"/>
+      <circle cx="44" cy="44" r="5" fill="#2563eb"/>
+      <circle cx="35" cy="40" r="4.5" fill="#7c3aed"/>
+      <circle cx="52" cy="32" r="4" fill="#dc2626"/>
+      <circle cx="50" cy="46" r="4" fill="#2563eb"/>
+      <!-- 하이라이트 -->
+      <circle cx="38" cy="32" r="1.5" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="46" cy="36" r="1.5" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="42" cy="42" r="1.5" fill="rgba(255,255,255,0.4)"/>
+    </svg>
     <div style="display:flex;flex-direction:column;line-height:1.1;text-align:left;">
-      <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">{{ config.name }}</span>
-      <span style="font-size:0.65rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">{{ config.tagline }}</span>
+      <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.3px;">{{ config.name }}</span>
+      <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">{{ config.tagline }}</span>
     </div>
   </button>
 

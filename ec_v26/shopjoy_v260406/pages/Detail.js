@@ -56,19 +56,33 @@ window.Detail = {
       { emoji: '👟', label: '스포티 룩',  desc: '트랙 팬츠 + 스니커즈' },
     ];
 
-    /* ── 가상 이미지 목록 (선택 색상 기준) ── */
+    /* ── 이미지 목록 (선택 색상별 교체) ── */
+    const _IMG = 'assets/cdn/prod/img/shop/product';
+    const _buildColorImages = (p, colorIdx) => {
+      const id = p.productId || 1;
+      const base = id <= 12 ? 'fashion' : 'product';
+      if (base === 'fashion') {
+        /* fashion 이미지 3장씩 순환: colorIdx 기준 오프셋 */
+        const startIdx = ((id - 1) * 3 + colorIdx * 3) % 12 + 1;
+        return [1,2,3].map(offset => {
+          const n = ((startIdx - 1 + offset - 1) % 12) + 1;
+          return { src: `${_IMG}/fashion/fashion-${n}.webp`, label: '이미지 ' + offset };
+        });
+      }
+      /* product png: 3장씩 순환 */
+      const startIdx = ((id - 1) * 3 + colorIdx * 2) % 23 + 1;
+      return [0,1,2].map(offset => {
+        const n = ((startIdx - 1 + offset) % 23) + 1;
+        return { src: `${_IMG}/product_${n}.png`, label: '이미지 ' + (offset + 1) };
+      });
+    };
+
     const mockImages = computed(() => {
       const p = props.product;
       if (!p) return [];
-      const c = selectedColor.value;
-      const hex = c?.hex || '#c8c8c8';
-      const nm  = c?.name || '기본';
-      return [
-        { bg: `linear-gradient(135deg,${hex}55,${hex}18)`, label: nm + ' 정면' },
-        { bg: `linear-gradient(180deg,${hex}44,${hex}11)`, label: nm + ' 측면' },
-        { bg: `linear-gradient(225deg,${hex}55,${hex}18)`, label: nm + ' 후면' },
-        { bg: `linear-gradient(90deg,${hex}33,${hex}0a)`,  label: nm + ' 디테일' },
-      ];
+      const opt1s = p.opt1s || [];
+      const colorIdx = opt1s.findIndex(c => c.name === selectedColor.value?.name);
+      return _buildColorImages(p, Math.max(0, colorIdx));
     });
 
     /* ── 가상 리뷰 ── */
@@ -106,6 +120,7 @@ window.Detail = {
           colorInfo:  colors[cIdx]?.name || '기본',
           text:       MOCK_COMMENTS[i],
           hasPhoto:   i < 5,
+          photoImg:   `assets/cdn/prod/img/shop/product/sm/pro-sm-${(i % 10) + 1}.jpg`,
           photoHex:   colors[cIdx]?.hex || '#e8587a',
           helpful:    (pid * 3 + i * 7) % 38,
         };
@@ -168,9 +183,12 @@ window.Detail = {
       const el  = map[tabId]?.value;
       if (!el) return;
       const main = getScrollEl();
-      const mainTop = main.getBoundingClientRect ? main.getBoundingClientRect().top : 0;
-      const tabH = (tabBarRef.value?.offsetHeight || 44) + 4;
-      const top  = main.scrollTop + (el.getBoundingClientRect().top - mainTop) - tabH;
+      const mainRect = main.getBoundingClientRect ? main.getBoundingClientRect() : { top: 0 };
+      const barH = tabBarRef.value?.offsetHeight || 44;
+      /* 탭바 fixed 시: mainRect.top + barH 만큼 오프셋 필요 */
+      const offset = tabFixed.value ? barH + 8 : barH + 8;
+      const elTop = el.getBoundingClientRect().top - mainRect.top;
+      const top = main.scrollTop + elTop - offset;
       main.scrollTo({ top, behavior: 'smooth' });
       activeTab.value = tabId;
     };
@@ -201,7 +219,10 @@ window.Detail = {
       showBottomBar.value = btn ? btn.getBoundingClientRect().bottom < mainTop : false;
 
       /* ── 활성 탭 ── */
-      const anchor = mainTop + (bar.offsetHeight || 44) + 10;
+      const barH = bar.offsetHeight || 44;
+      const anchor = tabFixed.value
+        ? tabFixedTop.value + barH + 20   /* fixed: 탭바 하단 기준 */
+        : bar.getBoundingClientRect().bottom + 10;
       const sections = [
         { id: 'style',  ref: styleSecRef },
         { id: 'review', ref: reviewSecRef },
@@ -219,7 +240,9 @@ window.Detail = {
     onMounted(() => {
       const main = getScrollEl();
       main.addEventListener('scroll', onScroll, { passive: true });
-      if (props.product?.opt1s?.[0]) selectedColor.value = props.product.opt1s[0];
+      /* 품절/중지 아닌 첫 색상 자동 선택 */
+      const firstAvail = (props.product?.opt1s || []).find(c => colorStatus(c) === 'ok');
+      if (firstAvail) selectedColor.value = firstAvail;
     });
     onBeforeUnmount(() => {
       const main = getScrollEl();
@@ -227,7 +250,7 @@ window.Detail = {
     });
 
     watch(() => props.product, (p) => {
-      selectedColor.value = p?.opt1s?.[0] || null;
+      selectedColor.value = (p?.opt1s || []).find(c => colorStatus(c) === 'ok') || null;
       selectedSize.value  = null;
       qty.value           = 1;
       selectedImg.value   = 0;
@@ -242,6 +265,39 @@ window.Detail = {
       if (!p) return '';
       return (props.config?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
     };
+
+    /* ── 옵션 재고 상태 (목업: 색상 + 사이즈) ── */
+    const colorStockMap = computed(() => {
+      const p = props.product;
+      if (!p) return {};
+      const opt1s = p.opt1s || [];
+      const pid = p.productId || 1;
+      const map = {};
+      opt1s.forEach((c, i) => {
+        const seed = (pid * 11 + i * 17) % 25;
+        if (seed === 0)      map[c.name] = 'stop';
+        else if (seed === 1) map[c.name] = 'soldout';
+        else                 map[c.name] = 'ok';
+      });
+      return map;
+    });
+    const colorStatus = (c) => colorStockMap.value[c?.name] || 'ok';
+
+    const sizeStockMap = computed(() => {
+      const p = props.product;
+      if (!p) return {};
+      const sizes = p.opt2s || [];
+      const pid = p.productId || 1;
+      const map = {};
+      sizes.forEach((s, i) => {
+        const seed = (pid * 7 + i * 13) % 20;
+        if (seed === 0)      map[s] = 'stop';
+        else if (seed === 1) map[s] = 'soldout';
+        else                 map[s] = 'ok';
+      });
+      return map;
+    });
+    const sizeStatus = (s) => sizeStockMap.value[s] || 'ok';
 
     /* ── 드로어 (바로구매 / 장바구니 공용) ── */
     const quickBuyOpen = ref(false);
@@ -259,13 +315,27 @@ window.Detail = {
     });
 
     /* ── 구매 로직 ── */
-    const selectColor = c => { selectedColor.value = c; colorError.value = ''; selectedImg.value = 0; };
-    const selectSize  = s => { selectedSize.value  = s; sizeError.value  = ''; };
+    const selectColor = c => {
+      const st = colorStatus(c);
+      if (st === 'stop' || st === 'soldout') return;
+      selectedColor.value = c; colorError.value = ''; selectedImg.value = 0;
+    };
+    const selectSize  = s => {
+      const st = sizeStatus(s);
+      if (st === 'stop' || st === 'soldout') return;
+      selectedSize.value = s; sizeError.value = '';
+    };
 
     const validate = () => {
       let ok = true;
       if (!selectedColor.value) { colorError.value = '색상을 선택해주세요.'; ok = false; }
-      if (!selectedSize.value)  { sizeError.value  = '사이즈를 선택해주세요.'; ok = false; }
+      /* 사이즈 FREE 또는 미설정이면 자동 선택 */
+      const sizes = props.product?.opt2s || [];
+      if (!selectedSize.value) {
+        if (sizes.length === 1 && sizes[0] === 'FREE') { selectedSize.value = 'FREE'; }
+        else if (sizes.length === 0) { selectedSize.value = 'FREE'; }
+        else { sizeError.value = '사이즈를 선택해주세요.'; ok = false; }
+      }
       return ok;
     };
 
@@ -317,7 +387,7 @@ window.Detail = {
       mockImages, mockReviews, reviewsWithPhoto, filteredReviews, avgRating, ratingDist,
       tabFixed, tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
       quickBuyOpen, drawerMode, quickBuyTotal,
-      scrollToTab, categoryLabel, stars,
+      scrollToTab, categoryLabel, stars, colorStatus, sizeStatus,
       buyBtnRef, showBottomBar,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
     };
@@ -349,34 +419,49 @@ window.Detail = {
             <div v-for="(img,i) in mockImages" :key="i"
               @click="selectedImg=i"
               :style="{
-                width:'64px',height:'64px',borderRadius:'8px',
-                background:img.bg,cursor:'pointer',
+                width:'64px',height:'64px',borderRadius:'8px',overflow:'hidden',
+                cursor:'pointer',
                 border:selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
-                display:'flex',alignItems:'center',justifyContent:'center',
-                fontSize:'1.4rem',transition:'border-color .15s',flexShrink:0,
+                transition:'border-color .15s',flexShrink:0,
+                background:'var(--bg-base)',
               }">
-              {{ product.emoji }}
+              <img v-if="img.src" :src="img.src" :alt="img.label" style="width:100%;height:100%;object-fit:cover;" />
             </div>
           </div>
 
           <!-- 메인 이미지 -->
-          <div style="flex:1;cursor:zoom-in;position:relative;" @click="zoomOpen=true">
-            <div :style="{
-              borderRadius:'12px',border:'1px solid var(--border)',
-              background:mockImages[selectedImg]?.bg||'var(--bg-base)',
-              minHeight:'420px',display:'flex',alignItems:'center',justifyContent:'center',
-              fontSize:'8rem',position:'relative',transition:'background .3s',
-            }">
-              {{ product.emoji }}
+          <div style="flex:1;position:relative;"
+            @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'"
+            @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
+            <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;min-height:420px;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
+              @click="zoomOpen=true">
+              <img v-if="mockImages[selectedImg]?.src" :src="mockImages[selectedImg].src" :alt="product.prodNm"
+                style="width:100%;height:100%;object-fit:cover;" />
               <div v-if="product.badge" style="position:absolute;top:14px;left:14px;">
                 <span v-if="product.badge==='NEW'"
                   style="background:var(--blue);color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">NEW</span>
                 <span v-else-if="product.badge==='인기'"
                   style="background:#ff6b35;color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">인기</span>
               </div>
-              <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.35);color:#fff;border-radius:6px;padding:4px 10px;font-size:0.75rem;display:flex;align-items:center;gap:4px;">
-                🔍 확대
-              </div>
+            </div>
+            <!-- 확대 아이콘 (우상단) -->
+            <button @click="zoomOpen=true"
+              style="position:absolute;top:14px;right:14px;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:2;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
+                <polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+            <!-- 좌/우 화살표 -->
+            <div class="img-nav" style="opacity:0;transition:opacity .2s;">
+              <button v-if="selectedImg > 0" @click="selectedImg--"
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <button v-if="selectedImg < mockImages.length - 1" @click="selectedImg++"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
           </div>
         </div><!-- /gallery -->
@@ -408,22 +493,32 @@ window.Detail = {
                 <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                <button v-for="c in product.opt1s" :key="c.name" @click="selectColor(c)"
-                  :title="c.name"
-                  :style="{
-                    width:'30px',height:'30px',borderRadius:'50%',cursor:'pointer',
-                    background:c.hex,
-                    border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
-                    outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
-                    outlineOffset:'-4px',boxSizing:'border-box',transition:'border .15s',
-                  }">
-                </button>
+                <div v-for="c in product.opt1s" :key="c.name" style="position:relative;">
+                  <button @click="selectColor(c)"
+                    :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')"
+                    :style="{
+                      width:'30px',height:'30px',borderRadius:'50%',
+                      cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
+                      background:c.hex,
+                      border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
+                      outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
+                      outlineOffset:'-4px',boxSizing:'border-box',transition:'border .15s',
+                      opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
+                    }">
+                  </button>
+                  <!-- 대각선 취소선 (품절/중지) -->
+                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;inset:0;pointer-events:none;" viewBox="0 0 30 30">
+                    <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
+                  </svg>
+                  <span v-if="colorStatus(c)==='soldout'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#ef4444;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
+                  <span v-else-if="colorStatus(c)==='stop'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#9ca3af;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
+                </div>
               </div>
               <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
             </div>
 
-            <!-- 사이즈 선택 -->
-            <div style="margin-bottom:20px;">
+            <!-- 사이즈 선택 (FREE 또는 미설정이면 숨김) -->
+            <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
                 <button @click="showSizeGuide=true"
@@ -434,13 +529,19 @@ window.Detail = {
               <div style="display:flex;flex-wrap:wrap;gap:6px;">
                 <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
                   :style="{
-                    padding:'7px 14px',borderRadius:'6px',cursor:'pointer',fontSize:'0.82rem',
-                    border:selectedSize===s?'2px solid var(--blue)':'1.5px solid var(--border)',
-                    background:selectedSize===s?'var(--blue-dim)':'var(--bg-card)',
-                    color:selectedSize===s?'var(--blue)':'var(--text-secondary)',
-                    fontWeight:selectedSize===s?'700':'500',
+                    padding:'7px 14px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
+                    cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
+                    border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '1.5px solid var(--border)' : '1.5px solid #e0e0e0',
+                    background: selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-card)' : '#f5f5f5',
+                    color: selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
+                    fontWeight: selectedSize===s ? '700' : '500',
+                    textDecoration: sizeStatus(s)!=='ok' ? 'line-through' : 'none',
+                    opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
                     transition:'all .15s',
-                  }">{{ s }}</button>
+                  }">{{ s }}
+                  <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
+                  <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
+                </button>
               </div>
               <div v-if="sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ sizeError }}</div>
             </div>
@@ -615,15 +716,10 @@ window.Detail = {
           <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
             <div v-for="r in reviewsWithPhoto" :key="r.id"
               @click="selectedReview=r"
-              :style="{
-                width:'80px',height:'80px',flexShrink:0,borderRadius:'8px',cursor:'pointer',
-                background:r.photoHex+'cc',border:'1px solid var(--border)',
-                display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.8rem',
-                transition:'opacity .15s',
-              }"
+              style="width:80px;height:80px;flex-shrink:0;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
               @mouseenter="$event.currentTarget.style.opacity='.75'"
               @mouseleave="$event.currentTarget.style.opacity='1'">
-              {{ product.emoji }}
+              <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
             </div>
           </div>
         </div>
@@ -656,11 +752,9 @@ window.Detail = {
             </div>
             <div v-if="r.hasPhoto" style="margin-bottom:10px;">
               <div @click="selectedReview=r"
-                :style="{
-                  width:'72px',height:'72px',borderRadius:'8px',cursor:'pointer',
-                  background:r.photoHex+'cc',border:'1px solid var(--border)',
-                  display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'1.6rem',
-                }">{{ product.emoji }}</div>
+                style="width:72px;height:72px;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);display:inline-block;">
+                <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
+              </div>
             </div>
             <p style="font-size:0.87rem;color:var(--text-secondary);line-height:1.75;margin-bottom:10px;">{{ r.text }}</p>
             <div style="font-size:0.75rem;color:var(--text-muted);">
@@ -691,14 +785,40 @@ window.Detail = {
 
   <!-- ══ 이미지 확대 모달 ══ -->
   <div v-if="zoomOpen && product" @click="zoomOpen=false"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;align-items:center;justify-content:center;cursor:zoom-out;">
-    <div :style="{
-      width:'340px',height:'340px',borderRadius:'20px',
-      background:mockImages[selectedImg]?.bg||'var(--bg-base)',
-      display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12rem',
-    }" @click.stop></div>
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <!-- 닫기 -->
     <button @click="zoomOpen=false"
-      style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.4rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.4rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">✕</button>
+    <!-- 확대 아이콘 (우상단, 모달 내에서는 축소 역할) -->
+    <button @click="zoomOpen=false"
+      style="position:absolute;top:20px;right:76px;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4 14 4 20 10 20"></polyline><polyline points="20 10 20 4 14 4"></polyline>
+        <line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line>
+      </svg>
+    </button>
+    <!-- 메인 확대 이미지 -->
+    <div @click.stop style="position:relative;max-width:90vw;max-height:70vh;border-radius:12px;overflow:hidden;">
+      <img v-if="mockImages[selectedImg]?.src" :src="mockImages[selectedImg].src" :alt="product.prodNm"
+        style="max-width:90vw;max-height:70vh;object-fit:contain;display:block;" />
+      <!-- 좌/우 화살표 -->
+      <button v-if="selectedImg > 0" @click.stop="selectedImg--"
+        style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <button v-if="selectedImg < mockImages.length - 1" @click.stop="selectedImg++"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+    <!-- 하단 썸네일 -->
+    <div @click.stop style="display:flex;gap:8px;">
+      <div v-for="(img,i) in mockImages" :key="i" @click.stop="selectedImg=i"
+        :style="{ width:'56px', height:'56px', borderRadius:'8px', overflow:'hidden', cursor:'pointer',
+          border: selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
+        <img :src="img.src" style="width:100%;height:100%;object-fit:cover;" />
+      </div>
+    </div>
   </div>
 
   <!-- ══ 포토 전체 팝업 ══ -->
@@ -712,15 +832,10 @@ window.Detail = {
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
         <div v-for="r in reviewsWithPhoto" :key="r.id"
           @click="selectedReview=r;photoPopupOpen=false"
-          :style="{
-            aspectRatio:'1',borderRadius:'8px',cursor:'pointer',
-            background:r.photoHex+'cc',border:'1px solid var(--border)',
-            display:'flex',alignItems:'center',justifyContent:'center',fontSize:'2.4rem',
-            transition:'opacity .15s',
-          }"
+          style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
           @mouseenter="$event.currentTarget.style.opacity='.75'"
           @mouseleave="$event.currentTarget.style.opacity='1'">
-          {{ product.emoji }}
+          <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
         </div>
       </div>
     </div>
@@ -734,12 +849,9 @@ window.Detail = {
         <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">포토&동영상 상품평</span>
         <button @click="selectedReview=null" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
-      <div :style="{
-        borderRadius:'12px',border:'1px solid var(--border)',
-        background:selectedReview.photoHex+'cc',
-        height:'220px',display:'flex',alignItems:'center',justifyContent:'center',
-        fontSize:'6rem',marginBottom:'20px',
-      }">{{ product.emoji }}</div>
+      <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);height:220px;margin-bottom:20px;">
+        <img :src="selectedReview.photoImg" style="width:100%;height:100%;object-fit:cover;" />
+      </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
         <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ selectedReview.maskedName }}</span>
         <span style="color:#f59e0b;font-size:0.85rem;">{{ stars(selectedReview.rating) }}</span>
@@ -824,21 +936,28 @@ window.Detail = {
             <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            <button v-for="c in product.opt1s" :key="c.name" @click="selectColor(c)" :title="c.name"
-              :style="{
-                width:'30px',height:'30px',borderRadius:'50%',cursor:'pointer',
-                background:c.hex,
-                border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
-                outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
-                outlineOffset:'-4px',boxSizing:'border-box',
-              }">
-            </button>
+            <div v-for="c in product.opt1s" :key="c.name" style="position:relative;">
+              <button @click="selectColor(c)" :title="c.name"
+                :style="{
+                  width:'30px',height:'30px',borderRadius:'50%',
+                  cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
+                  background:c.hex,
+                  border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
+                  outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
+                  outlineOffset:'-4px',boxSizing:'border-box',
+                  opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
+                }">
+              </button>
+              <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;inset:0;pointer-events:none;" viewBox="0 0 30 30">
+                <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
+              </svg>
+            </div>
           </div>
           <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
         </div>
 
-        <!-- 사이즈 -->
-        <div style="margin-bottom:20px;">
+        <!-- 사이즈 (FREE면 숨김) -->
+        <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈<span style="color:var(--blue);margin-left:2px;">*</span></span>
             <button @click="showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>
@@ -846,12 +965,18 @@ window.Detail = {
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
             <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
               :style="{
-                padding:'7px 16px',borderRadius:'6px',cursor:'pointer',fontSize:'0.82rem',
-                border:selectedSize===s?'2px solid var(--blue)':'1.5px solid var(--border)',
-                background:selectedSize===s?'var(--blue-dim)':'var(--bg-base)',
-                color:selectedSize===s?'var(--blue)':'var(--text-secondary)',
-                fontWeight:selectedSize===s?'700':'500',
-              }">{{ s }}</button>
+                padding:'7px 16px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
+                cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
+                border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '1.5px solid var(--border)' : '1.5px solid #e0e0e0',
+                background: selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-base)' : '#f5f5f5',
+                color: selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
+                fontWeight: selectedSize===s ? '700' : '500',
+                textDecoration: sizeStatus(s)!=='ok' ? 'line-through' : 'none',
+                opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
+              }">{{ s }}
+              <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
+              <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
+            </button>
           </div>
           <div v-if="sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ sizeError }}</div>
         </div>

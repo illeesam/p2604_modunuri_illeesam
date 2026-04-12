@@ -72,6 +72,7 @@ window.SITE_CONFIG = {
     { "categoryId": "dress",      "categoryNm": "원피스" },
     { "categoryId": "acc",        "categoryNm": "악세서리" }
   ],
+  "imgBase": "assets/cdn/prod/img",
   "products": [
     {
       "productId": 1,
@@ -79,7 +80,8 @@ window.SITE_CONFIG = {
       "categoryId": "tops",
       "price": "29,900원",
       "desc": "부드러운 100% 코튼 소재의 여유로운 오버핏 티셔츠. 데일리룩으로 완벽한 베이직 아이템.",
-      "emoji": "👕",
+      "image": "assets/cdn/prod/img/shop/product/fashion/fashion-1.webp",
+      "images": ["assets/cdn/prod/img/shop/product/fashion/fashion-1.webp","assets/cdn/prod/img/shop/product/fashion/fashion-2.webp","assets/cdn/prod/img/shop/product/fashion/fashion-3.webp"],
       "badge": "NEW",
       "opt1s": [
         { "name": "블랙",  "hex": "#1a1a1a" },
@@ -96,7 +98,8 @@ window.SITE_CONFIG = {
       "categoryId": "bottoms",
       "price": "59,900원",
       "desc": "클래식한 슬림핏 데님. 신축성 있는 소재로 활동성이 뛰어나며 어떤 상의와도 잘 어울립니다.",
-      "emoji": "👖",
+      "image": "assets/cdn/prod/img/shop/product/fashion/fashion-4.webp",
+      "images": ["assets/cdn/prod/img/shop/product/fashion/fashion-4.webp","assets/cdn/prod/img/shop/product/fashion/fashion-5.webp","assets/cdn/prod/img/shop/product/fashion/fashion-6.webp"],
       "badge": "인기",
       "opt1s": [
         { "name": "라이트블루", "hex": "#7bafd4" },
@@ -113,7 +116,8 @@ window.SITE_CONFIG = {
       "categoryId": "outer",
       "price": "119,000원",
       "desc": "고급 울 혼방 소재로 제작한 클래식 롱코트. 세련된 실루엣으로 어떤 코디에도 품격을 더합니다.",
-      "emoji": "🧥",
+      "image": "assets/cdn/prod/img/shop/product/fashion/fashion-7.webp",
+      "images": ["assets/cdn/prod/img/shop/product/fashion/fashion-7.webp","assets/cdn/prod/img/shop/product/fashion/fashion-8.webp","assets/cdn/prod/img/shop/product/fashion/fashion-9.webp"],
       "badge": "",
       "opt1s": [
         { "name": "카멜",  "hex": "#c19a6b" },
@@ -130,7 +134,8 @@ window.SITE_CONFIG = {
       "categoryId": "dress",
       "price": "79,000원",
       "desc": "화사한 플로럴 패턴의 미디 기장 드레스. 봄·여름 나들이 및 특별한 날에 어울리는 로맨틱한 아이템.",
-      "emoji": "👗",
+      "image": "assets/cdn/prod/img/shop/product/fashion/fashion-10.webp",
+      "images": ["assets/cdn/prod/img/shop/product/fashion/fashion-10.webp","assets/cdn/prod/img/shop/product/fashion/fashion-11.webp","assets/cdn/prod/img/shop/product/fashion/fashion-12.webp"],
       "badge": "NEW",
       "opt1s": [
         { "name": "핑크플로럴",  "hex": "#e8a0b4" },
@@ -146,7 +151,8 @@ window.SITE_CONFIG = {
       "categoryId": "tops",
       "price": "45,000원",
       "desc": "시원한 린넨 소재에 클래식한 스트라이프 패턴. 여름철 가볍고 시원하게 입을 수 있는 셔츠.",
-      "emoji": "👔",
+      "image": "assets/cdn/prod/img/shop/product/product_5.png",
+      "images": ["assets/cdn/prod/img/shop/product/product_5.png","assets/cdn/prod/img/shop/product/product_6.png","assets/cdn/prod/img/shop/product/product_7.png"],
       "badge": "",
       "opt1s": [
         { "name": "화이트네이비", "hex": "#e8eef5" },
@@ -162,7 +168,8 @@ window.SITE_CONFIG = {
       "categoryId": "bottoms",
       "price": "55,000원",
       "desc": "트렌디한 카고 디테일의 와이드 팬츠. 넉넉한 핏으로 편안하면서도 스타일리시한 룩을 완성합니다.",
-      "emoji": "🩳",
+      "image": "assets/cdn/prod/img/shop/product/product_8.png",
+      "images": ["assets/cdn/prod/img/shop/product/product_8.png","assets/cdn/prod/img/shop/product/product_9.png","assets/cdn/prod/img/shop/product/product_10.png"],
       "badge": "인기",
       "opt1s": [
         { "name": "카키",  "hex": "#6b7c4a" },
@@ -179,7 +186,8 @@ window.SITE_CONFIG = {
       "categoryId": "outer",
       "price": "89,000원",
       "desc": "보온성이 뛰어난 퀼티드 숏 점퍼. 캐주얼하면서도 세련된 디자인으로 데일리 아우터로 활용하세요.",
-      "emoji": "🧤",
+      "image": "assets/cdn/prod/img/shop/product/product_11.png",
+      "images": ["assets/cdn/prod/img/shop/product/product_11.png","assets/cdn/prod/img/shop/product/product_12.png","assets/cdn/prod/img/shop/product/product_13.png"],
       "badge": "",
       "opt1s": [
         { "name": "블랙",  "hex": "#1a1a1a" },
@@ -196,7 +204,8 @@ window.SITE_CONFIG = {
       "categoryId": "tops",
       "price": "49,000원",
       "desc": "포근한 케이블 니트 패턴의 스웨터. 가을·겨울 필수 아이템으로 다양한 하의와 코디하기 좋습니다.",
-      "emoji": "🧶",
+      "image": "assets/cdn/prod/img/shop/product/product_14.png",
+      "images": ["assets/cdn/prod/img/shop/product/product_14.png","assets/cdn/prod/img/shop/product/product_15.png","assets/cdn/prod/img/shop/product/product_16.png"],
       "badge": "",
       "opt1s": [
         { "name": "아이보리", "hex": "#f5f0e0" },

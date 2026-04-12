@@ -145,12 +145,9 @@ window.Cart = {
             </div>
 
             <!-- 상품 이미지 -->
-            <div :style="{
-              width:'80px', height:'80px', borderRadius:'12px', flexShrink:0,
-              display:'flex', alignItems:'center', justifyContent:'center',
-              fontSize:'2.8rem',
-              background: 'linear-gradient(135deg,' + item.color.hex + '33,' + item.color.hex + '11)'
-            }">{{ item.product.emoji }}</div>
+            <div style="width:80px;height:80px;border-radius:12px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
+              <img v-if="item.product.image" :src="item.product.image" :alt="item.product.prodNm" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
 
             <!-- 상품 정보 -->
             <div style="flex:1;min-width:0;">

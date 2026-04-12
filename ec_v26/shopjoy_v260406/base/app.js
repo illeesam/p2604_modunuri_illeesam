@@ -107,8 +107,28 @@
       new Promise(r => Object.assign(confirmState, { show: true, title, msg, type, resolve: r }));
     const closeConfirm = r => { confirmState.show = false; confirmState.resolve?.(r); };
 
-    /* ── Products ── */
+    /* ── Products (이미지 자동 할당) ── */
+    const _IMG = 'assets/cdn/prod/img/shop/product';
+    const _assignImg = (p) => {
+      /* colors→opt1s, sizes→opt2s 호환 */
+      if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
+      if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
+      /* 이미지 자동 할당 */
+      if (!p.image) {
+        const id = p.productId || 1;
+        if (id <= 12) {
+          p.image = `${_IMG}/fashion/fashion-${id}.webp`;
+          p.images = [p.image, `${_IMG}/fashion/fashion-${((id % 12) + 1)}.webp`];
+        } else {
+          const n = ((id - 1) % 23) + 1;
+          p.image = `${_IMG}/product_${n}.png`;
+          p.images = [p.image, `${_IMG}/product_${(n % 23) + 1}.png`];
+        }
+      }
+      return p;
+    };
     const products = window.SITE_CONFIG.products;
+    products.forEach(_assignImg);
     const selectedProduct = ref(products[0]);
     const selectProduct = p => {
       selectedProduct.value = p;

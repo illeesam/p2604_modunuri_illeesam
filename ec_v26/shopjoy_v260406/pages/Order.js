@@ -157,7 +157,7 @@ window.Order = {
           items: orderItems.value.map((i, idx) => ({
             productId:   i.product.productId,
             prodNm: i.product.prodNm,
-            emoji:       i.product.emoji,
+            image:       i.product.image,
             color: i.color.name, size: i.size, qty: i.qty,
             price:    parsePrice(i.product.price) * i.qty,
             coupon:   selectedCoupons.value[idx]?.name || null,
@@ -205,7 +205,7 @@ window.Order = {
         <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">📦 주문 상품</div>
         <div v-for="item in resultData.items" :key="item.productId"
           style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:1.5rem;">{{ item.emoji }}</span>
+          <div style="width:40px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg-base);"><img v-if="item.image" :src="item.image" style="width:100%;height:100%;object-fit:cover;" /></div>
           <div style="flex:1;">
             <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">{{ item.prodNm }}</div>
             <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} × {{ item.qty }}</div>
@@ -277,11 +277,9 @@ window.Order = {
             :style="idx<orderItems.length-1?'border-bottom:1px solid var(--border);':''">
             <!-- 상품 행 -->
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
-              <div :style="{
-                width:'52px',height:'52px',borderRadius:'10px',flexShrink:0,
-                display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.8rem',
-                background: item.color ? 'linear-gradient(135deg,'+item.color.hex+'33,'+item.color.hex+'11)' : 'var(--bg-base)'
-              }">{{ item.product.emoji }}</div>
+              <div style="width:52px;height:52px;border-radius:10px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
+                <img v-if="item.product.image" :src="item.product.image" :alt="item.product.prodNm" style="width:100%;height:100%;object-fit:cover;" />
+              </div>
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ item.product.prodNm }}</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">

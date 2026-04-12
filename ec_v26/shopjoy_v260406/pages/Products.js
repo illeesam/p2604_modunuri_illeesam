@@ -5,6 +5,27 @@ window.Products = {
   setup(props) {
     const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
+    /* ── 상품 이미지 자동 할당 ── */
+    const IMG_BASE = 'assets/cdn/prod/img/shop/product';
+    const assignImage = (p) => {
+      /* colors→opt1s, sizes→opt2s 호환 */
+      if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
+      if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
+      /* 이미지 자동 할당 */
+      if (!p.image) {
+        const id = p.productId || 1;
+        if (id <= 12) {
+          p.image  = `${IMG_BASE}/fashion/fashion-${id}.webp`;
+          p.images = [p.image, `${IMG_BASE}/fashion/fashion-${((id % 12) + 1)}.webp`];
+        } else {
+          const n = ((id - 1) % 23) + 1;
+          p.image  = `${IMG_BASE}/product_${n}.png`;
+          p.images = [p.image, `${IMG_BASE}/product_${(n % 23) + 1}.png`];
+        }
+      }
+      return p;
+    };
+
     /* ── 상품 데이터 ── */
     const allProducts = ref([]);
     const loading = ref(true);
@@ -13,7 +34,7 @@ window.Products = {
       loading.value = true;
       try {
         const res = await window.axiosApi.get('products/list.json');
-        allProducts.value = res.data.map(p => ({
+        allProducts.value = res.data.map(p => assignImage({
           ...p,
           priceNum: p.price,
           price: p.price.toLocaleString() + '원',
@@ -26,7 +47,7 @@ window.Products = {
         } catch (e) {}
       } catch (e) {
         /* 폴백: config 상품 사용 */
-        allProducts.value = (props.config && props.config.products || []).map(p => ({
+        allProducts.value = (props.config && props.config.products || []).map(p => assignImage({
           ...p,
           priceNum: parseInt(String(p.price).replace(/[^0-9]/g, ''), 10) || 0,
         }));
@@ -333,11 +354,14 @@ window.Products = {
       class="product-card" style="cursor:pointer;" @click="selectProduct(p)">
 
       <!-- 썸네일 -->
-      <div style="height:160px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:linear-gradient(135deg,var(--blue-dim),var(--green-dim));position:relative;">
-        {{ p.emoji }}
+      <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
+        <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
+          @mouseenter="$event.target.style.transform='scale(1.05)'"
+          @mouseleave="$event.target.style.transform=''"
+          @error="$event.target.style.display='none'" />
+        <span v-if="!p.image" style="font-size:3rem;opacity:0.3;">📷</span>
         <span v-if="p.badge==='NEW'" class="badge badge-new" style="position:absolute;top:12px;left:12px;">NEW</span>
         <span v-else-if="p.badge==='인기'" class="badge badge-hot" style="position:absolute;top:12px;left:12px;">인기</span>
-        <!-- 할인율 뱃지 -->
         <span v-if="p.originalPrice"
           style="position:absolute;top:12px;right:12px;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:800;padding:3px 7px;border-radius:10px;">
           {{ Math.round((1-p.priceNum/p.originalPrice)*100) }}%

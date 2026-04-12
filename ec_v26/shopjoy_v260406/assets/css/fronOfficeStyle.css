@@ -1,49 +1,52 @@
 /* ============================================
-   ShopJoy - Rose/Coral Fashion Theme
+   ShopJoy - Neutral / Minimal Fashion Theme
+   (Outstock-inspired)
    ============================================ */
 
 /* ── CSS Variables ── */
 :root {
-  --bg-base:      #fff5f7;
+  --bg-base:      #f8f6f3;
   --bg-card:      #ffffff;
   --bg-sidebar:   #ffffff;
-  --bg-header:    rgba(255, 255, 255, 0.95);
+  --bg-header:    rgba(255, 255, 255, 0.97);
   --border:       rgba(0, 0, 0, 0.08);
-  --text-primary:   #1a0a10;
-  --text-secondary: #6a3a4a;
-  --text-muted:     #b08090;
-  --shadow:       0 1px 3px rgba(232, 88, 122, 0.1);
+  --text-primary:   #1a1a1a;
+  --text-secondary: #555555;
+  --text-muted:     #999999;
+  --shadow:       0 1px 3px rgba(0, 0, 0, 0.06);
 
-  --blue:         #e8587a;
-  --blue-dim:     rgba(232, 88, 122, 0.12);
-  --green:        #ff8c69;
-  --green-dim:    rgba(255, 140, 105, 0.12);
-  --purple:       #9c5fa3;
-  --purple-dim:   rgba(156, 95, 163, 0.12);
+  --blue:         #1a1a1a;
+  --blue-dim:     rgba(26, 26, 26, 0.07);
+  --green:        #8b7355;
+  --green-dim:    rgba(139, 115, 85, 0.1);
+  --purple:       #6b6b6b;
+  --purple-dim:   rgba(107, 107, 107, 0.1);
+  --accent:       #c9a96e;
+  --accent-dim:   rgba(201, 169, 110, 0.12);
 
   --header-h:   60px;
   --sidebar-w:  220px;
-  --radius:     10px;
+  --radius:     4px;
   --transition: all 0.25s ease;
 }
 
 [data-theme="dark"] {
-  --bg-base:      #1a0a10;
+  --bg-base:      #141414;
   --bg-card:      rgba(255, 255, 255, 0.04);
-  --bg-sidebar:   rgba(26, 10, 16, 0.95);
-  --bg-header:    rgba(26, 10, 16, 0.92);
+  --bg-sidebar:   rgba(20, 20, 20, 0.95);
+  --bg-header:    rgba(20, 20, 20, 0.92);
   --border:       rgba(255, 255, 255, 0.08);
-  --text-primary:   #ffe0e8;
-  --text-secondary: #b08090;
-  --text-muted:     #7a4a5a;
+  --text-primary:   #e8e8e8;
+  --text-secondary: #999999;
+  --text-muted:     #666666;
   --shadow:       0 1px 3px rgba(0, 0, 0, 0.4);
 
-  --blue:         #ff85a5;
-  --blue-dim:     rgba(255, 133, 165, 0.14);
-  --green:        #ffaa88;
-  --green-dim:    rgba(255, 170, 136, 0.12);
-  --purple:       #c47eca;
-  --purple-dim:   rgba(196, 126, 202, 0.12);
+  --blue:         #e0e0e0;
+  --blue-dim:     rgba(224, 224, 224, 0.1);
+  --green:        #c9a96e;
+  --green-dim:    rgba(201, 169, 110, 0.12);
+  --purple:       #aaa;
+  --purple-dim:   rgba(170, 170, 170, 0.1);
 }
 
 /* ── Reset ── */
@@ -125,14 +128,14 @@ body {
   transition: var(--transition);
 }
 .card:hover {
-  border-color: var(--blue);
+  border-color: rgba(0,0,0,0.15);
   transform: translateY(-2px);
   box-shadow: 0 8px 32px var(--blue-dim);
 }
 
 /* ── Gradient Text ── */
 .gradient-text {
-  background: linear-gradient(135deg, var(--blue) 0%, var(--green) 60%, var(--purple) 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #8b7355 60%, #c9a96e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -181,7 +184,7 @@ body {
   }
   #sidebar.collapsed .sidebar-link.active {
     border-left: none;
-    box-shadow: inset 0 0 0 1px rgba(232, 88, 122, 0.45);
+    box-shadow: inset 0 0 0 1px rgba(26, 26, 26, 0.2);
   }
   #sidebar.collapsed .sidebar-link .sidebar-link-icon {
     display: flex;
@@ -230,28 +233,28 @@ body {
 
 /* ── Buttons ── */
 .btn-blue {
-  background: linear-gradient(135deg, var(--blue), #c03060);
+  background: #1a1a1a;
   color: #ffffff;
-  font-weight: 700;
-  border-radius: 8px;
+  font-weight: 600;
+  border-radius: 2px;
   padding: 10px 24px;
   transition: var(--transition);
   border: none;
   cursor: pointer;
   font-size: 0.875rem;
+  letter-spacing: 0.3px;
 }
-[data-theme="dark"] .btn-blue { color: #1a0a10; }
+[data-theme="dark"] .btn-blue { background: #e0e0e0; color: #1a1a1a; }
 .btn-blue:hover {
-  opacity: 0.88;
-  box-shadow: 0 4px 20px var(--blue-dim);
+  opacity: 0.85;
   transform: translateY(-1px);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--blue);
-  border: 1px solid var(--blue);
-  border-radius: 8px;
+  color: #1a1a1a;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 2px;
   padding: 10px 24px;
   font-weight: 600;
   transition: var(--transition);
@@ -259,7 +262,8 @@ body {
   font-size: 0.875rem;
 }
 .btn-outline:hover {
-  background: var(--blue-dim);
+  background: #1a1a1a;
+  color: #fff;
   transform: translateY(-1px);
 }
 
@@ -273,15 +277,15 @@ body {
 .product-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 2px;
   overflow: hidden;
   transition: var(--transition);
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 .product-card:hover {
-  border-color: var(--blue);
-  box-shadow: 0 12px 40px var(--blue-dim);
-  transform: translateY(-4px);
+  border-color: rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
 }
 
 /* ── FAQ ── */
@@ -364,20 +368,20 @@ body {
   letter-spacing: 0.03em;
 }
 .badge-new {
-  background: var(--blue-dim);
-  color: var(--blue);
-  border: 1px solid rgba(232, 88, 122, 0.25);
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
 }
 .badge-hot {
-  background: var(--green-dim);
-  color: var(--green);
-  border: 1px solid rgba(255, 140, 105, 0.25);
+  background: #8b7355;
+  color: #fff;
+  border: none;
 }
-[data-theme="dark"] .badge-hot { border-color: rgba(255, 170, 136, 0.25); }
+[data-theme="dark"] .badge-hot { background: #c9a96e; }
 .badge-cat {
-  background: var(--purple-dim);
-  color: var(--purple);
-  border: 1px solid rgba(156, 95, 163, 0.2);
+  background: #f0ece6;
+  color: #8b7355;
+  border: 1px solid rgba(139,115,85,0.15);
 }
 
 /* ── Toast ── */
@@ -402,15 +406,15 @@ body {
   from { opacity: 0; transform: translateY(16px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-.toast-success { background: #ffffff; border: 1.5px solid #e8587a; color: #e8587a; }
+.toast-success { background: #ffffff; border: 1.5px solid #1a1a1a; color: #1a1a1a; }
 .toast-error   { background: #ffffff; border: 1.5px solid #e53e3e; color: #e53e3e; }
 .toast-warning { background: #ffffff; border: 1.5px solid #dd6b20; color: #dd6b20; }
-.toast-info    { background: #ffffff; border: 1.5px solid #e8587a; color: #e8587a; }
+.toast-info    { background: #ffffff; border: 1.5px solid #1a1a1a; color: #1a1a1a; }
 
-[data-theme="dark"] .toast-success { background: #1a0a10; border-color: #ff85a5; color: #ff85a5; }
-[data-theme="dark"] .toast-error   { background: #1a0d0d; border-color: #fc8181; color: #fc8181; }
-[data-theme="dark"] .toast-warning { background: #1a140d; border-color: #f6ad55; color: #f6ad55; }
-[data-theme="dark"] .toast-info    { background: #1a0a10; border-color: #ff85a5; color: #ff85a5; }
+[data-theme="dark"] .toast-success { background: #1a1a1a; border-color: #e0e0e0; color: #e0e0e0; }
+[data-theme="dark"] .toast-error   { background: #1a1a1a; border-color: #fc8181; color: #fc8181; }
+[data-theme="dark"] .toast-warning { background: #1a1a1a; border-color: #f6ad55; color: #f6ad55; }
+[data-theme="dark"] .toast-info    { background: #1a1a1a; border-color: #e0e0e0; color: #e0e0e0; }
 
 .toast-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
 .toast-msg  { flex: 1; line-height: 1.5; }
@@ -476,10 +480,7 @@ body {
 
 /* ── Hero Section ── */
 .hero-section {
-  background:
-    radial-gradient(ellipse 60% 50% at 80% 30%, var(--blue-dim) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 20% 70%, var(--green-dim) 0%, transparent 70%),
-    var(--bg-base);
+  background: #f5f3f0;
   position: relative;
   overflow: hidden;
 }
@@ -487,10 +488,6 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 48px 48px;
   pointer-events: none;
 }
 
@@ -731,7 +728,7 @@ footer {
   margin-top: -10px;
   vertical-align: top;
 }
-[data-theme="dark"] .cart-badge { color: #1a0a10; }
+[data-theme="dark"] .cart-badge { color: #1a1a1a; }
 
 .header-cart-link:hover {
   border-color: var(--blue);
@@ -758,7 +755,7 @@ footer {
   pointer-events: none;
 }
 [data-theme="dark"] .header-cart-badge {
-  color: #1a0a10;
+  color: #1a1a1a;
   border-color: var(--bg-card);
 }
 

@@ -57,8 +57,10 @@ And round tips on the cutting feature of these products designed for the kitchen
 <div>
 
   <!-- 히어로 이미지 -->
-  <div :style="{ background: heroBg, height:'360px', display:'flex', alignItems:'center', justifyContent:'center' }">
-    <span style="font-size:5rem;opacity:0.3;">📷</span>
+  <div style="height:360px;overflow:hidden;background:var(--bg-base);">
+    <img :src="'assets/cdn/prod/img/blog/blog-big-' + (post.id <= 7 ? post.id : 2) + '.jpg'" :alt="post.title"
+      style="width:100%;height:100%;object-fit:cover;"
+      @error="$event.target.style.display='none'" />
   </div>
 
   <!-- 본문 -->
