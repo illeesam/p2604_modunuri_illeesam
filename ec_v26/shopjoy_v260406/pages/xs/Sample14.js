@@ -190,14 +190,11 @@ window.Sample14 = {
     /* 드래그&드롭 — 탭별 미리보기 */
     const TABS      = ['grid1', 'grid2', 'grid3', 'grid4', 'dashboard'];
     const activeTab = ref('grid1');
-    const GRID_COLS = { grid2: 2, grid3: 3, grid4: 4 };
+    const GRID_COLS = { grid1: 1, grid2: 2, grid3: 3, grid4: 4 };
 
-    // grid1 — 순서 있는 목록
-    const tabWidgets = reactive({ grid1: [] });
-
-    // grid2/3/4 — N열 셀 배열 (초기 2행)
+    // grid1~4 — N열 셀 배열 (초기 2행)
     const mkCells = (n) => Array.from({ length: n * 2 }, () => ({ widget: null }));
-    const gridCells = reactive({ grid2: mkCells(2), grid3: mkCells(3), grid4: mkCells(4) });
+    const gridCells = reactive({ grid1: mkCells(1), grid2: mkCells(2), grid3: mkCells(3), grid4: mkCells(4) });
 
     // dashboard — 자유 배치
     const dashItems  = reactive([]);
@@ -218,54 +215,18 @@ window.Sample14 = {
 
     // 헤더 카운트용
     const previewWidgets = computed(() => {
-      if (GRID_COLS[activeTab.value]) return gridCells[activeTab.value].filter(c => c.widget);
       if (activeTab.value === 'dashboard') return dashItems;
-      return tabWidgets.grid1;
+      return (gridCells[activeTab.value] || []).filter(c => c.widget);
     });
 
-    const dragSrc            = ref(null);
-    const dragFromPreviewIdx = ref(-1);
-    const dropZoneIdx        = ref(-1);
+    const dragSrc      = ref(null);
+    const dropZoneIdx  = ref(-1);
 
     const onWidgetDragStart = (w, p, area, evt) => {
       dragSrc.value = { ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel };
-      dragFromPreviewIdx.value = -1;
       evt.dataTransfer.effectAllowed = 'copy';
     };
-
-    /* grid1 */
-    const onPreviewDragStart = (i, evt) => {
-      dragSrc.value = tabWidgets.grid1[i];
-      dragFromPreviewIdx.value = i;
-      evt.dataTransfer.effectAllowed = 'move';
-    };
-    const onDropZoneOver = (i, evt) => {
-      evt.preventDefault();
-      evt.dataTransfer.dropEffect = dragFromPreviewIdx.value >= 0 ? 'move' : 'copy';
-      dropZoneIdx.value = i;
-    };
-    const onDrop = (insertAt, evt) => {
-      evt.preventDefault();
-      if (!dragSrc.value) return;
-      const arr = tabWidgets.grid1;
-      if (dragFromPreviewIdx.value >= 0) {
-        const from = dragFromPreviewIdx.value;
-        const item = arr.splice(from, 1)[0];
-        const to = insertAt > from ? insertAt - 1 : insertAt;
-        arr.splice(to, 0, item);
-      } else {
-        arr.splice(insertAt, 0, { ...dragSrc.value });
-      }
-      dragSrc.value = null;
-      dragFromPreviewIdx.value = -1;
-      dropZoneIdx.value = -1;
-    };
-    const onDragEnd = () => {
-      dragSrc.value = null;
-      dragFromPreviewIdx.value = -1;
-      dropZoneIdx.value = -1;
-    };
-    const removePreviewItem = (i) => { tabWidgets.grid1.splice(i, 1); };
+    const onDragEnd = () => { dragSrc.value = null; dropZoneIdx.value = -1; };
 
     /* grid2/3/4 */
     const onCellDrop = (tab, ci, evt) => {
@@ -286,7 +247,6 @@ window.Sample14 = {
         emptyRows++;
       }
       dragSrc.value = null;
-      dragFromPreviewIdx.value = -1;
       dropZoneIdx.value = -1;
     };
     const removeCellWidget = (tab, ci) => { gridCells[tab][ci] = { widget: null }; };
@@ -301,7 +261,6 @@ window.Sample14 = {
       const y = Math.max(0, Math.round((evt.clientY - rect.top  - 14) / snap) * snap);
       dashItems.push({ widget: { ...dragSrc.value }, x, y, w: 200, h: 160 });
       dragSrc.value = null;
-      dragFromPreviewIdx.value = -1;
       dropZoneIdx.value = -1;
     };
     const onDashItemMd = (idx, evt) => {
@@ -337,9 +296,7 @@ window.Sample14 = {
     /* 탭별 초기화 */
     const clearPreview = () => {
       const tab = activeTab.value;
-      if (tab === 'grid1') {
-        tabWidgets.grid1.splice(0, tabWidgets.grid1.length);
-      } else if (GRID_COLS[tab]) {
+      if (GRID_COLS[tab]) {
         const cells = gridCells[tab], cols = GRID_COLS[tab];
         cells.splice(0, cells.length);
         for (let i = 0; i < cols * 2; i++) cells.push({ widget: null });
@@ -367,6 +324,27 @@ window.Sample14 = {
     };
     const closePopover = () => { popoverKey.value = null; };
 
+    /* ── 반응형 뷰포트 ── */
+    const viewportMode = ref('desktop');
+    /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
+    const autoGridCols = computed(() => {
+      const map = {
+        grid1: 'repeat(1,1fr)',
+        grid2: 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))',
+        grid3: 'repeat(auto-fill,minmax(max(calc(33.333% - 6px),190px),1fr))',
+        grid4: 'repeat(auto-fill,minmax(max(calc(25% - 6px),220px),1fr))',
+      };
+      return map[activeTab.value] || 'repeat(1,1fr)';
+    });
+    const viewportWidth = computed(() => {
+      if (viewportMode.value === 'mobile') return '375px';
+      if (viewportMode.value === 'tablet') return '768px';
+      return null;
+    });
+
+    /* 실제 컨텐츠 보기 토글 */
+    const showRealContent = ref(false);
+
     /* 초기화 */
     initExpand();
 
@@ -386,15 +364,17 @@ window.Sample14 = {
       isPanelAllChecked,
       checkedWidgetList,
       TABS, activeTab, GRID_COLS, gridCells, wColor,
-      previewWidgets, dragSrc, dragFromPreviewIdx, dropZoneIdx,
-      onWidgetDragStart, onPreviewDragStart, onDropZoneOver, onDrop, onDragEnd,
-      removePreviewItem, onCellDrop, removeCellWidget,
+      previewWidgets, dragSrc, dropZoneIdx,
+      onWidgetDragStart, onDragEnd,
+      onCellDrop, removeCellWidget,
       dashItems, dashDrag, dashResize,
       onDashDrop, onDashItemMd, onDashResizeMd, onDashMm, onDashMu, removeDashItem,
       clearPreview,
       wLabel, wIcon,
       popoverKey, popoverWidget, popoverArea, popoverPanel, popoverPos,
       showWidgetInfo, closePopover,
+      viewportMode, autoGridCols, viewportWidth,
+      showRealContent,
     };
   },
   template: /* html */`
@@ -599,277 +579,91 @@ window.Sample14 = {
               style="font-size:11px;padding:2px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">초기화</button>
           </div>
         </div>
-        <!-- 탭 -->
-        <div style="display:flex;border-top:1px solid #f0f0f0;padding:0 10px;">
-          <button v-for="tab in TABS" :key="tab" @click="activeTab=tab"
-            style="font-size:12px;padding:7px 14px;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap;"
-            :style="activeTab===tab?'color:#1a73e8;border-bottom-color:#1a73e8;font-weight:700;':'color:#999;'">
-            {{ tab }}
-          </button>
+        <!-- 탭 + 뷰포트 토글 -->
+        <div style="display:flex;align-items:center;border-top:1px solid #f0f0f0;padding:0 10px;">
+          <div style="display:flex;flex:1;">
+            <button v-for="tab in TABS" :key="tab" @click="activeTab=tab"
+              style="font-size:12px;padding:7px 14px;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap;"
+              :style="activeTab===tab?'color:#1a73e8;border-bottom-color:#1a73e8;font-weight:700;':'color:#999;'">
+              {{ tab }}
+            </button>
+          </div>
+          <!-- 실제컨텐츠 토글 + 뷰포트 토글 (dashboard 제외) -->
+          <div v-if="activeTab!=='dashboard'" style="display:flex;gap:3px;padding:4px 0 4px 10px;border-left:1px solid #f0f0f0;margin-left:4px;flex-shrink:0;align-items:center;">
+            <button @click="showRealContent=!showRealContent"
+              style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:6px;"
+              :style="showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
+              {{ showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
+            </button>
+            <div style="width:1px;height:18px;background:#e5e7eb;margin-right:3px;"></div>
+            <button @click="viewportMode='desktop'"
+              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
+              :style="viewportMode==='desktop'?'background:#1a73e8;color:#fff;border-color:#1a73e8;':'background:#fff;color:#6b7280;'">🖥 PC</button>
+            <button @click="viewportMode='tablet'"
+              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
+              :style="viewportMode==='tablet'?'background:#1a73e8;color:#fff;border-color:#1a73e8;':'background:#fff;color:#6b7280;'">📟 태블릿</button>
+            <button @click="viewportMode='mobile'"
+              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
+              :style="viewportMode==='mobile'?'background:#1a73e8;color:#fff;border-color:#1a73e8;':'background:#fff;color:#6b7280;'">📱 모바일</button>
+          </div>
         </div>
       </div>
 
-      <!-- ===== grid1 ===== -->
-      <template v-if="activeTab==='grid1'">
-      <!-- 빈 상태 드롭존 -->
-      <div v-if="previewWidgets.length===0"
-        @dragover="onDropZoneOver(0, $event)"
-        @drop="onDrop(0, $event)"
-        style="border:2px dashed #e0e0e0;border-radius:8px;padding:50px 20px;text-align:center;color:#bbb;font-size:13px;transition:all .2s;cursor:default;"
-        :style="dropZoneIdx===0?'border-color:#1a73e8;background:#e8f0fe;color:#1a73e8;':''">
-        <div style="font-size:28px;margin-bottom:10px;">📥</div>
-        <div>좌측 위젯을 드래그하여 이곳에 추가하세요</div>
-        <div style="font-size:11px;margin-top:6px;opacity:.7;">추가 후 드래그로 순서 변경 가능</div>
+      <!-- 뷰포트 래퍼 (dashboard 제외) -->
+      <template v-if="activeTab!=='dashboard'">
+      <div :style="{
+        width: viewportWidth || '100%',
+        maxWidth: viewportWidth || '100%',
+        margin: '0 auto',
+        transition: 'width .3s, max-width .3s',
+      }">
+      <div v-if="viewportWidth" style="text-align:center;margin-bottom:6px;font-size:11px;color:#9ca3af;font-weight:600;padding-top:8px;">
+        {{ viewportMode==='mobile' ? '📱 375px' : '📟 768px' }}
       </div>
+      <div :style="{
+        border: viewportWidth ? '2px solid #d1d5db' : 'none',
+        borderRadius: viewportWidth ? '10px' : '0',
+        padding: viewportWidth ? '10px' : '0',
+        background: '#fff',
+        boxShadow: viewportWidth ? '0 4px 16px rgba(0,0,0,.1)' : 'none',
+      }">
 
-      <!-- 드롭 목록 -->
-      <div v-else>
-        <template v-for="(w, i) in previewWidgets" :key="'pw'+i">
 
-          <!-- 드롭존 (카드 앞) -->
-          <div @dragover="onDropZoneOver(i, $event)" @drop="onDrop(i, $event)"
-            style="height:8px;border-radius:4px;margin:2px 0;border:2px dashed transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;"
-            :style="dropZoneIdx===i?'height:30px;background:#e8f0fe;border-color:#1a73e8;':''">
-            <span v-if="dropZoneIdx===i" style="font-size:11px;color:#1a73e8;font-weight:600;pointer-events:none;">▼ 여기에 추가</span>
-          </div>
-
-          <!-- 위젯 카드 -->
-          <div draggable="true"
-            @dragstart="onPreviewDragStart(i, $event)"
-            @dragend="onDragEnd"
-            style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 14px;margin-bottom:0;overflow:hidden;cursor:grab;"
-            :style="dragFromPreviewIdx===i?'opacity:.4;':''">
-            <!-- 위젯 헤더 -->
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5f5f5;flex-wrap:wrap;">
-              <span style="font-size:13px;color:#ccc;cursor:grab;flex-shrink:0;">⠿</span>
-              <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">{{ wIcon(w.widgetType) }} {{ wLabel(w.widgetType) }}</span>
-              <span style="font-size:12px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
-              <span style="font-size:10px;color:#bbb;white-space:nowrap;">{{ w._area }} › {{ w._panelNm }}</span>
-              <button @click.stop="removePreviewItem(i)" style="border:none;background:none;color:#ccc;cursor:pointer;font-size:16px;padding:0 3px;line-height:1;" title="제거">×</button>
-            </div>
-
-          <!-- image_banner -->
-          <div v-if="w.widgetType==='image_banner'"
-            style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:28px 16px;text-align:center;color:#fff;display:flex;flex-direction:column;align-items:center;gap:8px;">
-            <div style="font-size:32px;">🖼</div>
-            <div style="font-size:14px;font-weight:700;letter-spacing:.3px;">{{ w.widgetNm }}</div>
-            <div v-if="w.clickTarget" style="font-size:11px;opacity:.8;background:rgba(255,255,255,.2);border-radius:10px;padding:3px 12px;">→ {{ w.clickTarget }}</div>
-          </div>
-
-          <!-- product_slider -->
-          <div v-else-if="w.widgetType==='product_slider'">
-            <div style="display:flex;gap:8px;overflow:hidden;">
-              <div v-for="n in 4" :key="n" style="flex:0 0 110px;border:1px solid #ececec;border-radius:8px;overflow:hidden;">
-                <div style="height:80px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);display:flex;align-items:center;justify-content:center;font-size:26px;">📦</div>
-                <div style="padding:7px 8px;">
-                  <div style="font-size:10px;color:#555;margin-bottom:2px;">상품명</div>
-                  <div style="font-size:12px;font-weight:700;color:#e8587a;">₩00,000</div>
-                </div>
-              </div>
-            </div>
-            <div v-if="w.clickTarget" style="font-size:10px;color:#aaa;margin-top:6px;text-align:right;">더보기 → {{ w.clickTarget }}</div>
-          </div>
-
-          <!-- product -->
-          <div v-else-if="w.widgetType==='product'" style="display:flex;gap:12px;align-items:flex-start;padding:4px 0;">
-            <div style="flex:0 0 88px;height:88px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px;">📦</div>
-            <div style="flex:1;">
-              <div style="font-size:11px;color:#aaa;margin-bottom:3px;">단품 상품</div>
-              <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:5px;">상품명</div>
-              <div style="font-size:15px;font-weight:800;color:#e8587a;">₩00,000</div>
-            </div>
-          </div>
-
-          <!-- cond_product -->
-          <div v-else-if="w.widgetType==='cond_product'">
-            <div style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 9px;margin-bottom:8px;display:inline-block;">🔍 조건 필터</div>
-            <div v-for="n in 3" :key="n" style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #f5f5f5;">
-              <div style="width:40px;height:40px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📦</div>
-              <div style="flex:1;">
-                <div style="font-size:11px;color:#444;margin-bottom:2px;">상품명 {{ n }}</div>
-                <div style="font-size:12px;font-weight:700;color:#e8587a;">₩00,000</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- chart_bar -->
-          <div v-else-if="w.widgetType==='chart_bar'">
-            <div style="display:flex;align-items:flex-end;gap:5px;height:90px;padding:0 4px;border-bottom:1px solid #eee;">
-              <div v-for="(h, ci) in [55,78,42,88,65,92,70]" :key="ci"
-                style="flex:1;border-radius:4px 4px 0 0;"
-                :style="'height:' + h + '%;background:linear-gradient(180deg,#667eea,#764ba2);'"></div>
-            </div>
-            <div style="display:flex;justify-content:space-around;margin-top:4px;">
-              <span v-for="d in ['월','화','수','목','금','토','일']" :key="d" style="font-size:9px;color:#aaa;">{{ d }}</span>
-            </div>
-          </div>
-
-          <!-- chart_line -->
-          <div v-else-if="w.widgetType==='chart_line'">
-            <svg viewBox="0 0 240 90" style="width:100%;height:90px;overflow:visible;">
-              <polyline points="0,70 34,50 68,62 102,22 136,38 170,14 204,28 240,20"
-                fill="none" stroke="#667eea" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-              <polyline points="0,70 34,50 68,62 102,22 136,38 170,14 204,28 240,20 240,90 0,90"
-                fill="#667eea" opacity=".1"/>
-            </svg>
-          </div>
-
-          <!-- chart_pie -->
-          <div v-else-if="w.widgetType==='chart_pie'" style="display:flex;align-items:center;gap:16px;">
-            <svg viewBox="0 0 100 100" style="width:90px;height:90px;flex-shrink:0;">
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#667eea" stroke-width="24" stroke-dasharray="72 28" stroke-dashoffset="25"/>
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#f6ad55" stroke-width="24" stroke-dasharray="17 83" stroke-dashoffset="-47"/>
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#68d391" stroke-width="24" stroke-dasharray="11 89" stroke-dashoffset="-64"/>
-            </svg>
-            <div>
-              <div v-for="(item,idx) in [['카테고리A','#667eea','72%'],['카테고리B','#f6ad55','17%'],['기타','#68d391','11%']]" :key="idx"
-                style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-                <div style="width:9px;height:9px;border-radius:50%;flex-shrink:0;" :style="'background:' + item[1] + ';'"></div>
-                <span style="font-size:11px;color:#555;">{{ item[0] }}</span>
-                <span style="font-size:11px;font-weight:700;color:#333;margin-left:auto;">{{ item[2] }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- text_banner -->
-          <div v-else-if="w.widgetType==='text_banner'"
-            style="background:#f8f9fa;border-left:4px solid #667eea;border-radius:0 8px 8px 0;padding:14px 16px;">
-            <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:5px;">{{ w.widgetNm }}</div>
-            <div style="font-size:12px;color:#666;line-height:1.7;">텍스트 배너 컨텐츠가 이 영역에 표시됩니다.</div>
-          </div>
-
-          <!-- info_card -->
-          <div v-else-if="w.widgetType==='info_card'"
-            style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:8px;padding:18px;display:flex;align-items:center;gap:14px;">
-            <div style="font-size:36px;">ℹ</div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:#1565c0;margin-bottom:4px;">{{ w.widgetNm }}</div>
-              <div style="font-size:11px;color:#1976d2;line-height:1.6;">정보 카드 컨텐츠 영역입니다.</div>
-            </div>
-          </div>
-
-          <!-- popup -->
-          <div v-else-if="w.widgetType==='popup'"
-            style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
-            <div style="background:#f5f5f5;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0e0e0;">
-              <span style="font-size:11px;font-weight:700;color:#555;">팝업</span>
-              <span style="font-size:16px;color:#aaa;">×</span>
-            </div>
-            <div style="padding:22px;text-align:center;">
-              <div style="font-size:28px;margin-bottom:8px;">💬</div>
-              <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:4px;">{{ w.widgetNm }}</div>
-            </div>
-          </div>
-
-          <!-- file -->
-          <div v-else-if="w.widgetType==='file'"
-            style="display:flex;align-items:center;gap:12px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:14px 16px;">
-            <span style="font-size:30px;">📎</span>
-            <div>
-              <div style="font-size:12px;font-weight:700;color:#333;">{{ w.widgetNm }}</div>
-              <div style="font-size:10px;color:#999;margin-top:2px;">파일 다운로드</div>
-            </div>
-          </div>
-
-          <!-- file_list -->
-          <div v-else-if="w.widgetType==='file_list'">
-            <div v-for="n in 3" :key="n" style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f0f0f0;">
-              <span style="font-size:18px;">📁</span>
-              <span style="font-size:11px;color:#555;flex:1;">파일명_{{ n }}.pdf</span>
-              <span style="font-size:10px;color:#aaa;">1.{{ n }}MB</span>
-            </div>
-          </div>
-
-          <!-- coupon -->
-          <div v-else-if="w.widgetType==='coupon'"
-            style="border:2px dashed #e8587a;border-radius:8px;padding:16px;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff5f7,#fce4ec);">
-            <div style="font-size:36px;">🎟</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:800;color:#c2185b;margin-bottom:3px;">{{ w.widgetNm }}</div>
-              <div style="font-size:11px;color:#e8587a;">쿠폰 발급 이벤트</div>
-            </div>
-            <div style="background:#e8587a;color:#fff;border-radius:8px;padding:10px 14px;font-size:12px;font-weight:700;white-space:nowrap;">쿠폰 받기</div>
-          </div>
-
-          <!-- html_editor -->
-          <div v-else-if="w.widgetType==='html_editor'"
-            style="background:#1e1e2e;border-radius:8px;padding:14px;font-family:monospace;font-size:11px;color:#a9b7c6;line-height:1.8;">
-            <span style="color:#cc7832;">&lt;div&gt;</span><br>
-            <span style="padding-left:14px;color:#a9b7c6;">&nbsp;&nbsp;HTML 컨텐츠 영역 ({{ w.widgetNm }})</span><br>
-            <span style="color:#cc7832;">&lt;/div&gt;</span>
-          </div>
-
-          <!-- event_banner -->
-          <div v-else-if="w.widgetType==='event_banner'"
-            style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:8px;padding:22px;text-align:center;color:#fff;">
-            <div style="font-size:26px;margin-bottom:8px;">🎉</div>
-            <div style="font-size:15px;font-weight:800;letter-spacing:.5px;margin-bottom:5px;">{{ w.widgetNm }}</div>
-            <div v-if="w.clickTarget" style="font-size:11px;opacity:.85;background:rgba(255,255,255,.2);border-radius:10px;padding:3px 12px;display:inline-block;">→ {{ w.clickTarget }}</div>
-          </div>
-
-          <!-- cache_banner -->
-          <div v-else-if="w.widgetType==='cache_banner'"
-            style="background:linear-gradient(135deg,#f6d365,#fda085);border-radius:8px;padding:18px;display:flex;align-items:center;gap:14px;color:#fff;">
-            <div style="font-size:36px;">💰</div>
-            <div>
-              <div style="font-size:12px;opacity:.85;margin-bottom:3px;">적립금 / 캐시</div>
-              <div style="font-size:20px;font-weight:800;">+0,000P</div>
-            </div>
-          </div>
-
-          <!-- widget_embed -->
-          <div v-else-if="w.widgetType==='widget_embed'"
-            style="border:2px dashed #a0aec0;border-radius:8px;padding:22px;text-align:center;background:#f7fafc;">
-            <div style="font-size:28px;margin-bottom:8px;">🧩</div>
-            <div style="font-size:13px;font-weight:700;color:#4a5568;margin-bottom:3px;">{{ w.widgetNm }}</div>
-            <div style="font-size:10px;color:#a0aec0;">외부 위젯 임베드 영역</div>
-          </div>
-
-          <!-- fallback -->
-          <div v-else style="background:#f5f5f5;border-radius:8px;padding:18px;text-align:center;color:#888;">
-            <div style="font-size:24px;margin-bottom:5px;">{{ wIcon(w.widgetType) }}</div>
-            <div style="font-size:12px;">{{ wLabel(w.widgetType) }}</div>
-          </div>
-
-          </div><!-- /위젯 카드 -->
-        </template>
-
-        <!-- 마지막 드롭존 -->
-        <div @dragover="onDropZoneOver(previewWidgets.length, $event)" @drop="onDrop(previewWidgets.length, $event)"
-          style="height:8px;border-radius:4px;margin:2px 0;border:2px dashed transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;"
-          :style="dropZoneIdx===previewWidgets.length?'height:30px;background:#e8f0fe;border-color:#1a73e8;':''">
-          <span v-if="dropZoneIdx===previewWidgets.length" style="font-size:11px;color:#1a73e8;font-weight:600;pointer-events:none;">▼ 여기에 추가</span>
-        </div>
-
-      </div>
-      </template><!-- /grid1 -->
-
-      <!-- ===== grid2 / grid3 / grid4 ===== -->
-      <template v-else-if="activeTab==='grid2'||activeTab==='grid3'||activeTab==='grid4'">
-        <div :style="{ display:'grid',
-          gridTemplateColumns: {
-            grid2: 'repeat(auto-fill,minmax(max(calc(50% - 4px),288px),1fr))',
-            grid3: 'repeat(auto-fill,minmax(max(calc(33.333% - 5.333px),230px),1fr))',
-            grid4: 'repeat(auto-fill,minmax(max(calc(25% - 6px),187px),1fr))'
-          }[activeTab],
-          gap: '8px' }">
-          <div v-for="(cell, ci) in gridCells[activeTab]" :key="ci"
+      <!-- ===== grid1 / grid2 / grid3 / grid4 =====  -->
+      <template v-if="GRID_COLS[activeTab]">
+        <div :style="{ display:'grid', gridTemplateColumns: autoGridCols, gap: '8px' }">
+          <template v-for="(cell, ci) in gridCells[activeTab]" :key="ci">
+          <div v-if="!showRealContent || cell.widget"
             @dragover.prevent="dropZoneIdx=ci"
             @dragleave="dropZoneIdx=-1"
             @drop="onCellDrop(activeTab, ci, $event)"
-            style="border-radius:8px;min-height:130px;overflow:hidden;transition:border .15s,background .15s;"
-            :style="cell.widget?'border:1px solid #e0e0e0;background:#fff;':dropZoneIdx===ci?'border:2px dashed #1a73e8;background:#e8f0fe;':'border:2px dashed #e0e0e0;background:#fafafa;'">
+            :style="[
+              cell.widget
+                ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e0e0e0;background:#fff;min-height:130px;')
+                : dropZoneIdx===ci ? 'border:2px dashed #1a73e8;background:#e8f0fe;min-height:60px;'
+                                   : 'border:2px dashed #e0e0e0;background:#fafafa;min-height:60px;'
+            ]"
+            style="border-radius:8px;overflow:hidden;transition:border .15s,background .15s;position:relative;">
             <!-- 위젯 있음 -->
             <template v-if="cell.widget">
-              <div :style="'height:4px;background:'+wColor(cell.widget.widgetType)+';'"></div>
-              <div style="padding:8px;overflow:hidden;">
-                <!-- 헤더 -->
-                <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
+              <!-- 관리자 헤더 (실제컨텐츠 OFF 시) -->
+              <template v-if="!showRealContent">
+                <div :style="'height:4px;background:'+wColor(cell.widget.widgetType)+';'"></div>
+                <div style="display:flex;align-items:center;gap:4px;padding:5px 8px 0;margin-bottom:4px;">
                   <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 4px;white-space:nowrap;flex-shrink:0;">{{ wIcon(cell.widget.widgetType) }} {{ wLabel(cell.widget.widgetType) }}</span>
                   <span style="font-size:10px;font-weight:600;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cell.widget.widgetNm }}</span>
                   <button @click="removeCellWidget(activeTab, ci)" style="border:none;background:none;color:#ccc;cursor:pointer;font-size:15px;padding:0;line-height:1;flex-shrink:0;">×</button>
                 </div>
-                <div style="font-size:9px;color:#bbb;margin-bottom:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cell.widget._area }} · {{ cell.widget._panelNm }}</div>
+                <div style="font-size:9px;color:#bbb;margin-bottom:4px;padding:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cell.widget._area }} · {{ cell.widget._panelNm }}</div>
+              </template>
+              <!-- 실제컨텐츠 ON 시 ×버튼만 -->
+              <template v-else>
+                <div style="position:relative;">
+                  <button @click="removeCellWidget(activeTab, ci)"
+                    style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">×</button>
+                </div>
+              </template>
+              <div :style="showRealContent?'padding:0':'padding:0 8px 8px'" style="overflow:hidden;">
                 <!-- 컨텐츠 -->
                 <div v-if="cell.widget.widgetType==='image_banner'" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:6px;padding:14px 10px;text-align:center;color:#fff;">
                   <div style="font-size:20px;">🖼</div><div style="font-size:10px;font-weight:700;margin-top:4px;">{{ cell.widget.widgetNm }}</div>
@@ -958,13 +752,18 @@ window.Sample14 = {
               </div>
             </template>
             <!-- 빈 셀 -->
-            <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:130px;">
+            <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:60px;">
               <div style="font-size:22px;margin-bottom:5px;opacity:.25;">{{ dropZoneIdx===ci ? '📥' : '+' }}</div>
               <div style="font-size:10px;color:#ccc;">{{ dropZoneIdx===ci ? '여기에 놓기' : '드래그하여 추가' }}</div>
             </div>
           </div>
+          </template><!-- /cell -->
         </div>
-      </template><!-- /grid2/3/4 -->
+      </template><!-- /grid1~4 -->
+
+      </div><!-- /device frame -->
+      </div><!-- /viewport wrapper -->
+      </template><!-- /뷰포트 래퍼 -->
 
       <!-- ===== dashboard ===== -->
       <template v-else-if="activeTab==='dashboard'">

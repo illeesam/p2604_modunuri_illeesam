@@ -103,8 +103,8 @@
     ],
 
     widgetLibs: (function(){
-      const D = (o) => Object.assign({ clickAction:'none', clickTarget:'', imageUrl:'', altText:'', linkUrl:'', productIds:'', chartTitle:'', chartLabels:'', chartValues:'', textContent:'', bgColor:'#ffffff', textColor:'#222222', infoTitle:'', infoBody:'', popupWidth:600, popupHeight:400, fileUrl:'', fileLabel:'', couponCode:'', couponDesc:'', htmlContent:'', eventId:'', cacheDesc:'', cacheAmount:0, embedCode:'', fileListJson:'[]', condSite:'', condUser:'', condCategory:'', condBrand:'', condSort:'newest', condLimit:8, status:'활성' }, o);
-      return [
+      const D = (o) => Object.assign({ clickAction:'none', clickTarget:'', imageUrl:'', altText:'', linkUrl:'', productIds:'', chartTitle:'', chartLabels:'', chartValues:'', textContent:'', bgColor:'#ffffff', textColor:'#222222', infoTitle:'', infoBody:'', popupWidth:600, popupHeight:400, fileUrl:'', fileLabel:'', couponCode:'', couponDesc:'', htmlContent:'', eventId:'', cacheDesc:'', cacheAmount:0, embedCode:'', fileListJson:'[]', condSite:'', condUser:'', condCategory:'', condBrand:'', condSort:'newest', condLimit:8, status:'활성', usedPaths:[] }, o);
+      const libs = [
         /* ── image_banner 1~10 ── */
         D({ libId:  1, widgetType:'image_banner',   name:'봄맞이 세일 메인배너',     desc:'홈 상단 봄 시즌 대표 배너',      tags:'봄,메인,배너',      regDate:'2026-01-05', clickAction:'navigate', clickTarget:'/products', imageUrl:'/img/spring-main.jpg',    altText:'봄맞이 세일',      linkUrl:'/products' }),
         D({ libId:  2, widgetType:'image_banner',   name:'여름 시즌 프리뷰 배너',    desc:'여름 신상 사전공개 배너',        tags:'여름,시즌,배너',     regDate:'2026-01-10', clickAction:'navigate', clickTarget:'/summer',   imageUrl:'/img/summer-preview.jpg', altText:'여름 프리뷰',      linkUrl:'/summer' }),
@@ -293,6 +293,31 @@
         D({ libId:169, widgetType:'widget_embed',   name:'구글 폼 설문 임베드',       desc:'고객 설문 구글 폼 임베드',       tags:'설문,구글폼,임베드', regDate:'2026-03-02', embedCode:'<iframe src="https://docs.google.com/forms/d/e/example/viewform?embedded=true" width="100%" height="400" frameborder="0">로드 중...</iframe>' }),
         D({ libId:170, widgetType:'widget_embed',   name:'카카오채널 상담 위젯',      desc:'카카오 채널 상담 버튼 임베드',   tags:'카카오,상담,임베드', regDate:'2026-03-07', embedCode:'<a href="https://pf.kakao.com/_shopjoy" style="display:inline-flex;align-items:center;gap:8px;background:#fee500;color:#333;padding:10px 20px;border-radius:20px;text-decoration:none;font-weight:700;">💬 카카오채널 상담</a>' }),
       ];
+      /* ── 사용위치경로 샘플 데이터 ── */
+      const pathMap = {
+        1:   ['홈 > 메인배너'],
+        2:   ['홈 > 메인배너', '이벤트 > 여름특집'],
+        3:   ['카테고리 > 여성 > 상단배너'],
+        5:   ['홈 > VIP존'],
+        11:  ['홈 > 신상품', '마이페이지 > 추천'],
+        12:  ['홈 > 베스트', '카테고리 > 전체'],
+        21:  ['홈 > 추천상품'],
+        31:  ['홈 > 판매통계차트'],
+        41:  ['이벤트 > 봄맞이 > 텍스트배너'],
+        51:  ['홈 > 오늘의카드'],
+        61:  ['홈 > 팝업', '이벤트 > 팝업존'],
+        71:  ['마이페이지 > 파일다운로드'],
+        81:  ['홈 > 카탈로그'],
+        91:  ['홈 > 쿠폰존', '마이페이지 > 쿠폰'],
+        101: ['홈 > HTML존'],
+        111: ['이벤트 > 봄맞이'],
+        121: ['마이페이지 > 캐시존'],
+        161: ['홈 > 영상섹션'],
+        162: ['SNS > 인스타피드'],
+        163: ['홈 > 매장안내'],
+      };
+      libs.forEach(lib => { if (pathMap[lib.libId]) lib.usedPaths = pathMap[lib.libId]; });
+      return libs;
     })(),
 
     displays: (() => {

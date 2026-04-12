@@ -18,7 +18,7 @@
     product:   [{ id: 'ecCategoryMng', label: '카테고리관리' }, { id: 'ecProdMng', label: '상품관리' }],
     order:     [{ id: 'ecOrderMng',    label: '주문관리' }, { id: 'ecClaimMng', label: '클레임관리' }, { id: 'ecDlivMng', label: '배송관리' }],
     promotion: [{ id: 'ecCouponMng',   label: '쿠폰관리' }, { id: 'ecCacheMng', label: '캐쉬관리' }, { id: 'ecEventMng', label: '이벤트관리' }],
-    display:   [{ id: 'ecDispAreaPreview', label: '전시영역미리보기' }, { id: 'ecDispAreaMng', label: '전시영역관리' }, { id: 'ecDispPanelMng', label: '전시패널관리' }, { id: 'ecDispWidgetLibMng', label: '전시위젯라이브러리' }],
+    display:   [{ id: 'ecDispAreaPreview', label: '전시영역미리보기' }, { id: 'ecDispAreaMng', label: '전시영역관리' }, { id: 'ecDispPanelMng', label: '전시패널관리' }, { id: 'ecDispWidgetLibMng', label: '전시위젯Lib' }, { id: 'ecDispWidgetLibPreview', label: '전시위젯Lib미리보기' }],
     customer:  [{ id: 'ecCustInfoMng', label: '고객종합정보' }, { id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
     system:    [{ id: 'sySiteMng', label: '사이트관리' }, { id: 'syCodeMng', label: '공통코드관리' }, { id: 'syBrandMng', label: '브랜드관리' },
                 { id: 'syAttachMng', label: '첨부관리' }, { id: 'syTemplateMng', label: '템플릿관리' },
@@ -86,6 +86,7 @@
         'ecDispPanelMng':'disp-panel-mng', 'ecDispAreaPreview':'disp-area-preview', 'ecDispAreaMng':'disp-area-mng',
         'ecDispPanelDtl':'disp-panel-dtl',
         'ecDispWidgetLibMng':'disp-widget-lib-mng', 'ecDispWidgetLibDtl':'disp-widget-lib-dtl',
+        'ecDispWidgetLibPreview':'disp-widget-lib-preview',
         'ecEventMng':'event-mng', 'ecEventDtl':'event-dtl',
         'ecCustInfoMng':'cust-info-mng',
         'syContactMng':'contact-mng', 'syContactDtl':'contact-dtl',
@@ -620,8 +621,9 @@
         <disp-area-preview v-else-if="page==='ecDispAreaPreview'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <disp-area-mng     v-else-if="page==='ecDispAreaMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" />
         <disp-panel-dtl      v-else-if="page==='ecDispPanelDtl'"      :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
-        <disp-widget-lib-mng v-else-if="page==='ecDispWidgetLibMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
-        <disp-widget-lib-dtl v-else-if="page==='ecDispWidgetLibDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
+        <disp-widget-lib-mng     v-else-if="page==='ecDispWidgetLibMng'"     :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <disp-widget-lib-dtl     v-else-if="page==='ecDispWidgetLibDtl'"     :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
+        <disp-widget-lib-preview v-else-if="page==='ecDispWidgetLibPreview'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <event-mng   v-else-if="page==='ecEventMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <event-dtl   v-else-if="page==='ecEventDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <cust-info-mng v-else-if="page==='ecCustInfoMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -975,8 +977,10 @@
   .component('DispAreaPreview',   window.DispAreaPreview)
   .component('DispAreaMng',       window.DispAreaMng)
   .component('DispArea',          window.DispArea)
-  .component('DispWidgetLibMng',  window.DispWidgetLibMng)
-  .component('DispWidgetLibDtl',  window.DispWidgetLibDtl)
+  .component('DispWidgetLibMng',     window.DispWidgetLibMng)
+  .component('DispWidgetLibDtl',     window.DispWidgetLibDtl)
+  .component('DispWidgetLibPreview', window.DispWidgetLibPreview)
+  .component('DispWidgetLib',        window.DispWidgetLib)
   .component('EventMng',   window.EventMng)
   .component('EventDtl',   window.EventDtl)
   .component('CustInfoMng', window.CustInfoMng)

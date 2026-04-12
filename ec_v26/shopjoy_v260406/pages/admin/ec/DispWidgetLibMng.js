@@ -122,7 +122,7 @@ window.DispWidgetLibMng = {
   template: /* html */`
 <div>
   <div class="page-title">
-    전시위젯라이브러리
+    전시위젯Lib
     <span style="font-size:13px;font-weight:400;color:#888;">위젯 유형별 리소스 등록·재활용</span>
   </div>
 
@@ -171,7 +171,9 @@ window.DispWidgetLibMng = {
           <th style="width:160px;">위젯 유형</th>
           <th>라이브러리명</th>
           <th>내용 요약</th>
-          <th style="width:120px;">태그</th>
+          <th style="width:140px;">사용위치경로</th>
+          <th style="width:60px;text-align:center;">적용수</th>
+          <th style="width:100px;">태그</th>
           <th style="width:60px;">상태</th>
           <th style="width:90px;">등록일</th>
           <th style="width:80px;text-align:center;">사이트</th>
@@ -180,7 +182,7 @@ window.DispWidgetLibMng = {
       </thead>
       <tbody>
         <tr v-if="pageList.length===0">
-          <td colspan="10" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
+          <td colspan="11" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
         </tr>
         <tr v-for="(d, idx) in pageList" :key="d.libId"
           :style="selectedId===d.libId ? 'background:#fff8f8;' : ''"
@@ -195,6 +197,21 @@ window.DispWidgetLibMng = {
           </td>
           <td style="font-weight:600;font-size:13px;">{{ d.name }}</td>
           <td style="font-size:12px;color:#777;">{{ contentSummary(d) }}</td>
+          <td style="font-size:11px;">
+            <span v-if="!d.usedPaths || !d.usedPaths.length" style="color:#ccc;">-</span>
+            <div v-else style="display:flex;flex-direction:column;gap:2px;">
+              <span v-for="(p,pi) in d.usedPaths" :key="pi"
+                style="display:inline-block;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:1px 6px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;"
+                :title="p">{{ p }}</span>
+            </div>
+          </td>
+          <td style="text-align:center;">
+            <span v-if="d.usedPaths && d.usedPaths.length"
+              style="display:inline-block;min-width:24px;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700;">
+              {{ d.usedPaths.length }}
+            </span>
+            <span v-else style="color:#d1d5db;font-size:12px;">0</span>
+          </td>
           <td style="font-size:11px;color:#aaa;">{{ d.tags || '-' }}</td>
           <td style="text-align:center;"><span class="badge" :class="statusCls(d.status)">{{ d.status }}</span></td>
           <td style="text-align:center;font-size:12px;color:#aaa;">{{ d.regDate }}</td>

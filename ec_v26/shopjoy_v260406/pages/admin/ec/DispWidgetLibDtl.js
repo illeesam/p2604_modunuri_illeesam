@@ -30,6 +30,7 @@ window.DispWidgetLibDtl = {
     /* ── 폼 초기값 ── */
     const makeForm = () => ({
       libId: null, name: '', widgetType: 'image_banner', desc: '', tags: '', status: '활성',
+      usedPaths: [],
       regDate: new Date().toISOString().slice(0, 10),
       /* 위젯 공통 */
       clickAction: 'none', clickTarget: '',
@@ -306,6 +307,22 @@ window.DispWidgetLibDtl = {
             <input v-model="form.tags" class="form-control" placeholder="봄,배너,시즌" style="margin:0;" />
           </div>
         </div>
+      </div>
+
+      <!-- 사용위치경로 -->
+      <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;">
+          사용위치경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 사용되는 경로 (예: 홈 > 메인배너)</span>
+        </div>
+        <div v-for="(path, pi) in form.usedPaths" :key="pi"
+          style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+          <input :value="path" @input="form.usedPaths[pi]=$event.target.value"
+            class="form-control" placeholder="홈 > 메인배너" style="margin:0;flex:1;font-size:12px;" />
+          <button @click="form.usedPaths.splice(pi,1)"
+            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0;">✕</button>
+        </div>
+        <button @click="form.usedPaths.push('')"
+          style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;cursor:pointer;font-size:12px;margin-top:2px;">+ 경로 추가</button>
       </div>
 
       <!-- 클릭 액션 (html_editor·file_list·embed 제외) -->
