@@ -10,6 +10,19 @@ window.MyClaim = {
     const claimPager = reactive({ page: 1, size: 50 });
     const paginate = myStore.paginate;
 
+    const { inRange, onDateSearch } = window.myDateFilterHelper();
+    const { ref: _r, computed: _c } = Vue;
+    const claimStatusFilter = _r([]);
+    const toggleClaimStatus = (step) => {
+      const idx = claimStatusFilter.value.indexOf(step);
+      if (idx === -1) claimStatusFilter.value.push(step);
+      else claimStatusFilter.value.splice(idx, 1);
+    };
+    const dateFilteredClaims = _c(() => filteredClaims.value
+      .filter(c => inRange(c.requestDate))
+      .filter(c => !claimStatusFilter.value.length || claimStatusFilter.value.includes(c.status))
+    );
+
     const authUser = computed(() => window.shopjoyAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
@@ -56,7 +69,8 @@ window.MyClaim = {
 
     return {
       myStore, claims, claimFilter, filteredClaims, orders,
-      claimPager, paginate,
+      claimPager, paginate, dateFilteredClaims, onDateSearch,
+      claimStatusFilter, toggleClaimStatus,
       authUser, findProduct, openProductModal, openCustomerModal, openOrderModal,
       openTracking2, cancelClaim,
     };
@@ -65,9 +79,9 @@ window.MyClaim = {
 <MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
 
   <!-- 유형 필터 -->
-  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button v-for="f in ['전체','취소','반품','교환']" :key="f"
-      @click="claimFilter=f;claimPager.page=1"
+      @click="claimFilter=f;claimStatusFilter.splice(0);claimPager.page=1"
       style="padding:6px 16px;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.15s;"
       :style="claimFilter===f
         ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
@@ -78,10 +92,53 @@ window.MyClaim = {
     </button>
   </div>
 
-  <PagerHeader :total="filteredClaims.length" :pager="claimPager" />
-  <div v-if="!filteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">해당 내역이 없습니다.</div>
+  <!-- 처리 흐름 (취소/반품/교환) -->
+  <template v-for="claimType in (claimFilter==='전체' ? ['취소','반품','교환'] : [claimFilter])" :key="claimType">
+    <div v-if="claims.filter(c=>c.type===claimType).length>0"
+      style="background:#f4f5f7;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;flex-wrap:nowrap;">
+        <!-- 유형 배지 -->
+        <span style="font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;flex-shrink:0;"
+          :style="'background:' + myStore.CLAIM_TYPE_COLOR[claimType]">{{ claimType }}</span>
+        <span style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
+        <!-- 흐름 단계 -->
+        <template v-for="(step, si) in myStore.CLAIM_FLOWS[claimType]" :key="step">
+          <button @click="claims.filter(c=>c.type===claimType&&c.status===step).length>0 && (toggleClaimStatus(step), claimPager.page=1)"
+            style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;"
+            :style="claimStatusFilter.includes(step)
+              ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;'
+              : claims.filter(c=>c.type===claimType&&c.status===step).length>0
+                ? 'background:var(--bg-base);border-color:var(--border);cursor:pointer;'
+                : 'background:var(--bg-card);border-color:#e5e7eb;cursor:default;opacity:0.72;'">
+            <span style="font-size:0.7rem;font-weight:600;"
+              :style="claimStatusFilter.includes(step) ? 'color:#fff;' : claims.filter(c=>c.type===claimType&&c.status===step).length>0 ? 'color:var(--text-primary);' : 'color:#9ca3af;'">
+              {{ step }}
+            </span>
+            <span style="font-size:0.65rem;font-weight:800;padding:0px 5px;border-radius:8px;"
+              :style="claimStatusFilter.includes(step)
+                ? 'background:rgba(255,255,255,0.25);color:#fff;'
+                : claims.filter(c=>c.type===claimType&&c.status===step).length>0
+                  ? 'background:var(--blue-dim);color:var(--blue);'
+                  : 'color:#9ca3af;'">
+              {{ claims.filter(c=>c.type===claimType&&c.status===step).length || 0 }}
+            </span>
+          </button>
+          <span v-if="si < myStore.CLAIM_FLOWS[claimType].length-1"
+            style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
+        </template>
+        <!-- 필터해제 -->
+        <button v-if="claimStatusFilter.length"
+          @click="claimStatusFilter.splice(0)"
+          style="margin-left:4px;font-size:0.68rem;padding:2px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg-base);color:var(--text-secondary);cursor:pointer;flex-shrink:0;">✕</button>
+      </div>
+    </div>
+  </template>
 
-  <div v-for="c in paginate(filteredClaims, claimPager)" :key="c.claimId"
+  <MyDateFilter @search="onDateSearch" @reset="claimStatusFilter.splice(0)" />
+  <PagerHeader :total="dateFilteredClaims.length" :pager="claimPager" />
+  <div v-if="!dateFilteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">해당 내역이 없습니다.</div>
+
+  <div v-for="c in paginate(dateFilteredClaims, claimPager)" :key="c.claimId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
 
     <!-- 카드 헤더 -->
@@ -119,9 +176,9 @@ window.MyClaim = {
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[c.type]" :key="step">
           <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
             <div style="width:10px;height:10px;border-radius:50%;margin-bottom:4px;"
-              :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= si ? 'background:var(--blue);' : 'background:var(--border);'"></div>
+              :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= si ? 'background:'+myStore.CLAIM_TYPE_COLOR[c.type] : 'background:var(--border);'"></div>
             <div style="font-size:0.65rem;text-align:center;white-space:nowrap;font-weight:600;"
-              :style="c.status===step ? 'color:var(--blue);font-weight:800;'
+              :style="c.status===step ? 'color:'+myStore.CLAIM_TYPE_COLOR[c.type]+';font-weight:800;'
                 : myStore.CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'color:var(--text-secondary);'
                 : 'color:var(--text-muted);'">{{ step }}</div>
             <button v-if="c.trackingNo && step==='수거완료' && myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= myStore.CLAIM_FLOWS[c.type].indexOf('수거완료')"
@@ -132,7 +189,7 @@ window.MyClaim = {
               style="margin-top:3px;padding:2px 6px;border-radius:4px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">📦 교환</button>
           </div>
           <div v-if="si < myStore.CLAIM_FLOWS[c.type].length-1" style="height:2px;flex:1;margin-bottom:16px;"
-            :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'background:var(--blue);' : 'background:var(--border);'"></div>
+            :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'background:'+myStore.CLAIM_TYPE_COLOR[c.type] : 'background:var(--border);'"></div>
         </template>
       </div>
     </div>

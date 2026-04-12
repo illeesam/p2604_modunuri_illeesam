@@ -591,6 +591,7 @@
   .component('Order',   window.Order)
   .component('Contact', window.Contact)
   .component('Faq',     window.Faq)
+  .component('MyDateFilter', window.MyDateFilter)
   .component('MyOrder',   window.MyOrder)
   .component('MyClaim',   window.MyClaim)
   .component('MyCoupon',  window.MyCoupon)

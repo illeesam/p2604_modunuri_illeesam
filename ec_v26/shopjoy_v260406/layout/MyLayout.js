@@ -1,5 +1,68 @@
 /* ShopJoy - My Page 공통 레이아웃 (헤더 + 탭바) */
 
+/* ── 날짜 필터 공통 헬퍼 ── */
+window.myDateFilterHelper = () => {
+  const { ref, computed, reactive } = Vue;
+  const today = new Date();
+  const fmt = d => d.toISOString().slice(0, 10);
+  const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };
+  const dateRange = reactive({ start: calcStart(6), end: fmt(today) });
+  const inRange = dateStr => {
+    const d = String(dateStr || '').slice(0, 10).replace(/\./g, '-').replace(/ .*/g, '');
+    return (!dateRange.start || d >= dateRange.start) && (!dateRange.end || d <= dateRange.end);
+  };
+  const onDateSearch = ({ startDate, endDate }) => { dateRange.start = startDate; dateRange.end = endDate; };
+  return { dateRange, inRange, onDateSearch };
+};
+
+/* ── 날짜 범위 필터 UI 컴포넌트 ── */
+window.MyDateFilter = {
+  emits: ['search', 'reset'],
+  setup(props, { emit }) {
+    const { ref } = Vue;
+    const today = new Date();
+    const fmt = d => d.toISOString().slice(0, 10);
+    const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };
+    const PERIODS = [
+      { label: '1달', value: 1 }, { label: '2달', value: 2 }, { label: '3달', value: 3 },
+      { label: '6달', value: 6 }, { label: '1년', value: 12 }, { label: '1년6개월', value: 18 },
+      { label: '2년', value: 24 }, { label: '3년', value: 36 },
+    ];
+    const period   = ref(6);
+    const startDate = ref(calcStart(6));
+    const endDate   = ref(fmt(today));
+    const onPeriodChange = () => { startDate.value = calcStart(period.value); endDate.value = fmt(today); };
+    const search = () => emit('search', { startDate: startDate.value, endDate: endDate.value });
+    const onReset = () => {
+      period.value = 6;
+      startDate.value = calcStart(6);
+      endDate.value = fmt(today);
+      emit('search', { startDate: startDate.value, endDate: endDate.value });
+      emit('reset');
+    };
+    return { period, startDate, endDate, PERIODS, onPeriodChange, search, onReset };
+  },
+  template: `
+<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <span style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);white-space:nowrap;">등록기간</span>
+    <input type="date" v-model="startDate"
+      style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-base);color:var(--text-primary);font-size:0.82rem;cursor:pointer;" />
+    <span style="font-size:0.82rem;color:var(--text-muted);">~</span>
+    <input type="date" v-model="endDate"
+      style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-base);color:var(--text-primary);font-size:0.82rem;cursor:pointer;" />
+    <select v-model="period" @change="onPeriodChange"
+      style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-base);color:var(--text-primary);font-size:0.82rem;cursor:pointer;">
+      <option v-for="p in PERIODS" :key="p.value" :value="p.value">{{ p.label }}</option>
+    </select>
+    <button @click="search"
+      style="padding:6px 18px;border-radius:6px;border:none;background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">검색</button>
+    <button @click="onReset"
+      style="padding:6px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg-base);color:var(--text-secondary);font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">초기화</button>
+  </div>
+</div>`
+};
+
 /* ── 공통 페이저 컴포넌트 (My 탭 전체에서 공유) ── */
 window.PagerHeader = {
   props: ['total', 'pager'],

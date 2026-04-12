@@ -121,6 +121,50 @@ window.MyOrder = {
       myStore.customerModal.show = true;
     };
 
+    /* ── 리뷰 ── */
+    const reviews = reactive({});
+    const reviewModal = reactive({ show: false, orderId: '', itemIdx: 0, item: null, rating: 5, text: '', isEdit: false, files: [] });
+    const onReviewFileChange = (e) => {
+      const selected = Array.from(e.target.files || []);
+      reviewModal.files = [...reviewModal.files, ...selected].slice(0, 5);
+      e.target.value = '';
+    };
+    const removeReviewFile = (idx) => { reviewModal.files.splice(idx, 1); };
+    const openReviewModal = (orderId, itemIdx, item) => {
+      const key = `${orderId}_${itemIdx}`;
+      const existing = reviews[key];
+      reviewModal.show = true; reviewModal.orderId = orderId; reviewModal.itemIdx = itemIdx;
+      reviewModal.item = item; reviewModal.rating = existing ? existing.rating : 5;
+      reviewModal.text = existing ? existing.text : ''; reviewModal.isEdit = !!existing;
+      reviewModal.files = existing ? (existing.files || []) : [];
+    };
+    const submitReview = () => {
+      if (!reviewModal.text.trim()) { props.showToast('리뷰 내용을 입력해주세요.', 'error'); return; }
+      const key = `${reviewModal.orderId}_${reviewModal.itemIdx}`;
+      reviews[key] = { rating: reviewModal.rating, text: reviewModal.text, date: new Date().toISOString().slice(0, 10), files: reviewModal.files.map(f => f.name) };
+      const order = orders.value.find(o => o.orderId === reviewModal.orderId);
+      if (order && order.status === '배송완료') {
+        const allReviewed = order.items.every((_, idx) => reviews[`${reviewModal.orderId}_${idx}`]);
+        if (allReviewed) myStore.setOrderStatus(reviewModal.orderId, '구매확정');
+      }
+      reviewModal.show = false;
+      props.showToast(reviewModal.isEdit ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다! 감사합니다 😊', 'success');
+    };
+    const getReview = (orderId, itemIdx) => reviews[`${orderId}_${itemIdx}`] || null;
+
+    const { inRange, onDateSearch } = window.myDateFilterHelper();
+    const { computed: _c } = Vue;
+    const flowStatusFilter = ref([]);
+    const toggleFlowStatus = (status) => {
+      const idx = flowStatusFilter.value.indexOf(status);
+      if (idx === -1) flowStatusFilter.value.push(status);
+      else flowStatusFilter.value.splice(idx, 1);
+    };
+    const dateFilteredOrders = _c(() => orders.value
+      .filter(o => inRange(o.orderDate))
+      .filter(o => !flowStatusFilter.value.length || flowStatusFilter.value.includes(o.status))
+    );
+
     onMounted(async () => {
       await myStore.loadOrders();
       myStore.loadClaims();
@@ -128,8 +172,9 @@ window.MyOrder = {
     });
 
     return {
-      myStore, orders, claimsByOrderId,
+      myStore, orders, claimsByOrderId, dateFilteredOrders, onDateSearch,
       orderPager, paginate,
+      flowStatusFilter, toggleFlowStatus,
       flowHelpOpen, helpTab,
       openTracking, openTracking2, showOrderPayBreakdown,
       cancelOrder, confirmPurchase,
@@ -137,46 +182,51 @@ window.MyOrder = {
       claimModal, claimShippingFee, applicableCoupons, claimSelectedCoupon, claimFinalFee, claimModalProduct,
       openClaimModal, submitClaimModal,
       authUser, findProduct, openProductModal, openCustomerModal,
+      reviews, reviewModal, openReviewModal, submitReview, getReview, onReviewFileChange, removeReviewFile,
     };
   },
   template: /* html */ `
 <MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
 
-  <!-- 주문 상태 흐름 차트 -->
-  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;overflow-x:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;">
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;">주문 처리 흐름</div>
-      <button type="button" @click="flowHelpOpen=true" aria-label="도움말"
-        style="flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-base);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      </button>
-    </div>
-    <div style="display:flex;align-items:center;min-width:540px;">
+  <!-- 주문 처리 흐름 (토글 필터) -->
+  <div style="background:#f4f5f7;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;flex-wrap:nowrap;">
+      <span style="font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#16a34a;flex-shrink:0;">주문</span>
+      <span style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
       <template v-for="(step, si) in myStore.ORDER_FLOW" :key="step.status">
-        <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
-          <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:6px;"
-            :style="orders.filter(o=>o.status===step.status).length>0
-              ? 'background:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.25);'
-              : 'background:var(--bg-base);border:2px solid var(--border);'">
-            {{ step.icon }}
-          </div>
-          <div style="font-size:0.72rem;font-weight:600;text-align:center;white-space:nowrap;"
-            :style="orders.filter(o=>o.status===step.status).length>0 ? 'color:var(--blue);' : 'color:var(--text-muted);'">
+        <button @click="orders.filter(o=>o.status===step.status).length>0 && (toggleFlowStatus(step.status), orderPager.page=1)"
+          style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;"
+          :style="flowStatusFilter.includes(step.status)
+            ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;'
+            : orders.filter(o=>o.status===step.status).length>0
+              ? 'background:var(--bg-card);border-color:var(--border);cursor:pointer;'
+              : 'background:transparent;border-color:transparent;opacity:0.35;cursor:default;'">
+          <span style="font-size:0.7rem;font-weight:700;"
+            :style="flowStatusFilter.includes(step.status) ? 'color:#fff;' : orders.filter(o=>o.status===step.status).length>0 ? 'color:var(--text-primary);' : 'color:var(--text-muted);'">
             {{ step.label || step.status }}
-          </div>
-          <div v-if="orders.filter(o=>o.status===step.status).length>0" style="font-size:0.68rem;font-weight:700;color:var(--blue);margin-top:2px;">
-            {{ orders.filter(o=>o.status===step.status).length }}건
-          </div>
-        </div>
-        <div v-if="si < myStore.ORDER_FLOW.length-1" style="font-size:1rem;color:var(--border);flex-shrink:0;margin:0 2px;padding-bottom:20px;">›</div>
+          </span>
+          <span v-if="orders.filter(o=>o.status===step.status).length>0"
+            style="font-size:0.65rem;font-weight:800;padding:0px 5px;border-radius:8px;"
+            :style="flowStatusFilter.includes(step.status) ? 'background:rgba(255,255,255,0.25);color:#fff;' : 'background:var(--blue-dim);color:var(--blue);'">
+            {{ orders.filter(o=>o.status===step.status).length }}
+          </span>
+        </button>
+        <span v-if="si < myStore.ORDER_FLOW.length-1" style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
       </template>
+      <button v-if="flowStatusFilter.length" @click="flowStatusFilter.splice(0)"
+        style="margin-left:4px;font-size:0.68rem;padding:2px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg-base);color:var(--text-secondary);cursor:pointer;flex-shrink:0;">✕</button>
+      <button type="button" @click="flowHelpOpen=true" aria-label="도움말"
+        style="margin-left:auto;flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-base);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </button>
     </div>
   </div>
 
-  <PagerHeader :total="orders.length" :pager="orderPager" />
-  <div v-if="!orders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">주문 내역이 없습니다.</div>
+  <MyDateFilter @search="onDateSearch" @reset="flowStatusFilter.splice(0)" />
+  <PagerHeader :total="dateFilteredOrders.length" :pager="orderPager" />
+  <div v-if="!dateFilteredOrders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">주문 내역이 없습니다.</div>
 
-  <div v-for="o in paginate(orders, orderPager)" :key="o.orderId"
+  <div v-for="o in paginate(dateFilteredOrders, orderPager)" :key="o.orderId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
 
     <!-- 주문 헤더 -->
@@ -331,9 +381,23 @@ window.MyOrder = {
               #{{ findProduct(item.prodNm).productId }}
             </button>
           </div>
-          <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">{{ item.color }} / {{ item.size }} / {{ item.qty }}개</div>
+          <div v-if="getReview(o.orderId, iix)" style="margin-top:3px;display:flex;align-items:center;gap:4px;">
+            <span style="font-size:0.72rem;color:#f59e0b;">{{ '★'.repeat(getReview(o.orderId,iix).rating) }}{{ '☆'.repeat(5-getReview(o.orderId,iix).rating) }}</span>
+            <span style="font-size:0.7rem;color:var(--text-muted);">{{ getReview(o.orderId,iix).text.slice(0,20) }}{{ getReview(o.orderId,iix).text.length>20?'…':'' }}</span>
+          </div>
         </div>
-        <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
+          <button v-if="o.status==='배송완료' || o.status==='구매확정'"
+            @click="openReviewModal(o.orderId, iix, item)"
+            style="font-size:0.7rem;padding:3px 9px;border-radius:6px;border:1.5px solid;cursor:pointer;font-weight:700;white-space:nowrap;"
+            :style="getReview(o.orderId,iix)
+              ? 'border-color:#6366f1;background:#eef2ff;color:#6366f1;'
+              : 'border-color:#22c55e;background:#f0fdf4;color:#16a34a;'">
+            {{ getReview(o.orderId,iix) ? '리뷰수정' : '리뷰작성' }}
+          </button>
+        </div>
       </div>
       <div v-if="item.productCoupon && item.productCoupon.discount"
         style="margin:1px 0 4px 46px;padding:3px 8px;border-radius:5px;font-size:0.68rem;background:var(--bg-base);display:inline-flex;align-items:center;gap:4px;">
@@ -402,6 +466,72 @@ window.MyOrder = {
 
   <!-- ── Teleport 모달들 ── -->
   <Teleport to="body">
+
+  <!-- 리뷰 작성/수정 모달 -->
+  <div v-if="reviewModal.show" @click.self="reviewModal.show=false"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);" @click.stop>
+      <!-- 헤더 -->
+      <div style="padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">{{ reviewModal.isEdit ? '리뷰 수정' : '리뷰 작성' }}</div>
+          <div v-if="reviewModal.item" style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+            <span>{{ reviewModal.item.emoji }} {{ reviewModal.item.prodNm }}</span>
+            <span v-if="findProduct(reviewModal.item.prodNm)"
+              style="font-size:0.7rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);font-weight:600;line-height:1.7;">
+              #{{ findProduct(reviewModal.item.prodNm).productId }}
+            </span>
+            <span style="color:var(--border);">·</span>
+            <span>{{ reviewModal.item.color }} / {{ reviewModal.item.size }}</span>
+          </div>
+        </div>
+        <button @click="reviewModal.show=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);">✕</button>
+      </div>
+      <!-- 별점 -->
+      <div style="padding:18px 20px 0;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">별점</div>
+        <div style="display:flex;gap:6px;margin-bottom:16px;">
+          <button v-for="s in [1,2,3,4,5]" :key="s" @click="reviewModal.rating=s"
+            style="background:none;border:none;cursor:pointer;font-size:1.8rem;padding:0;line-height:1;transition:transform 0.1s;"
+            :style="s<=reviewModal.rating ? 'color:#f59e0b;' : 'color:#d1d5db;'">★</button>
+          <span style="margin-left:6px;font-size:0.85rem;font-weight:700;color:var(--text-secondary);align-self:center;">
+            {{ ['','매우 불만족','불만족','보통','만족','매우 만족'][reviewModal.rating] }}
+          </span>
+        </div>
+        <!-- 리뷰 텍스트 -->
+        <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">리뷰 내용</div>
+        <textarea v-model="reviewModal.text" placeholder="상품에 대한 솔직한 리뷰를 작성해주세요. (10자 이상)"
+          style="width:100%;min-height:110px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;line-height:1.6;"></textarea>
+        <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:3px;">{{ reviewModal.text.length }}자</div>
+        <!-- 첨부 -->
+        <div style="margin-top:14px;">
+          <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">
+            첨부 파일 <span style="font-size:0.72rem;font-weight:400;color:var(--text-muted);">(이미지 최대 5개)</span>
+          </div>
+          <label style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border:1.5px dashed var(--border);border-radius:8px;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);background:var(--bg-base);">
+            📎 파일 선택
+            <input type="file" accept="image/*" multiple @change="onReviewFileChange" style="display:none;" />
+          </label>
+          <div v-if="reviewModal.files.length" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+            <div v-for="(f, fi) in reviewModal.files" :key="fi"
+              style="display:flex;align-items:center;gap:4px;padding:3px 8px 3px 10px;background:var(--bg-base);border:1px solid var(--border);border-radius:20px;font-size:0.72rem;color:var(--text-secondary);">
+              <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.name }}</span>
+              <button @click="removeReviewFile(fi)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.85rem;padding:0;line-height:1;margin-left:2px;">×</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 푸터 -->
+      <div style="padding:14px 20px 18px;display:flex;gap:8px;justify-content:flex-end;">
+        <button @click="reviewModal.show=false"
+          style="padding:8px 18px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:600;">취소</button>
+        <button @click="submitReview"
+          style="padding:8px 22px;border:none;border-radius:8px;background:#22c55e;color:#fff;cursor:pointer;font-size:0.85rem;font-weight:700;">
+          {{ reviewModal.isEdit ? '수정 완료' : '리뷰 등록' }}
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- 도움말 모달 -->
   <div v-if="flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="flowHelpOpen=false">

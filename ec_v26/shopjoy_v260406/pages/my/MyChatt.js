@@ -10,17 +10,22 @@ window.MyChatt = {
     const chatPager = reactive({ page: 1, size: 50 });
     const paginate = myStore.paginate;
 
+    const { inRange, onDateSearch } = window.myDateFilterHelper();
+    const { computed: _c } = Vue;
+    const dateFilteredChats = _c(() => chats.value.filter(c => inRange(c.date)));
+
     onMounted(() => myStore.loadChats());
 
-    return { myStore, chats, expandedChat, chatPager, paginate };
+    return { myStore, chats, expandedChat, chatPager, paginate, dateFilteredChats, onDateSearch };
   },
   template: /* html */ `
 <MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
 
-  <PagerHeader :total="chats.length" :pager="chatPager" />
-  <div v-if="!chats.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">채팅 내역이 없습니다.</div>
+  <MyDateFilter @search="onDateSearch" />
+  <PagerHeader :total="dateFilteredChats.length" :pager="chatPager" />
+  <div v-if="!dateFilteredChats.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">채팅 내역이 없습니다.</div>
 
-  <div v-for="c in paginate(chats, chatPager)" :key="c.chatId"
+  <div v-for="c in paginate(dateFilteredChats, chatPager)" :key="c.chatId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
     <div style="padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;" @click="myStore.openChat(c)">
       <div style="width:40px;height:40px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">💬</div>
