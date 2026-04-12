@@ -378,11 +378,39 @@ window.Detail = {
     const openQuickBuy  = () => { drawerMode.value = 'buy';  quickBuyOpen.value = true; };
     const openCartDrawer = () => { drawerMode.value = 'cart'; quickBuyOpen.value = true; };
 
+    /* ── 포토 리뷰 진입 경로 (grid=모아보기에서, list=리뷰목록에서) ── */
+    const photoFromGrid = ref(false);
+    const openPhotoFromGrid = (r) => { selectedReview.value = r; photoFromGrid.value = true;  photoPopupOpen.value = false; };
+    const openPhotoFromList = (r) => { selectedReview.value = r; photoFromGrid.value = false; };
+    const closePhotoDetail  = () => {
+      selectedReview.value = null;
+      if (photoFromGrid.value) photoPopupOpen.value = true;
+      photoFromGrid.value = false;
+    };
+
+    /* ── 포토 리뷰 좌/우 이동 ── */
+    const photoNavPrev = () => {
+      const list = reviewsWithPhoto.value;
+      const idx = list.findIndex(r => r.id === selectedReview.value?.id);
+      if (idx > 0) selectedReview.value = list[idx - 1];
+    };
+    const photoNavNext = () => {
+      const list = reviewsWithPhoto.value;
+      const idx = list.findIndex(r => r.id === selectedReview.value?.id);
+      if (idx < list.length - 1) selectedReview.value = list[idx + 1];
+    };
+    const photoNavIdx = computed(() => {
+      const list = reviewsWithPhoto.value;
+      return list.findIndex(r => r.id === selectedReview.value?.id);
+    });
+
     return {
       selectedImg, zoomOpen,
       selectedColor, selectedSize, qty, colorError, sizeError, showSizeGuide,
       TABS, activeTab, tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, styleSecRef,
       reviewFilter, photoPopupOpen, selectedReview,
+      photoNavPrev, photoNavNext, photoNavIdx,
+      photoFromGrid, openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
       mockImages, mockReviews, reviewsWithPhoto, filteredReviews, avgRating, ratingDist,
       tabFixed, tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
@@ -711,12 +739,12 @@ window.Detail = {
             </span>
             <button @click="photoPopupOpen=true"
               style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
-              [+] 모아보기
+              모아보기
             </button>
           </div>
           <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
             <div v-for="r in reviewsWithPhoto" :key="r.id"
-              @click="selectedReview=r"
+              @click="openPhotoFromList(r)"
               style="width:80px;height:80px;flex-shrink:0;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
               @mouseenter="$event.currentTarget.style.opacity='.75'"
               @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -752,7 +780,7 @@ window.Detail = {
               <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">색상: {{ r.colorInfo }}</span>
             </div>
             <div v-if="r.hasPhoto" style="margin-bottom:10px;">
-              <div @click="selectedReview=r"
+              <div @click="openPhotoFromList(r)"
                 style="width:72px;height:72px;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);display:inline-block;">
                 <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
               </div>
@@ -832,7 +860,7 @@ window.Detail = {
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
         <div v-for="r in reviewsWithPhoto" :key="r.id"
-          @click="selectedReview=r;photoPopupOpen=false"
+          @click="openPhotoFromGrid(r)"
           style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
           @mouseenter="$event.currentTarget.style.opacity='.75'"
           @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -843,12 +871,26 @@ window.Detail = {
   </div>
 
   <!-- ══ 포토 리뷰 개별 팝업 ══ -->
-  <div v-if="selectedReview && product" @click.self="selectedReview=null"
+  <div v-if="selectedReview && product" @click.self="closePhotoDetail"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:201;display:flex;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:24px;">
+
+    <!-- 좌 화살표 -->
+    <button v-if="photoNavIdx > 0" @click="photoNavPrev"
+      style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+
+    <!-- 본문 -->
+    <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:24px;position:relative;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">포토&동영상 상품평</span>
-        <button @click="selectedReview=null" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
+          포토&동영상 상품평
+          <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;margin-left:6px;">
+            {{ photoNavIdx + 1 }} / {{ reviewsWithPhoto.length }}
+          </span>
+        </span>
+        <button @click="closePhotoDetail"
+          style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);height:220px;margin-bottom:20px;">
         <img :src="selectedReview.photoImg" style="width:100%;height:100%;object-fit:cover;" />
@@ -867,6 +909,13 @@ window.Detail = {
         도움이 돼요 <span style="font-weight:700;color:var(--text-secondary);">({{ selectedReview.helpful }})</span>
       </div>
     </div>
+
+    <!-- 우 화살표 -->
+    <button v-if="photoNavIdx < reviewsWithPhoto.length - 1" @click="photoNavNext"
+      style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+
   </div>
 
   <!-- ══ 사이즈 가이드 모달 ══ -->
@@ -907,7 +956,7 @@ window.Detail = {
         <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
         <div style="font-size:1.05rem;font-weight:900;color:var(--blue);">{{ product.price }}</div>
       </div>
-      <button class="btn-outline" style="padding:10px 22px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openCartDrawer">🛒 장바구니</button>
+      <button class="btn-outline" style="padding:10px 22px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openCartDrawer">장바구니</button>
       <button class="btn-blue"    style="padding:10px 28px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openQuickBuy">바로구매</button>
     </div>
   </div>

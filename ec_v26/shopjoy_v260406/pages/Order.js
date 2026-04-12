@@ -311,15 +311,15 @@ window.Order = {
                   <span style="font-size:0.82rem;font-weight:700;color:var(--blue);">{{ selectedCoupons[idx].name }}</span>
                   <span style="font-size:0.78rem;color:var(--blue);margin-left:6px;">({{ discountLabel(selectedCoupons[idx]) }})</span>
                 </div>
-                <button @click="removeCoupon(idx)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-muted);font-size:0.78rem;cursor:pointer;">제거</button>
-                <button @click="openCouponPopup(idx)" style="padding:4px 10px;border:1px solid var(--blue);border-radius:6px;background:transparent;color:var(--blue);font-size:0.78rem;cursor:pointer;font-weight:600;">변경</button>
+                <button @click="removeCoupon(idx)" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-muted);font-size:0.8rem;cursor:pointer;">제거</button>
+                <button @click="openCouponPopup(idx)" style="padding:5px 12px;border:1px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.8rem;cursor:pointer;font-weight:600;">변경</button>
               </template>
               <template v-else>
                 <span style="flex:1;font-size:0.82rem;color:var(--text-muted);">
                   {{ productCoupons(item).length ? '적용 가능 ' + productCoupons(item).length + '개' : '적용 가능 쿠폰 없음' }}
                 </span>
                 <button v-if="productCoupons(item).length" @click="openCouponPopup(idx)"
-                  style="padding:4px 12px;border:1.5px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;cursor:pointer;font-weight:700;">선택</button>
+                  style="padding:5px 12px;border:1px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.8rem;cursor:pointer;font-weight:700;">선택</button>
               </template>
             </div>
           </div>
@@ -334,8 +334,8 @@ window.Order = {
           <div style="display:flex;gap:8px;align-items:center;">
             <input v-model="cashInput" type="number" min="0" :max="cashBalance" placeholder="사용할 캐쉬 금액"
               style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;">
-            <button @click="cashInput=cashBalance" style="padding:9px 14px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;cursor:pointer;font-weight:700;white-space:nowrap;">전액사용</button>
-            <button @click="cashInput=0" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-muted);font-size:0.82rem;cursor:pointer;">초기화</button>
+            <button @click="cashInput=cashBalance" style="padding:9px 14px;border:1px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;cursor:pointer;font-weight:700;white-space:nowrap;">전액사용</button>
+            <button @click="cashInput=0" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-muted);font-size:0.82rem;cursor:pointer;">초기화</button>
           </div>
           <div v-if="appliedCash>0" style="margin-top:6px;font-size:0.82rem;color:#f97316;">{{ fmt(appliedCash) }} 캐쉬 사용 예정</div>
         </div>
@@ -395,7 +395,7 @@ window.Order = {
               <input v-model="form.postcode" class="form-input" placeholder="우편번호" readonly
                 style="width:110px;flex-shrink:0;background:var(--bg-base);cursor:default;" />
               <button @click="openKakaoAddr" type="button"
-                style="padding:0 16px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                style="padding:9px 16px;border:1px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
                 📮 주소 검색
               </button>
             </div>
@@ -453,8 +453,8 @@ window.Order = {
                   <template v-if="selectedShipCoupon">
                     <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--blue-dim);">
                       <span style="font-size:0.82rem;font-weight:700;color:var(--blue);flex:1;">🎟️ {{ selectedShipCoupon.name }}</span>
-                      <button @click="removeShipCoupon" style="padding:3px 8px;border:1px solid var(--blue);border-radius:5px;background:transparent;color:var(--blue);font-size:0.75rem;cursor:pointer;">제거</button>
-                      <button @click="shipCouponPopup=true" style="padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg-card);color:var(--text-muted);font-size:0.75rem;cursor:pointer;">변경</button>
+                      <button @click="removeShipCoupon" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-muted);font-size:0.78rem;cursor:pointer;">제거</button>
+                      <button @click="shipCouponPopup=true" style="padding:4px 10px;border:1px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;cursor:pointer;font-weight:600;">변경</button>
                     </div>
                     <div style="font-size:0.82rem;color:#22c55e;margin-top:4px;">✓ 배송비 쿠폰 적용됨 → 무료</div>
                   </template>
