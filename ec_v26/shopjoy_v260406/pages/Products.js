@@ -1,7 +1,7 @@
 /* ShopJoy - Products (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
 window.Products = {
   name: 'Products',
-  props: ['navigate', 'config', 'products', 'selectProduct'],
+  props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   setup(props) {
     const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
@@ -374,6 +374,15 @@ window.Products = {
           style="position:absolute;top:12px;right:12px;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:800;padding:3px 7px;border-radius:10px;">
           {{ Math.round((1-p.priceNum/p.originalPrice)*100) }}%
         </span>
+        <!-- 좋아요 버튼 -->
+        <button v-if="toggleLike" @click.stop="toggleLike(p.productId)"
+          style="position:absolute;bottom:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+          title="위시리스트">
+          <svg width="16" height="16" viewBox="0 0 24 24"
+            :fill="isLiked&&isLiked(p.productId)?'#ef4444':'none'"
+            :stroke="isLiked&&isLiked(p.productId)?'#ef4444':'#555'"
+            stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
       </div>
 
       <div style="padding:16px;">
@@ -409,7 +418,7 @@ window.Products = {
           </template>
         </div>
 
-        <button class="btn-blue" style="width:100%;" @click.stop="selectProduct(p)">색상·사이즈 선택</button>
+        <button class="btn-outline" style="width:100%;padding:9px;" @click.stop="selectProduct(p)">상세보기</button>
       </div>
     </div>
   </div>

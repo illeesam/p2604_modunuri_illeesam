@@ -75,14 +75,14 @@ window.Home = {
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
         @click="selectProduct(p)">
         <div style="background:#f5f5f5;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
-          @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1';$event.currentTarget.querySelector('.prod-like').style.opacity='1'"
-          @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0';isLiked(p.productId)||($event.currentTarget.querySelector('.prod-like').style.opacity='0')">
+          @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
+          @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0'">
           <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
           <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;"
             :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355', color:'#fff' }">{{ p.badge }}</span>
           <!-- 좋아요 (좋아요 상태면 항상 표시) -->
           <button @click.stop="toggleLike(p.productId)"
-            :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2, opacity: isLiked(p.productId) ? '1' : '0', transition:'opacity .2s' }"
+            :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }"
             class="prod-like" title="위시리스트">
             <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.productId)?'#ef4444':'none'" :stroke="isLiked(p.productId)?'#ef4444':'#555'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>

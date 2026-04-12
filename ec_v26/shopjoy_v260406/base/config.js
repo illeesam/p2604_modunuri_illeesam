@@ -86,11 +86,12 @@ window.SITE_CONFIG = {
       "badge": "NEW",
       "opt1s": [
         { "name": "블랙",  "hex": "#1a1a1a" },
-        { "name": "화이트", "hex": "#f5f0eb" },
+        { "name": "화이트", "hex": "#f5f0eb", "priceDelta": 2000 },
         { "name": "네이비", "hex": "#1e3a5f" },
-        { "name": "베이지", "hex": "#d4b896" }
+        { "name": "베이지", "hex": "#d4b896", "priceDelta": 3000 }
       ],
       "opt2s": ["XS", "S", "M", "L", "XL"],
+      "opt2Prices": { "XL": 2000 },
       "tags": ["코튼", "오버핏", "베이직"]
     },
     {
@@ -105,11 +106,12 @@ window.SITE_CONFIG = {
       "badge": "인기",
       "opt1s": [
         { "name": "라이트블루", "hex": "#7bafd4" },
-        { "name": "미드블루",   "hex": "#3f6fa8" },
-        { "name": "다크블루",   "hex": "#1e3a5f" },
-        { "name": "블랙",       "hex": "#1a1a1a" }
+        { "name": "미드블루",   "hex": "#3f6fa8", "priceDelta": 2000 },
+        { "name": "다크블루",   "hex": "#1e3a5f", "priceDelta": 4000 },
+        { "name": "블랙",       "hex": "#1a1a1a", "priceDelta": 5000 }
       ],
       "opt2s": ["XS", "S", "M", "L", "XL", "XXL"],
+      "opt2Prices": { "XL": 2000, "XXL": 4000 },
       "tags": ["데님", "슬림핏", "스트레치"]
     },
     {
@@ -123,8 +125,8 @@ window.SITE_CONFIG = {
       "badge": "",
       "opt1s": [
         { "name": "카멜",  "hex": "#c19a6b" },
-        { "name": "블랙",  "hex": "#1a1a1a" },
-        { "name": "차콜",  "hex": "#3a3a3a" },
+        { "name": "블랙",  "hex": "#1a1a1a", "priceDelta": 5000 },
+        { "name": "차콜",  "hex": "#3a3a3a", "priceDelta": 5000 },
         { "name": "크림",  "hex": "#f5f0e8" }
       ],
       "opt2s": ["S", "M", "L", "XL"],
@@ -142,10 +144,11 @@ window.SITE_CONFIG = {
       "badge": "NEW",
       "opt1s": [
         { "name": "핑크플로럴",  "hex": "#e8a0b4" },
-        { "name": "블루플로럴",  "hex": "#a0b8e8" },
+        { "name": "블루플로럴",  "hex": "#a0b8e8", "priceDelta": 3000 },
         { "name": "화이트플로럴","hex": "#f5f5f0" }
       ],
       "opt2s": ["XS", "S", "M", "L"],
+      "opt2Prices": { "L": 3000 },
       "tags": ["플로럴", "미디기장", "로맨틱"]
     },
     {
@@ -163,6 +166,7 @@ window.SITE_CONFIG = {
         { "name": "화이트블랙",   "hex": "#f0f0f0" }
       ],
       "opt2s": ["S", "M", "L", "XL", "XXL"],
+      "opt2Prices": { "XL": 2000, "XXL": 4000 },
       "tags": ["린넨", "스트라이프", "여름"]
     },
     {
@@ -177,11 +181,12 @@ window.SITE_CONFIG = {
       "badge": "인기",
       "opt1s": [
         { "name": "카키",  "hex": "#6b7c4a" },
-        { "name": "블랙",  "hex": "#1a1a1a" },
+        { "name": "블랙",  "hex": "#1a1a1a", "priceDelta": 3000 },
         { "name": "베이지","hex": "#d4c4a8" },
-        { "name": "그레이","hex": "#8a8a8a" }
+        { "name": "그레이","hex": "#8a8a8a", "priceDelta": 2000 }
       ],
       "opt2s": ["XS", "S", "M", "L", "XL"],
+      "opt2Prices": { "L": 2000, "XL": 3000 },
       "tags": ["카고", "와이드핏", "트렌디"]
     },
     {

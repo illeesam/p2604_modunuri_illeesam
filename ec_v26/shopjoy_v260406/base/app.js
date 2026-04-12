@@ -425,6 +425,7 @@
       <products
         v-else-if="page==='products'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
+        :toggle-like="toggleLike" :is-liked="isLiked"
       />
       <detail
         v-else-if="page==='detail'"

@@ -303,14 +303,74 @@ window.Detail = {
     const quickBuyOpen = ref(false);
     const drawerMode   = ref('buy'); // 'buy' | 'cart'
 
-    /* 바로구매 총 금액 (숫자 파싱) */
-    const quickBuyTotal = computed(() => {
+    /* ── 옵션별 가격 ── */
+    const basePrice = computed(() => {
+      const numStr = String(props.product?.price || '').replace(/[^0-9]/g, '');
+      return Number(numStr) || 0;
+    });
+
+    /* opt2Prices에서 사이즈 delta 조회 */
+    const getSizeDelta = (sizeName) => (props.product?.opt2Prices || {})[sizeName] || 0;
+
+    /* 선택된 색상+사이즈의 최종 단가 */
+    const selectedUnitPrice = computed(() => {
+      const colorDelta = selectedColor.value?.priceDelta || 0;
+      const sizeDelta  = getSizeDelta(selectedSize.value);
+      return basePrice.value + colorDelta + sizeDelta;
+    });
+
+    /* 모든 옵션 조합의 최소~최대 가격 범위 */
+    const priceRange = computed(() => {
       const p = props.product;
-      if (!p) return '';
-      const numStr = String(p.price || '').replace(/[^0-9]/g, '');
-      const num = Number(numStr);
-      if (!num) return p.price;
-      const total = num * qty.value;
+      if (!p || !basePrice.value) return null;
+      const colorDeltas = (p.opt1s || []).map(c => c.priceDelta || 0);
+      const sizeDeltas  = Object.values(p.opt2Prices || {}).concat([0]);
+      const prices = [];
+      colorDeltas.forEach(cd => sizeDeltas.forEach(sd => prices.push(basePrice.value + cd + sd)));
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      return min === max ? null : { min, max };
+    });
+
+    /* 표시 가격:
+       - 색상+사이즈 모두 선택 → 정확한 가격
+       - 색상만 선택          → 색상가격 (사이즈 delta 존재 시 범위)
+       - 미선택               → 전체 범위 또는 기본가 */
+    const displayPrice = computed(() => {
+      const p = props.product;
+      if (!p || !basePrice.value) return p?.price || '';
+
+      const colorDelta = selectedColor.value?.priceDelta || 0;
+      const sizeDelta  = getSizeDelta(selectedSize.value);
+      const hasSizeDelta = Object.keys(p.opt2Prices || {}).length > 0;
+
+      /* 색상+사이즈 모두 선택 */
+      if (selectedColor.value && selectedSize.value) {
+        return (basePrice.value + colorDelta + sizeDelta).toLocaleString('ko-KR') + '원';
+      }
+
+      /* 색상만 선택 */
+      if (selectedColor.value) {
+        const colorPrice = basePrice.value + colorDelta;
+        if (hasSizeDelta) {
+          const maxSD = Math.max(...Object.values(p.opt2Prices));
+          return colorPrice.toLocaleString('ko-KR') + '원 ~ ' + (colorPrice + maxSD).toLocaleString('ko-KR') + '원';
+        }
+        return colorPrice.toLocaleString('ko-KR') + '원';
+      }
+
+      /* 미선택: 전체 범위 표시 */
+      if (priceRange.value) {
+        return priceRange.value.min.toLocaleString('ko-KR') + '원 ~ ' + priceRange.value.max.toLocaleString('ko-KR') + '원';
+      }
+      return p.price;
+    });
+
+    /* 바로구매 총 금액 */
+    const quickBuyTotal = computed(() => {
+      if (!props.product) return '';
+      if (!selectedUnitPrice.value) return props.product.price;
+      const total = selectedUnitPrice.value * qty.value;
       return total.toLocaleString('ko-KR') + '원';
     });
 
@@ -414,7 +474,7 @@ window.Detail = {
       sizeGuideRows, styleItems,
       mockImages, mockReviews, reviewsWithPhoto, filteredReviews, avgRating, ratingDist,
       tabFixed, tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
-      quickBuyOpen, drawerMode, quickBuyTotal,
+      quickBuyOpen, drawerMode, quickBuyTotal, displayPrice, getSizeDelta,
       scrollToTab, categoryLabel, stars, colorStatus, sizeStatus,
       buyBtnRef, showBottomBar,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
@@ -513,7 +573,7 @@ window.Detail = {
             </div>
 
             <!-- 가격 -->
-            <div style="font-size:1.7rem;font-weight:900;color:var(--blue);margin-bottom:24px;">{{ product.price }}</div>
+            <div style="font-size:1.7rem;font-weight:900;color:var(--blue);margin-bottom:24px;">{{ displayPrice }}</div>
 
             <!-- 색상 선택 -->
             <div style="margin-bottom:20px;">
@@ -522,7 +582,7 @@ window.Detail = {
                 <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                <div v-for="c in product.opt1s" :key="c.name" style="position:relative;">
+                <div v-for="c in product.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
                   <button @click="selectColor(c)"
                     :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')"
                     :style="{
@@ -536,11 +596,13 @@ window.Detail = {
                     }">
                   </button>
                   <!-- 대각선 취소선 (품절/중지) -->
-                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;inset:0;pointer-events:none;" viewBox="0 0 30 30">
+                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
                     <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
                   </svg>
                   <span v-if="colorStatus(c)==='soldout'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#ef4444;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
                   <span v-else-if="colorStatus(c)==='stop'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#9ca3af;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
+                  <!-- 옵션 가격 delta -->
+                  <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">+{{ c.priceDelta.toLocaleString('ko-KR') }}</span>
                 </div>
               </div>
               <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
@@ -567,7 +629,7 @@ window.Detail = {
                     textDecoration: sizeStatus(s)!=='ok' ? 'line-through' : 'none',
                     opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
                     transition:'all .15s',
-                  }">{{ s }}
+                  }">{{ s }}<span v-if="getSizeDelta(s)" style="font-size:0.62rem;font-weight:700;color:var(--blue);margin-left:2px;">(+{{ getSizeDelta(s).toLocaleString('ko-KR') }})</span>
                   <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
                   <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
                 </button>
@@ -954,7 +1016,7 @@ window.Detail = {
     <div style="display:flex;align-items:center;gap:16px;max-width:760px;width:100%;">
       <div style="flex:1;min-width:0;">
         <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
-        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);">{{ product.price }}</div>
+        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);">{{ displayPrice }}</div>
       </div>
       <button class="btn-outline" style="padding:10px 22px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openCartDrawer">장바구니</button>
       <button class="btn-blue"    style="padding:10px 28px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openQuickBuy">바로구매</button>
@@ -986,7 +1048,7 @@ window.Detail = {
             <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            <div v-for="c in product.opt1s" :key="c.name" style="position:relative;">
+            <div v-for="c in product.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
               <button @click="selectColor(c)" :title="c.name"
                 :style="{
                   width:'30px',height:'30px',borderRadius:'50%',
@@ -998,9 +1060,11 @@ window.Detail = {
                   opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
                 }">
               </button>
-              <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;inset:0;pointer-events:none;" viewBox="0 0 30 30">
+              <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
                 <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
               </svg>
+              <!-- 옵션 가격 delta -->
+              <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">+{{ c.priceDelta.toLocaleString('ko-KR') }}</span>
             </div>
           </div>
           <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
@@ -1030,7 +1094,7 @@ window.Detail = {
                 fontWeight: selectedSize===s ? '700' : '500',
                 textDecoration: sizeStatus(s)!=='ok' ? 'line-through' : 'none',
                 opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
-              }">{{ s }}
+              }">{{ s }}<span v-if="getSizeDelta(s)" style="font-size:0.62rem;font-weight:700;color:var(--blue);margin-left:2px;">(+{{ getSizeDelta(s).toLocaleString('ko-KR') }})</span>
               <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">품절</span>
               <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
             </button>
