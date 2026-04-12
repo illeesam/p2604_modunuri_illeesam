@@ -136,7 +136,7 @@ window.Sample11 = {
     };
   },
   template: /* html */`
-<div style="padding:16px;">
+<div style="padding:clamp(12px,3vw,24px);">
 
   <!-- 제목 -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">

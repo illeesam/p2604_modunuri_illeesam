@@ -209,7 +209,7 @@ window.Sample12 = {
     };
   },
   template: /* html */`
-<div style="padding:16px;">
+<div style="padding:clamp(12px,3vw,24px);">
 
   <!-- 제목 -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
@@ -313,10 +313,10 @@ window.Sample12 = {
     </div>
   </div>
 
-  <div style="display:flex;gap:12px;align-items:flex-start;">
+  <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
 
     <!-- 좌: 구조 트리 -->
-    <div style="flex:3;min-width:0;">
+    <div style="flex:3;min-width:280px;">
       <!-- 조작 바 -->
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:12px;font-weight:600;color:#555;">패널</span>
@@ -392,7 +392,7 @@ window.Sample12 = {
     </div>
 
     <!-- 우: 위젯 컨텐츠 미리보기 -->
-    <div style="flex:6;min-width:0;max-height:80vh;overflow-y:auto;">
+    <div style="flex:6;min-width:280px;max-height:80vh;overflow-y:auto;">
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
         <span style="font-size:13px;font-weight:700;color:#333;">🧩 위젯 컨텐츠 미리보기</span>
         <span style="font-size:11px;color:#aaa;">{{ checkedWidgetList.length }}개 선택됨</span>

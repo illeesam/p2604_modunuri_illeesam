@@ -119,7 +119,7 @@ window.Cart = {
 
   <!-- 장바구니 목록 -->
   <template v-else>
-    <div style="display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start;" class="order-grid">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);align-items:start;" class="order-grid">
       <!-- 왼쪽: 상품 목록 -->
       <div>
         <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
@@ -197,7 +197,7 @@ window.Cart = {
 
       <!-- 오른쪽: 주문 요약 -->
       <div>
-        <div class="card" style="padding:24px;position:sticky;top:76px;">
+        <div class="card" style="padding:clamp(12px,3vw,24px);position:sticky;top:76px;">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">📋 주문 요약</h2>
 
           <div v-if="checkedIdxs.size>0" style="margin-bottom:8px;padding:6px 10px;border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;font-weight:600;">

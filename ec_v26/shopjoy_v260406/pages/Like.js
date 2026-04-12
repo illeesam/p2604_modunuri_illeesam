@@ -38,7 +38,7 @@ window.Like = {
       @mouseleave="$event.currentTarget.style.boxShadow=''">
 
       <!-- 이미지 -->
-      <div style="position:relative;aspect-ratio:1;background:#fff;padding:16px;overflow:hidden;" @click="selectProduct(p)">
+      <div style="position:relative;aspect-ratio:1;background:#fff;padding:clamp(8px,2vw,16px);overflow:hidden;" @click="selectProduct(p)">
         <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;color:#fff;"
           :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355' }">{{ p.badge }}</span>
@@ -58,7 +58,7 @@ window.Like = {
   </div>
 
   <!-- 빈 상태 -->
-  <div v-else style="text-align:center;padding:80px 0;">
+  <div v-else style="text-align:center;padding:clamp(40px,8vw,80px) 0;">
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin-bottom:16px;">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
     </svg>

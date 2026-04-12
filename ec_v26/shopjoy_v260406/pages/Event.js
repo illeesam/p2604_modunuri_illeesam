@@ -101,7 +101,7 @@ window.Event = {
   </div>
 
   <!-- 탭 + 정렬 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);margin-bottom:28px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:28px;">
     <!-- 탭 -->
     <div style="display:flex;gap:0;">
       <button @click="activeTab='ongoing'"
@@ -185,7 +185,7 @@ window.Event = {
   </div>
 
   <!-- 빈 상태 -->
-  <div v-if="filteredEvents.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+  <div v-if="filteredEvents.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
     <div style="font-size:2rem;margin-bottom:12px;">📭</div>
     <div style="font-size:0.95rem;">{{ activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>
   </div>

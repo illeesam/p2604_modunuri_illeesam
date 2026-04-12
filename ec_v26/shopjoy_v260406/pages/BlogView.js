@@ -79,7 +79,7 @@ window.BlogView = {
 <div class="page-wrap" style="max-width:1100px;">
 
   <!-- ══ 2컬럼 레이아웃 ══ -->
-  <div style="display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(20px,4vw,48px);align-items:start;">
 
     <!-- ── 좌: 본문 영역 ── -->
     <div>
@@ -179,7 +179,7 @@ window.BlogView = {
     </div>
 
     <!-- ── 우: 사이드바 ── -->
-    <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:32px;">
+    <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:clamp(16px,2.5vw,32px);">
 
       <!-- 검색 -->
       <div>
@@ -254,7 +254,7 @@ window.BlogView = {
   <!-- ══ 하단: You Might Also Like ══ -->
   <div v-if="relatedPosts.length" style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);">
     <h2 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-bottom:28px;text-align:center;">You Might Also Like</h2>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:clamp(14px,2vw,28px);">
       <div v-for="rp in relatedPosts" :key="rp.id"
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"

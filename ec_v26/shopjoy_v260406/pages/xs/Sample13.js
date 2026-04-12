@@ -195,10 +195,10 @@ window.Sample13 = {
     };
   },
   template: /* html */`
-<div style="padding:16px;">
+<div style="padding:clamp(12px,3vw,24px);">
 
   <!-- 제목 -->
-  <div style="display:flex;align-items:center;margin-bottom:12px;">
+  <div style="display:flex;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
     <div style="font-size:16px;font-weight:700;">
       13. 전시영역 소스 보기
       <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">패널별 DispPanel 소스 코드</span>
@@ -334,7 +334,7 @@ window.Sample13 = {
 
     <!-- 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) -->
     <div v-for="(panel, pi) in panels" :key="panel.dispId"
-      style="display:flex;border:1px solid #e0e0e0;border-top:none;"
+      style="display:flex;flex-wrap:wrap;border:1px solid #e0e0e0;border-top:none;"
       :style="pi===panels.length-1?'border-radius:0 0 6px 6px;overflow:hidden;':''">
 
       <!-- 좌: 패널 정보 -->

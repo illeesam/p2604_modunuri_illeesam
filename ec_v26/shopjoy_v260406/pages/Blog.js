@@ -88,7 +88,7 @@ window.Blog = {
   </div>
 
   <!-- 레이아웃: 사이드바 + 본문 -->
-  <div style="display:grid;grid-template-columns:220px 1fr;gap:32px;" class="blog-grid">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,3vw,32px);" class="blog-grid">
 
     <!-- 사이드바 -->
     <aside>
@@ -129,19 +129,19 @@ window.Blog = {
     <!-- 포스트 목록 -->
     <div>
       <div v-for="post in filteredPosts" :key="post.id"
-        class="card" style="display:flex;gap:24px;padding:0;margin-bottom:24px;overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
+        class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
         @click="navigate('blogView', { editId: post.id })"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.boxShadow=''">
 
         <!-- 썸네일 -->
-        <div style="width:280px;min-height:200px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
+        <div style="width:clamp(200px,30%,280px);min-height:180px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
           <img v-if="post.thumb" :src="post.thumb" :alt="post.title" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
             @mouseenter="$event.target.style.transform='scale(1.05)'" @mouseleave="$event.target.style.transform=''" />
         </div>
 
         <!-- 내용 -->
-        <div style="flex:1;padding:24px 24px 24px 0;display:flex;flex-direction:column;justify-content:center;">
+        <div style="flex:1;min-width:200px;padding:clamp(14px,2vw,24px) clamp(14px,2vw,24px) clamp(14px,2vw,24px) 0;display:flex;flex-direction:column;justify-content:center;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">{{ categories.find(c => c.id === post.category)?.name || post.category }}</span>
           </div>

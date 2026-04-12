@@ -409,28 +409,13 @@ window.Detail = {
   <template v-if="product">
     <!-- ══ 상단: 갤러리 + 구매 옵션 ══ -->
     <div class="page-wrap" style="padding-bottom:0;">
-      <div style="display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;" class="detail-grid">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(16px,3vw,32px);align-items:start;" class="detail-grid">
 
         <!-- 좌: 이미지 갤러리 -->
-        <div style="display:flex;gap:12px;">
-
-          <!-- 썸네일 세로 목록 -->
-          <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
-            <div v-for="(img,i) in mockImages" :key="i"
-              @click="selectedImg=i"
-              :style="{
-                width:'64px',height:'64px',borderRadius:'8px',overflow:'hidden',
-                cursor:'pointer',
-                border:selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
-                transition:'border-color .15s',flexShrink:0,
-                background:'var(--bg-base)',
-              }">
-              <img v-if="img.src" :src="img.src" :alt="img.label" style="width:100%;height:100%;object-fit:cover;" />
-            </div>
-          </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
 
           <!-- 메인 이미지 -->
-          <div style="flex:1;position:relative;"
+          <div style="position:relative;"
             @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'"
             @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
             <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;min-height:420px;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
@@ -464,11 +449,27 @@ window.Detail = {
               </button>
             </div>
           </div>
+
+          <!-- 썸네일 가로 목록 (하단) -->
+          <div style="display:flex;flex-direction:row;gap:8px;overflow-x:auto;scrollbar-width:none;">
+            <div v-for="(img,i) in mockImages" :key="i"
+              @click="selectedImg=i"
+              :style="{
+                width:'72px',height:'72px',borderRadius:'8px',overflow:'hidden',
+                cursor:'pointer',flexShrink:0,
+                border:selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
+                transition:'border-color .15s',
+                background:'var(--bg-base)',
+              }">
+              <img v-if="img.src" :src="img.src" :alt="img.label" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
+          </div>
+
         </div><!-- /gallery -->
 
         <!-- 우: 구매 옵션 -->
         <div>
-          <div class="card" style="padding:28px;position:sticky;top:20px;">
+          <div class="card" style="padding:clamp(16px,3vw,28px);position:sticky;top:20px;">
 
             <!-- 상품명 + 카테고리 -->
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
@@ -620,7 +621,7 @@ window.Detail = {
       <div ref="detailSecRef" style="padding-top:32px;">
         <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">상세정보</div>
 
-        <div class="card" style="padding:28px;margin-bottom:14px;">
+        <div class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
           <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📋 상품 설명</h2>
           <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.9;margin-bottom:16px;">{{ product.desc }}</p>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">

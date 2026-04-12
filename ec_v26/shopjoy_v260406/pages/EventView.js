@@ -182,7 +182,7 @@ window.EventView = {
     minHeight: '400px',
     display:'flex', flexDirection:'column',
     alignItems:'center', justifyContent:'center',
-    textAlign:'center', padding:'72px 24px 60px',
+    textAlign:'center', padding:'clamp(40px,8vw,72px) clamp(16px,4vw,24px) clamp(32px,6vw,60px)',
     position:'relative', overflow:'hidden',
   }">
     <!-- 장식 원 -->
@@ -220,7 +220,7 @@ window.EventView = {
     </button>
 
     <!-- ③ 혜택 카드 -->
-    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:36px 32px;margin-bottom:36px;text-align:center;">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:clamp(20px,4vw,36px) clamp(16px,3vw,32px);margin-bottom:36px;text-align:center;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--blue);letter-spacing:2px;margin-bottom:10px;">SHOPJOY BENEFIT</div>
       <h2 style="font-size:1.4rem;font-weight:900;color:var(--text-primary);margin-bottom:6px;">이벤트 혜택</h2>
       <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:28px;">{{ event.heroSub }}</p>
@@ -308,7 +308,7 @@ window.EventView = {
     </div>
 
     <!-- ⑥ 유의사항 -->
-    <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:32px;">
+    <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:clamp(16px,3vw,24px) clamp(16px,3vw,28px);margin-bottom:32px;">
       <h3 style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);margin-bottom:14px;">유의사항</h3>
       <ul style="list-style:none;padding:0;margin:0;">
         <li v-for="(line, li) in event.notice" :key="li"

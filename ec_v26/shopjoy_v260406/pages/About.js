@@ -55,7 +55,7 @@ window.About = {
   </div>
 
   <!-- 미션 & 비전 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(10px,2vw,16px);margin-bottom:clamp(16px,2vw,24px);">
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
       <div style="font-size:1.8rem;margin-bottom:12px;">🎯</div>
       <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:10px;">미션</div>
@@ -73,7 +73,7 @@ window.About = {
   </div>
 
   <!-- 핵심 가치 -->
-  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(14px,2.5vw,24px);margin-bottom:clamp(16px,2vw,24px);">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;">💎 핵심 가치</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
       <div v-for="v in values" :key="v.icon" style="display:flex;gap:12px;align-items:flex-start;">

@@ -20,11 +20,11 @@ window.Contact = {
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;" class="contact-grid">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(14px,2.5vw,28px);align-items:start;" class="contact-grid">
     <!-- 문의 폼 -->
-    <div class="card" style="padding:32px;">
+    <div class="card" style="padding:clamp(16px,4vw,32px);">
       <h2 style="font-size:1rem;font-weight:700;margin-bottom:22px;color:var(--text-primary);">✉️ 문의 양식</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(8px,1.5vw,14px);margin-bottom:14px;">
         <div>
           <label class="form-label">이름<span class="form-required">*</span></label>
           <input v-model="form.name" class="form-input" placeholder="홍길동" @input="clearErr('name')" />

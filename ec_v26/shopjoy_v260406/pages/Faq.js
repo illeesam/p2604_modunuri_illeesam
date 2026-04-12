@@ -19,7 +19,7 @@ window.Faq = {
       </div>
     </div>
   </div>
-  <div class="card" style="padding:8px 28px;margin-bottom:24px;">
+  <div class="card" style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
       <button class="faq-question" @click="openFaq=(openFaq===idx?null:idx)">
         <span style="flex:1;">{{ faq.q }}</span>
@@ -28,7 +28,7 @@ window.Faq = {
       <div v-show="openFaq===idx" class="faq-answer">{{ faq.a }}</div>
     </div>
   </div>
-  <div style="text-align:center;padding:24px 0;">
+  <div style="text-align:center;padding:clamp(12px,3vw,24px) 0;">
     <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px;">원하시는 답변을 찾지 못하셨나요?</p>
     <button class="btn-blue" @click="navigate('contact')">1:1 문의하기</button>
   </div>

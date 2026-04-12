@@ -169,7 +169,7 @@ window.Login = {
   computed: { shopjoyAuth() { return window.shopjoyAuth; } },
   template: /* html */ `
 <div class="modal-overlay" @click.self="$emit('close')" style="z-index:200;">
-  <div class="modal-box" style="max-width:460px;width:92%;padding:32px 28px;position:relative;max-height:92vh;overflow-y:auto;">
+  <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">
     <button @click="$emit('close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
 
     <!-- ════ 로그인 ════ -->
@@ -341,7 +341,7 @@ window.Login = {
         </div>
 
         <!-- 생년월일 + 성별 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
           <div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">생년월일</div>
             <input v-model="sf.birthdate" type="date"
@@ -421,7 +421,7 @@ window.Login = {
           <input v-model="snsSf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
         </div>
         <!-- 생년월일 + 성별 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
           <div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">생년월일</div>
             <input v-model="snsSf.birthdate" type="date"

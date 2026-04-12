@@ -366,11 +366,11 @@ window.Order = {
       </div>
 
       <!-- ── 주문자 정보 + 결제 안내 ── -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;" class="order-grid">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,20px);align-items:start;" class="order-grid">
         <!-- 주문자 정보 -->
-        <div class="card" style="padding:28px;">
+        <div class="card" style="padding:clamp(16px,3vw,28px);">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">👤 주문자 정보</h2>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:14px;">
             <div>
               <label class="form-label">이름<span class="form-required">*</span></label>
               <input v-model="form.name" class="form-input" placeholder="홍길동" @input="clearErr('name')" />
@@ -422,7 +422,7 @@ window.Order = {
         </div>
 
         <!-- 결제 안내 -->
-        <div class="card" style="padding:28px;">
+        <div class="card" style="padding:clamp(16px,3vw,28px);">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">💳 결제 안내 (계좌이체)</h2>
           <div style="display:flex;flex-direction:column;gap:4px;">
             <div class="info-row"><span class="info-icon">1️⃣</span>

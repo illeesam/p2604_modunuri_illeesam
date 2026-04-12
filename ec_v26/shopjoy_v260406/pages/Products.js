@@ -259,7 +259,7 @@ window.Products = {
 
   <!-- ── 상세 필터 패널 ── -->
   <div v-show="filterOpen"
-    style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;">
+    style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:clamp(12px,2vw,18px);margin-bottom:20px;">
 
     <!-- 가격 구간 -->
     <div style="margin-bottom:16px;">

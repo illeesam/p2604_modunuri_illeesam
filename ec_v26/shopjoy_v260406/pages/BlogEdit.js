@@ -66,7 +66,7 @@ window.BlogEdit = {
   </div>
 
   <!-- 폼 -->
-  <div class="card" style="padding:28px;">
+  <div class="card" style="padding:clamp(16px,3vw,28px);">
 
     <!-- 제목 -->
     <div style="margin-bottom:20px;">

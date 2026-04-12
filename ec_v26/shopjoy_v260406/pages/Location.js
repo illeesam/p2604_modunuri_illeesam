@@ -101,14 +101,14 @@ window.Location = {
     <!-- 카카오 SDK 모드: div 컨테이너 -->
     <div v-if="mapProvider==='kakao_sdk'"
       id="shopjoy-map"
-      style="width:100%;height:320px;">
+      style="width:100%;height:clamp(220px,40vw,320px);">
     </div>
 
     <!-- iframe 모드 (Google / OSM) -->
     <iframe v-else-if="!mapError && mapSrc"
       :src="mapSrc"
-      width="100%" height="320"
-      style="border:0;display:block;"
+      width="100%"
+      style="border:0;display:block;height:clamp(220px,40vw,320px);"
       allowfullscreen loading="lazy"
       referrerpolicy="no-referrer-when-downgrade"
       @error="onMapError">
@@ -116,13 +116,13 @@ window.Location = {
 
     <!-- 로딩 중 (mapSrc 아직 미설정) -->
     <div v-else-if="!mapError && !mapSrc"
-      style="height:320px;display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
+      style="height:clamp(220px,40vw,320px);display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
       <span style="animation:spin .8s linear infinite;display:inline-block;">⏳</span> 지도 로딩 중…
     </div>
 
     <!-- 에러 fallback -->
     <div v-else
-      style="height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-base);gap:12px;">
+      style="height:clamp(220px,40vw,320px);display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-base);gap:12px;">
       <div style="font-size:2.5rem;">🗺️</div>
       <div style="font-size:13px;color:var(--text-muted);">지도를 불러올 수 없습니다.</div>
       <a :href="googleLink" target="_blank"
@@ -154,7 +154,7 @@ window.Location = {
   </div>
 
   <!-- 상세 정보 -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:24px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(10px,2vw,16px);margin-bottom:24px;">
 
     <!-- 주소 -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
@@ -215,9 +215,9 @@ window.Location = {
   </div>
 
   <!-- 교통편 안내 -->
-  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(16px,3vw,24px);">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:16px;">🚌 교통편 안내</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:clamp(8px,1.5vw,12px);">
       <div style="padding:14px;background:var(--bg-base);border-radius:10px;">
         <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">🚇 지하철</div>
         <div style="font-size:0.82rem;color:var(--text-secondary);line-height:1.8;">
