@@ -32,7 +32,7 @@ window.DispPanelMng = {
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'ecDispMng') { selectedId.value = null; return; }
+      if (pg === 'ecDispPanelMng') { selectedId.value = null; return; }
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };

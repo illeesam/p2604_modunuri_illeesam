@@ -325,7 +325,7 @@ window.DispPanelDtl = {
           }
         },
         navigate:   props.navigate,
-        navigateTo: 'ecDispMng',
+        navigateTo: 'ecDispPanelMng',
       });
     };
 
@@ -569,11 +569,11 @@ window.DispPanelDtl = {
           <div class="form-actions">
             <template v-if="viewMode">
               <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-              <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+              <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
             </template>
             <template v-else>
               <button class="btn btn-primary" @click="save">저장</button>
-              <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+              <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
             </template>
           </div>
         </div>
@@ -764,11 +764,11 @@ window.DispPanelDtl = {
           <div class="form-actions">
             <template v-if="viewMode">
               <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-              <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+              <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
             </template>
             <template v-else>
               <button class="btn btn-primary" @click="save">저장</button>
-              <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+              <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
             </template>
           </div>
         </div>
@@ -883,11 +883,11 @@ window.DispPanelDtl = {
             <div class="form-actions">
               <template v-if="viewMode">
                 <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-                <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+                <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
               </template>
               <template v-else>
                 <button class="btn btn-primary" @click="save">저장</button>
-                <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+                <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
               </template>
             </div>
           </div>
@@ -1028,11 +1028,11 @@ window.DispPanelDtl = {
             <div class="form-actions">
               <template v-if="viewMode">
                 <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-                <button class="btn btn-secondary" @click="navigate('ecDispMng')">닫기</button>
+                <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
               </template>
               <template v-else>
                 <button class="btn btn-primary" @click="save">저장</button>
-                <button class="btn btn-secondary" @click="navigate('ecDispMng')">취소</button>
+                <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
               </template>
             </div>
           </template>
