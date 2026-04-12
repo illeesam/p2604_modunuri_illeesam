@@ -42,10 +42,24 @@ window.Contact = {
           <option v-for="c in inquiryCodes" :key="c.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
-      <div style="margin-bottom:22px;">
+      <div style="margin-bottom:14px;">
         <label class="form-label">문의 내용<span class="form-required">*</span></label>
         <textarea v-model="form.desc" class="form-input" rows="5" placeholder="문의하실 내용을 자유롭게 입력해주세요. (최소 10자)" @input="clearErr('desc')"></textarea>
         <div v-if="errors.desc" class="form-error">{{ errors.desc }}</div>
+      </div>
+      <div style="margin-bottom:22px;">
+        <label class="form-label">첨부파일</label>
+        <base-attach-grp
+          :model-value="form.attachGrpId"
+          @update:model-value="form.attachGrpId = $event"
+          :admin-data="contactData"
+          ref-id="CONTACT"
+          :show-toast="showToast"
+          grp-code="CONTACT_ATTACH"
+          grp-nm="문의 첨부파일"
+          :max-count="5"
+          :max-size-mb="10"
+        />
       </div>
       <button class="btn-blue" @click="submitForm" style="width:100%;padding:13px;">문의 접수하기</button>
     </div>
@@ -81,9 +95,18 @@ window.Contact = {
       window.cmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
     );
 
-    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
+    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', attachGrpId: null });
     const errors = reactive({});
     const openFaq = ref(null);
+
+    /* BaseAttachGrp 용 로컬 데이터 저장소 */
+    const contactData = reactive({
+      attaches:   [],
+      attachGrps: [],
+      nextId(arr, key) {
+        return arr.length ? Math.max(...arr.map(x => x[key])) + 1 : 1;
+      },
+    });
 
     const clearErr = k => { if (errors[k] !== undefined) delete errors[k]; };
 
@@ -110,9 +133,11 @@ window.Contact = {
         }).catch(() => {});
       }
       props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
-      Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
+      Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', attachGrpId: null });
+      contactData.attaches.splice(0);
+      contactData.attachGrps.splice(0);
     };
 
-    return { form, errors, openFaq, clearErr, submitForm, inquiryCodes };
+    return { form, errors, openFaq, clearErr, submitForm, inquiryCodes, contactData };
   }
 };

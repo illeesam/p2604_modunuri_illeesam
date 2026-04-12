@@ -468,6 +468,8 @@
   .component('Sample21', window.Sample21)
   .component('Sample22', window.Sample22)
   .component('Sample23', window.Sample23)
+  /* BaseComp 공통 컴포넌트 */
+  .component('BaseAttachGrp', window.BaseAttachGrp)
   /* BaseModal 공통 컴포넌트 */
   .component('OrderDetailModal',    window.OrderDetailModal)
   .component('ProductModal',        window.ProductModal)

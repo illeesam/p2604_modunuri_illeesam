@@ -138,26 +138,42 @@ window.BaseAttachGrp = {
     return { files, acceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fmtSize, extIcon };
   },
   template: /* html */`
-<div class="comn-attach-grp">
+<div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">
   <input ref="fileInputRef" type="file" :accept="acceptAttr" multiple style="display:none;" @change="onFileChange" />
 
   <!-- 파일 목록 -->
-  <div v-if="files.length" class="comn-attach-list">
-    <div v-for="f in files" :key="f.attachId" class="comn-attach-item">
-      <span class="comn-attach-icon">{{ extIcon(f.fileExt) }}</span>
-      <span class="comn-attach-name" :title="f.fileNm">{{ f.fileNm }}</span>
-      <span class="comn-attach-size">{{ fmtSize(f.fileSize) }}</span>
-      <button class="comn-attach-del" @click.stop="removeFile(f.attachId)" title="삭제">✕</button>
+  <div v-if="files.length" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
+    <div v-for="f in files" :key="f.attachId"
+      style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
+      @mouseenter="e=>e.currentTarget.style.background='#fff8f9'"
+      @mouseleave="e=>e.currentTarget.style.background='#fff'">
+      <span style="font-size:15px;flex-shrink:0;line-height:1;">{{ extIcon(f.fileExt) }}</span>
+      <span style="flex:1;font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;" :title="f.fileNm">{{ f.fileNm }}</span>
+      <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">{{ fmtSize(f.fileSize) }}</span>
+      <button @click.stop="removeFile(f.attachId)" title="삭제"
+        style="flex-shrink:0;width:18px;height:18px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:10px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;transition:background .1s;"
+        @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
+        @mouseleave="e=>e.currentTarget.style.background='#f0f0f0'">✕</button>
     </div>
   </div>
-  <div v-else class="comn-attach-empty">첨부된 파일이 없습니다.</div>
+  <div v-else style="font-size:12px;color:#c0c0c0;padding:6px 2px 10px;display:flex;align-items:center;gap:5px;">
+    <span style="font-size:14px;">📂</span> 첨부된 파일이 없습니다.
+  </div>
 
-  <!-- 첨부 버튼 -->
-  <div class="comn-attach-footer">
-    <button class="btn btn-secondary btn-sm" @click="openPicker" type="button">
+  <!-- 하단 버튼 + 안내 -->
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button @click="openPicker" type="button"
+      style="display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border:1px solid #d9d9d9;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555;font-weight:500;transition:all .15s;white-space:nowrap;"
+      @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
+      @mouseleave="e=>{e.currentTarget.style.borderColor='#d9d9d9';e.currentTarget.style.color='#555';}">
       📎 파일첨부
     </button>
-    <span class="comn-attach-info">{{ files.length }} / {{ maxCount }}개 &nbsp;|&nbsp; 최대 {{ maxSizeMb }}MB<span v-if="allowExt!=='*'"> &nbsp;|&nbsp; {{ allowExt }}</span></span>
+    <span style="font-size:11px;color:#bbb;">
+      {{ files.length }} / {{ maxCount }}개
+      <span style="margin:0 4px;color:#e8e8e8;">|</span>
+      최대 {{ maxSizeMb }}MB
+      <span v-if="allowExt!=='*'"><span style="margin:0 4px;color:#e8e8e8;">|</span>{{ allowExt }}</span>
+    </span>
   </div>
 </div>
 `
