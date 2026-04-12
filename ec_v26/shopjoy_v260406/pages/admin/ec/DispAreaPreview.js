@@ -304,6 +304,68 @@ window.DispAreaPreview = {
       };
       return map[structGrid.value] || 'repeat(1,1fr)';
     });
+
+    /* ── 뷰포트 모드 (grid 탭 전용) ── */
+    const structViewport = ref('desktop');
+    const structShowReal = ref(false);
+    const STRUCT_VIEWPORT = {
+      desktop: { label:'🖥 PC',     width: null   },
+      tablet:  { label:'📟 태블릿', width:'768px' },
+      mobile:  { label:'📱 모바일', width:'375px' },
+    };
+
+    /* ── dashboard 자유배치 ── */
+    const structDashItems = reactive([]);
+    const structDashDragOver = ref(false);
+    const onStructDashDragOver  = (e) => { e.preventDefault(); structDashDragOver.value = true; };
+    const onStructDashDragLeave = () => { structDashDragOver.value = false; };
+    const onStructDashDrop = (e) => {
+      e.preventDefault(); structDashDragOver.value = false;
+      const widgets = window._dragAreaWidgets;
+      if (!widgets) return;
+      window._dragAreaWidgets = null;
+      if (widgets.length > 40) {
+        props.showToast(`위젯이 ${widgets.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
+        return;
+      }
+      const rect = e.currentTarget.getBoundingClientRect();
+      const SNAP = 20;
+      let bx = Math.max(0, Math.round((e.clientX - rect.left - 120) / SNAP) * SNAP);
+      let by = Math.max(0, Math.round((e.clientY - rect.top  - 20)  / SNAP) * SNAP);
+      const COLS = 3, W = 240, H = 180, GAP = 10;
+      widgets.forEach((w, i) => {
+        const col = i % COLS, row = Math.floor(i / COLS);
+        structDashItems.push({ id: Date.now() + i, slot: { ...w },
+          x: bx + col*(W+GAP), y: by + row*(H+GAP), w: W, h: H });
+      });
+    };
+    const startStructDashMove = (e, item) => {
+      e.preventDefault();
+      const ox = e.clientX - item.x, oy = e.clientY - item.y;
+      const mv = (me) => { item.x = Math.max(0, me.clientX - ox); item.y = Math.max(0, me.clientY - oy); };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    };
+    const startStructDashResize = (e, item) => {
+      e.preventDefault(); e.stopPropagation();
+      const sx = e.clientX, sy = e.clientY, sw = item.w, sh = item.h;
+      const mv = (me) => { item.w = Math.max(160, sw + (me.clientX - sx)); item.h = Math.max(100, sh + (me.clientY - sy)); };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    };
+    const removeStructDashItem = (id) => {
+      const i = structDashItems.findIndex(d => d.id === id);
+      if (i >= 0) structDashItems.splice(i, 1);
+    };
+
+    /* ── span 팝업 ── */
+    const structSpanPopupIdx = ref(-1);
+    const toggleStructSpanPopup = (e, idx) => {
+      e.stopPropagation();
+      structSpanPopupIdx.value = structSpanPopupIdx.value === idx ? -1 : idx;
+    };
+    const closeStructSpanPopup = () => { structSpanPopupIdx.value = -1; };
+
     const structDragOverIdx = ref(-1);
     const onStructDragOver  = (e, idx) => { e.preventDefault(); structDragOverIdx.value = idx; };
     const onStructDragLeave = () => { structDragOverIdx.value = -1; };
@@ -376,8 +438,13 @@ window.DispAreaPreview = {
       checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, checkedWidgetCount, checkedWidgetList,
       /* Tab2 그리드 */
       structGrid, STRUCT_GRID_COLS, structSlots, structCurrentSlots, structGridCols,
+      structViewport, STRUCT_VIEWPORT, structShowReal,
       structDragOverIdx, onStructDragOver, onStructDragLeave, onStructDrop,
       removeStructSlot, setStructSpan, structPlacedCount, resetStructGrid,
+      structSpanPopupIdx, toggleStructSpanPopup, closeStructSpanPopup,
+      structDashItems, structDashDragOver,
+      onStructDashDragOver, onStructDashDragLeave, onStructDashDrop,
+      startStructDashMove, startStructDashResize, removeStructDashItem,
       onAreaDragStart, onPanelDragStart, onAreaDragEnd,
       /* Tab3 */
       sourceLines, sourceText, sourceCopied, copySource,
@@ -662,22 +729,83 @@ window.DispAreaPreview = {
         <!-- 탭바 -->
         <div style="display:flex;align-items:stretch;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:0 10px;">
           <div style="display:flex;gap:2px;align-items:flex-end;padding-top:6px;flex:1;">
-            <button v-for="gid in ['grid1','grid2','grid3','grid4']" :key="gid" @click="structGrid=gid"
+            <button v-for="gid in ['grid1','grid2','grid3','grid4','dashboard']" :key="gid" @click="structGrid=gid"
               style="padding:4px 12px;border:1px solid transparent;border-bottom:none;border-radius:5px 5px 0 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:-1px;"
               :style="structGrid===gid ? 'background:#fff;border-color:#e8e8e8;border-bottom-color:#fff;color:#1d4ed8;' : 'background:transparent;color:#9ca3af;'">
               {{ gid }}
             </button>
           </div>
+          <!-- 실제컨텐츠 + 뷰포트 토글 (grid 탭 전용) -->
+          <div v-if="structGrid!=='dashboard'" style="display:flex;align-items:center;gap:3px;padding:6px 0 6px 10px;border-left:1px solid #e5e7eb;margin-left:6px;">
+            <button @click="structShowReal=!structShowReal"
+              style="font-size:11px;padding:2px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
+              :style="structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
+              {{ structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
+            </button>
+            <div style="width:1px;height:16px;background:#e5e7eb;margin-right:2px;"></div>
+            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="key" @click="structViewport=key"
+              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
+              :style="structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
+              {{ vp.label }}
+            </button>
+          </div>
           <div style="display:flex;align-items:center;gap:8px;padding:6px 0 6px 10px;">
-            <span style="font-size:12px;color:#555;font-weight:600;">{{ structPlacedCount }}개</span>
-            <button @click="resetStructGrid" style="font-size:11px;padding:2px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">초기화</button>
+            <span style="font-size:12px;color:#555;font-weight:600;">{{ structGrid==='dashboard' ? structDashItems.length : structPlacedCount }}개</span>
+            <button @click="structGrid==='dashboard' ? structDashItems.splice(0) : resetStructGrid()"
+              style="font-size:11px;padding:2px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">초기화</button>
           </div>
         </div>
         <!-- 그리드 캔버스 -->
-        <div style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
+        <div @click="closeStructSpanPopup" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
+
+          <!-- ── dashboard 캔버스 ── -->
+          <template v-if="structGrid==='dashboard'">
+            <div
+              @dragover="onStructDashDragOver"
+              @dragleave="onStructDashDragLeave"
+              @drop="onStructDashDrop"
+              style="position:relative;min-height:500px;min-width:400px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
+              :style="structDashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
+              <div v-if="!structDashItems.length && !structDashDragOver"
+                style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
+                <span style="font-size:40px;">🧩</span>
+                <span style="font-size:13px;">좌측에서 영역·패널을 드래그하여 배치하세요</span>
+              </div>
+              <div v-if="structDashDragOver && !structDashItems.length"
+                style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">▼ 여기에 배치</div>
+              <!-- 배치된 아이템 -->
+              <div v-for="item in structDashItems" :key="item.id"
+                :style="{ position:'absolute', left:item.x+'px', top:item.y+'px', width:item.w+'px', minHeight:item.h+'px',
+                  border:'1px solid #e5e7eb', borderRadius:'8px', background:'#fff',
+                  boxShadow:'0 2px 10px rgba(0,0,0,.1)', userSelect:'none', zIndex:1 }">
+                <div @mousedown="startStructDashMove($event, item)"
+                  style="display:flex;align-items:center;gap:5px;padding:5px 8px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;border-radius:8px 8px 0 0;cursor:move;">
+                  <span style="font-size:11px;">{{ wIcon(item.slot.widgetType) }}</span>
+                  <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 4px;white-space:nowrap;">{{ wLabel(item.slot.widgetType) }}</span>
+                  <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ item.slot.widgetNm }}</span>
+                  <button @click="removeStructDashItem(item.id)"
+                    style="flex-shrink:0;width:15px;height:15px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+                </div>
+                <div style="padding:8px;font-size:11px;color:#888;">{{ item.slot._panelNm }}</div>
+                <!-- 리사이즈 핸들 -->
+                <div @mousedown="startStructDashResize($event, item)"
+                  style="position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;background:linear-gradient(135deg,transparent 50%,#d1d5db 50%);border-radius:0 0 8px 0;"></div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ── grid1~4 캔버스 ── -->
+          <template v-else>
+          <!-- 뷰포트 래퍼 -->
+          <div :style="{ width: STRUCT_VIEWPORT[structViewport].width || '100%', maxWidth: STRUCT_VIEWPORT[structViewport].width || '100%', margin:'0 auto', transition:'width .3s' }">
+          <div v-if="STRUCT_VIEWPORT[structViewport].width"
+            style="text-align:center;margin-bottom:6px;font-size:11px;color:#9ca3af;font-weight:600;">
+            {{ structViewport==='mobile' ? '📱 375px' : '📟 768px' }}
+          </div>
+          <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
           <div :style="{ display:'grid', gridTemplateColumns:structGridCols, gap:'10px' }">
             <template v-for="(slot, idx) in structCurrentSlots" :key="idx">
-            <div
+            <div v-if="!structShowReal || slot"
               @dragover="onStructDragOver($event, idx)"
               @dragleave="onStructDragLeave"
               @drop="onStructDrop($event, idx)"
@@ -686,7 +814,7 @@ window.DispAreaPreview = {
                 structDragOverIdx===idx
                   ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;'
                   : slot
-                    ? 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;'
+                    ? (structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;')
                     : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
                 slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {},
                 slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {},
@@ -701,27 +829,56 @@ window.DispAreaPreview = {
                 style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;">▼ 여기에 추가</div>
               <!-- 배치된 위젯 -->
               <template v-else-if="slot">
-                <!-- 헤더 -->
-                <div style="display:flex;align-items:center;gap:4px;padding:5px 8px 4px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;flex-wrap:wrap;">
+                <!-- 실제컨텐츠 ON: ×만 -->
+                <div v-if="structShowReal" style="position:relative;">
+                  <button @click="removeStructSlot(idx)"
+                    style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+                </div>
+                <!-- 헤더 (실제컨텐츠 OFF) -->
+                <div v-else style="display:flex;align-items:center;gap:4px;padding:5px 8px 4px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
                   <span style="font-size:11px;">{{ wIcon(slot.widgetType) }}</span>
                   <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 4px;white-space:nowrap;">{{ wLabel(slot.widgetType) }}</span>
                   <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.widgetNm }}</span>
-                  <!-- span 조절 -->
-                  <span style="display:inline-flex;align-items:center;gap:1px;flex-shrink:0;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;background:#fff;">
-                    <span style="font-size:9px;color:#9ca3af;padding:0 3px;border-right:1px solid #f0f0f0;background:#f9fafb;">c</span>
-                    <button @click="setStructSpan(idx,'col',-1)" style="border:none;background:transparent;cursor:pointer;font-size:10px;padding:0 3px;color:#6b7280;line-height:16px;" :style="(slot.colSpan||1)<=1?'opacity:.3;':''">−</button>
-                    <span style="font-size:10px;min-width:13px;text-align:center;font-weight:600;color:#374151;">{{ slot.colSpan||1 }}</span>
-                    <button @click="setStructSpan(idx,'col',+1)" style="border:none;background:transparent;cursor:pointer;font-size:10px;padding:0 3px;color:#6b7280;line-height:16px;" :style="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)?'opacity:.3;':''">+</button>
-                    <span style="font-size:9px;color:#9ca3af;padding:0 3px;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;background:#f9fafb;">r</span>
-                    <button @click="setStructSpan(idx,'row',-1)" style="border:none;background:transparent;cursor:pointer;font-size:10px;padding:0 3px;color:#6b7280;line-height:16px;" :style="(slot.rowSpan||1)<=1?'opacity:.3;':''">−</button>
-                    <span style="font-size:10px;min-width:13px;text-align:center;font-weight:600;color:#374151;">{{ slot.rowSpan||1 }}</span>
-                    <button @click="setStructSpan(idx,'row',+1)" style="border:none;background:transparent;cursor:pointer;font-size:10px;padding:0 3px;color:#6b7280;line-height:16px;" :style="(slot.rowSpan||1)>=4?'opacity:.3;':''">+</button>
-                  </span>
+                  <!-- ⚙ 설정 아이콘 -->
+                  <button @click="toggleStructSpanPopup($event, idx)"
+                    :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
+                    style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
+                    :style="structSpanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">⚙</button>
                   <button @click="removeStructSlot(idx)"
                     style="flex-shrink:0;width:16px;height:16px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                 </div>
+                <!-- span 팝업 -->
+                <div v-if="!structShowReal && structSpanPopupIdx===idx" @click.stop
+                  style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
+                    <button @click="closeStructSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">✕</button>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                    <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
+                    <button @click="setStructSpan(idx,'col',-1)" :disabled="(slot.colSpan||1)<=1"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
+                    <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
+                    <button @click="setStructSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
+                    <span style="font-size:10px;color:#9ca3af;">/ {{ STRUCT_GRID_COLS[structGrid]||1 }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
+                    <button @click="setStructSpan(idx,'row',-1)" :disabled="(slot.rowSpan||1)<=1"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
+                    <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.rowSpan||1 }}</span>
+                    <button @click="setStructSpan(idx,'row',+1)" :disabled="(slot.rowSpan||1)>=4"
+                      style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                      :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">+</button>
+                    <span style="font-size:10px;color:#9ca3af;">/ 4</span>
+                  </div>
+                </div>
                 <!-- 위젯 미리보기 (기존 렌더링 재사용) -->
-                <div style="padding:10px;">
+                <div :style="structShowReal ? 'padding:0;' : 'padding:10px;'">
                   <div v-if="slot.widgetType==='image_banner'"
                     style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:20px;text-align:center;color:#fff;">
                     <div style="font-size:26px;">🖼</div>
@@ -782,11 +939,15 @@ window.DispAreaPreview = {
               </template>
             </div>
             </template>
-          </div>
+          </div><!-- /grid -->
           <div v-if="structCurrentSlots.every(s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
             좌측 영역 또는 패널을 드래그하여 배치하세요
           </div>
-        </div>
+          </div><!-- /device frame -->
+          </div><!-- /viewport wrapper -->
+          </template><!-- /grid1~4 -->
+
+        </div><!-- /캔버스 -->
       </div>
 
 
