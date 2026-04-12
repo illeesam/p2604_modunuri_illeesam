@@ -184,10 +184,14 @@ window.MyClaim = {
                 : 'color:var(--text-muted);'">{{ step }}</div>
             <button v-if="c.trackingNo && step==='수거완료' && myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= myStore.CLAIM_FLOWS[c.type].indexOf('수거완료')"
               @click.stop="openTracking2(c.courier, c.trackingNo)"
-              style="margin-top:4px;padding:2px 6px;border-radius:4px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">↩ 수거</button>
+              style="margin-top:4px;padding:2px 6px;border-radius:4px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">
+              {{ (c.courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}수거
+            </button>
             <button v-if="c.exchangeTrackingNo && step==='발송완료' && myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= myStore.CLAIM_FLOWS[c.type].indexOf('발송완료')"
               @click.stop="openTracking2(c.exchangeCourier, c.exchangeTrackingNo)"
-              style="margin-top:3px;padding:2px 6px;border-radius:4px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">📦 교환</button>
+              style="margin-top:3px;padding:2px 6px;border-radius:4px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">
+              {{ (c.exchangeCourier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}발송
+            </button>
           </div>
           <div v-if="si < myStore.CLAIM_FLOWS[c.type].length-1" style="height:2px;flex:1;margin-bottom:16px;"
             :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'background:'+myStore.CLAIM_TYPE_COLOR[c.type] : 'background:var(--border);'"></div>

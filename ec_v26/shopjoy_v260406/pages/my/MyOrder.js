@@ -274,7 +274,7 @@ window.MyOrder = {
             <button v-if="o.status===step.status && o.trackingNo && myStore.SHOW_COURIER.includes(step.status)"
               @click.stop="openTracking(o.courier, o.trackingNo)"
               style="margin-top:3px;padding:1px 6px;border-radius:4px;border:1px solid #86efac;background:#dcfce7;color:#15803d;cursor:pointer;font-size:0.58rem;font-weight:700;white-space:nowrap;">
-              🚚 배송
+              {{ (o.courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}배송
             </button>
           </div>
           <div v-if="si < myStore.ORDER_FLOW.length-1" style="height:2px;flex:1;margin-bottom:16px;flex-shrink:0;min-width:8px;"
