@@ -21,7 +21,17 @@ window.EcDispWidgetLibMng = {
       { value: 'file_list',      label: '파일목록' },
       { value: 'coupon',         label: '쿠폰' },
       { value: 'html_editor',    label: 'HTML 에디터' },
-      { value: 'event_banner',   label: '이벤트' },
+      { value: 'textarea',       label: '텍스트 영역' },
+      { value: 'markdown',       label: 'Markdown' },
+      { value: 'barcode',         label: '바코드' },
+      { value: 'qrcode',          label: 'QR코드' },
+      { value: 'barcode_qrcode',  label: '바코드+QR' },
+      { value: 'video_player',    label: '동영상 플레이어' },
+      { value: 'countdown',       label: '카운트다운 타이머' },
+      { value: 'payment_widget',  label: '결제위젯' },
+      { value: 'approval_widget', label: '전자결재' },
+      { value: 'map_widget',      label: '지도맵' },
+      { value: 'event_banner',    label: '이벤트' },
       { value: 'cache_banner',   label: '캐쉬' },
       { value: 'widget_embed',   label: '위젯' },
     ];
@@ -31,7 +41,10 @@ window.EcDispWidgetLibMng = {
       'chart_pie':'🥧',   'text_banner':'📝',     'info_card':'ℹ️',
       'popup':'💬',        'file':'📎',            'file_list':'📁',
       'coupon':'🎟',       'html_editor':'📄',     'event_banner':'🎉',
-      'cache_banner':'💰', 'widget_embed':'🧩',
+      'cache_banner':'💰', 'widget_embed':'🧩',    'textarea':'📋',
+      'markdown':'📑',       'barcode':'🔖',           'qrcode':'📱',
+      'barcode_qrcode':'🔖', 'video_player':'▶️',      'countdown':'⏱',
+      'payment_widget':'💳', 'approval_widget':'✅',   'map_widget':'🗺',
     };
     const wTypeLabel = (v) => WIDGET_TYPES.find(t => t.value === v)?.label || v;
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
@@ -171,6 +184,8 @@ window.EcDispWidgetLibMng = {
           <th style="width:160px;">위젯 유형</th>
           <th>라이브러리명</th>
           <th>내용 요약</th>
+          <th style="width:64px;text-align:center;">타이틀여부</th>
+          <th style="width:120px;">타이틀</th>
           <th style="width:140px;">사용위치경로</th>
           <th style="width:60px;text-align:center;">적용수</th>
           <th style="width:100px;">태그</th>
@@ -182,7 +197,7 @@ window.EcDispWidgetLibMng = {
       </thead>
       <tbody>
         <tr v-if="pageList.length===0">
-          <td colspan="11" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
+          <td colspan="13" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
         </tr>
         <tr v-for="(d, idx) in pageList" :key="d.libId"
           :style="selectedId===d.libId ? 'background:#fff8f8;' : ''"
@@ -197,6 +212,13 @@ window.EcDispWidgetLibMng = {
           </td>
           <td style="font-weight:600;font-size:13px;">{{ d.name }}</td>
           <td style="font-size:12px;color:#777;">{{ contentSummary(d) }}</td>
+          <td style="text-align:center;">
+            <span v-if="d.titleYn==='Y'" class="badge badge-blue" style="font-size:11px;">표시</span>
+            <span v-else style="font-size:11px;color:#ccc;">미표시</span>
+          </td>
+          <td style="font-size:12px;color:#555;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            {{ d.titleYn==='Y' && d.title ? d.title : '-' }}
+          </td>
           <td style="font-size:11px;">
             <span v-if="!d.usedPaths || !d.usedPaths.length" style="color:#ccc;">-</span>
             <div v-else style="display:flex;flex-direction:column;gap:2px;">
@@ -238,7 +260,7 @@ window.EcDispWidgetLibMng = {
 
   <!-- 인라인 상세 -->
   <div v-if="selectedId !== null" style="margin-top:16px;">
-    <disp-widget-lib-dtl
+    <ec-disp-widget-lib-dtl
       :key="detailKey"
       :navigate="inlineNavigate"
       :admin-data="adminData"

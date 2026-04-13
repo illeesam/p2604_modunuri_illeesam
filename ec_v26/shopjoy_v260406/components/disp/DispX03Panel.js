@@ -7,6 +7,8 @@ window.DispX03Panel = {
     isLoggedIn: { type: Boolean, default: false },
     userGrade: { type: String, default: '' },
     layout: { type: String, default: 'vertical' }, /* vertical | horizontal | grid */
+    titleYn: { type: String, default: 'N' },   /* 패널 타이틀 표시 여부 */
+    title:   { type: String, default: '' },    /* 패널 타이틀 텍스트 */
   },
   emits: ['widget-action'],
   setup(props, { emit }) {
@@ -31,7 +33,13 @@ window.DispX03Panel = {
     return { areaWidgets, onWidgetAction, layoutStyle };
   },
   template: /* html */`
-<div class="disp-panel" :data-area="area" :style="layoutStyle">
+<div class="disp-panel" :data-area="area">
+  <!-- 패널 타이틀 -->
+  <div v-if="titleYn==='Y' && title"
+    style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
+    {{ title }}
+  </div>
+  <div :style="layoutStyle">
   <disp-x04-widget
     v-for="w in areaWidgets"
     :key="w.dispId"
@@ -42,6 +50,7 @@ window.DispX03Panel = {
   />
   <div v-if="areaWidgets.length===0" style="color:#ccc;font-size:12px;padding:8px;text-align:center;">
     [{{ area }}] 활성 위젯 없음
+  </div>
   </div>
 </div>
 `

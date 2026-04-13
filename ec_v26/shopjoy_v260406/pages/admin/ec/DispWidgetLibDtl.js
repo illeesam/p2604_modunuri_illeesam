@@ -4,7 +4,7 @@ window.EcDispWidgetLibDtl = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
-    const { reactive, computed, ref, onMounted, watch } = Vue;
+    const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
 
     const WIDGET_TYPES = [
@@ -22,7 +22,17 @@ window.EcDispWidgetLibDtl = {
       { value: 'file_list',      label: '파일목록' },
       { value: 'coupon',         label: '쿠폰' },
       { value: 'html_editor',    label: 'HTML 에디터' },
-      { value: 'event_banner',   label: '이벤트' },
+      { value: 'textarea',       label: '텍스트 영역' },
+      { value: 'markdown',       label: 'Markdown' },
+      { value: 'barcode',         label: '바코드' },
+      { value: 'qrcode',          label: 'QR코드' },
+      { value: 'barcode_qrcode',  label: '바코드+QR' },
+      { value: 'video_player',    label: '동영상 플레이어' },
+      { value: 'countdown',       label: '카운트다운 타이머' },
+      { value: 'payment_widget',  label: '결제위젯' },
+      { value: 'approval_widget', label: '전자결재' },
+      { value: 'map_widget',      label: '지도맵' },
+      { value: 'event_banner',    label: '이벤트' },
       { value: 'cache_banner',   label: '캐쉬' },
       { value: 'widget_embed',   label: '위젯' },
     ];
@@ -30,6 +40,7 @@ window.EcDispWidgetLibDtl = {
     /* ── 폼 초기값 ── */
     const makeForm = () => ({
       libId: null, name: '', widgetType: 'image_banner', desc: '', tags: '', status: '활성',
+      titleYn: 'N', title: '',
       usedPaths: [],
       regDate: new Date().toISOString().slice(0, 10),
       /* 위젯 공통 */
@@ -54,6 +65,25 @@ window.EcDispWidgetLibDtl = {
       couponCode: '', couponDesc: '',
       /* HTML 에디터 */
       htmlContent: '',
+      /* 텍스트 영역 */
+      textareaContent: '',
+      /* Markdown */
+      markdownContent: '',
+      /* 바코드 / QR */
+      codeValue: '', codeFormat: 'CODE128', codeWidth: 2, codeHeight: 60,
+      showCodeLabel: true, qrSize: 120, qrErrorLevel: 'M',
+      /* 동영상 */
+      videoUrl: '', videoType: 'youtube', videoAutoplay: false, videoControls: true,
+      /* 카운트다운 */
+      countdownTarget: '', countdownTitle: '이벤트 종료까지', countdownExpiredMsg: '이벤트가 종료되었습니다.',
+      countdownBgColor: '#1a237e', countdownTextColor: '#ffffff',
+      /* 결제위젯 */
+      payAmount: 0, payCurrency: 'KRW', payMethods: 'card,kakao,naver,toss',
+      payButtonLabel: '결제하기', payButtonColor: '#1677ff',
+      /* 전자결재 */
+      approvalDocType: '구매승인', approvalTitle: '', approvalLine: '[{"role":"담당자","name":""},{"role":"팀장","name":""},{"role":"부서장","name":""}]',
+      /* 지도맵 */
+      mapType: 'google', mapAddress: '', mapLat: '', mapLng: '', mapZoom: 14, mapMarkerLabel: '',
       /* 이벤트 */
       eventId: '',
       /* 캐시 */
@@ -68,10 +98,14 @@ window.EcDispWidgetLibDtl = {
     const errors = reactive({});
 
     /* ── 기존 데이터 로드 ── */
-    onMounted(() => {
+    onMounted(async () => {
       if (!isNew.value) {
         const src = (props.adminData.widgetLibs || []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
+      }
+      if (form.widgetType === 'html_editor') {
+        await nextTick();
+        initQuill();
       }
     });
 
@@ -87,7 +121,18 @@ window.EcDispWidgetLibDtl = {
     const isFileList    = computed(() => form.widgetType === 'file_list');
     const isCoupon      = computed(() => form.widgetType === 'coupon');
     const isHtmlEditor  = computed(() => form.widgetType === 'html_editor');
-    const isEvent       = computed(() => form.widgetType === 'event_banner');
+    const isTextarea      = computed(() => form.widgetType === 'textarea');
+    const isMarkdown      = computed(() => form.widgetType === 'markdown');
+    const isBarcode       = computed(() => form.widgetType === 'barcode');
+    const isQrcode        = computed(() => form.widgetType === 'qrcode');
+    const isBarcodeQr     = computed(() => form.widgetType === 'barcode_qrcode');
+    const isCodeWidget    = computed(() => isBarcode.value || isQrcode.value || isBarcodeQr.value);
+    const isVideoPlayer   = computed(() => form.widgetType === 'video_player');
+    const isCountdown     = computed(() => form.widgetType === 'countdown');
+    const isPayment       = computed(() => form.widgetType === 'payment_widget');
+    const isApproval      = computed(() => form.widgetType === 'approval_widget');
+    const isMapWidget     = computed(() => form.widgetType === 'map_widget');
+    const isEvent         = computed(() => form.widgetType === 'event_banner');
     const isCache       = computed(() => form.widgetType === 'cache_banner');
     const isEmbed       = computed(() => form.widgetType === 'widget_embed');
 
@@ -139,6 +184,65 @@ window.EcDispWidgetLibDtl = {
         { key: 'couponCode', label: '쿠폰 코드', type: 'input', ph: 'COUPON_CODE' },
         { key: 'couponDesc', label: '쿠폰 설명', type: 'input', ph: '' },
       ];
+      if (isTextarea.value) return [
+        { key: 'textareaContent', label: '텍스트 내용', type: 'textarea', ph: '텍스트를 입력하세요...' },
+      ];
+      if (isMarkdown.value) return [
+        { key: 'markdownContent', label: 'Markdown 내용', type: 'code', ph: '# 제목\n\n내용을 입력하세요...' },
+      ];
+      if (isCodeWidget.value) {
+        const rows = [
+          { key: 'codeValue', label: '코드 값', type: 'input', ph: 'COUPON-2026-001234' },
+        ];
+        if (isBarcode.value || isBarcodeQr.value) rows.push(
+          { key: 'codeFormat', label: '바코드 형식', type: 'select', options: [
+            {v:'CODE128',l:'CODE128 (범용)'},{v:'EAN13',l:'EAN-13'},{v:'EAN8',l:'EAN-8'},
+            {v:'UPC',l:'UPC-A'},{v:'CODE39',l:'CODE39'},{v:'ITF14',l:'ITF-14'},
+          ]},
+          { key: 'codeHeight', label: '바코드 높이 (px)', type: 'number', ph: '60' },
+          { key: 'showCodeLabel', label: '코드값 텍스트', type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
+        );
+        if (isQrcode.value || isBarcodeQr.value) rows.push(
+          { key: 'qrSize', label: 'QR 크기 (px)', type: 'number', ph: '120' },
+          { key: 'qrErrorLevel', label: '오류 정정 수준', type: 'select', options: [
+            {v:'L',l:'L – 7%'},{v:'M',l:'M – 15%'},{v:'Q',l:'Q – 25%'},{v:'H',l:'H – 30%'},
+          ]},
+        );
+        return rows;
+      }
+      if (isVideoPlayer.value) return [
+        { key: 'videoUrl',      label: '동영상 URL',  type: 'input',  ph: 'https://youtube.com/watch?v=...' },
+        { key: 'videoType',     label: '동영상 유형', type: 'select', options: [{v:'youtube',l:'YouTube'},{v:'vimeo',l:'Vimeo'},{v:'direct',l:'직접 URL (mp4)'}] },
+        { key: 'videoAutoplay', label: '자동재생',    type: 'select', options: [{v:false,l:'사용 안 함'},{v:true,l:'사용 (음소거 필요)'}] },
+        { key: 'videoControls', label: '컨트롤바',    type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
+      ];
+      if (isCountdown.value) return [
+        { key: 'countdownTarget',     label: '목표 일시',    type: 'input', ph: '2026-12-31 23:59:59' },
+        { key: 'countdownTitle',      label: '타이틀',       type: 'input', ph: '이벤트 종료까지' },
+        { key: 'countdownExpiredMsg', label: '종료 메시지',  type: 'input', ph: '이벤트가 종료되었습니다.' },
+        { key: 'countdownBgColor',    label: '배경색',       type: 'color' },
+        { key: 'countdownTextColor',  label: '글자색',       type: 'color' },
+      ];
+      if (isPayment.value) return [
+        { key: 'payAmount',      label: '결제 금액',            type: 'number', ph: '0' },
+        { key: 'payCurrency',    label: '통화',                 type: 'select', options: [{v:'KRW',l:'원 (KRW)'},{v:'USD',l:'달러 (USD)'}] },
+        { key: 'payMethods',     label: '결제수단 (쉼표 구분)', type: 'input',  ph: 'card,kakao,naver,toss,bank' },
+        { key: 'payButtonLabel', label: '버튼 텍스트',          type: 'input',  ph: '결제하기' },
+        { key: 'payButtonColor', label: '버튼 색상',            type: 'color' },
+      ];
+      if (isApproval.value) return [
+        { key: 'approvalDocType', label: '문서 유형',     type: 'select', options: [{v:'구매승인',l:'구매승인'},{v:'지출결의',l:'지출결의'},{v:'휴가신청',l:'휴가신청'},{v:'기안',l:'기안'},{v:'품의서',l:'품의서'}] },
+        { key: 'approvalTitle',   label: '결재 제목',     type: 'input', ph: '' },
+        { key: 'approvalLine',    label: '결재선 (JSON)', type: 'code',  ph: '[{"role":"담당자","name":"홍길동"},{"role":"팀장","name":""}]' },
+      ];
+      if (isMapWidget.value) return [
+        { key: 'mapType',        label: '지도 유형',  type: 'select', options: [{v:'google',l:'Google Maps'},{v:'kakao',l:'카카오맵'},{v:'naver',l:'네이버지도'}] },
+        { key: 'mapAddress',     label: '주소',       type: 'input',  ph: '서울시 강남구 테헤란로 123' },
+        { key: 'mapLat',         label: '위도 (lat)', type: 'input',  ph: '37.5005' },
+        { key: 'mapLng',         label: '경도 (lng)', type: 'input',  ph: '127.0356' },
+        { key: 'mapZoom',        label: '줌 레벨',   type: 'number', ph: '14' },
+        { key: 'mapMarkerLabel', label: '마커 라벨', type: 'input',  ph: '우리 매장' },
+      ];
       if (isEvent.value) return [
         { key: 'eventId', label: '이벤트 ID', type: 'input', ph: '' },
       ];
@@ -186,6 +290,57 @@ window.EcDispWidgetLibDtl = {
       authRequired: false,
       authGrade: '',
     }));
+
+    /* ── Quill 에디터 (HTML 에디터 유형) ── */
+    const htmlContentEl  = ref(null);
+    const htmlSourceMode = ref(false);
+    let quillInst = null;
+
+    const QUILL_OPTS = {
+      theme: 'snow',
+      modules: { toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ color: [] }, { background: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'image'],
+        ['clean'],
+      ]},
+    };
+
+    const initQuill = () => {
+      if (!htmlContentEl.value || quillInst) return;
+      quillInst = new Quill(htmlContentEl.value, QUILL_OPTS);
+      quillInst.root.innerHTML = form.htmlContent || '';
+      quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
+    };
+
+    const toggleHtmlSource = async () => {
+      if (!htmlSourceMode.value) {
+        /* WYSIWYG → 소스 */
+        if (quillInst) form.htmlContent = quillInst.root.innerHTML;
+        htmlSourceMode.value = true;
+      } else {
+        /* 소스 → WYSIWYG */
+        htmlSourceMode.value = false;
+        await nextTick();
+        if (quillInst) {
+          quillInst.off('text-change');
+          quillInst.root.innerHTML = form.htmlContent || '';
+          quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
+        } else {
+          initQuill();
+        }
+      }
+    };
+
+    watch(isHtmlEditor, async (val) => {
+      if (!val) return;
+      htmlSourceMode.value = false;
+      quillInst = null;
+      await nextTick();
+      initQuill();
+    });
 
     /* ── Yup 유효성 ── */
     const schema = window.yup.object({
@@ -252,6 +407,7 @@ window.EcDispWidgetLibDtl = {
       isPopup, isFile, isFileList, isCoupon, isHtmlEditor, isEvent, isCache, isEmbed,
       displayRows, fileListItems, addFileItem, removeFileItem, updateFileItem,
       previewWidget, sampleJson, jsonCopied, copyJson, save, remove,
+      htmlContentEl, htmlSourceMode, toggleHtmlSource,
     };
   },
   template: /* html */`
@@ -309,6 +465,24 @@ window.EcDispWidgetLibDtl = {
         </div>
       </div>
 
+      <!-- 타이틀 -->
+      <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">타이틀</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+            <input type="radio" v-model="form.titleYn" value="Y" /> 표시
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+            <input type="radio" v-model="form.titleYn" value="N" /> 미표시
+          </label>
+        </div>
+        <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+          <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
+          <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
+        </div>
+      </div>
+
       <!-- 사용위치경로 -->
       <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;">
@@ -358,6 +532,7 @@ window.EcDispWidgetLibDtl = {
             <input  v-else-if="row.type==='number'"  v-model.number="form[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
             <input  v-else-if="row.type==='color'"   v-model="form[row.key]" type="color" class="form-control" style="margin:0;height:36px;padding:2px 6px;" />
             <textarea v-else-if="row.type==='textarea'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="3" style="margin:0;"></textarea>
+            <textarea v-else-if="row.type==='code'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;"></textarea>
             <select v-else-if="row.type==='select'" v-model="form[row.key]" class="form-control" style="margin:0;">
               <option v-for="o in row.options" :key="o.v" :value="o.v">{{ o.l }}</option>
             </select>
@@ -367,7 +542,18 @@ window.EcDispWidgetLibDtl = {
         <!-- HTML 에디터 -->
         <div v-else-if="isHtmlEditor" class="form-group" style="margin:0;">
           <label class="form-label">HTML 내용</label>
-          <textarea v-model="form.htmlContent" class="form-control" rows="8" placeholder="<p>HTML 내용을 입력하세요</p>" style="margin:0;font-family:monospace;font-size:12px;"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
+            <button @click="toggleHtmlSource"
+              :style="htmlSourceMode ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#f5f5f5;color:#555;border-color:#d0d0d0;'"
+              style="font-size:11px;padding:3px 10px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
+              {{ htmlSourceMode ? '✓ 디자인' : '</> HTML' }}
+            </button>
+          </div>
+          <div style="background:#fff;border:1px solid #d9d9d9;border-radius:6px;overflow:hidden;">
+            <div v-show="!htmlSourceMode" ref="htmlContentEl"></div>
+            <textarea v-if="htmlSourceMode" v-model="form.htmlContent"
+              style="width:100%;min-height:180px;padding:10px 12px;border:none;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;margin:0;background:#fff;outline:none;"></textarea>
+          </div>
         </div>
 
         <!-- 파일목록 -->

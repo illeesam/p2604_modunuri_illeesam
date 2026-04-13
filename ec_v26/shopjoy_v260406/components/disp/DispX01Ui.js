@@ -144,8 +144,9 @@ window.DispX01Ui = {
         if (ai > 0) lines.push({ type:'blank' });
 
         const _aLayout = info?.layoutType === 'dashboard' ? 'dashboard' : `${info?.layoutType||'grid'}:${info?.gridCols||1}`;
+        const _aTitleYn = info?.titleYn === 'Y' ? (info?.title || '(제목없음)') : '미표시';
         lines.push({ type:'area-meta',
-          text:`<!-- 표시형식:${_aLayout}, 정렬:${info?.sortOrd??'-'}, area="${areaCode}" -->` });
+          text:`<!-- 표시형식:${_aLayout}, 정렬:${info?.sortOrd??'-'}, 타이틀:${_aTitleYn}, area="${areaCode}" -->` });
         lines.push({ type:'area-open',
           text:`<DispArea area="${areaCode}" areaLabel="${info?.codeLabel||areaCode}" layoutType="${info?.layoutType||'grid'}" gridCols="${info?.gridCols||1}">` });
 
@@ -158,8 +159,9 @@ window.DispX01Ui = {
               ? `${p.dispStartDate||'∞'}${p.dispStartTime?' '+p.dispStartTime:''} ~ ${p.dispEndDate||'∞'}${p.dispEndTime?' '+p.dispEndTime:''}`
               : '기간없음';
             const _pLayout = p.layoutType === 'dashboard' ? 'dashboard' : `${p.layoutType||'grid'}:${p.gridCols||1}`;
+            const _pTitleYn = p.titleYn === 'Y' ? (p.title || '(제목없음)') : '미표시';
             lines.push({ type:'panel-meta',
-              text:`  <!-- 표시형식:${_pLayout}, 정렬:${p.sortOrder??'-'}, 기간: ${_period}  |  상태: ${p.status||'-'}  |  노출조건: ${p.condition||'항상 표시'}  |  인증필요: ${p.authRequired?'필요':'불필요'} -->` });
+              text:`  <!-- 표시형식:${_pLayout}, 정렬:${p.sortOrder??'-'}, 타이틀:${_pTitleYn}, 기간: ${_period}  |  상태: ${p.status||'-'}  |  노출조건: ${p.condition||'항상 표시'}  |  인증필요: ${p.authRequired?'필요':'불필요'} -->` });
             lines.push({ type:'panel-open',
               text:`  <DispPanel id="#${String(p.dispId).padStart(4,'0')}" name="${p.name}" status="${p.status}" layoutType="${p.layoutType||'grid'}" gridCols="${p.gridCols||1}" condition="${p.condition||'항상 표시'}">` });
 
@@ -443,6 +445,7 @@ window.DispX01Ui = {
             <span style="margin-left:auto;font-size:10px;color:#9c6fb5;font-family:monospace;white-space:nowrap;flex-shrink:0;">
               표시형식:{{ areaInfo(areaCode)?.layoutType||'grid' }}:{{ areaInfo(areaCode)?.gridCols||1 }},
               정렬:{{ areaInfo(areaCode)?.sortOrd??'-' }},
+              타이틀:{{ areaInfo(areaCode)?.titleYn==='Y' ? (areaInfo(areaCode)?.title||'(제목없음)') : '미표시' }},
               area="{{ areaCode }}"
             </span>
             <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:10px;">패널 {{ panelsForArea(areaCode).length }}개</span>
@@ -475,6 +478,7 @@ window.DispX01Ui = {
                 <span style="margin-left:auto;font-size:10px;color:#5a8a6a;font-family:monospace;white-space:nowrap;flex-shrink:0;">
                   표시형식:{{ p.layoutType||'grid' }}:{{ p.gridCols||1 }},
                   정렬:{{ p.sortOrder??'-' }},
+                  타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }},
                   기간: {{ (p.dispStartDate||p.dispEndDate) ? (p.dispStartDate||'∞')+' ~ '+(p.dispEndDate||'∞') : '기간없음' }}
                   &nbsp;|&nbsp;상태: {{ p.status||'-' }}
                   &nbsp;|&nbsp;노출조건: {{ p.condition||'항상 표시' }}

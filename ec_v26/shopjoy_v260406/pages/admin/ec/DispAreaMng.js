@@ -43,19 +43,22 @@ window.EcDispAreaMng = {
     const PAGE_SIZES = [10, 20, 50, 100];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['codeValue', 'codeLabel', 'areaType', 'layoutType', 'gridCols', 'remark', 'sortOrd', 'useYn'];
+    const EDIT_FIELDS = ['codeValue', 'codeLabel', 'areaType', 'layoutType', 'gridCols', 'remark', 'sortOrd', 'useYn', 'titleYn', 'title'];
 
     const makeRow = (c) => ({
       ...c,
       areaType:   c.areaType   || '',
       layoutType: c.layoutType || 'grid',
       gridCols:   c.gridCols   || 1,
+      titleYn:    c.titleYn    || 'N',
+      title:      c.title      || '',
       _row_status: 'N',
       _row_check:  false,
       _orig: {
         codeValue: c.codeValue, codeLabel: c.codeLabel,
         areaType:  c.areaType || '', remark: c.remark || '',
         layoutType: c.layoutType || 'grid', gridCols: c.gridCols || 1,
+        titleYn:   c.titleYn || 'N', title: c.title || '',
         sortOrd:   c.sortOrd,  useYn: c.useYn,
       },
     });
@@ -110,7 +113,7 @@ window.EcDispAreaMng = {
       const focused = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
         codeId: _tempId--, codeGrp: 'DISP_AREA',
-        codeValue: '', codeLabel: '', areaType: '', layoutType: 'grid', gridCols: 1, remark: '',
+        codeValue: '', codeLabel: '', areaType: '', layoutType: 'grid', gridCols: 1, titleYn: 'N', title: '', remark: '',
         sortOrd: focused ? (focused.sortOrd || 0) + 1 : (gridRows.length + 1),
         useYn: 'Y', regDate: new Date().toISOString().slice(0, 10),
         _row_status: 'I', _row_check: false, _orig: null,
@@ -197,6 +200,7 @@ window.EcDispAreaMng = {
         if (idx !== -1) Object.assign(props.adminData.codes[idx],
           { codeValue: r.codeValue, codeLabel: r.codeLabel, areaType: r.areaType,
             layoutType: r.layoutType, gridCols: r.gridCols,
+            titleYn: r.titleYn, title: r.title,
             remark: r.remark, sortOrd: r.sortOrd, useYn: r.useYn });
       });
       let nextId = Math.max(...props.adminData.codes.map(c => c.codeId), 0);
@@ -205,6 +209,7 @@ window.EcDispAreaMng = {
           codeId: ++nextId, codeGrp: 'DISP_AREA',
           codeValue: r.codeValue, codeLabel: r.codeLabel,
           areaType: r.areaType, layoutType: r.layoutType, gridCols: r.gridCols,
+          titleYn: r.titleYn, title: r.title,
           remark: r.remark, sortOrd: r.sortOrd, useYn: r.useYn,
           regDate: r.regDate,
         });
@@ -341,6 +346,8 @@ window.EcDispAreaMng = {
           <th style="width:100px;">영역유형</th>
           <th style="width:90px;">표시방식</th>
           <th style="width:60px;">열수</th>
+          <th style="width:70px;">타이틀표시</th>
+          <th style="width:120px;">타이틀</th>
           <th>설명</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
@@ -351,7 +358,7 @@ window.EcDispAreaMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="17" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.codeId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -396,6 +403,19 @@ window.EcDispAreaMng = {
             <input v-if="row.layoutType==='grid'" class="grid-input grid-num" type="number"
               v-model.number="row.gridCols" min="1" max="32"
               :disabled="row._row_status==='D'" @input="onCellChange(row)" style="width:48px;" />
+            <span v-else style="font-size:11px;color:#9ca3af;padding:0 6px;">-</span>
+          </td>
+          <td>
+            <select class="grid-select" v-model="row.titleYn"
+              :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:64px;">
+              <option value="Y">표시</option>
+              <option value="N">미표시</option>
+            </select>
+          </td>
+          <td>
+            <input v-if="row.titleYn==='Y'" class="grid-input" v-model="row.title"
+              :disabled="row._row_status==='D'" @input="onCellChange(row)"
+              placeholder="타이틀 텍스트" />
             <span v-else style="font-size:11px;color:#9ca3af;padding:0 6px;">-</span>
           </td>
           <td>

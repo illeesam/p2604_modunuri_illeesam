@@ -55,10 +55,51 @@ window.DispX04Widget = {
       return vals.map((v, i) => ({ value: v, label: labels[i] || '', pct: Math.round((v / max) * 100), color: chartColors[i % chartColors.length] }));
     });
 
-    return { visible, handleClick, nameGrad, chartBars, chartColors };
+    const parseMarkdown = (md) => (window.marked ? window.marked.parse(md || '') : (md || ''));
+
+    /* 동영상 embed URL 생성 */
+    const getVideoEmbed = (w) => {
+      const url = (w.videoUrl || '').trim();
+      if (!url) return null;
+      if (w.videoType === 'youtube' || url.includes('youtube') || url.includes('youtu.be')) {
+        const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\?\/\s]+)/);
+        if (!m) return null;
+        const params = `controls=${w.videoControls !== false ? 1 : 0}&mute=1`;
+        return `https://www.youtube.com/embed/${m[1]}?${params}`;
+      }
+      if (w.videoType === 'vimeo' || url.includes('vimeo')) {
+        const m = url.match(/vimeo\.com\/(\d+)/);
+        if (!m) return null;
+        return `https://player.vimeo.com/video/${m[1]}`;
+      }
+      return url;
+    };
+
+    /* 지도 embed URL 생성 */
+    const getMapEmbed = (w) => {
+      if (!w.mapAddress && !w.mapLat) return null;
+      const q = (w.mapLat && w.mapLng)
+        ? `${w.mapLat},${w.mapLng}`
+        : encodeURIComponent(w.mapAddress || '');
+      return `https://maps.google.com/maps?q=${q}&z=${w.mapZoom || 14}&output=embed&hl=ko`;
+    };
+
+    /* 결재선 JSON 파싱 */
+    const parseApprovalLine = (json) => {
+      try { return JSON.parse(json || '[]'); }
+      catch { return [{ role: '담당자', name: '' }, { role: '팀장', name: '' }, { role: '부서장', name: '' }]; }
+    };
+
+    return { visible, handleClick, nameGrad, chartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
   },
   template: /* html */`
 <div v-if="visible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleClick">
+
+  <!-- ─── 위젯 타이틀 ─── -->
+  <div v-if="widget.titleYn==='Y' && widget.title"
+    style="font-size:14px;font-weight:700;color:var(--text-primary,#222);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--blue,#1677ff);">
+    {{ widget.title }}
+  </div>
 
   <!-- ─── 이미지 배너 ─── -->
   <template v-if="widget.widgetType==='image_banner'">
@@ -199,16 +240,116 @@ window.DispX04Widget = {
 
   <!-- ─── HTML 에디터 ─── -->
   <template v-else-if="widget.widgetType==='html_editor'">
-    <div style="background:#1e1e2e;border-radius:10px;overflow:hidden;">
-      <div style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#2d2d3f;border-bottom:1px solid #444;">
-        <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57;display:inline-block;"></span>
-        <span style="width:10px;height:10px;border-radius:50%;background:#ffbd2e;display:inline-block;"></span>
-        <span style="width:10px;height:10px;border-radius:50%;background:#28c940;display:inline-block;"></span>
-        <span style="font-size:11px;color:#888;margin-left:6px;">HTML 에디터 · {{ widget.name }}</span>
+    <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
+        <span style="font-size:11px;color:#888;">📄 {{ widget.name }}</span>
       </div>
-      <div style="padding:14px 18px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#cdd9e5;min-height:60px;white-space:pre-wrap;">
-        <span v-if="widget.htmlContent">{{ widget.htmlContent.slice(0,200) }}<span v-if="widget.htmlContent.length>200" style="color:#555;">...</span></span>
-        <span v-else style="color:#555;"><!-- HTML 내용 없음 --></span>
+      <div v-if="widget.htmlContent" style="padding:14px 16px;font-size:13px;line-height:1.7;min-height:40px;" v-html="widget.htmlContent"></div>
+      <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">HTML 내용 없음</div>
+    </div>
+  </template>
+
+  <!-- ─── 텍스트 영역 ─── -->
+  <template v-else-if="widget.widgetType==='textarea'">
+    <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
+        <span style="font-size:11px;color:#888;">📋 {{ widget.name }}</span>
+      </div>
+      <pre v-if="widget.textareaContent" style="margin:0;padding:14px 16px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;font-family:inherit;background:#fff;">{{ widget.textareaContent }}</pre>
+      <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">내용 없음</div>
+    </div>
+  </template>
+
+  <!-- ─── Markdown ─── -->
+  <template v-else-if="widget.widgetType==='markdown'">
+    <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
+        <span style="font-size:11px;color:#888;">📑 {{ widget.name }}</span>
+      </div>
+      <div v-if="widget.markdownContent" style="padding:14px 16px;font-size:13px;line-height:1.7;" v-html="parseMarkdown(widget.markdownContent)"></div>
+      <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">Markdown 내용 없음</div>
+    </div>
+  </template>
+
+  <!-- ─── 바코드 / QR코드 ─── -->
+  <template v-else-if="widget.widgetType==='barcode'||widget.widgetType==='qrcode'||widget.widgetType==='barcode_qrcode'">
+    <barcode-widget :widget="widget" />
+  </template>
+
+  <!-- ─── 동영상 플레이어 ─── -->
+  <template v-else-if="widget.widgetType==='video_player'">
+    <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
+      <div v-if="getVideoEmbed(widget)" style="position:relative;padding-top:56.25%;background:#000;">
+        <iframe :src="getVideoEmbed(widget)"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+          allowfullscreen allow="accelerometer;clipboard-write;encrypted-media;gyroscope;picture-in-picture">
+        </iframe>
+      </div>
+      <div v-else style="background:#1a1a2e;padding:40px 20px;text-align:center;color:#fff;">
+        <div style="font-size:40px;margin-bottom:8px;">▶</div>
+        <div style="font-size:12px;opacity:.6;">동영상 URL을 입력하세요</div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ─── 카운트다운 타이머 ─── -->
+  <template v-else-if="widget.widgetType==='countdown'">
+    <countdown-widget :widget="widget" />
+  </template>
+
+  <!-- ─── 결제위젯 ─── -->
+  <template v-else-if="widget.widgetType==='payment_widget'">
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:20px;">
+      <div style="font-size:22px;font-weight:900;color:#1a1a2e;margin-bottom:4px;letter-spacing:-.5px;">
+        {{ Number(widget.payAmount||0).toLocaleString() }}<span style="font-size:14px;font-weight:600;margin-left:2px;">{{ widget.payCurrency==='USD' ? 'USD' : '원' }}</span>
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:14px;">{{ widget.name }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+        <div v-for="m in (widget.payMethods||'card').split(',')" :key="m"
+          style="padding:5px 10px;border:1px solid #e8e8e8;border-radius:16px;font-size:11px;background:#fafafa;color:#555;">
+          {{ {'card':'💳 카드','kakao':'💛 카카오페이','naver':'🟢 네이버페이','toss':'🔵 토스','bank':'🏦 계좌이체'}[m.trim()] || m.trim() }}
+        </div>
+      </div>
+      <button :style="'width:100%;padding:11px;background:'+(widget.payButtonColor||'#1677ff')+';color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;'">
+        {{ widget.payButtonLabel || '결제하기' }}
+      </button>
+    </div>
+  </template>
+
+  <!-- ─── 전자결재 ─── -->
+  <template v-else-if="widget.widgetType==='approval_widget'">
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
+      <div style="background:#1a237e;color:#fff;padding:10px 16px;font-size:13px;font-weight:700;">
+        ✅ {{ widget.approvalDocType || '전자결재' }}<span v-if="widget.approvalTitle"> – {{ widget.approvalTitle }}</span>
+      </div>
+      <div style="display:flex;border-bottom:1px solid #e8e8e8;overflow-x:auto;">
+        <div v-for="(ap, i) in parseApprovalLine(widget.approvalLine)" :key="i"
+          style="flex:1;min-width:72px;text-align:center;padding:10px 6px;border-right:1px solid #f0f0f0;">
+          <div style="font-size:10px;color:#aaa;margin-bottom:6px;">{{ ap.role }}</div>
+          <div style="width:36px;height:36px;border-radius:50%;background:#f5f5f5;border:1px solid #e0e0e0;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:16px;">
+            {{ ap.status==='approved'?'✅':ap.status==='rejected'?'❌':'👤' }}
+          </div>
+          <div style="font-size:11px;color:#333;font-weight:600;">{{ ap.name || '(미정)' }}</div>
+        </div>
+      </div>
+      <div style="padding:10px 14px;font-size:12px;color:#888;">결재를 진행합니다.</div>
+    </div>
+  </template>
+
+  <!-- ─── 지도맵 ─── -->
+  <template v-else-if="widget.widgetType==='map_widget'">
+    <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
+      <iframe v-if="getMapEmbed(widget)" :src="getMapEmbed(widget)"
+        style="width:100%;height:220px;border:none;display:block;"
+        allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+      <div v-else style="height:120px;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+        <span style="font-size:28px;">🗺</span>
+        <span style="font-size:12px;color:#aaa;">주소 또는 위도/경도를 입력하세요</span>
+      </div>
+      <div v-if="widget.mapAddress||widget.mapMarkerLabel"
+        style="padding:8px 12px;font-size:12px;color:#555;border-top:1px solid #f0f0f0;background:#fafafa;">
+        📍 {{ widget.mapMarkerLabel || widget.mapAddress }}
       </div>
     </div>
   </template>

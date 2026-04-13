@@ -62,6 +62,14 @@ window.EcDispPanelMng = {
       if (d.widgetType === 'event_banner') return d.eventId ? '이벤트#' + d.eventId : '-';
       if (d.widgetType === 'cache_banner') return d.cacheDesc || '-';
       if (d.widgetType === 'html_editor') return d.htmlContent ? d.htmlContent.replace(/<[^>]+>/g, '').slice(0, 20) + '…' : '-';
+      if (d.widgetType === 'textarea') return d.textareaContent ? d.textareaContent.slice(0, 20) + (d.textareaContent.length > 20 ? '…' : '') : '-';
+      if (d.widgetType === 'markdown') return d.markdownContent ? d.markdownContent.slice(0, 20) + (d.markdownContent.length > 20 ? '…' : '') : '-';
+      if (['barcode','qrcode','barcode_qrcode'].includes(d.widgetType)) return d.codeValue ? '코드: ' + d.codeValue.slice(0, 20) : '-';
+      if (d.widgetType === 'video_player')    return d.videoUrl ? d.videoUrl.slice(0, 30) + '…' : '-';
+      if (d.widgetType === 'countdown')       return d.countdownTarget || '-';
+      if (d.widgetType === 'payment_widget')  return d.payAmount ? Number(d.payAmount).toLocaleString() + '원' : '-';
+      if (d.widgetType === 'approval_widget') return d.approvalDocType || '-';
+      if (d.widgetType === 'map_widget')      return d.mapAddress || (d.mapLat ? `${d.mapLat},${d.mapLng}` : '-');
       if (d.widgetType === 'widget_embed') return d.embedCode ? d.embedCode.slice(0, 20) + '…' : '-';
       if (d.widgetType.startsWith('chart_')) return d.chartTitle || '-';
       if (d.widgetType === 'text_banner') return d.textContent ? d.textContent.slice(0, 20) + (d.textContent.length > 20 ? '…' : '') : '-';
@@ -113,6 +121,10 @@ window.EcDispPanelMng = {
       'chart_bar':'badge-orange', 'chart_line':'badge-orange', 'chart_pie':'badge-orange',
       'text_banner':'badge-gray', 'info_card':'badge-blue', 'popup':'badge-red',
       'file':'badge-gray', 'coupon':'badge-green', 'html_editor':'badge-orange',
+      'textarea':'badge-gray', 'markdown':'badge-blue',
+      'barcode':'badge-purple',  'qrcode':'badge-purple',      'barcode_qrcode':'badge-purple',
+      'video_player':'badge-red', 'countdown':'badge-orange',   'payment_widget':'badge-green',
+      'approval_widget':'badge-blue', 'map_widget':'badge-blue',
       'event_banner':'badge-blue', 'cache_banner':'badge-green', 'widget_embed':'badge-purple',
     }[t] || 'badge-gray');
     const typeLabel = t => ({
@@ -120,6 +132,10 @@ window.EcDispPanelMng = {
       'chart_bar':'차트(Bar)', 'chart_line':'차트(Line)', 'chart_pie':'차트(Pie)',
       'text_banner':'텍스트배너', 'info_card':'정보카드', 'popup':'팝업',
       'file':'파일', 'coupon':'쿠폰', 'html_editor':'HTML에디터',
+      'textarea':'텍스트영역', 'markdown':'Markdown',
+      'barcode':'바코드',      'qrcode':'QR코드',        'barcode_qrcode':'바코드+QR',
+      'video_player':'동영상', 'countdown':'카운트다운', 'payment_widget':'결제위젯',
+      'approval_widget':'전자결재', 'map_widget':'지도맵',
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     }[t] || t);
 
@@ -199,6 +215,10 @@ window.EcDispPanelMng = {
       'cond_product':'조건상품', 'chart_bar':'차트(Bar)', 'chart_line':'차트(Line)', 'chart_pie':'차트(Pie)',
       'text_banner':'텍스트 배너', 'info_card':'정보카드', 'popup':'팝업',
       'file':'파일', 'file_list':'파일목록', 'coupon':'쿠폰', 'html_editor':'HTML 에디터',
+      'textarea':'텍스트 영역', 'markdown':'Markdown',
+      'barcode':'바코드',      'qrcode':'QR코드',        'barcode_qrcode':'바코드+QR',
+      'video_player':'동영상', 'countdown':'카운트다운', 'payment_widget':'결제위젯',
+      'approval_widget':'전자결재', 'map_widget':'지도맵',
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     };
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
@@ -341,6 +361,8 @@ window.EcDispPanelMng = {
           <th style="width:76px;text-align:center;">표시방식</th>
           <th style="width:46px;text-align:center;">열수</th>
           <th style="width:48px;text-align:center;">순서</th>
+          <th style="width:64px;text-align:center;">타이틀여부</th>
+          <th style="width:120px;">타이틀</th>
           <th style="width:64px;text-align:center;">상태</th>
           <th style="width:96px;text-align:center;">노출조건</th>
           <th style="width:52px;text-align:center;">인증</th>
@@ -352,7 +374,7 @@ window.EcDispPanelMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="18" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <template v-for="(d, pageIdx) in pageList" :key="d.dispId">
           <tr draggable="true"
             @dragstart="onPanelDragStart($event, pageIdx)"
@@ -397,6 +419,13 @@ window.EcDispPanelMng = {
               <span v-else style="font-size:13px;font-weight:700;color:#0369a1;">{{ d.gridCols||1 }}</span>
             </td>
             <td style="text-align:center;font-size:13px;font-weight:600;color:#555;">{{ d.sortOrder ?? '-' }}</td>
+            <td style="text-align:center;">
+              <span v-if="d.titleYn==='Y'" class="badge badge-blue" style="font-size:11px;">표시</span>
+              <span v-else style="font-size:11px;color:#ccc;">미표시</span>
+            </td>
+            <td style="font-size:12px;color:#555;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              {{ d.titleYn==='Y' && d.title ? d.title : '-' }}
+            </td>
             <td style="text-align:center;"><span class="badge" :class="statusBadge(d.status)">{{ d.status }}</span></td>
             <td style="text-align:center;">
               <span style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 8px;white-space:nowrap;">
@@ -437,7 +466,7 @@ window.EcDispPanelMng = {
           </tr>
           <!-- 위젯 펼치기 서브 행 -->
           <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
-            <td colspan="15" style="padding:0;background:#f8f9fb;border-top:none;">
+            <td colspan="17" style="padding:0;background:#f8f9fb;border-top:none;">
               <div style="padding:10px 16px 12px 44px;">
                 <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">▸ 위젯 구성</div>
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">
@@ -507,7 +536,7 @@ window.EcDispPanelMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <disp-panel-dtl
+    <ec-disp-panel-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
       :admin-data="adminData"

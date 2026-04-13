@@ -12,6 +12,8 @@ window.DispX02Area = {
     showDesc:   { type: Boolean, default: true },      // areaLabel 표시 여부
     isLoggedIn: { type: Boolean, default: false },
     userGrade:  { type: String,  default: '' },
+    titleYn:    { type: String,  default: 'N' },       // 영역 타이틀 표시 여부
+    title:      { type: String,  default: '' },        // 영역 타이틀 텍스트
   },
   setup(props) {
     const { computed } = Vue;
@@ -124,6 +126,12 @@ window.DispX02Area = {
     <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;letter-spacing:.5px;">{{ area }}</code>
     <span v-if="showDesc" style="font-size:14px;font-weight:700;">{{ areaLabel || area }}</span>
     <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ panels.length }}개</span>
+  </div>
+
+  <!-- 영역 타이틀 -->
+  <div v-if="titleYn==='Y' && title"
+    style="padding:12px 16px 8px;font-size:16px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:16px;">
+    {{ title }}
   </div>
 
   <!-- ── 리스트 모드 ── -->

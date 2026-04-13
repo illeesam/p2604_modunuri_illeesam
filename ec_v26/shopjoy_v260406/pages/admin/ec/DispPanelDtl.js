@@ -15,6 +15,7 @@ window.EcDispPanelDtl = {
     const form = reactive({
       dispId: null, area: 'HOME_BANNER', name: '', status: '활성',
       layoutType: 'grid', gridCols: 1,
+      titleYn: 'N', title: '',
       htmlDesc: '',
       dispStartDate: '', dispStartTime: '00:00',
       dispEndDate:   '', dispEndTime:   '23:59',
@@ -27,6 +28,7 @@ window.EcDispPanelDtl = {
       widgetType: 'image_banner',
       clickAction: 'none', clickTarget: '',
       sortOrder: 1,
+      titleYn: 'N', title: '',
       imageUrl: '', linkUrl: '', altText: '',
       productIds: '',
       /* 조건상품 */
@@ -41,6 +43,17 @@ window.EcDispPanelDtl = {
       fileUrl: '', fileLabel: '',
       couponCode: '', couponDesc: '',
       htmlContent: '',
+      textareaContent: '',
+      markdownContent: '',
+      codeValue: '', codeFormat: 'CODE128', codeWidth: 2, codeHeight: 60,
+      showCodeLabel: true, qrSize: 120, qrErrorLevel: 'M',
+      videoUrl: '', videoType: 'youtube', videoAutoplay: false, videoControls: true,
+      countdownTarget: '', countdownTitle: '이벤트 종료까지', countdownExpiredMsg: '이벤트가 종료되었습니다.',
+      countdownBgColor: '#1a237e', countdownTextColor: '#ffffff',
+      payAmount: 0, payCurrency: 'KRW', payMethods: 'card,kakao,naver,toss',
+      payButtonLabel: '결제하기', payButtonColor: '#1677ff',
+      approvalDocType: '구매승인', approvalTitle: '', approvalLine: '[{"role":"담당자","name":""},{"role":"팀장","name":""},{"role":"부서장","name":""}]',
+      mapType: 'google', mapAddress: '', mapLat: '', mapLng: '', mapZoom: 14, mapMarkerLabel: '',
       eventId: '',
       cacheDesc: '', cacheAmount: 0,
       embedCode: '',
@@ -49,25 +62,18 @@ window.EcDispPanelDtl = {
 
     const rows = reactive([
       makeRowData({ sortOrder: 1 }),
-      makeRowData({ sortOrder: 2 }),
-      makeRowData({ sortOrder: 3 }),
-      makeRowData({ sortOrder: 4 }),
-      makeRowData({ sortOrder: 5 }),
     ]);
+    const MAX_WIDGETS = 10;
 
-    const TAB_LABELS = [
+    const TAB_LABELS   = computed(() => [
       { key: 'info', label: '패널기본정보' },
-      { key: 'tab1', label: '위젯 1' },
-      { key: 'tab2', label: '위젯 2' },
-      { key: 'tab3', label: '위젯 3' },
-      { key: 'tab4', label: '위젯 4' },
-      { key: 'tab5', label: '위젯 5' },
-    ];
-    const TAB_ROW_MAP  = { tab1: 0, tab2: 1, tab3: 2, tab4: 3, tab5: 4 };
-    const ROW_TAB_KEYS = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5'];
+      ...rows.map((_, i) => ({ key: 'tab'+(i+1), label: '위젯 '+(i+1) })),
+    ]);
+    const TAB_ROW_MAP  = computed(() => { const m = {}; rows.forEach((_, i) => { m['tab'+(i+1)] = i; }); return m; });
+    const ROW_TAB_KEYS = computed(() => rows.map((_, i) => 'tab'+(i+1)));
 
-    const activeRowIdx = computed(() => TAB_ROW_MAP[tab.value] ?? null);
-    const activeRow    = computed(() => activeRowIdx.value !== null ? rows[activeRowIdx.value] : null);
+    const activeRowIdx = computed(() => { const idx = TAB_ROW_MAP.value[tab.value]; return idx !== undefined ? idx : null; });
+    const activeRow    = computed(() => (activeRowIdx.value !== null && activeRowIdx.value !== undefined) ? rows[activeRowIdx.value] : null);
 
     /* ── 위젯 위아래 이동 (탭순서 = 노출순서 sortOrder 자동 갱신) ── */
     const moveRow = (dir) => {
@@ -81,7 +87,7 @@ window.EcDispPanelDtl = {
       Object.assign(rows[target], a);
       /* 탭 순서(1~5)를 sortOrder에 반영 */
       rows.forEach((r, i) => { r.sortOrder = i + 1; });
-      tab.value = ROW_TAB_KEYS[target];
+      tab.value = ROW_TAB_KEYS.value[target];
     };
 
     const WIDGET_TYPES = [
@@ -99,7 +105,17 @@ window.EcDispPanelDtl = {
       { value: 'file_list',     label: '파일목록' },
       { value: 'coupon',        label: '쿠폰' },
       { value: 'html_editor',   label: 'HTML 에디터' },
-      { value: 'event_banner',  label: '이벤트' },
+      { value: 'textarea',      label: '텍스트 영역' },
+      { value: 'markdown',      label: 'Markdown' },
+      { value: 'barcode',        label: '바코드' },
+      { value: 'qrcode',         label: 'QR코드' },
+      { value: 'barcode_qrcode', label: '바코드+QR' },
+      { value: 'video_player',   label: '동영상 플레이어' },
+      { value: 'countdown',      label: '카운트다운 타이머' },
+      { value: 'payment_widget', label: '결제위젯' },
+      { value: 'approval_widget',label: '전자결재' },
+      { value: 'map_widget',     label: '지도맵' },
+      { value: 'event_banner',   label: '이벤트' },
       { value: 'cache_banner',  label: '캐쉬' },
       { value: 'widget_embed',  label: '위젯' },
     ];
@@ -120,7 +136,18 @@ window.EcDispPanelDtl = {
     const isFileList    = computed(() => activeRow.value?.widgetType === 'file_list');
     const isCoupon      = computed(() => activeRow.value?.widgetType === 'coupon');
     const isHtmlEditor  = computed(() => activeRow.value?.widgetType === 'html_editor');
-    const isEventBanner = computed(() => activeRow.value?.widgetType === 'event_banner');
+    const isTextarea      = computed(() => activeRow.value?.widgetType === 'textarea');
+    const isMarkdown      = computed(() => activeRow.value?.widgetType === 'markdown');
+    const isBarcode       = computed(() => activeRow.value?.widgetType === 'barcode');
+    const isQrcode        = computed(() => activeRow.value?.widgetType === 'qrcode');
+    const isBarcodeQr     = computed(() => activeRow.value?.widgetType === 'barcode_qrcode');
+    const isCodeWidget    = computed(() => isBarcode.value || isQrcode.value || isBarcodeQr.value);
+    const isVideoPlayer   = computed(() => activeRow.value?.widgetType === 'video_player');
+    const isCountdown     = computed(() => activeRow.value?.widgetType === 'countdown');
+    const isPayment       = computed(() => activeRow.value?.widgetType === 'payment_widget');
+    const isApproval      = computed(() => activeRow.value?.widgetType === 'approval_widget');
+    const isMapWidget     = computed(() => activeRow.value?.widgetType === 'map_widget');
+    const isEventBanner   = computed(() => activeRow.value?.widgetType === 'event_banner');
     const isCacheBanner = computed(() => activeRow.value?.widgetType === 'cache_banner');
     const isWidgetEmbed = computed(() => activeRow.value?.widgetType === 'widget_embed');
     const isCondProduct = computed(() => activeRow.value?.widgetType === 'cond_product');
@@ -179,6 +206,32 @@ window.EcDispPanelDtl = {
         { key: 'couponDesc', label: '쿠폰 설명', type: 'input', ph: '쿠폰 안내 문구' },
       ];
       if (isHtmlEditor.value)  return [];   /* Quill로 별도 처리 */
+      if (isTextarea.value)    return [
+        { key: 'textareaContent', label: '텍스트 내용', type: 'textarea', ph: '텍스트를 입력하세요...' },
+      ];
+      if (isMarkdown.value)    return [
+        { key: 'markdownContent', label: 'Markdown 내용', type: 'code', ph: '# 제목\n\n내용을 입력하세요...' },
+      ];
+      if (isCodeWidget.value) {
+        const rows = [
+          { key: 'codeValue', label: '코드 값', type: 'input', ph: 'COUPON-2026-001234' },
+        ];
+        if (isBarcode.value || isBarcodeQr.value) rows.push(
+          { key: 'codeFormat', label: '바코드 형식', type: 'select', options: [
+            {v:'CODE128',l:'CODE128 (범용)'},{v:'EAN13',l:'EAN-13'},{v:'EAN8',l:'EAN-8'},
+            {v:'UPC',l:'UPC-A'},{v:'CODE39',l:'CODE39'},{v:'ITF14',l:'ITF-14'},
+          ]},
+          { key: 'codeHeight', label: '바코드 높이 (px)', type: 'number', ph: '60' },
+          { key: 'showCodeLabel', label: '코드값 텍스트', type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
+        );
+        if (isQrcode.value || isBarcodeQr.value) rows.push(
+          { key: 'qrSize', label: 'QR 크기 (px)', type: 'number', ph: '120' },
+          { key: 'qrErrorLevel', label: '오류 정정 수준', type: 'select', options: [
+            {v:'L',l:'L – 7%'},{v:'M',l:'M – 15%'},{v:'Q',l:'Q – 25%'},{v:'H',l:'H – 30%'},
+          ]},
+        );
+        return rows;
+      }
       if (isFileList.value)    return [];   /* 파일목록 별도 처리 */
       if (isCondProduct.value) return [
         { key: 'condSite',     label: '사이트 조건',   type: 'input',  ph: '사이트 코드 (비워두면 전체)' },
@@ -189,6 +242,39 @@ window.EcDispPanelDtl = {
         { key: 'condSort',     label: '정렬 기준',     type: 'select',
           options: [{v:'newest',l:'최신순'},{v:'popular',l:'인기순'},{v:'price_asc',l:'가격 낮은순'},{v:'price_desc',l:'가격 높은순'},{v:'discount',l:'할인율순'}] },
         { key: 'condLimit',    label: '표시 개수',     type: 'number', ph: '8' },
+      ];
+      if (isVideoPlayer.value) return [
+        { key: 'videoUrl',      label: '동영상 URL',  type: 'input',  ph: 'https://youtube.com/watch?v=...' },
+        { key: 'videoType',     label: '동영상 유형', type: 'select', options: [{v:'youtube',l:'YouTube'},{v:'vimeo',l:'Vimeo'},{v:'direct',l:'직접 URL (mp4)'}] },
+        { key: 'videoAutoplay', label: '자동재생',    type: 'select', options: [{v:false,l:'사용 안 함'},{v:true,l:'사용 (음소거 필요)'}] },
+        { key: 'videoControls', label: '컨트롤바',    type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
+      ];
+      if (isCountdown.value) return [
+        { key: 'countdownTarget',     label: '목표 일시',    type: 'input', ph: '2026-12-31 23:59:59' },
+        { key: 'countdownTitle',      label: '타이틀',       type: 'input', ph: '이벤트 종료까지' },
+        { key: 'countdownExpiredMsg', label: '종료 메시지',  type: 'input', ph: '이벤트가 종료되었습니다.' },
+        { key: 'countdownBgColor',    label: '배경색',       type: 'color' },
+        { key: 'countdownTextColor',  label: '글자색',       type: 'color' },
+      ];
+      if (isPayment.value) return [
+        { key: 'payAmount',      label: '결제 금액',          type: 'number', ph: '0' },
+        { key: 'payCurrency',    label: '통화',               type: 'select', options: [{v:'KRW',l:'원 (KRW)'},{v:'USD',l:'달러 (USD)'}] },
+        { key: 'payMethods',     label: '결제수단 (쉼표 구분)', type: 'input', ph: 'card,kakao,naver,toss,bank' },
+        { key: 'payButtonLabel', label: '버튼 텍스트',         type: 'input', ph: '결제하기' },
+        { key: 'payButtonColor', label: '버튼 색상',           type: 'color' },
+      ];
+      if (isApproval.value) return [
+        { key: 'approvalDocType', label: '문서 유형', type: 'select', options: [{v:'구매승인',l:'구매승인'},{v:'지출결의',l:'지출결의'},{v:'휴가신청',l:'휴가신청'},{v:'기안',l:'기안'},{v:'품의서',l:'품의서'}] },
+        { key: 'approvalTitle',   label: '결재 제목',    type: 'input', ph: '' },
+        { key: 'approvalLine',    label: '결재선 (JSON)', type: 'code',  ph: '[{"role":"담당자","name":"홍길동"},{"role":"팀장","name":""}]' },
+      ];
+      if (isMapWidget.value) return [
+        { key: 'mapType',        label: '지도 유형', type: 'select', options: [{v:'google',l:'Google Maps'},{v:'kakao',l:'카카오맵'},{v:'naver',l:'네이버지도'}] },
+        { key: 'mapAddress',     label: '주소',      type: 'input',  ph: '서울시 강남구 테헤란로 123' },
+        { key: 'mapLat',         label: '위도 (lat)', type: 'input', ph: '37.5005' },
+        { key: 'mapLng',         label: '경도 (lng)', type: 'input', ph: '127.0356' },
+        { key: 'mapZoom',        label: '줌 레벨',   type: 'number', ph: '14' },
+        { key: 'mapMarkerLabel', label: '마커 라벨', type: 'input',  ph: '우리 매장' },
       ];
       if (isEventBanner.value) return [
         { key: 'eventId', label: '이벤트 ID', type: 'event', ph: '' },
@@ -214,6 +300,25 @@ window.EcDispPanelDtl = {
     const htmlContentEl = ref(null);
     let quillDesc    = null;
     let quillContent = null;
+    const htmlSourceMode = ref(false);  // WYSIWYG ↔ 소스 토글
+
+    const toggleHtmlSource = async () => {
+      if (!activeRow.value) return;
+      if (!htmlSourceMode.value) {
+        /* WYSIWYG → 소스: Quill 최신값 저장 후 소스 모드 ON */
+        if (quillContent) activeRow.value.htmlContent = quillContent.root.innerHTML;
+        htmlSourceMode.value = true;
+      } else {
+        /* 소스 → WYSIWYG: quillContent 재생성 없이 내용만 동기화 */
+        htmlSourceMode.value = false;
+        await nextTick();
+        if (quillContent) {
+          bindQuillContent();   // 기존 인스턴스에 textarea 값 반영
+        } else {
+          initQuillContent();   // 최초 1회만 생성
+        }
+      }
+    };
 
     const QUILL_OPTS = {
       theme: 'snow',
@@ -272,8 +377,11 @@ window.EcDispPanelDtl = {
           form.authGrade     = d.authGrade     || '';
           form.layoutType    = d.layoutType    || 'grid';
           form.gridCols      = d.gridCols      || 1;
-          if (d.rows) {
-            d.rows.forEach((r, i) => { if (rows[i]) Object.assign(rows[i], r); });
+          form.titleYn       = d.titleYn       || 'N';
+          form.title         = d.title         || '';
+          if (d.rows && d.rows.length) {
+            rows.splice(0, rows.length, ...d.rows.map((r, i) => makeRowData({ sortOrder: i+1, ...r })));
+            d.rows.forEach((_, i) => expandedSections.add('tab'+(i+1)));
           } else {
             Object.assign(rows[0], { ...d });
           }
@@ -358,7 +466,7 @@ window.EcDispPanelDtl = {
     const viewAll = ref(false);
 
     /* 아코디언 다중 펼치기 */
-    const expandedSections = reactive(new Set(['info', 'tab1', 'tab2', 'tab3', 'tab4', 'tab5']));
+    const expandedSections = reactive(new Set(['info', 'tab1']));
     const toggleSection = (key) => { if (expandedSections.has(key)) expandedSections.delete(key); else expandedSections.add(key); };
     const isSectionExpanded = (key) => expandedSections.has(key);
 
@@ -402,14 +510,34 @@ window.EcDispPanelDtl = {
       rows.forEach((r, i) => { r.sortOrder = i + 1; });
     };
 
+    /* ── 위젯 추가 / 삭제 ── */
+    const addWidget = () => {
+      if (rows.length >= MAX_WIDGETS) { props.showToast(`위젯은 최대 ${MAX_WIDGETS}개까지 추가할 수 있습니다.`, 'error'); return; }
+      rows.push(makeRowData({ sortOrder: rows.length + 1 }));
+      const newKey = 'tab' + rows.length;
+      tab.value = newKey;
+      expandedSections.add(newKey);
+    };
+    const removeWidget = (idx) => {
+      if (idx === 0 || rows.length <= 1) return;
+      const currentIdx = activeRowIdx.value;
+      rows.splice(idx, 1);
+      rows.forEach((r, i) => { r.sortOrder = i + 1; });
+      expandedSections.delete('tab' + (rows.length + 1));
+      if (currentIdx !== null && currentIdx >= rows.length) {
+        tab.value = 'tab' + rows.length;
+      }
+    };
+
     return {
       isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
+      MAX_WIDGETS, addWidget, removeWidget,
       activeRowIdx, activeRow, moveRow,
       isChart, isProduct, isImage, isText, isInfo, isPopup, isFile, isFileList,
       isCoupon, isHtmlEditor, isEventBanner, isCacheBanner, isWidgetEmbed, isCondProduct,
       displayRows, relatedEvent, save,
       fileListItems, addFileItem, removeFileItem, updateFileItem,
-      htmlDescEl, htmlContentEl,
+      htmlDescEl, htmlContentEl, htmlSourceMode, toggleHtmlSource,
       preview, openPreview, closePreview, previewWidget,
       cardPreview, openCardPreview, closeCardPreview, currentAreaLabel, wLabel,
       viewAll,
@@ -464,21 +592,38 @@ window.EcDispPanelDtl = {
             <button @click="moveRow(-1)" :disabled="activeRowIdx===0" title="위로"
               style="display:block;font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
               :style="activeRowIdx===0?'opacity:0.3;cursor:default;':''">▲</button>
-            <button @click="moveRow(1)" :disabled="activeRowIdx===4" title="아래로"
+            <button @click="moveRow(1)" :disabled="activeRowIdx===rows.length-1" title="아래로"
               style="display:block;font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
-              :style="activeRowIdx===4?'opacity:0.3;cursor:default;':''">▼</button>
+              :style="activeRowIdx===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
           </div>
           <div v-else-if="t.key !== 'info'" style="width:22px;"></div>
+          <!-- 삭제 버튼 (위젯2부터) -->
+          <button v-if="tIdx >= 2" @click.stop="removeWidget(tIdx-1)" title="위젯 삭제"
+            style="padding:0 4px;font-size:11px;border:none;background:none;cursor:pointer;color:#ccc;line-height:1;flex-shrink:0;"
+            @mouseenter="$event.currentTarget.style.color='#e8587a'"
+            @mouseleave="$event.currentTarget.style.color='#ccc'">✕</button>
           <button @click.stop="openPreview(t.key, t.label)" title="미리보기"
             style="padding:0 6px 0 2px;font-size:12px;border:none;background:none;cursor:pointer;opacity:0.4;transition:opacity .15s;"
             :style="tab===t.key ? 'opacity:0.65;' : ''"
             @mouseenter="$event.currentTarget.style.opacity='1'"
             @mouseleave="$event.currentTarget.style.opacity=tab===t.key?'0.65':'0.4'">👁</button>
         </div>
+        <!-- 위젯 추가 버튼 -->
+        <div v-if="rows.length < MAX_WIDGETS" style="padding:6px 8px;border-top:1px dashed #d0d0d0;margin-top:2px;">
+          <button @click="addWidget"
+            style="width:100%;font-size:11px;padding:6px 0;border:1px dashed #ccc;border-radius:5px;background:#fafafa;cursor:pointer;color:#888;transition:all .15s;"
+            @mouseenter="$event.currentTarget.style.cssText='width:100%;font-size:11px;padding:6px 0;border:1px dashed #e8587a;border-radius:5px;background:#fff0f4;cursor:pointer;color:#e8587a;transition:all .15s;'"
+            @mouseleave="$event.currentTarget.style.cssText='width:100%;font-size:11px;padding:6px 0;border:1px dashed #ccc;border-radius:5px;background:#fafafa;cursor:pointer;color:#888;transition:all .15s;'">
+            + 추가
+          </button>
+        </div>
       </div>
 
-      <!-- 우측 콘텐츠 -->
-      <div style="flex:1;padding-left:20px;padding-top:4px;overflow:hidden;">
+      <!-- 우측 콘텐츠 + 미리보기 -->
+      <div style="flex:1;display:flex;overflow:hidden;min-width:0;">
+
+      <!-- 폼 영역 (75%) -->
+      <div style="flex:3;padding-left:20px;padding-top:4px;overflow-y:auto;min-width:0;">
 
         <!-- ── 기본정보 ── -->
         <div v-show="tab==='info'">
@@ -499,6 +644,25 @@ window.EcDispPanelDtl = {
             <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
               <option>활성</option><option>비활성</option>
             </select>
+          </div>
+
+          <!-- 타이틀 설정 -->
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            🏷 타이틀 설정
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+              <input type="radio" v-model="form.titleYn" value="Y" :disabled="viewMode" /> 표시
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+              <input type="radio" v-model="form.titleYn" value="N" :disabled="viewMode" /> 미표시
+            </label>
+          </div>
+          <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
+            <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+              style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
           </div>
 
           <!-- 위젯 레이아웃 -->
@@ -644,6 +808,20 @@ window.EcDispPanelDtl = {
               <input class="form-control" type="number" v-model.number="activeRow.sortOrder" min="1" :readonly="viewMode" />
             </div>
           </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+              <input type="radio" v-model="activeRow.titleYn" value="Y" :disabled="viewMode" /> 표시
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+              <input type="radio" v-model="activeRow.titleYn" value="N" :disabled="viewMode" /> 미표시
+            </label>
+          </div>
+          <div v-if="activeRow.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
+            <input v-model="activeRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+              style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
+          </div>
 
           <!-- § 표현 설정 -->
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
@@ -657,7 +835,21 @@ window.EcDispPanelDtl = {
               <span v-if="activeRow.htmlContent" v-html="activeRow.htmlContent"></span>
               <span v-else style="color:#bbb;">내용 없음</span>
             </div>
-            <div v-else ref="htmlContentEl"></div>
+            <template v-else>
+              <!-- 소스 토글 버튼 -->
+              <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
+                <button @click="toggleHtmlSource"
+                  :style="htmlSourceMode ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#f5f5f5;color:#555;border-color:#d0d0d0;'"
+                  style="font-size:11px;padding:3px 10px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
+                  {{ htmlSourceMode ? '&#x2713; 디자인' : '&lt;/&gt; HTML' }}
+                </button>
+              </div>
+              <!-- WYSIWYG -->
+              <div v-show="!htmlSourceMode" ref="htmlContentEl"></div>
+              <!-- 소스 모드 -->
+              <textarea v-if="htmlSourceMode" v-model="activeRow.htmlContent"
+                style="width:100%;min-height:180px;padding:10px 12px;border:1px solid #d0d0d0;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;"></textarea>
+            </template>
           </div>
 
           <!-- 파일목록 -->
@@ -734,6 +926,7 @@ window.EcDispPanelDtl = {
                     <option v-for="o in row.options" :key="o.v" :value="o.v">{{ o.l }}</option>
                   </select>
                   <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="activeRow[row.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
+                  <textarea v-else-if="row.type==='code'" class="form-control" v-model="activeRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
                   <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
                     <input type="color" v-model="activeRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
                     <input class="form-control" v-model="activeRow[row.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
@@ -820,6 +1013,39 @@ window.EcDispPanelDtl = {
           </div>
         </div>
 
+      </div><!-- /폼 영역 -->
+
+      <!-- 미리보기 패널 (25%) -->
+      <div style="width:25%;min-width:200px;max-width:320px;border-left:1px solid #e8e8e8;background:#f7f8fb;display:flex;flex-direction:column;overflow:hidden;">
+        <!-- 미리보기 타이틀 -->
+        <div style="padding:10px 14px;border-bottom:1px solid #e0e0e0;background:#f0f2f7;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;">👁 미리보기</span>
+          <span style="font-size:10px;color:#aaa;margin-left:auto;">
+            {{ tab==='info' ? '전체 위젯' : (TAB_LABELS.find(t=>t.key===tab)||{}).label }}
+          </span>
+        </div>
+        <!-- 미리보기 내용 -->
+        <div style="flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px;">
+          <!-- 패널기본정보: 전체 위젯 -->
+          <template v-if="tab==='info'">
+            <div v-for="(r, i) in rows" :key="i">
+              <div style="font-size:10px;color:#aaa;margin-bottom:4px;font-weight:600;">위젯 {{ i+1 }}</div>
+              <disp-x04-widget
+                :widget="{...r, widgetNm: r.widgetNm||('위젯 '+(i+1)), status:'활성', condition:'항상 표시'}"
+                :is-logged-in="true"
+              />
+            </div>
+          </template>
+          <!-- 위젯1~5: 해당 위젯만 -->
+          <template v-else-if="activeRow">
+            <disp-x04-widget
+              :widget="{...activeRow, widgetNm: activeRow.widgetNm||(TAB_LABELS.find(t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
+              :is-logged-in="true"
+            />
+          </template>
+        </div>
+      </div><!-- /미리보기 패널 -->
+
       </div><!-- /우측 콘텐츠 -->
     </div><!-- /탭 모드 flex -->
 
@@ -840,9 +1066,12 @@ window.EcDispPanelDtl = {
               <button @click.stop="moveRowAt(TAB_ROW_MAP[t.key], -1)" :disabled="TAB_ROW_MAP[t.key]===0"
                 style="font-size:10px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 6px;color:#888;"
                 :style="TAB_ROW_MAP[t.key]===0?'opacity:0.3;cursor:default;':''">▲</button>
-              <button @click.stop="moveRowAt(TAB_ROW_MAP[t.key], 1)" :disabled="TAB_ROW_MAP[t.key]===4"
+              <button @click.stop="moveRowAt(TAB_ROW_MAP[t.key], 1)" :disabled="TAB_ROW_MAP[t.key]===rows.length-1"
                 style="font-size:10px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 6px;color:#888;"
-                :style="TAB_ROW_MAP[t.key]===4?'opacity:0.3;cursor:default;':''">▼</button>
+                :style="TAB_ROW_MAP[t.key]===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
+              <!-- 삭제 버튼 (위젯2부터) -->
+              <button v-if="tIdx >= 2" @click.stop="removeWidget(TAB_ROW_MAP[t.key])"
+                style="font-size:11px;padding:1px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fff0f0;color:#dc2626;cursor:pointer;">✕</button>
             </template>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
@@ -878,6 +1107,22 @@ window.EcDispPanelDtl = {
               <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
                 <option>활성</option><option>비활성</option>
               </select>
+            </div>
+            <!-- 타이틀 설정 -->
+            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🏷 타이틀 설정</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+                <input type="radio" v-model="form.titleYn" value="Y" :disabled="viewMode" /> 표시
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+                <input type="radio" v-model="form.titleYn" value="N" :disabled="viewMode" /> 미표시
+              </label>
+            </div>
+            <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
+              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+                style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📅 전시 기간</div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
@@ -955,6 +1200,20 @@ window.EcDispPanelDtl = {
                 <input class="form-control" type="number" v-model.number="r.sortOrder" min="1" :readonly="viewMode" />
               </div>
             </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+                <input type="radio" v-model="r.titleYn" value="Y" :disabled="viewMode" /> 표시
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+                <input type="radio" v-model="r.titleYn" value="N" :disabled="viewMode" /> 미표시
+              </label>
+            </div>
+            <div v-if="r.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+              <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
+              <input v-model="r.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+                style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
+            </div>
 
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🎨 표현 설정</div>
             <!-- HTML 에디터: 펼치기 모드에서는 textarea로 표시 -->
@@ -1005,6 +1264,7 @@ window.EcDispPanelDtl = {
                       <option v-for="o in drow.options" :key="o.v" :value="o.v">{{ o.l }}</option>
                     </select>
                     <textarea v-else-if="drow.type==='textarea'" class="form-control" v-model="r[drow.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="drow.type==='code'" class="form-control" v-model="r[drow.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
                     <div v-else-if="drow.type==='color'" style="display:flex;gap:8px;align-items:center;">
                       <input type="color" v-model="r[drow.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
                       <input class="form-control" v-model="r[drow.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
@@ -1086,6 +1346,15 @@ window.EcDispPanelDtl = {
 
         </div><!-- /섹션 콘텐츠 -->
       </div><!-- /v-for 섹션 -->
+      <!-- 위젯 추가 버튼 (펼치기 모드) -->
+      <div v-if="rows.length < MAX_WIDGETS" style="margin-top:6px;">
+        <button @click="addWidget"
+          style="width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;cursor:pointer;font-size:13px;color:#888;transition:all .15s;"
+          @mouseenter="$event.currentTarget.style.cssText='width:100%;padding:9px 0;border:1.5px dashed #e8587a;border-radius:8px;background:#fff0f4;cursor:pointer;font-size:13px;color:#e8587a;transition:all .15s;'"
+          @mouseleave="$event.currentTarget.style.cssText='width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;cursor:pointer;font-size:13px;color:#888;transition:all .15s;'">
+          + 위젯 추가
+        </button>
+      </div>
     </div><!-- /펼치기 아코디언 모드 -->
 
   </div>

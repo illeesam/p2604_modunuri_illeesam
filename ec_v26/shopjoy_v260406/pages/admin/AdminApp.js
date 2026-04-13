@@ -966,7 +966,8 @@
   .component('DispX02Area',      window.DispX02Area)
   .component('DispX03Panel',     window.DispX03Panel        || { template: '<div/>' })
   .component('DispX04Widget',    window.DispX04Widget       || { template: '<div/>' })
-  .component('DispX05WidgetLib', window.DispX05WidgetLib)
+  .component('BarcodeWidget',   window.BarcodeWidget   || { template: '<div/>' })
+  .component('CountdownWidget', window.CountdownWidget || { template: '<div/>' })
   /* ── components/comp/ (공통 컴포넌트) ── */
   .component('BaseAttachGrp',  window.BaseAttachGrp)
   /* ── pages/admin/ (공통) ── */
