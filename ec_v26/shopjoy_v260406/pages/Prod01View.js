@@ -1106,7 +1106,7 @@ window.Prod01View = {
 
   <!-- ══ 고정 하단 바 ══ -->
   <div v-if="product && showBottomBar"
-    style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg-card);border-top:1px solid var(--border);padding:10px 24px;display:flex;justify-content:center;align-items:center;box-shadow:0 -4px 20px rgba(0,0,0,0.08);">
+    style="position:fixed;bottom:0;left:0;right:0;z-index:100;padding:10px 24px;display:flex;justify-content:center;align-items:center;background:linear-gradient(to top, var(--bg-card) 0%, rgba(245,248,255,0.98) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(80,100,160,0.08);">
     <div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
       <div style="flex:1;min-width:0;overflow:hidden;">
         <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
