@@ -8,11 +8,20 @@ window.DispUi03 = {
     const { computed } = Vue;
 
     const dispDataset = window.adminData || window.dispDataset || { displays: [], codes: [] };
+    const qs = new URLSearchParams(location.search);
     const params = {
       areas: ['PRODUCT_TOP', 'PRODUCT_BTM'],
-      date: '', time: '', status: '', condition: '', authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: 'content,struct,source',
-      isLoggedIn: window.shopjoyAuth?.isLoggedIn ?? false,
-      userGrade: window.shopjoyAuth?.userGrade ?? '',
+      date:         qs.get('date')         || '',
+      time:         qs.get('time')         || '',
+      status:       qs.get('status')       || '',
+      condition:    qs.get('condition')    || '',
+      authRequired: qs.get('authRequired') || '',
+      authGrade:    qs.get('authGrade')    || '',
+      siteId:       qs.get('siteId')       || '',
+      memberId:     qs.get('memberId')     || '',
+      viewOpts:     qs.get('viewOpts')     || 'content,struct,source',
+      isLoggedIn:   qs.get('isLoggedIn') === 'true' || (window.shopjoyAuth?.isLoggedIn ?? false),
+      userGrade:    qs.get('userGrade')    || (window.shopjoyAuth?.userGrade ?? ''),
     };
 
     const dispOpt = {
