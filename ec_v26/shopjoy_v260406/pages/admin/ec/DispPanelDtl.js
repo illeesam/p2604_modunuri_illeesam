@@ -1031,7 +1031,10 @@ window.EcDispPanelDtl = {
             <div v-for="(r, i) in rows" :key="i">
               <div style="font-size:10px;color:#aaa;margin-bottom:4px;font-weight:600;">위젯 {{ i+1 }}</div>
               <disp-x04-widget
-                :widget="{...r, widgetNm: r.widgetNm||('위젯 '+(i+1)), status:'활성', condition:'항상 표시'}"
+                :params="{ }"
+                :disp-dataset="dispDataset"
+                :disp-opt="{ showBadges: true }"
+                :widget-item="{...r, widgetNm: r.widgetNm||('위젯 '+(i+1)), status:'활성', condition:'항상 표시'}"
                 :is-logged-in="true"
               />
             </div>
@@ -1039,7 +1042,10 @@ window.EcDispPanelDtl = {
           <!-- 위젯1~5: 해당 위젯만 -->
           <template v-else-if="activeRow">
             <disp-x04-widget
-              :widget="{...activeRow, widgetNm: activeRow.widgetNm||(TAB_LABELS.find(t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
+              :params="{ }"
+              :disp-dataset="dispDataset"
+              :disp-opt="{ showBadges: true }"
+              :widget-item="{...activeRow, widgetNm: activeRow.widgetNm||(TAB_LABELS.find(t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
               :is-logged-in="true"
             />
           </template>

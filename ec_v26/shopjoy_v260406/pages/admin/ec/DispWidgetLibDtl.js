@@ -580,9 +580,12 @@ window.EcDispWidgetLibDtl = {
       <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;">👁 미리보기</div>
       <div style="background:#fff;border:1px solid #e4e4e4;border-radius:8px;padding:12px;min-height:100px;">
         <disp-x04-widget
-          :widget="previewWidget"
+          :params="{ }"
+          :disp-dataset="dispDataset"
+          :disp-opt="{ showBadges: true }"
+          :widget-item="previewWidget"
           :is-logged-in="false"
-          user-grade=""
+          :user-grade=""
         />
       </div>
       <div style="margin-top:12px;font-size:11px;color:#aaa;line-height:1.6;">

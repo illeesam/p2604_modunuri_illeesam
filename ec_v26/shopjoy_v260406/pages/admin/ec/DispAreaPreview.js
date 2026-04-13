@@ -686,6 +686,21 @@ window.EcDispAreaPreview = {
 
     const dispUiSourceText = computed(() => ''); /* DispUi 컴포넌트 내부 처리 */
 
+    /* ── DispX02Area props ── */
+    const filterParams = computed(() => ({
+      status:       searchStatus.value,
+      condition:    searchCondition.value,
+      authRequired: searchAuthRequired.value,
+      authGrade:    searchAuthGrade.value,
+      date:         previewDate.value,
+      time:         previewTime.value,
+    }));
+    const dispOpt = computed(() => ({ layout: viewMode.value, showBadges: true }));
+    const areaInfo = (code) =>
+      (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+    const isLoggedIn = computed(() => false);
+    const userGrade = computed(() => '');
+
     const openDispUiPopup = () => {
       if (!_validateDispUi()) return;
       const p = dispUiParamObj.value;
@@ -718,6 +733,7 @@ window.EcDispAreaPreview = {
       CONDITION_OPTS, AUTH_GRADE_OPTS,
       toggleArea, selectAllAreas, clearAllAreas, areaBtnLabel,
       panelsForArea, totalPanels, resetDate, isDateInRange,
+      filterParams, dispOpt, areaInfo, isLoggedIn, userGrade,
       /* Tab2 */
       structAreaList, expandedAreas, toggleAreaExpand,
       checkedPanelIds, togglePanelCheck, checkAllPanels, clearCheckedPanels,
@@ -1176,11 +1192,14 @@ window.EcDispAreaPreview = {
     <div v-else>
       <div v-for="area in areaList" :key="area.codeValue" style="margin-bottom:4px;">
         <disp-x02-area
-          :area="area.codeValue"
-          :area-label="area.codeLabel"
-          :panels="panelsForArea(area.codeValue)"
+          :params="filterParams"
+          :disp-dataset="dispDataset"
+          :disp-opt="dispOpt"
+          :area-item="{ code: area.codeValue, label: area.codeLabel, info: areaInfo(area.codeValue), panels: panelsForArea(area.codeValue) }"
           :mode="viewMode"
           :show-desc="showDesc"
+          :is-logged-in="isLoggedIn"
+          :user-grade="userGrade"
         />
       </div>
       <div v-if="areaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:14px;">등록된 화면영역이 없습니다.</div>
