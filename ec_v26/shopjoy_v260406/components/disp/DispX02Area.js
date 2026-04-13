@@ -71,15 +71,15 @@ window.DispX02Area = {
   <!-- 영역 헤더 -->
   <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;border-radius:8px 8px 0 0;">
     <span v-if="showDesc" style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;letter-spacing:.3px;flex-shrink:0;">DispX02Area</span>
-    <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;letter-spacing:.5px;">{{ area }}</code>
-    <span v-if="showDesc" style="font-size:14px;font-weight:700;">{{ areaLabel || area }}</span>
-    <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ panels.length }}개</span>
+    <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;letter-spacing:.5px;">{{ areaItem.code }}</code>
+    <span v-if="showDesc" style="font-size:14px;font-weight:700;">{{ areaItem.label || areaItem.code }}</span>
+    <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ areaItem.panels.length }}개</span>
   </div>
 
   <!-- 영역 타이틀 -->
-  <div v-if="titleYn==='Y' && title"
+  <div v-if="areaItem.info && areaItem.info.titleYn==='Y' && areaItem.info.title"
     style="padding:12px 16px 8px;font-size:16px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:16px;">
-    {{ title }}
+    {{ areaItem.info.title }}
   </div>
 
   <!-- ── 리스트 모드 ── -->

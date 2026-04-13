@@ -14,7 +14,7 @@ window.DispX03Panel = {
   setup(props, { emit }) {
     const { computed } = Vue;
 
-    /* panel.rows의 각 위젯에 패널 레벨 속성 병합 */
+    /* panelItem.rows의 각 위젯에 패널 레벨 속성 병합 */
     const mergedWidget = (w) => ({
       ...w,
       status:       props.panelItem.status,
@@ -35,25 +35,25 @@ window.DispX03Panel = {
     return { mergedWidget, layoutStyle, onWidgetAction };
   },
   template: /* html */`
-<div class="disp-panel" :data-area="panel.area">
+<div class="disp-panel" :data-area="panelItem.area">
 
   <!-- 패널 헤더 (showHeader=true 일 때) -->
   <div v-if="showHeader"
     style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#f8f8f8;border-bottom:1px solid #efefef;">
     <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;border-radius:3px;padding:0 5px;line-height:16px;flex-shrink:0;">
-      DispX03Panel #{{ String(panel.dispId).padStart(4,'0') }}
+      DispX03Panel #{{ String(panelItem.dispId).padStart(4,'0') }}
     </span>
-    <span style="font-size:13px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ panel.name }}</span>
+    <span style="font-size:13px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ panelItem.name }}</span>
     <span style="font-size:10px;padding:1px 7px;border-radius:5px;flex-shrink:0;"
-      :style="panel.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">{{ panel.status }}</span>
-    <span v-if="panel.condition && panel.condition!=='항상 표시'"
-      style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">{{ panel.condition }}</span>
+      :style="panelItem.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">{{ panelItem.status }}</span>
+    <span v-if="panelItem.condition && panelItem.condition!=='항상 표시'"
+      style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">{{ panelItem.condition }}</span>
   </div>
 
   <!-- 패널 타이틀 -->
-  <div v-if="panel.titleYn==='Y' && panel.title"
+  <div v-if="panelItem.titleYn==='Y' && panelItem.title"
     style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
-    {{ panel.title }}
+    {{ panelItem.title }}
   </div>
 
   <!-- 위젯 목록 -->
