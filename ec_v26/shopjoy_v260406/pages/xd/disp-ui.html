@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DispUi 미리보기</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <script src="../../assets/cdn/axios.js"></script>
+  <script src="../../assets/cdn/yup.js"></script>
+  <link rel="stylesheet" href="../../assets/css/backOfficeStyle.css">
+  <script src="../../pages/admin/AdminData.js"></script>
+  <script src="../../utils/adminUtil.js"></script>
+  <script src="../../components/comp/BaseComp.js"></script>
+  <script src="../../components/disp/DispWidget.js"></script>
+  <script src="../../components/disp/DispWidgetLib.js"></script>
+  <script src="../../components/disp/DispPanel.js"></script>
+  <script src="../../components/disp/DispArea.js"></script>
+  <script src="../../components/disp/DispUi.js"></script>
+  <script src="DispUiPage.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const { createApp } = Vue;
+    const app = createApp(window.DispUiPage);
+    app.component('DispArea',     window.DispArea);
+    app.component('DispPanel',    window.DispPanel);
+    app.component('DispWidget',   window.DispWidget);
+    app.component('DispWidgetLib',window.DispWidgetLib);
+    app.mount('#app');
+  </script>
+</body>
+</html>

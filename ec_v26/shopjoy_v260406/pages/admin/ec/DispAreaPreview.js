@@ -256,11 +256,41 @@ window.DispAreaPreview = {
       const areas = allAreaListRaw.value.filter(a =>
         selectedAreas.size === 0 || selectedAreas.has(a.codeValue)
       );
+
+      /* ── 최상단 헤더 주석 ── */
+      lines.push({ type:'source-header', htype:'entities', data:{
+        area:   selectedAreas.size > 0 ? [...selectedAreas].join(', ') : '',
+        panel:  '',
+        widget: '',
+        lib:    '',
+      }});
+      lines.push({ type:'source-header', htype:'disp', data:{
+        datetime:     `${previewDate.value || '-'} ${previewTime.value || ''}`.trim(),
+        status:       searchStatus.value || '전체',
+        condition:    searchCondition.value || '전체',
+        authRequired: searchAuthRequired.value === 'Y' ? '필요' : searchAuthRequired.value === 'N' ? '불필요' : '전체',
+        authGrade:    searchAuthGrade.value ? searchAuthGrade.value + ' 이상' : '전체',
+      }});
+      lines.push({ type:'source-header', htype:'cond', data:{
+        period:   '-',
+        category: '-',
+        order:    '-',
+      }});
+      lines.push({ type:'blank' });
       areas.forEach((area, ai) => {
         const panels = (props.adminData.displays || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         if (ai > 0) lines.push({ type:'blank' });
+        /* ── DispArea 메타 주석 ── */
+        const _areaLayout = area.layoutType === 'dashboard'
+          ? 'dashboard'
+          : `${area.layoutType || 'grid'}:${area.gridCols || 1}`;
+        lines.push({ type:'area-meta', level:0, meta:{
+          layout: _areaLayout,
+          sortOrd: area.sortOrd != null ? area.sortOrd : '-',
+          area: area.codeValue,
+        }});
         /* ── <DispArea attrs> ── */
         lines.push({ type:'area-open', level:0, attrs:[
           A('area',       area.codeValue,          true),
@@ -276,6 +306,22 @@ window.DispAreaPreview = {
           panels.forEach(p => {
             const rows = p.rows || [];
             lines.push({ type:'blank' });
+            /* ── 패널 메타 주석 ── */
+            const _period = (p.dispStartDate || p.dispEndDate)
+              ? `${p.dispStartDate || '∞'}${p.dispStartTime ? ' '+p.dispStartTime : ''} ~ ${p.dispEndDate || '∞'}${p.dispEndTime ? ' '+p.dispEndTime : ''}`
+              : '기간없음';
+            const _panelLayout = p.layoutType === 'dashboard'
+              ? 'dashboard'
+              : `${p.layoutType || 'grid'}:${p.gridCols || 1}`;
+            lines.push({ type:'panel-meta', level:1, meta:{
+              layout: _panelLayout,
+              sortOrder: p.sortOrder != null ? p.sortOrder : '-',
+              period: _period,
+              status: p.status || '-',
+              condition: p.condition || '항상 표시',
+              authRequired: p.authRequired ? '필요' : '불필요',
+              authGrade: (p.authRequired && p.authGrade) ? p.authGrade + ' 이상' : '-',
+            }});
             /* ── <DispPanel attrs> ── */
             lines.push({ type:'panel-open', level:1, attrs:[
               A('id',            '#'+String(p.dispId).padStart(4,'0'), true),
@@ -320,6 +366,14 @@ window.DispAreaPreview = {
       return sourceLines.value.map(l => {
         if (l.type === 'blank')        return '';
         if (l.type === 'area-open')    return `<DispArea ${fa(l.attrs)}>`;
+        if (l.type === 'source-header') {
+          if (l.htype === 'entities') return `<!-- 전시개체 : 전시영역s: ${l.data.area||'-'}, 전시패널s: ${l.data.panel||'-'}, 전시위젯s: ${l.data.widget||'-'}, 위젯Libs: ${l.data.lib||'-'} -->`;
+          if (l.htype === 'disp')     return `<!-- disp조건 : 전시일시 : ${l.data.datetime}  |  상태 : ${l.data.status}  |  노출조건 : ${l.data.condition}  |  인증필요 : ${l.data.authRequired}  |  등급제한 : ${l.data.authGrade} -->`;
+          if (l.htype === 'cond')     return `<!-- cond조건 : 조회기간 : ${l.data.period},  카테고리 : ${l.data.category},  주문 : ${l.data.order} -->`;
+          return '';
+        }
+        if (l.type === 'area-meta')    return `<!-- 표시형식:${l.meta.layout}, 정렬:${l.meta.sortOrd}, area="${l.meta.area}" -->`;
+        if (l.type === 'panel-meta')   return `  <!-- 표시형식:${l.meta.layout}, 정렬:${l.meta.sortOrder}, 기간: ${l.meta.period}  |  상태: ${l.meta.status}  |  노출조건: ${l.meta.condition}  |  인증필요: ${l.meta.authRequired}  |  등급제한: ${l.meta.authGrade} -->`;
         if (l.type === 'panel-open')   return `  <DispPanel ${fa(l.attrs)}>`;
         if (l.type === 'widget')       return `    <DispWidget ${fa(l.attrs)} />`;
         if (l.type === 'panel-close')  return `  </DispPanel>`;
@@ -485,8 +539,194 @@ window.DispAreaPreview = {
     };
     const onAreaDragEnd = () => { window._dragAreaWidgets = null; };
 
+    /* ── DispUi 미리보기 레이어 ── */
+    const dispUiLayerOpen = ref(false);
+    const dispUiModalOpen = ref(false);
+    const dispUiAreaErr   = ref(false);
+
+    /* 독립적인 조회 폼 (메인 필터와 별개) */
+    const dispUiForm = Vue.reactive({
+      areas: [], date: '', time: '', status: '',
+      condition: '', authRequired: '', authGrade: '',
+      siteId: '', siteNm: '', memberId: '', memberNm: '',
+    });
+
+    /* 보기옵션 (기본 전체 체크) */
+    const dispUiViewOpts = Vue.reactive({ content: true, struct: true, source: true });
+    const dispUiModalTab = ref('content');
+
+    /* 사이트 모달 */
+    const dispUiSiteModalOpen = ref(false);
+    const dispUiSiteSearch    = ref('');
+    const dispUiSiteList = computed(() => {
+      const kw = dispUiSiteSearch.value.trim().toLowerCase();
+      return (props.adminData.sites || []).filter(s =>
+        !kw || s.siteNm.toLowerCase().includes(kw) || (s.domain||'').toLowerCase().includes(kw)
+      );
+    });
+    const selectDispUiSite = (site) => {
+      dispUiForm.siteId = String(site.siteId);
+      dispUiForm.siteNm = site.siteNm;
+      dispUiSiteModalOpen.value = false;
+    };
+
+    /* 회원 모달 */
+    const dispUiMemberModalOpen = ref(false);
+    const dispUiMemberSearch    = ref('');
+    const dispUiMemberList = computed(() => {
+      const kw = dispUiMemberSearch.value.trim().toLowerCase();
+      return (props.adminData.members || []).filter(m =>
+        !kw || (m.memberNm||'').toLowerCase().includes(kw) || (m.email||'').toLowerCase().includes(kw)
+      ).slice(0, 30);
+    });
+    const selectDispUiMember = (m) => {
+      dispUiForm.memberId = String(m.userId);
+      dispUiForm.memberNm = m.memberNm || m.email;
+      dispUiMemberModalOpen.value = false;
+    };
+
+    /* 초기화 */
+    const resetDispUiForm = () => {
+      dispUiForm.areas       = [];
+      dispUiForm.date        = '';
+      dispUiForm.time        = '';
+      dispUiForm.status      = '';
+      dispUiForm.condition   = '';
+      dispUiForm.authRequired = '';
+      dispUiForm.authGrade   = '';
+      dispUiForm.siteId      = '';
+      dispUiForm.siteNm      = '';
+      dispUiForm.memberId    = '';
+      dispUiForm.memberNm    = '';
+      dispUiViewOpts.content = true;
+      dispUiViewOpts.struct  = true;
+      dispUiViewOpts.source  = true;
+    };
+
+    /* DispUi 영역 드롭다운 (메인 필터와 동일한 UX) */
+    const dispUiAreaDrop = ref(false);
+    const dispUiAreaBtnLabel = computed(() => {
+      const sz = dispUiForm.areas.length;
+      return sz === 0 ? '전체 영역' : `${sz}개 영역 선택`;
+    });
+    const dispUiToggleArea = (code) => {
+      const i = dispUiForm.areas.indexOf(code);
+      if (i !== -1) dispUiForm.areas.splice(i, 1);
+      else dispUiForm.areas.push(code);
+      dispUiAreaErr.value = false;
+    };
+    const dispUiSelectAllAreas = () => {
+      allAreaListRaw.value.forEach(a => {
+        if (!dispUiForm.areas.includes(a.codeValue)) dispUiForm.areas.push(a.codeValue);
+      });
+      dispUiAreaErr.value = false;
+    };
+    const dispUiClearAllAreas = () => { dispUiForm.areas.splice(0); };
+
+    /* 레이어 열기 – 처음 열 때 현재 필터값 복사 */
+    const openDispUiLayer = () => {
+      if (!dispUiLayerOpen.value) {
+        dispUiForm.areas        = [...selectedAreas];
+        dispUiForm.date         = previewDate.value;
+        dispUiForm.time         = previewTime.value;
+        dispUiForm.status       = searchStatus.value;
+        dispUiForm.condition    = searchCondition.value;
+        dispUiForm.authRequired = searchAuthRequired.value;
+        dispUiForm.authGrade    = searchAuthGrade.value;
+        const cf   = window.adminCommonFilter || {};
+        const site = (props.adminData.sites || []).find(s => s.siteId === cf.siteId);
+        dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
+        dispUiForm.siteNm   = site?.siteNm || '';
+        dispUiForm.memberId = '';
+        dispUiForm.memberNm = '';
+        dispUiSiteSearch.value   = '';
+        dispUiMemberSearch.value = '';
+        dispUiAreaDrop.value = false;
+      }
+      dispUiLayerOpen.value = !dispUiLayerOpen.value;
+    };
+
+    const dispUiParamObj = computed(() => {
+      const viewOpts = ['content','struct','source'].filter(k => dispUiViewOpts[k]).join(',');
+      return {
+        areas:        [...dispUiForm.areas],
+        date:         dispUiForm.date,
+        time:         dispUiForm.time,
+        status:       dispUiForm.status,
+        condition:    dispUiForm.condition,
+        authRequired: dispUiForm.authRequired,
+        authGrade:    dispUiForm.authGrade,
+        siteId:       dispUiForm.siteId,
+        memberId:     dispUiForm.memberId,
+        viewOpts,
+      };
+    });
+
+    /* 모달 탭 목록 */
+    const dispUiModalTabs = computed(() =>
+      [{ key:'content', label:'내용보기' }, { key:'struct', label:'구조보기' }, { key:'source', label:'소스보기' }]
+        .filter(t => dispUiViewOpts[t.key])
+    );
+
+    const _validateDispUi = () => {
+      if (dispUiForm.areas.length === 0) { dispUiAreaErr.value = true; return false; }
+      dispUiAreaErr.value = false;
+      return true;
+    };
+
+    const openDispUiModal = () => {
+      if (!_validateDispUi()) return;
+      const first = ['content','struct','source'].find(k => dispUiViewOpts[k]) || 'content';
+      dispUiModalTab.value = first;
+      dispUiModalOpen.value = true;
+      /* 레이어 닫지 않음 */
+    };
+
+    const dispUiSourceText = computed(() => ''); /* DispUi 컴포넌트 내부 처리 */
+    const dispUiModalKey      = ref(0);
+    const dispUiRefreshing    = ref(false);
+    const dispUiRefreshPct    = ref(0);
+    const refreshDispUiModal  = () => {
+      if (dispUiRefreshing.value) return;
+      dispUiRefreshing.value = true;
+      dispUiRefreshPct.value = 0;
+      /* 진행바 애니메이션 ~1.2초 */
+      const step = () => {
+        dispUiRefreshPct.value = Math.min(dispUiRefreshPct.value + Math.random() * 18 + 8, 95);
+        if (dispUiRefreshPct.value < 95) setTimeout(step, 120);
+      };
+      step();
+      setTimeout(() => {
+        dispUiRefreshPct.value  = 100;
+        dispUiModalKey.value++;
+        setTimeout(() => { dispUiRefreshing.value = false; dispUiRefreshPct.value = 0; }, 300);
+      }, 1200);
+    };
+
+    const openDispUiPopup = () => {
+      if (!_validateDispUi()) return;
+      const p = dispUiParamObj.value;
+      const qs = new URLSearchParams({
+        areas:        p.areas.join(','),
+        date:         p.date,
+        time:         p.time,
+        status:       p.status,
+        condition:    p.condition,
+        authRequired: p.authRequired,
+        authGrade:    p.authGrade,
+        siteId:       p.siteId,
+        memberId:     p.memberId,
+        viewOpts:     p.viewOpts,
+      }).toString();
+      window.open(
+        `http://127.0.0.1:5501/ec_v26/shopjoy_v260406/pages/xd/disp-ui.html?${qs}`,
+        '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'
+      );
+      /* 레이어 닫지 않음 */
+    };
+
     return {
-      today, siteNm,
+      today, siteNm, adminData: props.adminData,
       mainTab, switchTab,
       previewDate, viewMode, showDesc, showAreaDrop,
       selectedAreas, allAreaListRaw, areaList,
@@ -516,6 +756,16 @@ window.DispAreaPreview = {
       /* Tab3 */
       sourceLines, sourceText, sourceCopied, copySource,
       wLabel, wIcon,
+      /* DispUi 미리보기 */
+      dispUiLayerOpen, dispUiModalOpen, dispUiAreaErr,
+      dispUiModalKey, dispUiRefreshing, dispUiRefreshPct, refreshDispUiModal,
+      dispUiAreaDrop, dispUiAreaBtnLabel, dispUiToggleArea, dispUiSelectAllAreas, dispUiClearAllAreas,
+      dispUiForm,
+      dispUiViewOpts, dispUiParamObj,
+      dispUiModalTab, dispUiModalTabs, dispUiSourceText,
+      dispUiSiteModalOpen, dispUiSiteSearch, dispUiSiteList, selectDispUiSite,
+      dispUiMemberModalOpen, dispUiMemberSearch, dispUiMemberList, selectDispUiMember,
+      openDispUiLayer, openDispUiModal, openDispUiPopup, resetDispUiForm,
     };
   },
   template: /* html */`
@@ -656,7 +906,326 @@ window.DispAreaPreview = {
       <span v-if="searchAuthRequired==='Y'" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:10px;padding:2px 10px;">인증 필요</span>
       <span v-if="searchAuthRequired==='N'" style="font-size:12px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 10px;">인증 불필요</span>
       <span v-if="searchAuthGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">등급: {{ searchAuthGrade }}↑</span>
-      <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 10px;margin-left:auto;">패널 {{ totalPanels }}개 해당</span>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+        <button @click="openDispUiLayer"
+          style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
+          :style="dispUiLayerOpen?'background:#ede7f6;color:#4a148c;':'background:#f3e5f5;color:#6a1b9a;'">
+          🖥 DispUi미리보기
+        </button>
+        <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 10px;">패널 {{ totalPanels }}개 해당</span>
+      </div>
+    </div>
+
+    <!-- DispUi 미리보기 파라미터 레이어 -->
+    <div v-if="dispUiLayerOpen"
+      style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
+      <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        🖥 DispUi미리보기 조회조건
+        <button @click="resetDispUiForm"
+          style="font-size:11px;padding:2px 10px;border-radius:6px;border:1px solid #ce93d8;background:#f3e5f5;color:#7b1fa2;cursor:pointer;font-weight:500;margin-left:4px;">
+          초기화
+        </button>
+      </div>
+
+      <!-- ① 전시영역 (필수) — 메인 필터와 동일한 드롭다운 방식 -->
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:11px;font-weight:600;color:#555;white-space:nowrap;">
+          전시영역
+          <span style="font-size:10px;background:#fce4ec;color:#c62828;border-radius:4px;padding:1px 5px;margin-left:4px;">필수</span>
+        </span>
+        <!-- 드롭다운 버튼 -->
+        <div style="position:relative;">
+          <button @click="dispUiAreaDrop=!dispUiAreaDrop"
+            style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
+            :style="dispUiForm.areas.length>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
+            <span>🗂 {{ dispUiAreaBtnLabel }}</span>
+            <span style="font-size:10px;">{{ dispUiAreaDrop ? '▲' : '▼' }}</span>
+          </button>
+          <div v-if="dispUiAreaDrop" @click="dispUiAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
+          <div v-if="dispUiAreaDrop" style="position:absolute;left:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:280px;overflow-y:auto;padding:10px 0;">
+            <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
+              <button @click.stop="dispUiSelectAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
+              <button @click.stop="dispUiClearAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
+              <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">{{ dispUiForm.areas.length }}/{{ allAreaListRaw.length }}</span>
+            </div>
+            <div v-for="area in allAreaListRaw" :key="area.codeValue" @click.stop="dispUiToggleArea(area.codeValue)"
+              style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
+              :style="dispUiForm.areas.includes(area.codeValue) ? 'background:#fff8f8;' : ''">
+              <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+                :style="dispUiForm.areas.includes(area.codeValue) ? 'border-color:#e8587a;background:#e8587a;' : 'border-color:#ccc;background:#fff;'">
+                <span v-if="dispUiForm.areas.includes(area.codeValue)" style="color:#fff;font-size:11px;line-height:1;">✓</span>
+              </div>
+              <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">{{ area.codeValue }}</code>
+              <span style="font-size:12px;color:#333;">{{ area.codeLabel }}</span>
+            </div>
+            <div style="border-top:1px solid #f0f0f0;padding:8px 14px;">
+              <button @click.stop="dispUiAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;cursor:pointer;">닫기</button>
+            </div>
+          </div>
+        </div>
+        <!-- 선택된 영역 태그 -->
+        <span v-for="code in dispUiForm.areas" :key="code"
+          style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
+          {{ code }}<span @click="dispUiToggleArea(code)" style="cursor:pointer;font-weight:700;">×</span>
+        </span>
+        <span v-if="dispUiAreaErr" style="font-size:11px;color:#e8587a;">⚠ 1개 이상 선택하세요</span>
+      </div>
+
+      <!-- ② 조건 행 1: 전시일시 · 상태 · 노출조건 · 인증필요 · 등급제한 -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
+        <span class="search-label" style="font-size:11px;">전시일시</span>
+        <input type="date" v-model="dispUiForm.date"
+          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;width:130px;" />
+        <input type="time" v-model="dispUiForm.time"
+          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;width:90px;" />
+        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
+        <span class="search-label" style="font-size:11px;">상태</span>
+        <select v-model="dispUiForm.status"
+          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
+          <option value="">전체</option><option>활성</option><option>비활성</option>
+        </select>
+        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
+        <span class="search-label" style="font-size:11px;">노출조건</span>
+        <select v-model="dispUiForm.condition"
+          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
+          <option value="">전체</option>
+          <option v-for="c in CONDITION_OPTS" :key="c" :value="c">{{ c }}</option>
+        </select>
+        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
+        <span class="search-label" style="font-size:11px;">인증필요</span>
+        <select v-model="dispUiForm.authRequired"
+          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
+          <option value="">전체</option><option value="Y">필요</option><option value="N">불필요</option>
+        </select>
+        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
+        <span class="search-label" style="font-size:11px;">등급제한</span>
+        <select v-model="dispUiForm.authGrade"
+          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
+          <option value="">전체</option>
+          <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }} 이상</option>
+        </select>
+      </div>
+
+      <!-- ③ 조건 행 2: 사이트 · 회원 -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
+        <!-- 사이트 -->
+        <span class="search-label" style="font-size:11px;">사이트</span>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span v-if="dispUiForm.siteNm"
+            style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:2px 8px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            {{ dispUiForm.siteNm }}
+          </span>
+          <span v-else style="font-size:11px;color:#bbb;">미선택</span>
+          <button @click="dispUiSiteModalOpen=true;dispUiSiteSearch=''"
+            style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            📋 선택
+          </button>
+          <button v-if="dispUiForm.siteId" @click="dispUiForm.siteId='';dispUiForm.siteNm=''"
+            style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">×</button>
+        </div>
+        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
+        <!-- 회원 -->
+        <span class="search-label" style="font-size:11px;">회원</span>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span v-if="dispUiForm.memberNm"
+            style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:2px 8px;">
+            {{ dispUiForm.memberNm }}
+          </span>
+          <span v-else style="font-size:11px;color:#bbb;">미선택 (비로그인)</span>
+          <button @click="dispUiMemberModalOpen=true;dispUiMemberSearch=''"
+            style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            👤 선택
+          </button>
+          <button v-if="dispUiForm.memberId" @click="dispUiForm.memberId='';dispUiForm.memberNm=''"
+            style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">×</button>
+        </div>
+      </div>
+
+      <!-- 보기옵션 -->
+      <div style="padding:8px 0;border-top:1px solid #e8e0f8;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;color:#6a1b9a;margin-bottom:6px;">📑 보기옵션 <span style="font-weight:400;color:#aaa;">— 없으면 내용보기만 탭없이 표시</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+            :style="dispUiViewOpts.content?'border-color:#90caf9;background:#e3f2fd;color:#1565c0;':''">
+            <input type="checkbox" v-model="dispUiViewOpts.content" /> 내용보기
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+            :style="dispUiViewOpts.struct?'border-color:#a5d6a7;background:#e8f5e9;color:#2e7d32;':''">
+            <input type="checkbox" v-model="dispUiViewOpts.struct" /> 구조보기
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+            :style="dispUiViewOpts.source?'border-color:#b39ddb;background:#ede7f6;color:#4a148c;':''">
+            <input type="checkbox" v-model="dispUiViewOpts.source" /> 소스보기
+          </label>
+        </div>
+      </div>
+
+      <!-- 실행 버튼 -->
+      <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid #e8e0f8;">
+        <button @click="dispUiLayerOpen=false"
+          style="font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">
+          닫기
+        </button>
+        <button @click="openDispUiModal"
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
+          🗔 모달오픈
+        </button>
+        <button @click="openDispUiPopup"
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #a5d6a7;background:#e8f5e9;color:#2e7d32;cursor:pointer;font-weight:600;">
+          🔗 팝업오픈
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DispUi 모달 오버레이 -->
+  <div v-if="dispUiModalOpen"
+    @click.self="dispUiModalOpen=false"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto;">
+    <div style="background:#fff;border-radius:14px;width:1200px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.4);display:flex;flex-direction:column;">
+
+      <!-- 모달 헤더 -->
+      <div style="background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#fff;padding:14px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:2;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:15px;font-weight:700;">🖥 DispUi미리보기</span>
+          <span style="font-size:11px;opacity:.6;">파라미터 기준 렌더링</span>
+        </div>
+        <button @click="dispUiModalOpen=false" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;padding:0;">×</button>
+      </div>
+
+      <!-- 파라미터 바 -->
+      <div style="padding:8px 20px;background:#f8f4ff;border-bottom:1px solid #e8e0f8;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:10px;font-weight:700;color:#6a1b9a;flex-shrink:0;">파라미터:</span>
+        <textarea readonly rows="3"
+          :value="'areas='+(dispUiParamObj.areas.join(','))+' | date='+dispUiParamObj.date+' | time='+dispUiParamObj.time+' | status='+dispUiParamObj.status+' | condition='+dispUiParamObj.condition+' | authRequired='+dispUiParamObj.authRequired+' | authGrade='+dispUiParamObj.authGrade+' | siteId='+dispUiParamObj.siteId+' | memberId='+dispUiParamObj.memberId+' | viewOpts='+dispUiParamObj.viewOpts"
+          style="flex:1;font-size:11px;font-family:monospace;border:1px solid #d8ccee;border-radius:6px;padding:5px 8px;background:#f3eeff;color:#4a148c;resize:none;line-height:1.6;outline:none;overflow-x:hidden;white-space:pre-wrap;word-break:break-all;">
+        </textarea>
+        <button @click="refreshDispUiModal" :disabled="dispUiRefreshing"
+          style="font-size:11px;padding:5px 12px;border-radius:7px;border:1px solid #b39ddb;background:#ede7f6;color:#6a1b9a;cursor:pointer;font-weight:600;flex-shrink:0;transition:opacity .2s;height:fit-content;"
+          :style="dispUiRefreshing?'opacity:.5;cursor:not-allowed;':''"
+          title="재조회">
+          🔄 재조회
+        </button>
+      </div>
+
+      <!-- 진행바 -->
+      <div style="height:3px;background:#f0eaff;position:relative;overflow:hidden;">
+        <div style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#9c27b0,#6a1b9a);transition:width .12s linear;"
+          :style="'width:'+dispUiRefreshPct+'%;'+(dispUiRefreshing?'':'opacity:0;')"></div>
+      </div>
+
+      <!-- 설정조건 -->
+      <div style="padding:6px 20px;background:#f3eeff;border-bottom:1px solid #e8e0f8;display:flex;flex-wrap:wrap;gap:5px;align-items:center;">
+        <span style="font-size:10px;font-weight:700;color:#9c27b0;margin-right:4px;">설정조건:</span>
+        <span style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:7px;padding:1px 8px;">
+          📅 {{ dispUiForm.date||'-' }} {{ dispUiForm.time||'' }}
+        </span>
+        <span v-if="dispUiForm.status" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:7px;padding:1px 8px;">상태: {{ dispUiForm.status }}</span>
+        <span v-else style="font-size:11px;color:#bbb;">상태: 전체</span>
+        <span style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:7px;padding:1px 8px;">
+          노출조건: {{ dispUiForm.condition||'전체' }}
+        </span>
+        <span style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:7px;padding:1px 8px;">
+          인증: {{ dispUiForm.authRequired==='Y'?'필요':dispUiForm.authRequired==='N'?'불필요':'전체' }}
+        </span>
+        <span v-if="dispUiForm.authGrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:7px;padding:1px 8px;">등급: {{ dispUiForm.authGrade }}↑</span>
+        <span v-if="dispUiForm.siteNm" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:7px;padding:1px 8px;">🌐 {{ dispUiForm.siteNm }}</span>
+        <span v-if="dispUiForm.memberNm" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:7px;padding:1px 8px;">👤 {{ dispUiForm.memberNm }}</span>
+        <span v-else style="font-size:11px;color:#bbb;">👤 비로그인</span>
+      </div>
+
+
+
+      <!-- DispUi 컴포넌트 -->
+      <disp-ui :key="dispUiModalKey" :params="dispUiParamObj" :admin-data="adminData" />
+
+      <!-- 모달 푸터 -->
+      <div style="padding:10px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;z-index:1;">
+        <button @click="openDispUiPopup(); dispUiModalOpen=false;"
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #a5d6a7;background:#e8f5e9;color:#2e7d32;cursor:pointer;font-weight:600;">
+          🔗 팝업으로 열기
+        </button>
+        <button @click="dispUiModalOpen=false" class="btn btn-secondary btn-sm">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DispUi 사이트 선택 모달 -->
+  <div v-if="dispUiSiteModalOpen"
+    @click.self="dispUiSiteModalOpen=false"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:10000;display:flex;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
+      <!-- 헤더 -->
+      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:14px;font-weight:700;color:#1565c0;">🌐 사이트 선택</span>
+        <button @click="dispUiSiteModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">×</button>
+      </div>
+      <!-- 검색 -->
+      <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
+        <input v-model="dispUiSiteSearch" type="text" placeholder="사이트명 또는 도메인 검색..."
+          style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
+      </div>
+      <!-- 목록 -->
+      <div style="overflow-y:auto;flex:1;padding:6px 0;">
+        <div v-if="dispUiSiteList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
+        <div v-for="site in dispUiSiteList" :key="site.siteId"
+          @click="selectDispUiSite(site)"
+          style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
+          onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ site.siteNm }}</div>
+            <div style="font-size:11px;color:#888;margin-top:1px;">{{ site.domain || '-' }}</div>
+          </div>
+          <span v-if="site.siteType" style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:5px;padding:1px 6px;flex-shrink:0;">{{ site.siteType }}</span>
+          <span :style="String(site.siteId)===dispUiForm.siteId?'color:#1565c0;font-weight:700;':'color:#ccc;'">✓</span>
+        </div>
+      </div>
+      <!-- 푸터 -->
+      <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;">
+        <button @click="dispUiSiteModalOpen=false" class="btn btn-secondary btn-sm">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DispUi 회원 선택 모달 -->
+  <div v-if="dispUiMemberModalOpen"
+    @click.self="dispUiMemberModalOpen=false"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:10000;display:flex;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
+      <!-- 헤더 -->
+      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:14px;font-weight:700;color:#1565c0;">👤 회원 선택</span>
+        <button @click="dispUiMemberModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">×</button>
+      </div>
+      <!-- 검색 -->
+      <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
+        <input v-model="dispUiMemberSearch" type="text" placeholder="이름 또는 이메일 검색..."
+          style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
+      </div>
+      <!-- 목록 -->
+      <div style="overflow-y:auto;flex:1;padding:6px 0;">
+        <div v-if="dispUiMemberList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
+        <div v-for="m in dispUiMemberList" :key="m.userId"
+          @click="selectDispUiMember(m)"
+          style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
+          onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.memberNm || m.email }}</div>
+            <div style="font-size:11px;color:#888;margin-top:1px;">{{ m.email }}</div>
+          </div>
+          <span v-if="m.grade" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">{{ m.grade }}</span>
+          <span :style="String(m.userId)===dispUiForm.memberId?'color:#1565c0;font-weight:700;':'color:#ccc;'">✓</span>
+        </div>
+      </div>
+      <!-- 푸터 -->
+      <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+        <button v-if="dispUiForm.memberId" @click="dispUiForm.memberId='';dispUiForm.memberNm='';dispUiMemberModalOpen=false;"
+          style="font-size:11px;padding:4px 12px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;cursor:pointer;">
+          비로그인으로 초기화
+        </button>
+        <span v-else></span>
+        <button @click="dispUiMemberModalOpen=false" class="btn btn-secondary btn-sm">닫기</button>
+      </div>
     </div>
   </div>
 
@@ -1082,13 +1651,68 @@ window.DispAreaPreview = {
               ? 'height:0.4em;'
               : 'white-space:nowrap;overflow-x:visible;padding-left:' + (line.level||0)*20 + 'px;'">
 
+            <!-- 소스 최상단 헤더 주석 -->
+            <template v-if="line.type==='source-header'">
+              <span style="color:#718096;font-style:italic;">
+                <span style="color:#4a7a5a;">&lt;!--</span>
+                <template v-if="line.htype==='entities'">
+                  <span style="color:#7ec8a0;font-weight:600;"> 전시개체</span>
+                  <span style="color:#718096;"> : 전시영역s: </span><span style="color:#fbd38d;">{{ line.data.area || '-' }}</span>
+                  <span style="color:#718096;">,  전시패널s: </span><span style="color:#fbd38d;">{{ line.data.panel || '-' }}</span>
+                  <span style="color:#718096;">,  전시위젯s: </span><span style="color:#fbd38d;">{{ line.data.widget || '-' }}</span>
+                  <span style="color:#718096;">,  위젯Libs: </span><span style="color:#fbd38d;">{{ line.data.lib || '-' }}</span>
+                </template>
+                <template v-else-if="line.htype==='disp'">
+                  <span style="color:#90cdf4;font-weight:600;"> disp조건</span>
+                  <span style="color:#718096;"> : 전시일시 : </span><span style="color:#b5e4c7;">{{ line.data.datetime }}</span>
+                  <span style="color:#4a5568;"> | </span><span style="color:#718096;">상태 : </span><span style="color:#b5e4c7;">{{ line.data.status }}</span>
+                  <span style="color:#4a5568;"> | </span><span style="color:#718096;">노출조건 : </span><span style="color:#b5e4c7;">{{ line.data.condition }}</span>
+                  <span style="color:#4a5568;"> | </span><span style="color:#718096;">인증필요 : </span><span style="color:#b5e4c7;">{{ line.data.authRequired }}</span>
+                  <span style="color:#4a5568;"> | </span><span style="color:#718096;">등급제한 : </span><span style="color:#b5e4c7;">{{ line.data.authGrade }}</span>
+                </template>
+                <template v-else-if="line.htype==='cond'">
+                  <span style="color:#f6ad55;font-weight:600;"> cond조건</span>
+                  <span style="color:#718096;"> : 조회기간 : </span><span style="color:#b5e4c7;">{{ line.data.period }}</span>
+                  <span style="color:#718096;">,  카테고리 : </span><span style="color:#b5e4c7;">{{ line.data.category }}</span>
+                  <span style="color:#718096;">,  주문 : </span><span style="color:#b5e4c7;">{{ line.data.order }}</span>
+                </template>
+                <span style="color:#4a7a5a;"> --&gt;</span>
+              </span>
+            </template>
+
+            <!-- DispArea 메타 주석 -->
+            <template v-else-if="line.type==='area-meta'">
+              <span style="color:#4a7a5a;font-style:italic;">&lt;!--</span>
+              <span style="color:#4a7a5a;font-style:italic;">
+                표시형식:<span style="color:#7ec8a0;">{{ line.meta.layout }}</span>,
+                정렬:<span style="color:#7ec8a0;">{{ line.meta.sortOrd }}</span>,
+                area=<span style="color:#7ec8a0;">"{{ line.meta.area }}"</span>
+              </span>
+              <span style="color:#4a7a5a;font-style:italic;">--&gt;</span>
+            </template>
+
             <!-- <DispArea attr="val" ...> -->
-            <template v-if="line.type==='area-open'">
+            <template v-else-if="line.type==='area-open'">
               <span style="color:#63b3ed;font-weight:700;">&lt;DispArea</span>
               <template v-for="a in line.attrs" :key="a.key">
                 <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
               </template>
               <span style="color:#63b3ed;font-weight:700;">&gt;</span>
+            </template>
+
+            <!-- 패널 메타 주석 -->
+            <template v-else-if="line.type==='panel-meta'">
+              <span style="color:#5a9e6f;font-style:italic;">&lt;!--</span>
+              <span style="color:#5a9e6f;font-style:italic;">
+                표시형식:<span style="color:#b5e4c7;">{{ line.meta.layout }}</span>,
+                정렬:<span style="color:#b5e4c7;">{{ line.meta.sortOrder }}</span>,
+                기간: <span style="color:#b5e4c7;">{{ line.meta.period }}</span>
+                &nbsp;|&nbsp; 상태: <span style="color:#b5e4c7;">{{ line.meta.status }}</span>
+                &nbsp;|&nbsp; 노출조건: <span style="color:#b5e4c7;">{{ line.meta.condition }}</span>
+                &nbsp;|&nbsp; 인증필요: <span style="color:#b5e4c7;">{{ line.meta.authRequired }}</span>
+                &nbsp;|&nbsp; 등급제한: <span style="color:#b5e4c7;">{{ line.meta.authGrade }}</span>
+              </span>
+              <span style="color:#5a9e6f;font-style:italic;">--&gt;</span>
             </template>
 
             <!-- <DispPanel attr="val" ...> -->

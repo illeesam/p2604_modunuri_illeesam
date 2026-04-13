@@ -270,7 +270,7 @@ window.DispPanelMng = {
     };
     const onWidgetDragEnd = () => { widgetDragPanel.value = null; widgetDragSrcWi.value = null; widgetDragOverWi.value = null; };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, searchLayoutType, CONDITION_OPTS, AUTH_GRADE_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, searchLayoutType, CONDITION_OPTS, AUTH_GRADE_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>
@@ -333,6 +333,7 @@ window.DispPanelMng = {
     <table class="admin-table">
       <thead>
         <tr>
+          <th style="width:24px;"></th>
           <th style="width:28px;"></th>
           <th style="width:44px;">ID</th>
           <th>패널명</th>
@@ -351,9 +352,16 @@ window.DispPanelMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <template v-for="d in pageList" :key="d.dispId">
-          <tr :style="selectedId===d.dispId?'background:#fff8f9;':''">
+        <tr v-if="pageList.length===0"><td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <template v-for="(d, pageIdx) in pageList" :key="d.dispId">
+          <tr draggable="true"
+            @dragstart="onPanelDragStart($event, pageIdx)"
+            @dragover="onPanelDragOver($event, pageIdx)"
+            @dragleave="onPanelDragLeave"
+            @drop="onPanelDrop($event, pageIdx)"
+            @dragend="onPanelDragEnd"
+            :style="(selectedId===d.dispId?'background:#fff8f9;':'') + (panelDragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
+            <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">⠿</td>
             <td style="text-align:center;padding:0;">
               <button @click="toggleExpand(d.dispId)"
                 style="background:none;border:none;cursor:pointer;font-size:11px;color:#999;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
@@ -429,12 +437,13 @@ window.DispPanelMng = {
           </tr>
           <!-- 위젯 펼치기 서브 행 -->
           <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
-            <td colspan="14" style="padding:0;background:#f8f9fb;border-top:none;">
+            <td colspan="15" style="padding:0;background:#f8f9fb;border-top:none;">
               <div style="padding:10px 16px 12px 44px;">
                 <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">▸ 위젯 구성</div>
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">
                   <thead>
                     <tr style="background:#eef0f3;color:#666;">
+                      <th style="padding:4px 4px;text-align:center;width:24px;font-weight:600;"></th>
                       <th style="padding:4px 8px;text-align:center;width:48px;font-weight:600;">순서</th>
                       <th style="padding:4px 8px;font-weight:600;">위젯명</th>
                       <th style="padding:4px 8px;text-align:center;width:120px;font-weight:600;">유형</th>
@@ -445,8 +454,14 @@ window.DispPanelMng = {
                   <tbody>
                     <template v-if="d.rows && d.rows.length">
                       <tr v-for="(w, wi) in d.rows" :key="wi"
-                        style="border-bottom:1px solid #e8eaed;"
-                        :style="wi % 2 === 1 ? 'background:#fff;' : ''">
+                        draggable="true"
+                        @dragstart="onWidgetDragStart($event, d.dispId, wi)"
+                        @dragover="onWidgetDragOver($event, d.dispId, wi)"
+                        @dragleave="onWidgetDragLeave"
+                        @drop="onWidgetDrop($event, d.dispId, wi)"
+                        @dragend="onWidgetDragEnd"
+                        :style="'border-bottom:1px solid #e8eaed;' + (wi % 2 === 1 ? 'background:#fff;' : '') + (widgetDragOverWi===wi && widgetDragPanel===d.dispId ? 'outline:2px solid #1d4ed8;background:#e3f2fd;' : '')">
+                        <td style="padding:4px 4px;text-align:center;cursor:grab;color:#bbb;font-size:14px;user-select:none;">⠿</td>
                         <td style="padding:4px 8px;text-align:center;color:#aaa;">{{ w.sortOrder || (wi+1) }}</td>
                         <td style="padding:4px 8px;color:#444;">{{ w.widgetNm || ('위젯 ' + (wi+1)) }}</td>
                         <td style="padding:4px 8px;text-align:center;">
@@ -460,7 +475,7 @@ window.DispPanelMng = {
                       </tr>
                     </template>
                     <tr v-else>
-                      <td colspan="5" style="padding:8px;text-align:center;color:#bbb;">등록된 위젯이 없습니다. (수정 후 저장하면 위젯 정보가 표시됩니다)</td>
+                      <td colspan="6" style="padding:8px;text-align:center;color:#bbb;">등록된 위젯이 없습니다. (수정 후 저장하면 위젯 정보가 표시됩니다)</td>
                     </tr>
                   </tbody>
                 </table>

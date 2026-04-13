@@ -961,6 +961,7 @@
 </div>
 `,
   })
+  .component('DispUi',       window.DispUi)
   .component('DashboardMng', window.DashboardMng)
   .component('AdminRefModal', window.AdminRefModal)
   .component('MemberMng',  window.MemberMng)
