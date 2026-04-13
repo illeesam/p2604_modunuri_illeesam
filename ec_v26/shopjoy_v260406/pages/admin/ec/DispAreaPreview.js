@@ -230,8 +230,29 @@ window.DispAreaPreview = {
     ───────────────────────────────────────── */
     const sourceCopied = ref(false);
 
+    const WIDGET_EXTRA_ATTRS = {
+      image_banner:    ['imageUrl','linkUrl','altText'],
+      product_slider:  ['productIds','displayCnt','autoPlay'],
+      product:         ['productIds','displayCnt'],
+      cond_product:    ['condType','condValue','displayCnt'],
+      chart_bar:       ['chartTitle','chartLabels','chartValues','chartColor'],
+      chart_line:      ['chartTitle','chartLabels','chartValues','chartColor'],
+      chart_pie:       ['chartTitle','chartLabels','chartValues'],
+      text_banner:     ['textContent','bgColor','textColor','fontSize'],
+      info_card:       ['infoTitle','infoBody','infoIcon'],
+      popup:           ['popupWidth','popupHeight','popupBg'],
+      file:            ['fileUrl','fileLabel','fileSize'],
+      file_list:       ['fileIds','maxCount'],
+      coupon:          ['couponCode','couponDesc','discountRate'],
+      html_editor:     ['htmlContent'],
+      event_banner:    ['eventId','eventTitle','eventUrl'],
+      cache_banner:    ['cacheAmount','cacheDesc','cacheExpire'],
+      widget_embed:    ['embedCode','embedWidth','embedHeight'],
+    };
+
     const sourceLines = computed(() => {
       const lines = [];
+      const A = (key, val, real = false) => ({ key, val: String(val), real });
       const areas = allAreaListRaw.value.filter(a =>
         selectedAreas.size === 0 || selectedAreas.has(a.codeValue)
       );
@@ -239,31 +260,70 @@ window.DispAreaPreview = {
         const panels = (props.adminData.displays || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-        if (ai > 0) lines.push({ type: 'blank', text: '' });
-        lines.push({ type: 'area-open', text: `<DispArea area="${area.codeValue}" areaLabel="${area.codeLabel}">` });
+        if (ai > 0) lines.push({ type:'blank' });
+        /* ── <DispArea attrs> ── */
+        lines.push({ type:'area-open', level:0, attrs:[
+          A('area',      area.codeValue, true),
+          A('areaLabel', area.codeLabel, true),
+          A('sortOrd',   '~'),
+          A('useYn',     '~'),
+        ]});
         if (panels.length === 0) {
-          lines.push({ type: 'comment', text: `  <!-- 해당 날짜 활성 패널 없음 -->` });
+          lines.push({ type:'comment', level:1, text:`<!-- 해당 날짜 활성 패널 없음 -->` });
         } else {
           panels.forEach(p => {
-            const types = panelWidgetTypes(p);
-            lines.push({ type: 'blank', text: '' });
-            lines.push({ type: 'comment', text: `  <!-- #${String(p.dispId).padStart(4,'0')} ${p.name} | ${p.status} | ${p.condition || '항상 표시'} -->` });
-            if (types.length === 0) {
-              lines.push({ type: 'widget', text: `  <!-- (위젯 없음) -->` });
+            const rows = p.rows || [];
+            lines.push({ type:'blank' });
+            /* ── <DispPanel attrs> ── */
+            lines.push({ type:'panel-open', level:1, attrs:[
+              A('id',            '#'+String(p.dispId).padStart(4,'0'), true),
+              A('name',          p.name,                               true),
+              A('status',        p.status,                             true),
+              A('condition',     p.condition || '항상 표시',             true),
+              A('authRequired',  p.authRequired  || '~', !!p.authRequired),
+              A('authGrade',     p.authGrade     || '~', !!p.authGrade),
+              A('dispStartDate', p.dispStartDate || '~', !!p.dispStartDate),
+              A('dispStartTime', p.dispStartTime || '~', !!p.dispStartTime),
+              A('dispEndDate',   p.dispEndDate   || '~', !!p.dispEndDate),
+              A('dispEndTime',   p.dispEndTime   || '~', !!p.dispEndTime),
+              A('sortOrder',     p.sortOrder != null ? p.sortOrder : '~', p.sortOrder != null),
+            ]});
+            if (rows.length === 0) {
+              lines.push({ type:'comment', level:2, text:`<!-- (위젯 없음) -->` });
             } else {
-              types.forEach(wt => {
-                lines.push({ type: 'widget', text: `  <DispWidget widgetType="${wt}" />`, wt });
+              rows.forEach(w => {
+                /* ── <DispWidget attrs /> ── */
+                lines.push({ type:'widget', level:2, attrs:[
+                  A('widgetType', w.widgetType,        true),
+                  A('widgetNm',   w.widgetNm || '~',   !!w.widgetNm),
+                  A('condition',  w.condition || '~',  !!w.condition),
+                  A('sortOrder',  '~'),
+                  ...(WIDGET_EXTRA_ATTRS[w.widgetType] || []).map(k => A(k,'~')),
+                ]});
               });
             }
+            lines.push({ type:'panel-close', level:1 });
           });
-          lines.push({ type: 'blank', text: '' });
+          lines.push({ type:'blank' });
         }
-        lines.push({ type: 'area-close', text: `</DispArea>` });
+        lines.push({ type:'area-close', level:0 });
       });
       return lines;
     });
 
-    const sourceText = computed(() => sourceLines.value.map(l => l.text).join('\n'));
+    const sourceText = computed(() => {
+      const fa = (attrs) => attrs.map(a => `${a.key}="${a.val}"`).join(' ');
+      return sourceLines.value.map(l => {
+        if (l.type === 'blank')        return '';
+        if (l.type === 'area-open')    return `<DispArea ${fa(l.attrs)}>`;
+        if (l.type === 'panel-open')   return `  <DispPanel ${fa(l.attrs)}>`;
+        if (l.type === 'widget')       return `    <DispWidget ${fa(l.attrs)} />`;
+        if (l.type === 'panel-close')  return `  </DispPanel>`;
+        if (l.type === 'area-close')   return '</DispArea>';
+        if (l.type === 'comment')      return l.text;
+        return '';
+      }).join('\n');
+    });
 
     const copySource = () => {
       navigator.clipboard?.writeText(sourceText.value).then(() => {
@@ -976,30 +1036,62 @@ window.DispAreaPreview = {
       <!-- 소스 본문 -->
       <div style="background:#1e1e2e;padding:16px 20px;overflow-x:auto;min-height:400px;max-height:70vh;overflow-y:auto;">
         <div v-if="sourceLines.length===0" style="color:#718096;font-size:13px;text-align:center;padding:40px;">영역 또는 패널 데이터가 없습니다.</div>
-        <div v-else style="font-family:monospace;font-size:12px;line-height:1.8;">
+        <div v-else style="font-family:monospace;font-size:12px;line-height:1.9;">
           <div v-for="(line, i) in sourceLines" :key="i"
-            :style="line.type==='blank' ? 'height:0.6em;' : 'white-space:pre;'">
-            <span v-if="line.type==='area-open'" style="color:#63b3ed;font-weight:700;">{{ line.text }}</span>
-            <span v-else-if="line.type==='area-close'" style="color:#63b3ed;font-weight:700;">{{ line.text }}</span>
-            <span v-else-if="line.type==='comment'" style="color:#718096;">{{ line.text }}</span>
-            <span v-else-if="line.type==='widget'">
-              <span style="color:#cdd9e5;">{{ '  ' }}</span>
-              <span style="color:#f6ad55;font-weight:600;">&lt;DispWidget</span>
-              <span style="color:#b5cea8;"> widgetType=</span>
-              <span style="color:#ce9178;">"{{ line.wt }}"</span>
-              <span style="color:#f6ad55;font-weight:600;"> /&gt;</span>
-              <span style="color:#718096;">  &lt;!-- {{ wIcon(line.wt) }} {{ wLabel(line.wt) }} --&gt;</span>
-            </span>
-            <span v-else style="color:#cdd9e5;">{{ line.text }}</span>
+            :style="line.type==='blank'
+              ? 'height:0.4em;'
+              : 'white-space:nowrap;overflow-x:visible;padding-left:' + (line.level||0)*20 + 'px;'">
+
+            <!-- <DispArea attr="val" ...> -->
+            <template v-if="line.type==='area-open'">
+              <span style="color:#63b3ed;font-weight:700;">&lt;DispArea</span>
+              <template v-for="a in line.attrs" :key="a.key">
+                <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
+              </template>
+              <span style="color:#63b3ed;font-weight:700;">&gt;</span>
+            </template>
+
+            <!-- <DispPanel attr="val" ...> -->
+            <template v-else-if="line.type==='panel-open'">
+              <span style="color:#68d391;font-weight:700;">&lt;DispPanel</span>
+              <template v-for="a in line.attrs" :key="a.key">
+                <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
+              </template>
+              <span style="color:#68d391;font-weight:700;">&gt;</span>
+            </template>
+
+            <!-- <DispWidget attr="val" .../> -->
+            <template v-else-if="line.type==='widget'">
+              <span style="color:#f6ad55;font-weight:700;">&lt;DispWidget</span>
+              <template v-for="a in line.attrs" :key="a.key">
+                <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
+              </template>
+              <span style="color:#f6ad55;font-weight:700;"> /&gt;</span>
+            </template>
+
+            <!-- </DispPanel> -->
+            <span v-else-if="line.type==='panel-close'"
+              style="color:#68d391;font-weight:700;">&lt;/DispPanel&gt;</span>
+
+            <!-- </DispArea> -->
+            <span v-else-if="line.type==='area-close'"
+              style="color:#63b3ed;font-weight:700;">&lt;/DispArea&gt;</span>
+
+            <!-- 주석 -->
+            <span v-else-if="line.type==='comment'" style="color:#6a737d;">{{ line.text }}</span>
+
           </div>
         </div>
       </div>
 
       <!-- 소스 푸터: 범례 -->
-      <div style="background:#161622;padding:10px 20px;border-top:1px solid #3a3a5c;display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="background:#161622;padding:10px 20px;border-top:1px solid #3a3a5c;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
         <span style="font-size:11px;color:#63b3ed;">■ DispArea</span>
+        <span style="font-size:11px;color:#68d391;">■ DispPanel</span>
         <span style="font-size:11px;color:#f6ad55;">■ DispWidget</span>
-        <span style="font-size:11px;color:#718096;">■ 주석 (패널 정보)</span>
+        <span style="font-size:11px;color:#9cdcfe;">■ 속성명</span>
+        <span style="font-size:11px;color:#ce9178;">■ 실제값</span>
+        <span style="font-size:11px;color:#6a737d;font-style:italic;">■ 플레이스홀더(~)</span>
         <span style="font-size:11px;color:#aaa;margin-left:auto;">📅 {{ previewDate }} 기준 활성 패널</span>
       </div>
     </div>

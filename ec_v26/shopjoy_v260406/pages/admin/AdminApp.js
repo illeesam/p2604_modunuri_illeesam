@@ -18,7 +18,15 @@
     product:   [{ id: 'ecCategoryMng', label: '카테고리관리' }, { id: 'ecProdMng', label: '상품관리' }],
     order:     [{ id: 'ecOrderMng',    label: '주문관리' }, { id: 'ecClaimMng', label: '클레임관리' }, { id: 'ecDlivMng', label: '배송관리' }],
     promotion: [{ id: 'ecCouponMng',   label: '쿠폰관리' }, { id: 'ecCacheMng', label: '캐쉬관리' }, { id: 'ecEventMng', label: '이벤트관리' }],
-    display:   [{ id: 'ecDispAreaPreview', label: '전시영역미리보기' }, { id: 'ecDispAreaMng', label: '전시영역관리' }, { id: 'ecDispPanelMng', label: '전시패널관리' }, { id: 'ecDispWidgetLibMng', label: '전시위젯Lib' }, { id: 'ecDispWidgetLibPreview', label: '전시위젯Lib미리보기' }],
+    display:   [
+      { group: '미리보기' },
+      { id: 'ecDispAreaPreview',      label: '전시영역미리보기' },
+      { id: 'ecDispWidgetLibPreview', label: '전시위젯Lib미리보기' },
+      { group: '전시관리' },
+      { id: 'ecDispAreaMng',          label: '전시영역관리' },
+      { id: 'ecDispPanelMng',         label: '전시패널관리' },
+      { id: 'ecDispWidgetLibMng',     label: '전시위젯Lib' },
+    ],
     customer:  [{ id: 'ecCustInfoMng', label: '고객종합정보' }, { id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
     system:    [{ id: 'sySiteMng', label: '사이트관리' }, { id: 'syCodeMng', label: '공통코드관리' }, { id: 'syBrandMng', label: '브랜드관리' },
                 { id: 'syAttachMng', label: '첨부관리' }, { id: 'syTemplateMng', label: '템플릿관리' },
@@ -35,7 +43,7 @@
   const PAGE_TO_TOP = {};
   const PAGE_LABELS  = {};
   Object.entries(LEFT_MENUS).forEach(([top, items]) => {
-    items.forEach(item => {
+    items.filter(item => item.id).forEach(item => {
       PAGE_TO_TOP[item.id] = top;
       PAGE_TO_TOP[item.id.replace('Mng', 'Dtl')] = top;
       PAGE_LABELS[item.id] = item.label;
@@ -48,8 +56,8 @@
 
   const ALL_PAGES = [
     'dashboard',
-    ...Object.values(LEFT_MENUS).flat().map(p => p.id),
-    ...Object.values(LEFT_MENUS).flat().map(p => p.id.replace('Mng', 'Dtl')),
+    ...Object.values(LEFT_MENUS).flat().filter(p => p.id).map(p => p.id),
+    ...Object.values(LEFT_MENUS).flat().filter(p => p.id).map(p => p.id.replace('Mng', 'Dtl')),
   ];
 
   /* Mng 페이지의 탭 ID 반환 (Dtl → 부모 Mng) */
@@ -199,7 +207,7 @@
       const setTopMenu = (topId) => {
         activeTop.value = topId;
         leftMenuOpen.value = true;
-        const first = LEFT_MENUS[topId]?.[0];
+        const first = LEFT_MENUS[topId]?.find(p => p.id);
         if (first) navigate(first.id);
       };
 
@@ -528,14 +536,16 @@
     <nav class="admin-left-nav" :class="{closed: !leftMenuOpen}">
       <div class="left-nav-top">
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
-        <div v-for="item in LEFT_MENUS[activeTop]" :key="item.id"
-          class="left-nav-item" :class="{active: activeTabId===item.id}"
-          @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
-          :title="'Ctrl+클릭: 새창'">
-          {{ item.label }}
-          <span class="left-fav-star" :class="{active: isFav(item.id)}"
-            @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
-        </div>
+        <template v-for="item in LEFT_MENUS[activeTop]" :key="item.group || item.id">
+          <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
+          <div v-else class="left-nav-item left-nav-sub-item" :class="{active: activeTabId===item.id}"
+            @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
+            :title="'Ctrl+클릭: 새창'">
+            {{ item.label }}
+            <span class="left-fav-star" :class="{active: isFav(item.id)}"
+              @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
+          </div>
+        </template>
       </div>
 
       <!-- 열린화면 / 즐겨찾기 (하단 고정) -->

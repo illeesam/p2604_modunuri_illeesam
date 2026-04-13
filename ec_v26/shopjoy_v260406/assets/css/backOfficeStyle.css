@@ -213,6 +213,8 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .left-nav-item:hover::before { background: #e8587a; transform: scale(1.3); }
 .left-nav-item.active { background: linear-gradient(90deg, #fff0f4 0%, #fffbfc 100%); color: #e8587a; font-weight: 700; border-left-color: #e8587a; }
 .left-nav-item.active::before { background: #e8587a; }
+.left-nav-group-header { padding: 8px 16px 4px; font-size: 10px; font-weight: 800; color: #9ca3af; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+.left-nav-sub-item { padding-left: 22px; font-size: 12px; }
 
 /* ── Main Content ── */
 .admin-main { flex: 1; min-width: 0; }
