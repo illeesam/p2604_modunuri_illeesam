@@ -1,6 +1,6 @@
 /* ShopJoy - Sample07: Postman-style API Tester  (데이터: api/xs/sample07.json) */
-window.Sample07 = {
-  name: 'Sample07',
+window.XsSample07 = {
+  name: 'XsSample07',
   setup() {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 

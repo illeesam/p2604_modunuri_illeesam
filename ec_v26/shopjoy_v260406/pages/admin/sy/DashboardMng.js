@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 대시보드 */
-window.DashboardMng = {
-  name: 'DashboardMng',
+window.SyDashboardMng = {
+  name: 'SyDashboardMng',
   props: ['navigate', 'adminData', 'showToast'],
   setup(props) {
     const { computed } = Vue;

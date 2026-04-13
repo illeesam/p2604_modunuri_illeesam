@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 전시영역미리보기 (3탭: 미리보기 · 구조선택 · 소스) */
-window.DispAreaPreview = {
-  name: 'DispAreaPreview',
+window.EcDispAreaPreview = {
+  name: 'EcDispAreaPreview',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
@@ -1137,7 +1137,7 @@ window.DispAreaPreview = {
 
 
       <!-- DispUi 컴포넌트 -->
-      <disp-ui :key="dispUiModalKey" :params="dispUiParamObj" :admin-data="adminData" />
+      <disp-x01-ui :key="dispUiModalKey" :params="dispUiParamObj" :admin-data="adminData" />
 
       <!-- 모달 푸터 -->
       <div style="padding:10px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;z-index:1;">
@@ -1255,7 +1255,7 @@ window.DispAreaPreview = {
     <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">기준 날짜를 선택해주세요.</div>
     <div v-else>
       <div v-for="area in areaList" :key="area.codeValue" style="margin-bottom:4px;">
-        <disp-area
+        <disp-x02-area
           :area="area.codeValue"
           :area-label="area.codeLabel"
           :panels="panelsForArea(area.codeValue)"

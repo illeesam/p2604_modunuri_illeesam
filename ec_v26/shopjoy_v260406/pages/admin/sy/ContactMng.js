@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 문의관리 목록 + 하단 ContactDtl 임베드 */
-window.ContactMng = {
-  name: 'ContactMng',
+window.SyContactMng = {
+  name: 'SyContactMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

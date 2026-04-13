@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 업체정보 목록 */
-window.VendorMng = {
-  name: 'VendorMng',
+window.SyVendorMng = {
+  name: 'SyVendorMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

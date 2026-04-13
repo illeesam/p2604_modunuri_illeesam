@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 업체정보 상세/등록 */
-window.VendorDtl = {
-  name: 'VendorDtl',
+window.SyVendorDtl = {
+  name: 'SyVendorDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;

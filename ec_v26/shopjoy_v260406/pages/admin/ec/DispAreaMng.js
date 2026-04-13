@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 전시영역관리 (CRUD 그리드) */
-window.DispAreaMng = {
-  name: 'DispAreaMng',
+window.EcDispAreaMng = {
+  name: 'EcDispAreaMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

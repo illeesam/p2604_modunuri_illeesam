@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 주문관리 상세/등록 */
-window.OrderDtl = {
-  name: 'OrderDtl',
+window.EcOrderDtl = {
+  name: 'EcOrderDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 배치스케즐 상세/등록 */
-window.BatchDtl = {
-  name: 'BatchDtl',
+window.SyBatchDtl = {
+  name: 'SyBatchDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;

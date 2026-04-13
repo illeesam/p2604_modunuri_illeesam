@@ -1,6 +1,6 @@
 /* ShopJoy - Sample06: 쿠폰 관리 CRUD Grid */
-window.Sample06 = {
-  name: 'Sample06',
+window.XsSample06 = {
+  name: 'XsSample06',
   setup() {
     const { ref, reactive, computed, onMounted } = Vue;
 

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 상품관리 목록 + 하단 ProdDtl 임베드 */
-window.ProdMng = {
-  name: 'ProdMng',
+window.EcProdMng = {
+  name: 'EcProdMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

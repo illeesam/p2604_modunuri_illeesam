@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 상품 이력 (연관주문 / 재고이력 / 가격변경이력 / 상품상태이력 / 상품정보변경이력) */
-window.ProdHist = {
-  name: 'ProdHist',
+window.EcProdHist = {
+  name: 'EcProdHist',
   props: ['navigate', 'adminData', 'showRefModal', 'prodId'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;

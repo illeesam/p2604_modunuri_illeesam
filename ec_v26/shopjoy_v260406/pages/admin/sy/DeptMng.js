@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 부서관리 (Tree CRUD 그리드) */
-window.DeptMng = {
-  name: 'DeptMng',
+window.SyDeptMng = {
+  name: 'SyDeptMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

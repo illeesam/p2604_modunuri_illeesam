@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 전시관리 목록 + 하단 DispDtl 임베드 */
-window.DispPanelMng = {
-  name: 'DispPanelMng',
+window.EcDispPanelMng = {
+  name: 'EcDispPanelMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

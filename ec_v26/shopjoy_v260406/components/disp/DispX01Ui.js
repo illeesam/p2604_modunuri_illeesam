@@ -4,8 +4,8 @@
  *   params    - { areas[], date, time, status, condition, authRequired, authGrade, siteId, memberId, viewOpts }
  *   adminData - adminData 객체 (없으면 window.adminData fallback)
  */
-window.DispUi = {
-  name: 'DispUi',
+window.DispX01Ui = {
+  name: 'DispX01Ui',
   props: {
     params:    { type: Object, required: true },
     adminData: { type: Object, default: () => window.adminData || { displays: [], codes: [] } },
@@ -294,7 +294,7 @@ window.DispUi = {
         <template v-for="areaCode in params.areas" :key="areaCode">
           <template v-for="p in panelsForArea(areaCode)" :key="p.dispId">
             <template v-for="(w, wi) in (p.rows||[])" :key="wi">
-              <disp-widget :widget="{ ...w, status: p.status, condition: w.condition||p.condition||'항상 표시', authRequired: p.authRequired, authGrade: p.authGrade }" />
+              <disp-x04-widget :widget="{ ...w, status: p.status, condition: w.condition||p.condition||'항상 표시', authRequired: p.authRequired, authGrade: p.authGrade }" />
             </template>
           </template>
           <!-- 스켈레톤 (패널 없을 때) -->
@@ -384,7 +384,7 @@ window.DispUi = {
                   <span style="font-size:9px;background:#f0f0f0;border-radius:4px;padding:0 5px;color:#aaa;">{{ w.widgetType }}</span>
                   <span v-if="w.widgetNm" style="font-size:10px;color:#888;">{{ w.widgetNm }}</span>
                 </div>
-                <disp-widget :widget="{ ...w, status: p.status, condition: w.condition||p.condition||'항상 표시', authRequired: p.authRequired, authGrade: p.authGrade }" />
+                <disp-x04-widget :widget="{ ...w, status: p.status, condition: w.condition||p.condition||'항상 표시', authRequired: p.authRequired, authGrade: p.authGrade }" />
               </div>
 
             </div>

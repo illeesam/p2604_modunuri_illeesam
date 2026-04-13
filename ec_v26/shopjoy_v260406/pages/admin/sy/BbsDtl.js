@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 게시글관리 상세/등록 */
-window.BbsDtl = {
-  name: 'BbsDtl',
+window.SyBbsDtl = {
+  name: 'SyBbsDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;

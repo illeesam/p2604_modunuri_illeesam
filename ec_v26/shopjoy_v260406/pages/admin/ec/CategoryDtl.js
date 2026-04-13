@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 카테고리 상세/등록 */
-window.CategoryDtl = {
-  name: 'CategoryDtl',
+window.EcCategoryDtl = {
+  name: 'EcCategoryDtl',
   props: ['navigate', 'adminData', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;

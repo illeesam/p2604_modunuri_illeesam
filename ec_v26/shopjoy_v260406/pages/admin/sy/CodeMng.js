@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 공통코드관리 (CRUD 그리드) */
-window.CodeMng = {
-  name: 'CodeMng',
+window.SyCodeMng = {
+  name: 'SyCodeMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

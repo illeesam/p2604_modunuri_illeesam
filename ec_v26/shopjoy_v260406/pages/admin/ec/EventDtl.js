@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 이벤트관리 상세/등록 (Quill HTML Editor) */
-window.EventDtl = {
-  name: 'EventDtl',
+window.EcEventDtl = {
+  name: 'EcEventDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onUnmounted } = Vue;

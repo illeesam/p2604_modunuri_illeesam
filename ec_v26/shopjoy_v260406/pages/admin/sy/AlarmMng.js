@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 알림관리 */
-window.AlarmMng = {
-  name: 'AlarmMng',
+window.SyAlarmMng = {
+  name: 'SyAlarmMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

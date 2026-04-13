@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 사이트관리 목록 */
-window.SiteMng = {
-  name: 'SiteMng',
+window.SySiteMng = {
+  name: 'SySiteMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

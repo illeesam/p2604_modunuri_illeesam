@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 배치 실행이력 */
-window.BatchHist = {
-  name: 'BatchHist',
+window.SyBatchHist = {
+  name: 'SyBatchHist',
   props: ['adminData'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

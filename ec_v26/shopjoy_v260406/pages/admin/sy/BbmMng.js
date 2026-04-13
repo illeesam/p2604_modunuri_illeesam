@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 게시판관리 */
-window.BbmMng = {
-  name: 'BbmMng',
+window.SyBbmMng = {
+  name: 'SyBbmMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

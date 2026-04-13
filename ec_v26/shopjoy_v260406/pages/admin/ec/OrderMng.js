@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 주문관리 목록 + 하단 OrderDtl 임베드 */
-window.OrderMng = {
-  name: 'OrderMng',
+window.EcOrderMng = {
+  name: 'EcOrderMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

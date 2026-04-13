@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 회원관리 상세/등록 */
-window.MemberDtl = {
-  name: 'MemberDtl',
+window.EcMemberDtl = {
+  name: 'EcMemberDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;

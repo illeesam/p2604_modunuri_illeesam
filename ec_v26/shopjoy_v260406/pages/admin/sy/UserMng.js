@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 사용자관리(관리자) 목록 */
-window.UserMng = {
-  name: 'UserMng',
+window.SyUserMng = {
+  name: 'SyUserMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 알림관리 상세/등록 */
-window.AlarmDtl = {
-  name: 'AlarmDtl',
+window.SyAlarmDtl = {
+  name: 'SyAlarmDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;

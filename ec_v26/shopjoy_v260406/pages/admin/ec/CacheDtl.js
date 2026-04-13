@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 캐쉬관리 상세/등록 */
-window.CacheDtl = {
-  name: 'CacheDtl',
+window.EcCacheDtl = {
+  name: 'EcCacheDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;

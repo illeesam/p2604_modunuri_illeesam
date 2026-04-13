@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 권한관리 (Tree CRUD 그리드 + 하단 메뉴/사용자 배분) */
-window.RoleMng = {
-  name: 'RoleMng',
+window.SyRoleMng = {
+  name: 'SyRoleMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 쿠폰관리 상세/등록 */
-window.CouponDtl = {
-  name: 'CouponDtl',
+window.EcCouponDtl = {
+  name: 'EcCouponDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;

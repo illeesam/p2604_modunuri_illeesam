@@ -1,6 +1,6 @@
 /* ShopJoy - 전시 위젯 렌더러 컴포넌트 */
-window.DispWidget = {
-  name: 'DispWidget',
+window.DispX04Widget = {
+  name: 'DispX04Widget',
   props: {
     widget:     { type: Object,  required: true },
     isLoggedIn: { type: Boolean, default: false },

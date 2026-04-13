@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 채팅관리 상세/등록 */
-window.ChattDtl = {
-  name: 'ChattDtl',
+window.EcChattDtl = {
+  name: 'EcChattDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, nextTick } = Vue;

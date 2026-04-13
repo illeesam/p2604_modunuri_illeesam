@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 배치스케즐관리 (CRUD 그리드) */
-window.BatchMng = {
-  name: 'BatchMng',
+window.SyBatchMng = {
+  name: 'SyBatchMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

@@ -2,8 +2,8 @@
    mode="card"   : 패널 카드 목록 (패널 메타 정보)
    mode="expand" : 모든 패널 펼침 → 위젯 렌더링 (DispWidget 사용)
 */
-window.DispArea = {
-  name: 'DispArea',
+window.DispX02Area = {
+  name: 'DispX02Area',
   props: {
     area:       { type: String, required: true },
     areaLabel:  { type: String, default: '' },
@@ -244,7 +244,7 @@ window.DispArea = {
               <span style="font-size:9px;color:#bbb;">위젯{{ wi+1 }}</span>
               <span style="font-size:9px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:4px;padding:0 5px;color:#888;white-space:nowrap;">{{ wIcon(w.widgetType) }} {{ wLabel(w.widgetType) }}</span>
             </div>
-            <disp-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+            <disp-x04-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
           </div>
         </div>
 
@@ -282,7 +282,7 @@ window.DispArea = {
         <!-- 위젯 실제 컨텐츠 나열 -->
         <div v-for="(w, wi) in getPanelWidgets(p)" :key="wi"
           style="padding:12px 16px;border-bottom:1px solid #f5f5f5;">
-          <disp-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+          <disp-x04-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
         </div>
       </div>
     </template>
@@ -316,7 +316,7 @@ window.DispArea = {
             </div>
             <!-- 우: 실제 위젯 컨텐츠 -->
             <div style="padding:12px 16px;">
-              <disp-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+              <disp-x04-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
             </div>
           </div>
         </template>
@@ -326,7 +326,7 @@ window.DispArea = {
         <template v-for="p in panels" :key="p.dispId">
           <div v-for="(w, wi) in getPanelWidgets(p)" :key="wi"
             style="padding:12px 16px;border-bottom:1px solid #f5f5f5;">
-            <disp-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+            <disp-x04-widget :widget="w" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
           </div>
         </template>
       </template>

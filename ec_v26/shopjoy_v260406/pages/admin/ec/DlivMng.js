@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 배송관리 목록 + 하단 DlivDtl 임베드 */
-window.DlivMng = {
-  name: 'DlivMng',
+window.EcDlivMng = {
+  name: 'EcDlivMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

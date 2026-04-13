@@ -514,29 +514,29 @@
         v-else-if="page==='myChatt'"
         :navigate="navigate" :cart-count="cartCount"
       />
-      <disp-ui01 v-else-if="page==='dispUi01'" />
-      <disp-ui02 v-else-if="page==='dispUi02'" />
-      <disp-ui03 v-else-if="page==='dispUi03'" />
-      <disp-ui04 v-else-if="page==='dispUi04'" />
-      <disp-ui05 v-else-if="page==='dispUi05'" />
-      <disp-ui06 v-else-if="page==='dispUi06'" />
-      <sample01 v-else-if="page==='sample01'" />
-      <sample02 v-else-if="page==='sample02'" />
-      <sample03 v-else-if="page==='sample03'" />
-      <sample04 v-else-if="page==='sample04'" />
-      <sample05 v-else-if="page==='sample05'" />
-      <sample06 v-else-if="page==='sample06'" />
-      <sample07 v-else-if="page==='sample07'" />
-      <sample08 v-else-if="page==='sample08'" />
-      <sample09 v-else-if="page==='sample09'" />
-      <sample10 v-else-if="page==='sample10'" />
-      <sample11 v-else-if="page==='sample11'" />
-      <sample12 v-else-if="page==='sample12'" />
-      <sample13 v-else-if="page==='sample13'" />
-      <sample14 v-else-if="page==='sample14'" />
-      <sample21 v-else-if="page==='sample21'" />
-      <sample22 v-else-if="page==='sample22'" />
-      <sample23 v-else-if="page==='sample23'" />
+      <xd-disp-ui01 v-else-if="page==='dispUi01'" />
+      <xd-disp-ui02 v-else-if="page==='dispUi02'" />
+      <xd-disp-ui03 v-else-if="page==='dispUi03'" />
+      <xd-disp-ui04 v-else-if="page==='dispUi04'" />
+      <xd-disp-ui05 v-else-if="page==='dispUi05'" />
+      <xd-disp-ui06 v-else-if="page==='dispUi06'" />
+      <xs-sample01 v-else-if="page==='sample01'" />
+      <xs-sample02 v-else-if="page==='sample02'" />
+      <xs-sample03 v-else-if="page==='sample03'" />
+      <xs-sample04 v-else-if="page==='sample04'" />
+      <xs-sample05 v-else-if="page==='sample05'" />
+      <xs-sample06 v-else-if="page==='sample06'" />
+      <xs-sample07 v-else-if="page==='sample07'" />
+      <xs-sample08 v-else-if="page==='sample08'" />
+      <xs-sample09 v-else-if="page==='sample09'" />
+      <xs-sample10 v-else-if="page==='sample10'" />
+      <xs-sample11 v-else-if="page==='sample11'" />
+      <xs-sample12 v-else-if="page==='sample12'" />
+      <xs-sample13 v-else-if="page==='sample13'" />
+      <xs-sample14 v-else-if="page==='sample14'" />
+      <xs-sample21 v-else-if="page==='sample21'" />
+      <xs-sample22 v-else-if="page==='sample22'" />
+      <xs-sample23 v-else-if="page==='sample23'" />
 
       <app-footer :config="config" :navigate="navigate" />
     </main>
@@ -607,30 +607,30 @@
   .component('LikePage',     window.Like)
   .component('LocationPage', window.Location)
   .component('AboutPage',    window.About)
-  .component('DispWidget', window.DispWidget)
-  .component('DispUi01', window.DispUi01)
-  .component('DispUi02', window.DispUi02)
-  .component('DispUi03', window.DispUi03)
-  .component('DispUi04', window.DispUi04)
-  .component('DispUi05', window.DispUi05)
-  .component('DispUi06', window.DispUi06)
-  .component('Sample01', window.Sample01)
-  .component('Sample02', window.Sample02)
-  .component('Sample03', window.Sample03)
-  .component('Sample04', window.Sample04)
-  .component('Sample05', window.Sample05)
-  .component('Sample06', window.Sample06)
-  .component('Sample07', window.Sample07)
-  .component('Sample08', window.Sample08)
-  .component('Sample09', window.Sample09)
-  .component('Sample10', window.Sample10)
-  .component('Sample11', window.Sample11)
-  .component('Sample12', window.Sample12)
-  .component('Sample13', window.Sample13)
-  .component('Sample14', window.Sample14)
-  .component('Sample21', window.Sample21)
-  .component('Sample22', window.Sample22)
-  .component('Sample23', window.Sample23)
+  .component('DispX04Widget', window.DispX04Widget)
+  .component('XdDispUi01', window.XdDispUi01)
+  .component('XdDispUi02', window.XdDispUi02)
+  .component('XdDispUi03', window.XdDispUi03)
+  .component('XdDispUi04', window.XdDispUi04)
+  .component('XdDispUi05', window.XdDispUi05)
+  .component('XdDispUi06', window.XdDispUi06)
+  .component('XsSample01', window.XsSample01)
+  .component('XsSample02', window.XsSample02)
+  .component('XsSample03', window.XsSample03)
+  .component('XsSample04', window.XsSample04)
+  .component('XsSample05', window.XsSample05)
+  .component('XsSample06', window.XsSample06)
+  .component('XsSample07', window.XsSample07)
+  .component('XsSample08', window.XsSample08)
+  .component('XsSample09', window.XsSample09)
+  .component('XsSample10', window.XsSample10)
+  .component('XsSample11', window.XsSample11)
+  .component('XsSample12', window.XsSample12)
+  .component('XsSample13', window.XsSample13)
+  .component('XsSample14', window.XsSample14)
+  .component('XsSample21', window.XsSample21)
+  .component('XsSample22', window.XsSample22)
+  .component('XsSample23', window.XsSample23)
   /* BaseComp 공통 컴포넌트 */
   .component('BaseAttachGrp', window.BaseAttachGrp)
   /* BaseModal 공통 컴포넌트 */

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 이벤트관리 목록 + 하단 EventDtl 임베드 */
-window.EventMng = {
-  name: 'EventMng',
+window.EcEventMng = {
+  name: 'EcEventMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy - Sample04: 모달 / 팝업 전시관 */
-window.Sample04 = {
-  name: 'Sample04',
+window.XsSample04 = {
+  name: 'XsSample04',
   setup() {
     const { ref, reactive, onMounted } = Vue;
 

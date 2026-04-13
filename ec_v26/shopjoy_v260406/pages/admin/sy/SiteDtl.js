@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 사이트관리 상세/등록 */
-window.SiteDtl = {
-  name: 'SiteDtl',
+window.SySiteDtl = {
+  name: 'SySiteDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, ref } = Vue;

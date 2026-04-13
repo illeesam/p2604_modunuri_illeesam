@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 채팅관리 목록 + 하단 ChattDtl 임베드 */
-window.ChattMng = {
-  name: 'ChattMng',
+window.EcChattMng = {
+  name: 'EcChattMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

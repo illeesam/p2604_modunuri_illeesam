@@ -1789,7 +1789,7 @@ window.DispPreviewModal = {
             <div style="font-size:10px;color:#bbb;margin-bottom:4px;font-family:monospace;">
               #{{ w.dispId }} {{ w.name }} · 순서{{ w.sortOrder }}
             </div>
-            <disp-widget :widget="w" />
+            <disp-x04-widget :widget="w" />
           </div>
         </div>
       </template>
@@ -1802,7 +1802,7 @@ window.DispPreviewModal = {
         <!-- widgetType 없으면 DispWidget 렌더 금지 (widgetType.startsWith 오류 방지) -->
         <div v-if="previewWidget.widgetType"
           style="border:1px dashed #e0e0e0;border-radius:8px;padding:16px;background:#fafbff;">
-          <disp-widget :widget="previewWidget" />
+          <disp-x04-widget :widget="previewWidget" />
         </div>
         <div v-else
           style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">

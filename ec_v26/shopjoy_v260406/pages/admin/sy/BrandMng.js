@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 브랜드관리 (CRUD 그리드) */
-window.BrandMng = {
-  name: 'BrandMng',
+window.SyBrandMng = {
+  name: 'SyBrandMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

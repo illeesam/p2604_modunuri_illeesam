@@ -1,6 +1,6 @@
 /* ShopJoy - Sample02: 상품 관리 CRUD Grid (Infinity Scroll) */
-window.Sample02 = {
-  name: 'Sample02',
+window.XsSample02 = {
+  name: 'XsSample02',
   setup() {
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
 

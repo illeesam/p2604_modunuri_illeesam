@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 클레임 이력 (클레임항목 / 처리정보 / 연관주문) */
-window.ClaimHist = {
-  name: 'ClaimHist',
+window.EcClaimHist = {
+  name: 'EcClaimHist',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'claimId'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;

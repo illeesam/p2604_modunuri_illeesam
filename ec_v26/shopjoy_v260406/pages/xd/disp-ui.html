@@ -12,11 +12,11 @@
   <script src="../../pages/admin/AdminData.js"></script>
   <script src="../../utils/adminUtil.js"></script>
   <script src="../../components/comp/BaseComp.js"></script>
-  <script src="../../components/disp/DispWidget.js"></script>
-  <script src="../../components/disp/DispWidgetLib.js"></script>
-  <script src="../../components/disp/DispPanel.js"></script>
-  <script src="../../components/disp/DispArea.js"></script>
-  <script src="../../components/disp/DispUi.js"></script>
+  <script src="../../components/disp/DispX04Widget.js"></script>
+  <script src="../../components/disp/DispX05WidgetLib.js"></script>
+  <script src="../../components/disp/DispX03Panel.js"></script>
+  <script src="../../components/disp/DispX02Area.js"></script>
+  <script src="../../components/disp/DispX01Ui.js"></script>
   <script src="DispUiPage.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,10 +28,10 @@
   <script>
     const { createApp } = Vue;
     const app = createApp(window.DispUiPage);
-    app.component('DispArea',     window.DispArea);
-    app.component('DispPanel',    window.DispPanel);
-    app.component('DispWidget',   window.DispWidget);
-    app.component('DispWidgetLib',window.DispWidgetLib);
+    app.component('DispX02Area',     window.DispX02Area);
+    app.component('DispX03Panel',    window.DispX03Panel);
+    app.component('DispX04Widget',   window.DispX04Widget);
+    app.component('DispX05WidgetLib',window.DispX05WidgetLib);
     app.mount('#app');
   </script>
 </body>

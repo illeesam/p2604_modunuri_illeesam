@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 쿠폰관리 목록 + 하단 CouponDtl 임베드 */
-window.CouponMng = {
-  name: 'CouponMng',
+window.EcCouponMng = {
+  name: 'EcCouponMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

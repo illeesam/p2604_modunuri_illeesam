@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 위젯라이브러리 목록 */
-window.DispWidgetLibMng = {
-  name: 'DispWidgetLibMng',
+window.EcDispWidgetLibMng = {
+  name: 'EcDispWidgetLibMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 주문 이력 (구성상품 / 배송이력 / 연관클레임) */
-window.OrderHist = {
-  name: 'OrderHist',
+window.EcOrderHist = {
+  name: 'EcOrderHist',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'orderId'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;

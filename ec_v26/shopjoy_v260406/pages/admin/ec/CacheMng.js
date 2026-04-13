@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 캐쉬관리 목록 + 하단 CacheDtl 임베드 */
-window.CacheMng = {
-  name: 'CacheMng',
+window.EcCacheMng = {
+  name: 'EcCacheMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

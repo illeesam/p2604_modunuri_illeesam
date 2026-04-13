@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 메뉴관리 (Tree CRUD 그리드) */
-window.MenuMng = {
-  name: 'MenuMng',
+window.SyMenuMng = {
+  name: 'SyMenuMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

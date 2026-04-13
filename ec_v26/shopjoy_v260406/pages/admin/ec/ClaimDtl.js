@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 클레임관리 상세/등록 */
-window.ClaimDtl = {
-  name: 'ClaimDtl',
+window.EcClaimDtl = {
+  name: 'EcClaimDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;

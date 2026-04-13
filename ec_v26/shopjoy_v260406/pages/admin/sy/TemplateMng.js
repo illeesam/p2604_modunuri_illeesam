@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 템플릿관리 목록 */
-window.TemplateMng = {
-  name: 'TemplateMng',
+window.SyTemplateMng = {
+  name: 'SyTemplateMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 회원 이력 (연관주문 / 연관클레임) */
-window.MemberHist = {
-  name: 'MemberHist',
+window.EcMemberHist = {
+  name: 'EcMemberHist',
   props: ['navigate', 'adminData', 'showRefModal', 'memberId'],
   setup(props) {
     const { ref, computed } = Vue;

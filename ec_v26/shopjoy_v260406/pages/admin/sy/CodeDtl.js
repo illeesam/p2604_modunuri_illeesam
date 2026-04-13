@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 공통코드 상세/등록 */
-window.CodeDtl = {
-  name: 'CodeDtl',
+window.SyCodeDtl = {
+  name: 'SyCodeDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 클레임관리 목록 + 하단 ClaimDtl 임베드 */
-window.ClaimMng = {
-  name: 'ClaimMng',
+window.EcClaimMng = {
+  name: 'EcClaimMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

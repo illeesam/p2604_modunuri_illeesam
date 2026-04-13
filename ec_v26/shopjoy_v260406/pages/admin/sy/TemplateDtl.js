@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 템플릿 상세/등록 */
-window.TemplateDtl = {
-  name: 'TemplateDtl',
+window.SyTemplateDtl = {
+  name: 'SyTemplateDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;

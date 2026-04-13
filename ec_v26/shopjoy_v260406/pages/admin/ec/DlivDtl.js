@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 배송관리 상세/등록 */
-window.DlivDtl = {
-  name: 'DlivDtl',
+window.EcDlivDtl = {
+  name: 'EcDlivDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;

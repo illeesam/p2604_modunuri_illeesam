@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 위젯라이브러리 경로 트리 컴포넌트 */
-window.DispWidgetLib = {
-  name: 'DispWidgetLib',
+window.DispX05WidgetLib = {
+  name: 'DispX05WidgetLib',
   props: ['widgetLibs', 'selectedLibId'],
   emits: ['select'],
   setup(props, { emit }) {

@@ -1,6 +1,6 @@
 /* ShopJoy - Sample09: FAQ 관리 CRUD Grid */
-window.Sample09 = {
-  name: 'Sample09',
+window.XsSample09 = {
+  name: 'XsSample09',
   setup() {
     const { ref, reactive, computed, onMounted } = Vue;
 

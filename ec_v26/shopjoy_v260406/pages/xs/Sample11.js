@@ -1,6 +1,6 @@
 /* ShopJoy - Sample11: 전시영역 미리보기 (Tab1 미리보기) */
-window.Sample11 = {
-  name: 'Sample11',
+window.XsSample11 = {
+  name: 'XsSample11',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
     const { ref, reactive, computed } = Vue;

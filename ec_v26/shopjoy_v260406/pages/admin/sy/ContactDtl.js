@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 문의관리 상세/등록 */
-window.ContactDtl = {
-  name: 'ContactDtl',
+window.SyContactDtl = {
+  name: 'SyContactDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;

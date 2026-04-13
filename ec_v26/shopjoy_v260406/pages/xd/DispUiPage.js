@@ -1,9 +1,9 @@
 /* ShopJoy - DispUi 팝업 페이지 (window.open으로 열림)
- * 로직: components/disp/DispUi.js 참조
+ * 로직: components/disp/DispX01Ui.js 참조
  */
 window.DispUiPage = {
   name: 'DispUiPage',
-  components: { DispUi: window.DispUi },
+  components: {  DispX01Ui: window.DispX01Ui },
   setup() {
     const { computed } = Vue;
 
@@ -57,7 +57,7 @@ window.DispUiPage = {
   </div>
 
   <!-- 본문: DispUi 컴포넌트 -->
-  <disp-ui :params="params" :admin-data="adminData" />
+  <disp-x01-ui :params="params" :admin-data="adminData" />
 </div>
 `,
 };

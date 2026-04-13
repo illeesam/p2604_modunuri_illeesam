@@ -60,8 +60,8 @@
     return true;
   };
 
-  window.CustInfoMng = {
-    name: 'CustInfoMng',
+  window.EcCustInfoMng = {
+    name: 'EcCustInfoMng',
     props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
     setup(props) {
       /* ── 검색 상태 ── */

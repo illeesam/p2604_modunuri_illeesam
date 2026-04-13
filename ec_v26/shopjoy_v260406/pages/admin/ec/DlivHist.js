@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 배송 이력 (연관주문 / 연관클레임) */
-window.DlivHist = {
-  name: 'DlivHist',
+window.EcDlivHist = {
+  name: 'EcDlivHist',
   props: ['navigate', 'adminData', 'showRefModal', 'orderId'],
   setup(props) {
     const { ref, computed } = Vue;

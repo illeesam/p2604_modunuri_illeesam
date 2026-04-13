@@ -1,6 +1,6 @@
 /* ShopJoy - Sample12: 전시영역 구조 트리 보기 (Tab2) */
-window.Sample12 = {
-  name: 'Sample12',
+window.XsSample12 = {
+  name: 'XsSample12',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
     const { ref, reactive, computed } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 공지사항관리 상세/등록 */
-window.NoticeDtl = {
-  name: 'NoticeDtl',
+window.EcNoticeDtl = {
+  name: 'EcNoticeDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, onBeforeUnmount } = Vue;

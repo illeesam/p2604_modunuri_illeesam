@@ -134,8 +134,8 @@ const _WidgetPreview = {
 };
 
 /* ── 메인 컴포넌트 ── */
-window.DispWidgetLibPreview = {
-  name: 'DispWidgetLibPreview',
+window.EcDispWidgetLibPreview = {
+  name: 'EcDispWidgetLibPreview',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
@@ -502,7 +502,7 @@ window.DispWidgetLibPreview = {
         <span style="font-size:10px;color:#aaa;font-weight:400;">⠿ 드래그하여 배치</span>
       </div>
       <div style="flex:1;overflow-y:auto;">
-        <disp-widget-lib
+        <disp-x05-widget-lib
           :widget-libs="filteredLibs"
           :selected-lib-id="selectedLibId"
           @select="onTreeSelect"
@@ -742,7 +742,7 @@ window.DispWidgetLibPreview = {
 </div>
   `,
   components: {
-    DispWidgetLib: window.DispWidgetLib,
+    DispX05WidgetLib: window.DispX05WidgetLib,
     WidgetPreview: _WidgetPreview,
   },
 };

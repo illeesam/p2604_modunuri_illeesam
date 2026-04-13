@@ -1,6 +1,6 @@
 /* ShopJoy - 전시 패널 컴포넌트 (특정 영역의 모든 위젯을 렌더링) */
-window.DispPanel = {
-  name: 'DispPanel',
+window.DispX03Panel = {
+  name: 'DispX03Panel',
   props: {
     area: { type: String, required: true },
     widgets: { type: Array, default: () => [] },
@@ -32,7 +32,7 @@ window.DispPanel = {
   },
   template: /* html */`
 <div class="disp-panel" :data-area="area" :style="layoutStyle">
-  <disp-widget
+  <disp-x04-widget
     v-for="w in areaWidgets"
     :key="w.dispId"
     :widget="w"

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 공지사항관리 */
-window.NoticeMng = {
-  name: 'NoticeMng',
+window.EcNoticeMng = {
+  name: 'EcNoticeMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

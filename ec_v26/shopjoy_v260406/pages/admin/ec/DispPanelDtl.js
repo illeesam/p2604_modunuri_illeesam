@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 전시관리 상세/등록 */
-window.DispPanelDtl = {
-  name: 'DispPanelDtl',
+window.EcDispPanelDtl = {
+  name: 'EcDispPanelDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;

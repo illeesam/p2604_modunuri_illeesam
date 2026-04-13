@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 위젯라이브러리 상세/등록 */
-window.DispWidgetLibDtl = {
-  name: 'DispWidgetLibDtl',
+window.EcDispWidgetLibDtl = {
+  name: 'EcDispWidgetLibDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
@@ -393,7 +393,7 @@ window.DispWidgetLibDtl = {
     <div style="width:280px;flex-shrink:0;padding:20px;background:#f8f8f8;">
       <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;">👁 미리보기</div>
       <div style="background:#fff;border:1px solid #e4e4e4;border-radius:8px;padding:12px;min-height:100px;">
-        <disp-widget
+        <disp-x04-widget
           :widget="previewWidget"
           :is-logged-in="false"
           user-grade=""

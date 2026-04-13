@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 사용자관리(관리자) 상세/등록 */
-window.UserDtl = {
-  name: 'UserDtl',
+window.SyUserDtl = {
+  name: 'SyUserDtl',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const { reactive, computed, onMounted, ref } = Vue;

@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 카테고리관리 (Tree CRUD 그리드) */
-window.CategoryMng = {
-  name: 'CategoryMng',
+window.EcCategoryMng = {
+  name: 'EcCategoryMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

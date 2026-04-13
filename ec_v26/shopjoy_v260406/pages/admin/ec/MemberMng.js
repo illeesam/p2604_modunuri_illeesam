@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 회원관리 목록 + 하단 MemberDtl 임베드 */
-window.MemberMng = {
-  name: 'MemberMng',
+window.EcMemberMng = {
+  name: 'EcMemberMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;

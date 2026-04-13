@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 첨부관리 (좌30% 그룹 + 우70% 파일) */
-window.AttachMng = {
-  name: 'AttachMng',
+window.SyAttachMng = {
+  name: 'SyAttachMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
