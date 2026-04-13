@@ -751,7 +751,7 @@ window.Prod01View = {
       :style="tabFixed ? {
         position:'fixed', top:tabFixedTop+'px', left:tabFixedLeft+'px', width:tabFixedW+'px',
         zIndex:55,
-        background:'linear-gradient(to bottom, var(--bg-header, rgba(235,239,248,0.96)) 0%, var(--bg-card) 100%)',
+        background:'linear-gradient(to bottom, rgba(245,248,253,0.98) 0%, var(--bg-card) 100%)',
         backdropFilter:'blur(10px)',
         WebkitBackdropFilter:'blur(10px)',
         borderBottom:'1px solid var(--border)',
@@ -759,7 +759,7 @@ window.Prod01View = {
       } : {
         position:'relative',
         zIndex:50,
-        background:'linear-gradient(to bottom, var(--bg-header, rgba(235,239,248,0.96)) 0%, var(--bg-card) 100%)',
+        background:'linear-gradient(to bottom, rgba(245,248,253,0.98) 0%, var(--bg-card) 100%)',
         borderTop:'1px solid var(--border)', borderBottom:'1px solid var(--border)',
         marginTop:'24px',
       }">
@@ -778,7 +778,7 @@ window.Prod01View = {
     </div>
 
     <!-- ══ 탭 섹션들 ══ -->
-    <div class="page-wrap" style="padding-top:0;">
+    <div style="padding-top:0;">
 
       <!-- 상세정보 -->
       <div ref="detailSecRef" style="padding-top:32px;">
