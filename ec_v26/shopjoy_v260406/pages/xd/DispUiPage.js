@@ -24,7 +24,7 @@ window.DispUiPage = {
       userGrade:    qs.get('userGrade')    || (window.shopjoyAuth?.userGrade ?? ''),
     };
 
-    const dispDataset = window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.adminData || window.dispDataset || { displays: [], codes: [] };
 
     /* ── UI 렌더링 옵션 ── */
     const dispOpt = {

@@ -7,7 +7,7 @@ window.DispUi04 = {
   setup() {
     const { computed } = Vue;
 
-    const dispDataset = window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.adminData || window.dispDataset || { displays: [], codes: [] };
     const params = {
       areas: ['MY_PAGE', 'FOOTER'],
       date: '', time: '', status: '', condition: '', authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: 'content,struct,source',

@@ -7,7 +7,7 @@ window.DispUi01 = {
   setup() {
     const { computed } = Vue;
 
-    const dispDataset = window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.adminData || window.dispDataset || { displays: [], codes: [] };
     const params = {
       areas: ['HOME_BANNER', 'HOME_PRODUCT', 'HOME_CHART', 'HOME_EVENT'],
       date: '', time: '', status: '', condition: '', authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: 'content,struct,source',
