@@ -311,24 +311,23 @@ window.DispX01Ui = {
       <!-- ── 구조보기 OFF: 순수 위젯만 ── -->
       <div v-if="!showContentStruct" style="display:flex;flex-direction:column;gap:0;">
         <template v-for="areaCode in params.areas" :key="areaCode">
-          <template v-for="p in panelsForArea(areaCode)" :key="p.dispId">
-            <template v-for="(w, wi) in (p.rows||[])" :key="wi">
-              <disp-x04-widget :widget="{ ...w, status: p.status, condition: w.condition||p.condition||'항상 표시', authRequired: p.authRequired, authGrade: p.authGrade }" />
-            </template>
-          </template>
+          <disp-x02-area v-if="panelsForArea(areaCode).length"
+            :area="areaCode"
+            :area-label="areaLabel(areaCode)"
+            :panels="panelsForArea(areaCode)"
+            mode="area_detail"
+            :show-desc="false"
+          />
           <!-- 스켈레톤 (패널 없을 때) -->
-          <div v-if="!panelsForArea(areaCode).length"
-            style="padding:12px 0 4px 0;">
+          <div v-else style="padding:12px 0 4px 0;">
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div v-for="sk in 2" :key="sk"
                 style="border-radius:10px;overflow:hidden;background:#f5f5f7;padding:14px 16px;">
-                <!-- 상단 타이틀줄 -->
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                   <div class="skel-pulse" style="width:52px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
                   <div class="skel-pulse" style="width:110px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
                   <div class="skel-pulse" style="margin-left:auto;width:36px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
                 </div>
-                <!-- 이미지 배너형 스켈레톤 -->
                 <div class="skel-pulse" style="width:100%;height:80px;border-radius:8px;background:#e0e0e0;"></div>
               </div>
               <div style="border-radius:10px;overflow:hidden;background:#f5f5f7;padding:14px 16px;">
@@ -337,7 +336,6 @@ window.DispX01Ui = {
                   <div class="skel-pulse" style="width:80px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
                   <div class="skel-pulse" style="margin-left:auto;width:36px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
                 </div>
-                <!-- 상품 슬라이더형 스켈레톤 -->
                 <div style="display:flex;gap:8px;overflow:hidden;">
                   <div v-for="ci in 4" :key="ci" style="flex-shrink:0;width:90px;">
                     <div class="skel-pulse" style="width:90px;height:90px;border-radius:8px;background:#e0e0e0;margin-bottom:6px;"></div>
@@ -354,19 +352,17 @@ window.DispX01Ui = {
         </template>
       </div>
 
-      <!-- ── 구조보기 ON: 영역/패널/위젯 구조 표시 ── -->
+      <!-- ── 구조보기 ON: DispX02Area에 위임 ── -->
       <div v-else style="padding:16px;background:#f0f0f0;display:flex;flex-direction:column;gap:4px;">
         <template v-for="areaCode in params.areas" :key="areaCode">
-
-          <!-- 영역 헤더 -->
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;border-radius:8px 8px 0 0;margin-top:12px;">
-            <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">DispX02Area</span>
-            <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;letter-spacing:.5px;">{{ areaCode }}</code>
-            <span style="font-size:14px;font-weight:700;">{{ areaLabel(areaCode) }}</span>
-            <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ panelsForArea(areaCode).length }}개</span>
-          </div>
-
-          <!-- 스켈레톤 (구조보기 ON, 패널 없을 때) -->
+          <disp-x02-area
+            :area="areaCode"
+            :area-label="areaLabel(areaCode)"
+            :panels="panelsForArea(areaCode)"
+            mode="expand"
+            :show-desc="true"
+          />
+          <!-- 스켈레톤 (패널 없을 때) -->
           <div v-if="!panelsForArea(areaCode).length"
             style="background:#fff;border-radius:0 0 8px 8px;border:1px solid #e0e0e0;border-top:none;padding:14px 16px;">
             <div style="display:flex;flex-direction:column;gap:8px;">
@@ -379,36 +375,6 @@ window.DispX01Ui = {
             </div>
             <div style="margin-top:8px;text-align:center;font-size:10px;color:#ccc;">조건에 맞는 패널이 없습니다</div>
           </div>
-
-          <template v-else>
-            <div v-for="(p, pi) in panelsForArea(areaCode)" :key="p.dispId"
-              :style="'background:#fff;border:1px solid #e4e4e4;border-top:none;'+(pi===panelsForArea(areaCode).length-1?'border-radius:0 0 8px 8px;':'')">
-
-              <!-- 패널 헤더 -->
-              <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#f8f8f8;border-bottom:1px solid #efefef;">
-                <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;border-radius:3px;padding:0 5px;line-height:16px;flex-shrink:0;">DispX03Panel #{{ String(p.dispId).padStart(4,'0') }}</span>
-                <span style="font-size:13px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</span>
-                <span style="font-size:10px;padding:1px 7px;border-radius:5px;flex-shrink:0;"
-                  :style="p.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">{{ p.status }}</span>
-                <span v-if="p.condition&&p.condition!=='항상 표시'"
-                  style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">{{ p.condition }}</span>
-              </div>
-
-              <!-- 위젯 목록 -->
-              <div v-if="!(p.rows&&p.rows.length)"
-                style="padding:16px;text-align:center;color:#ccc;font-size:12px;">위젯 없음</div>
-              <div v-for="(w, wi) in (p.rows||[])" :key="wi" style="padding:10px 14px;border-top:1px solid #f5f5f5;">
-                <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
-                  <span style="font-size:9px;color:#ccc;">위젯{{ wi+1 }}</span>
-                  <span style="font-size:9px;background:#f0f0f0;border-radius:4px;padding:0 5px;color:#aaa;">{{ w.widgetType }}</span>
-                  <span v-if="w.widgetNm" style="font-size:10px;color:#888;">{{ w.widgetNm }}</span>
-                </div>
-                <disp-x04-widget :widget="{ ...w, status: p.status, condition: w.condition||p.condition||'항상 표시', authRequired: p.authRequired, authGrade: p.authGrade }" />
-              </div>
-
-            </div>
-          </template>
-
         </template>
       </div>
 
