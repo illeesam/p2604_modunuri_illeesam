@@ -465,19 +465,19 @@ window.CustomerModal = {
 
 /* ══════════════════════════════════════════════════════
    어드민 공통필터 팝업 선택 모달 (5종)
-   Props: adminData  Emits: select(item), close
+   Props: dispDataset  Emits: select(item), close
    ══════════════════════════════════════════════════════ */
 
 /* ── 사이트 선택 모달 ── */
 window.SiteSelectModal = {
   name: 'SiteSelectModal',
-  props: ['adminData'],
+  props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.adminData.sites.filter(s => {
+    const filtered = computed(() => props.dispDataset.sites.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k);
@@ -504,13 +504,13 @@ window.SiteSelectModal = {
 /* ── 판매업체 선택 모달 ── */
 window.VendorSelectModal = {
   name: 'VendorSelectModal',
-  props: ['adminData'],
+  props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.adminData.vendors.filter(v => {
+    const filtered = computed(() => props.dispDataset.vendors.filter(v => {
       if (v.vendorType !== '판매업체') return false;
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -538,7 +538,7 @@ window.VendorSelectModal = {
 /* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
 window.AdminUserSelectModal = {
   name: 'AdminUserSelectModal',
-  props: ['adminData'],
+  props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed, reactive } = Vue;
@@ -558,8 +558,8 @@ window.AdminUserSelectModal = {
     const flatDeptTree = computed(() => {
       const kw = deptKw.value.trim().toLowerCase();
       const list = kw
-        ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
-        : props.adminData.depts;
+        ? props.dispDataset.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
+        : props.dispDataset.depts;
       return flattenDept(buildDeptTree(list, null, 1)); /* depth 1부터 = 2레벨 */
     });
 
@@ -568,8 +568,8 @@ window.AdminUserSelectModal = {
       const queue = [deptId];
       while (queue.length) {
         const id = queue.shift();
-        const d = props.adminData.depts.find(x => x.deptId === id);
-        if (d) { names.add(d.deptNm); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+        const d = props.dispDataset.depts.find(x => x.deptId === id);
+        if (d) { names.add(d.deptNm); props.dispDataset.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
       }
       return names;
     };
@@ -577,11 +577,11 @@ window.AdminUserSelectModal = {
     /* ── 사용자 ── */
     const userKw = ref('');
     const selectedIds = reactive(new Set());
-    const totalUsers = computed(() => props.adminData.adminUsers.length);
+    const totalUsers = computed(() => props.dispDataset.adminUsers.length);
 
     const filtered = computed(() => {
       const k = userKw.value.trim().toLowerCase();
-      let list = props.adminData.adminUsers;
+      let list = props.dispDataset.adminUsers;
       if (selectedDeptId.value !== null) {
         const names = getDescDeptNames(selectedDeptId.value);
         list = list.filter(u => names.has(u.dept));
@@ -604,7 +604,7 @@ window.AdminUserSelectModal = {
     };
     const selectedCount = computed(() => selectedIds.size);
     const confirm = () => {
-      const selected = props.adminData.adminUsers.filter(u => selectedIds.has(u.adminUserId));
+      const selected = props.dispDataset.adminUsers.filter(u => selectedIds.has(u.adminUserId));
       emit('select', selected);
     };
 
@@ -750,13 +750,13 @@ window.AdminUserSelectModal = {
 /* ── 회원 선택 모달 ── */
 window.MemberSelectModal = {
   name: 'MemberSelectModal',
-  props: ['adminData'],
+  props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.adminData.members.filter(m => {
+    const filtered = computed(() => props.dispDataset.members.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return m.memberNm.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
@@ -783,13 +783,13 @@ window.MemberSelectModal = {
 /* ── 주문 선택 모달 ── */
 window.OrderSelectModal = {
   name: 'OrderSelectModal',
-  props: ['adminData'],
+  props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.adminData.orders.filter(o => {
+    const filtered = computed(() => props.dispDataset.orders.filter(o => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return o.orderId.toLowerCase().includes(k) || o.userNm.toLowerCase().includes(k) || o.prodNm.toLowerCase().includes(k);
@@ -816,7 +816,7 @@ window.OrderSelectModal = {
 /* ── 게시판 선택 모달 ── */
 window.BbmSelectModal = {
   name: 'BbmSelectModal',
-  props: ['adminData'],
+  props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed, watch } = Vue;
@@ -824,7 +824,7 @@ window.BbmSelectModal = {
     const page     = ref(1);
     const pageSize = 6;
 
-    const filtered = computed(() => props.adminData.bbms.filter(b => {
+    const filtered = computed(() => props.dispDataset.bbms.filter(b => {
       if (b.useYn === 'N') return false;
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -986,7 +986,7 @@ window.TemplatePreviewModal = {
 /* ── 템플릿 발송하기 모달 ── */
 window.TemplateSendModal = {
   name: 'TemplateSendModal',
-  props: ['tmpl', 'adminData', 'showToast', 'showConfirm'],
+  props: ['tmpl', 'dispDataset', 'showToast', 'showConfirm'],
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, watch } = Vue;
@@ -1007,7 +1007,7 @@ window.TemplateSendModal = {
     const flattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); }); return result; };
     const flatDeptTree = computed(() => {
       const k = deptKw.value.trim().toLowerCase();
-      const list = k ? props.adminData.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : props.adminData.depts;
+      const list = k ? props.dispDataset.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : props.dispDataset.depts;
       return flattenDept(buildDeptTree(list, null, 1));
     });
     const getDescDeptNames = (deptId) => {
@@ -1015,8 +1015,8 @@ window.TemplateSendModal = {
       const queue = [deptId];
       while (queue.length) {
         const id = queue.shift();
-        const d = props.adminData.depts.find(x => x.deptId === id);
-        if (d) { names.add(d.deptNm); props.adminData.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+        const d = props.dispDataset.depts.find(x => x.deptId === id);
+        if (d) { names.add(d.deptNm); props.dispDataset.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
       }
       return names;
     };
@@ -1028,14 +1028,14 @@ window.TemplateSendModal = {
     /* ── 목록 ── */
     const memberList = computed(() => {
       const k = kw.value.trim().toLowerCase();
-      let list = props.adminData.members || [];
+      let list = props.dispDataset.members || [];
       if (selectedGrade.value) list = list.filter(m => m.grade === selectedGrade.value);
       if (k) list = list.filter(m => m.memberNm?.toLowerCase().includes(k) || m.email?.toLowerCase().includes(k) || String(m.userId).includes(k));
       return list;
     });
     const userList = computed(() => {
       const k = kw.value.trim().toLowerCase();
-      let list = props.adminData.adminUsers || [];
+      let list = props.dispDataset.adminUsers || [];
       if (selectedDeptId.value !== null) {
         const names = getDescDeptNames(selectedDeptId.value);
         list = list.filter(u => names.has(u.dept));
@@ -1256,20 +1256,20 @@ window.TemplateSendModal = {
 };
 
 /* ── 부서 트리 선택 모달 ──────────────────────────────────
-   Props: adminData, excludeId (선택 불가 부서 ID, 보통 자기 자신)
+   Props: dispDataset, excludeId (선택 불가 부서 ID, 보통 자기 자신)
    Emits: select({ deptId, deptNm }), close
    ─────────────────────────────────────────────────── */
 /* ── 메뉴 트리 선택 모달 ──────────────────────────────
-   Props: adminData, excludeId
+   Props: dispDataset, excludeId
    Emits: select({ menuId, menuNm }), close
    ─────────────────────────────────────────────────── */
 /* ── 권한 트리 선택 모달 ──────────────────────────────
-   Props: adminData, excludeId
+   Props: dispDataset, excludeId
    Emits: select({ roleId, roleNm }), close
    ─────────────────────────────────────────────────── */
 window.RoleTreeModal = {
   name: 'RoleTreeModal',
-  props: ['adminData', 'excludeId'],
+  props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed } = Vue;
@@ -1289,10 +1289,10 @@ window.RoleTreeModal = {
     const flatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); props.adminData.roles.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
+        const mark = (id) => { excSet.add(id); props.dispDataset.roles.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
         mark(props.excludeId);
       }
-      const base = props.adminData.roles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
+      const base = props.dispDataset.roles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
@@ -1355,7 +1355,7 @@ window.RoleTreeModal = {
 
 window.MenuTreeModal = {
   name: 'MenuTreeModal',
-  props: ['adminData', 'excludeId'],
+  props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed } = Vue;
@@ -1379,11 +1379,11 @@ window.MenuTreeModal = {
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          props.adminData.menus.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
+          props.dispDataset.menus.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
         };
         markExclude(props.excludeId);
       }
-      const base = props.adminData.menus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
+      const base = props.dispDataset.menus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
@@ -1481,7 +1481,7 @@ window.MenuTreeModal = {
 
 window.DeptTreeModal = {
   name: 'DeptTreeModal',
-  props: ['adminData', 'excludeId'],
+  props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed } = Vue;
@@ -1507,11 +1507,11 @@ window.DeptTreeModal = {
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          props.adminData.depts.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
+          props.dispDataset.depts.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
         };
         markExclude(props.excludeId);
       }
-      const base = props.adminData.depts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
+      const base = props.dispDataset.depts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(d => d.deptNm.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
@@ -1618,7 +1618,7 @@ window.DeptTreeModal = {
 ───────────────────────────────────────────── */
 window.CategoryTreeModal = {
   name: 'CategoryTreeModal',
-  props: ['adminData', 'excludeId'],
+  props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed } = Vue;
@@ -1640,10 +1640,10 @@ window.CategoryTreeModal = {
     const flatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); props.adminData.categories.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
+        const mark = (id) => { excSet.add(id); props.dispDataset.categories.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
         mark(props.excludeId);
       }
-      const base   = props.adminData.categories.filter(c => !excSet.has(c.categoryId) && c.status === '활성');
+      const base   = props.dispDataset.categories.filter(c => !excSet.has(c.categoryId) && c.status === '활성');
       const kwVal  = kw.value.trim().toLowerCase();
       const list   = kwVal ? base.filter(c => c.categoryNm.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
@@ -1716,7 +1716,7 @@ window.CategoryTreeModal = {
                           single → 현재 form 단일 위젯 (DispWidget)
      tabLabel   String    탭 이름 (모달 제목용)
      area       String    mode=all 시 사용할 영역코드
-     widgets    Array     mode=all 시 adminData.displays 배열
+     widgets    Array     mode=all 시 dispDataset.displays 배열
      widget     Object    mode=single 시 미리볼 위젯 데이터 (form 스냅샷)
    Emits: close
    ─────────────────────────────────────────────────────────── */
@@ -1826,7 +1826,7 @@ window.DispPreviewModal = {
      show      (Boolean)  — 표시 여부
      params    (Object)   — { areas[], date, time, status, condition,
                               authRequired, authGrade, siteId, memberId, viewOpts }
-     adminData (Object)   — adminData 객체
+     dispDataset (Object)   — dispDataset 객체
      title     (String)   — 모달 헤더 제목
    Emits: close, open-popup
    ── DispUiPage.js와 동일한 DispX01Ui를 모달 안에서 렌더링
@@ -1839,7 +1839,7 @@ window.DispUiModal = {
       areas: [], date: '', time: '', status: '', condition: '',
       authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: '',
     }) },
-    adminData: { type: Object,  default: () => window.adminData || { displays: [], codes: [] } },
+    dispDataset: { type: Object,  default: () => window.dispDataset || { displays: [], codes: [] } },
     title:     { type: String,  default: 'DispUi미리보기' },
   },
   emits: ['close', 'open-popup'],
@@ -1872,7 +1872,7 @@ window.DispUiModal = {
     </div>
 
     <!-- 본문: DispX01Ui (파라미터 요약 바는 viewOpts 있을 때 내부 표시) -->
-    <disp-x01-ui :key="innerKey" :params="params" :admin-data="adminData" />
+    <disp-x01-ui :key="innerKey" :params="params" :disp-dataset="dispDataset" />
 
     <!-- 푸터 -->
     <div style="padding:10px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;z-index:1;">
@@ -1890,7 +1890,7 @@ window.DispUiModal = {
 /* ── 카테고리 멀티선택 모달 (사용자 페이스 Sample용) ────────────
    Props: show (Boolean), selectedIds (Array of categoryId)
    Emits: close, apply (Array of categoryId)
-   window.adminData.categories 직접 참조 (props 없음)
+   window.dispDataset.categories 직접 참조 (props 없음)
    트리 구조: 전체(root) > 루트노드(체크+[+/-]) > 자식노드(체크)
    ─────────────────────────────────────────────────────────── */
 window.CategorySelectModal = {
@@ -1906,7 +1906,7 @@ window.CategorySelectModal = {
     const kw = ref('');
 
     const allCats = computed(() =>
-      ((window.adminData || {}).categories || [])
+      ((window.dispDataset || {}).categories || [])
         .filter(c => c.status === '활성')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
     );

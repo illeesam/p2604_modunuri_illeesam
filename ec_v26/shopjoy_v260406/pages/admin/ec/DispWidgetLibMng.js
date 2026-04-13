@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 위젯라이브러리 목록 */
 window.EcDispWidgetLibMng = {
   name: 'EcDispWidgetLibMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -70,7 +70,7 @@ window.EcDispWidgetLibMng = {
     };
 
     const filtered = computed(() =>
-      (props.adminData.widgetLibs || []).filter(d => {
+      (props.dispDataset.widgetLibs || []).filter(d => {
         if (applied.kw && !d.name.toLowerCase().includes(applied.kw) && !(d.desc||'').toLowerCase().includes(applied.kw) && !(d.tags||'').toLowerCase().includes(applied.kw)) return false;
         if (applied.type   && d.widgetType !== applied.type)   return false;
         if (applied.status && d.status     !== applied.status) return false;
@@ -263,7 +263,7 @@ window.EcDispWidgetLibMng = {
     <ec-disp-widget-lib-dtl
       :key="detailKey"
       :navigate="inlineNavigate"
-      :admin-data="adminData"
+      :disp-dataset="dispDataset"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

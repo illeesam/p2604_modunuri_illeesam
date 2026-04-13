@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시관리 목록 + 하단 DispDtl 임베드 */
 window.EcDispPanelMng = {
   name: 'EcDispPanelMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -80,7 +80,7 @@ window.EcDispPanelMng = {
 
     const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '', layoutType: '' });
 
-    const filtered = computed(() => props.adminData.displays.filter(d => {
+    const filtered = computed(() => props.dispDataset.displays.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
       if (applied.area && d.area !== applied.area) return false;
@@ -103,7 +103,7 @@ window.EcDispPanelMng = {
       return true;
     }));
     const areas = computed(() =>
-      (props.adminData.codes || [])
+      (props.dispDataset.codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -186,8 +186,8 @@ window.EcDispPanelMng = {
         setApiRes: props.setApiRes,
         successMsg: '삭제되었습니다.',
         onLocal: () => {
-          const idx = props.adminData.displays.findIndex(x => x.dispId === d.dispId);
-          if (idx !== -1) props.adminData.displays.splice(idx, 1);
+          const idx = props.dispDataset.displays.findIndex(x => x.dispId === d.dispId);
+          if (idx !== -1) props.dispDataset.displays.splice(idx, 1);
           if (selectedId.value === d.dispId) selectedId.value = null;
         },
       });
@@ -197,7 +197,7 @@ window.EcDispPanelMng = {
 
     /* 영역 레이블 조회 */
     const areaLabel = (code) => {
-      const found = (props.adminData.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+      const found = (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
       return found ? found.codeLabel : code;
     };
 
@@ -248,7 +248,7 @@ window.EcDispPanelMng = {
       const srcId = pageList.value[src]?.dispId;
       const tgtId = pageList.value[pageIdx]?.dispId;
       if (!srcId || !tgtId) { panelDragSrc.value = null; return; }
-      const arr = props.adminData.displays;
+      const arr = props.dispDataset.displays;
       const si = arr.findIndex(x => x.dispId === srcId);
       const ti = arr.findIndex(x => x.dispId === tgtId);
       if (si === -1 || ti === -1) { panelDragSrc.value = null; return; }
@@ -281,7 +281,7 @@ window.EcDispPanelMng = {
       if (widgetDragPanel.value !== dispId) return;
       const src = widgetDragSrcWi.value;
       if (src === null || src === wi) { widgetDragPanel.value = null; widgetDragSrcWi.value = null; return; }
-      const panel = props.adminData.displays.find(x => x.dispId === dispId);
+      const panel = props.dispDataset.displays.find(x => x.dispId === dispId);
       if (!panel?.rows) return;
       const moved = panel.rows.splice(src, 1)[0];
       panel.rows.splice(wi, 0, moved);
@@ -539,7 +539,7 @@ window.EcDispPanelMng = {
     <ec-disp-panel-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
-      :admin-data="adminData"
+      :disp-dataset="dispDataset" :disp-opt="dispOpt"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

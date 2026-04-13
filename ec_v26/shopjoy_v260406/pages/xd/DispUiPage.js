@@ -22,14 +22,21 @@ window.DispUiPage = {
       viewOpts:     qs.get('viewOpts')     || '',
     };
 
-    const adminData = window.adminData || { displays: [], codes: [] };
+    const dispDataset = window.dispDataset || { displays: [], codes: [] };
+
+    /* ── UI 렌더링 옵션 ── */
+    const dispOpt = {
+      layout:     'auto',      // 'auto' | 'simple' | 'detailed'
+      showHeader: true,        // 섹션 헤더 표시 여부
+      showBadges: true,        // 정보 배지 표시 여부
+    };
 
     const totalPanels = computed(() => {
-      const displays = adminData.displays || [];
+      const displays = dispDataset.displays || [];
       return params.areas.reduce((s, a) => s + displays.filter(p => p.area === a).length, 0);
     });
 
-    return { params, adminData, totalPanels };
+    return { params, dispDataset, dispOpt, totalPanels };
   },
   template: /* html */`
 <div>
@@ -43,7 +50,7 @@ window.DispUiPage = {
   </div>
 
   <!-- 본문: DispUi 컴포넌트 -->
-  <disp-x01-ui :params="params" :admin-data="adminData" />
+  <disp-x01-ui :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" />
 </div>
 `,
 };

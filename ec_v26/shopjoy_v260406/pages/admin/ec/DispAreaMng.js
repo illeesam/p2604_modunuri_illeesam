@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시영역관리 (CRUD 그리드) */
 window.EcDispAreaMng = {
   name: 'EcDispAreaMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
+  props: ['navigate', 'dispDataset', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
 
@@ -65,7 +65,7 @@ window.EcDispAreaMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      props.adminData.codes
+      props.dispDataset.codes
         .filter(c => {
           if (c.codeGrp !== 'DISP_AREA') return false;
           const kw = applied.kw.trim().toLowerCase();
@@ -192,20 +192,20 @@ window.EcDispAreaMng = {
       if (!ok) return;
 
       dRows.forEach(r => {
-        const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) props.adminData.codes.splice(idx, 1);
+        const idx = props.dispDataset.codes.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) props.dispDataset.codes.splice(idx, 1);
       });
       uRows.forEach(r => {
-        const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) Object.assign(props.adminData.codes[idx],
+        const idx = props.dispDataset.codes.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) Object.assign(props.dispDataset.codes[idx],
           { codeValue: r.codeValue, codeLabel: r.codeLabel, areaType: r.areaType,
             layoutType: r.layoutType, gridCols: r.gridCols,
             titleYn: r.titleYn, title: r.title,
             remark: r.remark, sortOrd: r.sortOrd, useYn: r.useYn });
       });
-      let nextId = Math.max(...props.adminData.codes.map(c => c.codeId), 0);
+      let nextId = Math.max(...props.dispDataset.codes.map(c => c.codeId), 0);
       iRows.forEach(r => {
-        props.adminData.codes.push({
+        props.dispDataset.codes.push({
           codeId: ++nextId, codeGrp: 'DISP_AREA',
           codeValue: r.codeValue, codeLabel: r.codeLabel,
           areaType: r.areaType, layoutType: r.layoutType, gridCols: r.gridCols,

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 위젯라이브러리 상세/등록 */
 window.EcDispWidgetLibDtl = {
   name: 'EcDispWidgetLibDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
@@ -100,7 +100,7 @@ window.EcDispWidgetLibDtl = {
     /* ── 기존 데이터 로드 ── */
     onMounted(async () => {
       if (!isNew.value) {
-        const src = (props.adminData.widgetLibs || []).find(d => d.libId == props.editId);
+        const src = (props.dispDataset.widgetLibs || []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
       }
       if (form.widgetType === 'html_editor') {
@@ -365,7 +365,7 @@ window.EcDispWidgetLibDtl = {
         setApiRes:   props.setApiRes,
         successMsg:  '저장되었습니다.',
         onLocal: () => {
-          const list = props.adminData.widgetLibs || (props.adminData.widgetLibs = []);
+          const list = props.dispDataset.widgetLibs || (props.dispDataset.widgetLibs = []);
           if (isNew.value) {
             const newId = Math.max(0, ...list.map(d => d.libId)) + 1;
             form.libId = newId;
@@ -393,7 +393,7 @@ window.EcDispWidgetLibDtl = {
         setApiRes:   props.setApiRes,
         successMsg:  '삭제되었습니다.',
         onLocal: () => {
-          const list = props.adminData.widgetLibs || [];
+          const list = props.dispDataset.widgetLibs || [];
           const idx  = list.findIndex(d => d.libId == form.libId);
           if (idx >= 0) list.splice(idx, 1);
         },

@@ -6,15 +6,14 @@
 window.DispX02Area = {
   name: 'DispX02Area',
   props: {
-    area:       { type: String, required: true },
-    areaLabel:  { type: String, default: '' },
-    panels:     { type: Array,  default: () => [] },   // 이미 area 필터된 패널 목록
-    mode:       { type: String, default: 'card' },     // 'card' | 'expand' | 'area_detail'
-    showDesc:   { type: Boolean, default: true },      // areaLabel 표시 여부
-    isLoggedIn: { type: Boolean, default: false },
-    userGrade:  { type: String,  default: '' },
-    titleYn:    { type: String,  default: 'N' },       // 영역 타이틀 표시 여부
-    title:      { type: String,  default: '' },        // 영역 타이틀 텍스트
+    params:      { type: Object, required: true },
+    dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
+    dispOpt:     { type: Object, default: () => ({ layout: 'auto', showHeader: true, showBadges: true }) },
+    areaItem:    { type: Object, required: true },     // { code, label, info, panels }
+    mode:        { type: String, default: 'card' },   // 'card' | 'expand' | 'area_detail'
+    showDesc:    { type: Boolean, default: true },    // areaLabel 표시 여부
+    isLoggedIn:  { type: Boolean, default: false },
+    userGrade:   { type: String,  default: '' },
   },
   setup() {
 
@@ -88,7 +87,7 @@ window.DispX02Area = {
   <!-- ── 리스트 모드 ── -->
   <div v-if="mode==='list'"
     style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
-    <div v-if="panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">
+    <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">
       이 영역에 등록된 패널이 없습니다.
     </div>
     <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -104,7 +103,7 @@ window.DispX02Area = {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="p in panels" :key="p.dispId" style="border-bottom:1px solid #f0f0f0;cursor:default;" :title="panelTitle(p)">
+        <tr v-for="p in areaItem.panels" :key="p.dispId" style="border-bottom:1px solid #f0f0f0;cursor:default;" :title="panelTitle(p)">
           <td style="padding:6px 10px;text-align:center;color:#aaa;">#{{ padId(p.dispId) }}</td>
           <td style="padding:6px 10px;font-weight:600;color:#222;">{{ p.name }}</td>
           <td style="padding:6px 10px;text-align:center;"><span class="badge" :class="statusCls(p.status)" style="font-size:10px;">{{ p.status }}</span></td>
@@ -133,10 +132,10 @@ window.DispX02Area = {
   <!-- ── 카드 모드 ── -->
   <div v-else-if="mode==='card'"
     style="display:flex;flex-wrap:wrap;gap:12px;padding:18px 14px 14px;background:#f8f8f8;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;min-height:80px;">
-    <div v-if="panels.length===0" style="color:#ccc;font-size:13px;padding:16px;width:100%;text-align:center;">
+    <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;width:100%;text-align:center;">
       이 영역에 등록된 패널이 없습니다.
     </div>
-    <div v-for="p in panels" :key="p.dispId"
+    <div v-for="p in areaItem.panels" :key="p.dispId"
       :title="panelTitle(p)"
       style="position:relative;background:#fff;border:1px solid #e4e4e4;border-radius:10px;padding:14px 16px;width:230px;min-width:190px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:6px;margin-top:6px;cursor:default;">
 
@@ -170,13 +169,13 @@ window.DispX02Area = {
   <!-- ── 상세정보 모드 (모든 패널 펼침) ── -->
   <div v-else-if="mode==='expand'"
     style="padding:14px;background:#f0f0f0;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;display:flex;flex-direction:column;gap:10px;">
-    <div v-if="panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">
+    <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">
       이 영역에 등록된 패널이 없습니다.
     </div>
 
     <!-- ════ 설명보기 ON : 3열 그리드 ════ -->
     <template v-if="showDesc">
-      <div v-for="p in panels" :key="p.dispId"
+      <div v-for="p in areaItem.panels" :key="p.dispId"
         style="display:grid;grid-template-columns:190px 1fr 220px;border:1px solid #d8d8d8;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
 
         <!-- 1열: 패널 제목 -->
@@ -198,7 +197,7 @@ window.DispX02Area = {
         <div style="background:#fff;display:flex;flex-direction:column;min-width:0;">
           <div style="font-size:10px;font-weight:600;color:#888;padding:6px 12px;background:#fafafa;border-bottom:1px solid #f0f0f0;letter-spacing:.3px;">위젯 컨텐츠</div>
           <div style="padding:10px 12px;">
-            <disp-x03-panel :panel="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+            <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
           </div>
         </div>
 
@@ -226,9 +225,11 @@ window.DispX02Area = {
     <!-- ════ 설명보기 OFF : 패널 컨텐츠만 나열 ════ -->
     <template v-else>
       <disp-x03-panel
-        v-for="p in panels" :key="p.dispId"
-        :panel="p"
-        :show-header="true"
+        v-for="p in areaItem.panels" :key="p.dispId"
+        :params="params"
+        :disp-dataset="dispDataset"
+        :disp-opt="dispOpt"
+        :panel-item="p"
         :is-logged-in="isLoggedIn"
         :user-grade="userGrade"
       />
@@ -239,13 +240,13 @@ window.DispX02Area = {
   <!-- ── 영역-위젯 상세보기 모드 (area_detail) ── -->
   <div v-else-if="mode==='area_detail'"
     style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
-    <div v-if="panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">
+    <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">
       이 영역에 등록된 패널이 없습니다.
     </div>
     <template v-else>
       <!-- 설명보기 ON: 패널 출처 배지 + 위젯 컨텐츠 -->
       <template v-if="showDesc">
-        <div v-for="p in panels" :key="p.dispId"
+        <div v-for="p in areaItem.panels" :key="p.dispId"
           style="display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid #f0f0f0;">
           <!-- 좌: 패널 출처 -->
           <div style="background:#f8f9ff;padding:10px 12px;border-right:1px solid #eaecf5;display:flex;flex-direction:column;gap:4px;justify-content:center;">
@@ -258,15 +259,15 @@ window.DispX02Area = {
           </div>
           <!-- 우: 패널 컨텐츠 (DispX03Panel에 위임) -->
           <div style="padding:12px 16px;">
-            <disp-x03-panel :panel="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+            <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
           </div>
         </div>
       </template>
       <!-- 설명보기 OFF: 패널 컨텐츠만 쭉 -->
       <template v-else>
-        <div v-for="p in panels" :key="p.dispId"
+        <div v-for="p in areaItem.panels" :key="p.dispId"
           style="padding:12px 16px;border-bottom:1px solid #f5f5f5;">
-          <disp-x03-panel :panel="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+          <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
         </div>
       </template>
     </template>

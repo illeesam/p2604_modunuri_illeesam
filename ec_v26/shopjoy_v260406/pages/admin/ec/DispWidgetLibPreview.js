@@ -136,7 +136,7 @@ const _WidgetPreview = {
 /* ── 메인 컴포넌트 ── */
 window.EcDispWidgetLibPreview = {
   name: 'EcDispWidgetLibPreview',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -199,7 +199,7 @@ window.EcDispWidgetLibPreview = {
 
     const filteredLibs = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
-      return (props.adminData.widgetLibs || []).filter(lib => {
+      return (props.dispDataset.widgetLibs || []).filter(lib => {
         if (filterType.value   && lib.widgetType !== filterType.value) return false;
         if (filterStatus.value && lib.status     !== filterStatus.value) return false;
         if (kw && !lib.name.toLowerCase().includes(kw) &&

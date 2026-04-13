@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시관리 상세/등록 */
 window.EcDispPanelDtl = {
   name: 'EcDispPanelDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
@@ -121,7 +121,7 @@ window.EcDispPanelDtl = {
     ];
 
     const AREAS = computed(() =>
-      (props.adminData.codes || [])
+      (props.dispDataset.codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -292,7 +292,7 @@ window.EcDispPanelDtl = {
     const relatedEvent = computed(() => {
       const eid = activeRow.value?.eventId;
       if (!eid) return null;
-      return (props.adminData.events || []).find(e => String(e.eventId) === String(eid)) || null;
+      return (props.dispDataset.events || []).find(e => String(e.eventId) === String(eid)) || null;
     });
 
     /* ── Quill 에디터 ── */
@@ -361,7 +361,7 @@ window.EcDispPanelDtl = {
       await nextTick();
       /* 기존 데이터 로드 */
       if (!isNew.value) {
-        const d = props.adminData.displays.find(x => x.dispId === props.editId);
+        const d = props.dispDataset.displays.find(x => x.dispId === props.editId);
         if (d) {
           form.dispId        = d.dispId;
           form.area          = d.area          || 'HOME_BANNER';
@@ -431,12 +431,12 @@ window.EcDispPanelDtl = {
         onLocal: () => {
           const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(rows[0].sortOrder) };
           if (isNew.value) {
-            payload.dispId  = props.adminData.nextId(props.adminData.displays, 'dispId');
+            payload.dispId  = props.dispDataset.nextId(props.dispDataset.displays, 'dispId');
             payload.regDate = new Date().toISOString().slice(0, 10);
-            props.adminData.displays.push(payload);
+            props.dispDataset.displays.push(payload);
           } else {
-            const idx = props.adminData.displays.findIndex(x => x.dispId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.displays[idx], payload);
+            const idx = props.dispDataset.displays.findIndex(x => x.dispId === props.editId);
+            if (idx !== -1) Object.assign(props.dispDataset.displays[idx], payload);
           }
         },
         navigate:   props.navigate,
@@ -457,7 +457,7 @@ window.EcDispPanelDtl = {
     const openCardPreview = () => { cardPreview.show = true; };
     const closeCardPreview = () => { cardPreview.show = false; };
     const currentAreaLabel = computed(() => {
-      const found = (props.adminData.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
+      const found = (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
     const wLabel = (t) => WIDGET_TYPES.find(w => w.value === t)?.label || t || '-';
@@ -494,7 +494,7 @@ window.EcDispPanelDtl = {
       if (wt === 'widget_embed')   return [{ key:'embedCode', label:'임베드 코드', type:'code', ph:'<iframe ...></iframe>' }];
       return [];
     };
-    const getRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (props.adminData.events || []).find(e => String(e.eventId) === String(eid)) || null; };
+    const getRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (props.dispDataset.events || []).find(e => String(e.eventId) === String(eid)) || null; };
     const getFileListItems = (r) => { try { return JSON.parse(r?.fileListJson || '[]'); } catch { return []; } };
     const addFileItemAt    = (r) => { r.fileListJson = JSON.stringify([...getFileListItems(r), { name: '', url: '' }]); };
     const removeFileItemAt = (r, idx) => { r.fileListJson = JSON.stringify(getFileListItems(r).filter((_, i) => i !== idx)); };
@@ -1365,7 +1365,7 @@ window.EcDispPanelDtl = {
     mode="single"
     :tab-label="preview.tabLabel"
     :area="form.area"
-    :widgets="adminData.displays"
+    :widgets="dispDataset.displays"
     :widget="previewWidget"
     @close="closePreview"
   />

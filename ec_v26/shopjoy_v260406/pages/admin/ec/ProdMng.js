@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 상품관리 목록 + 하단 ProdDtl 임베드 */
 window.EcProdMng = {
   name: 'EcProdMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -35,7 +35,7 @@ window.EcProdMng = {
 
     const applied = Vue.reactive({ kw: '', cate: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.products.filter(p => {
+    const filtered = computed(() => props.dispDataset.products.filter(p => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !p.prodNm.toLowerCase().includes(kw) && !String(p.productId).includes(kw)) return false;
       if (applied.cate && p.category !== applied.cate) return false;
@@ -54,7 +54,7 @@ window.EcProdMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const categories = computed(() => props.adminData.categories.filter(c => c.status === '활성').map(c => c.categoryNm));
+    const categories = computed(() => props.dispDataset.categories.filter(c => c.status === '활성').map(c => c.categoryNm));
 
     /* ── 카테고리 선택 모달 ── */
     const catModal = Vue.reactive({ show: false });
@@ -98,8 +98,8 @@ window.EcProdMng = {
         setApiRes: props.setApiRes,
         successMsg: '삭제되었습니다.',
         onLocal: () => {
-          const idx = props.adminData.products.findIndex(x => x.productId === p.productId);
-          if (idx !== -1) props.adminData.products.splice(idx, 1);
+          const idx = props.dispDataset.products.findIndex(x => x.productId === p.productId);
+          if (idx !== -1) props.dispDataset.products.splice(idx, 1);
           if (selectedId.value === p.productId) selectedId.value = null;
         },
       });
@@ -185,7 +185,7 @@ window.EcProdMng = {
   <!-- 카테고리 선택 모달 -->
   <category-tree-modal
     v-if="catModal.show"
-    :admin-data="adminData"
+    :disp-dataset="dispDataset"
     :exclude-id="null"
     @select="onCatSelect"
     @close="catModal.show=false" />
@@ -198,7 +198,7 @@ window.EcProdMng = {
     <prod-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
-      :admin-data="adminData"
+      :disp-dataset="dispDataset"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

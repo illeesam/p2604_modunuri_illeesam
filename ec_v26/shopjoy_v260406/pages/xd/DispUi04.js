@@ -7,18 +7,24 @@ window.DispUi04 = {
   setup() {
     const { computed } = Vue;
 
-    const adminData = window.adminData || { displays: [], codes: [] };
+    const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const params = {
       areas: ['MY_PAGE', 'FOOTER'],
       date: '', time: '', status: '', condition: '', authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: 'content,struct,source'
     };
 
+    const dispOpt = {
+      layout:     'auto',
+      showHeader: true,
+      showBadges: true,
+    };
+
     const totalPanels = computed(() => {
-      const displays = adminData.displays || [];
+      const displays = dispDataset.displays || [];
       return params.areas.reduce((s, a) => s + displays.filter(p => p.area === a).length, 0);
     });
 
-    return { params, adminData, totalPanels };
+    return { params, dispDataset, dispOpt, totalPanels };
   },
   template: /* html */`
 <div>
@@ -32,7 +38,7 @@ window.DispUi04 = {
   </div>
 
   <!-- 본문: DispUi 컴포넌트 -->
-  <disp-x01-ui :params="params" :admin-data="adminData" />
+  <disp-x01-ui :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" />
 </div>
 `,
 };

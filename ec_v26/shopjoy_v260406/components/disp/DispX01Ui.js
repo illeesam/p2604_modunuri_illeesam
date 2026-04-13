@@ -1,14 +1,18 @@
 /* ShopJoy - DispUi 공통 컴포넌트
  * 용도: DispAreaPreview 모달 + DispUiPage 팝업 공용
  * Props:
- *   params    - { areas[], date, time, status, condition, authRequired, authGrade, siteId, memberId, viewOpts }
- *   adminData - adminData 객체 (없으면 window.adminData fallback)
+ *   params      - { areas[], date, time, status, condition, authRequired, authGrade, siteId, memberId, viewOpts }
+ *   dispDataset   - dispDataset 객체 (없으면 window.dispDataset fallback)
+ *   layout      - 'auto' | 'simple' | 'detailed' (기본: 'auto')
+ *   showHeader  - 섹션 헤더 표시 (기본: true)
+ *   showBadges  - 정보 배지 표시 (기본: true)
  */
 window.DispX01Ui = {
   name: 'DispX01Ui',
   props: {
-    params:    { type: Object, required: true },
-    adminData: { type: Object, default: () => window.adminData || { displays: [], codes: [] } },
+    params:      { type: Object, required: true },
+    dispDataset: { type: Object, default: () => window.dispDataset || { displays: [], codes: [] } },
+    dispOpt:     { type: Object, default: () => ({ layout: 'auto', showHeader: true, showBadges: true }) },
   },
   setup(props) {
     const { ref, reactive, computed } = Vue;
@@ -61,12 +65,12 @@ window.DispX01Ui = {
     };
 
     const panelsForArea = (areaCode) =>
-      (props.adminData.displays || [])
+      (props.dispDataset.displays || [])
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
     const areaInfo = (code) =>
-      (props.adminData.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+      (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
     const areaLabel = (code) => areaInfo(code)?.codeLabel || code;
 
@@ -222,6 +226,10 @@ window.DispX01Ui = {
       toggleArea, togglePanel,
       /* 소스보기 */
       sourceLines, lineColor,
+      /* 렌더링 옵션 */
+      layout: props.dispOpt?.layout || 'auto',
+      showHeader: props.dispOpt?.showHeader !== false,
+      showBadges: props.dispOpt?.showBadges !== false,
     };
   },
   template: /* html */`
@@ -312,9 +320,10 @@ window.DispX01Ui = {
       <div v-if="!showContentStruct" style="display:flex;flex-direction:column;gap:0;">
         <template v-for="areaCode in params.areas" :key="areaCode">
           <disp-x02-area v-if="panelsForArea(areaCode).length"
-            :area="areaCode"
-            :area-label="areaLabel(areaCode)"
-            :panels="panelsForArea(areaCode)"
+            :params="params"
+            :disp-dataset="dispDataset"
+            :disp-opt="dispOpt"
+            :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
             mode="area_detail"
             :show-desc="false"
           />
@@ -356,9 +365,10 @@ window.DispX01Ui = {
       <div v-else style="padding:16px;background:#f0f0f0;display:flex;flex-direction:column;gap:4px;">
         <template v-for="areaCode in params.areas" :key="areaCode">
           <disp-x02-area
-            :area="areaCode"
-            :area-label="areaLabel(areaCode)"
-            :panels="panelsForArea(areaCode)"
+            :params="params"
+            :disp-dataset="dispDataset"
+            :disp-opt="dispOpt"
+            :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
             mode="expand"
             :show-desc="true"
           />

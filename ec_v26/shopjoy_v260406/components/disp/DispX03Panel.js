@@ -4,11 +4,13 @@
 window.DispX03Panel = {
   name: 'DispX03Panel',
   props: {
-    panel:      { type: Object,  required: true },   // 패널 객체 (rows[] 포함)
-    isLoggedIn: { type: Boolean, default: false },
-    userGrade:  { type: String,  default: '' },
-    layout:     { type: String,  default: 'vertical' }, // vertical | horizontal | grid
-    showHeader: { type: Boolean, default: false },       // 패널 헤더 표시 여부
+    params:      { type: Object, required: true },
+    dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
+    dispOpt:     { type: Object, default: () => ({ layout: 'vertical', showBadges: true }) },
+    panelItem:   { type: Object, required: true },     // 패널 객체 (rows[] 포함)
+    isLoggedIn:  { type: Boolean, default: false },
+    userGrade:   { type: String,  default: '' },
+    showHeader:  { type: Boolean, default: false },    // 패널 헤더 표시 여부
   },
   emits: ['widget-action'],
   setup(props, { emit }) {
@@ -17,15 +19,16 @@ window.DispX03Panel = {
     /* panel.rows의 각 위젯에 패널 레벨 속성 병합 */
     const mergedWidget = (w) => ({
       ...w,
-      status:       props.panel.status,
-      condition:    w.condition || props.panel.condition || '항상 표시',
-      authRequired: props.panel.authRequired || false,
-      authGrade:    props.panel.authGrade    || '',
+      status:       props.panelItem.status,
+      condition:    w.condition || props.panelItem.condition || '항상 표시',
+      authRequired: props.panelItem.authRequired || false,
+      authGrade:    props.panelItem.authGrade    || '',
     });
 
     const layoutStyle = computed(() => {
-      if (props.layout === 'horizontal') return 'display:flex;gap:12px;overflow-x:auto;';
-      if (props.layout === 'grid')       return 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;';
+      const layout = props.dispOpt?.layout || 'vertical';
+      if (layout === 'horizontal') return 'display:flex;gap:12px;overflow-x:auto;';
+      if (layout === 'grid')       return 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;';
       return 'display:flex;flex-direction:column;gap:12px;';
     });
 
@@ -58,16 +61,19 @@ window.DispX03Panel = {
   <!-- 위젯 목록 -->
   <div :style="layoutStyle">
     <disp-x04-widget
-      v-for="(w, wi) in (panel.rows || [])"
+      v-for="(w, wi) in (panelItem.rows || [])"
       :key="wi"
-      :widget="mergedWidget(w)"
+      :params="params"
+      :disp-dataset="dispDataset"
+      :disp-opt="dispOpt"
+      :widget-item="mergedWidget(w)"
       :is-logged-in="isLoggedIn"
       :user-grade="userGrade"
       @click-action="onWidgetAction"
     />
-    <div v-if="!(panel.rows && panel.rows.length)"
+    <div v-if="!(panelItem.rows && panelItem.rows.length)"
       style="color:#ccc;font-size:12px;padding:8px;text-align:center;">
-      [{{ panel.area }}] 위젯 없음
+      위젯 없음
     </div>
   </div>
 

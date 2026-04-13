@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시영역미리보기 (3탭: 미리보기 · 구조선택 · 소스) */
 window.EcDispAreaPreview = {
   name: 'EcDispAreaPreview',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -50,7 +50,7 @@ window.EcDispAreaPreview = {
 
     /* ── 화면영역 코드 ── */
     const allAreaListRaw = computed(() =>
-      (props.adminData.codes || [])
+      (props.dispDataset.codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -99,12 +99,12 @@ window.EcDispAreaPreview = {
 
     /* ── Tab1: 영역별 필터 패널 ── */
     const panelsForArea = (areaCode) =>
-      (props.adminData.displays || [])
+      (props.dispDataset.displays || [])
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
     const totalPanels = computed(() =>
-      (props.adminData.displays || []).filter(p => panelFilter(p)).length
+      (props.dispDataset.displays || []).filter(p => panelFilter(p)).length
     );
     const resetDate = () => {
       previewDate.value = today;
@@ -125,7 +125,7 @@ window.EcDispAreaPreview = {
     /* 영역별 유효 패널 목록 (날짜·영역 필터 적용) */
     const structAreaList = computed(() =>
       allAreaListRaw.value.map(area => {
-        const panels = (props.adminData.displays || [])
+        const panels = (props.dispDataset.displays || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         return { ...area, panels };
@@ -279,7 +279,7 @@ window.EcDispAreaPreview = {
       lines.push({ type:'blank' });
       lines.push({ type:'ui-open', level:0 });
       areas.forEach((area, ai) => {
-        const panels = (props.adminData.displays || [])
+        const panels = (props.dispDataset.displays || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         if (ai > 0) lines.push({ type:'blank' });
@@ -564,7 +564,7 @@ window.EcDispAreaPreview = {
     const dispUiSiteSearch    = ref('');
     const dispUiSiteList = computed(() => {
       const kw = dispUiSiteSearch.value.trim().toLowerCase();
-      return (props.adminData.sites || []).filter(s =>
+      return (props.dispDataset.sites || []).filter(s =>
         !kw || s.siteNm.toLowerCase().includes(kw) || (s.domain||'').toLowerCase().includes(kw)
       );
     });
@@ -579,7 +579,7 @@ window.EcDispAreaPreview = {
     const dispUiMemberSearch    = ref('');
     const dispUiMemberList = computed(() => {
       const kw = dispUiMemberSearch.value.trim().toLowerCase();
-      return (props.adminData.members || []).filter(m =>
+      return (props.dispDataset.members || []).filter(m =>
         !kw || (m.memberNm||'').toLowerCase().includes(kw) || (m.email||'').toLowerCase().includes(kw)
       ).slice(0, 30);
     });
@@ -638,7 +638,7 @@ window.EcDispAreaPreview = {
         dispUiForm.authRequired = searchAuthRequired.value;
         dispUiForm.authGrade    = searchAuthGrade.value;
         const cf   = window.adminCommonFilter || {};
-        const site = (props.adminData.sites || []).find(s => s.siteId === cf.siteId);
+        const site = (props.dispDataset.sites || []).find(s => s.siteId === cf.siteId);
         dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
         dispUiForm.siteNm   = site?.siteNm || '';
         dispUiForm.memberId = '';
@@ -709,7 +709,7 @@ window.EcDispAreaPreview = {
     };
 
     return {
-      today, siteNm, adminData: props.adminData,
+      today, siteNm, dispDataset: props.dispDataset,
       mainTab, switchTab,
       previewDate, viewMode, showDesc, showAreaDrop,
       selectedAreas, allAreaListRaw, areaList,
@@ -1064,7 +1064,7 @@ window.EcDispAreaPreview = {
   <disp-ui-modal
     :show="dispUiModalOpen"
     :params="dispUiParamObj"
-    :admin-data="adminData"
+    :disp-dataset="dispDataset" :disp-opt="dispOpt"
     title="DispUi미리보기"
     @close="dispUiModalOpen=false"
     @open-popup="openDispUiPopup(); dispUiModalOpen=false;"

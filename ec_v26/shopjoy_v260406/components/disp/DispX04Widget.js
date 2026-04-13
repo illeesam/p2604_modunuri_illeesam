@@ -2,9 +2,12 @@
 window.DispX04Widget = {
   name: 'DispX04Widget',
   props: {
-    widget:     { type: Object,  required: true },
-    isLoggedIn: { type: Boolean, default: false },
-    userGrade:  { type: String,  default: '' },
+    params:      { type: Object, required: true },
+    dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
+    dispOpt:     { type: Object, default: () => ({ showBadges: true }) },
+    widgetItem:  { type: Object, required: true },
+    isLoggedIn:  { type: Boolean, default: false },
+    userGrade:   { type: String,  default: '' },
   },
   emits: ['click-action'],
   setup(props, { emit }) {
@@ -12,7 +15,7 @@ window.DispX04Widget = {
 
     /* 노출 여부 판단 */
     const visible = computed(() => {
-      const w = props.widget;
+      const w = props.widgetItem;
       if (!w || w.status !== '활성') return false;
       const cond = w.condition;
       if (cond === '항상 표시') return true;
@@ -24,7 +27,7 @@ window.DispX04Widget = {
     });
 
     const handleClick = () => {
-      const w = props.widget;
+      const w = props.widgetItem;
       if (!w.clickAction || w.clickAction === 'none') return;
       emit('click-action', { action: w.clickAction, target: w.clickTarget, widget: w });
     };
@@ -47,7 +50,7 @@ window.DispX04Widget = {
     /* 차트 데이터 */
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
-      const w = props.widget;
+      const w = props.widgetItem;
       if (!w.chartValues) return [];
       const vals   = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
       const labels = w.chartLabels ? w.chartLabels.split(',').map(l => l.trim()) : vals.map((_, i) => i + 1);
@@ -90,7 +93,7 @@ window.DispX04Widget = {
       catch { return [{ role: '담당자', name: '' }, { role: '팀장', name: '' }, { role: '부서장', name: '' }]; }
     };
 
-    return { visible, handleClick, nameGrad, chartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
+    return { widget: props.widgetItem, visible, handleClick, nameGrad, chartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
   },
   template: /* html */`
 <div v-if="visible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleClick">
