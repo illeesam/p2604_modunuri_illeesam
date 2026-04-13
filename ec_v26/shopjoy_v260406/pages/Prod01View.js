@@ -1,7 +1,7 @@
 /* ShopJoy - Prod01View (상품 상세 리뉴얼) */
 window.Prod01View = {
   name: 'Prod01View',
-  props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert'],
+  props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
     const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;
 
@@ -726,7 +726,21 @@ window.Prod01View = {
 
             <!-- 버튼 -->
             <div ref="buyBtnRef" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-              <button class="btn-blue" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleAddToCart">🛒 장바구니 담기</button>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-blue" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleAddToCart">🛒 장바구니 담기</button>
+                <button @click="toggleLike && toggleLike(product.productId)"
+                  :title="isLiked && isLiked(product.productId) ? '찜 해제' : '찜하기'"
+                  :style="{
+                    width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px',
+                    background: isLiked && isLiked(product.productId) ? '#fee2e2' : 'var(--bg-card)',
+                    cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center',
+                    transition:'all .15s',
+                  }">
+                  <span :style="{ color: isLiked && isLiked(product.productId) ? '#ef4444' : '#9ca3af' }">
+                    {{ isLiked && isLiked(product.productId) ? '♥' : '♡' }}
+                  </span>
+                </button>
+              </div>
               <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="execBuyNow">⚡ 바로구매</button>
               <button @click="navigate('contact')"
                 style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:4px 0;text-align:center;">

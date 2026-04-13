@@ -437,6 +437,7 @@
         v-else-if="page==='prod01view'"
         :navigate="navigate" :config="config" :product="selectedProduct"
         :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
+        :toggle-like="toggleLike" :is-liked="isLiked"
       />
       <cart
         v-else-if="page==='cart'"
