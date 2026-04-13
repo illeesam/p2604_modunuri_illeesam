@@ -116,10 +116,19 @@ body {
 
 /* ── Glass ── */
 .glass {
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  background: var(--bg-header, rgba(235,239,248,0.96));
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 50%, rgba(210,222,245,0.35) 100%),
+    var(--bg-header, rgba(235,239,248,0.96));
   border: 1px solid var(--border);
+  box-shadow: 0 4px 18px rgba(80,100,160,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+[data-theme="dark"] .glass {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 50%, rgba(90,110,160,0.12) 100%),
+    var(--bg-header, rgba(20,20,20,0.92));
+  box-shadow: 0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 /* ── Card ── */
