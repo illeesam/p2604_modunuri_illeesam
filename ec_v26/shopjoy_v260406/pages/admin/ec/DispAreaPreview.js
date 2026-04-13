@@ -553,7 +553,6 @@ window.EcDispAreaPreview = {
 
     /* 보기옵션 (기본 전체 체크) */
     const dispUiViewOpts = Vue.reactive({ content: true, struct: true, source: true });
-    const dispUiModalTab = ref('content');
 
     /* 사이트 모달 */
     const dispUiSiteModalOpen = ref(false);
@@ -676,32 +675,11 @@ window.EcDispAreaPreview = {
 
     const openDispUiModal = () => {
       if (!_validateDispUi()) return;
-      const first = ['content','struct','source'].find(k => dispUiViewOpts[k]) || 'content';
-      dispUiModalTab.value = first;
       dispUiModalOpen.value = true;
       /* 레이어 닫지 않음 */
     };
 
     const dispUiSourceText = computed(() => ''); /* DispUi 컴포넌트 내부 처리 */
-    const dispUiModalKey      = ref(0);
-    const dispUiRefreshing    = ref(false);
-    const dispUiRefreshPct    = ref(0);
-    const refreshDispUiModal  = () => {
-      if (dispUiRefreshing.value) return;
-      dispUiRefreshing.value = true;
-      dispUiRefreshPct.value = 0;
-      /* 진행바 애니메이션 ~1.2초 */
-      const step = () => {
-        dispUiRefreshPct.value = Math.min(dispUiRefreshPct.value + Math.random() * 18 + 8, 95);
-        if (dispUiRefreshPct.value < 95) setTimeout(step, 120);
-      };
-      step();
-      setTimeout(() => {
-        dispUiRefreshPct.value  = 100;
-        dispUiModalKey.value++;
-        setTimeout(() => { dispUiRefreshing.value = false; dispUiRefreshPct.value = 0; }, 300);
-      }, 1200);
-    };
 
     const openDispUiPopup = () => {
       if (!_validateDispUi()) return;
@@ -719,7 +697,7 @@ window.EcDispAreaPreview = {
         viewOpts:     p.viewOpts,
       }).toString();
       window.open(
-        `http://127.0.0.1:5501/ec_v26/shopjoy_v260406/pages/xd/disp-ui.html?${qs}`,
+        `${window.pageUrl('pages/xd/disp-ui.html')}?${qs}`,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'
       );
       /* 레이어 닫지 않음 */
@@ -758,11 +736,10 @@ window.EcDispAreaPreview = {
       wLabel, wIcon,
       /* DispUi 미리보기 */
       dispUiLayerOpen, dispUiModalOpen, dispUiAreaErr,
-      dispUiModalKey, dispUiRefreshing, dispUiRefreshPct, refreshDispUiModal,
       dispUiAreaDrop, dispUiAreaBtnLabel, dispUiToggleArea, dispUiSelectAllAreas, dispUiClearAllAreas,
       dispUiForm,
       dispUiViewOpts, dispUiParamObj,
-      dispUiModalTab, dispUiModalTabs, dispUiSourceText,
+      dispUiModalTabs, dispUiSourceText,
       dispUiSiteModalOpen, dispUiSiteSearch, dispUiSiteList, selectDispUiSite,
       dispUiMemberModalOpen, dispUiMemberSearch, dispUiMemberList, selectDispUiMember,
       openDispUiLayer, openDispUiModal, openDispUiPopup, resetDispUiForm,
@@ -1078,77 +1055,15 @@ window.EcDispAreaPreview = {
     </div>
   </div>
 
-  <!-- DispUi 모달 오버레이 -->
-  <div v-if="dispUiModalOpen"
-    @click.self="dispUiModalOpen=false"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto;">
-    <div style="background:#fff;border-radius:14px;width:1200px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.4);display:flex;flex-direction:column;">
-
-      <!-- 모달 헤더 -->
-      <div style="background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#fff;padding:14px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:2;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:15px;font-weight:700;">🖥 DispUi미리보기</span>
-          <span style="font-size:11px;opacity:.6;">파라미터 기준 렌더링</span>
-        </div>
-        <button @click="dispUiModalOpen=false" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;padding:0;">×</button>
-      </div>
-
-      <!-- 파라미터 바 -->
-      <div style="padding:8px 20px;background:#f8f4ff;border-bottom:1px solid #e8e0f8;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:10px;font-weight:700;color:#6a1b9a;flex-shrink:0;">파라미터:</span>
-        <textarea readonly rows="3"
-          :value="'areas='+(dispUiParamObj.areas.join(','))+' | date='+dispUiParamObj.date+' | time='+dispUiParamObj.time+' | status='+dispUiParamObj.status+' | condition='+dispUiParamObj.condition+' | authRequired='+dispUiParamObj.authRequired+' | authGrade='+dispUiParamObj.authGrade+' | siteId='+dispUiParamObj.siteId+' | memberId='+dispUiParamObj.memberId+' | viewOpts='+dispUiParamObj.viewOpts"
-          style="flex:1;font-size:11px;font-family:monospace;border:1px solid #d8ccee;border-radius:6px;padding:5px 8px;background:#f3eeff;color:#4a148c;resize:none;line-height:1.6;outline:none;overflow-x:hidden;white-space:pre-wrap;word-break:break-all;">
-        </textarea>
-        <button @click="refreshDispUiModal" :disabled="dispUiRefreshing"
-          style="font-size:11px;padding:5px 12px;border-radius:7px;border:1px solid #b39ddb;background:#ede7f6;color:#6a1b9a;cursor:pointer;font-weight:600;flex-shrink:0;transition:opacity .2s;height:fit-content;"
-          :style="dispUiRefreshing?'opacity:.5;cursor:not-allowed;':''"
-          title="재조회">
-          🔄 재조회
-        </button>
-      </div>
-
-      <!-- 진행바 -->
-      <div style="height:3px;background:#f0eaff;position:relative;overflow:hidden;">
-        <div style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#9c27b0,#6a1b9a);transition:width .12s linear;"
-          :style="'width:'+dispUiRefreshPct+'%;'+(dispUiRefreshing?'':'opacity:0;')"></div>
-      </div>
-
-      <!-- 설정조건 -->
-      <div style="padding:6px 20px;background:#f3eeff;border-bottom:1px solid #e8e0f8;display:flex;flex-wrap:wrap;gap:5px;align-items:center;">
-        <span style="font-size:10px;font-weight:700;color:#9c27b0;margin-right:4px;">설정조건:</span>
-        <span style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:7px;padding:1px 8px;">
-          📅 {{ dispUiForm.date||'-' }} {{ dispUiForm.time||'' }}
-        </span>
-        <span v-if="dispUiForm.status" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:7px;padding:1px 8px;">상태: {{ dispUiForm.status }}</span>
-        <span v-else style="font-size:11px;color:#bbb;">상태: 전체</span>
-        <span style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:7px;padding:1px 8px;">
-          노출조건: {{ dispUiForm.condition||'전체' }}
-        </span>
-        <span style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:7px;padding:1px 8px;">
-          인증: {{ dispUiForm.authRequired==='Y'?'필요':dispUiForm.authRequired==='N'?'불필요':'전체' }}
-        </span>
-        <span v-if="dispUiForm.authGrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:7px;padding:1px 8px;">등급: {{ dispUiForm.authGrade }}↑</span>
-        <span v-if="dispUiForm.siteNm" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:7px;padding:1px 8px;">🌐 {{ dispUiForm.siteNm }}</span>
-        <span v-if="dispUiForm.memberNm" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:7px;padding:1px 8px;">👤 {{ dispUiForm.memberNm }}</span>
-        <span v-else style="font-size:11px;color:#bbb;">👤 비로그인</span>
-      </div>
-
-
-
-      <!-- DispUi 컴포넌트 -->
-      <disp-x01-ui :key="dispUiModalKey" :params="dispUiParamObj" :admin-data="adminData" />
-
-      <!-- 모달 푸터 -->
-      <div style="padding:10px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;z-index:1;">
-        <button @click="openDispUiPopup(); dispUiModalOpen=false;"
-          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #a5d6a7;background:#e8f5e9;color:#2e7d32;cursor:pointer;font-weight:600;">
-          🔗 팝업으로 열기
-        </button>
-        <button @click="dispUiModalOpen=false" class="btn btn-secondary btn-sm">닫기</button>
-      </div>
-    </div>
-  </div>
+  <!-- DispUi 모달 -->
+  <disp-ui-modal
+    :show="dispUiModalOpen"
+    :params="dispUiParamObj"
+    :admin-data="adminData"
+    title="DispUi미리보기"
+    @close="dispUiModalOpen=false"
+    @open-popup="openDispUiPopup(); dispUiModalOpen=false;"
+  />
 
   <!-- DispUi 사이트 선택 모달 -->
   <div v-if="dispUiSiteModalOpen"

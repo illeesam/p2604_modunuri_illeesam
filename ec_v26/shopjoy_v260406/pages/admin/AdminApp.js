@@ -1064,6 +1064,7 @@
   .component('RoleTreeModal',        window.RoleTreeModal)
   /* ── components/modals/ — 미리보기/전송 모달 ── */
   .component('DispPreviewModal',     window.DispPreviewModal || { template: '<div/>' })
+  .component('DispUiModal',          window.DispUiModal      || { template: '<div/>' })
   .component('TemplatePreviewModal', window.TemplatePreviewModal)
   .component('TemplateSendModal',    window.TemplateSendModal)
   .mount('#app');

@@ -1821,6 +1821,72 @@ window.DispPreviewModal = {
 </div>`,
 };
 
+/* ── 전시 DispUi 모달 ──────────────────────────────────────────
+   Props:
+     show      (Boolean)  — 표시 여부
+     params    (Object)   — { areas[], date, time, status, condition,
+                              authRequired, authGrade, siteId, memberId, viewOpts }
+     adminData (Object)   — adminData 객체
+     title     (String)   — 모달 헤더 제목
+   Emits: close, open-popup
+   ── DispUiPage.js와 동일한 DispX01Ui를 모달 안에서 렌더링
+      파라미터 요약 바는 DispX01Ui 내부에서 viewOpts 있을 때 표시 ── */
+window.DispUiModal = {
+  name: 'DispUiModal',
+  props: {
+    show:      { type: Boolean, default: false },
+    params:    { type: Object,  default: () => ({
+      areas: [], date: '', time: '', status: '', condition: '',
+      authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: '',
+    }) },
+    adminData: { type: Object,  default: () => window.adminData || { displays: [], codes: [] } },
+    title:     { type: String,  default: 'DispUi미리보기' },
+  },
+  emits: ['close', 'open-popup'],
+  components: { DispX01Ui: window.DispX01Ui },
+  setup() {
+    const innerKey = Vue.ref(0);
+    return { innerKey };
+  },
+  template: /* html */`
+<div v-if="show"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto;"
+  @click.self="$emit('close')">
+  <div style="background:#fff;border-radius:14px;width:1200px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.4);display:flex;flex-direction:column;"
+    @click.stop>
+
+    <!-- 헤더 -->
+    <div style="background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#fff;padding:14px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:2;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:15px;font-weight:700;">🖥 {{ title }}</span>
+        <span style="font-size:11px;opacity:.6;">파라미터 기준 렌더링</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button @click="innerKey++"
+          style="font-size:11px;padding:4px 12px;border-radius:7px;border:1px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.15);color:#fff;cursor:pointer;font-weight:600;">
+          🔄 재조회
+        </button>
+        <button @click="$emit('close')"
+          style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;padding:0;">×</button>
+      </div>
+    </div>
+
+    <!-- 본문: DispX01Ui (파라미터 요약 바는 viewOpts 있을 때 내부 표시) -->
+    <disp-x01-ui :key="innerKey" :params="params" :admin-data="adminData" />
+
+    <!-- 푸터 -->
+    <div style="padding:10px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;z-index:1;">
+      <button @click="$emit('open-popup')"
+        style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #a5d6a7;background:#e8f5e9;color:#2e7d32;cursor:pointer;font-weight:600;">
+        🔗 팝업으로 열기
+      </button>
+      <button class="btn btn-secondary btn-sm" @click="$emit('close')">닫기</button>
+    </div>
+
+  </div>
+</div>`,
+};
+
 /* ── 카테고리 멀티선택 모달 (사용자 페이스 Sample용) ────────────
    Props: show (Boolean), selectedIds (Array of categoryId)
    Emits: close, apply (Array of categoryId)

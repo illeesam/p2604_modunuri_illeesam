@@ -50,7 +50,7 @@ window.EcDispPanelMng = {
         'MY_PAGE': '#page=mypage', 'FOOTER': '',
       };
       const hash = areaPageMap[d.area] || '';
-      window.open(`http://127.0.0.1:5502/ec_v26/shopjoy_v260406/index.html${hash}`, '_blank', 'width=1280,height=900,scrollbars=yes');
+      window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900,scrollbars=yes');
     };
 
     /* 표현설정 요약 */

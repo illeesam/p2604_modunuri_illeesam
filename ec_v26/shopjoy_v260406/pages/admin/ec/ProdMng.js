@@ -106,7 +106,7 @@ window.EcProdMng = {
     };
 
     const previewProduct = (pid) => {
-      window.open(`http://127.0.0.1:5502/ec_v26/shopjoy_v260406/index.html#page=detail&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+      window.open(`${window.pageUrl('index.html')}#page=detail&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'productId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'category'},{label:'가격',key:'price'},{label:'재고',key:'stock'},{label:'브랜드',key:'brand'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '상품목록.csv');
