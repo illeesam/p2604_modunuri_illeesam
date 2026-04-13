@@ -649,9 +649,13 @@
   .component('TemplatePreviewModal', window.TemplatePreviewModal)
   .component('TemplateSendModal',    window.TemplateSendModal);
 
+  /* ■■■ disp 공통 컴포넌트 등록 ■■■ */
+  ['DispX01Ui','DispX02Area','DispX03Panel','DispX04Widget'].forEach(name => {
+    if (window[name]) app.component(name, window[name]);
+  });
   /* ■■■ xd/DispUi* — 스크립트 태그 주석처리해도 에러 없이 동작 ■■■ */
-  ['XdDispUi01','XdDispUi02','XdDispUi03','XdDispUi04','XdDispUi05','XdDispUi06',
-  ].forEach(name => { if (window[name]) app.component(name, window[name]); });
+  ['DispUi01','DispUi02','DispUi03','DispUi04','DispUi05','DispUi06',
+  ].forEach(name => { if (window[name]) app.component('Xd'+name, window[name]); });
   /* ■■■ xs/Sample* — 스크립트 태그 주석처리해도 에러 없이 동작 ■■■ */
   ['XsSample01','XsSample02','XsSample03','XsSample04','XsSample05','XsSample06','XsSample07',
    'XsSample08','XsSample09','XsSample10','XsSample11','XsSample12','XsSample13','XsSample14',

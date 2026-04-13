@@ -30,13 +30,74 @@
 <body>
   <div id="app"></div>
   <script>
-    const { createApp } = Vue;
-    const app = createApp(window.DispUiPage);
+    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+    /* ── 해시 라우팅 래퍼 ── */
+    const DispUiApp = {
+      name: 'DispUiApp',
+      setup() {
+        const PAGE_MAP = {
+          'DispUi01': 'disp-ui01',
+          'DispUi02': 'disp-ui02',
+          'DispUi03': 'disp-ui03',
+          'DispUi04': 'disp-ui04',
+        };
+        const PAGE_LABELS = [
+          { key: 'DispUi01', label: 'HOME', icon: '🏠' },
+          { key: 'DispUi02', label: 'CATEGORY/SEARCH', icon: '🔍' },
+          { key: 'DispUi03', label: 'PRODUCT/EVENT', icon: '📦' },
+          { key: 'DispUi04', label: 'MY_PAGE/FOOTER', icon: '👤' },
+        ];
+
+        const getPage = () => {
+          const h = location.hash.replace('#','');
+          const qs = new URLSearchParams(location.search);
+          if (h && PAGE_MAP[h]) return h;
+          if (qs.get('areas')) return 'DispUiPage';
+          return 'DispUi01'; /* 기본: DispUi01 */
+        };
+
+        const currentPage = ref(getPage());
+        const onHash = () => { currentPage.value = getPage(); };
+        onMounted(() => window.addEventListener('hashchange', onHash));
+        onUnmounted(() => window.removeEventListener('hashchange', onHash));
+
+        const isPage = (key) => currentPage.value === key;
+        const go = (key) => { location.hash = key; };
+
+        return { currentPage, isPage, go, PAGE_LABELS };
+      },
+      template: /* html */`
+<div>
+  <!-- 탭 네비게이션 (DispUiPage 모드가 아닐 때) -->
+  <div v-if="currentPage !== 'DispUiPage'"
+    style="display:flex;gap:0;background:#2d2d2d;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+    <button v-for="p in PAGE_LABELS" :key="p.key"
+      @click="go(p.key)"
+      style="flex:1;padding:10px 8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;"
+      :style="isPage(p.key)
+        ? 'background:#fff;color:#6a1b9a;border-bottom:3px solid #6a1b9a;'
+        : 'background:transparent;color:#aaa;border-bottom:3px solid transparent;'"
+    >{{ p.icon }} {{ p.label }}</button>
+  </div>
+
+  <!-- 페이지 렌더링 -->
+  <disp-ui-page   v-if="currentPage==='DispUiPage'" />
+  <disp-ui01      v-else-if="currentPage==='DispUi01'" />
+  <disp-ui02      v-else-if="currentPage==='DispUi02'" />
+  <disp-ui03      v-else-if="currentPage==='DispUi03'" />
+  <disp-ui04      v-else-if="currentPage==='DispUi04'" />
+</div>
+`,
+    };
+
+    const app = createApp(DispUiApp);
     app.component('NotFound',        window.NotFound);
     app.component('DispX01Ui',       window.DispX01Ui);
     app.component('DispX02Area',     window.DispX02Area);
     app.component('DispX03Panel',    window.DispX03Panel);
     app.component('DispX04Widget',   window.DispX04Widget);
+    app.component('DispUiPage',      window.DispUiPage);
     ['DispUi01', 'DispUi02', 'DispUi03', 'DispUi04'].forEach(name => {
       if (window[name]) app.component(name, window[name]);
     });
