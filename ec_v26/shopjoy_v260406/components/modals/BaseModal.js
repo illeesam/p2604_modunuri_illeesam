@@ -1790,7 +1790,7 @@ window.DispPreviewModal = {
               #{{ w.dispId }} {{ w.name }} · 순서{{ w.sortOrder }}
             </div>
             <disp-x04-widget
-              :params="{ }"
+              :params="{ isLoggedIn: false, userGrade: '' }"
               :disp-dataset="{ displays: [], codes: [] }"
               :disp-opt="{ showBadges: true }"
               :widget-item="w"
@@ -1808,7 +1808,7 @@ window.DispPreviewModal = {
         <div v-if="previewWidget.widgetType"
           style="border:1px dashed #e0e0e0;border-radius:8px;padding:16px;background:#fafbff;">
           <disp-x04-widget
-            :params="{ }"
+            :params="{ isLoggedIn: false, userGrade: '' }"
             :disp-dataset="{ displays: [], codes: [] }"
             :disp-opt="{ showBadges: true }"
             :widget-item="previewWidget"

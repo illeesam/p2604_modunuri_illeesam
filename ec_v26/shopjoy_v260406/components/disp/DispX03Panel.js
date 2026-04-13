@@ -8,8 +8,6 @@ window.DispX03Panel = {
     dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
     dispOpt:     { type: Object, default: () => ({ layout: 'vertical', showBadges: true }) },
     panelItem:   { type: Object, required: true },     // 패널 객체 (rows[] 포함)
-    isLoggedIn:  { type: Boolean, default: false },
-    userGrade:   { type: String,  default: '' },
     showHeader:  { type: Boolean, default: false },    // 패널 헤더 표시 여부
   },
   emits: ['widget-action'],
@@ -67,8 +65,6 @@ window.DispX03Panel = {
       :disp-dataset="dispDataset"
       :disp-opt="dispOpt"
       :widget-item="mergedWidget(w)"
-      :is-logged-in="isLoggedIn"
-      :user-grade="userGrade"
       @click-action="onWidgetAction"
     />
     <div v-if="!(panelItem.rows && panelItem.rows.length)"

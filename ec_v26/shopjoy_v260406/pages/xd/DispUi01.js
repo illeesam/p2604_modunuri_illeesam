@@ -10,7 +10,9 @@ window.DispUi01 = {
     const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const params = {
       areas: ['HOME_BANNER', 'HOME_PRODUCT', 'HOME_CHART', 'HOME_EVENT'],
-      date: '', time: '', status: '', condition: '', authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: 'content,struct,source'
+      date: '', time: '', status: '', condition: '', authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: 'content,struct,source',
+      isLoggedIn: window.shopjoyAuth?.isLoggedIn ?? false,
+      userGrade: window.shopjoyAuth?.userGrade ?? '',
     };
 
     const dispOpt = {

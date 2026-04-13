@@ -6,8 +6,6 @@ window.DispX04Widget = {
     dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
     dispOpt:     { type: Object, default: () => ({ showBadges: true }) },
     widgetItem:  { type: Object, required: true },
-    isLoggedIn:  { type: Boolean, default: false },
-    userGrade:   { type: String,  default: '' },
   },
   emits: ['click-action'],
   setup(props, { emit }) {
@@ -19,10 +17,12 @@ window.DispX04Widget = {
       if (!w || w.status !== '활성') return false;
       const cond = w.condition;
       if (cond === '항상 표시') return true;
-      if (cond === '로그인 필요')  return props.isLoggedIn;
-      if (cond === '비로그인')     return !props.isLoggedIn;
-      if (cond === '로그인+VIP')   return props.isLoggedIn && props.userGrade === 'VIP';
-      if (cond === '로그인+우수')  return props.isLoggedIn && (props.userGrade === '우수' || props.userGrade === 'VIP');
+      const isLoggedIn = props.params?.isLoggedIn || false;
+      const userGrade = props.params?.userGrade || '';
+      if (cond === '로그인 필요')  return isLoggedIn;
+      if (cond === '비로그인')     return !isLoggedIn;
+      if (cond === '로그인+VIP')   return isLoggedIn && userGrade === 'VIP';
+      if (cond === '로그인+우수')  return isLoggedIn && (userGrade === '우수' || userGrade === 'VIP');
       return true;
     });
 

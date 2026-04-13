@@ -694,6 +694,8 @@ window.EcDispAreaPreview = {
       authGrade:    searchAuthGrade.value,
       date:         previewDate.value,
       time:         previewTime.value,
+      isLoggedIn:   false,
+      userGrade:    '',
     }));
     const dispOpt = computed(() => ({ layout: viewMode.value, showBadges: true, mode: viewMode.value, showDesc: showDesc.value }));
     const areaInfo = (code) =>

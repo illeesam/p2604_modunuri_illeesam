@@ -195,7 +195,7 @@ window.DispX02Area = {
         <div style="background:#fff;display:flex;flex-direction:column;min-width:0;">
           <div style="font-size:10px;font-weight:600;color:#888;padding:6px 12px;background:#fafafa;border-bottom:1px solid #f0f0f0;letter-spacing:.3px;">위젯 컨텐츠</div>
           <div style="padding:10px 12px;">
-            <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+            <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" />
           </div>
         </div>
 
@@ -228,8 +228,6 @@ window.DispX02Area = {
         :disp-dataset="dispDataset"
         :disp-opt="dispOpt"
         :panel-item="p"
-        :is-logged-in="isLoggedIn"
-        :user-grade="userGrade"
       />
     </template>
 
@@ -257,7 +255,7 @@ window.DispX02Area = {
           </div>
           <!-- 우: 패널 컨텐츠 (DispX03Panel에 위임) -->
           <div style="padding:12px 16px;">
-            <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+            <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" />
           </div>
         </div>
       </template>
