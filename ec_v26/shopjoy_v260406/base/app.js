@@ -399,7 +399,7 @@
   },
 
   template: /* html */ `
-<div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
+<div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
 
   <app-header
     :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"

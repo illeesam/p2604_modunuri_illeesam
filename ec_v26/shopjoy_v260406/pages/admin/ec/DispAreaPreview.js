@@ -277,22 +277,23 @@ window.EcDispAreaPreview = {
         order:    '-',
       }});
       lines.push({ type:'blank' });
+      lines.push({ type:'ui-open', level:0 });
       areas.forEach((area, ai) => {
         const panels = (props.adminData.displays || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         if (ai > 0) lines.push({ type:'blank' });
-        /* ── DispArea 메타 주석 ── */
+        /* ── DispX02Area 메타 주석 ── */
         const _areaLayout = area.layoutType === 'dashboard'
           ? 'dashboard'
           : `${area.layoutType || 'grid'}:${area.gridCols || 1}`;
-        lines.push({ type:'area-meta', level:0, meta:{
+        lines.push({ type:'area-meta', level:1, meta:{
           layout: _areaLayout,
           sortOrd: area.sortOrd != null ? area.sortOrd : '-',
           area: area.codeValue,
         }});
-        /* ── <DispArea attrs> ── */
-        lines.push({ type:'area-open', level:0, attrs:[
+        /* ── <DispX02Area attrs> ── */
+        lines.push({ type:'area-open', level:1, attrs:[
           A('area',       area.codeValue,          true),
           A('areaLabel',  area.codeLabel,           true),
           A('layoutType', area.layoutType || 'grid', true),
@@ -301,7 +302,7 @@ window.EcDispAreaPreview = {
           A('useYn',      '~'),
         ]});
         if (panels.length === 0) {
-          lines.push({ type:'comment', level:1, text:`<!-- 해당 날짜 활성 패널 없음 -->` });
+          lines.push({ type:'comment', level:2, text:`<!-- 해당 날짜 활성 패널 없음 -->` });
         } else {
           panels.forEach(p => {
             const rows = p.rows || [];
@@ -313,7 +314,7 @@ window.EcDispAreaPreview = {
             const _panelLayout = p.layoutType === 'dashboard'
               ? 'dashboard'
               : `${p.layoutType || 'grid'}:${p.gridCols || 1}`;
-            lines.push({ type:'panel-meta', level:1, meta:{
+            lines.push({ type:'panel-meta', level:2, meta:{
               layout: _panelLayout,
               sortOrder: p.sortOrder != null ? p.sortOrder : '-',
               period: _period,
@@ -322,8 +323,8 @@ window.EcDispAreaPreview = {
               authRequired: p.authRequired ? '필요' : '불필요',
               authGrade: (p.authRequired && p.authGrade) ? p.authGrade + ' 이상' : '-',
             }});
-            /* ── <DispPanel attrs> ── */
-            lines.push({ type:'panel-open', level:1, attrs:[
+            /* ── <DispX03Panel attrs> ── */
+            lines.push({ type:'panel-open', level:2, attrs:[
               A('id',            '#'+String(p.dispId).padStart(4,'0'), true),
               A('name',          p.name,                               true),
               A('status',        p.status,                             true),
@@ -339,11 +340,11 @@ window.EcDispAreaPreview = {
               A('sortOrder',     p.sortOrder != null ? p.sortOrder : '~', p.sortOrder != null),
             ]});
             if (rows.length === 0) {
-              lines.push({ type:'comment', level:2, text:`<!-- (위젯 없음) -->` });
+              lines.push({ type:'comment', level:3, text:`<!-- (위젯 없음) -->` });
             } else {
               rows.forEach(w => {
-                /* ── <DispWidget attrs /> ── */
-                lines.push({ type:'widget', level:2, attrs:[
+                /* ── <DispX04Widget attrs /> ── */
+                lines.push({ type:'widget', level:3, attrs:[
                   A('widgetType', w.widgetType,        true),
                   A('widgetNm',   w.widgetNm || '~',   !!w.widgetNm),
                   A('condition',  w.condition || '~',  !!w.condition),
@@ -352,33 +353,37 @@ window.EcDispAreaPreview = {
                 ]});
               });
             }
-            lines.push({ type:'panel-close', level:1 });
+            lines.push({ type:'panel-close', level:2 });
           });
           lines.push({ type:'blank' });
         }
-        lines.push({ type:'area-close', level:0 });
+        lines.push({ type:'area-close', level:1 });
       });
+      lines.push({ type:'ui-close', level:0 });
       return lines;
     });
 
     const sourceText = computed(() => {
       const fa = (attrs) => attrs.map(a => `${a.key}="${a.val}"`).join(' ');
+      const ind = (n) => '  '.repeat(n);
       return sourceLines.value.map(l => {
         if (l.type === 'blank')        return '';
-        if (l.type === 'area-open')    return `<DispArea ${fa(l.attrs)}>`;
+        if (l.type === 'ui-open')      return `<DispX01Ui>`;
+        if (l.type === 'ui-close')     return `</DispX01Ui>`;
+        if (l.type === 'area-open')    return `${ind(l.level)}<DispX02Area ${fa(l.attrs)}>`;
         if (l.type === 'source-header') {
           if (l.htype === 'entities') return `<!-- 전시개체 : 전시영역s: ${l.data.area||'-'}, 전시패널s: ${l.data.panel||'-'}, 전시위젯s: ${l.data.widget||'-'}, 위젯Libs: ${l.data.lib||'-'} -->`;
           if (l.htype === 'disp')     return `<!-- disp조건 : 전시일시 : ${l.data.datetime}  |  상태 : ${l.data.status}  |  노출조건 : ${l.data.condition}  |  인증필요 : ${l.data.authRequired}  |  등급제한 : ${l.data.authGrade} -->`;
           if (l.htype === 'cond')     return `<!-- cond조건 : 조회기간 : ${l.data.period},  카테고리 : ${l.data.category},  주문 : ${l.data.order} -->`;
           return '';
         }
-        if (l.type === 'area-meta')    return `<!-- 표시형식:${l.meta.layout}, 정렬:${l.meta.sortOrd}, area="${l.meta.area}" -->`;
-        if (l.type === 'panel-meta')   return `  <!-- 표시형식:${l.meta.layout}, 정렬:${l.meta.sortOrder}, 기간: ${l.meta.period}  |  상태: ${l.meta.status}  |  노출조건: ${l.meta.condition}  |  인증필요: ${l.meta.authRequired}  |  등급제한: ${l.meta.authGrade} -->`;
-        if (l.type === 'panel-open')   return `  <DispPanel ${fa(l.attrs)}>`;
-        if (l.type === 'widget')       return `    <DispWidget ${fa(l.attrs)} />`;
-        if (l.type === 'panel-close')  return `  </DispPanel>`;
-        if (l.type === 'area-close')   return '</DispArea>';
-        if (l.type === 'comment')      return l.text;
+        if (l.type === 'area-meta')    return `${ind(l.level)}<!-- 표시형식:${l.meta.layout}, 정렬:${l.meta.sortOrd}, area="${l.meta.area}" -->`;
+        if (l.type === 'panel-meta')   return `${ind(l.level)}<!-- 표시형식:${l.meta.layout}, 정렬:${l.meta.sortOrder}, 기간: ${l.meta.period}  |  상태: ${l.meta.status}  |  노출조건: ${l.meta.condition}  |  인증필요: ${l.meta.authRequired}  |  등급제한: ${l.meta.authGrade} -->`;
+        if (l.type === 'panel-open')   return `${ind(l.level)}<DispX03Panel ${fa(l.attrs)}>`;
+        if (l.type === 'widget')       return `${ind(l.level)}<DispX04Widget ${fa(l.attrs)} />`;
+        if (l.type === 'panel-close')  return `${ind(l.level)}</DispX03Panel>`;
+        if (l.type === 'area-close')   return `${ind(l.level)}</DispX02Area>`;
+        if (l.type === 'comment')      return `${ind(l.level||0)}${l.text}`;
         return '';
       }).join('\n');
     });
@@ -1218,7 +1223,7 @@ window.EcDispAreaPreview = {
               :style="isAreaAllChecked(area) ? 'border-color:#f6ad55;background:#f6ad55;' : 'border-color:rgba(255,255,255,.5);background:transparent;'">
               <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:11px;line-height:1;">✓</span>
             </div>
-            <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">DispArea</span>
+            <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">DispX02Area</span>
             <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;">{{ area.codeValue }}</code>
             <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
             <!-- 레이아웃 배지 -->
@@ -1257,7 +1262,7 @@ window.EcDispAreaPreview = {
               <!-- 패널 정보 -->
               <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-                  <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;line-height:16px;">DispPanel</span>
+                  <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;line-height:16px;">DispX03Panel</span>
                   <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">#{{ String(p.dispId).padStart(4,'0') }}</code>
                   <span style="font-size:13px;font-weight:700;color:#222;">{{ p.name }}</span>
                   <span style="font-size:10px;padding:1px 7px;border-radius:8px;" :style="p.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">{{ p.status }}</span>
@@ -1273,7 +1278,7 @@ window.EcDispAreaPreview = {
                       :style="checkedWidgetKeys.has(p.dispId + '_' + wi) ? 'border-color:#f59e0b;background:#f59e0b;' : 'border-color:#ccc;background:#fff;'">
                       <span v-if="checkedWidgetKeys.has(p.dispId + '_' + wi)" style="color:#fff;font-size:9px;line-height:1;">✓</span>
                     </div>
-                    <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 3px;flex-shrink:0;">DispWidget</span>
+                    <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 3px;flex-shrink:0;">DispX04Widget</span>
                     <span style="font-size:10px;">{{ wIcon(w.widgetType) }}</span>
                     <span style="font-size:11px;color:#e65100;">{{ wLabel(w.widgetType) }}</span>
                     <span v-if="w.widgetNm" style="font-size:10px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
@@ -1548,7 +1553,7 @@ window.EcDispAreaPreview = {
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1e1e2e;border-bottom:1px solid #3a3a5c;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-size:13px;font-weight:700;color:#63b3ed;">&lt;/&gt; 소스 구조</span>
-          <span style="font-size:11px;color:#718096;">Area → Widget 구조 (날짜 기준 활성 패널)</span>
+          <span style="font-size:11px;color:#718096;">DispX01Ui → DispX02Area → DispX03Panel → DispX04Widget</span>
         </div>
         <button @click="copySource"
           style="font-size:11px;padding:4px 12px;border-radius:8px;cursor:pointer;transition:all .15s;"
@@ -1606,9 +1611,17 @@ window.EcDispAreaPreview = {
               <span style="color:#4a7a5a;font-style:italic;">--&gt;</span>
             </template>
 
-            <!-- <DispArea attr="val" ...> -->
+            <!-- <DispX01Ui> / </DispX01Ui> -->
+            <template v-else-if="line.type==='ui-open'">
+              <span style="color:#b794f4;font-weight:700;">&lt;DispX01Ui&gt;</span>
+            </template>
+            <template v-else-if="line.type==='ui-close'">
+              <span style="color:#b794f4;font-weight:700;">&lt;/DispX01Ui&gt;</span>
+            </template>
+
+            <!-- <DispX02Area attr="val" ...> -->
             <template v-else-if="line.type==='area-open'">
-              <span style="color:#63b3ed;font-weight:700;">&lt;DispArea</span>
+              <span style="color:#63b3ed;font-weight:700;">&lt;DispX02Area</span>
               <template v-for="a in line.attrs" :key="a.key">
                 <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
               </template>
@@ -1630,31 +1643,31 @@ window.EcDispAreaPreview = {
               <span style="color:#5a9e6f;font-style:italic;">--&gt;</span>
             </template>
 
-            <!-- <DispPanel attr="val" ...> -->
+            <!-- <DispX03Panel attr="val" ...> -->
             <template v-else-if="line.type==='panel-open'">
-              <span style="color:#68d391;font-weight:700;">&lt;DispPanel</span>
+              <span style="color:#68d391;font-weight:700;">&lt;DispX03Panel</span>
               <template v-for="a in line.attrs" :key="a.key">
                 <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
               </template>
               <span style="color:#68d391;font-weight:700;">&gt;</span>
             </template>
 
-            <!-- <DispWidget attr="val" .../> -->
+            <!-- <DispX04Widget attr="val" .../> -->
             <template v-else-if="line.type==='widget'">
-              <span style="color:#f6ad55;font-weight:700;">&lt;DispWidget</span>
+              <span style="color:#f6ad55;font-weight:700;">&lt;DispX04Widget</span>
               <template v-for="a in line.attrs" :key="a.key">
                 <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
               </template>
               <span style="color:#f6ad55;font-weight:700;"> /&gt;</span>
             </template>
 
-            <!-- </DispPanel> -->
+            <!-- </DispX03Panel> -->
             <span v-else-if="line.type==='panel-close'"
-              style="color:#68d391;font-weight:700;">&lt;/DispPanel&gt;</span>
+              style="color:#68d391;font-weight:700;">&lt;/DispX03Panel&gt;</span>
 
-            <!-- </DispArea> -->
+            <!-- </DispX02Area> -->
             <span v-else-if="line.type==='area-close'"
-              style="color:#63b3ed;font-weight:700;">&lt;/DispArea&gt;</span>
+              style="color:#63b3ed;font-weight:700;">&lt;/DispX02Area&gt;</span>
 
             <!-- 주석 -->
             <span v-else-if="line.type==='comment'" style="color:#6a737d;">{{ line.text }}</span>
@@ -1665,9 +1678,10 @@ window.EcDispAreaPreview = {
 
       <!-- 소스 푸터: 범례 -->
       <div style="background:#161622;padding:10px 20px;border-top:1px solid #3a3a5c;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-        <span style="font-size:11px;color:#63b3ed;">■ DispArea</span>
-        <span style="font-size:11px;color:#68d391;">■ DispPanel</span>
-        <span style="font-size:11px;color:#f6ad55;">■ DispWidget</span>
+        <span style="font-size:11px;color:#b794f4;">■ DispX01Ui</span>
+        <span style="font-size:11px;color:#63b3ed;">■ DispX02Area</span>
+        <span style="font-size:11px;color:#68d391;">■ DispX03Panel</span>
+        <span style="font-size:11px;color:#f6ad55;">■ DispX04Widget</span>
         <span style="font-size:11px;color:#9cdcfe;">■ 속성명</span>
         <span style="font-size:11px;color:#ce9178;">■ 실제값</span>
         <span style="font-size:11px;color:#6a737d;font-style:italic;">■ 플레이스홀더(~)</span>

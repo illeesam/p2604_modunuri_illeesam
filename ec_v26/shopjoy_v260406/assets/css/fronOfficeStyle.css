@@ -51,14 +51,16 @@
 
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; height: 100%; }
 body {
   background: var(--bg-base);
   color: var(--text-primary);
   font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
   min-height: 100vh;
+  height: 100%;
   transition: background 0.3s ease, color 0.3s ease;
 }
+#app { height: 100%; min-height: 100vh; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
@@ -114,8 +116,9 @@ body {
 
 /* ── Glass ── */
 .glass {
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-  background: var(--bg-header);
+  background: var(--bg-header, rgba(235,239,248,0.96));
   border: 1px solid var(--border);
 }
 

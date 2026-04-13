@@ -116,7 +116,7 @@ window.AppHeader = {
   },
 
   template: /* html */ `
-<header class="glass" style="height:var(--header-h);display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">
+<header class="glass" style="height:var(--header-h,60px);min-height:60px;flex-shrink:0;display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">
 
   <!-- Hamburger (mobile) -->
   <button @click="$emit('toggle-mobile')"

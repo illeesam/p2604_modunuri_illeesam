@@ -137,6 +137,7 @@ window.DispX01Ui = {
       lines.push({ type:'header', sub:'cond',
         text:`<!-- cond조건 : 조회기간: -,  카테고리: -,  주문: - -->` });
       lines.push({ type:'blank' });
+      lines.push({ type:'ui-open',  text:`<DispX01Ui>` });
 
       allAreas.forEach((areaCode, ai) => {
         const info   = areaInfo(areaCode);
@@ -146,12 +147,12 @@ window.DispX01Ui = {
         const _aLayout = info?.layoutType === 'dashboard' ? 'dashboard' : `${info?.layoutType||'grid'}:${info?.gridCols||1}`;
         const _aTitleYn = info?.titleYn === 'Y' ? (info?.title || '(제목없음)') : '미표시';
         lines.push({ type:'area-meta',
-          text:`<!-- 표시형식:${_aLayout}, 정렬:${info?.sortOrd??'-'}, 타이틀:${_aTitleYn}, area="${areaCode}" -->` });
+          text:`  <!-- 표시형식:${_aLayout}, 정렬:${info?.sortOrd??'-'}, 타이틀:${_aTitleYn}, area="${areaCode}" -->` });
         lines.push({ type:'area-open',
-          text:`<DispArea area="${areaCode}" areaLabel="${info?.codeLabel||areaCode}" layoutType="${info?.layoutType||'grid'}" gridCols="${info?.gridCols||1}">` });
+          text:`  <DispX02Area area="${areaCode}" areaLabel="${info?.codeLabel||areaCode}" layoutType="${info?.layoutType||'grid'}" gridCols="${info?.gridCols||1}">` });
 
         if (!panels.length) {
-          lines.push({ type:'comment', text:`  <!-- 해당 날짜 활성 패널 없음 -->` });
+          lines.push({ type:'comment', text:`    <!-- 해당 날짜 활성 패널 없음 -->` });
         } else {
           panels.forEach(p => {
             lines.push({ type:'blank' });
@@ -161,25 +162,26 @@ window.DispX01Ui = {
             const _pLayout = p.layoutType === 'dashboard' ? 'dashboard' : `${p.layoutType||'grid'}:${p.gridCols||1}`;
             const _pTitleYn = p.titleYn === 'Y' ? (p.title || '(제목없음)') : '미표시';
             lines.push({ type:'panel-meta',
-              text:`  <!-- 표시형식:${_pLayout}, 정렬:${p.sortOrder??'-'}, 타이틀:${_pTitleYn}, 기간: ${_period}  |  상태: ${p.status||'-'}  |  노출조건: ${p.condition||'항상 표시'}  |  인증필요: ${p.authRequired?'필요':'불필요'} -->` });
+              text:`    <!-- 표시형식:${_pLayout}, 정렬:${p.sortOrder??'-'}, 타이틀:${_pTitleYn}, 기간: ${_period}  |  상태: ${p.status||'-'}  |  노출조건: ${p.condition||'항상 표시'}  |  인증필요: ${p.authRequired?'필요':'불필요'} -->` });
             lines.push({ type:'panel-open',
-              text:`  <DispPanel id="#${String(p.dispId).padStart(4,'0')}" name="${p.name}" status="${p.status}" layoutType="${p.layoutType||'grid'}" gridCols="${p.gridCols||1}" condition="${p.condition||'항상 표시'}">` });
+              text:`    <DispX03Panel id="#${String(p.dispId).padStart(4,'0')}" name="${p.name}" status="${p.status}" layoutType="${p.layoutType||'grid'}" gridCols="${p.gridCols||1}" condition="${p.condition||'항상 표시'}">` });
 
             if (!(p.rows?.length)) {
-              lines.push({ type:'comment', text:`    <!-- (위젯 없음) -->` });
+              lines.push({ type:'comment', text:`      <!-- (위젯 없음) -->` });
             } else {
               (p.rows||[]).forEach(w => {
                 lines.push({ type:'widget',
-                  text:`    <DispWidget widgetType="${w.widgetType}" widgetNm="${w.widgetNm||''}" condition="${w.condition||''}" />` });
+                  text:`      <DispX04Widget widgetType="${w.widgetType}" widgetNm="${w.widgetNm||''}" condition="${w.condition||''}" />` });
               });
             }
-            lines.push({ type:'panel-close', text:`  </DispPanel>` });
+            lines.push({ type:'panel-close', text:`    </DispX03Panel>` });
           });
           lines.push({ type:'blank' });
         }
-        lines.push({ type:'area-close', text:`</DispArea>` });
+        lines.push({ type:'area-close', text:`  </DispX02Area>` });
       });
 
+      lines.push({ type:'ui-close', text:`</DispX01Ui>` });
       return lines;
     });
 
@@ -191,13 +193,15 @@ window.DispX01Ui = {
           if (line.sub === 'disp')     return '#ffab40';
           if (line.sub === 'cond')     return '#ff8a65';
           return '#ffd700';
+        case 'ui-open':
+        case 'ui-close':    return '#b794f4';
         case 'area-meta':   return '#808080';
-        case 'area-open':   return '#c792ea';
-        case 'area-close':  return '#c792ea';
+        case 'area-open':   return '#63b3ed';
+        case 'area-close':  return '#63b3ed';
         case 'panel-meta':  return '#6e7f9e';
-        case 'panel-open':  return '#a5d6a7';
-        case 'panel-close': return '#a5d6a7';
-        case 'widget':      return '#82b1ff';
+        case 'panel-open':  return '#68d391';
+        case 'panel-close': return '#68d391';
+        case 'widget':      return '#f6ad55';
         case 'comment':     return '#546e7a';
         case 'blank':       return 'transparent';
         default:            return '#cdd9e5';
@@ -356,7 +360,7 @@ window.DispX01Ui = {
 
           <!-- 영역 헤더 -->
           <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;border-radius:8px 8px 0 0;margin-top:12px;">
-            <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">DispArea</span>
+            <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">DispX02Area</span>
             <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;letter-spacing:.5px;">{{ areaCode }}</code>
             <span style="font-size:14px;font-weight:700;">{{ areaLabel(areaCode) }}</span>
             <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ panelsForArea(areaCode).length }}개</span>
@@ -382,7 +386,7 @@ window.DispX01Ui = {
 
               <!-- 패널 헤더 -->
               <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#f8f8f8;border-bottom:1px solid #efefef;">
-                <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;border-radius:3px;padding:0 5px;line-height:16px;flex-shrink:0;">DispPanel #{{ String(p.dispId).padStart(4,'0') }}</span>
+                <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;border-radius:3px;padding:0 5px;line-height:16px;flex-shrink:0;">DispX03Panel #{{ String(p.dispId).padStart(4,'0') }}</span>
                 <span style="font-size:13px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</span>
                 <span style="font-size:10px;padding:1px 7px;border-radius:5px;flex-shrink:0;"
                   :style="p.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">{{ p.status }}</span>
