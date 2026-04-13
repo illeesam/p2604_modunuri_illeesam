@@ -12,6 +12,10 @@ window.DispAreaMng = {
       { value: 'GRID',    label: '그리드' },
       { value: 'BANNER',  label: '배너' },
     ];
+    const LAYOUT_TYPE_OPTS = [
+      { value: 'grid',      label: '그리드' },
+      { value: 'dashboard', label: '대시보드' },
+    ];
 
     /* ── 검색 ── */
     const searchKw        = ref('');
@@ -39,16 +43,19 @@ window.DispAreaMng = {
     const PAGE_SIZES = [10, 20, 50, 100];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['codeValue', 'codeLabel', 'areaType', 'remark', 'sortOrd', 'useYn'];
+    const EDIT_FIELDS = ['codeValue', 'codeLabel', 'areaType', 'layoutType', 'gridCols', 'remark', 'sortOrd', 'useYn'];
 
     const makeRow = (c) => ({
       ...c,
-      areaType:    c.areaType    || '',
+      areaType:   c.areaType   || '',
+      layoutType: c.layoutType || 'grid',
+      gridCols:   c.gridCols   || 1,
       _row_status: 'N',
       _row_check:  false,
       _orig: {
         codeValue: c.codeValue, codeLabel: c.codeLabel,
         areaType:  c.areaType || '', remark: c.remark || '',
+        layoutType: c.layoutType || 'grid', gridCols: c.gridCols || 1,
         sortOrd:   c.sortOrd,  useYn: c.useYn,
       },
     });
@@ -103,7 +110,7 @@ window.DispAreaMng = {
       const focused = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
       const newRow = {
         codeId: _tempId--, codeGrp: 'DISP_AREA',
-        codeValue: '', codeLabel: '', areaType: '', remark: '',
+        codeValue: '', codeLabel: '', areaType: '', layoutType: 'grid', gridCols: 1, remark: '',
         sortOrd: focused ? (focused.sortOrd || 0) + 1 : (gridRows.length + 1),
         useYn: 'Y', regDate: new Date().toISOString().slice(0, 10),
         _row_status: 'I', _row_check: false, _orig: null,
@@ -189,6 +196,7 @@ window.DispAreaMng = {
         const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
         if (idx !== -1) Object.assign(props.adminData.codes[idx],
           { codeValue: r.codeValue, codeLabel: r.codeLabel, areaType: r.areaType,
+            layoutType: r.layoutType, gridCols: r.gridCols,
             remark: r.remark, sortOrd: r.sortOrd, useYn: r.useYn });
       });
       let nextId = Math.max(...props.adminData.codes.map(c => c.codeId), 0);
@@ -196,8 +204,8 @@ window.DispAreaMng = {
         props.adminData.codes.push({
           codeId: ++nextId, codeGrp: 'DISP_AREA',
           codeValue: r.codeValue, codeLabel: r.codeLabel,
-          areaType: r.areaType, remark: r.remark,
-          sortOrd: r.sortOrd, useYn: r.useYn,
+          areaType: r.areaType, layoutType: r.layoutType, gridCols: r.gridCols,
+          remark: r.remark, sortOrd: r.sortOrd, useYn: r.useYn,
           regDate: r.regDate,
         });
       });
@@ -246,8 +254,10 @@ window.DispAreaMng = {
         {label:'ID',      key:'codeId'},
         {label:'영역코드', key:'codeValue'},
         {label:'영역명',   key:'codeLabel'},
-        {label:'영역유형', key:'areaType'},
-        {label:'설명',     key:'remark'},
+        {label:'영역유형',   key:'areaType'},
+        {label:'표시방식',   key:'layoutType'},
+        {label:'열수',       key:'gridCols'},
+        {label:'설명',       key:'remark'},
         {label:'순서',     key:'sortOrd'},
         {label:'사용여부', key:'useYn'},
       ],
@@ -255,7 +265,7 @@ window.DispAreaMng = {
     );
 
     return {
-      siteNm, AREA_TYPE_OPTS, areaTypeLabel,
+      siteNm, AREA_TYPE_OPTS, areaTypeLabel, LAYOUT_TYPE_OPTS,
       searchKw, searchAreaType, searchUseYn,
       searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange,
       applied, onSearch, onReset,
@@ -329,6 +339,8 @@ window.DispAreaMng = {
           <th style="width:140px;">영역코드</th>
           <th style="width:130px;">영역명</th>
           <th style="width:100px;">영역유형</th>
+          <th style="width:90px;">표시방식</th>
+          <th style="width:60px;">열수</th>
           <th>설명</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
@@ -339,7 +351,7 @@ window.DispAreaMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.codeId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -373,6 +385,18 @@ window.DispAreaMng = {
               <option value="">-</option>
               <option v-for="o in AREA_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
+          </td>
+          <td>
+            <select class="grid-select" v-model="row.layoutType"
+              :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              <option v-for="o in LAYOUT_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
+          </td>
+          <td>
+            <input v-if="row.layoutType==='grid'" class="grid-input grid-num" type="number"
+              v-model.number="row.gridCols" min="1" max="32"
+              :disabled="row._row_status==='D'" @input="onCellChange(row)" style="width:48px;" />
+            <span v-else style="font-size:11px;color:#9ca3af;padding:0 6px;">-</span>
           </td>
           <td>
             <input class="grid-input" v-model="row.remark"

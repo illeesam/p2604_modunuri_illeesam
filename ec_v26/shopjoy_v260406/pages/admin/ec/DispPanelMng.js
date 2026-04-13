@@ -19,8 +19,10 @@ window.DispPanelMng = {
     const searchCondition = ref('');
     const searchAuthRequired = ref('');
     const searchAuthGrade = ref('');
-    const CONDITION_OPTS = ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'];
-    const AUTH_GRADE_OPTS = ['일반', '우수', 'VIP'];
+    const searchLayoutType = ref('');
+    const CONDITION_OPTS   = ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'];
+    const AUTH_GRADE_OPTS  = ['일반', '우수', 'VIP'];
+    const LAYOUT_TYPE_OPTS = [{ value:'grid', label:'그리드' }, { value:'dashboard', label:'대시보드' }];
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -68,7 +70,7 @@ window.DispPanelMng = {
       return '-';
     };
 
-    const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '' });
+    const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '', layoutType: '' });
 
     const filtered = computed(() => props.adminData.displays.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
@@ -89,6 +91,7 @@ window.DispPanelMng = {
       if (applied.authRequired === 'Y' && !d.authRequired) return false;
       if (applied.authRequired === 'N' && d.authRequired) return false;
       if (applied.authGrade && d.authGrade !== applied.authGrade) return false;
+      if (applied.layoutType && (d.layoutType || 'grid') !== applied.layoutType) return false;
       return true;
     }));
     const areas = computed(() =>
@@ -138,6 +141,7 @@ window.DispPanelMng = {
         condition: searchCondition.value,
         authRequired: searchAuthRequired.value,
         authGrade: searchAuthGrade.value,
+        layoutType: searchLayoutType.value,
       });
       pager.page = 1;
     };
@@ -148,7 +152,8 @@ window.DispPanelMng = {
       searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
       searchDispDate.value = ''; searchDispTime.value = '';
       searchCondition.value = ''; searchAuthRequired.value = ''; searchAuthGrade.value = '';
-      Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '' });
+      searchLayoutType.value = '';
+      Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '', layoutType: '' });
       pager.page = 1;
     };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
@@ -203,7 +208,69 @@ window.DispPanelMng = {
     const openCardPreview = (d) => { cardPreviewItem.value = d; };
     const closeCardPreview = () => { cardPreviewItem.value = null; };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, CONDITION_OPTS, AUTH_GRADE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview };
+    /* ── 패널 드래그 정렬 ── */
+    const panelDragSrc    = ref(null);
+    const panelDragOverIdx = ref(-1);
+    const onPanelDragStart = (e, pageIdx) => {
+      panelDragSrc.value = pageIdx;
+      e.dataTransfer.effectAllowed = 'move';
+    };
+    const onPanelDragOver = (e, pageIdx) => {
+      e.preventDefault();
+      if (panelDragSrc.value === null || panelDragSrc.value === pageIdx) return;
+      panelDragOverIdx.value = pageIdx;
+    };
+    const onPanelDragLeave = () => { panelDragOverIdx.value = -1; };
+    const onPanelDrop = (e, pageIdx) => {
+      e.preventDefault(); panelDragOverIdx.value = -1;
+      const src = panelDragSrc.value;
+      if (src === null || src === pageIdx) { panelDragSrc.value = null; return; }
+      const srcId = pageList.value[src]?.dispId;
+      const tgtId = pageList.value[pageIdx]?.dispId;
+      if (!srcId || !tgtId) { panelDragSrc.value = null; return; }
+      const arr = props.adminData.displays;
+      const si = arr.findIndex(x => x.dispId === srcId);
+      const ti = arr.findIndex(x => x.dispId === tgtId);
+      if (si === -1 || ti === -1) { panelDragSrc.value = null; return; }
+      const moved = arr.splice(si, 1)[0];
+      arr.splice(ti, 0, moved);
+      arr.forEach((x, i) => { x.sortOrder = i + 1; });
+      props.showToast('패널 순서가 변경되었습니다.', 'info');
+      panelDragSrc.value = null;
+    };
+    const onPanelDragEnd = () => { panelDragSrc.value = null; panelDragOverIdx.value = -1; };
+
+    /* ── 위젯 드래그 정렬 ── */
+    const widgetDragPanel  = ref(null);
+    const widgetDragSrcWi  = ref(null);
+    const widgetDragOverWi = ref(null);
+    const onWidgetDragStart = (e, dispId, wi) => {
+      e.stopPropagation();
+      widgetDragPanel.value = dispId; widgetDragSrcWi.value = wi;
+      e.dataTransfer.effectAllowed = 'move';
+    };
+    const onWidgetDragOver = (e, dispId, wi) => {
+      e.preventDefault(); e.stopPropagation();
+      if (widgetDragPanel.value !== dispId) return;
+      widgetDragOverWi.value = wi;
+    };
+    const onWidgetDragLeave = (e) => { e.stopPropagation(); widgetDragOverWi.value = null; };
+    const onWidgetDrop = (e, dispId, wi) => {
+      e.preventDefault(); e.stopPropagation();
+      widgetDragOverWi.value = null;
+      if (widgetDragPanel.value !== dispId) return;
+      const src = widgetDragSrcWi.value;
+      if (src === null || src === wi) { widgetDragPanel.value = null; widgetDragSrcWi.value = null; return; }
+      const panel = props.adminData.displays.find(x => x.dispId === dispId);
+      if (!panel?.rows) return;
+      const moved = panel.rows.splice(src, 1)[0];
+      panel.rows.splice(wi, 0, moved);
+      panel.rows.forEach((r, i) => { r.sortOrder = i + 1; });
+      widgetDragPanel.value = null; widgetDragSrcWi.value = null;
+    };
+    const onWidgetDragEnd = () => { widgetDragPanel.value = null; widgetDragSrcWi.value = null; widgetDragOverWi.value = null; };
+
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, searchLayoutType, CONDITION_OPTS, AUTH_GRADE_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview };
   },
   template: /* html */`
 <div>
@@ -247,6 +314,12 @@ window.DispPanelMng = {
         <option value="">전체</option>
         <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }} 이상</option>
       </select>
+      <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
+      <span class="search-label">표시방식</span>
+      <select v-model="searchLayoutType" style="min-width:100px;">
+        <option value="">전체</option>
+        <option v-for="o in LAYOUT_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
     </div>
   </div>
   <div class="card">
@@ -263,7 +336,9 @@ window.DispPanelMng = {
           <th style="width:28px;"></th>
           <th style="width:44px;">ID</th>
           <th>패널명</th>
-          <th style="width:160px;">화면영역</th>
+          <th style="width:140px;">화면영역</th>
+          <th style="width:76px;text-align:center;">표시방식</th>
+          <th style="width:46px;text-align:center;">열수</th>
           <th style="width:48px;text-align:center;">순서</th>
           <th style="width:64px;text-align:center;">상태</th>
           <th style="width:96px;text-align:center;">노출조건</th>
@@ -276,7 +351,7 @@ window.DispPanelMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <template v-for="d in pageList" :key="d.dispId">
           <tr :style="selectedId===d.dispId?'background:#fff8f9;':''">
             <td style="text-align:center;padding:0;">
@@ -298,6 +373,20 @@ window.DispPanelMng = {
                 <code style="font-size:10px;background:#f0f2f5;color:#555;padding:1px 5px;border-radius:3px;letter-spacing:.3px;">{{ d.area }}</code>
                 <span style="font-size:11px;color:#888;">{{ areaLabel(d.area) }}</span>
               </div>
+            </td>
+            <td style="text-align:center;">
+              <span v-if="(d.layoutType||'grid')==='dashboard'"
+                style="font-size:11px;background:#f0f4ff;color:#4f46e5;border:1px solid #c7d2fe;border-radius:8px;padding:2px 7px;white-space:nowrap;">
+                🧩 대시보드
+              </span>
+              <span v-else
+                style="font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;border-radius:8px;padding:2px 7px;white-space:nowrap;">
+                🔲 그리드
+              </span>
+            </td>
+            <td style="text-align:center;">
+              <span v-if="(d.layoutType||'grid')==='dashboard'" style="font-size:12px;color:#ccc;">-</span>
+              <span v-else style="font-size:13px;font-weight:700;color:#0369a1;">{{ d.gridCols||1 }}</span>
             </td>
             <td style="text-align:center;font-size:13px;font-weight:600;color:#555;">{{ d.sortOrder ?? '-' }}</td>
             <td style="text-align:center;"><span class="badge" :class="statusBadge(d.status)">{{ d.status }}</span></td>
@@ -340,7 +429,7 @@ window.DispPanelMng = {
           </tr>
           <!-- 위젯 펼치기 서브 행 -->
           <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
-            <td colspan="12" style="padding:0;background:#f8f9fb;border-top:none;">
+            <td colspan="14" style="padding:0;background:#f8f9fb;border-top:none;">
               <div style="padding:10px 16px 12px 44px;">
                 <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">▸ 위젯 구성</div>
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">

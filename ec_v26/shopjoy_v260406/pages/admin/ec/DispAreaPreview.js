@@ -263,10 +263,12 @@ window.DispAreaPreview = {
         if (ai > 0) lines.push({ type:'blank' });
         /* ── <DispArea attrs> ── */
         lines.push({ type:'area-open', level:0, attrs:[
-          A('area',      area.codeValue, true),
-          A('areaLabel', area.codeLabel, true),
-          A('sortOrd',   '~'),
-          A('useYn',     '~'),
+          A('area',       area.codeValue,          true),
+          A('areaLabel',  area.codeLabel,           true),
+          A('layoutType', area.layoutType || 'grid', true),
+          A('gridCols',   area.layoutType === 'dashboard' ? '~' : (area.gridCols || 1), area.layoutType !== 'dashboard'),
+          A('sortOrd',    '~'),
+          A('useYn',      '~'),
         ]});
         if (panels.length === 0) {
           lines.push({ type:'comment', level:1, text:`<!-- 해당 날짜 활성 패널 없음 -->` });
@@ -279,6 +281,8 @@ window.DispAreaPreview = {
               A('id',            '#'+String(p.dispId).padStart(4,'0'), true),
               A('name',          p.name,                               true),
               A('status',        p.status,                             true),
+              A('layoutType',    p.layoutType || 'grid',               true),
+              A('gridCols',      p.layoutType === 'dashboard' ? '~' : (p.gridCols || 1), p.layoutType !== 'dashboard'),
               A('condition',     p.condition || '항상 표시',             true),
               A('authRequired',  p.authRequired  || '~', !!p.authRequired),
               A('authGrade',     p.authGrade     || '~', !!p.authGrade),
@@ -341,29 +345,35 @@ window.DispAreaPreview = {
     /* ─────────────────────────────────────────
        구조 탭 우측 그리드 (드래그-드롭 + span)
     ───────────────────────────────────────── */
-    const structGrid     = ref('grid2');
-    const STRUCT_GRID_COLS = { grid1:1, grid2:2, grid3:3, grid4:4 };
+    /* ── 캔버스 레이아웃 설정 ── */
+    const structLayoutType = ref('grid');   // 'grid' | 'dashboard'
+    const structColCount   = ref(1);        // 1 ~ 32
     const sMakeInit = (cols) => Array(cols * 2).fill(null);
-    const structSlots = reactive({
-      grid1: sMakeInit(1), grid2: sMakeInit(2),
-      grid3: sMakeInit(3), grid4: sMakeInit(4),
-    });
-    const structCurrentSlots = computed(() => structSlots[structGrid.value] || []);
-    const structAutoExpand = (tabId) => {
-      const cols = STRUCT_GRID_COLS[tabId]; if (!cols) return;
-      const arr  = structSlots[tabId];
-      if (arr.slice(arr.length - cols).some(Boolean))
-        for (let i = 0; i < cols; i++) arr.push(null);
+    const structSlots = reactive([...sMakeInit(1)]);
+    const structCurrentSlots = computed(() => structSlots);
+    const structAutoExpand = () => {
+      const cols = structColCount.value;
+      if (structSlots.slice(structSlots.length - cols).some(Boolean))
+        for (let i = 0; i < cols; i++) structSlots.push(null);
     };
     const structGridCols = computed(() => {
-      const map = {
-        grid1: 'repeat(1,1fr)',
-        grid2: 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))',
-        grid3: 'repeat(auto-fill,minmax(max(calc(33.333% - 6px),190px),1fr))',
-        grid4: 'repeat(auto-fill,minmax(max(calc(25% - 6px),220px),1fr))',
-      };
-      return map[structGrid.value] || 'repeat(1,1fr)';
+      const n = structColCount.value;
+      if (n <= 1) return 'repeat(1,1fr)';
+      if (n === 2) return 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))';
+      if (n === 3) return 'repeat(auto-fill,minmax(max(calc(33.333% - 6px),190px),1fr))';
+      if (n === 4) return 'repeat(auto-fill,minmax(max(calc(25% - 6px),220px),1fr))';
+      return `repeat(${n},1fr)`;
     });
+    /* 영역 설정을 캔버스에 적용 */
+    const applyAreaLayout = (area) => {
+      const lt = area.layoutType || 'grid';
+      const gc = area.gridCols   || 1;
+      structLayoutType.value = lt;
+      if (lt === 'grid') {
+        structColCount.value = gc;
+        structSlots.splice(0, structSlots.length, ...sMakeInit(gc));
+      }
+    };
 
     /* ── 뷰포트 모드 (grid 탭 전용) ── */
     const structViewport = ref('desktop');
@@ -438,29 +448,25 @@ window.DispAreaPreview = {
         props.showToast(`위젯이 ${widgets.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
         return;
       }
-      const tabId = structGrid.value;
-      const arr   = structSlots[tabId];
-      const cols  = STRUCT_GRID_COLS[tabId] || 1;
+      const cols = structColCount.value;
       let placed = 0, i = idx;
       while (placed < widgets.length) {
-        if (i >= arr.length) for (let c = 0; c < cols; c++) arr.push(null);
-        if (!arr[i]) { arr.splice(i, 1, { ...widgets[placed], colSpan:1, rowSpan:1 }); placed++; }
+        if (i >= structSlots.length) for (let c = 0; c < cols; c++) structSlots.push(null);
+        if (!structSlots[i]) { structSlots.splice(i, 1, { ...widgets[placed], colSpan:1, rowSpan:1 }); placed++; }
         i++;
       }
-      structAutoExpand(tabId);
+      structAutoExpand();
     };
-    const removeStructSlot = (idx) => { structSlots[structGrid.value].splice(idx, 1, null); };
+    const removeStructSlot = (idx) => { structSlots.splice(idx, 1, null); };
     const setStructSpan = (idx, axis, delta) => {
-      const slot = structSlots[structGrid.value][idx]; if (!slot) return;
-      const maxCol = STRUCT_GRID_COLS[structGrid.value] || 1;
+      const slot = structSlots[idx]; if (!slot) return;
+      const maxCol = structColCount.value;
       if (axis === 'col') slot.colSpan = Math.max(1, Math.min(maxCol, (slot.colSpan||1) + delta));
       if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan||1) + delta));
     };
-    const structPlacedCount = computed(() => structCurrentSlots.value.filter(Boolean).length);
+    const structPlacedCount = computed(() => structSlots.filter(Boolean).length);
     const resetStructGrid = () => {
-      const cols = STRUCT_GRID_COLS[structGrid.value];
-      const arr  = structSlots[structGrid.value];
-      arr.splice(0, arr.length, ...sMakeInit(cols));
+      structSlots.splice(0, structSlots.length, ...sMakeInit(structColCount.value));
     };
 
     /* ── 노드 드래그 (영역 / 패널) ── */
@@ -497,8 +503,9 @@ window.DispAreaPreview = {
       panelWidgetTypes, isPanelAllChecked,
       checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, checkedWidgetCount, checkedWidgetList,
       /* Tab2 그리드 */
-      structGrid, STRUCT_GRID_COLS, structSlots, structCurrentSlots, structGridCols,
+      structLayoutType, structColCount, structSlots, structCurrentSlots, structGridCols,
       structViewport, STRUCT_VIEWPORT, structShowReal,
+      applyAreaLayout,
       structDragOverIdx, onStructDragOver, onStructDragLeave, onStructDrop,
       removeStructSlot, setStructSpan, structPlacedCount, resetStructGrid,
       structSpanPopupIdx, toggleStructSpanPopup, closeStructSpanPopup,
@@ -730,7 +737,18 @@ window.DispAreaPreview = {
             <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">DispArea</span>
             <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;">{{ area.codeValue }}</code>
             <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
+            <!-- 레이아웃 배지 -->
+            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,.15);color:#e2e8f0;white-space:nowrap;">
+              {{ area.layoutType==='dashboard' ? '🧩 대시보드' : ('🔲 grid ' + (area.gridCols||1) + '열') }}
+            </span>
             <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ area.panels.length }}개</span>
+            <!-- 캔버스 적용 버튼 -->
+            <button @click.stop="applyAreaLayout(area)"
+              title="이 영역의 레이아웃을 캔버스에 적용"
+              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#e2e8f0;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;"
+              onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+              ⚡ 적용
+            </button>
             <span style="font-size:11px;opacity:.5;">{{ expandedAreas.has(area.codeValue) ? '▲' : '▼' }}</span>
           </div>
 
@@ -786,40 +804,62 @@ window.DispAreaPreview = {
 
       <!-- 우: 위젯 컨텐츠 그리드 미리보기 -->
       <div style="flex:6;min-width:0;display:flex;flex-direction:column;max-height:80vh;">
-        <!-- 탭바 -->
-        <div style="display:flex;align-items:stretch;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:0 10px;">
-          <div style="display:flex;gap:2px;align-items:flex-end;padding-top:6px;flex:1;">
-            <button v-for="gid in ['grid1','grid2','grid3','grid4','dashboard']" :key="gid" @click="structGrid=gid"
-              style="padding:4px 12px;border:1px solid transparent;border-bottom:none;border-radius:5px 5px 0 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:-1px;"
-              :style="structGrid===gid ? 'background:#fff;border-color:#e8e8e8;border-bottom-color:#fff;color:#1d4ed8;' : 'background:transparent;color:#9ca3af;'">
-              {{ gid }}
+        <!-- 캔버스 컨트롤 바 -->
+        <div style="display:flex;align-items:center;gap:6px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:6px 10px;flex-wrap:wrap;">
+          <!-- 표시방식 토글 -->
+          <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
+            <button @click="structLayoutType='grid'"
+              style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;transition:all .15s;"
+              :style="structLayoutType==='grid' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
+              🔲 그리드
+            </button>
+            <button @click="structLayoutType='dashboard'"
+              style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+              :style="structLayoutType==='dashboard' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
+              🧩 대시보드
             </button>
           </div>
-          <!-- 실제컨텐츠 + 뷰포트 토글 (grid 탭 전용) -->
-          <div v-if="structGrid!=='dashboard'" style="display:flex;align-items:center;gap:3px;padding:6px 0 6px 10px;border-left:1px solid #e5e7eb;margin-left:6px;">
+          <!-- 열수 (grid 전용) -->
+          <template v-if="structLayoutType==='grid'">
+            <div style="width:1px;height:20px;background:#e5e7eb;"></div>
+            <span style="font-size:11px;color:#6b7280;font-weight:600;">열수</span>
+            <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
+              <button v-for="n in [1,2,3,4]" :key="n" @click="structColCount=n; resetStructGrid()"
+                style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                :style="[n===1?'border-left:none;':'', structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
+                {{ n }}
+              </button>
+            </div>
+            <input type="number" v-model.number="structColCount" min="1" max="32"
+              @change="resetStructGrid()"
+              style="width:52px;font-size:12px;padding:3px 6px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
+            <div style="width:1px;height:20px;background:#e5e7eb;"></div>
+            <!-- 실제컨텐츠 -->
             <button @click="structShowReal=!structShowReal"
-              style="font-size:11px;padding:2px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
+              style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
               {{ structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
             </button>
-            <div style="width:1px;height:16px;background:#e5e7eb;margin-right:2px;"></div>
+            <div style="width:1px;height:20px;background:#e5e7eb;"></div>
+            <!-- 뷰포트 -->
             <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="key" @click="structViewport=key"
-              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
+              style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
               {{ vp.label }}
             </button>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:6px 0 6px 10px;">
-            <span style="font-size:12px;color:#555;font-weight:600;">{{ structGrid==='dashboard' ? structDashItems.length : structPlacedCount }}개</span>
-            <button @click="structGrid==='dashboard' ? structDashItems.splice(0) : resetStructGrid()"
-              style="font-size:11px;padding:2px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">초기화</button>
+          </template>
+          <!-- 우측: 개수 + 초기화 -->
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;color:#555;font-weight:600;">{{ structLayoutType==='dashboard' ? structDashItems.length : structPlacedCount }}개</span>
+            <button @click="structLayoutType==='dashboard' ? structDashItems.splice(0) : resetStructGrid()"
+              style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">초기화</button>
           </div>
         </div>
         <!-- 그리드 캔버스 -->
         <div @click="closeStructSpanPopup" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
 
           <!-- ── dashboard 캔버스 ── -->
-          <template v-if="structGrid==='dashboard'">
+          <template v-if="structLayoutType==='dashboard'">
             <div
               @dragover="onStructDashDragOver"
               @dragleave="onStructDashDragLeave"
@@ -854,7 +894,7 @@ window.DispAreaPreview = {
             </div>
           </template>
 
-          <!-- ── grid1~4 캔버스 ── -->
+          <!-- ── grid 캔버스 ── -->
           <template v-else>
           <!-- 뷰포트 래퍼 -->
           <div :style="{ width: STRUCT_VIEWPORT[structViewport].width || '100%', maxWidth: STRUCT_VIEWPORT[structViewport].width || '100%', margin:'0 auto', transition:'width .3s' }">

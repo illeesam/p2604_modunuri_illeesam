@@ -324,7 +324,8 @@
       const W = (sortOrder, widgetNm, widgetType, clickAction='none', clickTarget='', status='활성') =>
         ({ sortOrder, widgetNm, widgetType, clickAction, clickTarget, status });
       const P = (dispId, area, name, widgetType, condition, authRequired, sortOrder, status, regDate, rows, extra={}) =>
-        ({ dispId, area, name, widgetType, condition, authRequired, sortOrder, status, regDate, rows, ...extra });
+        ({ dispId, area, name, widgetType, condition, authRequired, sortOrder, status, regDate, rows,
+           layoutType: 'grid', gridCols: 1, ...extra });
 
       return [
         /* ───────────── HOME_BANNER (홈 메인배너) ───────────── */
@@ -1222,17 +1223,17 @@
       { codeId:147, codeGrp: 'USE_YN',          codeLabel: '사용',       codeValue: 'Y',              sortOrd: 1, useYn: 'Y', remark: '', regDate: '2026-01-01' },
       { codeId:148, codeGrp: 'USE_YN',          codeLabel: '미사용',     codeValue: 'N',              sortOrd: 2, useYn: 'Y', remark: '', regDate: '2026-01-01' },
       /* ── 전시 화면영역 ── */
-      { codeId:149, codeGrp: 'DISP_AREA',       codeLabel: '홈 메인배너',   codeValue: 'HOME_BANNER',  sortOrd:  1, useYn: 'Y', remark: '홈 상단 메인 슬라이드 배너 영역', regDate: '2026-01-01' },
-      { codeId:150, codeGrp: 'DISP_AREA',       codeLabel: '홈 상품영역',   codeValue: 'HOME_PRODUCT', sortOrd:  2, useYn: 'Y', remark: '홈 추천/신상품 상품 목록 영역', regDate: '2026-01-01' },
-      { codeId:151, codeGrp: 'DISP_AREA',       codeLabel: '홈 차트',       codeValue: 'HOME_CHART',   sortOrd:  3, useYn: 'Y', remark: '홈 인기/베스트 차트 영역', regDate: '2026-01-01' },
-      { codeId:152, codeGrp: 'DISP_AREA',       codeLabel: '홈 이벤트',     codeValue: 'HOME_EVENT',   sortOrd:  4, useYn: 'Y', remark: '홈 이벤트/기획전 배너 영역', regDate: '2026-01-01' },
-      { codeId:153, codeGrp: 'DISP_AREA',       codeLabel: '사이드바 상단', codeValue: 'SIDEBAR_TOP',  sortOrd:  5, useYn: 'Y', remark: '우측 사이드바 최상단 영역', regDate: '2026-01-01' },
-      { codeId:154, codeGrp: 'DISP_AREA',       codeLabel: '사이드바 중단', codeValue: 'SIDEBAR_MID',  sortOrd:  6, useYn: 'Y', remark: '우측 사이드바 중간 영역', regDate: '2026-01-01' },
-      { codeId:155, codeGrp: 'DISP_AREA',       codeLabel: '사이드바 하단', codeValue: 'SIDEBAR_BOT',  sortOrd:  7, useYn: 'Y', remark: '우측 사이드바 하단 영역', regDate: '2026-01-01' },
-      { codeId:156, codeGrp: 'DISP_AREA',       codeLabel: '상품 상단',     codeValue: 'PRODUCT_TOP',  sortOrd:  8, useYn: 'Y', remark: '상품 목록/상세 상단 영역', regDate: '2026-01-01' },
-      { codeId:157, codeGrp: 'DISP_AREA',       codeLabel: '상품 하단',     codeValue: 'PRODUCT_BTM',  sortOrd:  9, useYn: 'Y', remark: '상품 목록/상세 하단 영역', regDate: '2026-01-01' },
-      { codeId:158, codeGrp: 'DISP_AREA',       codeLabel: '마이페이지',    codeValue: 'MY_PAGE',      sortOrd: 10, useYn: 'Y', remark: '마이페이지 전용 위젯 영역', regDate: '2026-01-01' },
-      { codeId:159, codeGrp: 'DISP_AREA',       codeLabel: '푸터',          codeValue: 'FOOTER',       sortOrd: 11, useYn: 'Y', remark: '사이트 하단 푸터 영역', regDate: '2026-01-01' },
+      { codeId:149, codeGrp: 'DISP_AREA',       codeLabel: '홈 메인배너',   codeValue: 'HOME_BANNER',  sortOrd:  1, useYn: 'Y', remark: '홈 상단 메인 슬라이드 배너 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 1 },
+      { codeId:150, codeGrp: 'DISP_AREA',       codeLabel: '홈 상품영역',   codeValue: 'HOME_PRODUCT', sortOrd:  2, useYn: 'Y', remark: '홈 추천/신상품 상품 목록 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 4 },
+      { codeId:151, codeGrp: 'DISP_AREA',       codeLabel: '홈 차트',       codeValue: 'HOME_CHART',   sortOrd:  3, useYn: 'Y', remark: '홈 인기/베스트 차트 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 3 },
+      { codeId:152, codeGrp: 'DISP_AREA',       codeLabel: '홈 이벤트',     codeValue: 'HOME_EVENT',   sortOrd:  4, useYn: 'Y', remark: '홈 이벤트/기획전 배너 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 2 },
+      { codeId:153, codeGrp: 'DISP_AREA',       codeLabel: '사이드바 상단', codeValue: 'SIDEBAR_TOP',  sortOrd:  5, useYn: 'Y', remark: '우측 사이드바 최상단 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 1 },
+      { codeId:154, codeGrp: 'DISP_AREA',       codeLabel: '사이드바 중단', codeValue: 'SIDEBAR_MID',  sortOrd:  6, useYn: 'Y', remark: '우측 사이드바 중간 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 1 },
+      { codeId:155, codeGrp: 'DISP_AREA',       codeLabel: '사이드바 하단', codeValue: 'SIDEBAR_BOT',  sortOrd:  7, useYn: 'Y', remark: '우측 사이드바 하단 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 1 },
+      { codeId:156, codeGrp: 'DISP_AREA',       codeLabel: '상품 상단',     codeValue: 'PRODUCT_TOP',  sortOrd:  8, useYn: 'Y', remark: '상품 목록/상세 상단 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 2 },
+      { codeId:157, codeGrp: 'DISP_AREA',       codeLabel: '상품 하단',     codeValue: 'PRODUCT_BTM',  sortOrd:  9, useYn: 'Y', remark: '상품 목록/상세 하단 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 2 },
+      { codeId:158, codeGrp: 'DISP_AREA',       codeLabel: '마이페이지',    codeValue: 'MY_PAGE',      sortOrd: 10, useYn: 'Y', remark: '마이페이지 전용 위젯 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 2 },
+      { codeId:159, codeGrp: 'DISP_AREA',       codeLabel: '푸터',          codeValue: 'FOOTER',       sortOrd: 11, useYn: 'Y', remark: '사이트 하단 푸터 영역', regDate: '2026-01-01', layoutType: 'grid', gridCols: 4 },
     ],
 
     attachGrps: [

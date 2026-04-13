@@ -8,8 +8,13 @@ window.DispPanelDtl = {
     const tab = ref('info');
 
     /* ── 패널정보 (패널 공통) ── */
+    const LAYOUT_TYPE_OPTS = [
+      { value: 'grid',      label: '그리드' },
+      { value: 'dashboard', label: '대시보드' },
+    ];
     const form = reactive({
       dispId: null, area: 'HOME_BANNER', name: '', status: '활성',
+      layoutType: 'grid', gridCols: 1,
       htmlDesc: '',
       dispStartDate: '', dispStartTime: '00:00',
       dispEndDate:   '', dispEndTime:   '23:59',
@@ -265,6 +270,8 @@ window.DispPanelDtl = {
           form.condition     = d.condition     || '항상 표시';
           form.authRequired  = d.authRequired  || false;
           form.authGrade     = d.authGrade     || '';
+          form.layoutType    = d.layoutType    || 'grid';
+          form.gridCols      = d.gridCols      || 1;
           if (d.rows) {
             d.rows.forEach((r, i) => { if (rows[i]) Object.assign(rows[i], r); });
           } else {
@@ -396,7 +403,7 @@ window.DispPanelDtl = {
     };
 
     return {
-      isNew, tab, form, rows, WIDGET_TYPES, AREAS, TAB_LABELS, TAB_ROW_MAP,
+      isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
       activeRowIdx, activeRow, moveRow,
       isChart, isProduct, isImage, isText, isInfo, isPopup, isFile, isFileList,
       isCoupon, isHtmlEditor, isEventBanner, isCacheBanner, isWidgetEmbed, isCondProduct,
@@ -492,6 +499,46 @@ window.DispPanelDtl = {
             <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
               <option>활성</option><option>비활성</option>
             </select>
+          </div>
+
+          <!-- 위젯 레이아웃 -->
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            🔲 위젯 레이아웃
+          </div>
+          <div class="form-row" style="align-items:flex-end;">
+            <div class="form-group" style="flex:0 0 auto;">
+              <label class="form-label">표시방식</label>
+              <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
+                <button v-for="o in LAYOUT_TYPE_OPTS" :key="o.value"
+                  @click="!viewMode && (form.layoutType = o.value)"
+                  type="button"
+                  style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                  :style="[o.value==='grid'?'border-left:none;':'', form.layoutType===o.value ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
+                  {{ o.value==='grid' ? '🔲 ' : '🧩 ' }}{{ o.label }}
+                </button>
+              </div>
+            </div>
+            <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
+              <label class="form-label">열수 <span style="font-size:10px;color:#aaa;">(위젯 배치 열 개수)</span></label>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
+                  <button v-for="n in [1,2,3,4]" :key="n" type="button"
+                    @click="!viewMode && (form.gridCols = n)"
+                    style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                    :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
+                    {{ n }}
+                  </button>
+                </div>
+                <input type="number" v-model.number="form.gridCols" min="1" max="32"
+                  :readonly="viewMode"
+                  style="width:64px;font-size:13px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
+                <span style="font-size:12px;color:#aaa;">열</span>
+              </div>
+            </div>
+            <div class="form-group" style="flex:0 0 auto;" v-else>
+              <label class="form-label">배치</label>
+              <span style="font-size:12px;color:#6b7280;padding:6px 0;display:block;">자유 배치 (열수 없음)</span>
+            </div>
           </div>
 
           <!-- 전시 기간 -->
