@@ -114,7 +114,7 @@ window.Cart = {
   <div v-if="cart.length===0" style="text-align:center;padding:80px 20px;">
     <div style="font-size:4rem;margin-bottom:20px;">🛒</div>
     <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">장바구니가 비어 있어요</p>
-    <button class="btn-blue" @click="navigate('products')" style="padding:12px 28px;">쇼핑하러 가기</button>
+    <button class="btn-blue" @click="navigate('prod01list')" style="padding:12px 28px;">쇼핑하러 가기</button>
   </div>
 
   <!-- 장바구니 목록 -->
@@ -192,7 +192,7 @@ window.Cart = {
           </div>
         </div>
 
-        <button class="btn-outline" @click="navigate('products')" style="padding:10px 20px;">← 계속 쇼핑하기</button>
+        <button class="btn-outline" @click="navigate('prod01list')" style="padding:10px 20px;">← 계속 쇼핑하기</button>
       </div>
 
       <!-- 오른쪽: 주문 요약 -->

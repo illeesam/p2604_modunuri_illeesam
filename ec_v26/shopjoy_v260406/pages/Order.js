@@ -274,7 +274,7 @@ window.Order = {
     <div v-if="orderItems.length===0" style="text-align:center;padding:80px 20px;">
       <div style="font-size:4rem;margin-bottom:20px;">📦</div>
       <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">주문할 상품이 없어요.</p>
-      <button class="btn-blue" @click="navigate('products')" style="padding:12px 28px;">상품 보러가기</button>
+      <button class="btn-blue" @click="navigate('prod01list')" style="padding:12px 28px;">상품 보러가기</button>
     </div>
 
     <template v-else>

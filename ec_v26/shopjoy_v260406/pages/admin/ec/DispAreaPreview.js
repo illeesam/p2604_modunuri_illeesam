@@ -702,7 +702,7 @@ window.EcDispAreaPreview = {
         viewOpts:     p.viewOpts,
       }).toString();
       window.open(
-        `${window.pageUrl('pages/xd/disp-ui.html')}?${qs}`,
+        `${window.pageUrl('disp-ui.html')}?${qs}`,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'
       );
       /* 레이어 닫지 않음 */

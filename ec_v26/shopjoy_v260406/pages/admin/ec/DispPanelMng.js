@@ -46,7 +46,7 @@ window.EcDispPanelMng = {
     const previewDisp = (d) => {
       const areaPageMap = {
         'HOME_BANNER': '', 'HOME_PRODUCT': '', 'HOME_CHART': '', 'HOME_EVENT': '',
-        'PRODUCT_TOP': '#page=products', 'PRODUCT_BTM': '#page=products',
+        'PRODUCT_TOP': '#page=prod01list', 'PRODUCT_BTM': '#page=prod01list',
         'MY_PAGE': '#page=mypage', 'FOOTER': '',
       };
       const hash = areaPageMap[d.area] || '';

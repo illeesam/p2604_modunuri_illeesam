@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DispUi 미리보기</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <script src="assets/cdn/axios.js"></script>
+  <script src="assets/cdn/yup.js"></script>
+  <link rel="stylesheet" href="assets/css/backOfficeStyle.css">
+  <script src="pages/admin/AdminData.js"></script>
+  <script src="utils/adminUtil.js"></script>
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="pages/base/NotFound.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+  <script src="components/disp/DispX05WidgetLib.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX01Ui.js"></script>
+  <script src="pages/xd/DispUiPage.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const { createApp } = Vue;
+    const app = createApp(window.DispUiPage);
+    app.component('NotFound',        window.NotFound);
+    app.component('DispX01Ui',       window.DispX01Ui);
+    app.component('DispX02Area',     window.DispX02Area);
+    app.component('DispX03Panel',    window.DispX03Panel);
+    app.component('DispX04Widget',   window.DispX04Widget);
+    app.component('DispX05WidgetLib',window.DispX05WidgetLib);
+    app.mount('#app');
+  </script>
+</body>
+</html>

@@ -63,7 +63,7 @@ window.Like = {
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
     </svg>
     <div style="font-size:0.95rem;color:var(--text-muted);margin-bottom:20px;">좋아요한 상품이 없습니다</div>
-    <button class="btn-outline" @click="navigate('products')" style="padding:10px 24px;">상품 둘러보기</button>
+    <button class="btn-outline" @click="navigate('prod01list')" style="padding:10px 24px;">상품 둘러보기</button>
   </div>
 
 </div>

@@ -664,6 +664,7 @@
         <sy-alarm-mng   v-else-if="page==='syAlarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbm-mng     v-else-if="page==='syBbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbs-mng     v-else-if="page==='syBbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <not-found v-else :navigate="navigate" :page-id="page" />
         </div><!-- /비고정 탭 래퍼 -->
       </div>
     </div>
@@ -961,6 +962,8 @@
 </div>
 `,
   })
+  /* ── pages/base/ ── */
+  .component('NotFound',         window.NotFound)
   /* ── components/disp/ (전시 핵심 컴포넌트) ── */
   .component('DispX01Ui',        window.DispX01Ui)
   .component('DispX02Area',      window.DispX02Area)

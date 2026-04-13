@@ -82,6 +82,7 @@
       if (mobileOpen.value) mobileOpen.value = false;
       page.value = id;
       window.scrollTo(0, 0);
+      try { document.querySelector('.layout-main')?.scrollTo(0, 0); } catch (e) {}
       try { sessionStorage.setItem('shopjoy_page', id); } catch (e) {}
     };
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) mobileOpen.value = false; });
@@ -137,7 +138,7 @@
     const selectProduct = p => {
       selectedProduct.value = p;
       if (p && p.productId != null) try { sessionStorage.setItem('shopjoy_pid', String(p.productId)); } catch (e) {}
-      navigate('detail');
+      navigate('prod01view');
     };
 
     /* ── Likes (좋아요/위시리스트) ── */
@@ -248,7 +249,7 @@
 
     /* ── URL state ── */
     let restoring = true;
-    const validPages = ['home', 'products', 'detail', 'cart', 'order', 'contact', 'faq',
+    const validPages = ['home', 'prod01list', 'prod01view', 'cart', 'order', 'contact', 'faq',
       'event', 'eventView', 'blog', 'blogView', 'blogEdit', 'like',
       'location', 'about',
       'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
@@ -265,6 +266,7 @@
       if (hasPageParam) {
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;
+        else if (hPage && !validPages.includes(hPage)) page.value = 'notFound';
       } else {
         try {
           const sp = sessionStorage.getItem('shopjoy_page');
@@ -308,6 +310,7 @@
         const params = new URLSearchParams(rawHash);
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage)) page.value = hPage;
+        else if (hPage && !validPages.includes(hPage)) page.value = 'notFound';
         if (hPage === 'order') {
           instantOrder.value = _instantOrderFromParams(params);
           const cids = params.get('cartIds');
@@ -335,7 +338,7 @@
       if (restoring || syncingFromHash) return;
       const params = new URLSearchParams();
       params.set('page', page.value);
-      if (id === 'detail') {
+      if (id === 'prod01view') {
         params.set('pid', selectedProduct.value?.productId ?? '');
         if (selectedProduct.value?.productId != null) sessionStorage.setItem('shopjoy_pid', String(selectedProduct.value.productId));
       }
@@ -367,7 +370,7 @@
       if (!raw || !raw.includes('page=')) {
         const pr = new URLSearchParams();
         pr.set('page', page.value);
-        if (page.value === 'detail') pr.set('pid', String(selectedProduct.value?.productId ?? ''));
+        if (page.value === 'prod01view') pr.set('pid', String(selectedProduct.value?.productId ?? ''));
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
       }
     } catch (e) {}
@@ -395,6 +398,9 @@
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, showLogin, onShowLogin, onLogout,
+      notFoundPageId: computed(() => {
+        try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
+      }),
     };
   },
 
@@ -422,13 +428,13 @@
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
-      <products
-        v-else-if="page==='products'"
+      <prod01-list
+        v-else-if="page==='prod01list'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
-      <detail
-        v-else-if="page==='detail'"
+      <prod01-view
+        v-else-if="page==='prod01view'"
         :navigate="navigate" :config="config" :product="selectedProduct"
         :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
       />
@@ -538,6 +544,9 @@
       <xs-sample22 v-else-if="page==='sample22'" />
       <xs-sample23 v-else-if="page==='sample23'" />
 
+      <!-- 404 Not Found -->
+      <not-found v-else-if="page==='notFound'" :navigate="navigate" :page-id="notFoundPageId" />
+
       <app-footer :config="config" :navigate="navigate" />
     </main>
   </div>
@@ -585,10 +594,12 @@
   .component('AppHeader',   window.AppHeader)
   .component('AppSidebar',  window.AppSidebar)
   .component('AppFooter',   window.AppFooter)
+  /* ── pages/base/ ── */
+  .component('NotFound',     window.NotFound)
   /* ── pages/ (사용자 페이스) ── */
   .component('Home',         window.Home)
-  .component('Products',     window.Products)
-  .component('Detail',       window.Detail)
+  .component('Prod01List',   window.Prod01List)
+  .component('Prod01View',   window.Prod01View)
   .component('Cart',         window.Cart)
   .component('Order',        window.Order)
   .component('Contact',      window.Contact)
