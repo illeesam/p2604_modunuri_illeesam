@@ -1,5 +1,38 @@
-/* ShopJoy - DispUi04 */
-window.XdDispUi04 = {
-  name: 'XdDispUi04',
-  template: `<div style="padding:40px;">pages/DispUi04.js</div>`,
+/* ShopJoy - DispUi 04 (MY_PAGE, FOOTER 영역)
+ * 전시영역: MY_PAGE, FOOTER
+ */
+window.DispUi04 = {
+  name: 'DispUi04',
+  components: { DispX01Ui: window.DispX01Ui },
+  setup() {
+    const { computed } = Vue;
+
+    const adminData = window.adminData || { displays: [], codes: [] };
+    const params = {
+      areas: ['MY_PAGE', 'FOOTER'],
+      date: '', time: '', status: '', condition: '', authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: 'content,struct,source'
+    };
+
+    const totalPanels = computed(() => {
+      const displays = adminData.displays || [];
+      return params.areas.reduce((s, a) => s + displays.filter(p => p.area === a).length, 0);
+    });
+
+    return { params, adminData, totalPanels };
+  },
+  template: /* html */`
+<div>
+  <!-- 페이지 헤더 -->
+  <div style="background:linear-gradient(135deg,#0097a7,#00838f);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2);">
+    <div>
+      <span style="font-size:16px;font-weight:700;">👤 DispUi04 - MY_PAGE / FOOTER</span>
+      <span style="font-size:11px;opacity:.7;margin-left:12px;">MY_PAGE, FOOTER</span>
+    </div>
+    <span style="font-size:13px;opacity:.8;">패널 {{ totalPanels }}개</span>
+  </div>
+
+  <!-- 본문: DispUi 컴포넌트 -->
+  <disp-x01-ui :params="params" :admin-data="adminData" />
+</div>
+`,
 };
