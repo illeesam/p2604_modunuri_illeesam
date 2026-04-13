@@ -451,13 +451,15 @@ window.Prod01View = {
     /* ── 포토 리뷰 좌/우 이동 ── */
     const photoNavPrev = () => {
       const list = reviewsWithPhoto.value;
+      if (!list.length) return;
       const idx = list.findIndex(r => r.id === selectedReview.value?.id);
-      if (idx > 0) selectedReview.value = list[idx - 1];
+      selectedReview.value = list[(idx - 1 + list.length) % list.length];
     };
     const photoNavNext = () => {
       const list = reviewsWithPhoto.value;
+      if (!list.length) return;
       const idx = list.findIndex(r => r.id === selectedReview.value?.id);
-      if (idx < list.length - 1) selectedReview.value = list[idx + 1];
+      selectedReview.value = list[(idx + 1) % list.length];
     };
     const photoNavIdx = computed(() => {
       const list = reviewsWithPhoto.value;
@@ -515,7 +517,7 @@ window.Prod01View = {
           <div style="position:relative;"
             @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'"
             @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
-            <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;min-height:420px;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
+            <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
               @click="zoomOpen=true">
               <img v-if="mockImages[selectedImg]?.src" :src="mockImages[selectedImg].src" :alt="product.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
@@ -536,11 +538,11 @@ window.Prod01View = {
             </button>
             <!-- 좌/우 화살표 -->
             <div class="img-nav" style="opacity:0;transition:opacity .2s;">
-              <button v-if="selectedImg > 0" @click="selectedImg--"
+              <button @click="selectedImg=(selectedImg-1+mockImages.length)%mockImages.length"
                 style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
               </button>
-              <button v-if="selectedImg < mockImages.length - 1" @click="selectedImg++"
+              <button @click="selectedImg=(selectedImg+1)%mockImages.length"
                 style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </button>
@@ -898,21 +900,21 @@ window.Prod01View = {
       </svg>
     </button>
     <!-- 메인 확대 이미지 -->
-    <div @click.stop style="position:relative;max-width:90vw;max-height:70vh;border-radius:12px;overflow:hidden;">
+    <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
       <img v-if="mockImages[selectedImg]?.src" :src="mockImages[selectedImg].src" :alt="product.prodNm"
-        style="max-width:90vw;max-height:70vh;object-fit:contain;display:block;" />
+        style="max-width:95vw;max-height:85vh;object-fit:contain;display:block;" />
       <!-- 좌/우 화살표 -->
-      <button v-if="selectedImg > 0" @click.stop="selectedImg--"
+      <button @click.stop="selectedImg=(selectedImg-1+mockImages.length)%mockImages.length"
         style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-      <button v-if="selectedImg < mockImages.length - 1" @click.stop="selectedImg++"
+      <button @click.stop="selectedImg=(selectedImg+1)%mockImages.length"
         style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
     </div>
     <!-- 하단 썸네일 -->
-    <div @click.stop style="display:flex;gap:8px;">
+    <div @click.stop style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;">
       <div v-for="(img,i) in mockImages" :key="i" @click.stop="selectedImg=i"
         :style="{ width:'56px', height:'56px', borderRadius:'8px', overflow:'hidden', cursor:'pointer',
           border: selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
@@ -946,7 +948,7 @@ window.Prod01View = {
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:201;display:flex;align-items:center;justify-content:center;padding:20px;">
 
     <!-- 좌 화살표 -->
-    <button v-if="photoNavIdx > 0" @click="photoNavPrev"
+    <button @click="photoNavPrev"
       style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
@@ -982,7 +984,7 @@ window.Prod01View = {
     </div>
 
     <!-- 우 화살표 -->
-    <button v-if="photoNavIdx < reviewsWithPhoto.length - 1" @click="photoNavNext"
+    <button @click="photoNavNext"
       style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </button>
