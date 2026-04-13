@@ -482,10 +482,10 @@ window.Prod01View = {
   },
 
   template: /* html */ `
-<div style="padding-bottom:72px;">
+<div class="page-wrap" style="padding-bottom:72px;">
 
   <!-- 페이지 타이틀 배너 -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:28px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
+  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품상세"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
     <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>
@@ -502,19 +502,10 @@ window.Prod01View = {
     </div>
   </div>
 
-  <!-- 뒤로 -->
-  <div class="page-wrap" style="padding-top:0;padding-bottom:0;">
-    <button @click="navigate('prod01list')"
-      style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:20px;padding:0;transition:color .2s;"
-      @mouseenter="$event.currentTarget.style.color='var(--blue)'"
-      @mouseleave="$event.currentTarget.style.color='var(--text-muted)'">
-      ← 상품 목록으로
-    </button>
-  </div>
 
   <template v-if="product">
     <!-- ══ 상단: 갤러리 + 구매 옵션 ══ -->
-    <div class="page-wrap" style="padding-bottom:0;">
+    <div style="padding:0 32px;max-width:1100px;margin:0 auto;">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(16px,3vw,32px);align-items:start;" class="detail-grid">
 
         <!-- 좌: 이미지 갤러리 -->
@@ -1031,13 +1022,15 @@ window.Prod01View = {
   <!-- ══ 고정 하단 바 ══ -->
   <div v-if="product && showBottomBar"
     style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg-card);border-top:1px solid var(--border);padding:10px 24px;display:flex;justify-content:center;align-items:center;box-shadow:0 -4px 20px rgba(0,0,0,0.08);">
-    <div style="display:flex;align-items:center;gap:16px;max-width:760px;width:100%;">
-      <div style="flex:1;min-width:0;">
+    <div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
+      <div style="flex:1;min-width:0;overflow:hidden;">
         <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
-        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);">{{ displayPrice }}</div>
+        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ displayPrice }}</div>
       </div>
-      <button class="btn-outline" style="padding:10px 18px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openCartDrawer">담기</button>
-      <button class="btn-blue"    style="padding:10px 22px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openQuickBuy">구매</button>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="btn-outline" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="openCartDrawer">담기</button>
+        <button class="btn-blue"    style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="openQuickBuy">구매하기</button>
+      </div>
     </div>
   </div>
 
