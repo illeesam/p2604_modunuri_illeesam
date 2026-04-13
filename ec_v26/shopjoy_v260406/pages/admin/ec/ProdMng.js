@@ -198,7 +198,7 @@ window.EcProdMng = {
     <prod-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
-      :disp-dataset="dispDataset"
+      :admin-data="dispDataset"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
