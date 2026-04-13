@@ -247,9 +247,37 @@ window.Prod01View = {
       }
     };
 
+    /* ── 모달 공통 닫기 (ESC / 뒤로가기) ── */
+    const anyModalOpen = () =>
+      zoomOpen.value || photoPopupOpen.value || !!selectedReview.value ||
+      showSizeGuide.value || quickBuyOpen.value;
+    const closeAllModals = () => {
+      zoomOpen.value = false;
+      photoPopupOpen.value = false;
+      selectedReview.value = null;
+      showSizeGuide.value = false;
+      quickBuyOpen.value = false;
+    };
+    const onKeydown = (e) => {
+      if (e.key === 'Escape' && anyModalOpen()) {
+        e.preventDefault();
+        closeAllModals();
+      }
+    };
+    const onPopState = () => {
+      if (anyModalOpen()) closeAllModals();
+    };
+    watch(anyModalOpen, (open, prev) => {
+      if (open && !prev) {
+        try { history.pushState({ modal: true }, ''); } catch (_) {}
+      }
+    });
+
     onMounted(() => {
       const main = getScrollEl();
       main.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('keydown', onKeydown);
+      window.addEventListener('popstate', onPopState);
       /* 품절/중지 아닌 첫 색상 자동 선택 */
       const firstAvail = (props.product?.opt1s || []).find(c => colorStatus(c) === 'ok');
       if (firstAvail) selectedColor.value = firstAvail;
@@ -257,6 +285,8 @@ window.Prod01View = {
     onBeforeUnmount(() => {
       const main = getScrollEl();
       main.removeEventListener('scroll', onScroll);
+      window.removeEventListener('keydown', onKeydown);
+      window.removeEventListener('popstate', onPopState);
     });
 
     watch(() => props.product, (p) => {
@@ -535,7 +565,7 @@ window.Prod01View = {
 
   <template v-if="product">
     <!-- ══ 상단: 갤러리 + 구매 옵션 ══ -->
-    <div style="padding:0 32px;max-width:1100px;margin:0 auto;">
+    <div class="prod-top-wrap" style="max-width:1100px;margin:0 auto;">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(16px,3vw,32px);align-items:start;" class="detail-grid">
 
         <!-- 좌: 이미지 갤러리 -->
@@ -914,19 +944,12 @@ window.Prod01View = {
   </template>
 
   <!-- ══ 이미지 확대 모달 ══ -->
+  <teleport to="body">
   <div v-if="zoomOpen && product" @click="zoomOpen=false"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
     <!-- 닫기 -->
-    <button @click="zoomOpen=false"
-      style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.4rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">✕</button>
-    <!-- 확대 아이콘 (우상단, 모달 내에서는 축소 역할) -->
-    <button @click="zoomOpen=false"
-      style="position:absolute;top:20px;right:76px;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="4 14 4 20 10 20"></polyline><polyline points="20 10 20 4 14 4"></polyline>
-        <line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line>
-      </svg>
-    </button>
+    <button @click.stop="zoomOpen=false"
+      style="position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.8);color:#fff;font-size:1.4rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1510;">✕</button>
     <!-- 메인 확대 이미지 -->
     <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
       <img v-if="mockImages[selectedImg]?.src" :src="mockImages[selectedImg].src" :alt="product.prodNm"
@@ -951,12 +974,15 @@ window.Prod01View = {
     </div>
   </div>
 
+  </teleport>
+
   <!-- ══ 포토 전체 팝업 ══ -->
+  <teleport to="body">
   <div v-if="photoPopupOpen && product" @click.self="photoPopupOpen=false"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;">
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;">
     <!-- 좌 화살표 -->
     <button v-if="photoGridPageCount > 1" @click="photoGridPrev"
-      style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
     <div @click.stop style="background:var(--bg-card);border-radius:16px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;padding:24px;">
@@ -983,18 +1009,21 @@ window.Prod01View = {
     </div>
     <!-- 우 화살표 -->
     <button v-if="photoGridPageCount > 1" @click="photoGridNext"
-      style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </button>
   </div>
 
+  </teleport>
+
   <!-- ══ 포토 리뷰 개별 팝업 ══ -->
+  <teleport to="body">
   <div v-if="selectedReview && product" @click.self="closePhotoDetail"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:201;display:flex;align-items:center;justify-content:center;padding:20px;">
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1501;display:flex;align-items:center;justify-content:center;padding:20px;">
 
     <!-- 좌 화살표 -->
     <button @click="photoNavPrev"
-      style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
 
@@ -1030,14 +1059,17 @@ window.Prod01View = {
 
     <!-- 우 화살표 -->
     <button @click="photoNavNext"
-      style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </button>
 
   </div>
 
+  </teleport>
+
   <!-- ══ 사이즈 가이드 모달 ══ -->
-  <div v-if="showSizeGuide" class="modal-overlay" @click.self="showSizeGuide=false">
+  <teleport to="body">
+  <div v-if="showSizeGuide" class="modal-overlay" style="z-index:1500;" @click.self="showSizeGuide=false">
     <div class="modal-box" style="max-width:480px;text-align:left;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <span style="font-weight:800;font-size:1rem;color:var(--text-primary);">📏 사이즈 가이드</span>
@@ -1065,6 +1097,8 @@ window.Prod01View = {
       <button class="btn-blue" @click="showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
     </div>
   </div>
+
+  </teleport>
 
   <!-- ══ 고정 하단 바 ══ -->
   <div v-if="product && showBottomBar"
