@@ -9,7 +9,7 @@
   const pinia = Pinia.createPinia();
   window.shopjoyAuth.init(pinia);
 
-  createApp({
+  const app = createApp({
   setup() {
     /* ── Theme ── */
     const theme = ref(localStorage.getItem('shopjoy-theme') || 'light');
@@ -612,31 +612,8 @@
   .component('MyChatt',      window.MyChatt)
   /* ── components/disp/ (전시 컴포넌트) ── */
   .component('DispX04Widget', window.DispX04Widget)
-  /* ── pages/xd/ (전시 UI 데모) ── */
-  .component('XdDispUi01', window.XdDispUi01)
-  .component('XdDispUi02', window.XdDispUi02)
-  .component('XdDispUi03', window.XdDispUi03)
-  .component('XdDispUi04', window.XdDispUi04)
-  .component('XdDispUi05', window.XdDispUi05)
-  .component('XdDispUi06', window.XdDispUi06)
-  /* ── pages/xs/ (샘플) ── */
-  .component('XsSample01', window.XsSample01)
-  .component('XsSample02', window.XsSample02)
-  .component('XsSample03', window.XsSample03)
-  .component('XsSample04', window.XsSample04)
-  .component('XsSample05', window.XsSample05)
-  .component('XsSample06', window.XsSample06)
-  .component('XsSample07', window.XsSample07)
-  .component('XsSample08', window.XsSample08)
-  .component('XsSample09', window.XsSample09)
-  .component('XsSample10', window.XsSample10)
-  .component('XsSample11', window.XsSample11)
-  .component('XsSample12', window.XsSample12)
-  .component('XsSample13', window.XsSample13)
-  .component('XsSample14', window.XsSample14)
-  .component('XsSample21', window.XsSample21)
-  .component('XsSample22', window.XsSample22)
-  .component('XsSample23', window.XsSample23)
+  /* ── pages/xd/ (전시 UI 데모) — 스크립트 미로드 시 건너뜀 ── */
+  /* ── pages/xs/ (샘플) — 스크립트 미로드 시 건너뜀 ── */
   /* ── components/comp/ (공통 컴포넌트) ── */
   .component('BaseAttachGrp', window.BaseAttachGrp)
   /* ── components/modals/ — 상세 모달 ── */
@@ -659,7 +636,16 @@
   /* ── components/modals/ — 미리보기/전송 모달 ── */
   .component('DispPreviewModal',     window.DispPreviewModal)
   .component('TemplatePreviewModal', window.TemplatePreviewModal)
-  .component('TemplateSendModal',    window.TemplateSendModal)
-  .use(pinia)
-  .mount('#app');
+  .component('TemplateSendModal',    window.TemplateSendModal);
+
+  /* ■■■ xd/DispUi* — 스크립트 태그 주석처리해도 에러 없이 동작 ■■■ */
+  ['XdDispUi01','XdDispUi02','XdDispUi03','XdDispUi04','XdDispUi05','XdDispUi06',
+  ].forEach(name => { if (window[name]) app.component(name, window[name]); });
+  /* ■■■ xs/Sample* — 스크립트 태그 주석처리해도 에러 없이 동작 ■■■ */
+  ['XsSample01','XsSample02','XsSample03','XsSample04','XsSample05','XsSample06','XsSample07',
+   'XsSample08','XsSample09','XsSample10','XsSample11','XsSample12','XsSample13','XsSample14',
+   'XsSample21','XsSample22','XsSample23',
+  ].forEach(name => { if (window[name]) app.component(name, window[name]); });
+
+  app.use(pinia).mount('#app');
 })();
