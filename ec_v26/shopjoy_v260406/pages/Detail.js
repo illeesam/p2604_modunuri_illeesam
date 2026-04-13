@@ -484,8 +484,26 @@ window.Detail = {
   template: /* html */ `
 <div style="padding-bottom:72px;">
 
+  <!-- 페이지 타이틀 배너 -->
+  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:28px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
+    <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품상세"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
+    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>
+    <div style="position:relative;z-index:1;text-align:center;">
+      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Product</div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">상품 상세</h1>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
+        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
+        <span>/</span>
+        <span style="cursor:pointer;" @click="navigate('products')">상품목록</span>
+        <span>/</span>
+        <span style="color:#333;">상품 상세</span>
+      </div>
+    </div>
+  </div>
+
   <!-- 뒤로 -->
-  <div class="page-wrap" style="padding-top:20px;padding-bottom:0;">
+  <div class="page-wrap" style="padding-top:0;padding-bottom:0;">
     <button @click="navigate('products')"
       style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:20px;padding:0;transition:color .2s;"
       @mouseenter="$event.currentTarget.style.color='var(--blue)'"
