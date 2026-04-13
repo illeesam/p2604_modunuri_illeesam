@@ -584,8 +584,6 @@ window.EcDispWidgetLibDtl = {
           :disp-dataset="dispDataset"
           :disp-opt="{ showBadges: true }"
           :widget-item="previewWidget"
-          :is-logged-in="false"
-          :user-grade=""
         />
       </div>
       <div style="margin-top:12px;font-size:11px;color:#aaa;line-height:1.6;">

@@ -1035,7 +1035,6 @@ window.EcDispPanelDtl = {
                 :disp-dataset="dispDataset"
                 :disp-opt="{ showBadges: true }"
                 :widget-item="{...r, widgetNm: r.widgetNm||('위젯 '+(i+1)), status:'활성', condition:'항상 표시'}"
-                :is-logged-in="true"
               />
             </div>
           </template>
@@ -1046,7 +1045,6 @@ window.EcDispPanelDtl = {
               :disp-dataset="dispDataset"
               :disp-opt="{ showBadges: true }"
               :widget-item="{...activeRow, widgetNm: activeRow.widgetNm||(TAB_LABELS.find(t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
-              :is-logged-in="true"
             />
           </template>
         </div>
