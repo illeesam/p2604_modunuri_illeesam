@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 전시영역미리보기 (3탭: 미리보기 · 구조선택 · 소스) */
+/* ShopJoy Admin - 전시영역미리보기 (3탭: 영역미리보기 · 구조선택 · 소스) */
 window.EcDispAreaPreview = {
   name: 'EcDispAreaPreview',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
@@ -112,7 +112,7 @@ window.EcDispAreaPreview = {
     };
 
     /* ─────────────────────────────────────────
-       Tab2: 구조선택 + 선택 미리보기
+       Tab2: 구조선택 + 선택 영역미리보기
     ───────────────────────────────────────── */
     const checkedPanelIds = reactive(new Set());
 
@@ -544,7 +544,7 @@ window.EcDispAreaPreview = {
     };
     const onAreaDragEnd = () => { window._dragAreaWidgets = null; };
 
-    /* ── DispUi 미리보기 레이어 ── */
+    /* ── Ui미리보기 레이어 ── */
     const dispUiLayerOpen = ref(false);
     const dispUiModalOpen = ref(false);
     const dispUiAreaErr   = ref(false);
@@ -755,7 +755,7 @@ window.EcDispAreaPreview = {
       /* Tab3 */
       sourceLines, sourceText, sourceCopied, copySource,
       wLabel, wIcon,
-      /* DispUi 미리보기 */
+      /* Ui미리보기 */
       dispUiLayerOpen, dispUiModalOpen, dispUiAreaErr,
       dispUiAreaDrop, dispUiAreaBtnLabel, dispUiToggleArea, dispUiSelectAllAreas, dispUiClearAllAreas,
       dispUiForm,
@@ -772,7 +772,7 @@ window.EcDispAreaPreview = {
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
       전시영역미리보기
-      <span style="font-size:13px;font-weight:400;color:#888;">화면영역별 전시패널 분석 및 미리보기</span>
+      <span style="font-size:13px;font-weight:400;color:#888;">화면영역별 전시패널 분석 및 영역미리보기</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
       🌐 {{ siteNm }}
@@ -914,7 +914,7 @@ window.EcDispAreaPreview = {
       </div>
     </div>
 
-    <!-- DispUi 미리보기 파라미터 레이어 -->
+    <!-- Ui미리보기 파라미터 레이어 -->
     <div v-if="dispUiLayerOpen"
       style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
       <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
@@ -1170,7 +1170,7 @@ window.EcDispAreaPreview = {
     <button @click="switchTab('preview')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
       :style="mainTab==='preview' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-      🖼 미리보기
+      🖼 영역미리보기
     </button>
     <button @click="switchTab('struct')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
@@ -1185,7 +1185,7 @@ window.EcDispAreaPreview = {
   </div>
 
   <!-- ═══════════════════════════════════════
-       Tab1: 미리보기
+       Tab1: 영역미리보기
   ═══════════════════════════════════════ -->
   <div v-if="mainTab==='preview'">
     <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">기준 날짜를 선택해주세요.</div>
@@ -1203,7 +1203,7 @@ window.EcDispAreaPreview = {
   </div>
 
   <!-- ═══════════════════════════════════════
-       Tab2: 구조 선택 미리보기
+       Tab2: 구조 선택 영역미리보기
   ═══════════════════════════════════════ -->
   <div v-else-if="mainTab==='struct'" style="margin-top:4px;">
     <div style="display:flex;gap:12px;align-items:stretch;">
@@ -1306,7 +1306,7 @@ window.EcDispAreaPreview = {
         </div>
       </div>
 
-      <!-- 우: 위젯 컨텐츠 그리드 미리보기 -->
+      <!-- 우: 위젯 컨텐츠 그리드 위젯미리보기 -->
       <div style="flex:6;min-width:0;display:flex;flex-direction:column;max-height:80vh;">
         <!-- 캔버스 컨트롤 바 -->
         <div style="display:flex;align-items:center;gap:6px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:6px 10px;flex-wrap:wrap;">
@@ -1481,7 +1481,7 @@ window.EcDispAreaPreview = {
                     <span style="font-size:10px;color:#9ca3af;">/ 4</span>
                   </div>
                 </div>
-                <!-- 위젯 미리보기 (기존 렌더링 재사용) -->
+                <!-- 위젯미리보기 (기존 렌더링 재사용) -->
                 <div :style="structShowReal ? 'padding:0;' : 'padding:10px;'">
                   <div v-if="slot.widgetType==='image_banner'"
                     style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:20px;text-align:center;color:#fff;">

@@ -1,6 +1,6 @@
-/* ShopJoy Admin - 전시위젯Lib 미리보기 (#page=ecDispWidgetLibPreview) */
+/* ShopJoy Admin - 전시위젯Lib 위젯미리보기 (#page=ecDispWidgetLibPreview) */
 
-/* ── 위젯 미리보기 서브컴포넌트 (grid · dashboard 공용) ── */
+/* ── 위젯미리보기 서브컴포넌트 (grid · dashboard 공용) ── */
 const _WidgetPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
@@ -511,7 +511,7 @@ window.EcDispWidgetLibPreview = {
   <!-- 페이지 타이틀 -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
-      전시위젯Lib 미리보기
+      전시위젯Lib 위젯미리보기
       <span style="font-size:13px;font-weight:400;color:#888;">사용위치경로 트리 &amp; 드래그하여 배치</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
@@ -779,7 +779,7 @@ window.EcDispWidgetLibPreview = {
                     <button @click="removeSlot(idx)"
                       style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
-                  <!-- 위젯 미리보기 -->
+                  <!-- 위젯미리보기 -->
                   <widget-preview :lib="slot" />
                 </template>
 
@@ -839,7 +839,7 @@ window.EcDispWidgetLibPreview = {
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
             </div>
 
-            <!-- 위젯 미리보기 -->
+            <!-- 위젯미리보기 -->
             <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
               <widget-preview :lib="item.lib" />
             </div>

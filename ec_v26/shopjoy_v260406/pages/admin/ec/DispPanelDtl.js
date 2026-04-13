@@ -444,7 +444,7 @@ window.EcDispPanelDtl = {
       });
     };
 
-    /* ── 미리보기 모달 ── */
+    /* ── 위젯미리보기 모달 ── */
     const preview = reactive({ show: false, tabLabel: '' });
     const openPreview = (tabKey, tabLabel) => { preview.tabLabel = tabLabel; preview.show = true; };
     const closePreview = () => { preview.show = false; };
@@ -452,7 +452,7 @@ window.EcDispPanelDtl = {
       ...form, ...(activeRow.value ? { ...activeRow.value } : {}), status: '활성',
     }));
 
-    /* ── 패널 카드 미리보기 ── */
+    /* ── 패널미리보기 (카드) ── */
     const cardPreview = reactive({ show: false });
     const openCardPreview = () => { cardPreview.show = true; };
     const closeCardPreview = () => { cardPreview.show = false; };
@@ -555,13 +555,13 @@ window.EcDispPanelDtl = {
     <div style="display:flex;align-items:center;gap:6px;">
       <button @click="openCardPreview"
         style="font-size:11px;padding:4px 11px;border:1px solid #b39ddb;border-radius:14px;background:#f5f0ff;cursor:pointer;color:#6a1b9a;display:flex;align-items:center;gap:4px;"
-        title="패널 카드 미리보기">
-        🖼 카드미리보기
+        title="패널미리보기">
+        🖼 패널미리보기
       </button>
       <button @click="openPreview(tab, '패널 전체')"
         style="font-size:11px;padding:4px 11px;border:1px solid #b0c4de;border-radius:14px;background:#e8f0fe;cursor:pointer;color:#1a73e8;display:flex;align-items:center;gap:4px;"
-        title="패널 내용 미리보기">
-        👁 내용미리보기
+        title="위젯미리보기">
+        👁 위젯미리보기
       </button>
       <button @click="viewAll = !viewAll"
         style="font-size:11px;padding:4px 12px;border:1px solid #d0d0d0;border-radius:14px;background:#fff;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;transition:all .15s;"
@@ -602,7 +602,7 @@ window.EcDispPanelDtl = {
             style="padding:0 4px;font-size:11px;border:none;background:none;cursor:pointer;color:#ccc;line-height:1;flex-shrink:0;"
             @mouseenter="$event.currentTarget.style.color='#e8587a'"
             @mouseleave="$event.currentTarget.style.color='#ccc'">✕</button>
-          <button @click.stop="openPreview(t.key, t.label)" title="미리보기"
+          <button @click.stop="openPreview(t.key, t.label)" title="위젯미리보기"
             style="padding:0 6px 0 2px;font-size:12px;border:none;background:none;cursor:pointer;opacity:0.4;transition:opacity .15s;"
             :style="tab===t.key ? 'opacity:0.65;' : ''"
             @mouseenter="$event.currentTarget.style.opacity='1'"
@@ -1015,16 +1015,16 @@ window.EcDispPanelDtl = {
 
       </div><!-- /폼 영역 -->
 
-      <!-- 미리보기 패널 (25%) -->
+      <!-- 위젯미리보기 패널 (25%) -->
       <div style="width:25%;min-width:200px;max-width:320px;border-left:1px solid #e8e8e8;background:#f7f8fb;display:flex;flex-direction:column;overflow:hidden;">
-        <!-- 미리보기 타이틀 -->
+        <!-- 위젯미리보기 타이틀 -->
         <div style="padding:10px 14px;border-bottom:1px solid #e0e0e0;background:#f0f2f7;flex-shrink:0;display:flex;align-items:center;gap:6px;">
-          <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;">👁 미리보기</span>
+          <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;">👁 위젯미리보기</span>
           <span style="font-size:10px;color:#aaa;margin-left:auto;">
             {{ tab==='info' ? '전체 위젯' : (TAB_LABELS.find(t=>t.key===tab)||{}).label }}
           </span>
         </div>
-        <!-- 미리보기 내용 -->
+        <!-- 위젯미리보기 내용 -->
         <div style="flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px;">
           <!-- 패널기본정보: 전체 위젯 -->
           <template v-if="tab==='info'">
@@ -1048,7 +1048,7 @@ window.EcDispPanelDtl = {
             />
           </template>
         </div>
-      </div><!-- /미리보기 패널 -->
+      </div><!-- /위젯미리보기 패널 -->
 
       </div><!-- /우측 콘텐츠 -->
     </div><!-- /탭 모드 flex -->
@@ -1363,7 +1363,7 @@ window.EcDispPanelDtl = {
 
   </div>
 
-  <!-- 기존 위젯 미리보기 모달 -->
+  <!-- 위젯미리보기 모달 -->
   <disp-preview-modal
     :show="preview.show"
     mode="single"
@@ -1374,14 +1374,14 @@ window.EcDispPanelDtl = {
     @close="closePreview"
   />
 
-  <!-- 패널 카드 미리보기 오버레이 -->
+  <!-- 패널미리보기 오버레이 -->
   <div v-if="cardPreview.show"
     @click.self="closeCardPreview"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:14px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
       <!-- 헤더 -->
       <div style="background:linear-gradient(135deg,#e8587a,#c0395e);color:#fff;padding:15px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:14px;font-weight:700;">🖼 패널 카드 미리보기</span>
+        <span style="font-size:14px;font-weight:700;">🖼 패널미리보기</span>
         <button @click="closeCardPreview" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:0.85;line-height:1;padding:0;">×</button>
       </div>
       <!-- 카드 본문 -->

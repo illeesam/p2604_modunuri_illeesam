@@ -42,7 +42,7 @@ window.EcDispPanelMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    /* 미리보기 */
+    /* 패널미리보기 */
     const previewDisp = (d) => {
       const areaPageMap = {
         'HOME_BANNER': '', 'HOME_PRODUCT': '', 'HOME_CHART': '', 'HOME_EVENT': '',
@@ -223,7 +223,7 @@ window.EcDispPanelMng = {
     };
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
-    /* 카드 미리보기 */
+    /* 패널미리보기 (카드) */
     const cardPreviewItem = ref(null);
     const openCardPreview = (d) => { cardPreviewItem.value = d; };
     const closeCardPreview = () => { cardPreviewItem.value = null; };
@@ -457,8 +457,8 @@ window.EcDispPanelMng = {
             </td>
             <td>
               <div class="actions">
-                <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;font-size:11px;" title="카드 미리보기" @click="openCardPreview(d)">🖼 카드</button>
-                <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;" title="내용 미리보기" @click="previewDisp(d)">👁 내용</button>
+                <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;font-size:11px;" title="패널미리보기" @click="openCardPreview(d)">🖼 패널</button>
+                <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;" title="위젯미리보기" @click="previewDisp(d)">👁 위젯</button>
                 <button class="btn btn-blue btn-sm" @click="loadDetail(d.dispId)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="doDelete(d)">삭제</button>
               </div>
@@ -548,14 +548,14 @@ window.EcDispPanelMng = {
     />
   </div>
 
-  <!-- 패널 카드 미리보기 오버레이 -->
+  <!-- 패널미리보기 오버레이 -->
   <div v-if="cardPreviewItem"
     @click.self="closeCardPreview"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:14px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
       <!-- 헤더 -->
       <div style="background:linear-gradient(135deg,#e8587a,#c0395e);color:#fff;padding:15px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:14px;font-weight:700;">🖼 패널 카드 미리보기</span>
+        <span style="font-size:14px;font-weight:700;">🖼 패널미리보기</span>
         <button @click="closeCardPreview" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:0.85;line-height:1;padding:0;">×</button>
       </div>
       <!-- 카드 본문 -->

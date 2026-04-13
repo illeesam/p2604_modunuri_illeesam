@@ -1708,7 +1708,7 @@ window.CategoryTreeModal = {
 </div>`,
 };
 
-/* ── 전시 위젯 미리보기 모달 ─────────────────────────────────
+/* ── 위젯미리보기 모달 ─────────────────────────────────
    Props:
      show       Boolean   표시 여부
      mode       String    'all' | 'single'
@@ -1725,7 +1725,7 @@ window.DispPreviewModal = {
   props: {
     show:     { type: Boolean, default: false },
     mode:     { type: String,  default: 'single' },   /* 'all' | 'single' */
-    tabLabel: { type: String,  default: '미리보기' },
+    tabLabel: { type: String,  default: '위젯미리보기' },
     area:     { type: String,  default: '' },
     widgets:  { type: Array,   default: () => [] },
     widget:   { type: Object,  default: () => ({}) },
@@ -1765,7 +1765,7 @@ window.DispPreviewModal = {
     <!-- 헤더 -->
     <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fafafa;">
       <div>
-        <span style="font-size:14px;font-weight:700;color:#333;">👁 미리보기</span>
+        <span style="font-size:14px;font-weight:700;color:#333;">👁 위젯미리보기</span>
         <span style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:600;">{{ tabLabel }}</span>
         <span v-if="mode==='single' && widgetLabel" style="margin-left:6px;font-size:11px;color:#aaa;">({{ widgetLabel }})</span>
         <span v-if="mode==='all' && area" style="margin-left:6px;font-size:11px;color:#aaa;">영역: {{ area }}</span>
@@ -1802,7 +1802,7 @@ window.DispPreviewModal = {
       <!-- mode=single: 현재 form 단일 위젯 -->
       <template v-else>
         <div style="font-size:10px;color:#bbb;margin-bottom:8px;font-family:monospace;">
-          현재 입력값 기준 실시간 미리보기
+          현재 입력값 기준 실시간 위젯미리보기
         </div>
         <!-- widgetType 없으면 DispWidget 렌더 금지 (widgetType.startsWith 오류 방지) -->
         <div v-if="previewWidget.widgetType"
@@ -1817,7 +1817,7 @@ window.DispPreviewModal = {
         <div v-else
           style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
           <div style="font-size:28px;margin-bottom:8px;">🎨</div>
-          행(1~5행)에서 위젯 유형을 선택하면<br>미리보기가 표시됩니다.
+          행(1~5행)에서 위젯 유형을 선택하면<br>위젯미리보기가 표시됩니다.
         </div>
       </template>
 

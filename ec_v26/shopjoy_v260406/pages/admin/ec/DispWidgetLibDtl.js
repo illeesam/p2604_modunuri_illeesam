@@ -279,7 +279,7 @@ window.EcDispWidgetLibDtl = {
       });
     };
 
-    /* ── 미리보기용 위젯 객체 ── */
+    /* ── 위젯미리보기용 위젯 객체 ── */
     const previewWidget = computed(() => ({
       ...form,
       dispId: form.libId || 0,
@@ -575,9 +575,9 @@ window.EcDispWidgetLibDtl = {
       </div>
     </div>
 
-    <!-- 오른쪽: 미리보기 -->
+    <!-- 오른쪽: 위젯미리보기 -->
     <div style="width:280px;flex-shrink:0;padding:20px;background:#f8f8f8;">
-      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;">👁 미리보기</div>
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;">👁 위젯미리보기</div>
       <div style="background:#fff;border:1px solid #e4e4e4;border-radius:8px;padding:12px;min-height:100px;">
         <disp-x04-widget
           :params="{ }"
