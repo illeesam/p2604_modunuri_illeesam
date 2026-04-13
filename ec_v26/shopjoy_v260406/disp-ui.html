@@ -22,6 +22,8 @@
   <script src="pages/xd/DispUi02.js"></script>
   <script src="pages/xd/DispUi03.js"></script>
   <script src="pages/xd/DispUi04.js"></script>
+  <script src="pages/xd/DispUi05.js"></script>
+  <script src="pages/xd/DispUi06.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
@@ -41,12 +43,16 @@
           'DispUi02': 'disp-ui02',
           'DispUi03': 'disp-ui03',
           'DispUi04': 'disp-ui04',
+          'DispUi05': 'disp-ui05',
+          'DispUi06': 'disp-ui06',
         };
         const PAGE_LABELS = [
           { key: 'DispUi01', label: 'HOME', icon: '🏠' },
           { key: 'DispUi02', label: 'CATEGORY/SEARCH', icon: '🔍' },
           { key: 'DispUi03', label: 'PRODUCT/EVENT', icon: '📦' },
           { key: 'DispUi04', label: 'MY_PAGE/FOOTER', icon: '👤' },
+          { key: 'DispUi05', label: 'DispUi05', icon: '📋' },
+          { key: 'DispUi06', label: 'DispUi06', icon: '📋' },
         ];
 
         const getPage = () => {
@@ -87,6 +93,8 @@
   <disp-ui02      v-else-if="currentPage==='DispUi02'" />
   <disp-ui03      v-else-if="currentPage==='DispUi03'" />
   <disp-ui04      v-else-if="currentPage==='DispUi04'" />
+  <disp-ui05      v-else-if="currentPage==='DispUi05'" />
+  <disp-ui06      v-else-if="currentPage==='DispUi06'" />
 </div>
 `,
     };
@@ -98,7 +106,7 @@
     app.component('DispX03Panel',    window.DispX03Panel);
     app.component('DispX04Widget',   window.DispX04Widget);
     app.component('DispUiPage',      window.DispUiPage);
-    ['DispUi01', 'DispUi02', 'DispUi03', 'DispUi04'].forEach(name => {
+    ['DispUi01', 'DispUi02', 'DispUi03', 'DispUi04', 'DispUi05', 'DispUi06'].forEach(name => {
       if (window[name]) app.component(name, window[name]);
     });
     app.mount('#app');
