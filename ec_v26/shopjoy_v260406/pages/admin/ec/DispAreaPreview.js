@@ -695,7 +695,7 @@ window.EcDispAreaPreview = {
       date:         previewDate.value,
       time:         previewTime.value,
     }));
-    const dispOpt = computed(() => ({ layout: viewMode.value, showBadges: true }));
+    const dispOpt = computed(() => ({ layout: viewMode.value, showBadges: true, mode: viewMode.value, showDesc: showDesc.value }));
     const areaInfo = (code) =>
       (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
@@ -1194,8 +1194,6 @@ window.EcDispAreaPreview = {
           :disp-dataset="dispDataset"
           :disp-opt="dispOpt"
           :area-item="{ code: area.codeValue, label: area.codeLabel, info: areaInfo(area.codeValue), panels: panelsForArea(area.codeValue) }"
-          :mode="viewMode"
-          :show-desc="showDesc"
         />
       </div>
       <div v-if="areaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:14px;">등록된 화면영역이 없습니다.</div>

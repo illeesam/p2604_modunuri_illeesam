@@ -8,14 +8,12 @@ window.DispX02Area = {
   props: {
     params:      { type: Object, required: true },
     dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
-    dispOpt:     { type: Object, default: () => ({ layout: 'auto', showHeader: true, showBadges: true }) },
+    dispOpt:     { type: Object, default: () => ({ layout: 'auto', showHeader: true, showBadges: true, mode: 'card', showDesc: true }) },
     areaItem:    { type: Object, required: true },     // { code, label, info, panels }
-    mode:        { type: String, default: 'card' },   // 'card' | 'expand' | 'area_detail'
-    showDesc:    { type: Boolean, default: true },    // areaLabel 표시 여부
-    isLoggedIn:  { type: Boolean, default: false },
-    userGrade:   { type: String,  default: '' },
   },
-  setup() {
+  setup(props) {
+    const mode = props.dispOpt?.mode || 'card';
+    const showDesc = props.dispOpt?.showDesc !== false;
 
     /* 위젯 유형 레이블 */
     const WIDGET_TYPE_LABELS = {
@@ -65,7 +63,7 @@ window.DispX02Area = {
       p.htmlDesc ? `설명: ${p.htmlDesc}` : '',
     ].filter(Boolean).join('\n');
 
-    return { wLabel, wIcon, padId, panelWidgetTypes, periodText, statusCls, panelTitle };
+    return { mode, showDesc, wLabel, wIcon, padId, panelWidgetTypes, periodText, statusCls, panelTitle };
   },
   template: /* html */`
 <div class="disp-area" style="margin-bottom:28px;">

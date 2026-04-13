@@ -322,10 +322,8 @@ window.DispX01Ui = {
           <disp-x02-area v-if="panelsForArea(areaCode).length"
             :params="params"
             :disp-dataset="dispDataset"
-            :disp-opt="dispOpt"
+            :disp-opt="{ ...dispOpt, mode: 'area_detail', showDesc: false }"
             :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
-            mode="area_detail"
-            :show-desc="false"
           />
           <!-- 스켈레톤 (패널 없을 때) -->
           <div v-else style="padding:12px 0 4px 0;">
@@ -367,10 +365,8 @@ window.DispX01Ui = {
           <disp-x02-area
             :params="params"
             :disp-dataset="dispDataset"
-            :disp-opt="dispOpt"
+            :disp-opt="{ ...dispOpt, mode: 'expand', showDesc: true }"
             :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
-            mode="expand"
-            :show-desc="true"
           />
           <!-- 스켈레톤 (패널 없을 때) -->
           <div v-if="!panelsForArea(areaCode).length"
