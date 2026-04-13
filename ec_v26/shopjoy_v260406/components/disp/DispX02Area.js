@@ -263,7 +263,7 @@ window.DispX02Area = {
       <template v-else>
         <div v-for="p in areaItem.panels" :key="p.dispId"
           style="padding:12px 16px;border-bottom:1px solid #f5f5f5;">
-          <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" :is-logged-in="isLoggedIn" :user-grade="userGrade" />
+          <disp-x03-panel :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" :panel-item="p" />
         </div>
       </template>
     </template>
