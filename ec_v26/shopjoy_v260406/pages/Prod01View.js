@@ -750,13 +750,17 @@ window.Prod01View = {
     <div ref="tabBarRef"
       :style="tabFixed ? {
         position:'fixed', top:tabFixedTop+'px', left:tabFixedLeft+'px', width:tabFixedW+'px',
-        zIndex:55, background:'var(--bg-card)',
-        borderBottom:'2px solid var(--border)',
-        boxShadow:'0 2px 8px rgba(0,0,0,0.08)',
+        zIndex:55,
+        background:'linear-gradient(to bottom, var(--bg-header, rgba(235,239,248,0.96)) 0%, var(--bg-card) 100%)',
+        backdropFilter:'blur(10px)',
+        WebkitBackdropFilter:'blur(10px)',
+        borderBottom:'1px solid var(--border)',
+        boxShadow:'0 4px 16px rgba(0,0,0,0.06)',
       } : {
         position:'relative',
-        zIndex:50, background:'var(--bg-card)',
-        borderTop:'1px solid var(--border)', borderBottom:'2px solid var(--border)',
+        zIndex:50,
+        background:'linear-gradient(to bottom, var(--bg-header, rgba(235,239,248,0.96)) 0%, var(--bg-card) 100%)',
+        borderTop:'1px solid var(--border)', borderBottom:'1px solid var(--border)',
         marginTop:'24px',
       }">
       <div class="page-wrap" style="padding-top:0;padding-bottom:0;display:flex;justify-content:center;">
