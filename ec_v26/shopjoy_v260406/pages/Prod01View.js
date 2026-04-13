@@ -37,6 +37,8 @@ window.Prod01View = {
     const reviewFilter   = ref('최신순');
     const photoPopupOpen = ref(false);
     const selectedReview = ref(null);
+    const photoGridPage = ref(1);
+    const photoGridPageSize = 12;
 
     /* ── 사이즈 가이드 ── */
     const sizeGuideRows = [
@@ -154,8 +156,16 @@ window.Prod01View = {
 
     /* ── 별점 렌더 ── */
     const stars = n => {
-      const v = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
-      return '★'.repeat(v) + '☆'.repeat(5 - v);
+      const v = Math.max(0, Math.min(5, Number(n) || 0));
+      const full = Math.floor(v);
+      const frac = v - full;
+      const half = frac >= 0.25 && frac < 0.75 ? 1 : 0;
+      const fullCount = frac >= 0.75 ? full + 1 : full;
+      const emptyCount = 5 - fullCount - half;
+      const FULL = '<span style="color:#f59e0b;">★</span>';
+      const EMPTY = '<span style="color:#e5e7eb;">★</span>';
+      const HALF = '<span style="position:relative;display:inline-block;color:#e5e7eb;">★<span style="position:absolute;left:0;top:0;width:50%;overflow:hidden;color:#f59e0b;">★</span></span>';
+      return FULL.repeat(fullCount) + (half ? HALF : '') + EMPTY.repeat(emptyCount);
     };
 
     /* ── 탭 고정 + 스크롤 ── */
@@ -465,6 +475,23 @@ window.Prod01View = {
       const list = reviewsWithPhoto.value;
       return list.findIndex(r => r.id === selectedReview.value?.id);
     });
+    const photoGridPageCount = computed(() =>
+      Math.max(1, Math.ceil(reviewsWithPhoto.value.length / photoGridPageSize))
+    );
+    const photoGridItems = computed(() => {
+      const start = (photoGridPage.value - 1) * photoGridPageSize;
+      return reviewsWithPhoto.value.slice(start, start + photoGridPageSize);
+    });
+    const photoGridPrev = () => {
+      photoGridPage.value = photoGridPage.value > 1
+        ? photoGridPage.value - 1
+        : photoGridPageCount.value;
+    };
+    const photoGridNext = () => {
+      photoGridPage.value = photoGridPage.value < photoGridPageCount.value
+        ? photoGridPage.value + 1
+        : 1;
+    };
 
     return {
       selectedImg, zoomOpen,
@@ -472,6 +499,7 @@ window.Prod01View = {
       TABS, activeTab, tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, styleSecRef,
       reviewFilter, photoPopupOpen, selectedReview,
       photoNavPrev, photoNavNext, photoNavIdx,
+      photoGridPage, photoGridPageCount, photoGridItems, photoGridPrev, photoGridNext,
       photoFromGrid, openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
       mockImages, mockReviews, reviewsWithPhoto, filteredReviews, avgRating, ratingDist,
@@ -578,7 +606,7 @@ window.Prod01View = {
 
             <!-- 별점 미리보기 -->
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
-              <span style="color:#f59e0b;font-size:0.82rem;">{{ stars(avgRating) }}</span>
+              <span style="font-size:0.82rem;" v-html="stars(avgRating)"></span>
               <span style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">{{ avgRating }}</span>
               <span style="font-size:0.78rem;color:var(--text-muted);">({{ mockReviews.length }})</span>
             </div>
@@ -790,12 +818,12 @@ window.Prod01View = {
         <div class="card" style="padding:24px;margin-bottom:14px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
           <div style="text-align:center;flex-shrink:0;min-width:90px;">
             <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">{{ avgRating }}</div>
-            <div style="color:#f59e0b;font-size:1rem;margin:6px 0;">{{ stars(avgRating) }}</div>
+            <div style="font-size:1rem;margin:6px 0;" v-html="stars(avgRating)"></div>
             <div style="font-size:0.76rem;color:var(--text-muted);">{{ mockReviews.length }}개 리뷰</div>
           </div>
           <div style="flex:1;min-width:180px;">
             <div v-for="d in ratingDist" :key="d.star" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
-              <span style="font-size:0.76rem;color:var(--text-muted);width:22px;text-align:right;flex-shrink:0;">{{ d.star }}★</span>
+              <span style="font-size:0.76rem;color:var(--text-muted);width:28px;text-align:right;flex-shrink:0;">{{ d.star }}<span style="color:#f59e0b;">★</span></span>
               <div style="flex:1;height:7px;background:var(--bg-base);border-radius:4px;overflow:hidden;">
                 <div :style="{width:d.pct+'%',height:'100%',background:'#f59e0b',borderRadius:'4px'}"></div>
               </div>
@@ -845,7 +873,7 @@ window.Prod01View = {
             :style="{padding:'20px',borderTop:i===0?'none':'1px solid var(--border)',background:'var(--bg-card)'}">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;">
               <span style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">{{ r.maskedName }}</span>
-              <span style="color:#f59e0b;font-size:0.82rem;">{{ stars(r.rating) }}</span>
+              <span style="font-size:0.82rem;" v-html="stars(r.rating)"></span>
               <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ r.date }}</span>
             </div>
             <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
@@ -926,13 +954,18 @@ window.Prod01View = {
   <!-- ══ 포토 전체 팝업 ══ -->
   <div v-if="photoPopupOpen && product" @click.self="photoPopupOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;padding:24px;">
+    <!-- 좌 화살표 -->
+    <button v-if="photoGridPageCount > 1" @click="photoGridPrev"
+      style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div @click.stop style="background:var(--bg-card);border-radius:16px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;padding:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">포토&동영상 상품평 {{ reviewsWithPhoto.length }}</span>
         <button @click="photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
-        <div v-for="r in reviewsWithPhoto" :key="r.id"
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        <div v-for="r in photoGridItems" :key="r.id"
           @click="openPhotoFromGrid(r)"
           style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
           @mouseenter="$event.currentTarget.style.opacity='.75'"
@@ -940,7 +973,19 @@ window.Prod01View = {
           <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
         </div>
       </div>
+      <!-- 페이지네이션 -->
+      <div v-if="photoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
+        <button v-for="p in photoGridPageCount" :key="p" @click="photoGridPage=p"
+          :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: photoGridPage===p ? 700 : 400 }">
+          {{ p }}
+        </button>
+      </div>
     </div>
+    <!-- 우 화살표 -->
+    <button v-if="photoGridPageCount > 1" @click="photoGridNext"
+      style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:202;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
   </div>
 
   <!-- ══ 포토 리뷰 개별 팝업 ══ -->
@@ -954,7 +999,7 @@ window.Prod01View = {
     </button>
 
     <!-- 본문 -->
-    <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:24px;position:relative;">
+    <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;padding:24px;position:relative;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
           포토&동영상 상품평
@@ -965,12 +1010,12 @@ window.Prod01View = {
         <button @click="closePhotoDetail"
           style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
-      <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);height:220px;margin-bottom:20px;">
-        <img :src="selectedReview.photoImg" style="width:100%;height:100%;object-fit:cover;" />
+      <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1/1;margin-bottom:20px;background:var(--bg-base);">
+        <img :src="selectedReview.photoImg" style="width:100%;height:100%;object-fit:contain;" />
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
         <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ selectedReview.maskedName }}</span>
-        <span style="color:#f59e0b;font-size:0.85rem;">{{ stars(selectedReview.rating) }}</span>
+        <span style="font-size:0.85rem;" v-html="stars(selectedReview.rating)"></span>
         <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ selectedReview.date }}</span>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:14px;">
