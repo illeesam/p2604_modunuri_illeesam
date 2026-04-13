@@ -1036,8 +1036,8 @@ window.Prod01View = {
         <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
         <div style="font-size:1.05rem;font-weight:900;color:var(--blue);">{{ displayPrice }}</div>
       </div>
-      <button class="btn-outline" style="padding:10px 22px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openCartDrawer">장바구니</button>
-      <button class="btn-blue"    style="padding:10px 28px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openQuickBuy">바로구매</button>
+      <button class="btn-outline" style="padding:10px 18px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openCartDrawer">담기</button>
+      <button class="btn-blue"    style="padding:10px 22px;font-size:0.88rem;white-space:nowrap;flex-shrink:0;" @click="openQuickBuy">구매</button>
     </div>
   </div>
 
