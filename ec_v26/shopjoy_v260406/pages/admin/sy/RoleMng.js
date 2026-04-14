@@ -571,7 +571,7 @@ window.SyRoleMng = {
   <!-- 상위권한 선택 모달 -->
   <role-tree-modal
     v-if="roleTreeModal.show"
-    :admin-data="adminData"
+    :disp-dataset="adminData"
     :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
     @select="onParentSelect"
     @close="roleTreeModal.show=false" />

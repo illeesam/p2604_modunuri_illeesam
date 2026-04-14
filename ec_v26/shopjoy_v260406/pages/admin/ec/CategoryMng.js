@@ -346,7 +346,7 @@ window.EcCategoryMng = {
 
   <category-tree-modal
     v-if="catTreeModal.show"
-    :admin-data="adminData"
+    :disp-dataset="adminData"
     :exclude-id="catTreeModal.targetRow && catTreeModal.targetRow.categoryId > 0 ? catTreeModal.targetRow.categoryId : null"
     @select="onParentSelect"
     @close="catTreeModal.show=false" />

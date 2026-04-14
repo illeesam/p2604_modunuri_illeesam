@@ -258,7 +258,7 @@ window.SyUserDtl = {
   <!-- 부서 선택 팝업 -->
   <dept-tree-modal
     v-if="deptModal.show"
-    :admin-data="adminData"
+    :disp-dataset="adminData"
     :exclude-id="null"
     @select="onDeptSelect"
     @close="deptModal.show=false" />

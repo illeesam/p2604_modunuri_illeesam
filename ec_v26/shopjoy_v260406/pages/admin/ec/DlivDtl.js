@@ -417,7 +417,7 @@ window.EcDlivDtl = {
 
   <!-- 배송상태변경이력 탭 -->
   <div v-if="!isNew && showTab('hist')" class="card">
-    <dliv-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
+    <ec-dliv-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
   </div>
 
   <!-- 정보수정이력 탭 -->

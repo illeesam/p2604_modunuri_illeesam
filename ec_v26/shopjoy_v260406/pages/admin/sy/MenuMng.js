@@ -346,7 +346,7 @@ window.SyMenuMng = {
 
   <menu-tree-modal
     v-if="menuTreeModal.show"
-    :admin-data="adminData"
+    :disp-dataset="adminData"
     :exclude-id="menuTreeModal.targetRow && menuTreeModal.targetRow.menuId > 0 ? menuTreeModal.targetRow.menuId : null"
     @select="onParentSelect"
     @close="menuTreeModal.show=false" />

@@ -453,7 +453,7 @@ window.EcClaimDtl = {
 
   <!-- 상태변경이력 탭 -->
   <div v-if="!isNew && showTab('hist')" class="card">
-    <claim-hist :claim-id="form.claimId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
+    <ec-claim-hist :claim-id="form.claimId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- 정보수정이력 탭 -->

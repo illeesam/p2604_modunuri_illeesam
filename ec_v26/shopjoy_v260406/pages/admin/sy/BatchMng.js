@@ -454,7 +454,7 @@ window.SyBatchMng = {
 
   <!-- ── 배치 실행이력 ── -->
   <div class="card" style="margin-top:4px;">
-    <batch-hist :admin-data="adminData" />
+    <sy-batch-hist :admin-data="adminData" />
   </div>
 
   <!-- ── Cron 편집 모달 ── -->

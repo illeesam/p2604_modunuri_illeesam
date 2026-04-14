@@ -161,7 +161,7 @@ window.EcCouponMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <coupon-dtl
+    <ec-coupon-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
       :admin-data="adminData"

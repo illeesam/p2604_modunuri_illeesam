@@ -553,7 +553,7 @@ window.EcOrderDtl = {
 
   <!-- 상태변경이력 탭 -->
   <div v-if="!isNew && showTab('hist')" class="card">
-    <order-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
+    <ec-order-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- 정보수정이력 탭 -->

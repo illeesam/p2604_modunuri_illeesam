@@ -135,7 +135,7 @@ window.EcMemberDtl = {
 
   <!-- 연관 이력 -->
   <div v-if="!isNew" class="card">
-    <member-hist
+    <ec-member-hist
       :navigate="navigate"
       :admin-data="adminData"
       :show-ref-modal="showRefModal"

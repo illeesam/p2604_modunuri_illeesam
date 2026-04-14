@@ -583,7 +583,7 @@ window.EcProdDtl = {
 
   </div>
   <div v-if="!isNew" class="card">
-    <prod-hist :prod-id="editId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
+    <ec-prod-hist :prod-id="editId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
   </div>
 </div>
 `
