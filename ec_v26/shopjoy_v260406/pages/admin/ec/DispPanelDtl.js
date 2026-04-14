@@ -51,7 +51,7 @@ window.EcDispPanelDtl = {
     const DEFAULT_END_DATE   = `${_today.getFullYear()+3}-12-31`;
 
     const form = reactive({
-      dispId: null, area: 'HOME_BANNER', name: '', status: '활성',
+      dispId: null, dispCode: '', area: 'HOME_BANNER', name: '', status: '활성',
       layoutType: 'grid', gridCols: 1,
       titleYn: 'N', title: '',
       htmlDesc: '',
@@ -404,6 +404,7 @@ window.EcDispPanelDtl = {
         const d = props.dispDataset.displays.find(x => x.dispId === props.editId);
         if (d) {
           form.dispId        = d.dispId;
+          form.dispCode      = d.dispCode      || '';
           form.area          = d.area          || 'HOME_BANNER';
           form.name          = d.name          || '';
           form.status        = d.status        || '활성';
@@ -428,6 +429,11 @@ window.EcDispPanelDtl = {
             Object.assign(rows[0], { ...d });
           }
         }
+      } else {
+        /* 신규: 패널코드 자동 생성 DP_YYMMDD_HHMMSS */
+        const t = new Date();
+        const p = n => String(n).padStart(2, '0');
+        form.dispCode = `DP_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
       /* Quill 초기화 (기본정보 탭이 기본) */
       initQuillDesc();
@@ -459,7 +465,7 @@ window.EcDispPanelDtl = {
     });
 
     const save = async () => {
-      if (!form.name || !form.area) { props.showToast('필수 항목을 입력해주세요.', 'error'); return; }
+      if (!form.name || !form.area || !form.dispCode) { props.showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
       await window.adminApiCall({
         method: isNew.value ? 'post' : 'put',
         path: `disps/${form.dispId}`,
@@ -683,8 +689,12 @@ window.EcDispPanelDtl = {
         <div v-show="tab==='info'">
           <div class="form-row">
             <div class="form-group">
+              <label class="form-label">패널코드 <span v-if="!viewMode" class="req">*</span></label>
+              <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="viewMode" style="font-family:monospace;" />
+            </div>
+            <div class="form-group">
               <label class="form-label">패널명 <span v-if="!viewMode" class="req">*</span></label>
-              <input class="form-control" v-model="form.name" placeholder="위젯 이름" :readonly="viewMode" />
+              <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
             </div>
             <div class="form-group">
               <label class="form-label">포함된 화면영역
@@ -1164,8 +1174,12 @@ window.EcDispPanelDtl = {
           <div v-if="t.key === 'info'">
             <div class="form-row">
               <div class="form-group">
+                <label class="form-label">패널코드 <span v-if="!viewMode" class="req">*</span></label>
+                <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="viewMode" style="font-family:monospace;" />
+              </div>
+              <div class="form-group">
                 <label class="form-label">패널명 <span v-if="!viewMode" class="req">*</span></label>
-                <input class="form-control" v-model="form.name" placeholder="위젯 이름" :readonly="viewMode" />
+                <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
               </div>
               <div class="form-group">
                 <label class="form-label">포함된 화면영역

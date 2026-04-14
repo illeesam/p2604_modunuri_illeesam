@@ -1026,6 +1026,7 @@
   .component('EcDispUiMng',           window.EcDispUiMng)
   .component('EcDispUiDtl',           window.EcDispUiDtl)
   .component('EcDispWidgetMng',       window.EcDispWidgetMng)
+  .component('EcDispWidgetDtl',       window.EcDispWidgetDtl)
   .component('EcDispUiPreview',       window.EcDispUiPreview)
   .component('EcDispAreaPreview2',    window.EcDispAreaPreview2)
   .component('EcDispPanelPreview',    window.EcDispPanelPreview)

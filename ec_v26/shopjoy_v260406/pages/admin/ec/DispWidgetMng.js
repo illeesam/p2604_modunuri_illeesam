@@ -377,7 +377,7 @@ window.EcDispWidgetMng = {
 
   <!-- 인라인 상세 -->
   <div v-if="selectedId !== null" style="margin-top:16px;">
-    <ec-disp-widget-lib-dtl
+    <ec-disp-widget-dtl
       :key="detailKey"
       :navigate="inlineNavigate"
       :disp-dataset="dispDataset"

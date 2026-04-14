@@ -54,6 +54,8 @@ window.EcDispAreaDtl = {
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
         form.regDate = `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`;
+        /* 자동 코드: DA_YYMMDD_HHMMSS */
+        form.codeValue = `DA_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
     });
 

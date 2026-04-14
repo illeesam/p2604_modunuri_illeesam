@@ -1,6 +1,6 @@
-/* ShopJoy Admin - 위젯라이브러리 상세/등록 */
-window.EcDispWidgetLibDtl = {
-  name: 'EcDispWidgetLibDtl',
+/* ShopJoy Admin - 전시위젯 상세/등록 */
+window.EcDispWidgetDtl = {
+  name: 'EcDispWidgetDtl',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
@@ -103,10 +103,10 @@ window.EcDispWidgetLibDtl = {
         const src = (props.dispDataset.widgetLibs || []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
       } else {
-        /* 신규: Lib코드 자동 생성 DL_YYMMDD_HHMMSS */
+        /* 신규: 위젯코드 자동 생성 DW_YYMMDD_HHMMSS */
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
-        form.libCode = `DL_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
+        form.libCode = `DW_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
       if (form.widgetType === 'html_editor') {
         await nextTick();
@@ -316,7 +316,7 @@ window.EcDispWidgetLibDtl = {
       window.addEventListener('mouseup', onUp);
     };
 
-    /* ── 위젯Lib미리보기용 위젯 객체 ── */
+    /* ── 위젯미리보기용 위젯 객체 ── */
     const previewWidget = computed(() => ({
       ...form,
       dispId: form.libId || 0,
@@ -381,7 +381,7 @@ window.EcDispWidgetLibDtl = {
 
     /* ── Yup 유효성 ── */
     const schema = window.yup.object({
-      libCode:    window.yup.string().required('Lib코드를 입력하세요.'),
+      libCode:    window.yup.string().required('위젯코드를 입력하세요.'),
       name:       window.yup.string().required('라이브러리명을 입력하세요.'),
       widgetType: window.yup.string().required('위젯 유형을 선택하세요.'),
     });
@@ -425,7 +425,7 @@ window.EcDispWidgetLibDtl = {
         method: 'delete',
         path: `widget-libs/${form.libId}`,
         confirmTitle: '삭제',
-        confirmMsg: '이 위젯 Lib를 삭제하시겠습니까?',
+        confirmMsg: '이 위젯를 삭제하시겠습니까?',
         showConfirm: props.showConfirm,
         showToast:   props.showToast,
         setApiRes:   props.setApiRes,
@@ -455,7 +455,7 @@ window.EcDispWidgetLibDtl = {
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
     <div style="display:flex;align-items:center;gap:10px;">
       <span style="font-size:15px;font-weight:700;color:#222;">
-        {{ isNew ? '위젯 Lib 신규등록' : '위젯 Lib 수정' }}
+        {{ isNew ? '위젯 신규등록' : '위젯 수정' }}
       </span>
       <span v-if="!isNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">#{{ String(form.libId).padStart(4,'0') }}</span>
     </div>
@@ -475,13 +475,13 @@ window.EcDispWidgetLibDtl = {
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">기본 정보</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group" style="margin:0;">
-            <label class="form-label">Lib코드 <span style="color:#e8587a;">*</span></label>
-            <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="DL_YYMMDD_HHMMSS" style="margin:0;font-family:monospace;" />
+            <label class="form-label">위젯코드 <span style="color:#e8587a;">*</span></label>
+            <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="DW_YYMMDD_HHMMSS" style="margin:0;font-family:monospace;" />
             <div v-if="errors.libCode" class="field-error">{{ errors.libCode }}</div>
           </div>
           <div class="form-group" style="margin:0;">
             <label class="form-label">라이브러리명 <span style="color:#e8587a;">*</span></label>
-            <input v-model="form.name" class="form-control" :class="{'is-invalid':errors.name}" placeholder="위젯 Lib 이름" style="margin:0;" />
+            <input v-model="form.name" class="form-control" :class="{'is-invalid':errors.name}" placeholder="위젯 이름" style="margin:0;" />
             <div v-if="errors.name" class="field-error">{{ errors.name }}</div>
           </div>
           <div class="form-group" style="margin:0;">
@@ -625,9 +625,9 @@ window.EcDispWidgetLibDtl = {
       title="드래그로 폭 조절">
       <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
     </div>
-    <!-- 오른쪽: 위젯Lib미리보기 -->
+    <!-- 오른쪽: 위젯미리보기 -->
     <div :style="{ width: previewPaneWidth + 'px', flexShrink:0, padding:'20px', background:'#f8f8f8', overflowX:'auto', transition:'width .2s' }">
-      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;">👁 위젯Lib미리보기</div>
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;">👁 위젯미리보기</div>
       <!-- 디바이스 모드 버튼 -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
         <button v-for="m in PREVIEW_MODES" :key="m.value"
