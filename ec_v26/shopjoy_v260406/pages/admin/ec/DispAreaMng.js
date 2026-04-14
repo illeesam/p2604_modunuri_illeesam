@@ -99,7 +99,7 @@ window.EcDispAreaMng = {
 
     /* ── 페이저 ── */
     const pager      = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 50];
+    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100, 200, 300];
     const total      = computed(() => filtered.value.length);
     const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
     const pageList   = computed(() =>

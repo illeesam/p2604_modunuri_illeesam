@@ -24,7 +24,7 @@ window.EcDispPanelMng = {
     const AUTH_GRADE_OPTS  = ['일반', '우수', 'VIP'];
     const LAYOUT_TYPE_OPTS = [{ value:'grid', label:'그리드' }, { value:'dashboard', label:'대시보드' }];
     const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100, 200, 300];
 
     /* 하단 상세 */
     const selectedId = ref(null);

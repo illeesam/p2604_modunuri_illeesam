@@ -53,8 +53,8 @@ window.EcDispWidgetMng = {
     const searchKw     = ref('');
     const searchType   = ref('');
     const searchStatus = ref('');
-    const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 50];
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100, 200, 300];
 
     const applied = reactive({ kw: '', type: '', status: '' });
     const doSearch = () => {
@@ -161,6 +161,25 @@ window.EcDispWidgetMng = {
     const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
     const detailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
 
+    const doDelete = async (d) => {
+      await window.adminApiCall({
+        method: 'delete',
+        path: `widget-libs/${d.libId}`,
+        confirmTitle: '삭제',
+        confirmMsg: `[${d.name}]을 삭제하시겠습니까?`,
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '삭제되었습니다.',
+        onLocal: () => {
+          const list = props.dispDataset.widgetLibs || [];
+          const idx = list.findIndex(x => x.libId === d.libId);
+          if (idx !== -1) list.splice(idx, 1);
+          if (selectedId.value === d.libId) selectedId.value = null;
+        },
+      });
+    };
+
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'ecDispWidgetLibMng') { selectedId.value = null; return; }
       props.navigate(pg, opts);
@@ -184,7 +203,7 @@ window.EcDispWidgetMng = {
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
 
     return {
-      WIDGET_TYPES, wTypeLabel, wIcon,
+      WIDGET_TYPES, wTypeLabel, wIcon, doDelete,
       searchKw, searchType, searchStatus, pager, PAGE_SIZES,
       filtered, totalCount, pageList, totalPages, pageNumbers,
       tree, openNodes, toggleNode, isOpen, selectedTreeKey, selectTree, expandAll, collapseAll,
@@ -300,11 +319,8 @@ window.EcDispWidgetMng = {
   <div style="flex:1;min-width:0;">
   <!-- 목록 -->
   <div class="card" style="padding:0;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #f0f0f0;">
+    <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:13px;color:#555;">총 <b>{{ totalCount }}</b>건</span>
-      <select v-model="pager.size" class="form-control" style="width:80px;margin:0;font-size:12px;" @change="pager.page=1">
-        <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}건</option>
-      </select>
     </div>
 
     <table class="admin-table">
@@ -355,6 +371,7 @@ window.EcDispWidgetMng = {
           <td style="vertical-align:top;padding-top:10px;">
             <div class="actions" style="justify-content:flex-end;">
               <button @click.stop="loadDetail(d.libId)" class="btn btn-blue btn-sm">수정</button>
+              <button @click.stop="doDelete(d)" class="btn btn-danger btn-sm">삭제</button>
             </div>
           </td>
         </tr>
@@ -362,13 +379,20 @@ window.EcDispWidgetMng = {
     </table>
 
     <!-- 페이저 -->
-    <div style="display:flex;justify-content:center;gap:4px;padding:14px;">
-      <button @click="pager.page=1"            :disabled="pager.page===1"           class="btn btn-sm btn-outline" style="font-size:12px;">«</button>
-      <button @click="pager.page--"            :disabled="pager.page===1"           class="btn btn-sm btn-outline" style="font-size:12px;">‹</button>
-      <button v-for="n in pageNumbers" :key="n" @click="pager.page=n"
-        class="btn btn-sm" :class="pager.page===n ? 'btn-primary' : 'btn-outline'" style="font-size:12px;min-width:32px;">{{ n }}</button>
-      <button @click="pager.page++"            :disabled="pager.page===totalPages"  class="btn btn-sm btn-outline" style="font-size:12px;">›</button>
-      <button @click="pager.page=totalPages"   :disabled="pager.page===totalPages"  class="btn btn-sm btn-outline" style="font-size:12px;">»</button>
+    <div class="pagination" style="padding:12px 18px;border-top:1px solid #f0f0f0;margin-top:0;">
+      <div></div>
+      <div class="pager">
+        <button :disabled="pager.page===1" @click="pager.page=1">«</button>
+        <button :disabled="pager.page===1" @click="pager.page--">‹</button>
+        <button v-for="n in pageNumbers" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+        <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
+        <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+      </div>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        </select>
+      </div>
     </div>
   </div>
 
