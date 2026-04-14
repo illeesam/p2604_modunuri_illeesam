@@ -12,7 +12,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
   <script>
-    /* ── 프론트 사이트 번호 (URL ?FRONT_SITE_NO=02 로 오버라이드 가능) ── */
+    /* ═══════════════════════════════════════════════════════════════════
+       사이트 기본값 설정 (변경 시 이 한 줄만 수정)
+       ═══════════════════════════════════════════════════════════════════ */
+    const DEFAULT_FRONT_SITE_NO = '01';
+
     /* /index.html → / 로 단축 (해시/쿼리는 유지) */
     (function(){
       try {
@@ -23,15 +27,14 @@
         }
       } catch(_){}
     })();
+    /* FRONT_SITE_NO — URL ?FRONT_SITE_NO=02 로 오버라이드 가능 */
     (function(){
-      var def = '01';
       try {
         var qs = new URLSearchParams(window.location.search);
         var v = qs.get('FRONT_SITE_NO');
         if (v) {
           window.FRONT_SITE_NO = v;
           try { localStorage.setItem('FRONT_SITE_NO', v); } catch(_){}
-          /* URL에서 ?FRONT_SITE_NO=... 제거 (해시는 유지) */
           try {
             qs.delete('FRONT_SITE_NO');
             var newSearch = qs.toString();
@@ -40,22 +43,42 @@
         } else {
           var saved = null;
           try { saved = localStorage.getItem('FRONT_SITE_NO'); } catch(_){}
-          window.FRONT_SITE_NO = saved || def;
+          window.FRONT_SITE_NO = saved || DEFAULT_FRONT_SITE_NO;
         }
-      } catch(e) { window.FRONT_SITE_NO = def; }
+      } catch(e) { window.FRONT_SITE_NO = DEFAULT_FRONT_SITE_NO; }
+      /* ADMIN_SITE_NO 기본값은 admin.html에서 전적으로 관리. front 진입 시 저장된 값만 읽음 (덮어쓰지 않음) */
+      try {
+        var savedA = null;
+        try { savedA = localStorage.getItem('ADMIN_SITE_NO'); } catch(_){}
+        window.ADMIN_SITE_NO = savedA || '';
+      } catch(e) { window.ADMIN_SITE_NO = ''; }
     })();
     document.write('<link rel="stylesheet" href="assets/css/frontOfficeStyle' + window.FRONT_SITE_NO + '.css">');
     document.write('<link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">');
+    /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
+    window.addEventListener('storage', function(e){
+      if ((e.key === 'FRONT_SITE_NO' || e.key === 'ADMIN_SITE_NO') && e.newValue !== e.oldValue) {
+        location.reload();
+      }
+    });
   </script>
-  <link rel="stylesheet" href="assets/css/vue-loading.css">
-  <style>:root { --vue-loading-accent: #1a1a1a; --vue-loading-glow: rgba(26, 26, 26, 0.15); }</style>
+  <!-- 초기 로딩 인디케이터: 외부 리소스 없이 즉시 표시 -->
+  <style>
+    #_boot_loading { position:fixed; inset:0; z-index:99999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
+      animation:_bootspin .8s linear infinite; }
+    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+    @keyframes _bootspin { to { transform: rotate(360deg); } }
+    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+  </style>
 </head>
 <body>
-  <div id="vue-app-loading" class="vue-app-loading" role="status" aria-busy="true" aria-live="polite">
-    <div class="vue-app-loading-inner">
-      <div class="vue-app-loading-spinner" aria-hidden="true"></div>
-      <p class="vue-app-loading-text">로딩 중… .</p>
-    </div>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
   </div>
   <div id="app"></div>
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>

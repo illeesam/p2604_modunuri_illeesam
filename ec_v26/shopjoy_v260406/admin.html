@@ -4,6 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShopJoy Admin</title>
+  <script>
+    /* ═══════════════════════════════════════════════════════════════════
+       사이트 기본값 설정 (변경 시 이 한 줄만 수정)
+       ═══════════════════════════════════════════════════════════════════ */
+    const DEFAULT_ADMIN_SITE_NO = '01';
+
+    /* ADMIN_SITE_NO — URL ?ADMIN_SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
+    (function(){
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        var v = qs.get('ADMIN_SITE_NO');
+        if (v) {
+          window.ADMIN_SITE_NO = v;
+          try { localStorage.setItem('ADMIN_SITE_NO', v); } catch(_){}
+          try {
+            qs.delete('ADMIN_SITE_NO');
+            var newSearch = qs.toString();
+            history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
+          } catch(_){}
+        } else {
+          var saved = null;
+          try { saved = localStorage.getItem('ADMIN_SITE_NO'); } catch(_){}
+          window.ADMIN_SITE_NO = saved || DEFAULT_ADMIN_SITE_NO;
+          if (!saved) { try { localStorage.setItem('ADMIN_SITE_NO', DEFAULT_ADMIN_SITE_NO); } catch(_){} }
+        }
+      } catch(e) { window.ADMIN_SITE_NO = DEFAULT_ADMIN_SITE_NO; }
+      /* ADMIN_SITE_NO 기준 CSS 로드 */
+      document.write('<link rel="stylesheet" href="assets/css/backOfficeStyle' + window.ADMIN_SITE_NO + '.css">');
+    })();
+    /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
+    window.addEventListener('storage', function(e){
+      if ((e.key === 'ADMIN_SITE_NO' || e.key === 'FRONT_SITE_NO') && e.newValue !== e.oldValue) {
+        location.reload();
+      }
+    });
+  </script>
   <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
   <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
@@ -12,10 +48,24 @@
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
   <script src="assets/cdn/pkg/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
   <script src="assets/cdn/pkg/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link rel="stylesheet" href="assets/css/backOfficeStyle.css">
   <link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">
+  <style>
+    #_boot_loading { position:fixed; inset:0; z-index:99999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
+      animation:_bootspin .8s linear infinite; }
+    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+    @keyframes _bootspin { to { transform: rotate(360deg); } }
+    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+  </style>
 </head>
 <body>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
+  </div>
   <div id="app"></div>
   <script src="pages/base/NotFound.js"></script>
   <script src="pages/admin/AdminData.js"></script>

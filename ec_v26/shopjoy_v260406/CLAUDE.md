@@ -317,8 +317,13 @@ CSS 변수 기반 테마 전환:
 | 스크립트 | `pages/Home{NO}.js`, `Prod{NO}List.js`, `Prod{NO}View.js` document.write로 동적 삽입 |
 | 컴포넌트 등록 | `app.component('Home'+NO, window['Home'+NO])` |
 | 런타임 렌더 | `<component :is="frontHomeComp">` (window['Home'+NO] 참조) |
-| URL 오버라이드 | `?FRONT_SITE_NO=02` → localStorage 저장 후 쿼리 자동 제거 |
-| 헤더 배지 | AppHeader 로고 옆 `01/02` 작은 뱃지 (hover 시 툴팁) |
+| URL 오버라이드 | `?FRONT_SITE_NO=01\|02\|03` → localStorage 저장 후 쿼리 자동 제거 |
+| 헤더 배지 | AppHeader 로고 옆 `01/02/03` 작은 뱃지 (hover 시 툴팁) |
+
+**사이트 테마 프리셋**:
+- **01** — 기본 모듈 (베이지/카키, `frontOfficeStyle01.css`)
+- **02** — Mint Edition (민트/세이지 그린, `frontOfficeStyle02.css`, 상단에 🌿 리본)
+- **03** — Luxe Edition (로얄 퍼플, `frontOfficeStyle03.css`, 상단에 👑 리본)
 
 **URL 단축**: `/index.html` → `/` (history.replaceState로 자동), 해시/쿼리 유지.
 

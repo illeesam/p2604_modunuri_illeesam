@@ -4,12 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DispUi 미리보기</title>
+  <script>
+    /* ═══════════════════════════════════════════════════════════════════
+       사이트 기본값 설정 (변경 시 이 한 줄만 수정)
+       ═══════════════════════════════════════════════════════════════════ */
+    const DEFAULT_FRONT_SITE_NO = '01';
+    window.FRONT_SITE_NO = (typeof localStorage !== 'undefined' && localStorage.getItem('FRONT_SITE_NO')) || DEFAULT_FRONT_SITE_NO;
+    /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
+    window.addEventListener('storage', function(e){
+      if ((e.key === 'FRONT_SITE_NO' || e.key === 'ADMIN_SITE_NO') && e.newValue !== e.oldValue) {
+        location.reload();
+      }
+    });
+  </script>
   <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
   <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
   <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
-  <link rel="stylesheet" href="assets/css/backOfficeStyle.css">
+  <link rel="stylesheet" href="assets/css/backOfficeStyle01.css">
   <link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">
   <script src="pages/admin/AdminData.js"></script>
   <script src="utils/adminUtil.js"></script>
@@ -29,9 +42,22 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
+    #_boot_loading { position:fixed; inset:0; z-index:99999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
+      animation:_bootspin .8s linear infinite; }
+    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+    @keyframes _bootspin { to { transform: rotate(360deg); } }
+    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
   </style>
 </head>
 <body>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
+  </div>
   <div id="app"></div>
   <script>
     const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
@@ -112,6 +138,11 @@
       if (window[name]) app.component(name, window[name]);
     });
     app.mount('#app');
+    const loadingEl = document.getElementById('_boot_loading');
+    if (loadingEl) {
+      loadingEl.classList.add('done');
+      setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
+    }
   </script>
 </body>
 </html>

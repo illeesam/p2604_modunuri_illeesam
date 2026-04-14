@@ -3,7 +3,11 @@
   const { createApp, ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
 
   /* ── 메뉴 구조 ── */
-  const TOP_MENUS = [
+  /* ADMIN_SITE_NO 기준으로 상단 메뉴 필터링
+     - 02: 고객센터 제외
+     - 03: 프로모션 제외 */
+  const _ADMIN_NO = window.ADMIN_SITE_NO || '01';
+  const _ALL_TOP_MENUS = [
     { id: 'member',    label: '회원관리' },
     { id: 'product',   label: '상품관리' },
     { id: 'order',     label: '주문관리' },
@@ -12,6 +16,11 @@
     { id: 'customer',  label: '고객센터' },
     { id: 'system',    label: '시스템' },
   ];
+  const TOP_MENUS = _ALL_TOP_MENUS.filter(m => {
+    if (_ADMIN_NO === '02' && m.id === 'customer')  return false;
+    if (_ADMIN_NO === '03' && m.id === 'promotion') return false;
+    return true;
+  });
 
   const LEFT_MENUS = {
     member:    [{ id: 'ecMemberMng',   label: '회원관리' }],
@@ -446,6 +455,41 @@
         showToast('가입이 완료되었습니다. 로그인해주세요.');
       };
 
+      /* ── 연관사이트 레이어 ── */
+      const relatedSiteOpen = ref(false);
+      const toggleRelatedSite = () => { relatedSiteOpen.value = !relatedSiteOpen.value; };
+      const openRelatedLink = (url) => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        relatedSiteOpen.value = false;
+      };
+      const goFrontSite = (no) => {
+        try { localStorage.setItem('FRONT_SITE_NO', no); } catch(_){}
+        window.open('index.html?FRONT_SITE_NO=' + no, '_blank');
+        relatedSiteOpen.value = false;
+      };
+      const goAdminSite = (no) => {
+        try { localStorage.setItem('ADMIN_SITE_NO', no); } catch(_){}
+        window.open('admin.html?ADMIN_SITE_NO=' + no, '_blank');
+        relatedSiteOpen.value = false;
+      };
+      const currentFrontNo = (typeof localStorage !== 'undefined' && localStorage.getItem('FRONT_SITE_NO')) || '01';
+      const currentAdminSiteNo = window.ADMIN_SITE_NO || '01';
+      const SITE_PAIR_MENU = [
+        { front:'01',   admin:'01' },
+        { front:'02',   admin:'02' },
+        { front:'03',   admin:'03' },
+        { front:'9999', admin:'9999' },
+      ];
+      const DISP_LINKS = [
+        { label: '통합 페이지',  url: 'disp-ui.html#page=dispUiPage', icon:'🌐' },
+        { label: 'UI 샘플 01',   url: 'disp-ui.html#page=dispUi01',   icon:'1️⃣' },
+        { label: 'UI 샘플 02',   url: 'disp-ui.html#page=dispUi02',   icon:'2️⃣' },
+        { label: 'UI 샘플 03',   url: 'disp-ui.html#page=dispUi03',   icon:'3️⃣' },
+        { label: 'UI 샘플 04',   url: 'disp-ui.html#page=dispUi04',   icon:'4️⃣' },
+        { label: 'UI 샘플 05',   url: 'disp-ui.html#page=dispUi05',   icon:'5️⃣' },
+        { label: 'UI 샘플 06',   url: 'disp-ui.html#page=dispUi06',   icon:'6️⃣' },
+      ];
+
       /* ── 즐겨찾기 ── */
       const favorites = reactive([]);
       const favKeepSet = reactive(new Set()); // 즐겨찾기별 keep 설정
@@ -498,6 +542,8 @@
         favorites, favKeepSet, sidebarTab, isFav, toggleFav, favList, toggleFavKeep,
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
+        relatedSiteOpen, toggleRelatedSite, openRelatedLink,
+        goFrontSite, goAdminSite, currentFrontNo, currentAdminSiteNo, SITE_PAIR_MENU, DISP_LINKS,
       };
     },
 
@@ -506,7 +552,16 @@
   <!-- ① TOP NAV -->
   <nav class="admin-top-nav">
     <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" title="사이드바">☰</button>
-    <span class="brand" @click="navigate('dashboard')">ShopJoy</span>
+    <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
+      ShopJoy
+      <span class="front-site-badge"
+        :title="'FRONT_SITE_NO=' + (currentFrontNo || '-') + ' ADMIN_SITE_NO=' + (currentAdminSiteNo || '-')"
+        :data-tip="'FRONT_SITE_NO=' + (currentFrontNo || '-') + ' ADMIN_SITE_NO=' + (currentAdminSiteNo || '-')"
+        style="display:inline-flex;gap:4px;font-family:monospace;font-size:11px;cursor:help;">
+        <span :style="{fontWeight:800,color: currentFrontNo==='03'?'#7b1fa2':currentFrontNo==='02'?'#2e7d6b':currentFrontNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentFrontNo || '-' }}</span>
+        <span :style="{fontWeight:800,color: currentAdminSiteNo==='03'?'#7b1fa2':currentAdminSiteNo==='02'?'#2e7d6b':currentAdminSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentAdminSiteNo || '-' }}</span>
+      </span>
+    </span>
     <div class="top-nav-menus">
       <span v-for="tm in TOP_MENUS" :key="tm.id"
         class="top-nav-item" :class="{active: activeTop===tm.id}"
@@ -622,6 +677,79 @@
             @click="sidebarTab='fav'">★ 즐겨찾기</button>
           <button class="left-nav-section-tab" :class="{active: sidebarTab==='open'}"
             @click="sidebarTab='open'">열린화면</button>
+        </div>
+        <!-- 연관사이트 (별도 행) -->
+        <div style="padding:6px 10px;border-top:1px solid #eef0f3;background:#fafbfc;">
+          <button @click.stop="toggleRelatedSite"
+            style="width:100%;display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border:1px solid #eee;border-radius:6px;cursor:pointer;font-size:12px;color:#555;"
+            title="연관사이트 열기">
+            <span>🔗 연관사이트</span>
+            <span style="margin-left:auto;display:inline-flex;gap:5px;font-family:monospace;">
+              <span :style="{fontWeight:800,color: currentFrontNo==='03'?'#7b1fa2':currentFrontNo==='02'?'#2e7d6b':currentFrontNo==='9999'?'#888':'#9f2946'}">{{ currentFrontNo || '-' }}</span>
+              <span :style="{fontWeight:800,color: currentAdminSiteNo==='03'?'#7b1fa2':currentAdminSiteNo==='02'?'#2e7d6b':currentAdminSiteNo==='9999'?'#888':'#9f2946'}">{{ currentAdminSiteNo || '-' }}</span>
+            </span>
+            <span style="font-size:9px;color:#bbb;">▾</span>
+          </button>
+        </div>
+
+        <!-- 연관사이트 팝업 레이어 -->
+        <div v-if="relatedSiteOpen"
+          @click="relatedSiteOpen=false"
+          style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.25);"></div>
+        <div v-if="relatedSiteOpen"
+          @click.stop
+          style="position:fixed;left:12px;bottom:56px;z-index:9999;width:360px;max-height:75vh;overflow:auto;background:#fff;border:1px solid #ffc9d6;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+          <div style="padding:12px 14px;border-bottom:1px solid #ffc9d6;background:linear-gradient(135deg,#fff0f4,#ffe4ec);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-weight:800;font-size:13px;color:#9f2946;"><span style="color:#e8587a;font-size:9px;margin-right:6px;">●</span>🔗 연관사이트</span>
+            <button @click="relatedSiteOpen=false" style="background:none;border:none;font-size:13px;color:#9f2946;cursor:pointer;padding:2px 6px;border-radius:4px;">✕</button>
+          </div>
+          <div style="padding:12px;">
+            <!-- _SITE_NO (FRONT / ADMIN 분리 링크) -->
+            <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;margin-bottom:12px;">
+              <div style="font-size:12px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:10.5px;color:#888;font-weight:600;">(FRONT: {{ currentFrontNo || '-' }}, ADMIN: {{ currentAdminSiteNo || '-' }})</span></div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <div v-for="p in SITE_PAIR_MENU" :key="p.front+'_'+p.admin"
+                  style="display:flex;gap:6px;align-items:center;">
+                  <button type="button" @click="goFrontSite(p.front)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFrontNo===p.front?'#e0f2ec':'transparent',border:'1px solid '+(currentFrontNo===p.front?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentFrontNo===p.front?'#2e7d6b':'#444',fontWeight: currentFrontNo===p.front?700:500,transition:'all .12s'}"
+                    onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
+                    onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
+                    :data-active="currentFrontNo===p.front?'1':'0'"
+                    title="index.html 새창 오픈">
+                    <span>{{ currentFrontNo===p.front?'●':'○' }}</span>
+                    <span>FRONT={{ p.front }}</span>
+                    <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
+                  </button>
+                  <button type="button" @click="goAdminSite(p.admin)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminSiteNo===p.admin?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminSiteNo===p.admin?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentAdminSiteNo===p.admin?'#7b1fa2':'#444',fontWeight: currentAdminSiteNo===p.admin?700:500,transition:'all .12s'}"
+                    onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
+                    onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
+                    :data-active="currentAdminSiteNo===p.admin?'1':'0'"
+                    title="admin.html 새창 오픈">
+                    <span>{{ currentAdminSiteNo===p.admin?'●':'○' }}</span>
+                    <span>ADMIN={{ p.admin }}</span>
+                    <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- dispUi -->
+            <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
+              <div style="font-size:12px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">🖥 dispUi (샘플)</div>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <button v-for="it in DISP_LINKS" :key="it.url"
+                  @click="openRelatedLink(it.url)"
+                  style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
+                  onmouseover="this.style.background='#fef3eb';this.style.color='#c2410c';"
+                  onmouseout="this.style.background='transparent';this.style.color='#333';">
+                  <span style="width:18px;text-align:center;">{{ it.icon }}</span>
+                  <span style="flex:1;">{{ it.label }}</span>
+                  <span style="font-size:10px;color:#aaa;">↗</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -1119,4 +1247,10 @@
   .component('TemplatePreviewModal', window.TemplatePreviewModal)
   .component('TemplateSendModal',    window.TemplateSendModal)
   .mount('#app');
+
+  const loadingEl = document.getElementById('_boot_loading');
+  if (loadingEl) {
+    loadingEl.classList.add('done');
+    setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
+  }
 })();

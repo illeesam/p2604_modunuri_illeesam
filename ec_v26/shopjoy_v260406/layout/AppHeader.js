@@ -113,6 +113,7 @@ window.AppHeader = {
       profileOpen, pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pwOpen, pw, openPw, savePw, IS,
       frontSiteNo: window.FRONT_SITE_NO || '01',
+      adminSiteNo: (typeof localStorage !== 'undefined' && localStorage.getItem('ADMIN_SITE_NO')) || '01',
     };
   },
 
@@ -166,19 +167,25 @@ window.AppHeader = {
     </svg>
     <div style="display:flex;flex-direction:column;line-height:1.1;text-align:left;">
       <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.3px;">{{ config.name }}</span>
-      <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">{{ config.tagline }}</span>
+      <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">
+        {{ config.tagline }}
+        <span class="front-site-badge"
+          :title="'FRONT_SITE_NO=' + (frontSiteNo || '-') + ' ADMIN_SITE_NO=' + (adminSiteNo || '-')"
+          :data-tip="'FRONT_SITE_NO=' + (frontSiteNo || '-') + ' ADMIN_SITE_NO=' + (adminSiteNo || '-')"
+          style="cursor:help;">
+          <span :style="{fontWeight:800,marginLeft:'4px',color: frontSiteNo==='03' ? '#7b1fa2' : frontSiteNo==='02' ? '#2e7d6b' : frontSiteNo==='9999' ? '#888' : '#9f2946'}">{{ frontSiteNo || '-' }}</span>
+          <span :style="{fontWeight:800,marginLeft:'3px',color: adminSiteNo==='03' ? '#7b1fa2' : adminSiteNo==='02' ? '#2e7d6b' : adminSiteNo==='9999' ? '#888' : '#9f2946'}">{{ adminSiteNo || '-' }}</span>
+        </span>
+      </span>
     </div>
   </button>
-  <span class="front-site-badge" :title="'FRONT_SITE_NO=' + frontSiteNo"
-    :data-tip="'FRONT_SITE_NO=' + frontSiteNo"
-    :style="{position:'relative',display:'inline-flex',alignItems:'center',padding:'1px 6px',marginLeft:'2px',borderRadius:'8px',fontSize:'9px',fontWeight:700,letterSpacing:'0.03em',background:'#fafafa',color: frontSiteNo==='02' ? '#2e7d6b' : '#9f2946',border:'1px solid #eee',cursor:'help'}">
-    {{ frontSiteNo }}
-  </span>
 
   <!-- Top nav -->
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
     <template v-for="m in config.topMenu" :key="m.menuId">
-      <span v-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
+      <!-- Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) -->
+      <template v-if="frontSiteNo==='01' && (m.menuId && (m.menuId.startsWith('dispUi') || m.menuId==='divider-disp'))"></template>
+      <span v-else-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
       <button v-else @click="navigate(m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
         <span>{{ m.menuNm }}</span>
       </button>

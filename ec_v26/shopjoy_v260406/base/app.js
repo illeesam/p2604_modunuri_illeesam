@@ -366,10 +366,11 @@
     });
 
     /* ── Loading done ── */
-    const loadingEl = document.getElementById('vue-app-loading');
+    const loadingEl = document.getElementById('_boot_loading') || document.getElementById('vue-app-loading');
     if (loadingEl) {
+      loadingEl.classList.add('done');
       loadingEl.classList.add('vue-app-loading--done');
-      setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 500);
+      setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
     }
 
     /* FRONT_SITE_NO 기준 동적 컴포넌트 참조 */

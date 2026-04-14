@@ -1,6 +1,6 @@
 /* ShopJoy - Prod01View (상품 상세 리뉴얼) */
-window.Prod02View = {
-  name: "Prod02View",
+window.Prod03View = {
+  name: "Prod03View",
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
     const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;
@@ -544,11 +544,11 @@ window.Prod02View = {
   template: /* html */ `
 <div class="page-wrap" style="padding-bottom:72px;">
 
-  <!-- Site 02 Edition Ribbon -->
-  <div style="background:linear-gradient(135deg,#2e7d6b 0%,#4a9b7e 50%,#5b9279 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;">
-    <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.4);">MINT</span>
-    <span>🌿 자연 소재 · 친환경 패키지</span>
-    <span style="margin-left:auto;opacity:0.85;">SITE 02</span>
+  <!-- Site 03 Edition Ribbon -->
+  <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
+    <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.5);">👑 LUXE</span>
+    <span>✨ 한정판 · 시그니처 상품</span>
+    <span style="margin-left:auto;opacity:0.9;">SITE 03</span>
   </div>
 
   <!-- 페이지 타이틀 배너 -->

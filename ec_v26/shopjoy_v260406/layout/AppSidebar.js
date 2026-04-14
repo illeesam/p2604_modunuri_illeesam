@@ -63,8 +63,12 @@ window.AppSidebar = {
       emit('close-mobile');
     };
 
+    const frontSiteNo = window.FRONT_SITE_NO || '01';
+    const showSamples = frontSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
+
     return { isMenuActive, sample0Open, sample1Open, sample2Open, dispUiOpen,
-             SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, navTo };
+             SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, navTo,
+             showSamples };
   },
   template: /* html */ `
 <div id="sidebar" :class="[sidebarOpen?'':'collapsed', mobileOpen?'open':'']" @click.stop>
@@ -94,6 +98,8 @@ window.AppSidebar = {
       </template>
     </template>
 
+    <!-- 샘플 섹션 — Site 01은 전체 숨김 -->
+    <template v-if="showSamples">
     <!-- 샘플0 (01~06) -->
     <div v-if="sidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="sample0Open=!sample0Open"
@@ -165,6 +171,7 @@ window.AppSidebar = {
         <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">{{ item.menuNm }}</span>
       </button>
     </template>
+    </template>  <!-- /showSamples -->
 
     <div style="flex:1;"></div>
     <button type="button" @click.stop="$emit('toggle-sidebar')"

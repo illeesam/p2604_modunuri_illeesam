@@ -1,6 +1,6 @@
 /* ShopJoy - Prod01List (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
-window.Prod02List = {
-  name: "Prod02List",
+window.Prod03List = {
+  name: "Prod03List",
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   setup(props) {
     const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
@@ -199,11 +199,11 @@ window.Prod02List = {
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- Site 02 Edition Ribbon -->
-  <div style="background:linear-gradient(135deg,#2e7d6b 0%,#4a9b7e 50%,#5b9279 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;">
-    <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.4);">MINT</span>
-    <span>🌿 세이지 그린 큐레이션 — 지속 가능한 소재</span>
-    <span style="margin-left:auto;opacity:0.85;">SITE 02</span>
+  <!-- Site 03 Edition Ribbon -->
+  <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
+    <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.5);">👑 LUXE</span>
+    <span>✨ 프리미엄 큐레이션 — 장인의 손길</span>
+    <span style="margin-left:auto;opacity:0.9;">SITE 03</span>
   </div>
 
   <!-- 페이지 타이틀 배너 -->

@@ -1,20 +1,20 @@
 /* ShopJoy - Home */
-window.Home02 = {
+window.Home03 = {
   name: 'Home',
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   emits: [],
   template: /* html */ `
 <div>
 
-  <!-- ══ Site 02 Edition Ribbon ══ -->
-  <div style="background:linear-gradient(135deg,#2e7d6b 0%,#4a9b7e 50%,#5b9279 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-    <span style="font-size:10px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(255,255,255,0.4);border-radius:2px;">MINT EDITION</span>
-    <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;">🌿 자연에서 영감받은 세이지 그린 컬렉션</span>
-    <span style="margin-left:auto;font-size:11px;opacity:0.85;">FRONT_SITE_NO=02</span>
+  <!-- ══ Site 03 Edition Ribbon ══ -->
+  <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
+    <span style="font-size:10px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(255,255,255,0.5);border-radius:2px;">👑 LUXE EDITION</span>
+    <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;">✨ 로얄 퍼플 프리미엄 컬렉션 — 한정 수량</span>
+    <span style="margin-left:auto;font-size:11px;opacity:0.9;">FRONT_SITE_NO=03</span>
   </div>
 
   <!-- ══ Hero Banner Slider ══ -->
-  <section style="position:relative;overflow:hidden;background:#f5f3f0;min-height:320px;display:flex;align-items:center;flex-wrap:wrap;">
+  <section style="position:relative;overflow:hidden;background:#faf7fd;min-height:320px;display:flex;align-items:center;flex-wrap:wrap;">
     <!-- 좌: 텍스트 (슬라이드별) -->
     <div style="position:relative;z-index:2;flex:1 1 260px;padding:clamp(28px,6vw,80px) clamp(20px,5vw,60px) clamp(28px,6vw,80px) clamp(20px,5vw,48px);min-width:0;">
       <h1 style="font-size:clamp(1.4rem,3.5vw,2.6rem);font-weight:300;line-height:1.3;color:#1a1a1a;margin-bottom:16px;letter-spacing:-0.5px;">

@@ -18,10 +18,19 @@ window.AppFooter = {
         window.open((window.pageUrl ? window.pageUrl('disp-ui.html') : 'disp-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'frontSite') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FRONT_SITE_NO=' + target;
+      } else if (root === 'frontOnly') {
+        /* target = FRONT 번호만, index.html 이동 */
+        try { localStorage.setItem('FRONT_SITE_NO', target); } catch(_){}
+        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FRONT_SITE_NO=' + target;
+      } else if (root === 'backOnly') {
+        /* target = BACK 번호만, admin.html 새창 오픈 */
+        try { localStorage.setItem('ADMIN_SITE_NO', target); } catch(_){}
+        window.open((window.pageUrl ? window.pageUrl('admin.html') : 'admin.html') + '?ADMIN_SITE_NO=' + target, '_blank');
       }
       menuOpen.value = false;
     };
-    const currentSiteNo = (window.FRONT_SITE_NO || '01');
+    const currentSiteNo  = window.FRONT_SITE_NO || '01';
+    const currentAdminNo = (typeof localStorage !== 'undefined' && localStorage.getItem('ADMIN_SITE_NO')) || '01';
 
     const FRONT_MENU = [
       { id:'home',       label:'홈',         icon:'🏠' },
@@ -62,10 +71,18 @@ window.AppFooter = {
       { id:'dispUi06',   label:'UI 샘플 06',  icon:'6️⃣' },
     ];
     const SITE_MENU = [
-      { id:'01', label:'FRONT_SITE_NO=01' },
-      { id:'02', label:'FRONT_SITE_NO=02' },
+      { id:'01',   label:'FRONT_SITE_NO=01' },
+      { id:'02',   label:'FRONT_SITE_NO=02' },
+      { id:'03',   label:'FRONT_SITE_NO=03' },
+      { id:'9999', label:'FRONT_SITE_NO=9999' },
     ];
-    return { menuOpen, toggleMenu, closeMenu, goItem, currentSiteNo, FRONT_MENU, BACK_MENU, DISP_MENU, SITE_MENU };
+    const SITE_PAIR_MENU = [
+      { front:'01',   admin:'01' },
+      { front:'02',   admin:'02' },
+      { front:'03',   admin:'03' },
+      { front:'9999', admin:'9999' },
+    ];
+    return { menuOpen, toggleMenu, closeMenu, goItem, currentSiteNo, currentAdminNo, FRONT_MENU, BACK_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
   },
   template: /* html */ `
 <footer style="padding:28px 32px;">
@@ -100,7 +117,10 @@ window.AppFooter = {
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;">
       <button type="button" @click="toggleMenu"
         style="font-size:0.75rem;padding:5px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
-        🌐 메뉴 바로가기 <span style="font-size:9px;">▾</span>
+        🌐 메뉴 바로가기
+        <span :style="{fontWeight:800,color: currentSiteNo==='03' ? '#7b1fa2' : currentSiteNo==='02' ? '#2e7d6b' : currentSiteNo==='9999' ? '#888' : '#9f2946'}">{{ currentSiteNo || '-' }}</span>
+        <span :style="{fontWeight:800,color: currentAdminNo==='03' ? '#7b1fa2' : currentAdminNo==='02' ? '#2e7d6b' : currentAdminNo==='9999' ? '#888' : '#9f2946'}">{{ currentAdminNo || '-' }}</span>
+        <span style="font-size:9px;">▾</span>
       </button>
 
       <!-- 메뉴 레이어 -->
@@ -153,19 +173,34 @@ window.AppFooter = {
 
           <!-- 나머지: Front 사이트번호 + dispUi -->
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <!-- Front 사이트번호 -->
+            <!-- _SITE_NO (FRONT / BACK 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 Front 사이트번호 <span style="font-size:11px;color:#888;font-weight:600;">(현재: {{ currentSiteNo }})</span></div>
-              <div style="display:flex;flex-direction:column;gap:2px;">
-                <button v-for="s in SITE_MENU" :key="s.id" type="button"
-                  @click="goItem('frontSite', s.id)"
-                  :style="{display:'flex',alignItems:'center',gap:'8px',padding:'7px 10px',background: currentSiteNo===s.id?'#e0f2ec':'transparent',border:'none',borderRadius:'6px',cursor:'pointer',fontSize:'12.5px',color: currentSiteNo===s.id?'#2e7d6b':'#333',textAlign:'left',fontWeight: currentSiteNo===s.id?700:500,transition:'all .12s'}"
-                  onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
-                  onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#333';}"
-                  :data-active="currentSiteNo===s.id?'1':'0'">
-                  <span style="font-size:14px;width:18px;text-align:center;">{{ currentSiteNo===s.id?'●':'○' }}</span>
-                  <span>{{ s.label }}</span>
-                </button>
+              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FRONT: {{ currentSiteNo }}, ADMIN: {{ currentAdminNo }})</span></div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <div v-for="p in SITE_PAIR_MENU" :key="p.front+'_'+p.admin"
+                  style="display:flex;gap:6px;align-items:center;">
+                  <!-- FRONT 링크 -->
+                  <button type="button" @click="goItem('frontOnly', p.front)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentSiteNo===p.front?'#e0f2ec':'transparent',border:'1px solid '+(currentSiteNo===p.front?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentSiteNo===p.front?'#2e7d6b':'#444',fontWeight: currentSiteNo===p.front?700:500,transition:'all .12s'}"
+                    onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
+                    onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
+                    :data-active="currentSiteNo===p.front?'1':'0'"
+                    title="index.html로 이동 (같은 창)">
+                    <span>{{ currentSiteNo===p.front?'●':'○' }}</span>
+                    <span>FRONT={{ p.front }}</span>
+                  </button>
+                  <!-- BACK 링크 (admin.html 새창) -->
+                  <button type="button" @click="goItem('backOnly', p.admin)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminNo===p.admin?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminNo===p.admin?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentAdminNo===p.admin?'#7b1fa2':'#444',fontWeight: currentAdminNo===p.admin?700:500,transition:'all .12s'}"
+                    onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
+                    onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
+                    :data-active="currentAdminNo===p.admin?'1':'0'"
+                    title="admin.html 새창 오픈">
+                    <span>{{ currentAdminNo===p.admin?'●':'○' }}</span>
+                    <span>ADMIN={{ p.admin }}</span>
+                    <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
+                  </button>
+                </div>
               </div>
             </div>
             <!-- dispUi -->
