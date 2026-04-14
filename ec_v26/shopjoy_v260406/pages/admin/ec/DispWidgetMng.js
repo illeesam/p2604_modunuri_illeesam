@@ -1,6 +1,6 @@
-/* ShopJoy Admin - 위젯라이브러리 목록 */
-window.EcDispWidgetLibMng = {
-  name: 'EcDispWidgetLibMng',
+/* ShopJoy Admin - 전시위젯 목록 (UI용 배치 위젯) */
+window.EcDispWidgetMng = {
+  name: 'EcDispWidgetMng',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
@@ -198,7 +198,7 @@ window.EcDispWidgetLibMng = {
   template: /* html */`
 <div>
   <div class="page-title">
-    전시위젯Lib
+    전시위젯
     <span style="font-size:13px;font-weight:400;color:#888;">위젯 유형별 리소스 등록·재활용</span>
   </div>
 

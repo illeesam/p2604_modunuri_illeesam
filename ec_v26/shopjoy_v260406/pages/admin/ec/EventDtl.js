@@ -7,9 +7,14 @@ window.EcEventDtl = {
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
 
+    const _today = new Date();
+    const _pad = n => String(n).padStart(2, '0');
+    const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
+    const DEFAULT_END   = `${_today.getFullYear()+3}-12-31`;
+
     const form = reactive({
-      title: '', status: '진행중', startDate: '', endDate: '',
-      authRequired: false, targetProducts: [],
+      title: '', status: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END,
+      authRequired: false, targetProducts: [], visibilityTargets: '^PUBLIC^',
       content1: '', content2: '', content3: '', content4: '', content5: '',
     });
     const errors = reactive({});
@@ -65,7 +70,13 @@ window.EcEventDtl = {
     onMounted(() => {
       if (!isNew.value) {
         const e = props.adminData.events.find(x => x.eventId === props.editId);
-        if (e) Object.assign(form, { ...e, targetProducts: [...(e.targetProducts || [])] });
+        if (e) {
+          Object.assign(form, { ...e, targetProducts: [...(e.targetProducts || [])] });
+          if (!form.visibilityTargets) {
+            form.visibilityTargets = window.visibilityUtil.fromLegacy('항상 표시', e.authRequired, '');
+            if (!form.visibilityTargets) form.visibilityTargets = '^PUBLIC^';
+          }
+        }
       }
     });
 
@@ -133,7 +144,15 @@ window.EcEventDtl = {
       });
     };
 
-    return { isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save };
+    const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
+    const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
+    const toggleVisibility = (code) => {
+      const list = window.visibilityUtil.parse(form.visibilityTargets);
+      const i = list.indexOf(code);
+      if (i >= 0) list.splice(i, 1); else list.push(code);
+      form.visibilityTargets = window.visibilityUtil.serialize(list);
+    };
+    return { isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save, visibilityOptions, hasVisibility, toggleVisibility };
   },
   template: /* html */`
 <div>
@@ -181,6 +200,24 @@ window.EcEventDtl = {
       </div>
       <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
         ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
+      </div>
+      <div style="margin-top:14px;">
+        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">🔒 공개 대상 (하나라도 해당하면 노출)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+            :style="{
+              display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 10px',borderRadius:'14px',
+              border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+              background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+              color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
+              fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
+              cursor: viewMode?'default':'pointer',
+            }">
+            <input type="checkbox" :checked="hasVisibility(opt.codeValue)" :disabled="viewMode"
+              @change="toggleVisibility(opt.codeValue)" style="accent-color:#1565c0;" />
+            {{ opt.codeLabel }}
+          </label>
+        </div>
       </div>
       <div class="form-actions">
         <template v-if="viewMode">

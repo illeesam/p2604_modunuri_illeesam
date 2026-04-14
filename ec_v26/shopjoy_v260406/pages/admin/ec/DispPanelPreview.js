@@ -1,7 +1,7 @@
-/* ShopJoy Admin - 전시위젯Lib 위젯미리보기 (#page=ecDispWidgetLibPreview) */
+/* ShopJoy Admin - 전시패널미리보기 (#page=ecDispWidgetLibPreview) */
 
 /* ── 위젯미리보기 서브컴포넌트 (grid · dashboard 공용) ── */
-const _WidgetPreview = {
+const _WP_DispPanelPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
@@ -134,8 +134,8 @@ const _WidgetPreview = {
 };
 
 /* ── 메인 컴포넌트 ── */
-window.EcDispWidgetLibPreview = {
-  name: 'EcDispWidgetLibPreview',
+window.EcDispPanelPreview = {
+  name: 'EcDispPanelPreview',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
@@ -214,23 +214,27 @@ window.EcDispWidgetLibPreview = {
     const onTreeSelect  = (lib) => { selectedLibId.value = lib.libId; };
 
     /* ── 트리 상태 ── */
+    /* ── 패널 트리: prefix > 영역명 > 패널명 ── */
     const tree = computed(() => {
-      const map = {};
-      const addToPath = (lib, pathStr) => {
-        const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
-        if (!parts.length) return;
-        const top = parts[0];
-        const rest = parts.slice(1).join(' > ') || '(루트)';
-        if (!map[top]) map[top] = {};
-        if (!map[top][rest]) map[top][rest] = [];
-        map[top][rest].push(lib);
+      const codes = props.dispDataset.codes || [];
+      const areaNm = (code) => {
+        const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
+        return c ? c.codeLabel : code;
       };
-      filteredLibs.value.forEach(lib => {
-        if (!lib.usedPaths || !lib.usedPaths.length) {
-          addToPath(lib, '(미등록) > (미등록)');
-        } else {
-          lib.usedPaths.forEach(p => addToPath(lib, p));
-        }
+      const map = {};
+      (props.dispDataset.displays || []).forEach(p => {
+        const area = p.area || '(미등록)';
+        const top  = area.split('_')[0] || '(기타)';
+        const subKey = areaNm(area);
+        if (!map[top]) map[top] = {};
+        if (!map[top][subKey]) map[top][subKey] = [];
+        map[top][subKey].push({
+          libId: p.dispId,
+          name: p.name,
+          widgetType: p.widgetType || '-',
+          panelId: p.dispId,
+          areaCode: area,
+        });
       });
       return Object.keys(map).sort().map(top => ({
         label: top,
@@ -514,8 +518,8 @@ window.EcDispWidgetLibPreview = {
   <!-- 페이지 타이틀 -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
-      전시위젯Lib 위젯미리보기
-      <span style="font-size:13px;font-weight:400;color:#888;">사용위치경로 트리 &amp; 드래그하여 배치</span>
+      전시패널미리보기
+      <span style="font-size:13px;font-weight:400;color:#888;">패널 트리 & 드래그하여 배치</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
       🌐 {{ siteNm }}
@@ -618,11 +622,6 @@ window.EcDispWidgetLibPreview = {
             <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 6px;">
               {{ node.children.reduce((acc,c)=>acc+c.libs.length,0) }}
             </span>
-            <span v-if="isOpen(node.label)" @click="toggleAllChildren($event, node)"
-              :title="allChildrenOpen(node) ? '하위 모두 닫기' : '하위 모두 열기'"
-              style="font-size:10px;color:#9ca3af;padding:1px 4px;border-radius:3px;cursor:pointer;flex-shrink:0;"
-              :style="allChildrenOpen(node) ? 'color:#1d4ed8;' : ''"
-            >{{ allChildrenOpen(node) ? '⊟' : '⊞' }}</span>
           </div>
           <template v-if="isOpen(node.label)">
             <div v-for="sub in node.children" :key="node.label+'_'+sub.label">
@@ -807,7 +806,13 @@ window.EcDispWidgetLibPreview = {
                       style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
                   <!-- 위젯미리보기 -->
-                  <widget-preview :lib="slot" />
+                  <disp-x03-panel v-if="slot.panelId"
+                    :params="{ date: previewDate, time: previewTime, status: filterStatus, condition: filterCondition, authRequired: filterAuthReq, authGrade: filterAuthGrade }"
+                    :disp-dataset="dispDataset"
+                    :disp-opt="{ layout:'vertical', showBadges:false }"
+                    :panel-item="(dispDataset.displays||[]).find(p => p.dispId===slot.panelId) || {}"
+                    :show-header="true" />
+                  <widget-preview v-else :lib="slot" />
                 </template>
 
               </div><!-- /slot -->
@@ -868,7 +873,13 @@ window.EcDispWidgetLibPreview = {
 
             <!-- 위젯미리보기 -->
             <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
-              <widget-preview :lib="item.lib" />
+              <disp-x03-panel v-if="item.lib.panelId"
+                :params="{ date: previewDate, time: previewTime, status: filterStatus, condition: filterCondition, authRequired: filterAuthReq, authGrade: filterAuthGrade }"
+                :disp-dataset="dispDataset"
+                :disp-opt="{ layout:'vertical', showBadges:false }"
+                :panel-item="(dispDataset.displays||[]).find(p => p.dispId===item.lib.panelId) || {}"
+                :show-header="true" />
+              <widget-preview v-else :lib="item.lib" />
             </div>
 
             <!-- 크기 조절 핸들 -->
@@ -892,6 +903,6 @@ window.EcDispWidgetLibPreview = {
 </div>
   `,
   components: {
-    WidgetPreview: _WidgetPreview,
+    WidgetPreview: _WP_DispPanelPreview,
   },
 };

@@ -279,6 +279,38 @@ window.EcDispWidgetLibDtl = {
       });
     };
 
+    /* ── 디바이스 모드 + 스플리터 ── */
+    const previewMode = ref('default');
+    const PREVIEW_MODES = [
+      { value: 'default', label: '기본',   width: 420  },
+      { value: 'pc',      label: 'PC',     width: 1200 },
+      { value: 'tablet',  label: '태블릿', width: 768  },
+      { value: 'mobile',  label: '모바일', width: 375  },
+    ];
+    const previewFrameWidth = computed(() => {
+      const m = PREVIEW_MODES.find(x => x.value === previewMode.value);
+      return (m?.width || 420) + 'px';
+    });
+    const previewPaneWidth = ref(460);
+    Vue.watch(previewMode, (m) => {
+      const info = PREVIEW_MODES.find(x => x.value === m);
+      previewPaneWidth.value = (info?.width || 420) + 40;
+    });
+    const onSplitDrag = (e) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = previewPaneWidth.value;
+      const onMove = (ev) => {
+        previewPaneWidth.value = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
+
     /* ── 위젯미리보기용 위젯 객체 ── */
     const previewWidget = computed(() => ({
       ...form,
@@ -407,6 +439,7 @@ window.EcDispWidgetLibDtl = {
       isPopup, isFile, isFileList, isCoupon, isHtmlEditor, isEvent, isCache, isEmbed,
       displayRows, fileListItems, addFileItem, removeFileItem, updateFileItem,
       previewWidget, sampleJson, jsonCopied, copyJson, save, remove,
+      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
       htmlContentEl, htmlSourceMode, toggleHtmlSource,
     };
   },
@@ -429,7 +462,7 @@ window.EcDispWidgetLibDtl = {
 
   <div style="display:flex;gap:0;">
     <!-- 왼쪽: 폼 -->
-    <div style="flex:1;padding:20px;border-right:1px solid #f0f0f0;">
+    <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
 
       <!-- 기본 정보 -->
       <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
@@ -575,10 +608,29 @@ window.EcDispWidgetLibDtl = {
       </div>
     </div>
 
+    <!-- 스플리터 -->
+    <div @mousedown="onSplitDrag"
+      style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
+      title="드래그로 폭 조절">
+      <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
+    </div>
     <!-- 오른쪽: 위젯미리보기 -->
-    <div style="width:280px;flex-shrink:0;padding:20px;background:#f8f8f8;">
-      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;">👁 위젯미리보기</div>
-      <div style="background:#fff;border:1px solid #e4e4e4;border-radius:8px;padding:12px;min-height:100px;">
+    <div :style="{ width: previewPaneWidth + 'px', flexShrink:0, padding:'20px', background:'#f8f8f8', overflowX:'auto', transition:'width .2s' }">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;">👁 위젯미리보기</div>
+      <!-- 디바이스 모드 버튼 -->
+      <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
+        <button v-for="m in PREVIEW_MODES" :key="m.value"
+          @click="previewMode = m.value"
+          :style="{
+            flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
+            background: previewMode===m.value ? '#fff' : 'transparent',
+            color: previewMode===m.value ? '#1565c0' : '#666',
+            fontWeight: previewMode===m.value ? 700 : 500,
+            boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+          }">{{ m.label }}</button>
+      </div>
+      <!-- 디바이스 프레임 -->
+      <div :style="{ width: previewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
         <disp-x04-widget
           :params="{ }"
           :disp-dataset="dispDataset"

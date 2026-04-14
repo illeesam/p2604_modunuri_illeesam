@@ -6,21 +6,61 @@ window.EcDispPanelDtl = {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
+    const previewMode = ref('default');
+    const PREVIEW_MODES = [
+      { value: 'default', label: '기본',   width: 480  },
+      { value: 'pc',      label: 'PC',     width: 1200 },
+      { value: 'tablet',  label: '태블릿', width: 768  },
+      { value: 'mobile',  label: '모바일', width: 375  },
+    ];
+    const previewFrameWidth = computed(() => {
+      const m = PREVIEW_MODES.find(x => x.value === previewMode.value);
+      return (m?.width || 480) + 'px';
+    });
+    /* 패널 폭(스플리터 드래그 반영). 모드 변경 시 자동 갱신 */
+    const previewPaneWidth = ref(520);
+    Vue.watch(previewMode, (m) => {
+      const info = PREVIEW_MODES.find(x => x.value === m);
+      previewPaneWidth.value = (info?.width || 480) + 40;
+    });
+    /* 스플리터 드래그 */
+    const onSplitDrag = (e) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = previewPaneWidth.value;
+      const onMove = (ev) => {
+        previewPaneWidth.value = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
 
     /* ── 패널정보 (패널 공통) ── */
     const LAYOUT_TYPE_OPTS = [
       { value: 'grid',      label: '그리드' },
       { value: 'dashboard', label: '대시보드' },
     ];
+    /* ── 기본 전시기간: 오늘 00:00 ~ +3년 12/31 23:59 ── */
+    const _today = new Date();
+    const _pad = n => String(n).padStart(2, '0');
+    const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
+    const DEFAULT_END_DATE   = `${_today.getFullYear()+3}-12-31`;
+
     const form = reactive({
       dispId: null, area: 'HOME_BANNER', name: '', status: '활성',
       layoutType: 'grid', gridCols: 1,
       titleYn: 'N', title: '',
       htmlDesc: '',
-      dispStartDate: '', dispStartTime: '00:00',
-      dispEndDate:   '', dispEndTime:   '23:59',
-      /* 패널 레벨 노출조건 */
+      dispStartDate: DEFAULT_START_DATE, dispStartTime: '00:00',
+      dispEndDate:   DEFAULT_END_DATE,   dispEndTime:   '23:59',
+      /* 패널 레벨 노출조건 (레거시 유지) */
       condition: '항상 표시', authRequired: false, authGrade: '',
+      /* 신규: 공개 대상 (기본 전체공개) */
+      visibilityTargets: '^PUBLIC^',
     });
 
     /* ── 행별 독립 데이터 팩토리 ── */
@@ -67,7 +107,7 @@ window.EcDispPanelDtl = {
 
     const TAB_LABELS   = computed(() => [
       { key: 'info', label: '패널기본정보' },
-      ...rows.map((_, i) => ({ key: 'tab'+(i+1), label: '위젯 '+(i+1) })),
+      ...rows.map((_, i) => ({ key: 'tab'+(i+1), label: '전시항목 '+(i+1) })),
     ]);
     const TAB_ROW_MAP  = computed(() => { const m = {}; rows.forEach((_, i) => { m['tab'+(i+1)] = i; }); return m; });
     const ROW_TAB_KEYS = computed(() => rows.map((_, i) => 'tab'+(i+1)));
@@ -375,6 +415,8 @@ window.EcDispPanelDtl = {
           form.condition     = d.condition     || '항상 표시';
           form.authRequired  = d.authRequired  || false;
           form.authGrade     = d.authGrade     || '';
+          form.visibilityTargets = d.visibilityTargets
+            || window.visibilityUtil.fromLegacy(d.condition, d.authRequired, d.authGrade);
           form.layoutType    = d.layoutType    || 'grid';
           form.gridCols      = d.gridCols      || 1;
           form.titleYn       = d.titleYn       || 'N';
@@ -529,7 +571,24 @@ window.EcDispPanelDtl = {
       }
     };
 
+    /* ── 공개 대상 멀티체크 토글 ── */
+    const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
+    const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
+    const toggleVisibility = (code) => {
+      const list = window.visibilityUtil.parse(form.visibilityTargets);
+      const i = list.indexOf(code);
+      if (i >= 0) list.splice(i, 1); else list.push(code);
+      if (code === 'PUBLIC' && i < 0) {
+        form.visibilityTargets = '^PUBLIC^';
+        return;
+      }
+      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      form.visibilityTargets = window.visibilityUtil.serialize(filtered);
+    };
+
     return {
+      visibilityOptions, hasVisibility, toggleVisibility,
+      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
       isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
       MAX_WIDGETS, addWidget, removeWidget,
       activeRowIdx, activeRow, moveRow,
@@ -560,8 +619,8 @@ window.EcDispPanelDtl = {
       </button>
       <button @click="openPreview(tab, '패널 전체')"
         style="font-size:11px;padding:4px 11px;border:1px solid #b0c4de;border-radius:14px;background:#e8f0fe;cursor:pointer;color:#1a73e8;display:flex;align-items:center;gap:4px;"
-        title="위젯미리보기">
-        👁 위젯미리보기
+        title="전시항목 미리보기">
+        👁 전시항목 미리보기
       </button>
       <button @click="viewAll = !viewAll"
         style="font-size:11px;padding:4px 12px;border:1px solid #d0d0d0;border-radius:14px;background:#fff;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;transition:all .15s;"
@@ -583,7 +642,7 @@ window.EcDispPanelDtl = {
           style="display:flex;align-items:stretch;border-right:3px solid transparent;transition:all .15s;"
           :style="tab===t.key ? 'border-right-color:#e8587a;background:#fff;' : 'border-right-color:transparent;'">
           <button @click="tab=t.key"
-            style="flex:1;text-align:center;padding:11px 4px;font-size:12px;font-weight:600;border:none;cursor:pointer;line-height:1.3;background:transparent;"
+            style="flex:1;text-align:left;padding:11px 10px;font-size:12px;font-weight:600;border:none;cursor:pointer;line-height:1.3;background:transparent;"
             :style="tab===t.key ? 'color:#e8587a;' : 'color:#666;'">
             {{ t.label }}
           </button>
@@ -602,11 +661,6 @@ window.EcDispPanelDtl = {
             style="padding:0 4px;font-size:11px;border:none;background:none;cursor:pointer;color:#ccc;line-height:1;flex-shrink:0;"
             @mouseenter="$event.currentTarget.style.color='#e8587a'"
             @mouseleave="$event.currentTarget.style.color='#ccc'">✕</button>
-          <button @click.stop="openPreview(t.key, t.label)" title="위젯미리보기"
-            style="padding:0 6px 0 2px;font-size:12px;border:none;background:none;cursor:pointer;opacity:0.4;transition:opacity .15s;"
-            :style="tab===t.key ? 'opacity:0.65;' : ''"
-            @mouseenter="$event.currentTarget.style.opacity='1'"
-            @mouseleave="$event.currentTarget.style.opacity=tab===t.key?'0.65':'0.4'">👁</button>
         </div>
         <!-- 위젯 추가 버튼 -->
         <div v-if="rows.length < MAX_WIDGETS" style="padding:6px 8px;border-top:1px dashed #d0d0d0;margin-top:2px;">
@@ -633,10 +687,16 @@ window.EcDispPanelDtl = {
               <input class="form-control" v-model="form.name" placeholder="위젯 이름" :readonly="viewMode" />
             </div>
             <div class="form-group">
-              <label class="form-label">화면 영역 <span v-if="!viewMode" class="req">*</span></label>
-              <select class="form-control" v-model="form.area" :disabled="viewMode">
-                <option v-for="a in AREAS" :key="a.codeValue" :value="a.codeValue">{{ a.codeValue }}  {{ a.codeLabel }}</option>
-              </select>
+              <label class="form-label">포함된 화면영역
+                <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(전시영역관리에서 편집)</span>
+              </label>
+              <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+                <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
+                  <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
+                  &nbsp;{{ currentAreaLabel }}
+                </span>
+                <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -723,48 +783,28 @@ window.EcDispPanelDtl = {
             <span>{{ form.dispEndDate || '?' }} {{ form.dispEndTime }}</span>
           </div>
 
-          <!-- 노출 조건 / 인증 -->
+          <!-- 공개 대상 -->
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            🔒 노출 조건 · 인증
+            🔒 공개 대상 (하나라도 해당하면 노출)
           </div>
-          <div class="form-row" style="margin-bottom:8px;">
-            <div class="form-group">
-              <label class="form-label">노출 조건</label>
-              <select class="form-control" v-model="form.condition" :disabled="viewMode">
-                <option>항상 표시</option>
-                <option>로그인 필요</option>
-                <option>비로그인만</option>
-                <option>로그인+등급</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">인증 필요</label>
-              <div style="display:flex;align-items:center;gap:16px;padding-top:8px;">
-                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-                  <input type="radio" v-model="form.authRequired" :value="false" :disabled="viewMode" /> 불필요
-                </label>
-                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-                  <input type="radio" v-model="form.authRequired" :value="true" :disabled="viewMode" /> 필요
-                </label>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">인증 등급 제한</label>
-              <select class="form-control" v-model="form.authGrade" :disabled="viewMode || !form.authRequired">
-                <option value="">제한 없음</option>
-                <option>일반</option>
-                <option>우수</option>
-                <option>VIP</option>
-              </select>
-              <div v-if="!form.authRequired" style="font-size:11px;color:#bbb;margin-top:3px;">인증 필요 시 활성화</div>
-            </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+              :style="{
+                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
+                border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+                background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+                color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
+                fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
+                cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+              }">
+              <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
+                :disabled="viewMode"
+                @change="toggleVisibility(opt.codeValue)"
+                style="accent-color:#1565c0;" />
+              {{ opt.codeLabel }}
+            </label>
           </div>
-          <!-- 조건 요약 뱃지 -->
-          <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
-            <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:3px 10px;">{{ form.condition }}</span>
-            <span v-if="form.authRequired" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:12px;padding:3px 10px;">인증 필요</span>
-            <span v-if="form.authRequired && form.authGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:12px;padding:3px 10px;">{{ form.authGrade }} 이상</span>
-          </div>
+          <div v-if="!form.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:12px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
 
           <!-- HTML 설명 (Quill) -->
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
@@ -1015,28 +1055,55 @@ window.EcDispPanelDtl = {
 
       </div><!-- /폼 영역 -->
 
-      <!-- 위젯미리보기 패널 (25%) -->
-      <div style="width:25%;min-width:200px;max-width:320px;border-left:1px solid #e8e8e8;background:#f7f8fb;display:flex;flex-direction:column;overflow:hidden;">
+      <!-- 스플리터 -->
+      <div @mousedown="onSplitDrag"
+        style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
+        title="드래그로 폭 조절">
+        <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
+      </div>
+      <!-- 위젯미리보기 패널 -->
+      <div :style="{
+        width: previewPaneWidth + 'px', flexShrink:0,
+        borderLeft:'1px solid #e8e8e8', background:'#f7f8fb',
+        display:'flex', flexDirection:'column', overflow:'hidden',
+      }">
         <!-- 위젯미리보기 타이틀 -->
         <div style="padding:10px 14px;border-bottom:1px solid #e0e0e0;background:#f0f2f7;flex-shrink:0;display:flex;align-items:center;gap:6px;">
-          <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;">👁 위젯미리보기</span>
+          <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;">👁 {{ tab==='info' ? '패널' : '전시항목' }}미리보기</span>
           <span style="font-size:10px;color:#aaa;margin-left:auto;">
-            {{ tab==='info' ? '전체 위젯' : (TAB_LABELS.find(t=>t.key===tab)||{}).label }}
+            {{ tab==='info' ? '전체 전시항목' : (TAB_LABELS.find(t=>t.key===tab)||{}).label }}
           </span>
         </div>
-        <!-- 위젯미리보기 내용 -->
-        <div style="flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px;">
-          <!-- 패널기본정보: 전체 위젯 -->
+        <!-- 디바이스 모드 버튼 -->
+        <div style="padding:8px 10px 0;">
+          <div style="display:flex;gap:4px;padding:3px;background:#eef0f3;border-radius:6px;">
+            <button v-for="m in PREVIEW_MODES" :key="m.value"
+              @click="previewMode = m.value"
+              :style="{
+                flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
+                background: previewMode===m.value ? '#fff' : 'transparent',
+                color: previewMode===m.value ? '#1565c0' : '#666',
+                fontWeight: previewMode===m.value ? 700 : 500,
+                boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              }">{{ m.label }}</button>
+          </div>
+        </div>
+        <!-- 위젯미리보기 내용 (디바이스 프레임) -->
+        <div style="flex:1;overflow:auto;padding:10px;">
+        <div :style="{
+          width: previewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
+          background:'#fff', padding:'8px', transition:'width .2s',
+          display:'flex', flexDirection:'column', gap:'10px',
+        }">
+          <!-- 패널기본정보: 패널 전체 렌더 -->
           <template v-if="tab==='info'">
-            <div v-for="(r, i) in rows" :key="i">
-              <div style="font-size:10px;color:#aaa;margin-bottom:4px;font-weight:600;">위젯 {{ i+1 }}</div>
-              <disp-x04-widget
-                :params="{ }"
-                :disp-dataset="dispDataset"
-                :disp-opt="{ showBadges: true }"
-                :widget-item="{...r, widgetNm: r.widgetNm||('위젯 '+(i+1)), status:'활성', condition:'항상 표시'}"
-              />
-            </div>
+            <disp-x03-panel
+              :params="{ }"
+              :disp-dataset="dispDataset"
+              :disp-opt="{ layout:'vertical', showBadges:true }"
+              :panel-item="{...form, rows: rows, status:'활성', condition: form.condition||'항상 표시'}"
+              :show-header="true"
+            />
           </template>
           <!-- 위젯1~5: 해당 위젯만 -->
           <template v-else-if="activeRow">
@@ -1047,6 +1114,7 @@ window.EcDispPanelDtl = {
               :widget-item="{...activeRow, widgetNm: activeRow.widgetNm||(TAB_LABELS.find(t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
             />
           </template>
+        </div><!-- /device frame -->
         </div>
       </div><!-- /위젯미리보기 패널 -->
 
@@ -1100,10 +1168,16 @@ window.EcDispPanelDtl = {
                 <input class="form-control" v-model="form.name" placeholder="위젯 이름" :readonly="viewMode" />
               </div>
               <div class="form-group">
-                <label class="form-label">화면 영역 <span v-if="!viewMode" class="req">*</span></label>
-                <select class="form-control" v-model="form.area" :disabled="viewMode">
-                  <option v-for="a in AREAS" :key="a.codeValue" :value="a.codeValue">{{ a.codeValue }}  {{ a.codeLabel }}</option>
-                </select>
+                <label class="form-label">포함된 화면영역
+                  <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(전시영역관리에서 편집)</span>
+                </label>
+                <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+                  <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
+                    <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
+                    &nbsp;{{ currentAreaLabel }}
+                  </span>
+                  <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
+                </div>
               </div>
             </div>
             <div class="form-group">
@@ -1142,34 +1216,24 @@ window.EcDispPanelDtl = {
               <span style="color:#aaa;">~</span>
               <span>{{ form.dispEndDate || '?' }} {{ form.dispEndTime }}</span>
             </div>
-            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🔒 노출 조건 · 인증</div>
-            <div class="form-row" style="margin-bottom:8px;">
-              <div class="form-group">
-                <label class="form-label">노출 조건</label>
-                <select class="form-control" v-model="form.condition" :disabled="viewMode">
-                  <option>항상 표시</option><option>로그인 필요</option><option>비로그인만</option><option>로그인+등급</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">인증 필요</label>
-                <div style="display:flex;align-items:center;gap:16px;padding-top:8px;">
-                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" v-model="form.authRequired" :value="false" :disabled="viewMode" /> 불필요</label>
-                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" v-model="form.authRequired" :value="true" :disabled="viewMode" /> 필요</label>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">인증 등급 제한</label>
-                <select class="form-control" v-model="form.authGrade" :disabled="viewMode || !form.authRequired">
-                  <option value="">제한 없음</option><option>일반</option><option>우수</option><option>VIP</option>
-                </select>
-                <div v-if="!form.authRequired" style="font-size:11px;color:#bbb;margin-top:3px;">인증 필요 시 활성화</div>
-              </div>
+            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🔒 공개 대상 (하나라도 해당하면 노출)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+              <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+                :style="{
+                  display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
+                  border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+                  background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+                  color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
+                  fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
+                  cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+                }">
+                <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
+                  :disabled="viewMode" @change="toggleVisibility(opt.codeValue)"
+                  style="accent-color:#1565c0;" />
+                {{ opt.codeLabel }}
+              </label>
             </div>
-            <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
-              <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:3px 10px;">{{ form.condition }}</span>
-              <span v-if="form.authRequired" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:12px;padding:3px 10px;">인증 필요</span>
-              <span v-if="form.authRequired && form.authGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:12px;padding:3px 10px;">{{ form.authGrade }} 이상</span>
-            </div>
+            <div v-if="!form.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:12px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📝 HTML 설명</div>
             <div v-if="viewMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;margin-bottom:16px;">
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
@@ -1394,11 +1458,13 @@ window.EcDispPanelDtl = {
         </div>
         <!-- 패널명 -->
         <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">{{ form.name || '(패널명 없음)' }}</div>
-        <!-- 노출조건 / 인증 배지 -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:4px 12px;">{{ form.condition || '항상 표시' }}</span>
-          <span v-if="form.authRequired" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:12px;padding:4px 12px;">인증 필요</span>
-          <span v-if="form.authRequired && form.authGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:12px;padding:4px 12px;">{{ form.authGrade }} 이상</span>
+        <!-- 공개 대상 배지 -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+          <template v-for="opt in visibilityOptions" :key="opt.codeValue">
+            <span v-if="hasVisibility(opt.codeValue)"
+              style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:4px 12px;">{{ opt.codeLabel }}</span>
+          </template>
+          <span v-if="!form.visibilityTargets" style="font-size:12px;background:#ffebee;color:#c62828;border-radius:12px;padding:4px 12px;">노출 대상 없음</span>
         </div>
         <!-- 전시 기간 -->
         <div v-if="form.dispStartDate || form.dispEndDate"

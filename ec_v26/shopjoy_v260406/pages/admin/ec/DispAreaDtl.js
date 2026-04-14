@@ -1,0 +1,523 @@
+/* ShopJoy Admin - 전시영역 상세/등록 (탭 구성) */
+window.EcDispAreaDtl = {
+  name: 'EcDispAreaDtl',
+  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  setup(props) {
+    const { reactive, computed, ref, onMounted } = Vue;
+
+    const AREA_TYPE_OPTS = [
+      { value: '',        label: '-' },
+      { value: 'FULL',    label: '전체폭' },
+      { value: 'SIDEBAR', label: '사이드바' },
+      { value: 'POPUP',   label: '팝업' },
+      { value: 'GRID',    label: '그리드' },
+      { value: 'BANNER',  label: '배너' },
+    ];
+    const LAYOUT_TYPE_OPTS = [
+      { value: 'grid',      label: '그리드' },
+      { value: 'dashboard', label: '대시보드' },
+    ];
+
+    const isNew = computed(() => !props.editId);
+
+    const form = reactive({
+      codeId: null, codeGrp: 'DISP_AREA',
+      codeValue: '', codeLabel: '', areaType: '',
+      layoutType: 'grid', gridCols: 1,
+      titleYn: 'N', title: '',
+      remark: '', sortOrd: 1, useYn: 'Y', regDate: '',
+    });
+
+    const errors = reactive({});
+    const schema = yup.object({
+      codeValue: yup.string().required('영역코드를 입력해주세요.'),
+      codeLabel: yup.string().required('영역명을 입력해주세요.'),
+    });
+
+    /* ── 로드 ── */
+    onMounted(() => {
+      if (!isNew.value) {
+        const a = (props.dispDataset.codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
+        if (a) {
+          Object.assign(form, {
+            codeId: a.codeId, codeGrp: a.codeGrp,
+            codeValue: a.codeValue || '', codeLabel: a.codeLabel || '',
+            areaType: a.areaType || '', layoutType: a.layoutType || 'grid',
+            gridCols: a.gridCols || 1, titleYn: a.titleYn || 'N', title: a.title || '',
+            remark: a.remark || '', sortOrd: a.sortOrd || 0, useYn: a.useYn || 'Y',
+            regDate: a.regDate || '',
+          });
+        }
+      } else {
+        const areas = (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_AREA');
+        form.sortOrd = areas.length ? Math.max(...areas.map(c => c.sortOrd || 0)) + 1 : 1;
+        const t = new Date();
+        const p = n => String(n).padStart(2, '0');
+        form.regDate = `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`;
+      }
+    });
+
+    /* ── 연결된 패널 ── */
+    const relatedPanels = computed(() =>
+      (props.dispDataset.displays || [])
+        .filter(p => p.area === form.codeValue)
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    );
+
+    /* ── 패널 선택 팝업 ── */
+    const pickOpen = ref(false);
+    const pickKw   = ref('');
+    const pickSel  = ref(new Set());
+    const availablePanels = computed(() => {
+      const all = (props.dispDataset.displays || []);
+      const kw  = pickKw.value.trim().toLowerCase();
+      return all.filter(p => {
+        if (p.area === form.codeValue) return false; /* 이미 포함된 것 제외 */
+        if (kw && !p.name.toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
+        return true;
+      }).sort((a, b) => (a.name||'').localeCompare(b.name||''));
+    });
+    const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel.value = new Set(); };
+    const closePick = () => { pickOpen.value = false; };
+    const togglePick = (id) => {
+      const s = new Set(pickSel.value);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      pickSel.value = s;
+    };
+    const confirmPick = () => {
+      const ids = Array.from(pickSel.value);
+      if (!ids.length) { closePick(); return; }
+      if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
+      const list = props.dispDataset.displays || [];
+      ids.forEach(id => {
+        const p = list.find(x => x.dispId === id);
+        if (p) p.area = form.codeValue;
+      });
+      /* 순서 재부여 */
+      list.filter(p => p.area === form.codeValue).forEach((p, i) => { p.sortOrder = i + 1; });
+      props.showToast && props.showToast(`${ids.length}개 패널을 추가했습니다.`, 'info');
+      closePick();
+    };
+    const removePanel = (p) => {
+      props.showConfirm && props.showConfirm({
+        title: '영역에서 제거',
+        message: `[${p.name}]을 이 영역에서 제거하시겠습니까?`,
+        onOk: () => {
+          p.area = ''; /* 영역 연결 해제 */
+          props.showToast && props.showToast('제거되었습니다.', 'info');
+        },
+      });
+    };
+
+    /* ── 탭 상태 ── */
+    const activeTab = ref('base');          /* 'base' | 'panel_<dispId>' */
+    const expanded  = ref(false);           /* 우측 미리보기 펼치기 */
+    const previewMode = ref('default');     /* 'default' | 'pc' | 'tablet' | 'mobile' */
+    const PREVIEW_MODES = [
+      { value: 'default', label: '기본',   width: 480  },
+      { value: 'pc',      label: 'PC',     width: 1200 },
+      { value: 'tablet',  label: '태블릿', width: 768  },
+      { value: 'mobile',  label: '모바일', width: 375  },
+    ];
+    const previewFrameWidth = computed(() => {
+      const m = PREVIEW_MODES.find(x => x.value === previewMode.value);
+      return (m?.width || 480) + 'px';
+    });
+    const previewPaneWidth = ref(520);
+    Vue.watch(previewMode, (m) => {
+      const info = PREVIEW_MODES.find(x => x.value === m);
+      previewPaneWidth.value = (info?.width || 480) + 40;
+    });
+    const onSplitDrag = (e) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = previewPaneWidth.value;
+      const onMove = (ev) => {
+        previewPaneWidth.value = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
+    const selectTab = (key) => { activeTab.value = key; };
+    const activePanel = computed(() => {
+      if (!activeTab.value.startsWith('panel_')) return null;
+      const id = Number(activeTab.value.replace('panel_', ''));
+      return relatedPanels.value.find(p => p.dispId === id) || null;
+    });
+
+    /* ── 저장 ── */
+    const save = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      form.codeValue = (form.codeValue || '').toUpperCase();
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        (err.inner || []).forEach(e => { errors[e.path] = e.message; });
+        props.showToast && props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
+      if (!/^[A-Z0-9_]+$/.test(form.codeValue || '')) {
+        errors.codeValue = '영문 대문자·숫자·_ 만 가능합니다.';
+        props.showToast && props.showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
+      await window.adminApiCall({
+        method: isNew.value ? 'post' : 'put',
+        path: isNew.value ? 'disp-areas' : `disp-areas/${form.codeId}`,
+        data: { ...form },
+        confirmTitle: '저장',
+        confirmMsg: isNew.value ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?',
+        showConfirm: props.showConfirm,
+        showToast: props.showToast,
+        setApiRes: props.setApiRes,
+        successMsg: '저장되었습니다.',
+        onLocal: () => {
+          const codes = props.dispDataset.codes;
+          if (isNew.value) {
+            const nextId = window.adminData.nextId(codes, 'codeId');
+            codes.push({ ...form, codeId: nextId });
+          } else {
+            const idx = codes.findIndex(c => c.codeId === form.codeId);
+            if (idx !== -1) Object.assign(codes[idx], form);
+          }
+        },
+        navigate: props.navigate,
+        navigateTo: 'ecDispAreaMng',
+      });
+    };
+
+    const doCancel = () => { props.navigate('ecDispAreaMng'); };
+
+    /* ── 미리보기 액션 ── */
+    const openPanelPreview = () => {
+      if (!form.codeValue) return props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error');
+      const areaPageMap = {
+        'HOME_BANNER':'', 'HOME_PRODUCT':'', 'HOME_CHART':'', 'HOME_EVENT':'',
+        'PRODUCT_TOP':'#page=prod01list', 'PRODUCT_BTM':'#page=prod01list',
+        'MY_PAGE':'#page=mypage', 'FOOTER':'',
+      };
+      const hash = areaPageMap[form.codeValue] || '';
+      window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900');
+    };
+    const openWidgetPreview = () => {
+      if (!activePanel.value) return props.showToast && props.showToast('미리볼 패널을 선택하세요.', 'error');
+      window.open(`${window.pageUrl('disp-ui.html')}?areas=${form.codeValue}&date=${form.regDate}&time=00:00`, '_blank', 'width=1280,height=900');
+    };
+
+    /* ── 패널 유형 레이블 / 위젯 요약 ── */
+    const WIDGET_LABEL = {
+      'image_banner':'이미지배너', 'product_slider':'상품슬라이더', 'product':'상품',
+      'chart_bar':'차트', 'chart_line':'차트', 'chart_pie':'차트',
+      'text_banner':'텍스트', 'info_card':'정보카드', 'popup':'팝업',
+      'file':'파일', 'coupon':'쿠폰', 'html_editor':'HTML',
+      'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
+    };
+    const wLabel = (t) => WIDGET_LABEL[t] || t || '-';
+
+    const addPanelShortcut = () => {
+      if (!form.codeId) return props.showToast && props.showToast('먼저 영역을 저장해주세요.', 'error');
+      props.navigate('ecDispPanelDtl', { editId: null, preset: { area: form.codeValue } });
+    };
+
+    return {
+      form, errors, isNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
+      save, doCancel, relatedPanels,
+      pickOpen, pickKw, pickSel, availablePanels, openPick, closePick, togglePick, confirmPick, removePanel,
+      activeTab, selectTab, activePanel, expanded,
+      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
+      openPanelPreview, openWidgetPreview, addPanelShortcut, wLabel,
+    };
+  },
+  template: /* html */`
+<div class="card" style="padding:0;overflow:hidden;">
+
+  <!-- ── 헤더: 타이틀 + 우측 액션 ── -->
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;background:#fafafa;">
+    <div style="font-size:16px;font-weight:700;color:#222;">
+      전시 <span style="color:#e8587a;">영역</span> {{ isNew ? '등록' : '수정' }}
+      <span v-if="!isNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">#{{ form.codeId }}</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span style="font-size:12px;color:#888;margin-right:10px;">연결된 패널:
+        <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">{{ relatedPanels.length }}개</span>
+      </span>
+      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openPanelPreview">🖼 패널미리보기</button>
+      <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;" @click="openWidgetPreview">👁 위젯미리보기</button>
+      <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
+    </div>
+  </div>
+
+  <!-- ── 본문: 좌측 탭사이드 + 중앙 폼 + 우측 미리보기 ── -->
+  <div style="display:flex;min-height:500px;">
+
+    <!-- 좌측 탭사이드 -->
+    <div style="width:140px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
+      <!-- 기본정보 탭 -->
+      <div @click="selectTab('base')"
+        :style="{
+          display:'flex',alignItems:'center',justifyContent:'space-between',
+          padding:'9px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'6px',
+          fontSize:'12px',fontWeight: activeTab==='base'?'700':'500',
+          background: activeTab==='base' ? '#fff' : 'transparent',
+          color: activeTab==='base' ? '#e8587a' : '#555',
+          border: '1px solid '+(activeTab==='base' ? '#e8587a' : 'transparent'),
+        }">
+        <span>📋 영역 <b>기본정보</b></span>
+        <span v-if="activeTab==='base'" style="font-size:10px;">👁</span>
+      </div>
+      <!-- 패널 리스트 -->
+      <div v-for="(p, i) in relatedPanels" :key="p.dispId"
+        @click="selectTab('panel_'+p.dispId)"
+        :style="{
+          display:'flex',alignItems:'center',justifyContent:'space-between',
+          padding:'8px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'4px',
+          fontSize:'12px',
+          background: activeTab==='panel_'+p.dispId ? '#fff' : 'transparent',
+          color: activeTab==='panel_'+p.dispId ? '#1565c0' : '#666',
+          border: '1px solid '+(activeTab==='panel_'+p.dispId ? '#1565c0' : 'transparent'),
+        }">
+        <span>패널 {{ i+1 }}</span>
+        <span style="display:flex;gap:4px;align-items:center;">
+          <span :style="'width:6px;height:6px;border-radius:50%;background:'+(p.status==='활성'?'#43a047':'#ccc')+';'"></span>
+          <span style="font-size:10px;color:#aaa;">👁</span>
+        </span>
+      </div>
+      <!-- 기존 패널 추가 + 신규 생성 -->
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+        <button @click="openPick"
+          style="padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;">
+          ✚ 기존 패널 추가
+        </button>
+        <button @click="addPanelShortcut"
+          style="padding:7px;border:1px dashed #ccc;background:#fff;color:#888;border-radius:8px;font-size:11px;cursor:pointer;">
+          + 신규 패널
+        </button>
+      </div>
+    </div>
+
+    <!-- 중앙 폼 -->
+    <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
+
+      <!-- ── 기본정보 탭 ── -->
+      <div v-if="activeTab==='base'">
+        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📋 기본정보</div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group">
+            <label class="form-label">영역코드 <span style="color:#e57373;">*</span></label>
+            <input class="form-control" v-model="form.codeValue"
+              placeholder="HOME_BANNER" style="text-transform:uppercase;font-family:monospace;"
+              :class="{'is-invalid': errors.codeValue}" />
+            <div v-if="errors.codeValue" class="field-error">{{ errors.codeValue }}</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">영역명 <span style="color:#e57373;">*</span></label>
+            <input class="form-control" v-model="form.codeLabel"
+              placeholder="홈 메인배너" :class="{'is-invalid': errors.codeLabel}" />
+            <div v-if="errors.codeLabel" class="field-error">{{ errors.codeLabel }}</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">영역유형</label>
+            <select class="form-control" v-model="form.areaType">
+              <option v-for="o in AREA_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-weight:700;color:#888;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🎨 표시방식</div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group">
+            <label class="form-label">표시방식</label>
+            <select class="form-control" v-model="form.layoutType">
+              <option v-for="o in LAYOUT_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
+          </div>
+          <div class="form-group" v-if="form.layoutType==='grid'">
+            <label class="form-label">열수</label>
+            <input class="form-control" type="number" v-model.number="form.gridCols" min="1" max="32" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">타이틀 표시</label>
+            <select class="form-control" v-model="form.titleYn">
+              <option value="Y">표시</option>
+              <option value="N">미표시</option>
+            </select>
+          </div>
+          <div class="form-group" v-if="form.titleYn==='Y'">
+            <label class="form-label">타이틀 텍스트</label>
+            <input class="form-control" v-model="form.title" placeholder="타이틀 텍스트" />
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-weight:700;color:#888;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">⚙ 기타 설정</div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group">
+            <label class="form-label">정렬 순서</label>
+            <input class="form-control" type="number" v-model.number="form.sortOrd" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">사용 여부</label>
+            <select class="form-control" v-model="form.useYn">
+              <option value="Y">사용</option>
+              <option value="N">미사용</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2;">
+            <label class="form-label">설명</label>
+            <input class="form-control" v-model="form.remark" placeholder="영역 설명" />
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top:20px;">
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="doCancel">취소</button>
+        </div>
+      </div>
+
+      <!-- ── 패널 탭 ── -->
+      <div v-else-if="activePanel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div>
+            <span style="font-size:11px;color:#888;">#{{ activePanel.dispId }}</span>
+            <span style="font-size:15px;font-weight:700;color:#222;margin-left:8px;">{{ activePanel.name }}</span>
+            <span class="badge" :class="activePanel.status==='활성'?'badge-green':'badge-gray'" style="font-size:11px;margin-left:8px;">{{ activePanel.status }}</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-blue btn-sm" @click="navigate('ecDispPanelDtl', { editId: activePanel.dispId })">패널 편집</button>
+            <button class="btn btn-danger btn-sm" @click="removePanel(activePanel)">영역에서 제거</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:16px;">
+          <span><b style="color:#888;">표시:</b> {{ activePanel.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(activePanel.gridCols||1)+'열' }}</span>
+          <span><b style="color:#888;">순서:</b> {{ activePanel.sortOrder ?? '-' }}</span>
+          <span><b style="color:#888;">노출조건:</b> {{ activePanel.condition || '항상 표시' }}</span>
+          <span v-if="activePanel.authRequired"><b style="color:#888;">인증:</b> 필요</span>
+          <span><b style="color:#888;">전시기간:</b>
+            <template v-if="activePanel.dispStartDate || activePanel.dispEndDate">
+              {{ activePanel.dispStartDate || '∞' }} ~ {{ activePanel.dispEndDate || '∞' }}
+            </template>
+            <span v-else style="color:#ccc;">없음</span>
+          </span>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">▸ 위젯 구성 ({{ (activePanel.rows||[]).length }}개)</div>
+        <div v-if="(activePanel.rows||[]).length" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">
+          <div v-for="(w, wi) in activePanel.rows" :key="wi"
+            style="padding:10px 12px;border:1px solid #e0e4ea;border-radius:8px;background:#fafbfc;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+              <span style="font-size:11px;color:#aaa;">#{{ w.sortOrder || (wi+1) }}</span>
+              <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 8px;font-size:10px;">{{ wLabel(w.widgetType) }}</span>
+            </div>
+            <div style="font-size:12px;color:#333;font-weight:600;">{{ w.widgetNm || ('위젯 '+(wi+1)) }}</div>
+            <div v-if="w.clickAction && w.clickAction!=='none'" style="font-size:10px;color:#888;margin-top:2px;">클릭: {{ w.clickAction }}</div>
+          </div>
+        </div>
+        <div v-else style="padding:16px;text-align:center;color:#bbb;font-size:12px;border:1px dashed #e0e4ea;border-radius:8px;">
+          등록된 위젯이 없습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 스플리터 -->
+    <div @mousedown="onSplitDrag"
+      style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
+      title="드래그로 폭 조절">
+      <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
+    </div>
+    <!-- 우측 영역미리보기 -->
+    <div :style="{
+      width: previewPaneWidth + 'px',
+      background:'#fafafa',borderLeft:'1px solid #e8ebef',padding:'14px',flexShrink:0,
+      transition:'width .2s',
+      overflowX:'auto',
+    }">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:12px;font-weight:700;color:#555;">👁 {{ activeTab==='base' ? '영역' : '패널' }} 미리보기</span>
+        <span style="font-size:10px;color:#aaa;">{{ relatedPanels.length }}개 패널</span>
+      </div>
+      <!-- 디바이스 모드 버튼 -->
+      <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
+        <button v-for="m in PREVIEW_MODES" :key="m.value"
+          @click="previewMode = m.value"
+          :style="{
+            flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
+            background: previewMode===m.value ? '#fff' : 'transparent',
+            color: previewMode===m.value ? '#1565c0' : '#666',
+            fontWeight: previewMode===m.value ? 700 : 500,
+            boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+          }">{{ m.label }}</button>
+      </div>
+      <!-- 디바이스 프레임 -->
+      <div :style="{
+        width: previewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
+        background:'#fff', padding:'8px', transition:'width .2s',
+      }">
+      <!-- 영역 기본정보 탭: disp-x02-area 로 전체 영역 렌더 -->
+      <div v-if="activeTab==='base'" style="max-height:560px;overflow-y:auto;">
+        <disp-x02-area v-if="form.codeValue"
+          :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
+          :disp-dataset="dispDataset"
+          :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
+          :area-item="{ code: form.codeValue, label: form.codeLabel, info: form, panels: relatedPanels }" />
+        <div v-else style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">
+          영역코드를 입력하세요.
+        </div>
+      </div>
+      <!-- 패널 탭: disp-x03-panel 로 선택 패널 렌더 -->
+      <div v-else-if="activePanel" style="max-height:560px;overflow-y:auto;">
+        <disp-x03-panel
+          :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
+          :disp-dataset="dispDataset"
+          :disp-opt="{ layout:'vertical', showBadges:false }"
+          :panel-item="activePanel"
+          :show-header="true" />
+      </div>
+      <div v-else style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">
+        미리볼 항목을 선택하세요.
+      </div>
+      </div><!-- /device frame -->
+    </div>
+  </div>
+
+  <!-- 패널 선택 팝업 -->
+  <div v-if="pickOpen" @click.self="closePick"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;width:560px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;background:#fafafa;">
+        <span style="font-size:14px;font-weight:700;color:#222;">기존 패널 추가</span>
+        <button @click="closePick" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
+      </div>
+      <div style="padding:10px 18px;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;">
+        <input v-model="pickKw" placeholder="패널명 / 영역코드 검색"
+          style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
+        <span style="font-size:11px;color:#888;">선택: {{ pickSel.size }}개</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:10px 12px;">
+        <div v-if="!availablePanels.length" style="padding:30px;text-align:center;color:#bbb;font-size:12px;">
+          추가할 수 있는 패널이 없습니다.
+        </div>
+        <label v-for="p in availablePanels" :key="p.dispId"
+          :style="{
+            display:'flex',alignItems:'center',gap:'8px',padding:'8px 10px',borderRadius:'6px',cursor:'pointer',marginBottom:'4px',
+            background: pickSel.has(p.dispId) ? '#e3f2fd' : 'transparent',
+            border: '1px solid '+(pickSel.has(p.dispId) ? '#90caf9' : '#eee'),
+          }">
+          <input type="checkbox" :checked="pickSel.has(p.dispId)" @change="togglePick(p.dispId)" />
+          <span style="font-size:12px;font-weight:700;color:#222;flex:1;">{{ p.name }}</span>
+          <code style="font-size:10px;background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;">{{ p.area || '(미등록)' }}</code>
+          <span class="badge" :style="'font-size:10px;background:'+(p.status==='활성'?'#e8f5e9':'#f5f5f5')+';color:'+(p.status==='활성'?'#2e7d32':'#888')+';border-radius:10px;padding:1px 8px;'">{{ p.status }}</span>
+        </label>
+      </div>
+      <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;">
+        <button @click="closePick" class="btn btn-secondary btn-sm">취소</button>
+        <button @click="confirmPick" class="btn btn-primary btn-sm" :disabled="!pickSel.size">
+          선택한 {{ pickSel.size }}개 추가
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+  `,
+};

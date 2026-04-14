@@ -70,6 +70,60 @@
 
   window.adminUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange };
 
+  /* ── 공개 대상(Visibility) 유틸 ──
+   * 저장 포맷: '^MEMBER^VIP^' (양끝 ^ 래핑). 공개 안 함=''.
+   */
+  window.visibilityUtil = {
+    TARGETS: ['PUBLIC','MEMBER','VERIFIED','PREMIUM','VIP','INVITED','STAFF','EXECUTIVE'],
+    serialize(codes) {
+      const arr = Array.isArray(codes) ? codes.filter(Boolean) : [];
+      return arr.length ? '^' + arr.join('^') + '^' : '';
+    },
+    parse(str) {
+      if (!str) return [];
+      return str.replace(/^\^|\^$/g, '').split('^').filter(Boolean);
+    },
+    has(str, code) {
+      return !!str && str.indexOf('^' + code + '^') !== -1;
+    },
+    /* 사용자가 해당 콘텐츠를 볼 수 있는지 판정
+     * targetStr: '^MEMBER^VIP^'
+     * userCodes: 해당 사용자의 자격 코드 배열 ['MEMBER','VIP']
+     */
+    matches(targetStr, userCodes) {
+      if (!targetStr) return false;
+      if (targetStr.indexOf('^PUBLIC^') !== -1) return true;
+      const codes = Array.isArray(userCodes) ? userCodes : [];
+      return codes.some(c => targetStr.indexOf('^' + c + '^') !== -1);
+    },
+    /* 기존 필드(condition/authRequired/authGrade) → 신규 visibilityTargets 마이그레이션 */
+    fromLegacy(condition, authRequired, authGrade) {
+      const out = new Set();
+      const cond = (condition || '').trim();
+      if (cond === '항상 표시' || cond === '') out.add('PUBLIC');
+      else if (cond === '로그인 필요') out.add('MEMBER');
+      else if (cond === '비로그인만') {/* 신규 스키마에서 제거: 미체크로 둠 */}
+      else if (cond === '로그인+등급') {
+        if (authGrade === 'VIP') out.add('VIP');
+        else if (authGrade === 'GOLD') out.add('PREMIUM');
+        else out.add('MEMBER');
+      }
+      if (authRequired === true || authRequired === 'Y') out.add('VERIFIED');
+      return this.serialize(Array.from(out));
+    },
+    /* 라벨 조회용 */
+    label(code) {
+      const c = (window.adminData?.codes || [])
+        .find(x => x.codeGrp === 'VISIBILITY_TARGET' && x.codeValue === code);
+      return c?.codeLabel || code;
+    },
+    allOptions() {
+      return (window.adminData?.codes || [])
+        .filter(x => x.codeGrp === 'VISIBILITY_TARGET' && x.useYn === 'Y')
+        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
+    },
+  };
+
   window.adminUtil.getSiteNm = function() {
     if (!window.adminCommonFilter.siteId) return 'ShopJoy';
     const site = window.adminData?.sites?.find(s => s.siteId === window.adminCommonFilter.siteId);

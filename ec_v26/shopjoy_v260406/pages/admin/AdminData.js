@@ -325,7 +325,40 @@
         162: ['SNS > 인스타피드'],
         163: ['홈 > 매장안내'],
       };
-      libs.forEach(lib => { if (pathMap[lib.libId]) lib.usedPaths = pathMap[lib.libId]; });
+      /* ── 위젯 유형별 기본 사용위치 (미등록 최소화) ── */
+      const defaultByType = {
+        image_banner:   ['홈 > 메인배너'],
+        product_slider: ['홈 > 신상품'],
+        product:        ['홈 > 추천상품', '카테고리 > 전체'],
+        cond_product:   ['카테고리 > 여성'],
+        chart_bar:      ['홈 > 통계차트'],
+        chart_line:     ['홈 > 통계차트'],
+        chart_pie:      ['홈 > 통계차트'],
+        text_banner:    ['이벤트 > 텍스트배너'],
+        info_card:      ['홈 > 정보카드'],
+        popup:          ['홈 > 팝업'],
+        file:           ['마이페이지 > 파일다운로드'],
+        file_list:      ['마이페이지 > 자료실'],
+        coupon:         ['홈 > 쿠폰존'],
+        html_editor:    ['홈 > HTML존'],
+        textarea:       ['마이페이지 > 메모'],
+        markdown:       ['홈 > 공지'],
+        barcode:        ['마이페이지 > 바코드'],
+        qrcode:         ['마이페이지 > QR코드'],
+        barcode_qrcode: ['마이페이지 > 바코드'],
+        video_player:   ['홈 > 영상섹션'],
+        countdown:      ['이벤트 > 카운트다운'],
+        payment_widget: ['주문 > 결제'],
+        approval_widget:['마이페이지 > 전자결재'],
+        map_widget:     ['홈 > 매장안내'],
+        event_banner:   ['이벤트 > 배너'],
+        cache_banner:   ['마이페이지 > 캐시존'],
+        widget_embed:   ['홈 > 위젯임베드'],
+      };
+      libs.forEach(lib => {
+        if (pathMap[lib.libId]) lib.usedPaths = pathMap[lib.libId];
+        else if (defaultByType[lib.widgetType]) lib.usedPaths = defaultByType[lib.widgetType];
+      });
       return libs;
     })(),
 
@@ -342,9 +375,24 @@
            payButtonLabel: '결제하기', payButtonColor: '#1677ff',
            approvalDocType: '구매승인', approvalTitle: '', approvalLine: '[{"role":"담당자","name":""},{"role":"팀장","name":""},{"role":"부서장","name":""}]',
            mapType: 'google', mapAddress: '', mapLat: '', mapLng: '', mapZoom: 14, mapMarkerLabel: '' });
+      const _visFromLegacy = (condition, authRequired, authGrade) => {
+        const out = [];
+        const c = (condition || '').trim();
+        if (c === '항상 표시' || c === '') out.push('PUBLIC');
+        else if (c === '로그인 필요') out.push('MEMBER');
+        else if (c === '로그인+등급') {
+          if (authGrade === 'VIP') out.push('VIP');
+          else if (authGrade === 'GOLD') out.push('PREMIUM');
+          else out.push('MEMBER');
+        }
+        if (authRequired === true) out.push('VERIFIED');
+        return out.length ? '^' + out.join('^') + '^' : '';
+      };
       const P = (dispId, area, name, widgetType, condition, authRequired, sortOrder, status, regDate, rows, extra={}) =>
         ({ dispId, area, name, widgetType, condition, authRequired, sortOrder, status, regDate, rows,
-           layoutType: 'grid', gridCols: 1, titleYn: 'N', title: '', ...extra });
+           layoutType: 'grid', gridCols: 1, titleYn: 'N', title: '',
+           visibilityTargets: _visFromLegacy(condition, authRequired, extra.authGrade),
+           ...extra });
 
       return [
         /* ───────────── HOME_BANNER (홈 메인배너) ───────────── */
@@ -1058,6 +1106,23 @@
     ],
 
     codes: [
+      /* ── 전시 UI (최상위) ── */
+      { codeId:681, codeGrp: 'DISP_UI', codeLabel: '프론트 메인',    codeValue: 'FRONT_MAIN',    uiType: 'FRONT',  sortOrd: 1, useYn: 'Y', remark: '사용자 메인 화면',   regDate: '2026-01-01' },
+      { codeId:682, codeGrp: 'DISP_UI', codeLabel: '상품 상세',      codeValue: 'FRONT_PRODUCT', uiType: 'FRONT',  sortOrd: 2, useYn: 'Y', remark: '상품 상세 페이지',   regDate: '2026-01-01' },
+      { codeId:683, codeGrp: 'DISP_UI', codeLabel: '마이페이지',     codeValue: 'FRONT_MY',      uiType: 'FRONT',  sortOrd: 3, useYn: 'Y', remark: '회원 마이페이지',    regDate: '2026-01-01' },
+      { codeId:684, codeGrp: 'DISP_UI', codeLabel: '모바일 메인',    codeValue: 'MOBILE_MAIN',   uiType: 'MOBILE', sortOrd: 4, useYn: 'Y', remark: '모바일 메인 화면',   regDate: '2026-01-01' },
+      { codeId:685, codeGrp: 'DISP_UI', codeLabel: '관리자 대시보드',codeValue: 'ADMIN_DASH',    uiType: 'ADMIN',  sortOrd: 5, useYn: 'Y', remark: '관리자 대시보드',    regDate: '2026-01-01' },
+
+      /* ── 공개 대상 (노출 타겟) ── */
+      { codeId:701, codeGrp: 'VISIBILITY_TARGET', codeLabel: '전체 공개',   codeValue: 'PUBLIC',     sortOrd: 1, useYn: 'Y', remark: '모든 방문자',           regDate: '2026-01-01' },
+      { codeId:702, codeGrp: 'VISIBILITY_TARGET', codeLabel: '회원 공개',   codeValue: 'MEMBER',     sortOrd: 2, useYn: 'Y', remark: '로그인 회원 전체',       regDate: '2026-01-01' },
+      { codeId:703, codeGrp: 'VISIBILITY_TARGET', codeLabel: '인증회원',    codeValue: 'VERIFIED',   sortOrd: 3, useYn: 'Y', remark: '본인인증 완료 회원',     regDate: '2026-01-01' },
+      { codeId:704, codeGrp: 'VISIBILITY_TARGET', codeLabel: '우수회원↑',   codeValue: 'PREMIUM',    sortOrd: 4, useYn: 'Y', remark: '우수·VIP 등급',          regDate: '2026-01-01' },
+      { codeId:705, codeGrp: 'VISIBILITY_TARGET', codeLabel: 'VIP 전용',    codeValue: 'VIP',        sortOrd: 5, useYn: 'Y', remark: 'VIP 등급만',             regDate: '2026-01-01' },
+      { codeId:706, codeGrp: 'VISIBILITY_TARGET', codeLabel: '초대회원',    codeValue: 'INVITED',    sortOrd: 6, useYn: 'Y', remark: '초대권 인증 완료 회원',   regDate: '2026-01-01' },
+      { codeId:707, codeGrp: 'VISIBILITY_TARGET', codeLabel: '직원',        codeValue: 'STAFF',      sortOrd: 7, useYn: 'Y', remark: '일반 직원',              regDate: '2026-01-01' },
+      { codeId:708, codeGrp: 'VISIBILITY_TARGET', codeLabel: '임직원',      codeValue: 'EXECUTIVE',  sortOrd: 8, useYn: 'Y', remark: '임원',                   regDate: '2026-01-01' },
+
       /* ── 회원 등급 ── */
       { codeId:  1, codeGrp: 'MEMBER_GRADE',    codeLabel: 'VIP',       codeValue: 'VIP',            sortOrd: 1, useYn: 'Y', remark: 'VIP 회원 등급', regDate: '2026-01-01' },
       { codeId:  2, codeGrp: 'MEMBER_GRADE',    codeLabel: '우수',       codeValue: 'GOLD',           sortOrd: 2, useYn: 'Y', remark: '우수 회원 등급', regDate: '2026-01-01' },
@@ -1604,5 +1669,37 @@
     nextId(list, field) {
       return list.length ? Math.max(...list.map(i => i[field] || 0)) + 1 : 1;
     },
+  });
+
+  /* ── 공개 대상 자동 채우기 (이벤트 등 레거시 레코드) ── */
+  const _legacyVis = (condition, authRequired, authGrade) => {
+    const out = [];
+    const c = (condition || '').trim();
+    if (c === '항상 표시' || c === '') out.push('PUBLIC');
+    else if (c === '로그인 필요') out.push('MEMBER');
+    else if (c === '로그인+등급') {
+      if (authGrade === 'VIP') out.push('VIP');
+      else if (authGrade === 'GOLD') out.push('PREMIUM');
+      else out.push('MEMBER');
+    }
+    if (authRequired === true) out.push('VERIFIED');
+    return out.length ? '^' + out.join('^') + '^' : '';
+  };
+  (window.adminData.events || []).forEach(e => {
+    if (e.visibilityTargets == null) {
+      e.visibilityTargets = _legacyVis(e.condition, e.authRequired, e.authGrade);
+    }
+  });
+
+  /* ── 영역(DISP_AREA)에 UI 코드 자동 매핑 ── */
+  const _uiMap = {
+    HOME: 'FRONT_MAIN', PRODUCT: 'FRONT_PRODUCT', MY: 'FRONT_MY',
+    SIDEBAR: 'FRONT_MAIN', FOOTER: 'FRONT_MAIN',
+  };
+  (window.adminData.codes || []).forEach(c => {
+    if (c.codeGrp === 'DISP_AREA' && !c.uiCode) {
+      const prefix = (c.codeValue || '').split('_')[0];
+      c.uiCode = _uiMap[prefix] || 'FRONT_MAIN';
+    }
   });
 })();

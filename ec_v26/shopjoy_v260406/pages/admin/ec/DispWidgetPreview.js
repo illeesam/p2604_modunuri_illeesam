@@ -1,7 +1,7 @@
-/* ShopJoy Admin - 전시위젯Lib 위젯미리보기 (#page=ecDispWidgetLibPreview) */
+/* ShopJoy Admin - 전시위젯미리보기 (#page=ecDispWidgetLibPreview) */
 
 /* ── 위젯미리보기 서브컴포넌트 (grid · dashboard 공용) ── */
-const _WidgetPreview = {
+const _WP_DispWidgetPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
@@ -134,8 +134,8 @@ const _WidgetPreview = {
 };
 
 /* ── 메인 컴포넌트 ── */
-window.EcDispWidgetLibPreview = {
-  name: 'EcDispWidgetLibPreview',
+window.EcDispWidgetPreview = {
+  name: 'EcDispWidgetPreview',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
@@ -514,8 +514,8 @@ window.EcDispWidgetLibPreview = {
   <!-- 페이지 타이틀 -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
-      전시위젯Lib 위젯미리보기
-      <span style="font-size:13px;font-weight:400;color:#888;">사용위치경로 트리 &amp; 드래그하여 배치</span>
+      전시위젯미리보기
+      <span style="font-size:13px;font-weight:400;color:#888;">위젯 트리 & 드래그하여 배치</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
       🌐 {{ siteNm }}
@@ -618,11 +618,6 @@ window.EcDispWidgetLibPreview = {
             <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 6px;">
               {{ node.children.reduce((acc,c)=>acc+c.libs.length,0) }}
             </span>
-            <span v-if="isOpen(node.label)" @click="toggleAllChildren($event, node)"
-              :title="allChildrenOpen(node) ? '하위 모두 닫기' : '하위 모두 열기'"
-              style="font-size:10px;color:#9ca3af;padding:1px 4px;border-radius:3px;cursor:pointer;flex-shrink:0;"
-              :style="allChildrenOpen(node) ? 'color:#1d4ed8;' : ''"
-            >{{ allChildrenOpen(node) ? '⊟' : '⊞' }}</span>
           </div>
           <template v-if="isOpen(node.label)">
             <div v-for="sub in node.children" :key="node.label+'_'+sub.label">
@@ -892,6 +887,6 @@ window.EcDispWidgetLibPreview = {
 </div>
   `,
   components: {
-    WidgetPreview: _WidgetPreview,
+    WidgetPreview: _WP_DispWidgetPreview,
   },
 };
