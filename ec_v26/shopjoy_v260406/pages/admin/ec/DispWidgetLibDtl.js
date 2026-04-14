@@ -439,7 +439,18 @@ window.EcDispWidgetLibDtl = {
       props.navigate('ecDispWidgetLibMng');
     };
 
+    /* ── 위젯Lib 내용복사 팝업 ── */
+    const libPickOpen = ref(false);
+    const openLibPick = () => { libPickOpen.value = true; };
+    const onLibPicked = (lib) => {
+      libPickOpen.value = false;
+      const preserve = { libId: form.libId, libCode: form.libCode, regDate: form.regDate };
+      Object.assign(form, { ...lib, ...preserve });
+      props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
+    };
+
     return {
+      libPickOpen, openLibPick, onLibPicked,
       isNew, form, errors, WIDGET_TYPES,
       isImage, isProduct, isCondProduct, isChart, isText, isInfo,
       isPopup, isFile, isFileList, isCoupon, isHtmlEditor, isEvent, isCache, isEmbed,
@@ -460,10 +471,15 @@ window.EcDispWidgetLibDtl = {
       <span v-if="!isNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">#{{ String(form.libId).padStart(4,'0') }}</span>
     </div>
     <div class="form-actions" style="margin:0;gap:8px;">
+      <button @click="openLibPick" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">📋 전시위젯Lib 내용복사</button>
       <button @click="save"   class="btn btn-primary" style="font-size:13px;">저장</button>
       <button v-if="!isNew" @click="remove" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">삭제</button>
       <button @click="$emit('close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </div>
+    <widget-lib-pick-modal v-if="libPickOpen" mode="copy"
+      :widget-libs="dispDataset.widgetLibs || []"
+      @close="libPickOpen=false"
+      @pick="onLibPicked" />
   </div>
 
   <div style="display:flex;gap:0;">

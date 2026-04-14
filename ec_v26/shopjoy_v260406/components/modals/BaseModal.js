@@ -2074,3 +2074,801 @@ window.CategorySelectModal = {
 </div>
   `,
 };
+
+/* ═══════════════════════════════════════════════════════════════════
+ * RowPickModal — 전시항목(위젯 행) 선택 팝업 (패널에 전시항목 복사)
+ * ═══════════════════════════════════════════════════════════════════ */
+window.RowPickModal = {
+  name: 'RowPickModal',
+  props: {
+    title: { type: String, default: '전시항목 복사' },
+    displays: { type: Array, default: () => [] },   /* 전체 패널(dispDataset.displays) */
+    areas:    { type: Array, default: () => [] },   /* DISP_AREA codes */
+    excludePanelId: { type: Number, default: null },/* 현재 패널 제외 */
+  },
+  emits: ['close', 'pick-multi'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed } = Vue;
+    const searchKw = ref('');
+    const searchStatus = ref('');
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
+    const selectedTreeKey = ref('');
+    const treeOpen = ref(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
+    const isTreeOpen = k => treeOpen.value.has(k);
+    const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
+    const areaNm = (code) => {
+      const a = props.areas.find(x => x.codeValue === code);
+      return a ? a.codeLabel : code;
+    };
+
+    /* 모든 위젯을 flatten (panel 정보 포함) */
+    const allRows = computed(() => {
+      const out = [];
+      (props.displays || []).forEach(p => {
+        if (props.excludePanelId && p.dispId === props.excludePanelId) return;
+        (p.rows || []).forEach((r, i) => {
+          out.push({
+            __rowId: p.dispId + '_' + i,
+            __panelId: p.dispId,
+            __panelName: p.name,
+            __area: p.area,
+            __status: p.status,
+            row: r,
+            sortIdx: i,
+          });
+        });
+      });
+      return out;
+    });
+
+    const filtered = computed(() => allRows.value.filter(o => {
+      const kw = searchKw.value.trim().toLowerCase();
+      if (kw && !(o.row.widgetNm||'').toLowerCase().includes(kw)
+           && !(o.__panelName||'').toLowerCase().includes(kw)
+           && !(o.row.widgetType||'').toLowerCase().includes(kw)) return false;
+      if (searchStatus.value && o.__status !== searchStatus.value) return false;
+      if (selectedTreeKey.value) {
+        const top = (o.__area || '').split('_')[0];
+        if (top !== selectedTreeKey.value) return false;
+      }
+      return true;
+    }));
+    const total = computed(() => filtered.value.length);
+    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
+    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const pageNums = computed(() => {
+      const cur = pager.page, last = totalPages.value;
+      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
+      return Array.from({ length: e-s+1 }, (_, i) => s+i);
+    });
+    const tree = computed(() => {
+      const g = {};
+      allRows.value.forEach(o => {
+        const top = (o.__area || '(미등록)').split('_')[0];
+        g[top] = (g[top] || 0) + 1;
+      });
+      return Object.keys(g).sort().map(top => ({ label: top, count: g[top] }));
+    });
+
+    const checked = ref(new Set());
+    const isChecked = (id) => checked.value.has(id);
+    const toggleCheck = (id) => {
+      const s = new Set(checked.value);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      checked.value = s;
+    };
+    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(o => checked.value.has(o.__rowId)));
+    const toggleCheckAll = () => {
+      const s = new Set(checked.value);
+      if (allChecked.value) pageList.value.forEach(o => s.delete(o.__rowId));
+      else pageList.value.forEach(o => s.add(o.__rowId));
+      checked.value = s;
+    };
+    const pickMulti = () => {
+      const picks = allRows.value.filter(o => checked.value.has(o.__rowId));
+      if (!picks.length) return;
+      emit('pick-multi', picks.map(o => ({ ...o.row })));
+      checked.value = new Set();
+    };
+    const pickOne = (o) => emit('pick-multi', [{ ...o.row }]);
+    const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+
+    const WIDGET_LABEL = {
+      image_banner:'이미지배너', product_slider:'상품슬라이더', product:'상품',
+      chart_bar:'차트', chart_line:'차트', chart_pie:'차트', text_banner:'텍스트',
+      info_card:'정보카드', popup:'팝업', file:'파일', coupon:'쿠폰',
+      html_editor:'HTML', event_banner:'이벤트', cache_banner:'캐쉬', widget_embed:'위젯',
+    };
+    const wLabel = (t) => WIDGET_LABEL[t] || t || '-';
+
+    return {
+      searchKw, searchStatus, pager, PAGE_SIZES,
+      total, totalPages, pageList, pageNums,
+      selectedTreeKey, toggleTree, isTreeOpen, selectTree, tree,
+      statusCls, areaNm, wLabel,
+      checked, isChecked, toggleCheck, allChecked, toggleCheckAll, pickMulti, pickOne,
+    };
+  },
+  template: /* html */`
+<div @click.self="$emit('close')"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fafafa;border-radius:14px;width:1100px;max-width:98vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.3);">
+    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:14px;font-weight:700;">🔗 {{ title }}</span>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input v-model="searchKw" placeholder="위젯명·패널명·유형 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+        <option value="">패널상태 전체</option>
+        <option value="활성">활성</option>
+        <option value="비활성">비활성</option>
+      </select>
+    </div>
+    <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
+      <div style="width:220px;flex-shrink:0;background:#fff;border-radius:8px;padding:12px;overflow-y:auto;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;">사용위치 트리</div>
+        <div @click="toggleTree('__root__'); selectTree('')"
+          :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
+          <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+        </div>
+        <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
+          <div v-for="node in tree" :key="node.label"
+            @click="selectTree(node.label)"
+            :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
+            <span>▸ {{ node.label }}</span>
+            <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
+          <span>총 <b>{{ total }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 복사</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <table class="admin-table" style="margin:0;">
+            <thead>
+              <tr>
+                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
+                <th style="width:110px;">위젯 유형</th>
+                <th>전시항목 정보</th>
+                <th style="width:160px;text-align:left;">사용위치경로</th>
+                <th style="width:90px;text-align:right;">선택</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!pageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 전시항목이 없습니다.</td></tr>
+              <tr v-for="o in pageList" :key="o.__rowId"
+                :style="isChecked(o.__rowId)?'background:#eef6fd;':''">
+                <td style="text-align:center;vertical-align:top;padding-top:14px;">
+                  <input type="checkbox" :checked="isChecked(o.__rowId)" @change="toggleCheck(o.__rowId)" />
+                </td>
+                <td style="vertical-align:top;padding-top:12px;">
+                  <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wLabel(o.row.widgetType) }}</span>
+                </td>
+                <td style="padding:10px 12px;">
+                  <div style="margin-bottom:4px;">
+                    <span style="font-size:14px;font-weight:700;color:#222;">{{ o.row.widgetNm || ('위젯 '+(o.sortIdx+1)) }}</span>
+                    <span class="badge" :class="statusCls(o.__status)" style="font-size:11px;margin-left:8px;">{{ o.__status }}</span>
+                  </div>
+                  <div style="font-size:11px;color:#555;line-height:1.5;">
+                    <span><b style="color:#888;">소속 패널:</b> {{ o.__panelName }} (#{{ o.__panelId }})</span>
+                    <span v-if="o.row.clickAction && o.row.clickAction !== 'none'" style="margin-left:10px;"><b style="color:#888;">클릭:</b> {{ o.row.clickAction }}</span>
+                  </div>
+                </td>
+                <td style="vertical-align:top;padding-top:12px;">
+                  <span style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;font-size:11px;">
+                    {{ (o.__area||'').split('_')[0] || '-' }} &gt; {{ areaNm(o.__area) }}
+                  </span>
+                </td>
+                <td style="vertical-align:top;padding-top:10px;text-align:right;">
+                  <button @click="pickOne(o)" class="btn btn-primary btn-sm" style="font-size:11px;">복사</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" style="padding:10px 16px;border-top:1px solid #f0f0f0;margin-top:0;">
+          <div></div>
+          <div class="pager">
+            <button :disabled="pager.page===1" @click="pager.page=1">«</button>
+            <button :disabled="pager.page===1" @click="pager.page--">‹</button>
+            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+          </div>
+          <div class="pager-right">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  `,
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * AreaPickModal — 전시영역 선택 팝업 (UI에 영역 추가)
+ * ═══════════════════════════════════════════════════════════════════ */
+window.AreaPickModal = {
+  name: 'AreaPickModal',
+  props: {
+    title: { type: String, default: '전시영역 추가' },
+    areas:    { type: Array, default: () => [] },   /* DISP_AREA codes */
+    excludeUi: { type: String, default: '' },        /* 제외할 UI 코드 (이미 포함된 영역 제외) */
+  },
+  emits: ['close', 'pick'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed } = Vue;
+    const searchKw = ref('');
+    const searchUseYn = ref('');
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
+    const selectedTreeKey = ref('');
+    const treeOpen = ref(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
+    const isTreeOpen = k => treeOpen.value.has(k);
+    const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
+
+    const filtered = computed(() => (props.areas || []).filter(a => {
+      if (props.excludeUi && a.uiCode === props.excludeUi) return false;
+      const kw = searchKw.value.trim().toLowerCase();
+      if (kw && !(a.codeValue||'').toLowerCase().includes(kw) && !(a.codeLabel||'').toLowerCase().includes(kw)) return false;
+      if (searchUseYn.value && a.useYn !== searchUseYn.value) return false;
+      if (selectedTreeKey.value) {
+        const top = (a.codeValue || '').split('_')[0];
+        if (top !== selectedTreeKey.value) return false;
+      }
+      return true;
+    }).sort((a,b) => (a.codeLabel||'').localeCompare(b.codeLabel||'')));
+    const total = computed(() => filtered.value.length);
+    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
+    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const pageNums = computed(() => {
+      const cur = pager.page, last = totalPages.value;
+      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
+      return Array.from({ length: e-s+1 }, (_, i) => s+i);
+    });
+    const tree = computed(() => {
+      const g = {};
+      (props.areas || []).forEach(a => {
+        if (props.excludeUi && a.uiCode === props.excludeUi) return;
+        const top = (a.codeValue || '(기타)').split('_')[0];
+        g[top] = (g[top] || 0) + 1;
+      });
+      return Object.keys(g).sort().map(top => ({ label: top, count: g[top] }));
+    });
+    const statusCls = (y) => y === 'Y' ? 'badge-green' : 'badge-gray';
+    const onPick = (a) => emit('pick', a);
+
+    /* 멀티선택 */
+    const checked = ref(new Set());
+    const isChecked = (id) => checked.value.has(id);
+    const toggleCheck = (id) => {
+      const s = new Set(checked.value);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      checked.value = s;
+    };
+    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(a => checked.value.has(a.codeId)));
+    const toggleCheckAll = () => {
+      const s = new Set(checked.value);
+      if (allChecked.value) pageList.value.forEach(a => s.delete(a.codeId));
+      else pageList.value.forEach(a => s.add(a.codeId));
+      checked.value = s;
+    };
+    const pickMulti = () => {
+      const ids = Array.from(checked.value);
+      if (!ids.length) return;
+      ids.forEach(id => {
+        const a = (props.areas || []).find(x => x.codeId === id);
+        if (a) emit('pick', a);
+      });
+      checked.value = new Set();
+    };
+
+    return {
+      searchKw, searchUseYn, pager, PAGE_SIZES,
+      total, totalPages, pageList, pageNums,
+      selectedTreeKey, toggleTree, isTreeOpen, selectTree, tree,
+      statusCls, onPick,
+      checked, isChecked, toggleCheck, allChecked, toggleCheckAll, pickMulti,
+    };
+  },
+  template: /* html */`
+<div @click.self="$emit('close')"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fafafa;border-radius:14px;width:1100px;max-width:98vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.3);">
+    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:14px;font-weight:700;">🔗 {{ title }}</span>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input v-model="searchKw" placeholder="영역코드·영역명 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <select v-model="searchUseYn" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+        <option value="">사용 전체</option>
+        <option value="Y">사용</option>
+        <option value="N">미사용</option>
+      </select>
+    </div>
+    <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
+      <div style="width:220px;flex-shrink:0;background:#fff;border-radius:8px;padding:12px;overflow-y:auto;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;">사용위치 트리</div>
+        <div @click="toggleTree('__root__'); selectTree('')"
+          :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
+          <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+        </div>
+        <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
+          <div v-for="node in tree" :key="node.label"
+            @click="selectTree(node.label)"
+            :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
+            <span>▸ {{ node.label }}</span>
+            <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
+          <span>총 <b>{{ total }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <table class="admin-table" style="margin:0;">
+            <thead>
+              <tr>
+                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
+                <th style="width:56px;">ID</th>
+                <th>영역 정보</th>
+                <th style="width:140px;text-align:left;">사용위치경로</th>
+                <th style="width:90px;text-align:right;">선택</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!pageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 영역이 없습니다.</td></tr>
+              <tr v-for="a in pageList" :key="a.codeId"
+                :style="isChecked(a.codeId)?'background:#eef6fd;':''">
+                <td style="text-align:center;vertical-align:top;padding-top:14px;">
+                  <input type="checkbox" :checked="isChecked(a.codeId)" @change="toggleCheck(a.codeId)" />
+                </td>
+                <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">{{ a.codeId }}</td>
+                <td style="padding:10px 12px;">
+                  <div style="margin-bottom:4px;">
+                    <code style="background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;font-size:10px;">{{ a.codeValue }}</code>
+                    <span style="font-size:14px;font-weight:700;color:#222;margin-left:8px;">{{ a.codeLabel }}</span>
+                    <span class="badge" :class="statusCls(a.useYn)" style="font-size:11px;margin-left:8px;">{{ a.useYn==='Y'?'사용':'미사용' }}</span>
+                  </div>
+                  <div style="font-size:11px;color:#555;line-height:1.5;">
+                    <span><b style="color:#888;">유형:</b> {{ a.areaType || '-' }}</span>
+                    <span style="margin-left:10px;"><b style="color:#888;">표시:</b> {{ a.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(a.gridCols||1)+'열' }}</span>
+                    <span v-if="a.uiCode" style="margin-left:10px;"><b style="color:#888;">현재UI:</b> {{ a.uiCode }}</span>
+                  </div>
+                </td>
+                <td style="vertical-align:top;padding-top:12px;">
+                  <span style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;font-size:11px;">
+                    {{ (a.codeValue||'').split('_')[0] || '-' }} &gt; {{ a.codeLabel }}
+                  </span>
+                </td>
+                <td style="vertical-align:top;padding-top:10px;text-align:right;">
+                  <button @click="onPick(a)" class="btn btn-primary btn-sm" style="font-size:11px;">선택</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" style="padding:10px 16px;border-top:1px solid #f0f0f0;margin-top:0;">
+          <div></div>
+          <div class="pager">
+            <button :disabled="pager.page===1" @click="pager.page=1">«</button>
+            <button :disabled="pager.page===1" @click="pager.page--">‹</button>
+            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+          </div>
+          <div class="pager-right">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  `,
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * PanelPickModal — 전시패널 선택 팝업 (영역에 패널 추가)
+ * ═══════════════════════════════════════════════════════════════════ */
+window.PanelPickModal = {
+  name: 'PanelPickModal',
+  props: {
+    title: { type: String, default: '전시패널 추가' },
+    displays: { type: Array, default: () => [] },
+    areas:    { type: Array, default: () => [] },   /* DISP_AREA codes */
+    excludeArea: { type: String, default: '' },     /* 제외할 영역코드 (이미 포함) */
+  },
+  emits: ['close', 'pick'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed } = Vue;
+    const searchKw = ref('');
+    const searchStatus = ref('');
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
+    const selectedTreeKey = ref('');
+    const treeOpen = ref(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
+    const isTreeOpen = k => treeOpen.value.has(k);
+    const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
+
+    const areaNm = (code) => {
+      const a = props.areas.find(x => x.codeValue === code);
+      return a ? a.codeLabel : code;
+    };
+
+    const filtered = computed(() => (props.displays || []).filter(p => {
+      if (props.excludeArea && p.area === props.excludeArea) return false;
+      const kw = searchKw.value.trim().toLowerCase();
+      if (kw && !(p.name||'').toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
+      if (searchStatus.value && p.status !== searchStatus.value) return false;
+      if (selectedTreeKey.value) {
+        const top = (p.area || '').split('_')[0];
+        if (top !== selectedTreeKey.value) return false;
+      }
+      return true;
+    }).sort((a,b) => (a.name||'').localeCompare(b.name||'')));
+    const total = computed(() => filtered.value.length);
+    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
+    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const pageNums = computed(() => {
+      const cur = pager.page, last = totalPages.value;
+      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
+      return Array.from({ length: e-s+1 }, (_, i) => s+i);
+    });
+    const tree = computed(() => {
+      const g = {};
+      (props.displays || []).forEach(p => {
+        if (props.excludeArea && p.area === props.excludeArea) return;
+        const top = (p.area || '(미등록)').split('_')[0];
+        g[top] = (g[top] || 0) + 1;
+      });
+      return Object.keys(g).sort().map(top => ({ label: top, count: g[top] }));
+    });
+    const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+    const onPick = (p) => emit('pick', p);
+
+    /* 멀티선택 */
+    const checked = ref(new Set());
+    const isChecked = (id) => checked.value.has(id);
+    const toggleCheck = (id) => {
+      const s = new Set(checked.value);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      checked.value = s;
+    };
+    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(p => checked.value.has(p.dispId)));
+    const toggleCheckAll = () => {
+      const s = new Set(checked.value);
+      if (allChecked.value) pageList.value.forEach(p => s.delete(p.dispId));
+      else pageList.value.forEach(p => s.add(p.dispId));
+      checked.value = s;
+    };
+    const pickMulti = () => {
+      const ids = Array.from(checked.value);
+      if (!ids.length) return;
+      ids.forEach(id => {
+        const p = (props.displays || []).find(x => x.dispId === id);
+        if (p) emit('pick', p);
+      });
+      checked.value = new Set();
+    };
+
+    return {
+      searchKw, searchStatus, pager, PAGE_SIZES,
+      total, totalPages, pageList, pageNums,
+      selectedTreeKey, toggleTree, isTreeOpen, selectTree, tree,
+      statusCls, onPick, areaNm,
+      checked, isChecked, toggleCheck, allChecked, toggleCheckAll, pickMulti,
+    };
+  },
+  template: /* html */`
+<div @click.self="$emit('close')"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fafafa;border-radius:14px;width:1100px;max-width:98vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.3);">
+    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:14px;font-weight:700;">🔗 {{ title }}</span>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input v-model="searchKw" placeholder="패널명·영역코드 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+        <option value="">상태 전체</option>
+        <option value="활성">활성</option>
+        <option value="비활성">비활성</option>
+      </select>
+    </div>
+    <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
+      <!-- 트리 -->
+      <div style="width:220px;flex-shrink:0;background:#fff;border-radius:8px;padding:12px;overflow-y:auto;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;">사용위치 트리</div>
+        <div @click="toggleTree('__root__'); selectTree('')"
+          :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
+          <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+        </div>
+        <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
+          <div v-for="node in tree" :key="node.label"
+            @click="selectTree(node.label)"
+            :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
+            <span>▸ {{ node.label }}</span>
+            <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+          </div>
+        </div>
+      </div>
+      <!-- 목록 -->
+      <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
+          <span>총 <b>{{ total }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <table class="admin-table" style="margin:0;">
+            <thead>
+              <tr>
+                <th style="width:36px;text-align:center;">
+                  <input type="checkbox" :checked="allChecked" @change="toggleCheckAll" />
+                </th>
+                <th style="width:56px;">ID</th>
+                <th>패널 정보</th>
+                <th style="width:140px;text-align:left;">사용위치경로</th>
+                <th style="width:90px;text-align:right;">선택</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!pageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 패널이 없습니다.</td></tr>
+              <tr v-for="p in pageList" :key="p.dispId"
+                :style="isChecked(p.dispId)?'background:#eef6fd;':''">
+                <td style="text-align:center;vertical-align:top;padding-top:14px;">
+                  <input type="checkbox" :checked="isChecked(p.dispId)" @change="toggleCheck(p.dispId)" />
+                </td>
+                <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ p.dispId }}</td>
+                <td style="padding:10px 12px;">
+                  <div style="margin-bottom:4px;">
+                    <code style="background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;font-size:10px;">{{ p.area || '(미등록)' }}</code>
+                    <span style="font-size:14px;font-weight:700;color:#222;margin-left:8px;">{{ p.name }}</span>
+                    <span class="badge" :class="statusCls(p.status)" style="font-size:11px;margin-left:8px;">{{ p.status }}</span>
+                  </div>
+                  <div style="font-size:11px;color:#555;line-height:1.5;">
+                    <span><b style="color:#888;">영역명:</b> {{ areaNm(p.area) }}</span>
+                    <span style="margin-left:10px;"><b style="color:#888;">위젯:</b> {{ (p.rows||[]).length }}개</span>
+                  </div>
+                </td>
+                <td style="vertical-align:top;padding-top:12px;">
+                  <span style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;font-size:11px;">
+                    {{ (p.area||'').split('_')[0] || '-' }} &gt; {{ areaNm(p.area) }}
+                  </span>
+                </td>
+                <td style="vertical-align:top;padding-top:10px;text-align:right;">
+                  <button @click="onPick(p)" class="btn btn-primary btn-sm" style="font-size:11px;">선택</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" style="padding:10px 16px;border-top:1px solid #f0f0f0;margin-top:0;">
+          <div></div>
+          <div class="pager">
+            <button :disabled="pager.page===1" @click="pager.page=1">«</button>
+            <button :disabled="pager.page===1" @click="pager.page--">‹</button>
+            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+          </div>
+          <div class="pager-right">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  `,
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * WidgetLibPickModal — 전시위젯Lib 선택 팝업 (내용복사 / 참조)
+ * ═══════════════════════════════════════════════════════════════════ */
+window.WidgetLibPickModal = {
+  name: 'WidgetLibPickModal',
+  props: {
+    mode: { type: String, default: 'copy' },     /* 'copy' | 'ref' */
+    widgetLibs: { type: Array, default: () => [] },
+  },
+  emits: ['close', 'pick'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed } = Vue;
+    const searchKw = ref('');
+    const searchType = ref('');
+    const searchStatus = ref('');
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
+
+    const filtered = computed(() => (props.widgetLibs || []).filter(d => {
+      const kw = searchKw.value.trim().toLowerCase();
+      if (kw && !(d.name||'').toLowerCase().includes(kw) && !(d.desc||'').toLowerCase().includes(kw) && !(d.tags||'').toLowerCase().includes(kw)) return false;
+      if (searchType.value && d.widgetType !== searchType.value) return false;
+      if (searchStatus.value && d.status !== searchStatus.value) return false;
+      return true;
+    }).sort((a,b) => b.libId - a.libId));
+    const total = computed(() => filtered.value.length);
+    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
+    const pageList = computed(() =>
+      filtered.value.slice((pager.page-1) * pager.size, pager.page * pager.size)
+    );
+    const pageNums = computed(() => {
+      const cur = pager.page, last = totalPages.value;
+      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
+      return Array.from({ length: e-s+1 }, (_, i) => s+i);
+    });
+
+    /* 사용위치 트리 */
+    const selectedTreeKey = ref('');
+    const treeOpen = ref(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
+    const isTreeOpen = k => treeOpen.value.has(k);
+    const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
+    const tree = computed(() => {
+      const map = {};
+      const add = (lib, p) => {
+        const parts = p.split('>').map(x => x.trim()).filter(Boolean);
+        if (!parts.length) return;
+        const top = parts[0], rest = parts.slice(1).join(' > ') || '(루트)';
+        if (!map[top]) map[top] = {};
+        if (!map[top][rest]) map[top][rest] = [];
+        map[top][rest].push(lib);
+      };
+      filtered.value.forEach(lib => {
+        if (!lib.usedPaths || !lib.usedPaths.length) add(lib, '(미등록) > (미등록)');
+        else lib.usedPaths.forEach(p => add(lib, p));
+      });
+      return Object.keys(map).sort().map(top => ({
+        label: top,
+        count: Object.values(map[top]).reduce((a,b) => a+b.length, 0),
+        children: Object.keys(map[top]).sort().map(sub => ({ label: sub, count: map[top][sub].length })),
+      }));
+    });
+
+    const WIDGET_TYPES = [
+      { value:'', label:'전체 유형' },
+      { value:'image_banner', label:'이미지 배너' }, { value:'product_slider', label:'상품 슬라이더' },
+      { value:'product', label:'상품' }, { value:'text_banner', label:'텍스트 배너' },
+      { value:'info_card', label:'정보카드' }, { value:'popup', label:'팝업' },
+      { value:'file', label:'파일' }, { value:'coupon', label:'쿠폰' },
+      { value:'html_editor', label:'HTML 에디터' }, { value:'widget_embed', label:'위젯' },
+    ];
+    const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+    const onPick = (lib) => emit('pick', lib);
+
+    return {
+      searchKw, searchType, searchStatus, WIDGET_TYPES,
+      pager, PAGE_SIZES, total, totalPages, pageList, pageNums,
+      tree, selectedTreeKey, toggleTree, isTreeOpen, selectTree,
+      statusCls, onPick,
+    };
+  },
+  template: /* html */`
+<div @click.self="$emit('close')"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fafafa;border-radius:14px;width:1100px;max-width:98vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.3);">
+    <!-- 헤더 -->
+    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:14px;font-weight:700;">
+        {{ mode==='copy' ? '📋 전시위젯Lib 내용복사' : '🔗 전시위젯Lib 참조' }}
+      </span>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+    </div>
+
+    <!-- 검색 -->
+    <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input v-model="searchKw" placeholder="이름·설명·태그 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <select v-model="searchType" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+        <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
+      </select>
+      <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+        <option value="">상태 전체</option>
+        <option value="활성">활성</option>
+        <option value="비활성">비활성</option>
+      </select>
+    </div>
+
+    <!-- 본문: 좌측 트리 + 우측 목록 -->
+    <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
+      <!-- 트리 -->
+      <div style="width:220px;flex-shrink:0;background:#fff;border-radius:8px;padding:12px;overflow-y:auto;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;">사용위치 트리</div>
+        <div @click="toggleTree('__root__'); selectTree('')"
+          :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
+          <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+        </div>
+        <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
+          <div v-for="node in tree" :key="node.label">
+            <div @click="toggleTree(node.label); selectTree(node.label)"
+              :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
+              <span>{{ isTreeOpen(node.label) ? '▼' : '▶' }} {{ node.label }}</span>
+              <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 목록 -->
+      <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">총 <b>{{ total }}</b>건</div>
+        <div style="flex:1;overflow-y:auto;">
+          <table class="admin-table" style="margin:0;">
+            <thead>
+              <tr>
+                <th style="width:56px;">ID</th>
+                <th>위젯 정보</th>
+                <th style="width:90px;text-align:right;">선택</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!pageList.length"><td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 데이터가 없습니다.</td></tr>
+              <tr v-for="d in pageList" :key="d.libId">
+                <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
+                <td style="padding:10px 12px;">
+                  <div style="margin-bottom:4px;">
+                    <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ d.widgetType }}</span>
+                    <span style="font-size:14px;font-weight:700;color:#222;margin-left:8px;">{{ d.name }}</span>
+                    <span class="badge" :class="statusCls(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
+                  </div>
+                  <div style="font-size:11px;color:#555;line-height:1.5;">
+                    <span v-if="d.usedPaths && d.usedPaths.length">
+                      <b style="color:#888;">사용위치:</b>
+                      <span v-for="(p,pi) in d.usedPaths" :key="pi"
+                        style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ p }}</span>
+                    </span>
+                    <span v-if="d.tags" style="margin-left:8px;"><b style="color:#888;">태그:</b> {{ d.tags }}</span>
+                  </div>
+                </td>
+                <td style="vertical-align:top;padding-top:10px;text-align:right;">
+                  <button @click="onPick(d)" class="btn btn-primary btn-sm" style="font-size:11px;">
+                    {{ mode==='copy' ? '복사' : '참조' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 페이저 -->
+        <div class="pagination" style="padding:10px 16px;border-top:1px solid #f0f0f0;margin-top:0;">
+          <div></div>
+          <div class="pager">
+            <button :disabled="pager.page===1" @click="pager.page=1">«</button>
+            <button :disabled="pager.page===1" @click="pager.page--">‹</button>
+            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+          </div>
+          <div class="pager-right">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  `,
+};

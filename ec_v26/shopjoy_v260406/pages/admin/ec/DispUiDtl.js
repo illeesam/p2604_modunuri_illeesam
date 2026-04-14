@@ -118,6 +118,12 @@ window.EcDispUiDtl = {
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
     const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel.value = new Set(); };
+    const onAreaPicked = (a) => {
+      if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
+      a.uiCode = form.codeValue;
+      props.showToast && props.showToast(`[${a.codeLabel}] 영역을 추가했습니다.`, 'info');
+      pickOpen.value = false;
+    };
     const closePick = () => { pickOpen.value = false; };
     const togglePick = (id) => {
       const s = new Set(pickSel.value);
@@ -135,6 +141,15 @@ window.EcDispUiDtl = {
       });
       props.showToast && props.showToast(`${ids.length}개 영역을 추가했습니다.`, 'info');
       closePick();
+    };
+    const moveArea = (idx, dir) => {
+      const arr = relatedAreas.value;
+      const target = idx + dir;
+      if (target < 0 || target >= arr.length) return;
+      /* sortOrd 스왑 */
+      const a = arr[idx], b = arr[target];
+      const tmp = a.sortOrd; a.sortOrd = b.sortOrd; b.sortOrd = tmp;
+      props.showToast && props.showToast(`[${a.codeLabel}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
     };
     const removeArea = (a) => {
       props.showConfirm && props.showConfirm({
@@ -199,9 +214,9 @@ window.EcDispUiDtl = {
     return {
       form, errors, isNew, UI_TYPE_OPTS,
       save, doCancel, relatedAreas, panelsOfArea,
-      activeTab, selectTab, activeArea, expanded,
+      activeTab, selectTab, activeArea, expanded, moveArea,
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
-      pickOpen, pickKw, pickSel, availableAreas, openPick, closePick, togglePick, confirmPick, removeArea,
+      pickOpen, pickKw, pickSel, availableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
       openUiPreview, openAreaPreview,
     };
   },
@@ -214,12 +229,19 @@ window.EcDispUiDtl = {
       <span v-if="!isNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">#{{ form.codeId }}</span>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-sm" :disabled="isNew"
+        :style="isNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
+        :title="isNew ? '저장 후 영역을 추가할 수 있습니다.' : ''"
+        @click="!isNew && openPick()">
+        ✚ 전시영역추가
+      </button>
       <span style="font-size:12px;color:#888;margin-right:10px;">연결된 영역:
         <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">{{ relatedAreas.length }}개</span>
       </span>
       <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openUiPreview">🖼 UI미리보기</button>
       <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;" @click="openAreaPreview">👁 영역미리보기</button>
       <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
+      <button class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
 
@@ -241,17 +263,27 @@ window.EcDispUiDtl = {
       <div v-for="(a, i) in relatedAreas" :key="a.codeId"
         @click="selectTab('area_'+a.codeId)"
         :style="{
+          display:'flex',alignItems:'center',justifyContent:'space-between',
           padding:'8px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'4px',
           fontSize:'12px',
           background: activeTab==='area_'+a.codeId ? '#fff' : 'transparent',
           color: activeTab==='area_'+a.codeId ? '#1565c0' : '#666',
           border: '1px solid '+(activeTab==='area_'+a.codeId ? '#1565c0' : 'transparent'),
         }">
-        영역 {{ i+1 }}. {{ a.codeLabel }}
+        <span>영역 {{ i+1 }}. {{ a.codeLabel }}</span>
+        <span v-if="activeTab==='area_'+a.codeId" style="display:flex;gap:2px;">
+          <button @click.stop="moveArea(i, -1)" :disabled="i===0" title="위로"
+            style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+            :style="i===0?'opacity:0.3;cursor:default;':''">▲</button>
+          <button @click.stop="moveArea(i, 1)" :disabled="i===relatedAreas.length-1" title="아래로"
+            style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+            :style="i===relatedAreas.length-1?'opacity:0.3;cursor:default;':''">▼</button>
+        </span>
       </div>
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
-        <button @click="openPick"
-          style="padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;">
+        <button @click="!isNew && openPick()" :disabled="isNew"
+          :title="isNew ? '저장 후 영역을 추가할 수 있습니다.' : ''"
+          :style="isNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
           ✚ 기존 영역 추가
         </button>
       </div>
@@ -297,10 +329,6 @@ window.EcDispUiDtl = {
             <label class="form-label">설명</label>
             <input class="form-control" v-model="form.remark" placeholder="UI 설명" />
           </div>
-        </div>
-        <div class="form-actions" style="margin-top:20px;">
-          <button class="btn btn-primary" @click="save">저장</button>
-          <button class="btn btn-secondary" @click="doCancel">취소</button>
         </div>
       </div>
       <div v-else-if="activeArea">
@@ -390,40 +418,12 @@ window.EcDispUiDtl = {
   </div>
 
   <!-- 영역 선택 팝업 -->
-  <div v-if="pickOpen" @click.self="closePick"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;width:560px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;background:#fafafa;">
-        <span style="font-size:14px;font-weight:700;color:#222;">기존 영역 추가</span>
-        <button @click="closePick" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
-      </div>
-      <div style="padding:10px 18px;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;">
-        <input v-model="pickKw" placeholder="영역명 / 영역코드 검색"
-          style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
-        <span style="font-size:11px;color:#888;">선택: {{ pickSel.size }}개</span>
-      </div>
-      <div style="flex:1;overflow-y:auto;padding:10px 12px;">
-        <div v-if="!availableAreas.length" style="padding:30px;text-align:center;color:#bbb;font-size:12px;">추가할 수 있는 영역이 없습니다.</div>
-        <label v-for="a in availableAreas" :key="a.codeId"
-          :style="{
-            display:'flex',alignItems:'center',gap:'8px',padding:'8px 10px',borderRadius:'6px',cursor:'pointer',marginBottom:'4px',
-            background: pickSel.has(a.codeId) ? '#e3f2fd' : 'transparent',
-            border: '1px solid '+(pickSel.has(a.codeId) ? '#90caf9' : '#eee'),
-          }">
-          <input type="checkbox" :checked="pickSel.has(a.codeId)" @change="togglePick(a.codeId)" />
-          <span style="font-size:12px;font-weight:700;color:#222;flex:1;">{{ a.codeLabel }}</span>
-          <code style="font-size:10px;background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;">{{ a.codeValue }}</code>
-          <span style="font-size:10px;color:#999;">{{ a.uiCode || '(미할당)' }}</span>
-        </label>
-      </div>
-      <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;">
-        <button @click="closePick" class="btn btn-secondary btn-sm">취소</button>
-        <button @click="confirmPick" class="btn btn-primary btn-sm" :disabled="!pickSel.size">
-          선택한 {{ pickSel.size }}개 추가
-        </button>
-      </div>
-    </div>
-  </div>
+  <area-pick-modal v-if="pickOpen"
+    :title="'전시영역 추가 [' + form.codeValue + ']'"
+    :areas="(dispDataset.codes||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :exclude-ui="form.codeValue"
+    @close="closePick"
+    @pick="onAreaPicked" />
 </div>
   `,
 };

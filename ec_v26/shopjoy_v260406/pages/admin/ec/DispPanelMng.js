@@ -522,8 +522,6 @@ window.EcDispPanelMng = {
             </td>
             <td style="vertical-align:top;padding-top:10px;">
               <div class="actions" style="justify-content:flex-end;">
-                <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;font-size:11px;" title="패널미리보기" @click="openCardPreview(d)">🖼 패널</button>
-                <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;" title="전시항목 미리보기" @click="previewDisp(d)">👁 전시항목</button>
                 <button class="btn btn-blue btn-sm" @click="loadDetail(d.dispId)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="doDelete(d)">삭제</button>
               </div>

@@ -592,7 +592,44 @@ window.EcDispPanelDtl = {
       form.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
+    /* ── 전시항목 복사 팝업 ── */
+    const rowCopyOpen = ref(false);
+    const onRowCopy = (pickedRows) => {
+      if (!Array.isArray(pickedRows) || !pickedRows.length) return;
+      pickedRows.forEach(r => {
+        if (rows.length >= MAX_WIDGETS) return;
+        rows.push({ ...makeRowData(), ...r, sortOrder: rows.length + 1 });
+      });
+      props.showToast && props.showToast(`${pickedRows.length}개 전시항목을 복사했습니다.`, 'info');
+      rowCopyOpen.value = false;
+    };
+
+    /* ── 위젯Lib 선택 팝업 (활성 row에 복사/참조) ── */
+    const libPickOpen = ref(false);
+    const libPickMode = ref('copy');
+    const openLibPick = (mode) => {
+      if (!activeRow.value) return;
+      libPickMode.value = mode; libPickOpen.value = true;
+    };
+    const onLibPicked = (lib) => {
+      libPickOpen.value = false;
+      if (!activeRow.value) return;
+      if (libPickMode.value === 'copy') {
+        const r = activeRow.value;
+        const preserve = { widgetNm: r.widgetNm, sortOrder: r.sortOrder };
+        Object.assign(r, { ...lib, ...preserve });
+        props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
+      } else {
+        activeRow.value.refLibId   = lib.libId;
+        activeRow.value.refLibCode = lib.libCode || '';
+        activeRow.value.refLibName = lib.name || '';
+        props.showToast && props.showToast(`[${lib.name}] 참조로 설정되었습니다.`, 'info');
+      }
+    };
+
     return {
+      libPickOpen, libPickMode, openLibPick, onLibPicked,
+      rowCopyOpen, onRowCopy,
       visibilityOptions, hasVisibility, toggleVisibility,
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
       isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
@@ -616,18 +653,11 @@ window.EcDispPanelDtl = {
   template: /* html */`
 <div>
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
-    <span>{{ isNew ? '전시패널 등록' : (viewMode ? '전시패널 상세' : '전시패널 수정') }}</span>
+    <span>
+      {{ isNew ? '전시패널 등록' : (viewMode ? '전시패널 상세' : '전시패널 수정') }}
+      <span v-if="!isNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">#{{ form.dispId }}</span>
+    </span>
     <div style="display:flex;align-items:center;gap:6px;">
-      <button @click="openCardPreview"
-        style="font-size:11px;padding:4px 11px;border:1px solid #b39ddb;border-radius:14px;background:#f5f0ff;cursor:pointer;color:#6a1b9a;display:flex;align-items:center;gap:4px;"
-        title="패널미리보기">
-        🖼 패널미리보기
-      </button>
-      <button @click="openPreview(tab, '패널 전체')"
-        style="font-size:11px;padding:4px 11px;border:1px solid #b0c4de;border-radius:14px;background:#e8f0fe;cursor:pointer;color:#1a73e8;display:flex;align-items:center;gap:4px;"
-        title="전시항목 미리보기">
-        👁 전시항목 미리보기
-      </button>
       <button @click="viewAll = !viewAll"
         style="font-size:11px;padding:4px 12px;border:1px solid #d0d0d0;border-radius:14px;background:#fff;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;transition:all .15s;"
         :style="viewAll ? 'background:#f5f0ff;border-color:#b39ddb;color:#6a1b9a;' : ''"
@@ -635,6 +665,13 @@ window.EcDispPanelDtl = {
         <span>{{ viewAll ? '☰' : '⊞' }}</span>
         {{ viewAll ? '탭 보기' : '펼치기' }}
       </button>
+      <button v-if="!viewMode" class="btn btn-sm" :disabled="isNew"
+        :style="isNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
+        :title="isNew ? '저장 후 전시항목을 복사할 수 있습니다.' : ''"
+        @click="!isNew && (rowCopyOpen = true)">
+        📄 전시항목 복사
+      </button>
+      <button v-if="!viewMode" class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
   <div class="card">
@@ -642,39 +679,40 @@ window.EcDispPanelDtl = {
     <!-- ═══════════════════ 탭 모드 ═══════════════════ -->
     <div v-if="!viewAll" style="display:flex;gap:0;min-height:400px;">
 
-      <!-- 좌측 탭 메뉴 -->
-      <div style="width:116px;min-width:116px;border-right:1px solid #d8d8d8;padding-top:4px;background:#e8e8e8;border-radius:6px 0 0 6px;">
+      <!-- 좌측 탭 메뉴 (UI 스타일) -->
+      <div style="width:160px;min-width:160px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
         <div v-for="(t, tIdx) in TAB_LABELS" :key="t.key"
-          style="display:flex;align-items:stretch;border-right:3px solid transparent;transition:all .15s;"
-          :style="tab===t.key ? 'border-right-color:#e8587a;background:#fff;' : 'border-right-color:transparent;'">
-          <button @click="tab=t.key"
-            style="flex:1;text-align:left;padding:11px 10px;font-size:12px;font-weight:600;border:none;cursor:pointer;line-height:1.3;background:transparent;"
-            :style="tab===t.key ? 'color:#e8587a;' : 'color:#666;'">
-            {{ t.label }}
-          </button>
-          <div v-if="t.key !== 'info' && tab===t.key"
-            style="display:flex;flex-direction:column;justify-content:center;gap:1px;padding-right:3px;">
-            <button @click="moveRow(-1)" :disabled="activeRowIdx===0" title="위로"
-              style="display:block;font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+          @click="tab=t.key"
+          :style="{
+            display:'flex',alignItems:'center',justifyContent:'space-between',
+            padding:'9px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'6px',
+            fontSize:'12px',fontWeight: tab===t.key ? 700 : 500,
+            background: tab===t.key ? '#fff' : 'transparent',
+            color: tab===t.key ? '#e8587a' : '#555',
+            border: '1px solid '+(tab===t.key ? '#e8587a' : 'transparent'),
+            transition:'all .15s',
+          }">
+          <span v-if="t.key==='info'">📋 <b>패널기본정보</b></span>
+          <span v-else>{{ t.label }}</span>
+          <span v-if="t.key !== 'info' && tab===t.key" style="display:flex;gap:2px;">
+            <button @click.stop="moveRow(-1)" :disabled="activeRowIdx===0" title="위로"
+              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
               :style="activeRowIdx===0?'opacity:0.3;cursor:default;':''">▲</button>
-            <button @click="moveRow(1)" :disabled="activeRowIdx===rows.length-1" title="아래로"
-              style="display:block;font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+            <button @click.stop="moveRow(1)" :disabled="activeRowIdx===rows.length-1" title="아래로"
+              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
               :style="activeRowIdx===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
-          </div>
-          <div v-else-if="t.key !== 'info'" style="width:22px;"></div>
-          <!-- 삭제 버튼 (위젯2부터) -->
-          <button v-if="tIdx >= 2" @click.stop="removeWidget(tIdx-1)" title="위젯 삭제"
-            style="padding:0 4px;font-size:11px;border:none;background:none;cursor:pointer;color:#ccc;line-height:1;flex-shrink:0;"
+          </span>
+          <button v-if="tIdx >= 2 && tab!==t.key" @click.stop="removeWidget(tIdx-1)" title="전시항목 삭제"
+            style="font-size:11px;border:none;background:none;cursor:pointer;color:#bbb;line-height:1;padding:0 2px;"
             @mouseenter="$event.currentTarget.style.color='#e8587a'"
-            @mouseleave="$event.currentTarget.style.color='#ccc'">✕</button>
+            @mouseleave="$event.currentTarget.style.color='#bbb'">✕</button>
         </div>
-        <!-- 위젯 추가 버튼 -->
-        <div v-if="rows.length < MAX_WIDGETS" style="padding:6px 8px;border-top:1px dashed #d0d0d0;margin-top:2px;">
-          <button @click="addWidget"
-            style="width:100%;font-size:11px;padding:6px 0;border:1px dashed #ccc;border-radius:5px;background:#fafafa;cursor:pointer;color:#888;transition:all .15s;"
-            @mouseenter="$event.currentTarget.style.cssText='width:100%;font-size:11px;padding:6px 0;border:1px dashed #e8587a;border-radius:5px;background:#fff0f4;cursor:pointer;color:#e8587a;transition:all .15s;'"
-            @mouseleave="$event.currentTarget.style.cssText='width:100%;font-size:11px;padding:6px 0;border:1px dashed #ccc;border-radius:5px;background:#fafafa;cursor:pointer;color:#888;transition:all .15s;'">
-            + 추가
+        <!-- 추가 버튼 -->
+        <div v-if="rows.length < MAX_WIDGETS" style="margin-top:8px;">
+          <button @click="!isNew && addWidget()" :disabled="isNew"
+            :title="isNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
+            :style="isNew ? 'width:100%;padding:8px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'width:100%;padding:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
+            ✚ 전시항목 추가
           </button>
         </div>
       </div>
@@ -833,7 +871,6 @@ window.EcDispPanelDtl = {
               <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
             </template>
             <template v-else>
-              <button class="btn btn-primary" @click="save">저장</button>
               <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
             </template>
           </div>
@@ -843,8 +880,47 @@ window.EcDispPanelDtl = {
         <div v-if="activeRow">
 
           <!-- § 위젯 설정 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            📐 위젯 설정
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            <span style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;">📐 위젯 설정</span>
+            <span v-if="!viewMode" style="display:flex;gap:6px;">
+              <button @click="!isNew && openLibPick('copy')" :disabled="isNew"
+                :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
+                :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:6px;cursor:pointer;font-weight:600;'">📋 전시위젯Lib 내용복사</button>
+              <button @click="!isNew && openLibPick('ref')" :disabled="isNew"
+                :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
+                :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #ce93d8;background:#f3e5f5;color:#6a1b9a;border-radius:6px;cursor:pointer;font-weight:600;'">🔗 전시위젯Lib 참조</button>
+            </span>
+          </div>
+
+          <!-- 🔗 참조 정보 -->
+          <div v-if="activeRow.refLibId"
+            style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
+              <button v-if="!viewMode" @click="activeRow.refLibId=null; activeRow.refLibCode=''; activeRow.refLibName=''"
+                style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">참조 해제</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
+              <span><b style="color:#888;">참조구분:</b>
+                <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">위젯Lib</span>
+              </span>
+              <span v-if="activeRow.refLibCode"><b style="color:#888;">참조항목Code:</b>
+                <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">{{ activeRow.refLibCode }}</code>
+              </span>
+              <span><b style="color:#888;">참조항목ID:</b>
+                <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">#{{ String(activeRow.refLibId).padStart(4,'0') }}</code>
+              </span>
+              <span v-if="activeRow.refLibName"><b style="color:#888;">참조명:</b> {{ activeRow.refLibName }}</span>
+            </div>
+            <!-- 참조된 컴포넌트 내용 -->
+            <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
+              <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
+              <disp-x04-widget
+                :params="{ }"
+                :disp-dataset="dispDataset"
+                :disp-opt="{ showBadges: true }"
+                :widget-item="(dispDataset.widgetLibs||[]).find(l => l.libId===activeRow.refLibId) || {}" />
+            </div>
           </div>
           <div class="form-row" style="margin-bottom:16px;">
             <div class="form-group">
@@ -1057,7 +1133,6 @@ window.EcDispPanelDtl = {
               <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
             </template>
             <template v-else>
-              <button class="btn btn-primary" @click="save">저장</button>
               <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
             </template>
           </div>
@@ -1260,7 +1335,6 @@ window.EcDispPanelDtl = {
                 <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
               </template>
               <template v-else>
-                <button class="btn btn-primary" @click="save">저장</button>
                 <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
               </template>
             </div>
@@ -1420,7 +1494,6 @@ window.EcDispPanelDtl = {
                 <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">닫기</button>
               </template>
               <template v-else>
-                <button class="btn btn-primary" @click="save">저장</button>
                 <button class="btn btn-secondary" @click="navigate('ecDispPanelMng')">취소</button>
               </template>
             </div>
@@ -1430,10 +1503,9 @@ window.EcDispPanelDtl = {
       </div><!-- /v-for 섹션 -->
       <!-- 위젯 추가 버튼 (펼치기 모드) -->
       <div v-if="rows.length < MAX_WIDGETS" style="margin-top:6px;">
-        <button @click="addWidget"
-          style="width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;cursor:pointer;font-size:13px;color:#888;transition:all .15s;"
-          @mouseenter="$event.currentTarget.style.cssText='width:100%;padding:9px 0;border:1.5px dashed #e8587a;border-radius:8px;background:#fff0f4;cursor:pointer;font-size:13px;color:#e8587a;transition:all .15s;'"
-          @mouseleave="$event.currentTarget.style.cssText='width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;cursor:pointer;font-size:13px;color:#888;transition:all .15s;'">
+        <button @click="!isNew && addWidget()" :disabled="isNew"
+          :title="isNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
+          :style="isNew ? 'width:100%;padding:9px 0;border:1.5px dashed #e0e0e0;border-radius:8px;background:#f5f5f5;cursor:not-allowed;font-size:13px;color:#bbb;' : 'width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;cursor:pointer;font-size:13px;color:#888;'">
           + 위젯 추가
         </button>
       </div>
@@ -1507,6 +1579,21 @@ window.EcDispPanelDtl = {
       </div>
     </div>
   </div>
+
+  <!-- 전시위젯Lib 선택 팝업 -->
+  <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
+    :widget-libs="dispDataset.widgetLibs || []"
+    @close="libPickOpen=false"
+    @pick="onLibPicked" />
+
+  <!-- 전시항목 복사 팝업 -->
+  <row-pick-modal v-if="rowCopyOpen"
+    :title="'전시항목 복사 [' + (form.name || '현재 패널') + ']'"
+    :displays="dispDataset.displays || []"
+    :areas="(dispDataset.codes||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :exclude-panel-id="form.dispId"
+    @close="rowCopyOpen=false"
+    @pick-multi="onRowCopy" />
 </div>
 `,
 };

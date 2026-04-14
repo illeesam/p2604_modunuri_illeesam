@@ -80,6 +80,22 @@ window.EcDispAreaDtl = {
       }).sort((a, b) => (a.name||'').localeCompare(b.name||''));
     });
     const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel.value = new Set(); };
+    const movePanel = (idx, dir) => {
+      const arr = relatedPanels.value;
+      const target = idx + dir;
+      if (target < 0 || target >= arr.length) return;
+      const a = arr[idx], b = arr[target];
+      const tmp = a.sortOrder; a.sortOrder = b.sortOrder; b.sortOrder = tmp;
+      props.showToast && props.showToast(`[${a.name}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
+    };
+    const onPanelPicked = (p) => {
+      if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
+      p.area = form.codeValue;
+      const list = (props.dispDataset.displays || []).filter(x => x.area === form.codeValue);
+      list.forEach((x, i) => { x.sortOrder = i + 1; });
+      props.showToast && props.showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
+      pickOpen.value = false;
+    };
     const closePick = () => { pickOpen.value = false; };
     const togglePick = (id) => {
       const s = new Set(pickSel.value);
@@ -228,7 +244,7 @@ window.EcDispAreaDtl = {
     return {
       form, errors, isNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
       save, doCancel, relatedPanels,
-      pickOpen, pickKw, pickSel, availablePanels, openPick, closePick, togglePick, confirmPick, removePanel,
+      pickOpen, pickKw, pickSel, availablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
       activeTab, selectTab, activePanel, expanded,
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
       openPanelPreview, openWidgetPreview, addPanelShortcut, wLabel,
@@ -244,12 +260,19 @@ window.EcDispAreaDtl = {
       <span v-if="!isNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">#{{ form.codeId }}</span>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-sm" :disabled="isNew"
+        :style="isNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
+        :title="isNew ? '저장 후 패널을 추가할 수 있습니다.' : ''"
+        @click="!isNew && openPick()">
+        ✚ 전시패널추가
+      </button>
       <span style="font-size:12px;color:#888;margin-right:10px;">연결된 패널:
         <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">{{ relatedPanels.length }}개</span>
       </span>
       <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openPanelPreview">🖼 패널미리보기</button>
       <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;" @click="openWidgetPreview">👁 위젯미리보기</button>
       <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
+      <button class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
 
@@ -285,17 +308,26 @@ window.EcDispAreaDtl = {
         <span>패널 {{ i+1 }}</span>
         <span style="display:flex;gap:4px;align-items:center;">
           <span :style="'width:6px;height:6px;border-radius:50%;background:'+(p.status==='활성'?'#43a047':'#ccc')+';'"></span>
-          <span style="font-size:10px;color:#aaa;">👁</span>
+          <template v-if="activeTab==='panel_'+p.dispId">
+            <button @click.stop="movePanel(i, -1)" :disabled="i===0" title="위로"
+              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+              :style="i===0?'opacity:0.3;cursor:default;':''">▲</button>
+            <button @click.stop="movePanel(i, 1)" :disabled="i===relatedPanels.length-1" title="아래로"
+              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+              :style="i===relatedPanels.length-1?'opacity:0.3;cursor:default;':''">▼</button>
+          </template>
         </span>
       </div>
       <!-- 기존 패널 추가 + 신규 생성 -->
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
-        <button @click="openPick"
-          style="padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;">
+        <button @click="!isNew && openPick()" :disabled="isNew"
+          :title="isNew ? '저장 후 패널을 추가할 수 있습니다.' : ''"
+          :style="isNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
           ✚ 기존 패널 추가
         </button>
-        <button @click="addPanelShortcut"
-          style="padding:7px;border:1px dashed #ccc;background:#fff;color:#888;border-radius:8px;font-size:11px;cursor:pointer;">
+        <button @click="!isNew && addPanelShortcut()" :disabled="isNew"
+          :title="isNew ? '저장 후 신규 패널을 추가할 수 있습니다.' : ''"
+          :style="isNew ? 'padding:7px;border:1px dashed #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;cursor:not-allowed;' : 'padding:7px;border:1px dashed #ccc;background:#fff;color:#888;border-radius:8px;font-size:11px;cursor:pointer;'">
           + 신규 패널
         </button>
       </div>
@@ -373,10 +405,6 @@ window.EcDispAreaDtl = {
           </div>
         </div>
 
-        <div class="form-actions" style="margin-top:20px;">
-          <button class="btn btn-primary" @click="save">저장</button>
-          <button class="btn btn-secondary" @click="doCancel">취소</button>
-        </div>
       </div>
 
       <!-- ── 패널 탭 ── -->
@@ -484,42 +512,13 @@ window.EcDispAreaDtl = {
   </div>
 
   <!-- 패널 선택 팝업 -->
-  <div v-if="pickOpen" @click.self="closePick"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;width:560px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;background:#fafafa;">
-        <span style="font-size:14px;font-weight:700;color:#222;">기존 패널 추가</span>
-        <button @click="closePick" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
-      </div>
-      <div style="padding:10px 18px;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;">
-        <input v-model="pickKw" placeholder="패널명 / 영역코드 검색"
-          style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
-        <span style="font-size:11px;color:#888;">선택: {{ pickSel.size }}개</span>
-      </div>
-      <div style="flex:1;overflow-y:auto;padding:10px 12px;">
-        <div v-if="!availablePanels.length" style="padding:30px;text-align:center;color:#bbb;font-size:12px;">
-          추가할 수 있는 패널이 없습니다.
-        </div>
-        <label v-for="p in availablePanels" :key="p.dispId"
-          :style="{
-            display:'flex',alignItems:'center',gap:'8px',padding:'8px 10px',borderRadius:'6px',cursor:'pointer',marginBottom:'4px',
-            background: pickSel.has(p.dispId) ? '#e3f2fd' : 'transparent',
-            border: '1px solid '+(pickSel.has(p.dispId) ? '#90caf9' : '#eee'),
-          }">
-          <input type="checkbox" :checked="pickSel.has(p.dispId)" @change="togglePick(p.dispId)" />
-          <span style="font-size:12px;font-weight:700;color:#222;flex:1;">{{ p.name }}</span>
-          <code style="font-size:10px;background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;">{{ p.area || '(미등록)' }}</code>
-          <span class="badge" :style="'font-size:10px;background:'+(p.status==='활성'?'#e8f5e9':'#f5f5f5')+';color:'+(p.status==='활성'?'#2e7d32':'#888')+';border-radius:10px;padding:1px 8px;'">{{ p.status }}</span>
-        </label>
-      </div>
-      <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;">
-        <button @click="closePick" class="btn btn-secondary btn-sm">취소</button>
-        <button @click="confirmPick" class="btn btn-primary btn-sm" :disabled="!pickSel.size">
-          선택한 {{ pickSel.size }}개 추가
-        </button>
-      </div>
-    </div>
-  </div>
+  <panel-pick-modal v-if="pickOpen"
+    :title="'전시패널 추가 [' + form.codeValue + ']'"
+    :displays="dispDataset.displays || []"
+    :areas="(dispDataset.codes||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :exclude-area="form.codeValue"
+    @close="closePick"
+    @pick="onPanelPicked" />
 </div>
   `,
 };

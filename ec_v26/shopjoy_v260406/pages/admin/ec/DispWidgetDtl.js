@@ -439,7 +439,26 @@ window.EcDispWidgetDtl = {
       props.navigate('ecDispWidgetLibMng');
     };
 
+    /* ── 위젯Lib 선택 팝업 ── */
+    const libPickOpen = ref(false);
+    const libPickMode = ref('copy'); /* 'copy' | 'ref' */
+    const openLibPick = (mode) => { libPickMode.value = mode; libPickOpen.value = true; };
+    const onLibPicked = (lib) => {
+      libPickOpen.value = false;
+      if (libPickMode.value === 'copy') {
+        const preserve = { libId: form.libId, libCode: form.libCode, regDate: form.regDate };
+        Object.assign(form, { ...lib, ...preserve });
+        props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
+      } else {
+        form.refLibId = lib.libId;
+        form.refLibCode = lib.libCode || '';
+        form.refLibName = lib.name || '';
+        props.showToast && props.showToast(`[${lib.name}] 참조로 설정되었습니다.`, 'info');
+      }
+    };
+
     return {
+      libPickOpen, libPickMode, openLibPick, onLibPicked,
       isNew, form, errors, WIDGET_TYPES,
       isImage, isProduct, isCondProduct, isChart, isText, isInfo,
       isPopup, isFile, isFileList, isCoupon, isHtmlEditor, isEvent, isCache, isEmbed,
@@ -460,15 +479,52 @@ window.EcDispWidgetDtl = {
       <span v-if="!isNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">#{{ String(form.libId).padStart(4,'0') }}</span>
     </div>
     <div class="form-actions" style="margin:0;gap:8px;">
+      <button @click="openLibPick('copy')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">📋 전시위젯Lib 내용복사</button>
+      <button @click="openLibPick('ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">🔗 전시위젯Lib 참조</button>
       <button @click="save"   class="btn btn-primary" style="font-size:13px;">저장</button>
       <button v-if="!isNew" @click="remove" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">삭제</button>
       <button @click="$emit('close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </div>
+    <!-- 위젯Lib 선택 팝업 -->
+    <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
+      :widget-libs="dispDataset.widgetLibs || []"
+      @close="libPickOpen=false"
+      @pick="onLibPicked" />
   </div>
 
   <div style="display:flex;gap:0;">
     <!-- 왼쪽: 폼 -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
+
+      <!-- 🔗 참조 정보 -->
+      <div v-if="form.refLibId"
+        style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
+          <button @click="form.refLibId=null; form.refLibCode=''; form.refLibName=''"
+            style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">참조 해제</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
+          <span><b style="color:#888;">참조구분:</b>
+            <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">위젯Lib</span>
+          </span>
+          <span v-if="form.refLibCode"><b style="color:#888;">참조항목Code:</b>
+            <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">{{ form.refLibCode }}</code>
+          </span>
+          <span><b style="color:#888;">참조항목ID:</b>
+            <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">#{{ String(form.refLibId).padStart(4,'0') }}</code>
+          </span>
+          <span v-if="form.refLibName"><b style="color:#888;">참조명:</b> {{ form.refLibName }}</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
+          <disp-x04-widget
+            :params="{ }"
+            :disp-dataset="dispDataset"
+            :disp-opt="{ showBadges: true }"
+            :widget-item="(dispDataset.widgetLibs||[]).find(l => l.libId===form.refLibId) || {}" />
+        </div>
+      </div>
 
       <!-- 기본 정보 -->
       <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
