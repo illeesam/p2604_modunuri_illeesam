@@ -51,6 +51,10 @@
     ],
 
     claims: [
+      { claimId: 'CLM-2026-025', userId: 1, userNm: '홍길동', orderId: 'ORD-2026-025', type: '교환', status: '교환요청',  requestDate: '2026-04-06 09:10', prodNm: '오버사이즈 코튼 티셔츠', reason: '사이즈 불일치', refundAmount: 0,      courier:'한진택배', trackingNo:'556677889900', exchangeCourier:'CJ대한통운', exchangeTrackingNo:'998811223344' },
+      { claimId: 'CLM-2026-024', userId: 1, userNm: '홍길동', orderId: 'ORD-2026-024', type: '취소', status: '취소요청',  requestDate: '2026-04-05 14:25', prodNm: '슬림핏 데님 진 외 1', reason: '단순변심', refundAmount: 238800 },
+      { claimId: 'CLM-2026-022', userId: 3, userNm: '박민준', orderId: 'ORD-2026-022', type: '반품', status: '수거중',     requestDate: '2026-03-31 17:42', prodNm: '플로럴 미디 드레스', reason: '색상 상이', refundAmount: 79000, courier:'한진택배', trackingNo:'334455667788' },
+      { claimId: 'CLM-2026-021', userId: 1, userNm: '홍길동', orderId: 'ORD-2026-021', type: '반품', status: '환불완료',  requestDate: '2026-03-25 11:12', prodNm: '카고 와이드 팬츠', reason: '상품불량', refundAmount: 55000, courier:'롯데택배', trackingNo:'112233445566' },
       { claimId: 'CLM-2026-013', userId: 1, userNm: '홍길동', orderId: 'ORD-2026-013', type: '취소', status: '취소요청', requestDate: '2026-04-06 11:23', prodNm: '오버사이즈 코튼 티셔츠', reason: '단순변심', refundAmount: 29900 },
       { claimId: 'CLM-2026-012', userId: 7, userNm: '강예은', orderId: 'ORD-2026-012', type: '취소', status: '취소처리중', requestDate: '2026-04-04 09:47', prodNm: '슬림핏 데님 진 외 1', reason: '주문실수', refundAmount: 94900 },
       { claimId: 'CLM-2026-011', userId: 1, userNm: '홍길동', orderId: 'ORD-2026-011', type: '취소', status: '취소완료', requestDate: '2026-04-01 15:08', prodNm: '울 블렌드 롱코트', reason: '배송지연', refundAmount: 119000 },
