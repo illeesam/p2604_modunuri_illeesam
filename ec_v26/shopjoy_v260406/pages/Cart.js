@@ -134,6 +134,9 @@ window.Cart = {
                 <span v-if="checkedIdxs.size>0" style="font-weight:400;color:var(--blue);font-size:0.82rem;">
                   ({{ checkedIdxs.size }}개 선택됨)
                 </span>
+                <span v-else style="font-weight:400;color:var(--text-muted);font-size:0.82rem;">
+                  (총 {{ cart.length }}개)
+                </span>
               </span>
             </label>
             <button @click="handleClearAll"
