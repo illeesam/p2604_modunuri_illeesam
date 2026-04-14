@@ -3,6 +3,65 @@
    My.js 의 components 블록에 등록하여 사용합니다.
 */
 
+/* ── 공통 모달 디자인 스타일 주입 ────────────────────────────── */
+(() => {
+  if (document.getElementById('__shopjoy_modal_enh_style__')) return;
+  const css = `
+    .modal-overlay { background: rgba(18,24,40,0.55) !important; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    .modal-box { border-radius: 16px !important; box-shadow: 0 24px 60px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.08) !important; border: 1px solid rgba(255,255,255,0.6); overflow: hidden; }
+    .modal-header {
+      margin: -20px -20px 14px -20px !important; padding: 14px 18px !important;
+      background: linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%) !important;
+      border-bottom: 1px solid #ffc9d6 !important;
+      display:flex !important; align-items:center !important; justify-content:space-between !important;
+    }
+    .modal-title { font-size: 15px !important; font-weight: 800 !important; color: #9f2946 !important; letter-spacing:-0.2px; }
+    .modal-title::before { content:'●'; display:inline-block; color:#e8587a; font-size:9px; margin-right:8px; vertical-align:middle; }
+    .modal-close {
+      width:28px; height:28px; border-radius:50%; display:inline-flex !important; align-items:center; justify-content:center;
+      background:rgba(255,255,255,0.6); color:#9f2946 !important; font-size:13px !important; cursor:pointer; transition:all .15s;
+    }
+    .modal-close:hover { background:#e8587a !important; color:#fff !important; transform:rotate(90deg); }
+    .sel-modal-list { border:1px solid #eef0f3; border-radius:10px; overflow:hidden; background:#fafbfc; }
+    .sel-modal-item {
+      display:flex; align-items:center; gap:10px; padding:12px 14px !important;
+      border-bottom:1px solid #f0f2f5 !important; background:#fff; transition:background .15s;
+    }
+    .sel-modal-item:last-child { border-bottom:none !important; }
+    .sel-modal-item:hover { background:#fff5f8 !important; }
+    .sel-modal-item-name { flex:1; font-size:13px; font-weight:600; color:#1a1a2e; }
+    .sel-modal-item-id {
+      font-size:11px; color:#6b7280; background:#eef2f7; padding:3px 9px; border-radius:12px; font-weight:600; font-family:monospace;
+    }
+    .sel-modal-item-btn {
+      border:none; padding:5px 14px !important; border-radius:8px !important; cursor:pointer; font-size:12px; font-weight:700 !important;
+      background: linear-gradient(135deg,#e8587a,#d64669) !important; color:#fff !important;
+      box-shadow: 0 2px 6px rgba(232,88,122,0.35); transition:all .15s;
+    }
+    .sel-modal-item-btn:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(232,88,122,0.5); }
+    .tree-modal-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 18px !important;
+      background: linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);
+      border-bottom:1px solid #ffc9d6 !important; flex-shrink:0;
+    }
+    .tree-modal-header > div > div:first-child,
+    .tree-modal-header > div > div:first-child > div:first-child { color:#9f2946 !important; font-weight:800 !important; }
+    .tree-modal-header .modal-close { background:rgba(255,255,255,0.6) !important; color:#9f2946 !important; }
+    .tree-modal-header .modal-close:hover { background:#e8587a !important; color:#fff !important; }
+    .modal-box .form-control { border-radius:10px; border-color:#e5e7eb; transition:all .15s; }
+    .modal-box .form-control:focus { border-color:#e8587a !important; box-shadow:0 0 0 3px rgba(232,88,122,0.12) !important; }
+    .modal-box .btn-primary { background:linear-gradient(135deg,#e8587a,#d64669) !important; border:none !important; box-shadow:0 2px 6px rgba(232,88,122,0.35) !important; }
+    .modal-box .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(232,88,122,0.5) !important; }
+    .modal-box .btn-secondary { background:#f3f4f6 !important; color:#4b5563 !important; border:1px solid #e5e7eb !important; }
+    .modal-box .btn-secondary:hover { background:#e5e7eb !important; }
+  `;
+  const style = document.createElement('style');
+  style.id = '__shopjoy_modal_enh_style__';
+  style.textContent = css;
+  document.head.appendChild(style);
+})();
+
 /* ── 주문 상세 모달 ──────────────────────────────────
    Props: show (Boolean), order (Object | null)
    Emits: close
@@ -1305,7 +1364,7 @@ window.RoleTreeModal = {
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+    <div class="tree-modal-header">
       <div>
         <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위권한 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">권한을 클릭하면 상위권한으로 지정됩니다</div>
@@ -1402,7 +1461,7 @@ window.MenuTreeModal = {
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
 
     <!-- ── 헤더 ── -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+    <div class="tree-modal-header">
       <div>
         <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위메뉴 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">메뉴를 클릭하면 상위메뉴로 지정됩니다</div>
@@ -1530,7 +1589,7 @@ window.DeptTreeModal = {
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
 
     <!-- ── 헤더 ── -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+    <div class="tree-modal-header">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:18px;line-height:1;">🌳</span>
         <div>
@@ -1657,7 +1716,7 @@ window.CategoryTreeModal = {
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+    <div class="tree-modal-header">
       <div>
         <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위카테고리 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">카테고리를 클릭하면 상위카테고리로 지정됩니다</div>

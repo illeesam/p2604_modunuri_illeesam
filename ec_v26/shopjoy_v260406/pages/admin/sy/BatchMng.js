@@ -461,12 +461,12 @@ window.SyBatchMng = {
   <div v-if="cronPicker.show"
     style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;"
     @click.self="cronPicker.show=false">
-    <div style="background:#fff;border-radius:10px;width:500px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.25);overflow:hidden;">
+    <div style="background:#fff;border-radius:16px;width:500px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.08);overflow:hidden;border:1px solid rgba(255,255,255,.6);">
 
       <!-- 헤더 -->
-      <div style="padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#fafafa;">
-        <div style="font-weight:700;font-size:15px;">🕐 Cron 표현식 설정</div>
-        <button @click="cronPicker.show=false" style="background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:#aaa;padding:0 4px;">✕</button>
+      <div style="padding:14px 20px;border-bottom:1px solid #ffc9d6;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);">
+        <div style="font-weight:800;font-size:15px;color:#9f2946;letter-spacing:-0.2px;"><span style="color:#e8587a;font-size:9px;margin-right:8px;vertical-align:middle;">●</span>🕐 Cron 표현식 설정</div>
+        <button @click="cronPicker.show=false" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.6);border:none;font-size:13px;line-height:1;cursor:pointer;color:#9f2946;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#e8587a';this.style.color='#fff';this.style.transform='rotate(90deg)';" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';this.style.transform='';">✕</button>
       </div>
 
       <!-- 본문 -->
