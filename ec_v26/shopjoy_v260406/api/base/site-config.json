@@ -11,7 +11,7 @@
     "holder": "송성일"
   },
   "topMenu": [
-    { "icon": "🏠", "menuId": "home",     "menuNm": "홈" },
+    { "icon": "🏠", "menuId": "home01",     "menuNm": "홈" },
     { "icon": "🗂️", "menuId": "prod01list", "menuNm": "상품목록" },
     { "icon": "📝", "menuId": "order",    "menuNm": "주문하기" },
     { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
@@ -30,7 +30,7 @@
     {
       "section": "쇼핑",
       "items": [
-        { "icon": "🏠", "menuId": "home",     "menuNm": "홈" },
+        { "icon": "🏠", "menuId": "home01",     "menuNm": "홈" },
         { "icon": "🗂️", "menuId": "prod01list", "menuNm": "상품목록" }
       ]
     },

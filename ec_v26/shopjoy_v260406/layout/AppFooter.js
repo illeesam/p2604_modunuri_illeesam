@@ -4,10 +4,11 @@ window.AppFooter = {
   props: ['config', 'navigate'],
   emits: [],
   setup() {
-    const onMenuChange = (e) => {
-      const val = e.target.value;
-      if (!val) return;
-      const [root, target] = val.split('::');
+    const { ref } = Vue;
+    const menuOpen = ref(false);
+    const toggleMenu = () => { menuOpen.value = !menuOpen.value; };
+    const closeMenu  = () => { menuOpen.value = false; };
+    const goItem = (root, target) => {
       if (root === 'frontOffice') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');
         if (target && typeof window.navigate === 'function') window.navigate(target);
@@ -15,10 +16,56 @@ window.AppFooter = {
         window.open((window.pageUrl ? window.pageUrl('admin.html') : 'admin.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispUi') {
         window.open((window.pageUrl ? window.pageUrl('disp-ui.html') : 'disp-ui.html') + (target ? '#page=' + target : ''), '_blank');
+      } else if (root === 'frontSite') {
+        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FRONT_SITE_NO=' + target;
       }
-      e.target.value = '';
+      menuOpen.value = false;
     };
-    return { onMenuChange };
+    const currentSiteNo = (window.FRONT_SITE_NO || '01');
+
+    const FRONT_MENU = [
+      { id:'home',       label:'홈',         icon:'🏠' },
+      { id:'prod01list', label:'상품목록',    icon:'🛍' },
+      { id:'cart',       label:'장바구니',    icon:'🛒' },
+      { id:'order',      label:'주문하기',    icon:'📋' },
+      { id:'like',       label:'찜 목록',     icon:'💝' },
+      { id:'event',      label:'이벤트',      icon:'🎉' },
+      { id:'blog',       label:'블로그',      icon:'📝' },
+      { id:'faq',        label:'FAQ',        icon:'❓' },
+      { id:'contact',    label:'고객센터',    icon:'📞' },
+      { id:'location',   label:'위치안내',    icon:'📍' },
+      { id:'about',      label:'회사소개',    icon:'ℹ' },
+      { id:'myOrder',    label:'마이 - 주문',  icon:'📦' },
+      { id:'myCoupon',   label:'마이 - 쿠폰',  icon:'🎟' },
+      { id:'myCache',    label:'마이 - 캐시',  icon:'💰' },
+      { id:'myContact',  label:'마이 - 문의',  icon:'💬' },
+    ];
+    const BACK_MENU = [
+      { id:'dashboard',           label:'대시보드',         icon:'📊' },
+      { id:'ecMemberMng',         label:'회원관리',         icon:'👥' },
+      { id:'ecProdMng',           label:'상품관리',         icon:'📦' },
+      { id:'ecOrderMng',          label:'주문관리',         icon:'📋' },
+      { id:'ecDispUiMng',         label:'전시UI관리',       icon:'🎨' },
+      { id:'ecDispAreaMng',       label:'전시영역관리',     icon:'🗂' },
+      { id:'ecDispPanelMng',      label:'전시패널관리',     icon:'🪟' },
+      { id:'ecDispWidgetMng',     label:'전시위젯관리',     icon:'🧩' },
+      { id:'ecDispWidgetLibMng',  label:'전시위젯Lib',      icon:'📚' },
+      { id:'ecDispUiSimul',       label:'전시UI시뮬레이션', icon:'🖼' },
+    ];
+    const DISP_MENU = [
+      { id:'dispUiPage', label:'통합 페이지',  icon:'🌐' },
+      { id:'dispUi01',   label:'UI 샘플 01',  icon:'1️⃣' },
+      { id:'dispUi02',   label:'UI 샘플 02',  icon:'2️⃣' },
+      { id:'dispUi03',   label:'UI 샘플 03',  icon:'3️⃣' },
+      { id:'dispUi04',   label:'UI 샘플 04',  icon:'4️⃣' },
+      { id:'dispUi05',   label:'UI 샘플 05',  icon:'5️⃣' },
+      { id:'dispUi06',   label:'UI 샘플 06',  icon:'6️⃣' },
+    ];
+    const SITE_MENU = [
+      { id:'01', label:'FRONT_SITE_NO=01' },
+      { id:'02', label:'FRONT_SITE_NO=02' },
+    ];
+    return { menuOpen, toggleMenu, closeMenu, goItem, currentSiteNo, FRONT_MENU, BACK_MENU, DISP_MENU, SITE_MENU };
   },
   template: /* html */ `
 <footer style="padding:28px 32px;">
@@ -50,49 +97,95 @@ window.AppFooter = {
       <span style="color:var(--text-muted);font-size:0.75rem;">|</span>
       <span style="color:var(--text-muted);font-size:0.8rem;">{{ config.address }}</span>
     </div>
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-      <select @change="onMenuChange"
-        style="font-size:0.75rem;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;min-width:220px;max-width:280px;">
-        <option value="">🌐 메뉴 바로가기</option>
-        <optgroup label="🛍 frontOffice">
-          <option value="frontOffice::home">├ 홈</option>
-          <option value="frontOffice::prod01list">├ 상품목록</option>
-          <option value="frontOffice::cart">├ 장바구니</option>
-          <option value="frontOffice::order">├ 주문하기</option>
-          <option value="frontOffice::like">├ 찜 목록</option>
-          <option value="frontOffice::event">├ 이벤트</option>
-          <option value="frontOffice::blog">├ 블로그</option>
-          <option value="frontOffice::faq">├ FAQ</option>
-          <option value="frontOffice::contact">├ 고객센터</option>
-          <option value="frontOffice::location">├ 위치안내</option>
-          <option value="frontOffice::about">├ 회사소개</option>
-          <option value="frontOffice::myOrder">├ 마이페이지 - 주문</option>
-          <option value="frontOffice::myCoupon">├ 마이페이지 - 쿠폰</option>
-          <option value="frontOffice::myCache">├ 마이페이지 - 캐시</option>
-          <option value="frontOffice::myContact">└ 마이페이지 - 문의</option>
-        </optgroup>
-        <optgroup label="🔧 backOffice (admin)">
-          <option value="backOffice::dashboard">├ 대시보드</option>
-          <option value="backOffice::ecMemberMng">├ 회원관리</option>
-          <option value="backOffice::ecProdMng">├ 상품관리</option>
-          <option value="backOffice::ecOrderMng">├ 주문관리</option>
-          <option value="backOffice::ecDispUiMng">├ 전시UI관리</option>
-          <option value="backOffice::ecDispAreaMng">├ 전시영역관리</option>
-          <option value="backOffice::ecDispPanelMng">├ 전시패널관리</option>
-          <option value="backOffice::ecDispWidgetMng">├ 전시위젯관리</option>
-          <option value="backOffice::ecDispWidgetLibMng">├ 전시위젯Lib</option>
-          <option value="backOffice::ecDispUiSimul">└ 전시UI시뮬레이션</option>
-        </optgroup>
-        <optgroup label="🖥 dispUi (샘플)">
-          <option value="dispUi::dispUiPage">├ 통합 페이지</option>
-          <option value="dispUi::dispUi01">├ UI 샘플 01</option>
-          <option value="dispUi::dispUi02">├ UI 샘플 02</option>
-          <option value="dispUi::dispUi03">├ UI 샘플 03</option>
-          <option value="dispUi::dispUi04">├ UI 샘플 04</option>
-          <option value="dispUi::dispUi05">├ UI 샘플 05</option>
-          <option value="dispUi::dispUi06">└ UI 샘플 06</option>
-        </optgroup>
-      </select>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;">
+      <button type="button" @click="toggleMenu"
+        style="font-size:0.75rem;padding:5px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+        🌐 메뉴 바로가기 <span style="font-size:9px;">▾</span>
+      </button>
+
+      <!-- 메뉴 레이어 -->
+      <div v-if="menuOpen"
+        style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9998;backdrop-filter:blur(2px);"
+        @click="closeMenu"></div>
+      <div v-if="menuOpen"
+        style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.28);width:920px;max-width:95vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #ffe4ec;"
+        @click.stop>
+        <!-- 헤더 -->
+        <div style="padding:14px 18px;border-bottom:1px solid #ffc9d6;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:15px;font-weight:800;color:#9f2946;"><span style="color:#e8587a;font-size:9px;margin-right:8px;">●</span>🌐 메뉴 바로가기</div>
+          <button type="button" @click="closeMenu"
+            style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.6);border:none;color:#9f2946;font-size:13px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;"
+            onmouseover="this.style.background='#e8587a';this.style.color='#fff';this.style.transform='rotate(90deg)';"
+            onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';this.style.transform='';">✕</button>
+        </div>
+
+        <!-- 3열 본문 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:18px;overflow:auto;">
+          <!-- frontOffice -->
+          <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
+            <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">🛍 frontOffice</div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <button v-for="m in FRONT_MENU" :key="m.id" type="button"
+                @click="goItem('frontOffice', m.id)"
+                style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
+                onmouseover="this.style.background='#fff5f8';this.style.color='#e8587a';"
+                onmouseout="this.style.background='transparent';this.style.color='#333';">
+                <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
+                <span>{{ m.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- backOffice -->
+          <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
+            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 backOffice (admin)</div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <button v-for="m in BACK_MENU" :key="m.id" type="button"
+                @click="goItem('backOffice', m.id)"
+                style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
+                onmouseover="this.style.background='#f7f0fa';this.style.color='#7b1fa2';"
+                onmouseout="this.style.background='transparent';this.style.color='#333';">
+                <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
+                <span>{{ m.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 나머지: Front 사이트번호 + dispUi -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <!-- Front 사이트번호 -->
+            <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
+              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 Front 사이트번호 <span style="font-size:11px;color:#888;font-weight:600;">(현재: {{ currentSiteNo }})</span></div>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <button v-for="s in SITE_MENU" :key="s.id" type="button"
+                  @click="goItem('frontSite', s.id)"
+                  :style="{display:'flex',alignItems:'center',gap:'8px',padding:'7px 10px',background: currentSiteNo===s.id?'#e0f2ec':'transparent',border:'none',borderRadius:'6px',cursor:'pointer',fontSize:'12.5px',color: currentSiteNo===s.id?'#2e7d6b':'#333',textAlign:'left',fontWeight: currentSiteNo===s.id?700:500,transition:'all .12s'}"
+                  onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
+                  onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#333';}"
+                  :data-active="currentSiteNo===s.id?'1':'0'">
+                  <span style="font-size:14px;width:18px;text-align:center;">{{ currentSiteNo===s.id?'●':'○' }}</span>
+                  <span>{{ s.label }}</span>
+                </button>
+              </div>
+            </div>
+            <!-- dispUi -->
+            <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
+              <div style="font-size:13px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">🖥 dispUi (샘플)</div>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <button v-for="m in DISP_MENU" :key="m.id" type="button"
+                  @click="goItem('dispUi', m.id)"
+                  style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
+                  onmouseover="this.style.background='#fef3eb';this.style.color='#c2410c';"
+                  onmouseout="this.style.background='transparent';this.style.color='#333';">
+                  <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
+                  <span>{{ m.label }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <span style="color:var(--text-muted);font-size:0.75rem;">{{ config.tel }}</span>
       <span style="color:var(--text-muted);font-size:0.75rem;">{{ config.email }}</span>
       <span style="color:var(--text-muted);font-size:0.75rem;">© 2026 {{ config.name }}</span>

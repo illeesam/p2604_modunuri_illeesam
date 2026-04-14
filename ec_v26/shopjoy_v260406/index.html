@@ -11,7 +11,41 @@
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="assets/css/frontOfficeStyle.css">
+  <script>
+    /* ── 프론트 사이트 번호 (URL ?FRONT_SITE_NO=02 로 오버라이드 가능) ── */
+    /* /index.html → / 로 단축 (해시/쿼리는 유지) */
+    (function(){
+      try {
+        var p = window.location.pathname;
+        if (/\/index\.html$/i.test(p)) {
+          var newPath = p.replace(/index\.html$/i, '');
+          history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+        }
+      } catch(_){}
+    })();
+    (function(){
+      var def = '01';
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        var v = qs.get('FRONT_SITE_NO');
+        if (v) {
+          window.FRONT_SITE_NO = v;
+          try { localStorage.setItem('FRONT_SITE_NO', v); } catch(_){}
+          /* URL에서 ?FRONT_SITE_NO=... 제거 (해시는 유지) */
+          try {
+            qs.delete('FRONT_SITE_NO');
+            var newSearch = qs.toString();
+            history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
+          } catch(_){}
+        } else {
+          var saved = null;
+          try { saved = localStorage.getItem('FRONT_SITE_NO'); } catch(_){}
+          window.FRONT_SITE_NO = saved || def;
+        }
+      } catch(e) { window.FRONT_SITE_NO = def; }
+    })();
+    document.write('<link rel="stylesheet" href="assets/css/frontOfficeStyle' + window.FRONT_SITE_NO + '.css">');
+  </script>
   <link rel="stylesheet" href="assets/css/vue-loading.css">
   <style>:root { --vue-loading-accent: #1a1a1a; --vue-loading-glow: rgba(26, 26, 26, 0.15); }</style>
 </head>
@@ -36,9 +70,15 @@
   <script src="layout/AppFooter.js"></script>
   <script src="layout/MyLayout.js"></script>
   <script src="pages/base/NotFound.js"></script>
-  <script src="pages/Home.js"></script>
-  <script src="pages/Prod01List.js"></script>
-  <script src="pages/Prod01View.js"></script>
+  <script>
+    /* FRONT_SITE_NO 기준 동적 페이지 스크립트 로드 */
+    (function(){
+      var n = window.FRONT_SITE_NO;
+      ['Home'+n, 'Prod'+n+'List', 'Prod'+n+'View'].forEach(function(name){
+        document.write('<script src="pages/' + name + '.js"><\/script>');
+      });
+    })();
+  </script>
   <script src="pages/Cart.js"></script>
   <script src="pages/Order.js"></script>
   <script src="pages/Contact.js"></script>

@@ -22,7 +22,7 @@
     const toggleTheme = () => applyTheme(theme.value === 'light' ? 'dark' : 'light');
 
     /* ── Navigation ── */
-    const page = ref('home');
+    const page = ref(getHomePage());
     const sidebarOpen = ref(true);
     const mobileOpen  = ref(false);
     let replaceNextHash = false;
@@ -83,7 +83,6 @@
       page.value = id;
       window.scrollTo(0, 0);
       try { document.querySelector('.layout-main')?.scrollTo(0, 0); } catch (e) {}
-      try { sessionStorage.setItem('shopjoy_page', id); } catch (e) {}
     };
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) mobileOpen.value = false; });
 
@@ -137,8 +136,7 @@
     const selectedProduct = ref(products[0]);
     const selectProduct = p => {
       selectedProduct.value = p;
-      if (p && p.productId != null) try { sessionStorage.setItem('shopjoy_pid', String(p.productId)); } catch (e) {}
-      navigate('prod01view');
+      navigate(getProdViewPage());
     };
 
     /* ── Likes (좋아요/위시리스트) ── */
@@ -240,16 +238,16 @@
     const onLogout = () => {
       window.shopjoyAuth.logout();
       showToast('로그아웃되었습니다.', 'info');
-      if (MY_PAGES.includes(page.value)) page.value = 'home';
+      if (MY_PAGES.includes(page.value)) page.value = getHomePage();
     };
     /* shopjoy_token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
     watch(() => auth.user, u => {
-      if (!u && MY_PAGES.includes(page.value)) page.value = 'home';
+      if (!u && MY_PAGES.includes(page.value)) page.value = getHomePage();
     });
 
     /* ── URL state ── */
     let restoring = true;
-    const validPages = ['home', 'prod01list', 'prod01view', 'cart', 'order', 'contact', 'faq',
+    const validPages = [getHomePage(), getProdPage(), getProdViewPage(), 'cart', 'order', 'contact', 'faq',
       'event', 'eventView', 'blog', 'blogView', 'blogEdit', 'like',
       'location', 'about',
       'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
@@ -267,11 +265,6 @@
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;
         else if (hPage && !validPages.includes(hPage)) page.value = 'notFound';
-      } else {
-        try {
-          const sp = sessionStorage.getItem('shopjoy_page');
-          if (sp && validPages.includes(sp) && (!isMyPage(sp) || isLoggedIn)) page.value = sp;
-        } catch (e) {}
       }
       /* 바로구매 URL 파라미터 복원 */
       if (page.value === 'order' && hasPageParam) {
@@ -291,12 +284,6 @@
       if (!Number.isNaN(pid)) {
         const f = products.find(x => Number(x.productId) === pid);
         if (f) selectedProduct.value = f;
-      } else {
-        const s = Number(sessionStorage.getItem('shopjoy_pid'));
-        if (!Number.isNaN(s)) {
-          const f = products.find(x => Number(x.productId) === s);
-          if (f) selectedProduct.value = f;
-        }
       }
     } catch(e) {}
     restoring = false;
@@ -338,9 +325,8 @@
       if (restoring || syncingFromHash) return;
       const params = new URLSearchParams();
       params.set('page', page.value);
-      if (id === 'prod01view') {
+      if (id === getProdViewPage()) {
         params.set('pid', selectedProduct.value?.productId ?? '');
-        if (selectedProduct.value?.productId != null) sessionStorage.setItem('shopjoy_pid', String(selectedProduct.value.productId));
       }
       if (id === 'order' && instantOrder.value) {
         const io = _instantOrderToParams(instantOrder.value);
@@ -370,7 +356,7 @@
       if (!raw || !raw.includes('page=')) {
         const pr = new URLSearchParams();
         pr.set('page', page.value);
-        if (page.value === 'prod01view') pr.set('pid', String(selectedProduct.value?.productId ?? ''));
+        if (page.value === getProdViewPage()) pr.set('pid', String(selectedProduct.value?.productId ?? ''));
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
       }
     } catch (e) {}
@@ -386,6 +372,12 @@
       setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 500);
     }
 
+    /* FRONT_SITE_NO 기준 동적 컴포넌트 참조 */
+    const _N = window.FRONT_SITE_NO;
+    const frontHomeComp     = window['Home' + _N];
+    const frontProdListComp = window['Prod' + _N + 'List'];
+    const frontProdViewComp = window['Prod' + _N + 'View'];
+
     return {
       theme, toggleTheme,
       page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
@@ -398,6 +390,7 @@
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, showLogin, onShowLogin, onLogout,
+      frontHomeComp, frontProdListComp, frontProdViewComp,
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
       }),
@@ -423,18 +416,18 @@
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
 
     <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
-      <home
-        v-if="page==='home'"
+      <component :is="frontHomeComp"
+        v-if="page === getHomePage()"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
-      <prod01-list
-        v-else-if="page==='prod01list'"
+      <component :is="frontProdListComp"
+        v-else-if="page === getProdPage()"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
-      <prod01-view
-        v-else-if="page==='prod01view'"
+      <component :is="frontProdViewComp"
+        v-else-if="page === getProdViewPage()"
         :navigate="navigate" :config="config" :product="selectedProduct"
         :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
         :toggle-like="toggleLike" :is-liked="isLiked"
@@ -597,10 +590,10 @@
   .component('AppFooter',   window.AppFooter)
   /* ── pages/base/ ── */
   .component('NotFound',     window.NotFound)
-  /* ── pages/ (사용자 페이스) ── */
-  .component('Home',         window.Home)
-  .component('Prod01List',   window.Prod01List)
-  .component('Prod01View',   window.Prod01View)
+  /* ── pages/ (사용자 페이스 - FRONT_SITE_NO 기준 동적) ── */
+  .component('Home'+window.FRONT_SITE_NO,        window['Home'+window.FRONT_SITE_NO])
+  .component('Prod'+window.FRONT_SITE_NO+'List', window['Prod'+window.FRONT_SITE_NO+'List'])
+  .component('Prod'+window.FRONT_SITE_NO+'View', window['Prod'+window.FRONT_SITE_NO+'View'])
   .component('Cart',         window.Cart)
   .component('Order',        window.Order)
   .component('Contact',      window.Contact)
@@ -662,6 +655,15 @@
    'XsSample08','XsSample09','XsSample10','XsSample11','XsSample12','XsSample13','XsSample14',
    'XsSample21','XsSample22','XsSample23',
   ].forEach(name => { if (window[name]) app.component(name, window[name]); });
+
+  /* 페이지 ID 헬퍼 — 모든 템플릿에서 getHomePage() 등으로 접근 가능 */
+  app.mixin({
+    methods: {
+      getHomePage()     { return window.getHomePage(); },
+      getProdPage()     { return window.getProdPage(); },
+      getProdViewPage() { return window.getProdViewPage(); },
+    }
+  });
 
   app.use(pinia).mount('#app');
 })();

@@ -421,7 +421,7 @@ window.ProductModal = {
         <!-- 일반 모드: 전체 버튼 -->
         <template v-else>
           <div style="display:flex;gap:8px;">
-            <button class="btn-blue" @click="navigate && navigate('prod01view');$emit('close')"
+            <button class="btn-blue" @click="navigate && navigate(getProdViewPage());$emit('close')"
               style="flex:1;padding:12px;font-size:0.85rem;">상세보기</button>
             <button class="btn-outline" @click="handleBuyNow(navigate) && $emit('close')"
               style="flex:1;padding:12px;font-size:0.85rem;">바로구매</button>

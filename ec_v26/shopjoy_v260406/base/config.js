@@ -1,4 +1,11 @@
 /* ShopJoy - 의류 쇼핑몰 site config */
+
+/* ── 페이지 ID 추상화 헬퍼 (window.FRONT_SITE_NO 기준) ─────────────── */
+window.FRONT_SITE_NO   = window.FRONT_SITE_NO || '01';
+window.getHomePage     = () => 'home'   + window.FRONT_SITE_NO;
+window.getProdPage     = () => 'prod'   + window.FRONT_SITE_NO + 'list';
+window.getProdViewPage = () => 'prod'   + window.FRONT_SITE_NO + 'view';
+
 window.SITE_CONFIG = {
   "name": "ShopJoy",
   "nameEn": "SHOPJOY",
@@ -12,7 +19,7 @@ window.SITE_CONFIG = {
     "holder": "송성일"
   },
   "topMenu": [
-    { "icon": "🏠", "menuId": "home",     "menuNm": "홈" },
+    { "icon": "🏠", "menuId": "home01",     "menuNm": "홈" },
     { "icon": "🗂️", "menuId": "prod01list", "menuNm": "상품목록" },
     { "icon": "📝", "menuId": "order",    "menuNm": "주문하기" },
     { "icon": "📞", "menuId": "contact",  "menuNm": "고객센터" },
@@ -31,7 +38,7 @@ window.SITE_CONFIG = {
     {
       "section": "쇼핑",
       "items": [
-        { "icon": "🏠", "menuId": "home",     "menuNm": "홈" },
+        { "icon": "🏠", "menuId": "home01",     "menuNm": "홈" },
         { "icon": "🗂️", "menuId": "prod01list", "menuNm": "상품목록" }
       ]
     },

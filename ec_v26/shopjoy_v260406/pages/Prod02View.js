@@ -1,6 +1,6 @@
 /* ShopJoy - Prod01View (상품 상세 리뉴얼) */
-window.Prod01View = {
-  name: 'Prod01View',
+window.Prod02View = {
+  name: "Prod02View",
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
     const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;

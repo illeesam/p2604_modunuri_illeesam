@@ -1,6 +1,6 @@
 /* ShopJoy - Prod01List (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
-window.Prod01List = {
-  name: 'Prod01List',
+window.Prod02List = {
+  name: "Prod02List",
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   setup(props) {
     const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
