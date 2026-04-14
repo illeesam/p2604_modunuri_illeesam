@@ -1,10 +1,15 @@
 /* ShopJoy Admin - 주문 이력 (구성상품 / 배송이력 / 연관클레임) */
+window._ecOrderHistState = window._ecOrderHistState || { tab: 'products', viewMode: 'tab' };
 window.EcOrderHist = {
   name: 'EcOrderHist',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'orderId'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;
-    const botTab = ref('products');
+    const botTab = ref(window._ecOrderHistState.tab || 'products');
+    Vue.watch(botTab, v => { window._ecOrderHistState.tab = v; });
+    const viewMode2 = ref('tab');
+    
+    const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
     const orderItems = ref([]);
     onMounted(() => {
@@ -27,25 +32,23 @@ window.EcOrderHist = {
       ].filter(h => h.date !== '-');
     });
 
-    return { botTab, orderItems, relatedDliv, relatedClaims, dlivHistory };
+    return { botTab, orderItems, relatedDliv, relatedClaims, dlivHistory, viewMode2, showTab };
   },
   template: /* html */`
 <div>
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 8px;border-bottom:2px solid #f0f0f0;margin-bottom:0;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
-  <div class="tab-nav">
-    <button class="tab-btn" :class="{active:botTab==='products'}" @click="botTab='products'">
-      구성 상품 <span class="tab-count">{{ orderItems.length }}</span>
-    </button>
-    <button class="tab-btn" :class="{active:botTab==='dliv'}" @click="botTab='dliv'">
-      배송 이력 <span class="tab-count">{{ relatedDliv ? 1 : 0 }}</span>
-    </button>
-    <button class="tab-btn" :class="{active:botTab==='claims'}" @click="botTab='claims'">
-      연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span>
-    </button>
-  </div>
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
+  <div class="tab-bar-row">
+    <div class="tab-nav">
+      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="viewMode2!=='tab'" @click="botTab='products'">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="viewMode2!=='tab'" @click="botTab='dliv'">🚚 배송 이력 <span class="tab-count">{{ relatedDliv ? 1 : 0 }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="viewMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span></button>
+    </div>
+    </div>
+  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
   <!-- 구성 상품 -->
-  <div v-show="botTab==='products'">
+  <div class="card" v-show="showTab('products')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
     <table class="admin-table" v-if="orderItems.length">
       <thead><tr><th>No</th><th>상품명</th><th>옵션</th><th>수량</th><th>단가</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
@@ -65,7 +68,8 @@ window.EcOrderHist = {
   </div>
 
   <!-- 배송 이력 -->
-  <div v-show="botTab==='dliv'">
+  <div class="card" v-show="showTab('dliv')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ relatedDliv ? 1 : 0 }}</span></div>
     <template v-if="relatedDliv">
       <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:13px;">
@@ -92,7 +96,8 @@ window.EcOrderHist = {
   </div>
 
   <!-- 연관 클레임 -->
-  <div v-show="botTab==='claims'">
+  <div class="card" v-show="showTab('claims')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span></div>
     <table class="admin-table" v-if="relatedClaims.length">
       <thead><tr><th>클레임ID</th><th>회원</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
@@ -108,6 +113,7 @@ window.EcOrderHist = {
       </tbody>
     </table>
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 클레임이 없습니다.</div>
+  </div>
   </div>
 </div>
 `,

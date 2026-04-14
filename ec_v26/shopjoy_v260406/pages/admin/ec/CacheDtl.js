@@ -1,11 +1,16 @@
 /* ShopJoy Admin - 캐쉬관리 상세/등록 */
+window._ecCacheDtlState = window._ecCacheDtlState || { tab: 'info', viewMode: 'tab' };
 window.EcCacheDtl = {
   name: 'EcCacheDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
-    const tab = ref('info');
+    const tab = ref(window._ecCacheDtlState.tab || 'info');
+    Vue.watch(tab, v => { window._ecCacheDtlState.tab = v; });
+    const viewMode2 = ref(window._ecCacheDtlState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._ecCacheDtlState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({
       userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
@@ -81,21 +86,31 @@ window.EcCacheDtl = {
 
     const typeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
-    return { isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge };
+    return { isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge, viewMode2, showTab };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '캐쉬 등록' : (viewMode ? '캐쉬 상세' : '캐쉬 수정') }}</div>
-  <div class="card">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='info'}" @click="tab='info'">기본정보</button>
-      <button v-if="form.userId" class="tab-btn" :class="{active:tab==='history'}" @click="tab='history'">
-        회원 캐쉬 내역 <span class="tab-count">{{ memberCacheHistory.length }}</span>
-      </button>
+    <div class="tab-bar-row">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
+        <button v-if="form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">
+          🕒 회원 캐쉬 내역 <span class="tab-count">{{ memberCacheHistory.length }}</span>
+        </button>
+      </div>
+      <div class="tab-view-modes">
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      </div>
     </div>
+    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
     <!-- 기본정보 -->
-    <div v-show="tab==='info'">
+    <div class="card" v-show="showTab('info')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">회원ID <span v-if="!viewMode" class="req">*</span></label>
@@ -150,7 +165,8 @@ window.EcCacheDtl = {
     </div>
 
     <!-- 회원 캐쉬 내역 -->
-    <div v-show="tab==='history'">
+    <div class="card" v-show="showTab('history')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ memberCacheHistory.length }}</span></div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
           <span class="ref-link" @click="showRefModal('member', Number(form.userId))">{{ form.userNm }}</span> 현재 잔액

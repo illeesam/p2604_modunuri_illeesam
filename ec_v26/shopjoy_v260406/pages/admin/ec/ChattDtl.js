@@ -1,11 +1,16 @@
 /* ShopJoy Admin - 채팅관리 상세/등록 */
+window._ecChattDtlState = window._ecChattDtlState || { tab: 'chat', viewMode: 'tab' };
 window.EcChattDtl = {
   name: 'EcChattDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
-    const tab = ref('chat');
+    const tab = ref(window._ecChattDtlState.tab || 'chat');
+    Vue.watch(tab, v => { window._ecChattDtlState.tab = v; });
+    const viewMode2 = ref(window._ecChattDtlState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._ecChattDtlState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const chat = ref(null);
     const replyText = ref('');
@@ -128,7 +133,7 @@ window.EcChattDtl = {
     const searchUser = computed(() => props.adminData.getMember(Number(searchUserId.value)));
 
     return {
-      isNew, tab, chat, replyText, sendReply, closeChat, msgBoxRef,
+      isNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, saveNew, onUserChange,
       searchUserId, userChats, searchUser,
@@ -140,16 +145,25 @@ window.EcChattDtl = {
   <div class="page-title">{{ isNew ? '채팅 등록' : (viewMode ? '채팅 상세' : '채팅 수정') }}</div>
 
   <!-- 채팅 상세 -->
-  <div class="card" v-if="!isNew">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='chat'}" @click="tab='chat'">채팅 내용</button>
-      <button class="tab-btn" :class="{active:tab==='history'}" @click="tab='history'">
-        회원 채팅 이력 <span class="tab-count">{{ memberChats.length }}</span>
-      </button>
+  <div v-if="!isNew">
+    <div class="tab-bar-row">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='chat'}" :disabled="viewMode2!=='tab'" @click="tab='chat'">💬 채팅 내용</button>
+        <button class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 채팅 이력 <span class="tab-count">{{ memberChats.length }}</span></button>
+      </div>
+      <div class="tab-view-modes">
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      </div>
     </div>
+    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
     <!-- 채팅 내용 탭 -->
-    <div v-show="tab==='chat'">
+    <div class="card" v-show="showTab('chat')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💬 채팅 내용</div>
       <template v-if="chat">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
@@ -191,7 +205,8 @@ window.EcChattDtl = {
     </div>
 
     <!-- 회원 채팅 이력 탭 -->
-    <div v-show="tab==='history'">
+    <div class="card" v-show="showTab('history')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 채팅 이력 <span class="tab-count">{{ memberChats.length }}</span></div>
       <div v-if="chat" style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;gap:12px;">
         <span style="font-size:13px;color:#555;">
           <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userNm }}</span> 의 다른 채팅
@@ -210,6 +225,7 @@ window.EcChattDtl = {
         </tbody>
       </table>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">다른 채팅 이력이 없습니다.</div>
+    </div>
     </div>
   </div>
 

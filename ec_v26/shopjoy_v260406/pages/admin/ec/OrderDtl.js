@@ -249,7 +249,7 @@ window.EcOrderDtl = {
       </button>
     </div>
     <div style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'2col',label:'2열',icon:'⊞'},{id:'1col',label:'1열',icon:'☰'}]" :key="v.id"
+      <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v.id"
         @click="viewMode2=v.id" :title="v.label+'로 보기'"
         :style="{
           padding:'8px 12px', border:'none', cursor:'pointer', fontSize:'13px', borderRadius:'8px',
@@ -262,9 +262,10 @@ window.EcOrderDtl = {
       </button>
     </div>
   </div>
-  <div :style="viewMode2==='2col' ? 'display:grid;grid-template-columns:1fr 1fr;gap:10px;' : ''">
+  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
   <div v-if="isNew || showTab('info')" class="card">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
     <!-- 주문 진행 상태 흐름 -->
     <div v-if="!isNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
@@ -439,9 +440,9 @@ window.EcOrderDtl = {
 
   <!-- 주문항목목록 탭 -->
   <div v-if="!isNew && showTab('items')" class="card" style="padding:20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div style="font-size:14px;font-weight:700;color:#333;">📦 주문 항목 ({{ orderItems.length }})</div>
-      <button v-if="relatedClaim && relatedClaim.type==='교환'" class="btn btn-secondary btn-sm" @click="toggleExpandAll">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 주문항목 <span class="tab-count">{{ orderItems.length }}</span></div>
+    <div v-if="relatedClaim && relatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+      <button class="btn btn-secondary btn-sm" @click="toggleExpandAll">
         {{ allExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
       </button>
     </div>
@@ -529,7 +530,7 @@ window.EcOrderDtl = {
 
   <!-- 결제정보 탭 -->
   <div v-if="!isNew && showTab('payment')" class="card" style="padding:20px;">
-    <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:14px;">💳 결제정보 ({{ paymentList.length }}건)</div>
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ paymentList.length }}</span></div>
     <table class="admin-table" v-if="paymentList.length">
       <thead><tr>
         <th style="width:40px;text-align:center;">No.</th>
@@ -553,12 +554,13 @@ window.EcOrderDtl = {
 
   <!-- 상태변경이력 탭 -->
   <div v-if="!isNew && showTab('hist')" class="card">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ statusHistList.length }}</span></div>
     <ec-order-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- 정보수정이력 탭 -->
   <div v-if="!isNew && showTab('editHist')" class="card" style="padding:20px;">
-    <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:14px;">📝 정보수정이력</div>
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ editHistList.length }}</span></div>
     <table class="admin-table" v-if="editHistList.length">
       <thead><tr>
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>

@@ -1,10 +1,15 @@
 /* ShopJoy Admin - 클레임 이력 (클레임항목 / 처리정보 / 연관주문) */
+window._ecClaimHistState = window._ecClaimHistState || { tab: 'items', viewMode: 'tab' };
 window.EcClaimHist = {
   name: 'EcClaimHist',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'claimId'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const botTab = ref('items');
+    const botTab = ref(window._ecClaimHistState.tab || 'items');
+    Vue.watch(botTab, v => { window._ecClaimHistState.tab = v; });
+    const viewMode2 = ref('tab');
+    
+    const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
     /* 클레임 항목 */
     const claimItems = ref([]);
@@ -73,23 +78,23 @@ window.EcClaimHist = {
       props.showToast('저장되었습니다.');
     };
 
-    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, saveProcess, statusOptions, relatedOrder, relatedDliv };
+    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, saveProcess, statusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
   },
   template: /* html */`
 <div>
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 8px;border-bottom:2px solid #f0f0f0;margin-bottom:0;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
-  <div class="tab-nav">
-    <button class="tab-btn" :class="{active:botTab==='items'}"   @click="botTab='items'">
-      클레임 항목 <span class="tab-count">{{ claimItems.length }}</span>
-    </button>
-    <button class="tab-btn" :class="{active:botTab==='process'}" @click="botTab='process'">처리 정보</button>
-    <button class="tab-btn" :class="{active:botTab==='order'}"   @click="botTab='order'">
-      연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span>
-    </button>
-  </div>
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
+  <div class="tab-bar-row">
+    <div class="tab-nav">
+      <button class="tab-btn" :class="{active:botTab==='items'}"   :disabled="viewMode2!=='tab'" @click="botTab='items'">↩ 클레임 항목 <span class="tab-count">{{ claimItems.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='process'}" :disabled="viewMode2!=='tab'" @click="botTab='process'">⚙ 처리 정보</button>
+      <button class="tab-btn" :class="{active:botTab==='order'}"   :disabled="viewMode2!=='tab'" @click="botTab='order'">🛒 연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span></button>
+    </div>
+    </div>
+  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
   <!-- 클레임 항목 -->
-  <div v-show="botTab==='items'">
+  <div class="card" v-show="showTab('items')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임 항목 <span class="tab-count">{{ claimItems.length }}</span></div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
       <button class="btn btn-sm btn-secondary" @click="addClaimItem">+ 항목 추가</button>
     </div>
@@ -166,7 +171,8 @@ window.EcClaimHist = {
   </div>
 
   <!-- 처리 정보 -->
-  <div v-show="botTab==='process'">
+  <div class="card" v-show="showTab('process')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">⚙ 처리 정보</div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">환불금액</label>
@@ -189,7 +195,8 @@ window.EcClaimHist = {
   </div>
 
   <!-- 연관 주문 -->
-  <div v-show="botTab==='order'">
+  <div class="card" v-show="showTab('order')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span></div>
     <template v-if="relatedOrder">
       <div style="margin-bottom:12px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -225,6 +232,7 @@ window.EcClaimHist = {
       </template>
     </template>
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문 정보가 없습니다.</div>
+  </div>
   </div>
 </div>
 `,

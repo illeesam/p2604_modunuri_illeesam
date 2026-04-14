@@ -134,7 +134,7 @@ window.EcMemberDtl = {
   </div>
 
   <!-- 연관 이력 -->
-  <div v-if="!isNew" class="card">
+  <div v-if="!isNew" style="margin-top:20px;">
     <ec-member-hist
       :navigate="navigate"
       :admin-data="adminData"

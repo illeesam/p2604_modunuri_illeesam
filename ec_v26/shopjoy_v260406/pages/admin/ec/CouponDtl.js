@@ -1,11 +1,16 @@
 /* ShopJoy Admin - 쿠폰관리 상세/등록 */
+window._ecCouponDtlState = window._ecCouponDtlState || { tab: 'info', viewMode: 'tab' };
 window.EcCouponDtl = {
   name: 'EcCouponDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
-    const tab = ref('info');
+    const tab = ref(window._ecCouponDtlState.tab || 'info');
+    Vue.watch(tab, v => { window._ecCouponDtlState.tab = v; });
+    const viewMode2 = ref(window._ecCouponDtlState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._ecCouponDtlState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({
       code: '', name: '', discountTypeCd: 'amount', discountValue: 0,
@@ -82,20 +87,30 @@ window.EcCouponDtl = {
       });
     };
 
-    return { isNew, tab, form, errors, useRate, save, memoEl };
+    return { isNew, tab, form, errors, useRate, save, memoEl, viewMode2, showTab };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '쿠폰 등록' : (viewMode ? '쿠폰 상세' : '쿠폰 수정') }}</div>
-  <div class="card">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='info'}" @click="tab='info'">기본정보</button>
-      <button class="tab-btn" :class="{active:tab==='issue'}" @click="tab='issue'">발급 정보</button>
-      <button v-if="!isNew" class="tab-btn" :class="{active:tab==='stats'}" @click="tab='stats'">사용 통계</button>
+    <div class="tab-bar-row">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
+        <button class="tab-btn" :class="{active:tab==='issue'}" :disabled="viewMode2!=='tab'" @click="tab='issue'">🎟 발급 정보</button>
+        <button v-if="!isNew" class="tab-btn" :class="{active:tab==='stats'}" :disabled="viewMode2!=='tab'" @click="tab='stats'">📊 사용 통계</button>
+      </div>
+      <div class="tab-view-modes">
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      </div>
     </div>
+    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
     <!-- 기본정보 -->
-    <div v-show="tab==='info'">
+    <div class="card" v-show="showTab('info')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">쿠폰코드 <span v-if="!viewMode" class="req">*</span></label>
@@ -156,7 +171,8 @@ window.EcCouponDtl = {
     </div>
 
     <!-- 발급 정보 -->
-    <div v-show="tab==='issue'">
+    <div class="card" v-show="showTab('issue')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎟 발급 정보</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">발급대상</label>
@@ -185,7 +201,8 @@ window.EcCouponDtl = {
     </div>
 
     <!-- 사용 통계 -->
-    <div v-show="tab==='stats'">
+    <div class="card" v-show="showTab('stats')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📊 사용 통계</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
         <div style="text-align:center;padding:20px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
           <div style="font-size:28px;font-weight:700;color:#e8587a;">{{ form.issueCount }}</div>

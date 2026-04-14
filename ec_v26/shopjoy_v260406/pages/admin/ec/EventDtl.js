@@ -1,11 +1,16 @@
 /* ShopJoy Admin - 이벤트관리 상세/등록 (Quill HTML Editor) */
+window._ecEventDtlState = window._ecEventDtlState || { tab: 'info', viewMode: 'tab' };
 window.EcEventDtl = {
   name: 'EcEventDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onUnmounted } = Vue;
     const isNew = computed(() => !props.editId);
-    const tab = ref('info');
+    const tab = ref(window._ecEventDtlState.tab || 'info');
+    Vue.watch(tab, v => { window._ecEventDtlState.tab = v; });
+    const viewMode2 = ref(window._ecEventDtlState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._ecEventDtlState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
@@ -152,23 +157,33 @@ window.EcEventDtl = {
       if (i >= 0) list.splice(i, 1); else list.push(code);
       form.visibilityTargets = window.visibilityUtil.serialize(list);
     };
-    return { isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save, visibilityOptions, hasVisibility, toggleVisibility };
+    return { isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save, visibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}</div>
-  <div class="card">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='info'}" @click="onTabChange('info')">기본정보</button>
-      <button class="tab-btn" :class="{active:tab==='content'}" @click="onTabChange('content')">이벤트 내용</button>
-      <button class="tab-btn" :class="{active:tab==='products'}" @click="onTabChange('products')">
-        대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span>
-      </button>
-      <button class="tab-btn" :class="{active:tab==='preview'}" @click="onTabChange('preview')">미리보기</button>
+    <div class="tab-bar-row">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
+        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="onTabChange('content')">📝 이벤트 내용</button>
+        <button class="tab-btn" :class="{active:tab==='products'}" :disabled="viewMode2!=='tab'" @click="onTabChange('products')">
+          🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="viewMode2!=='tab'" @click="onTabChange('preview')">👁 미리보기</button>
+      </div>
+      <div class="tab-view-modes">
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      </div>
     </div>
+    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
     <!-- 기본정보 -->
-    <div v-show="tab==='info'">
+    <div class="card" v-show="showTab('info')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
         <label class="form-label">이벤트 제목 <span v-if="!viewMode" class="req">*</span></label>
         <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
@@ -232,7 +247,8 @@ window.EcEventDtl = {
     </div>
 
     <!-- 이벤트 내용 (HTML 에디터) -->
-    <div v-show="tab==='content'">
+    <div class="card" v-show="showTab('content')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 이벤트 내용</div>
       <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
         <button v-for="n in 5" :key="n" class="btn btn-sm"
           :class="activeContentTab===n ? 'btn-primary' : 'btn-secondary'"
@@ -264,7 +280,8 @@ window.EcEventDtl = {
     </div>
 
     <!-- 대상 상품 -->
-    <div v-show="tab==='products'">
+    <div class="card" v-show="showTab('products')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span></div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
         <button v-if="!viewMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
@@ -297,7 +314,8 @@ window.EcEventDtl = {
     </div>
 
     <!-- 미리보기 -->
-    <div v-show="tab==='preview'">
+    <div class="card" v-show="showTab('preview')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.title || '이벤트 제목' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>

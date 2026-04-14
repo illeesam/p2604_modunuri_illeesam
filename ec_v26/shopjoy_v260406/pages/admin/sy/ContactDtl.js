@@ -1,4 +1,5 @@
 /* ShopJoy Admin - 문의관리 상세/등록 */
+window._syContactDtlState = window._syContactDtlState || { tab: 'content', viewMode: 'tab' };
 window.SyContactDtl = {
   name: 'SyContactDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
@@ -6,7 +7,11 @@ window.SyContactDtl = {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
-    const tab = ref('content');
+    const tab = ref(window._syContactDtlState.tab || 'content');
+    Vue.watch(tab, v => { window._syContactDtlState.tab = v; });
+    const viewMode2 = ref(window._syContactDtlState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._syContactDtlState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({
       userId: '', userNm: '', date: '', categoryCd: '배송 문의',
@@ -115,7 +120,7 @@ window.SyContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { isNew, tab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteNm, contentEl, answerEl };
+    return { isNew, tab, viewMode2, showTab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>
@@ -127,16 +132,25 @@ window.SyContactDtl = {
         <div class="readonly-field">{{ siteNm }}</div>
       </div>
     </div>
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='content'}" @click="tab='content'">문의 내용</button>
-      <button class="tab-btn" :class="{active:tab==='answer'}" @click="tab='answer'">답변</button>
-      <button v-if="!isNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" @click="tab='history'">
-        회원 문의 이력 <span class="tab-count">{{ memberContacts.length }}</span>
-      </button>
+    <div class="tab-bar-row">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="tab='content'">📋 문의 내용</button>
+        <button class="tab-btn" :class="{active:tab==='answer'}"  :disabled="viewMode2!=='tab'" @click="tab='answer'">💬 답변</button>
+        <button v-if="!isNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력 <span class="tab-count">{{ memberContacts.length }}</span></button>
+      </div>
+      <div class="tab-view-modes">
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      </div>
     </div>
+    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
     <!-- 문의 내용 -->
-    <div v-show="tab==='content'">
+    <div class="card" v-show="showTab('content')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">회원ID</label>
@@ -189,7 +203,8 @@ window.SyContactDtl = {
     </div>
 
     <!-- 답변 -->
-    <div v-show="tab==='answer'">
+    <div class="card" v-show="showTab('answer')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
       <div v-if="!isNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.categoryCd }} · {{ form.date }}</div>
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.title }}</div>
@@ -214,7 +229,8 @@ window.SyContactDtl = {
     </div>
 
     <!-- 회원 문의 이력 -->
-    <div v-show="tab==='history'">
+    <div class="card" v-show="showTab('history')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력 <span class="tab-count">{{ memberContacts.length }}</span></div>
       <table class="admin-table" v-if="memberContacts.length">
         <thead><tr><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
         <tbody>
@@ -228,6 +244,7 @@ window.SyContactDtl = {
         </tbody>
       </table>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">다른 문의 이력이 없습니다.</div>
+    </div>
     </div>
   </div>
 </div>

@@ -1,10 +1,15 @@
 /* ShopJoy Admin - 상품 이력 (연관주문 / 재고이력 / 가격변경이력 / 상품상태이력 / 상품정보변경이력) */
+window._ecProdHistState = window._ecProdHistState || { tab: 'orders', viewMode: 'tab' };
 window.EcProdHist = {
   name: 'EcProdHist',
   props: ['navigate', 'adminData', 'showRefModal', 'prodId'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;
-    const botTab = ref('orders');
+    const botTab = ref(window._ecProdHistState.tab || 'orders');
+    Vue.watch(botTab, v => { window._ecProdHistState.tab = v; });
+    const viewMode2 = ref(window._ecProdHistState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._ecProdHistState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
     const stockHistory  = ref([]);
     const statusHistory = ref([]);
@@ -35,31 +40,32 @@ window.EcProdHist = {
       return props.adminData.orders.filter(o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
-    return { botTab, stockHistory, statusHistory, changeHistory, priceHistory, relatedOrders };
+    return { botTab, stockHistory, statusHistory, changeHistory, priceHistory, relatedOrders, viewMode2, showTab };
   },
   template: /* html */`
 <div>
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 8px;border-bottom:2px solid #f0f0f0;margin-bottom:0;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
-  <div class="tab-nav">
-    <button class="tab-btn" :class="{active:botTab==='orders'}"  @click="botTab='orders'">
-      연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span>
-    </button>
-    <button class="tab-btn" :class="{active:botTab==='stock'}"   @click="botTab='stock'">
-      재고 이력 <span class="tab-count">{{ stockHistory.length }}</span>
-    </button>
-    <button class="tab-btn" :class="{active:botTab==='price'}"   @click="botTab='price'">
-      가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span>
-    </button>
-    <button class="tab-btn" :class="{active:botTab==='status'}"  @click="botTab='status'">
-      상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span>
-    </button>
-    <button class="tab-btn" :class="{active:botTab==='changes'}" @click="botTab='changes'">
-      상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span>
-    </button>
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
+  <div class="tab-bar-row">
+    <div class="tab-nav">
+      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="viewMode2!=='tab'" @click="botTab='orders'">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="viewMode2!=='tab'" @click="botTab='stock'">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="viewMode2!=='tab'" @click="botTab='price'">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="viewMode2!=='tab'" @click="botTab='status'">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="viewMode2!=='tab'" @click="botTab='changes'">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></button>
+    </div>
+    <div class="tab-view-modes">
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+    </div>
   </div>
+  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
   <!-- 연관 주문 -->
-  <div v-show="botTab==='orders'">
+  <div class="card" v-show="showTab('orders')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
     <table class="admin-table" v-if="relatedOrders.length">
       <thead><tr><th>주문ID</th><th>회원</th><th>주문일</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
@@ -77,7 +83,8 @@ window.EcProdHist = {
   </div>
 
   <!-- 재고 이력 -->
-  <div v-show="botTab==='stock'">
+  <div class="card" v-show="showTab('stock')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
     <table class="admin-table" v-if="stockHistory.length">
       <thead><tr><th>일시</th><th>유형</th><th>수량</th><th>처리 후 재고</th><th>메모</th></tr></thead>
       <tbody>
@@ -96,7 +103,8 @@ window.EcProdHist = {
   </div>
 
   <!-- 가격변경이력 -->
-  <div v-show="botTab==='price'">
+  <div class="card" v-show="showTab('price')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
     <table class="admin-table" v-if="priceHistory.length">
       <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
@@ -113,7 +121,8 @@ window.EcProdHist = {
   </div>
 
   <!-- 상품상태 이력 -->
-  <div v-show="botTab==='status'">
+  <div class="card" v-show="showTab('status')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
     <table class="admin-table" v-if="statusHistory.length">
       <thead><tr><th>일시</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
@@ -129,7 +138,8 @@ window.EcProdHist = {
   </div>
 
   <!-- 상품정보 변경이력 -->
-  <div v-show="botTab==='changes'">
+  <div class="card" v-show="showTab('changes')" style="margin:0;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
     <table class="admin-table" v-if="changeHistory.length">
       <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
@@ -143,6 +153,7 @@ window.EcProdHist = {
       </tbody>
     </table>
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">변경 이력이 없습니다.</div>
+  </div>
   </div>
 </div>
 `,

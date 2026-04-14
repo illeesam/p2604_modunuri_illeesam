@@ -1,11 +1,16 @@
 /* ShopJoy Admin - 상품관리 상세/등록 */
+window._ecProdDtlState = window._ecProdDtlState || { tab: 'info', viewMode: 'tab' };
 window.EcProdDtl = {
   name: 'EcProdDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const topTab = ref('info');
+    const topTab = ref(window._ecProdDtlState.tab || 'info');
+    Vue.watch(topTab, v => { window._ecProdDtlState.tab = v; });
+    const viewMode2 = ref(window._ecProdDtlState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._ecProdDtlState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || topTab.value === id;
 
     const form = reactive({
       prodNm: '', category: '상의', price: 0, stock: 0,
@@ -193,7 +198,7 @@ window.EcProdDtl = {
     };
 
     return {
-      isNew, topTab, form, errors, relatedProducts, save,
+      isNew, topTab, viewMode2, showTab, form, errors, relatedProducts, save,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
       salePlans, planVisible, planAllChecked, addPlanRow, onPlanChange,
       deletePlanChecked, deleteLastPlanRow, planRowStyle, planStatusBadge,
@@ -203,20 +208,30 @@ window.EcProdDtl = {
   template: /* html */`
 <div>
   <div class="page-title">{{ isNew ? '상품 등록' : (viewMode ? '상품 상세' : '상품 수정') }}</div>
-  <div class="card">
 
     <!-- 상단 탭 -->
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:topTab==='info'}"    @click="topTab='info'">기본정보</button>
-      <button class="tab-btn" :class="{active:topTab==='option'}"  @click="topTab='option'">옵션설정</button>
-      <button class="tab-btn" :class="{active:topTab==='detail'}"  @click="topTab='detail'">상세설정</button>
-      <button class="tab-btn" :class="{active:topTab==='image'}"   @click="topTab='image'">상품이미지설정</button>
-      <button class="tab-btn" :class="{active:topTab==='related'}" @click="topTab='related'">연관상품</button>
-      <button class="tab-btn" :class="{active:topTab==='price'}"   @click="topTab='price'">가격설정</button>
+    <div class="tab-bar-row">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="viewMode2!=='tab'" @click="topTab='info'">📋 기본정보</button>
+        <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="viewMode2!=='tab'" @click="topTab='option'">⚙ 옵션설정</button>
+        <button class="tab-btn" :class="{active:topTab==='detail'}"  :disabled="viewMode2!=='tab'" @click="topTab='detail'">📝 상세설정</button>
+        <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="viewMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ (form.images || []).length }}</span></button>
+        <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="viewMode2!=='tab'" @click="topTab='related'">🔗 연관상품 <span class="tab-count">{{ relatedProducts.length }}</span></button>
+        <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="viewMode2!=='tab'" @click="topTab='price'">💰 가격</button>
+      </div>
+      <div class="tab-view-modes">
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      </div>
     </div>
+    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
     <!-- 기본정보 -->
-    <div v-show="topTab==='info'">
+    <div class="card" v-show="showTab('info')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">상품명 <span v-if="!viewMode" class="req">*</span></label>
@@ -265,7 +280,8 @@ window.EcProdDtl = {
     </div>
 
     <!-- 옵션설정 -->
-    <div v-show="topTab==='option'">
+    <div class="card" v-show="showTab('option')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
           <input type="checkbox" v-model="form.optionUse" :disabled="viewMode" />
@@ -312,7 +328,8 @@ window.EcProdDtl = {
     </div>
 
     <!-- 상세설정 -->
-    <div v-show="topTab==='detail'">
+    <div class="card" v-show="showTab('detail')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
       <div class="form-group">
         <label class="form-label">상품 설명</label>
         <div v-if="viewMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.description || '<span style=color:#bbb>-</span>'"></div>
@@ -331,7 +348,8 @@ window.EcProdDtl = {
     </div>
 
     <!-- 상품이미지설정 -->
-    <div v-show="topTab==='image'">
+    <div class="card" v-show="showTab('image')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
       <!-- 파일 input (숨김) -->
       <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
 
@@ -414,7 +432,8 @@ window.EcProdDtl = {
     </div>
 
     <!-- 연관상품 -->
-    <div v-show="topTab==='related'">
+    <div class="card" v-show="showTab('related')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🔗 연관상품</div>
       <div class="form-group">
         <label class="form-label">연관 상품 ID (쉼표 구분)</label>
         <input class="form-control" v-model="form.relatedProductIds" placeholder="1, 2, 3" :readonly="viewMode" />
@@ -447,7 +466,8 @@ window.EcProdDtl = {
     </div>
 
     <!-- 가격설정 -->
-    <div v-show="topTab==='price'">
+    <div class="card" v-show="showTab('price')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 가격</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">판매가 <span v-if="!viewMode" class="req">*</span></label>
@@ -582,7 +602,7 @@ window.EcProdDtl = {
     </div>
 
   </div>
-  <div v-if="!isNew" class="card">
+  <div v-if="!isNew" style="margin-top:20px;">
     <ec-prod-hist :prod-id="editId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
   </div>
 </div>

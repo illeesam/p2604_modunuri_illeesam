@@ -404,8 +404,8 @@ window.SyRoleMng = {
                 :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:1px 6px;font-size:12px;line-height:1.4;color:#6b7280;" title="상위권한 선택"
-                @click.stop="openParentModal(row)">↑</button>
+                style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위권한 선택"
+                @click.stop="openParentModal(row)">🔍</button>
             </div>
           </td>
 
