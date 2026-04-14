@@ -56,6 +56,8 @@ window.MyCoupon = {
   template: /* html */ `
 <MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
 
+  <MyDateFilter @search="onDateSearch" />
+
   <!-- 쿠폰 등록 -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
     <input v-model="couponCode" type="text" placeholder="쿠폰 코드 입력 (예: SPRING5000)" @keyup.enter="addCoupon"
@@ -83,7 +85,6 @@ window.MyCoupon = {
       }">사용 <span style="font-size:0.8rem;margin-left:2px;">({{ usedCount }})</span></button>
   </div>
 
-  <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredCoupons.length" :pager="couponPager" />
   <div v-if="!dateFilteredCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     {{ activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}

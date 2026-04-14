@@ -78,6 +78,8 @@ window.MyClaim = {
   template: /* html */ `
 <MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
 
+  <MyDateFilter @search="onDateSearch" @reset="claimStatusFilter.splice(0)" />
+
   <!-- 유형 필터 -->
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button v-for="f in ['전체','취소','반품','교환']" :key="f"
@@ -134,7 +136,6 @@ window.MyClaim = {
     </div>
   </template>
 
-  <MyDateFilter @search="onDateSearch" @reset="claimStatusFilter.splice(0)" />
   <PagerHeader :total="dateFilteredClaims.length" :pager="claimPager" />
   <div v-if="!dateFilteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">해당 내역이 없습니다.</div>
 

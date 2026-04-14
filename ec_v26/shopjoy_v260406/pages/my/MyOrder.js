@@ -188,6 +188,8 @@ window.MyOrder = {
   template: /* html */ `
 <MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
 
+  <MyDateFilter @search="onDateSearch" @reset="flowStatusFilter.splice(0)" />
+
   <!-- 주문 처리 흐름 (토글 필터) -->
   <div style="background:#f4f5f7;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;flex-wrap:nowrap;">
@@ -222,7 +224,6 @@ window.MyOrder = {
     </div>
   </div>
 
-  <MyDateFilter @search="onDateSearch" @reset="flowStatusFilter.splice(0)" />
   <PagerHeader :total="dateFilteredOrders.length" :pager="orderPager" />
   <div v-if="!dateFilteredOrders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">주문 내역이 없습니다.</div>
 

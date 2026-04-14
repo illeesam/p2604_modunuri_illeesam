@@ -44,6 +44,8 @@ window.MyCache = {
   template: /* html */ `
 <MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
 
+  <MyDateFilter @search="onDateSearch" />
+
   <!-- 보유 캐쉬 -->
   <div style="background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:var(--radius);padding:24px;margin-bottom:20px;color:#1a1a1a;">
     <div style="font-size:0.85rem;font-weight:600;opacity:0.7;">보유 캐쉬</div>
@@ -65,7 +67,6 @@ window.MyCache = {
     </button>
   </div>
 
-  <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredHistory.length" :pager="cashPager" />
   <div v-if="!dateFilteredHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">캐쉬 내역이 없습니다.</div>
 
