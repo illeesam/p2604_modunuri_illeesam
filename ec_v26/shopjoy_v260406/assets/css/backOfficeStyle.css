@@ -237,6 +237,13 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .tab-btn { flex:1; padding: 11px 16px; border: none; background: transparent; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #666; border-radius:9px; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .18s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
 .tab-btn:hover { color: #9f2946; background:rgba(232,88,122,0.06); }
 .tab-btn.active { color: #e8587a; font-weight: 800; background: linear-gradient(135deg,#fff0f4,#ffe4ec); box-shadow:0 2px 8px rgba(232,88,122,0.18); border-bottom:2px solid #e8587a; }
+.tab-btn:disabled, .tab-btn[disabled] {
+  opacity: 0.55; cursor: default; pointer-events: none;
+  background: transparent !important; color: #aaa !important;
+  box-shadow: none !important; border-bottom-color: transparent !important;
+}
+.tab-btn:disabled .tab-count, .tab-btn[disabled] .tab-count { background:#eee !important; color:#aaa !important; }
+.tab-nav:has(.tab-btn:disabled) { background:#fafafa; opacity: 0.85; }
 .tab-count { display: inline-block; background: #e5e7eb; color: #666; font-size: 10.5px; padding: 1px 7px; border-radius: 10px; font-weight:800; min-width:18px; text-align:center; }
 .tab-btn.active .tab-count { background: #e8587a; color: #fff; }
 .tab-view-modes { display:flex; gap:3px; background:#fff; padding:5px; border-radius:12px; border:1px solid #e5e7eb; box-shadow:0 1px 3px rgba(0,0,0,0.04); margin-left:8px; }
