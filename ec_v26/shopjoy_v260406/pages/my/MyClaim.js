@@ -176,8 +176,15 @@ window.MyClaim = {
       <div style="display:flex;align-items:center;min-width:320px;">
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[c.type]" :key="step">
           <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
-            <div style="width:10px;height:10px;border-radius:50%;margin-bottom:4px;"
-              :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= si ? 'background:'+myStore.CLAIM_TYPE_COLOR[c.type] : 'background:var(--border);'"></div>
+            <div :style="{
+              width: c.status===step ? '14px' : '10px',
+              height: c.status===step ? '14px' : '10px',
+              borderRadius:'50%',
+              marginBottom:'4px',
+              transition:'all .15s',
+              boxShadow: c.status===step ? '0 0 0 2px '+myStore.CLAIM_TYPE_COLOR[c.type]+'33' : 'none',
+              background: myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= si ? myStore.CLAIM_TYPE_COLOR[c.type] : 'var(--border)',
+            }"></div>
             <div style="font-size:0.65rem;text-align:center;white-space:nowrap;font-weight:600;"
               :style="c.status===step ? 'color:'+myStore.CLAIM_TYPE_COLOR[c.type]+';font-weight:800;'
                 : myStore.CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'color:var(--text-secondary);'
