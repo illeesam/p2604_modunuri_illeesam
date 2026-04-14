@@ -112,6 +112,7 @@ window.AppHeader = {
       userMenuOpen, toggleUserMenu, closeUserMenu, goMy, doLogout, menuItems,
       profileOpen, pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pwOpen, pw, openPw, savePw, IS,
+      frontSiteNo: window.FRONT_SITE_NO || '01',
     };
   },
 
@@ -168,6 +169,11 @@ window.AppHeader = {
       <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">{{ config.tagline }}</span>
     </div>
   </button>
+  <span class="front-site-badge" :title="'FRONT_SITE_NO=' + frontSiteNo"
+    :data-tip="'FRONT_SITE_NO=' + frontSiteNo"
+    :style="{position:'relative',display:'inline-flex',alignItems:'center',padding:'1px 6px',marginLeft:'2px',borderRadius:'8px',fontSize:'9px',fontWeight:700,letterSpacing:'0.03em',background:'#fafafa',color: frontSiteNo==='02' ? '#2e7d6b' : '#9f2946',border:'1px solid #eee',cursor:'help'}">
+    {{ frontSiteNo }}
+  </span>
 
   <!-- Top nav -->
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
