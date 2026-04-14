@@ -152,20 +152,26 @@ window.MyLayout = {
   </div>
 
   <!-- 탭 바 -->
-  <div style="display:flex;gap:4px;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:6px;">
-    <button v-for="t in MY_TABS" :key="t.pageId" @click="goTab(t.pageId)"
-      style="padding:8px 14px;border:none;cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;border-radius:8px;transition:all 0.2s;display:flex;align-items:center;gap:5px;"
-      :style="activePage===t.pageId
-        ? 'background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,0.4);'
-        : 'background:transparent;color:var(--text-muted);'">
-      <span>{{ t.icon }}</span>
-      <span>{{ t.label }}</span>
-      <span v-if="tabCounts[t.pageId] > 0"
-        style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:0.7rem;"
-        :style="activePage===t.pageId ? 'background:rgba(255,255,255,0.3);color:#fff;' : 'background:var(--blue);color:#fff;'">
-        {{ tabCounts[t.pageId] }}
-      </span>
-    </button>
+  <div style="display:flex;gap:0;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:8px;box-shadow:0 2px 12px rgba(0,0,0,0.05);align-items:stretch;">
+    <template v-for="(t, ti) in MY_TABS" :key="t.pageId">
+      <button @click="goTab(t.pageId)"
+        style="padding:11px 18px;border:none;cursor:pointer;font-size:0.92rem;white-space:nowrap;border-radius:10px;transition:all 0.18s;display:flex;align-items:center;gap:7px;flex:1;justify-content:center;min-width:fit-content;"
+        :style="activePage===t.pageId
+          ? 'background:linear-gradient(135deg,#1a1a1a,#404040);color:#fff;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,0.18);transform:translateY(-1px);'
+          : 'background:transparent;color:var(--text-secondary);font-weight:600;'"
+        @mouseenter="activePage===t.pageId || ($event.currentTarget.style.background='var(--bg-base)')"
+        @mouseleave="activePage===t.pageId || ($event.currentTarget.style.background='transparent')">
+        <span style="font-size:1.05rem;">{{ t.icon }}</span>
+        <span>{{ t.label }}</span>
+        <span v-if="tabCounts[t.pageId] > 0"
+          style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;font-size:0.72rem;font-weight:800;"
+          :style="activePage===t.pageId ? 'background:rgba(255,255,255,0.25);color:#fff;' : 'background:#fee2e2;color:#dc2626;'">
+          {{ tabCounts[t.pageId] }}
+        </span>
+      </button>
+      <div v-if="ti < MY_TABS.length-1"
+        style="width:1px;background:var(--border);margin:8px 0;flex-shrink:0;"></div>
+    </template>
   </div>
 
   <!-- 탭 컨텐츠 (슬롯) -->
