@@ -291,7 +291,7 @@ window.MyOrder = {
 
     <!-- 클레임 정보 -->
     <template v-if="claimsByOrderId[o.orderId]">
-      <div :style="'border-left:3px solid '+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type]+';background:var(--bg-base);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:12px;'">
+      <div :style="'border-left:3px solid '+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type]+';background:#FAFAFA;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:12px;'">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:0.8rem;font-weight:800;" :style="'color:'+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type]">
@@ -319,7 +319,7 @@ window.MyOrder = {
                   boxShadow: claimsByOrderId[o.orderId].status===step
                     ? '0 0 0 2px '+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type]+'4d' : 'none',
                   background: myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf(claimsByOrderId[o.orderId].status) >= si
-                    ? myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type] : 'var(--border)',
+                    ? myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type] : '#bbb',
                 }"></div>
                 <div style="font-size:0.57rem;text-align:center;line-height:1.2;white-space:nowrap;"
                   :style="claimsByOrderId[o.orderId].status===step
@@ -337,7 +337,7 @@ window.MyOrder = {
               <div v-if="si < myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].length-1"
                 style="height:1.5px;flex:1;margin-bottom:13px;flex-shrink:0;min-width:6px;"
                 :style="myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf(claimsByOrderId[o.orderId].status) > si
-                  ? 'background:'+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type] : 'background:var(--border)'"></div>
+                  ? 'background:'+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type] : 'background:#bbb'"></div>
             </template>
           </div>
         </div>
