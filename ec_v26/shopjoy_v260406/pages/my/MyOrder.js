@@ -262,7 +262,7 @@ window.MyOrder = {
 
     <!-- 주문 진행 프로세스 (취소됨 포함) -->
     <div v-if="myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) >= 0 || o.status==='취소됨'"
-      style="background:var(--bg-base);border-radius:8px;padding:10px 14px;margin-bottom:12px;overflow-x:auto;">
+      style="background:#f6f6f6;border-radius:8px;padding:10px 14px;margin-bottom:12px;overflow-x:auto;">
       <div style="display:flex;align-items:flex-start;min-width:320px;">
         <template v-for="(step, si) in myStore.ORDER_FLOW" :key="step.status">
           <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:48px;">
@@ -271,7 +271,7 @@ window.MyOrder = {
               height: o.status===step.status ? '14px' : '10px',
               borderRadius:'50%', marginBottom:'4px', flexShrink:0, transition:'all .15s',
               boxShadow: o.status===step.status ? '0 0 0 2px rgba(74,222,128,0.3)' : 'none',
-              background: o.status==='취소됨' ? '#d1d5db' : (myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) >= si ? '#4ade80' : 'var(--border)'),
+              background: o.status==='취소됨' ? '#bbb' : (myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) >= si ? '#4ade80' : '#bbb'),
             }"></div>
             <div style="font-size:0.63rem;text-align:center;line-height:1.3;white-space:nowrap;"
               :style="o.status===step.status ? 'color:#16a34a;font-weight:800;'
@@ -284,7 +284,7 @@ window.MyOrder = {
             </button>
           </div>
           <div v-if="si < myStore.ORDER_FLOW.length-1" style="height:2px;flex:1;margin-bottom:16px;flex-shrink:0;min-width:8px;"
-            :style="o.status==='취소됨' ? 'background:#d1d5db;' : (myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) > si ? 'background:#4ade80;' : 'background:var(--border);')"></div>
+            :style="o.status==='취소됨' ? 'background:#bbb;' : (myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) > si ? 'background:#4ade80;' : 'background:#bbb;')"></div>
         </template>
       </div>
     </div>

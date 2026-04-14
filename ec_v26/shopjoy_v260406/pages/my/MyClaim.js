@@ -173,7 +173,7 @@ window.MyClaim = {
     </div>
 
     <!-- 진행 흐름 바 -->
-    <div style="background:var(--bg-base);border-radius:8px;padding:12px 14px;margin-bottom:12px;overflow-x:auto;">
+    <div style="background:#f6f6f6;border-radius:8px;padding:12px 14px;margin-bottom:12px;overflow-x:auto;">
       <div style="display:flex;align-items:center;min-width:320px;">
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[c.type]" :key="step">
           <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
@@ -184,7 +184,7 @@ window.MyClaim = {
               marginBottom:'4px',
               transition:'all .15s',
               boxShadow: c.status===step ? '0 0 0 2px '+myStore.CLAIM_TYPE_COLOR[c.type]+'33' : 'none',
-              background: myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= si ? myStore.CLAIM_TYPE_COLOR[c.type] : 'var(--border)',
+              background: myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= si ? myStore.CLAIM_TYPE_COLOR[c.type] : '#bbb',
             }"></div>
             <div style="font-size:0.65rem;text-align:center;white-space:nowrap;font-weight:600;"
               :style="c.status===step ? 'color:'+myStore.CLAIM_TYPE_COLOR[c.type]+';font-weight:800;'
@@ -202,7 +202,7 @@ window.MyClaim = {
             </button>
           </div>
           <div v-if="si < myStore.CLAIM_FLOWS[c.type].length-1" style="height:2px;flex:1;margin-bottom:16px;"
-            :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'background:'+myStore.CLAIM_TYPE_COLOR[c.type] : 'background:var(--border);'"></div>
+            :style="myStore.CLAIM_FLOWS[c.type].indexOf(c.status) > si ? 'background:'+myStore.CLAIM_TYPE_COLOR[c.type] : 'background:#bbb;'"></div>
         </template>
       </div>
     </div>
