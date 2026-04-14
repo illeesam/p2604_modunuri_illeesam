@@ -24,7 +24,6 @@
       { id: 'ecDispAreaPreview',      label: '전시영역미리보기' },
       { id: 'ecDispPanelPreview',     label: '전시패널미리보기' },
       { id: 'ecDispWidgetPreview',    label: '전시위젯미리보기' },
-      { id: 'ecDispAreaPreview2',     label: '전시영역미리보기2' },
       { id: 'ecDispWidgetLibPreview', label: '전시위젯Lib미리보기' },
       { group: '전시관리' },
       { id: 'ecDispUiMng',            label: '전시UI관리' },
@@ -33,6 +32,8 @@
       { id: 'ecDispWidgetMng',        label: '전시위젯관리' },
       { group: '전시리소스' },
       { id: 'ecDispWidgetLibMng',     label: '전시위젯Lib' },
+      { group: '개발지원' },
+      { id: 'ecDispUiSimul',          label: '전시UI시뮬레이션' },
     ],
     customer:  [{ id: 'ecCustInfoMng', label: '고객종합정보' }, { id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
     system:    [{ id: 'sySiteMng', label: '사이트관리' }, { id: 'syCodeMng', label: '공통코드관리' }, { id: 'syBrandMng', label: '브랜드관리' },
@@ -99,7 +100,7 @@
         'ecCouponMng':'ec-coupon-mng', 'ecCouponDtl':'ec-coupon-dtl',
         'ecCacheMng':'ec-cache-mng', 'ecCacheDtl':'ec-cache-dtl',
         'ecDispPanelMng':'ec-disp-panel-mng', 'ecDispAreaPreview':'ec-disp-area-preview', 'ecDispAreaMng':'ec-disp-area-mng',
-        'ecDispUiPreview':'ec-disp-ui-preview', 'ecDispAreaPreview2':'ec-disp-area-preview2',
+        'ecDispUiPreview':'ec-disp-ui-preview', 'ecDispUiSimul':'ec-disp-ui-simul',
         'ecDispPanelPreview':'ec-disp-panel-preview', 'ecDispWidgetPreview':'ec-disp-widget-preview',
         'ecDispAreaDtl':'ec-disp-area-dtl',
         'ecDispUiMng':'ec-disp-ui-mng', 'ecDispUiDtl':'ec-disp-ui-dtl',
@@ -642,7 +643,7 @@
         <ec-disp-panel-mng  v-else-if="page==='ecDispPanelMng'"  :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-disp-area-preview  v-else-if="page==='ecDispAreaPreview'"  :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-disp-ui-preview    v-else-if="page==='ecDispUiPreview'"    :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
-        <ec-disp-area-preview2 v-else-if="page==='ecDispAreaPreview2'" :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <ec-disp-ui-simul     v-else-if="page==='ecDispUiSimul'"     :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-disp-panel-preview v-else-if="page==='ecDispPanelPreview'" :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-disp-widget-preview v-else-if="page==='ecDispWidgetPreview'" :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-disp-area-mng     v-else-if="page==='ecDispAreaMng'"     :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -1028,7 +1029,7 @@
   .component('EcDispWidgetMng',       window.EcDispWidgetMng)
   .component('EcDispWidgetDtl',       window.EcDispWidgetDtl)
   .component('EcDispUiPreview',       window.EcDispUiPreview)
-  .component('EcDispAreaPreview2',    window.EcDispAreaPreview2)
+  .component('EcDispUiSimul',         window.EcDispUiSimul)
   .component('EcDispPanelPreview',    window.EcDispPanelPreview)
   .component('EcDispWidgetPreview',   window.EcDispWidgetPreview)
   .component('EcDispAreaPreview',     window.EcDispAreaPreview)

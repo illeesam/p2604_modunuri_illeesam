@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 전시영역미리보기 (3탭: 영역미리보기 · 구조선택 · 소스) */
-window.EcDispAreaPreview2 = {
-  name: 'EcDispAreaPreview2',
+window.EcDispUiSimul = {
+  name: 'EcDispUiSimul',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
@@ -545,7 +545,7 @@ window.EcDispAreaPreview2 = {
     const onAreaDragEnd = () => { window._dragAreaWidgets = null; };
 
     /* ── Ui미리보기 레이어 ── */
-    const dispUiLayerOpen = ref(false);
+    const dispUiLayerOpen = ref(true);
     const dispUiModalOpen = ref(false);
     const dispUiAreaErr   = ref(false);
 
@@ -717,21 +717,16 @@ window.EcDispAreaPreview2 = {
       '/disp-ui.html#page=dispUi05',
       '/disp-ui.html#page=dispUi06',
     ];
-    const openDispUiOther = () => {
-      const msg = '오픈할 페이지 번호를 입력하세요:\n' +
-        DISP_UI_OTHER_PAGES.map((u, i) => `${i + 1}. ${u}`).join('\n');
-      const ans = window.prompt(msg, '1');
-      if (ans == null) return;
-      const idx = parseInt(ans, 10) - 1;
-      if (isNaN(idx) || idx < 0 || idx >= DISP_UI_OTHER_PAGES.length) {
-        props.showToast && props.showToast('잘못된 번호입니다.', 'error');
-        return;
-      }
+    const otherMenuOpen = ref(false);
+    const openDispUiOther = () => { otherMenuOpen.value = !otherMenuOpen.value; };
+    const closeOtherMenu = () => { otherMenuOpen.value = false; };
+    const pickOtherPage = (url) => {
       const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
       window.open(
-        base + DISP_UI_OTHER_PAGES[idx],
+        base + url,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'
       );
+      otherMenuOpen.value = false;
     };
 
     const openDispUiPopup = () => {
@@ -797,6 +792,7 @@ window.EcDispAreaPreview2 = {
       dispUiSiteModalOpen, dispUiSiteSearch, dispUiSiteList, selectDispUiSite,
       dispUiMemberModalOpen, dispUiMemberSearch, dispUiMemberList, selectDispUiMember,
       openDispUiLayer, openDispUiModal, openDispUiPopup, openDispUiOther, resetDispUiForm,
+      DISP_UI_OTHER_PAGES, otherMenuOpen, closeOtherMenu, pickOtherPage,
     };
   },
   template: /* html */`
@@ -804,7 +800,7 @@ window.EcDispAreaPreview2 = {
   <!-- ── 페이지 제목 ── -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
-      전시영역미리보기
+      전시UI시뮬레이션
       <span style="font-size:13px;font-weight:400;color:#888;">화면영역별 전시패널 분석 및 영역미리보기</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
@@ -1105,10 +1101,25 @@ window.EcDispAreaPreview2 = {
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #a5d6a7;background:#e8f5e9;color:#2e7d32;cursor:pointer;font-weight:600;">
           🔗 팝업오픈
         </button>
-        <button @click="openDispUiOther"
-          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
-          🌐 기타오픈
-        </button>
+        <div style="position:relative;">
+          <button @click="openDispUiOther"
+            style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
+            🌐 기타오픈 <span style="font-size:10px;margin-left:2px;">▾</span>
+          </button>
+          <!-- 드롭다운 layer -->
+          <div v-if="otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="closeOtherMenu"></div>
+          <div v-if="otherMenuOpen" @click.stop
+            style="position:absolute;top:calc(100% + 4px);right:0;z-index:5000;background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.15);min-width:320px;padding:6px;max-height:400px;overflow-y:auto;">
+            <div style="font-size:10px;color:#888;padding:6px 10px;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">오픈할 페이지를 선택하세요</div>
+            <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="u"
+              @click="pickOtherPage(u)"
+              style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:11px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-family:monospace;color:#333;"
+              @mouseenter="$event.currentTarget.style.background='#e3f2fd'"
+              @mouseleave="$event.currentTarget.style.background='transparent'">
+              <span style="color:#1565c0;font-weight:700;margin-right:6px;">{{ i+1 }}.</span>{{ u }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
