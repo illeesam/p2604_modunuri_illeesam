@@ -52,7 +52,7 @@ window.AppFooter = {
     </div>
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <select @change="onMenuChange"
-        style="font-size:0.75rem;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;min-width:440px;max-width:560px;">
+        style="font-size:0.75rem;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;min-width:220px;max-width:280px;">
         <option value="">🌐 메뉴 바로가기</option>
         <optgroup label="🛍 frontOffice">
           <option value="frontOffice::home">├ 홈</option>
