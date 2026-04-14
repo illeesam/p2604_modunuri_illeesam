@@ -22,7 +22,7 @@
     const toggleTheme = () => applyTheme(theme.value === 'light' ? 'dark' : 'light');
 
     /* ── Navigation ── */
-    const page = ref(getHomePage());
+    const page = ref('home');
     const sidebarOpen = ref(true);
     const mobileOpen  = ref(false);
     let replaceNextHash = false;
@@ -136,7 +136,7 @@
     const selectedProduct = ref(products[0]);
     const selectProduct = p => {
       selectedProduct.value = p;
-      navigate(getProdViewPage());
+      navigate('prodView');
     };
 
     /* ── Likes (좋아요/위시리스트) ── */
@@ -238,16 +238,16 @@
     const onLogout = () => {
       window.shopjoyAuth.logout();
       showToast('로그아웃되었습니다.', 'info');
-      if (MY_PAGES.includes(page.value)) page.value = getHomePage();
+      if (MY_PAGES.includes(page.value)) page.value = 'home';
     };
     /* shopjoy_token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
     watch(() => auth.user, u => {
-      if (!u && MY_PAGES.includes(page.value)) page.value = getHomePage();
+      if (!u && MY_PAGES.includes(page.value)) page.value = 'home';
     });
 
     /* ── URL state ── */
     let restoring = true;
-    const validPages = [getHomePage(), getProdPage(), getProdViewPage(), 'cart', 'order', 'contact', 'faq',
+    const validPages = ['home', 'prodList', 'prodView', 'cart', 'order', 'contact', 'faq',
       'event', 'eventView', 'blog', 'blogView', 'blogEdit', 'like',
       'location', 'about',
       'myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt',
@@ -325,7 +325,7 @@
       if (restoring || syncingFromHash) return;
       const params = new URLSearchParams();
       params.set('page', page.value);
-      if (id === getProdViewPage()) {
+      if (id === 'prodView') {
         params.set('pid', selectedProduct.value?.productId ?? '');
       }
       if (id === 'order' && instantOrder.value) {
@@ -356,7 +356,7 @@
       if (!raw || !raw.includes('page=')) {
         const pr = new URLSearchParams();
         pr.set('page', page.value);
-        if (page.value === getProdViewPage()) pr.set('pid', String(selectedProduct.value?.productId ?? ''));
+        if (page.value === 'prodView') pr.set('pid', String(selectedProduct.value?.productId ?? ''));
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
       }
     } catch (e) {}
@@ -417,17 +417,17 @@
 
     <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
       <component :is="frontHomeComp"
-        v-if="page === getHomePage()"
+        v-if="page === 'home'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
       <component :is="frontProdListComp"
-        v-else-if="page === getProdPage()"
+        v-else-if="page === 'prodList'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
       <component :is="frontProdViewComp"
-        v-else-if="page === getProdViewPage()"
+        v-else-if="page === 'prodView'"
         :navigate="navigate" :config="config" :product="selectedProduct"
         :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
         :toggle-like="toggleLike" :is-liked="isLiked"
@@ -656,14 +656,6 @@
    'XsSample21','XsSample22','XsSample23',
   ].forEach(name => { if (window[name]) app.component(name, window[name]); });
 
-  /* 페이지 ID 헬퍼 — 모든 템플릿에서 getHomePage() 등으로 접근 가능 */
-  app.mixin({
-    methods: {
-      getHomePage()     { return window.getHomePage(); },
-      getProdPage()     { return window.getProdPage(); },
-      getProdViewPage() { return window.getProdViewPage(); },
-    }
-  });
-
+  /* 페이지 ID 헬퍼 — 모든 템플릿에서 'home' 등으로 접근 가능 */
   app.use(pinia).mount('#app');
 })();

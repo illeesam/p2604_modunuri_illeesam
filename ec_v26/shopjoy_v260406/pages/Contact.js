@@ -14,7 +14,7 @@ window.Contact = {
       <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Support</div>
       <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">고객센터</h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="navigate(getHomePage())">홈</span>
+        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
         <span>/</span><span style="color:#333;">고객센터</span>
       </div>
     </div>

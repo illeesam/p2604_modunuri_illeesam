@@ -253,7 +253,7 @@ window.Order = {
           @mouseleave="$event.currentTarget.style.transform=''">
           📋 마이페이지에서 주문 확인
         </button>
-        <button @click="navigate(getHomePage())"
+        <button @click="navigate('home')"
           style="padding:14px;border:1.5px solid #e4e7ec;border-radius:10px;background:#fff;color:#555;font-weight:600;cursor:pointer;transition:all .15s;"
           @mouseenter="$event.currentTarget.style.background='#f8f9fb'"
           @mouseleave="$event.currentTarget.style.background='#fff'">
@@ -274,7 +274,7 @@ window.Order = {
         <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Shopping</div>
         <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">주문 · 결제</h1>
         <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-          <span style="cursor:pointer;" @click="navigate(getHomePage())">홈</span>
+          <span style="cursor:pointer;" @click="navigate('home')">홈</span>
           <span>/</span>
           <span style="color:#333;">주문하기</span>
         </div>
@@ -284,7 +284,7 @@ window.Order = {
     <div v-if="orderItems.length===0" style="text-align:center;padding:80px 20px;">
       <div style="font-size:4rem;margin-bottom:20px;">📦</div>
       <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">주문할 상품이 없어요.</p>
-      <button class="btn-blue" @click="navigate(getProdPage())" style="padding:12px 28px;">상품 보러가기</button>
+      <button class="btn-blue" @click="navigate('prodList')" style="padding:12px 28px;">상품 보러가기</button>
     </div>
 
     <template v-else>

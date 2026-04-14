@@ -25,7 +25,7 @@ window.AppFooter = {
 
     const FRONT_MENU = [
       { id:'home',       label:'홈',         icon:'🏠' },
-      { id:'prod01list', label:'상품목록',    icon:'🛍' },
+      { id:'prodList', label:'상품목록',    icon:'🛍' },
       { id:'cart',       label:'장바구니',    icon:'🛒' },
       { id:'order',      label:'주문하기',    icon:'📋' },
       { id:'like',       label:'찜 목록',     icon:'💝' },

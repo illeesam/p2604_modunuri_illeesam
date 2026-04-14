@@ -16,7 +16,7 @@ window.Home01 = {
       <p style="font-size:0.85rem;color:#888;line-height:1.8;margin-bottom:28px;max-width:360px;">
         {{ banners[bannerIdx].desc }}
       </p>
-      <button @click="navigate(getProdPage())"
+      <button @click="navigate('prodList')"
         style="padding:12px 28px;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;cursor:pointer;transition:all .25s;"
         @mouseenter="$event.target.style.background='#1a1a1a';$event.target.style.color='#fff'"
         @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#1a1a1a'">
@@ -47,7 +47,7 @@ window.Home01 = {
   <div style="padding:0 clamp(12px,3vw,32px);margin:-40px auto 0;max-width:820px;position:relative;z-index:3;">
     <div class="home-cat-grid">
       <div v-for="(cat, ci) in (config.categorys || []).slice(0,3)" :key="cat.categoryId"
-        @click="navigate(getProdPage())"
+        @click="navigate('prodList')"
         style="background:#fff;border-radius:14px;padding:clamp(14px,3vw,24px);cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,0.09);display:flex;align-items:center;gap:clamp(10px,2vw,20px);transition:transform .2s,box-shadow .2s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,0.14)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 4px 24px rgba(0,0,0,0.09)'">
@@ -105,7 +105,7 @@ window.Home01 = {
       </div>
     </div>
     <div style="text-align:center;margin-top:32px;">
-      <button @click="navigate(getProdPage())"
+      <button @click="navigate('prodList')"
         style="padding:12px 40px;font-size:0.82rem;font-weight:600;letter-spacing:0.5px;border:1.5px solid #ddd;background:transparent;color:#666;cursor:pointer;transition:all .2s;"
         @mouseenter="$event.target.style.borderColor='#1a1a1a';$event.target.style.color='#1a1a1a'"
         @mouseleave="$event.target.style.borderColor='#ddd';$event.target.style.color='#666'">
@@ -125,7 +125,7 @@ window.Home01 = {
           <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">프리미엄 컬렉션</div>
           <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">핸드메이드<br>프리미엄 아이템</h3>
           <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">장인의 손길이 담긴<br>특별한 컬렉션을 만나보세요.</p>
-          <button @click="navigate(getProdPage())"
+          <button @click="navigate('prodList')"
             style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
             @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
             @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
@@ -141,7 +141,7 @@ window.Home01 = {
           <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">시즌 한정 상품</div>
           <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">2026 S/S<br>신상품 컬렉션</h3>
           <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">올 봄·여름 시즌을 빛낼<br>새로운 아이템이 도착했습니다.</p>
-          <button @click="navigate(getProdPage())"
+          <button @click="navigate('prodList')"
             style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
             @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
             @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">

@@ -24,7 +24,7 @@ window.Like = {
       <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">My</div>
       <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">위시리스트</h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="navigate(getHomePage())">홈</span>
+        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
         <span>/</span><span style="color:#333;">위시리스트</span>
       </div>
     </div>
@@ -63,7 +63,7 @@ window.Like = {
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
     </svg>
     <div style="font-size:0.95rem;color:var(--text-muted);margin-bottom:20px;">좋아요한 상품이 없습니다</div>
-    <button class="btn-outline" @click="navigate(getProdPage())" style="padding:10px 24px;">상품 둘러보기</button>
+    <button class="btn-outline" @click="navigate('prodList')" style="padding:10px 24px;">상품 둘러보기</button>
   </div>
 
 </div>

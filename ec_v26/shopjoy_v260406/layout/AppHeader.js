@@ -135,7 +135,7 @@ window.AppHeader = {
   </button>
 
   <!-- Logo -->
-  <button @click="navigate(getHomePage())" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0;">
+  <button @click="navigate('home')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0;">
     <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <!-- 모래 -->
       <ellipse cx="30" cy="92" rx="22" ry="6" fill="#d4a017"/>
