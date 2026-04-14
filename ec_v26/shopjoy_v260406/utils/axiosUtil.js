@@ -1,11 +1,11 @@
 /**
  * api/ 하위 JSON·향후 REST 엔드포인트용 axios 래퍼
- * 선행: assets/cdn/axios.js (window.axios)
+ * 선행: assets/cdn/pkg/axios/1.7.9/axios.min.js (window.axios)
  */
 (function (global) {
   'use strict';
   function ax() {
-    if (!global.axios) throw new Error('axiosUtil: load assets/cdn/axios.js first');
+    if (!global.axios) throw new Error('axiosUtil: load assets/cdn/pkg/axios/1.7.9/axios.min.js first');
     return global.axios;
   }
 

@@ -1,0 +1,170 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  ShopJoy .gitignore
+#  개발 PC에만 존재해야 하고 원격 저장소에 올리면 안 되는 파일 목록
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ─── Node.js / npm ────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnp.*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+package-lock.json.bak
+.npm/
+
+# ─── Tailwind / 빌드 임시 ─────────────────────────────────────────────────
+# 빌드 결과물은 repo에 커밋합니다 (`assets/cdn/pkg/tailwind/<ver>.build/`)
+# 필요 시 아래 주석 해제로 추적 제외 가능:
+# assets/cdn/pkg/tailwind/*/tailwind.min.css
+
+# ─── 편집기 / IDE ─────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.history/
+
+# ─── OS 자동 생성 ─────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ─── 로그 / 런타임 ────────────────────────────────────────────────────────
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# ─── 캐시 / 임시 ──────────────────────────────────────────────────────────
+.cache/
+.temp/
+.tmp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+*~
+
+# ─── 복사-붙여넣기 자동 파일명 ────────────────────────────────────────────
+# Windows 탐색기
+*- 복사본*
+*- 복사본 (*)*
+*- Copy*
+*- Copy (*)*
+# macOS Finder
+* copy
+* copy.*
+* copy 2
+* copy 2.*
+* copy [0-9]*
+* copy [0-9]*.*
+# 파일명 어디에든 copy 단어가 들어간 경우 (대소문자 구분 없이)
+*copy.js
+*copy.css
+*copy.html
+*Copy.js
+*Copy.css
+*Copy.html
+*COPY.js
+*COPY.css
+*COPY.html
+
+# ─── 개인 백업 컨벤션 (파일명에 @ 포함) ───────────────────────────────────
+*@*
+*@*.*
+
+# ─── 환경변수 / 비밀 ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.pfx
+secrets/
+credentials.json
+serviceAccountKey.json
+
+# ─── Live Server / 로컬 개발 도구 ────────────────────────────────────────
+.live-server*
+.browsersync/
+
+# ─── 테스트 / 커버리지 ────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+.vitest-cache/
+
+# ─── 번들러 / 번들 분석 ───────────────────────────────────────────────────
+.vite/
+.parcel-cache/
+.turbo/
+.next/
+.nuxt/
+dist-ssr/
+stats.html
+stats.json
+
+# ─── 큰 바이너리 / 미디어 임시 ────────────────────────────────────────────
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.iso
+
+# ─── Python (스크립트 실행 시) ────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# ─── DB / 데이터 덤프 ─────────────────────────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+
+# ─── 배포 관련 임시 ───────────────────────────────────────────────────────
+.deploy/
+.serverless/
+.vercel/
+.netlify/
+
+# ─── 기타 ─────────────────────────────────────────────────────────────────
+.eslintcache
+.stylelintcache
+.prettiercache
+*.tsbuildinfo
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  ✅ 포함(커밋) 대상 — 명시적 허용
+# ═══════════════════════════════════════════════════════════════════════════
+!assets/cdn/pkg/**
+!assets/cdn/prod/**
+!.gitignore
+!.gitattributes
