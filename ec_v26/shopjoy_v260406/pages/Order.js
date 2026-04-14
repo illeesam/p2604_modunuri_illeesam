@@ -319,7 +319,10 @@ window.Order = {
                   {{ productCoupons(item).length ? '적용 가능 ' + productCoupons(item).length + '개' : '적용 가능 쿠폰 없음' }}
                 </span>
                 <button v-if="productCoupons(item).length" @click="openCouponPopup(idx)"
-                  style="padding:5px 12px;border:1px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.8rem;cursor:pointer;font-weight:700;">선택</button>
+                  style="padding:7px 16px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--blue),#1e88e5);color:#fff;font-size:0.8rem;cursor:pointer;font-weight:700;box-shadow:0 2px 6px rgba(22,119,255,0.25);transition:all .15s;display:inline-flex;align-items:center;gap:4px;"
+                  @mouseenter="$event.currentTarget.style.transform='translateY(-1px)';$event.currentTarget.style.boxShadow='0 4px 10px rgba(22,119,255,0.35)'"
+                  @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 2px 6px rgba(22,119,255,0.25)'">
+                  🎟 선택</button>
               </template>
             </div>
           </div>
@@ -334,8 +337,18 @@ window.Order = {
           <div style="display:flex;gap:8px;align-items:center;">
             <input v-model="cashInput" type="number" min="0" :max="cashBalance" placeholder="사용할 캐쉬 금액"
               style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;">
-            <button @click="cashInput=cashBalance" style="padding:9px 14px;border:1px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;cursor:pointer;font-weight:700;white-space:nowrap;">전액사용</button>
-            <button @click="cashInput=0" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-muted);font-size:0.82rem;cursor:pointer;">초기화</button>
+            <button @click="cashInput=cashBalance"
+              style="padding:9px 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#ef6c00);color:#fff;font-size:0.82rem;cursor:pointer;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(245,158,11,0.3);transition:all .15s;"
+              @mouseenter="$event.currentTarget.style.transform='translateY(-1px)';$event.currentTarget.style.boxShadow='0 4px 10px rgba(245,158,11,0.4)'"
+              @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 2px 6px rgba(245,158,11,0.3)'">
+              💰 전액사용
+            </button>
+            <button @click="cashInput=0"
+              style="padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-muted);font-size:0.82rem;cursor:pointer;font-weight:600;transition:all .15s;"
+              @mouseenter="$event.currentTarget.style.borderColor='#999';$event.currentTarget.style.color='#555'"
+              @mouseleave="$event.currentTarget.style.borderColor='';$event.currentTarget.style.color=''">
+              ↻ 초기화
+            </button>
           </div>
           <div v-if="appliedCash>0" style="margin-top:6px;font-size:0.82rem;color:#f97316;">{{ fmt(appliedCash) }} 캐쉬 사용 예정</div>
         </div>
@@ -395,7 +408,9 @@ window.Order = {
               <input v-model="form.postcode" class="form-input" placeholder="우편번호" readonly
                 style="width:110px;flex-shrink:0;background:var(--bg-base);cursor:default;" />
               <button @click="openKakaoAddr" type="button"
-                style="padding:9px 16px;border:1px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                style="padding:9px 18px;border:none;border-radius:8px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(34,197,94,0.3);transition:all .15s;"
+                @mouseenter="$event.currentTarget.style.transform='translateY(-1px)';$event.currentTarget.style.boxShadow='0 4px 10px rgba(34,197,94,0.4)'"
+                @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 2px 6px rgba(34,197,94,0.3)'">
                 📮 주소 검색
               </button>
             </div>
@@ -454,7 +469,10 @@ window.Order = {
                     <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--blue-dim);">
                       <span style="font-size:0.82rem;font-weight:700;color:var(--blue);flex:1;">🎟️ {{ selectedShipCoupon.name }}</span>
                       <button @click="removeShipCoupon" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-muted);font-size:0.78rem;cursor:pointer;">제거</button>
-                      <button @click="shipCouponPopup=true" style="padding:4px 10px;border:1px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;cursor:pointer;font-weight:600;">변경</button>
+                      <button @click="shipCouponPopup=true"
+                        style="padding:5px 12px;border:none;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-size:0.78rem;cursor:pointer;font-weight:700;box-shadow:0 1px 4px rgba(139,92,246,0.3);transition:all .15s;"
+                        @mouseenter="$event.currentTarget.style.transform='translateY(-1px)'"
+                        @mouseleave="$event.currentTarget.style.transform=''">변경</button>
                     </div>
                     <div style="font-size:0.82rem;color:#22c55e;margin-top:4px;">✓ 배송비 쿠폰 적용됨 → 무료</div>
                   </template>
@@ -462,8 +480,10 @@ window.Order = {
                     <div style="display:flex;align-items:center;gap:8px;">
                       <span style="font-size:0.85rem;color:#22c55e;font-weight:700;">무료</span>
                       <button v-if="shippingCoupons.length" @click="shipCouponPopup=true"
-                        style="padding:4px 10px;border:1.5px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;cursor:pointer;font-weight:600;">
-                        🎟️ 배송비 쿠폰 선택
+                        style="padding:6px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-size:0.78rem;cursor:pointer;font-weight:700;box-shadow:0 2px 6px rgba(139,92,246,0.3);transition:all .15s;"
+                        @mouseenter="$event.currentTarget.style.transform='translateY(-1px)';$event.currentTarget.style.boxShadow='0 4px 10px rgba(139,92,246,0.4)'"
+                        @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 2px 6px rgba(139,92,246,0.3)'">
+                        🎟 배송비 쿠폰 선택
                       </button>
                     </div>
                   </template>
