@@ -57,9 +57,9 @@ window.EcClaimMng = {
     const typeBadge = t => ({ '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' }[t] || 'badge-gray');
     const statusBadge = s => ({
       '취소요청': 'badge-orange', '취소처리중': 'badge-orange', '취소완료': 'badge-gray',
-      '반품요청': 'badge-orange', '수거예정': 'badge-blue', '수거완료': 'badge-blue',
+      '반품요청': 'badge-orange', '수거예정': 'badge-blue', '수거중': 'badge-blue', '수거완료': 'badge-purple',
       '환불처리중': 'badge-orange', '환불완료': 'badge-green',
-      '교환요청': 'badge-orange', '발송완료': 'badge-blue', '교환완료': 'badge-green',
+      '교환요청': 'badge-orange', '상품준비중': 'badge-orange', '발송중': 'badge-blue', '발송완료': 'badge-green', '교환완료': 'badge-green',
     }[s] || 'badge-gray');
     const onSearch = () => {
       Object.assign(applied, {

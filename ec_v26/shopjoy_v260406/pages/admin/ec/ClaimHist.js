@@ -17,8 +17,8 @@ window.EcClaimHist = {
     const claimType = ref('취소');
     const CLAIM_STEPS = computed(() => ({
       '취소': ['취소요청', '취소처리중', '취소완료'],
-      '반품': ['반품요청', '수거예정', '수거완료', '환불처리중', '환불완료'],
-      '교환': ['교환요청', '수거예정', '수거완료', '발송완료', '교환완료'],
+      '반품': ['반품요청', '수거예정', '수거중', '수거완료', '환불처리중', '환불완료'],
+      '교환': ['교환요청', '수거예정', '수거중', '수거완료', '상품준비중', '발송중', '발송완료', '교환완료'],
     }[claimType.value] || []));
     const claimStatus = ref('');
     const statusOptions = computed(() => CLAIM_STEPS.value);

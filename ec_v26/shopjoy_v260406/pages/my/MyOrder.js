@@ -576,9 +576,9 @@ window.MyOrder = {
           <div style="background:#fff7ed;border-radius:8px;padding:10px 14px;margin-bottom:14px;"><div style="font-size:0.82rem;font-weight:800;color:#ea580c;margin-bottom:4px;">↩️ 반품 신청 안내</div><div style="font-size:0.76rem;color:#7c2d12;line-height:1.55;">배송완료 후 <strong>7일 이내</strong>에 신청해야 합니다.<br>미착용·미세탁·태그 부착 상태여야 합니다.</div></div>
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;">진행 흐름</div>
           <div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
-            <span v-for="(st,i) in ['반품요청','수거예정','수거완료','환불처리중','환불완료']" :key="st" style="display:flex;align-items:center;gap:4px;">
+            <span v-for="(st,i) in ['반품요청','수거예정','수거중','수거완료','환불처리중','환불완료']" :key="st" style="display:flex;align-items:center;gap:4px;">
               <span style="padding:3px 8px;border-radius:20px;font-size:0.72rem;font-weight:700;background:#fff7ed;color:#ea580c;">{{ st }}</span>
-              <span v-if="i<4" style="color:var(--text-muted);">→</span>
+              <span v-if="i<5" style="color:var(--text-muted);">→</span>
             </span>
           </div>
         </div>
@@ -586,9 +586,9 @@ window.MyOrder = {
           <div style="background:#eff6ff;border-radius:8px;padding:10px 14px;margin-bottom:14px;"><div style="font-size:0.82rem;font-weight:800;color:#1d4ed8;margin-bottom:4px;">🔄 교환 신청 안내</div><div style="font-size:0.76rem;color:#1e3a8a;line-height:1.55;">배송완료 후 <strong>7일 이내</strong>에 신청해야 합니다.<br>동일 상품의 사이즈·색상 교환만 가능합니다.</div></div>
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;">진행 흐름</div>
           <div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
-            <span v-for="(st,i) in ['교환요청','수거예정','수거완료','상품준비중','발송완료','교환완료']" :key="st" style="display:flex;align-items:center;gap:4px;">
+            <span v-for="(st,i) in ['교환요청','수거예정','수거중','수거완료','상품준비중','발송중','발송완료','교환완료']" :key="st" style="display:flex;align-items:center;gap:4px;">
               <span style="padding:3px 8px;border-radius:20px;font-size:0.72rem;font-weight:700;background:#eff6ff;color:#1d4ed8;">{{ st }}</span>
-              <span v-if="i<5" style="color:var(--text-muted);">→</span>
+              <span v-if="i<7" style="color:var(--text-muted);">→</span>
             </span>
           </div>
         </div>

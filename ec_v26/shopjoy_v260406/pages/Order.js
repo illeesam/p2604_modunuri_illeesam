@@ -247,8 +247,18 @@ window.Order = {
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;">
-        <button @click="navigate('myOrder')" class="btn-blue" style="padding:14px;font-size:1rem;font-weight:700;">📋 마이페이지에서 주문 확인</button>
-        <button @click="navigate('home')" class="btn-outline" style="padding:14px;">계속 쇼핑하기</button>
+        <button @click="navigate('myOrder')"
+          style="padding:14px;font-size:1rem;font-weight:700;border:none;border-radius:10px;background:linear-gradient(135deg,#1a1a1a,#404040);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all .15s;"
+          @mouseenter="$event.currentTarget.style.transform='translateY(-1px)'"
+          @mouseleave="$event.currentTarget.style.transform=''">
+          📋 마이페이지에서 주문 확인
+        </button>
+        <button @click="navigate('home')"
+          style="padding:14px;border:1.5px solid #e4e7ec;border-radius:10px;background:#fff;color:#555;font-weight:600;cursor:pointer;transition:all .15s;"
+          @mouseenter="$event.currentTarget.style.background='#f8f9fb'"
+          @mouseleave="$event.currentTarget.style.background='#fff'">
+          🛍 계속 쇼핑하기
+        </button>
       </div>
     </div>
   </template>
@@ -311,8 +321,14 @@ window.Order = {
                   <span style="font-size:0.82rem;font-weight:700;color:var(--blue);">{{ selectedCoupons[idx].name }}</span>
                   <span style="font-size:0.78rem;color:var(--blue);margin-left:6px;">({{ discountLabel(selectedCoupons[idx]) }})</span>
                 </div>
-                <button @click="removeCoupon(idx)" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-muted);font-size:0.8rem;cursor:pointer;">제거</button>
-                <button @click="openCouponPopup(idx)" style="padding:5px 12px;border:1px solid var(--blue);border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.8rem;cursor:pointer;font-weight:600;">변경</button>
+                <button @click="removeCoupon(idx)"
+                  style="padding:6px 12px;border:1px solid #ffcdd2;border-radius:6px;background:#ffebee;color:#c62828;font-size:0.8rem;cursor:pointer;font-weight:600;transition:all .15s;"
+                  @mouseenter="$event.currentTarget.style.background='#ffcdd2'"
+                  @mouseleave="$event.currentTarget.style.background='#ffebee'">✕ 제거</button>
+                <button @click="openCouponPopup(idx)"
+                  style="padding:6px 12px;border:1px solid #bbdefb;border-radius:6px;background:#e3f2fd;color:#1565c0;font-size:0.8rem;cursor:pointer;font-weight:600;transition:all .15s;"
+                  @mouseenter="$event.currentTarget.style.background='#bbdefb'"
+                  @mouseleave="$event.currentTarget.style.background='#e3f2fd'">↻ 변경</button>
               </template>
               <template v-else>
                 <span style="flex:1;font-size:0.82rem;color:var(--text-muted);">
@@ -431,8 +447,18 @@ window.Order = {
               <option value="연락 후 배송해주세요">연락 후 배송해주세요</option>
             </select>
           </div>
-          <button class="btn-blue" @click="submitOrder" style="width:100%;padding:13px;" :disabled="submitting">
-            {{ submitting ? '처리 중...' : '주문 완료' }}
+          <button @click="submitOrder" :disabled="submitting"
+            :style="{
+              width:'100%',padding:'14px',border:'none',borderRadius:'10px',fontSize:'0.95rem',fontWeight:700,
+              cursor: submitting ? 'wait' : 'pointer',
+              background: submitting ? '#9ca3af' : 'linear-gradient(135deg,#1a1a1a,#404040)',
+              color:'#fff',transition:'all .15s',
+              boxShadow: submitting ? 'none' : '0 2px 8px rgba(0,0,0,0.15)',
+              letterSpacing:'0.5px',
+            }"
+            @mouseenter="!submitting && ($event.currentTarget.style.transform='translateY(-1px)', $event.currentTarget.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)')"
+            @mouseleave="$event.currentTarget.style.transform='', $event.currentTarget.style.boxShadow=submitting?'none':'0 2px 8px rgba(0,0,0,0.15)'">
+            {{ submitting ? '처리 중...' : '🛒 주문 완료' }}
           </button>
         </div>
 
@@ -468,11 +494,14 @@ window.Order = {
                   <template v-if="selectedShipCoupon">
                     <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--blue-dim);">
                       <span style="font-size:0.82rem;font-weight:700;color:var(--blue);flex:1;">🎟️ {{ selectedShipCoupon.name }}</span>
-                      <button @click="removeShipCoupon" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-muted);font-size:0.78rem;cursor:pointer;">제거</button>
+                      <button @click="removeShipCoupon"
+                        style="padding:5px 11px;border:1px solid #ffcdd2;border-radius:6px;background:#ffebee;color:#c62828;font-size:0.78rem;cursor:pointer;font-weight:600;transition:all .15s;"
+                        @mouseenter="$event.currentTarget.style.background='#ffcdd2'"
+                        @mouseleave="$event.currentTarget.style.background='#ffebee'">✕ 제거</button>
                       <button @click="shipCouponPopup=true"
-                        style="padding:5px 12px;border:none;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-size:0.78rem;cursor:pointer;font-weight:700;box-shadow:0 1px 4px rgba(139,92,246,0.3);transition:all .15s;"
-                        @mouseenter="$event.currentTarget.style.transform='translateY(-1px)'"
-                        @mouseleave="$event.currentTarget.style.transform=''">변경</button>
+                        style="padding:5px 12px;border:1px solid #ce93d8;border-radius:6px;background:#f3e5f5;color:#6a1b9a;font-size:0.78rem;cursor:pointer;font-weight:600;transition:all .15s;"
+                        @mouseenter="$event.currentTarget.style.background='#e1bee7'"
+                        @mouseleave="$event.currentTarget.style.background='#f3e5f5'">변경</button>
                     </div>
                     <div style="font-size:0.82rem;color:#22c55e;margin-top:4px;">✓ 배송비 쿠폰 적용됨 → 무료</div>
                   </template>
@@ -496,7 +525,12 @@ window.Order = {
             </div>
           </div>
           <div style="margin-top:16px;">
-            <button class="btn-outline" @click="navigate('contact')" style="width:100%;padding:10px;">문의·상담하기</button>
+            <button @click="navigate('contact')"
+              style="width:100%;padding:10px;border:1.5px solid #e4e7ec;border-radius:10px;background:#fff;color:#555;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all .15s;"
+              @mouseenter="$event.currentTarget.style.background='#f8f9fb';$event.currentTarget.style.borderColor='#d0d7de'"
+              @mouseleave="$event.currentTarget.style.background='#fff';$event.currentTarget.style.borderColor='#e4e7ec'">
+              💬 문의·상담하기
+            </button>
           </div>
         </div>
       </div>
@@ -505,39 +539,53 @@ window.Order = {
 
   <!-- ══ 상품 쿠폰 팝업 ══ -->
   <div v-if="couponPopup.show" class="modal-overlay" @click.self="closeCouponPopup" style="z-index:200;">
-    <div class="modal-box" style="max-width:480px;width:92%;padding:28px;max-height:80vh;display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div class="modal-box" style="max-width:480px;width:92%;padding:0;max-height:82vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
+      <!-- 헤더 -->
+      <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
         <div>
-          <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary);">🎟️ 상품 쿠폰 선택</div>
-          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">할인(정률/정액) 쿠폰 · 상품 1개당 1개 적용</div>
+          <div style="font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px;">🎟️ 상품 쿠폰 선택</div>
+          <div style="font-size:0.76rem;opacity:0.85;margin-top:4px;">할인(정률/정액) 쿠폰 · 상품 1개당 1개 적용</div>
         </div>
-        <button @click="closeCouponPopup" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+        <button @click="closeCouponPopup" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
-      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;">
+      <!-- 리스트 -->
+      <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
         <!-- 쿠폰 없음 -->
         <div @click="applyCoupon(null)"
-          style="padding:14px;border-radius:8px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:12px;"
-          :style="!selectedCoupons[couponPopup.targetIdx]?'border-color:var(--blue);background:var(--blue-dim);':''">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-base);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🚫</div>
-          <div style="flex:1;"><div style="font-size:0.88rem;font-weight:600;color:var(--text-secondary);">쿠폰 사용 안 함</div></div>
+          style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
+          :style="!selectedCoupons[couponPopup.targetIdx]?'border-color:#9ca3af;background:#f3f4f6;':''"
+          @mouseenter="!selectedCoupons[couponPopup.targetIdx] || $event.currentTarget.style.setProperty('border-color','#d0d7de')"
+          @mouseleave="$event.currentTarget.style.removeProperty('border-color')">
+          <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">🚫</div>
+          <div style="flex:1;"><div style="font-size:0.9rem;font-weight:600;color:#6b7280;">쿠폰 사용 안 함</div></div>
         </div>
         <template v-if="couponPopup.targetIdx!==null">
           <div v-for="c in productCoupons(orderItems[couponPopup.targetIdx])" :key="c.couponId"
             @click="applyCoupon(c)"
-            style="padding:14px;border-radius:8px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:12px;"
-            :style="selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId?'border-color:var(--blue);background:var(--blue-dim);':''">
-            <div style="width:36px;height:36px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🎟️</div>
+            :style="{
+              padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
+              display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',
+              border: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '2px solid #e8587a' : '1.5px solid #e4e7ec',
+              background: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '#fff5f7' : '#fff',
+              boxShadow: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '0 2px 8px rgba(232,88,122,0.15)' : 'none',
+            }">
+            <!-- 쿠폰 티켓 스타일 아이콘 -->
+            <div style="position:relative;width:44px;height:44px;background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
+              🎟️
+            </div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ c.name }}</div>
-              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">
-                {{ c.minOrder>0 ? fmt(c.minOrder)+' 이상' : '최소금액 없음' }} · 만료: {{ c.expiry }}
+              <div style="font-size:0.9rem;font-weight:700;color:#222;">{{ c.name }}</div>
+              <div style="font-size:0.74rem;color:#9ca3af;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;">
+                <span>{{ c.minOrder>0 ? fmt(c.minOrder)+' 이상' : '최소금액 없음' }}</span>
+                <span>·</span>
+                <span>~ {{ c.expiry }}</span>
               </div>
             </div>
-            <div style="font-size:1rem;font-weight:800;color:var(--blue);flex-shrink:0;">{{ discountLabel(c) }}</div>
+            <div style="font-size:1rem;font-weight:800;color:#e8587a;flex-shrink:0;background:#fff5f7;border:1px solid #fbcfe8;border-radius:8px;padding:4px 10px;">{{ discountLabel(c) }}</div>
           </div>
           <div v-if="!productCoupons(orderItems[couponPopup.targetIdx]).length"
-            style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.88rem;">
-            이 상품에 적용 가능한 쿠폰이 없습니다.
+            style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
+            🪙 이 상품에 적용 가능한 쿠폰이 없습니다.
           </div>
         </template>
       </div>
@@ -546,34 +594,39 @@ window.Order = {
 
   <!-- ══ 배송비 쿠폰 팝업 ══ -->
   <div v-if="shipCouponPopup" class="modal-overlay" @click.self="shipCouponPopup=false" style="z-index:200;">
-    <div class="modal-box" style="max-width:440px;width:92%;padding:28px;max-height:70vh;display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div class="modal-box" style="max-width:440px;width:92%;padding:0;max-height:72vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#22c55e 0%,#0ea5e9 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
         <div>
-          <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary);">🚚 배송비 쿠폰 선택</div>
-          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">배송비 할인 쿠폰만 표시됩니다</div>
+          <div style="font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px;">🚚 배송비 쿠폰 선택</div>
+          <div style="font-size:0.76rem;opacity:0.85;margin-top:4px;">배송비 할인 쿠폰만 표시됩니다</div>
         </div>
-        <button @click="shipCouponPopup=false" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+        <button @click="shipCouponPopup=false" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
-      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;">
+      <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
         <div @click="applyShipCoupon(null)"
-          style="padding:14px;border-radius:8px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:12px;"
-          :style="!selectedShipCoupon?'border-color:var(--blue);background:var(--blue-dim);':''">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-base);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🚫</div>
-          <div><div style="font-size:0.88rem;font-weight:600;color:var(--text-secondary);">쿠폰 사용 안 함</div></div>
+          style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
+          :style="!selectedShipCoupon?'border-color:#9ca3af;background:#f3f4f6;':''">
+          <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">🚫</div>
+          <div><div style="font-size:0.9rem;font-weight:600;color:#6b7280;">쿠폰 사용 안 함</div></div>
         </div>
         <div v-for="c in shippingCoupons" :key="c.couponId"
           @click="applyShipCoupon(c)"
-          style="padding:14px;border-radius:8px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:12px;"
-          :style="selectedShipCoupon?.couponId===c.couponId?'border-color:var(--blue);background:var(--blue-dim);':''">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🚚</div>
-          <div style="flex:1;">
-            <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ c.name }}</div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">만료: {{ c.expiry }}</div>
+          :style="{
+            padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
+            display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',
+            border: selectedShipCoupon?.couponId===c.couponId ? '2px solid #22c55e' : '1.5px solid #e4e7ec',
+            background: selectedShipCoupon?.couponId===c.couponId ? '#ecfdf5' : '#fff',
+            boxShadow: selectedShipCoupon?.couponId===c.couponId ? '0 2px 8px rgba(34,197,94,0.15)' : 'none',
+          }">
+          <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🚚</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.9rem;font-weight:700;color:#222;">{{ c.name }}</div>
+            <div style="font-size:0.74rem;color:#9ca3af;margin-top:3px;">~ {{ c.expiry }}</div>
           </div>
-          <div style="font-size:1rem;font-weight:800;color:var(--blue);">무료배송</div>
+          <div style="font-size:0.9rem;font-weight:800;color:#16a34a;flex-shrink:0;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:4px 10px;">무료배송</div>
         </div>
-        <div v-if="!shippingCoupons.length" style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.88rem;">
-          보유한 배송비 쿠폰이 없습니다.
+        <div v-if="!shippingCoupons.length" style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
+          🪙 보유한 배송비 쿠폰이 없습니다.
         </div>
       </div>
     </div>
