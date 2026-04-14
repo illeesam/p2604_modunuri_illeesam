@@ -241,7 +241,7 @@ window.SyBbsDtl = {
   <!-- 게시판 선택 팝업 -->
   <bbm-select-modal
     v-if="showBbmModal"
-    :admin-data="adminData"
+    :disp-dataset="adminData"
     @select="onBbmSelect"
     @close="showBbmModal=false"
   />

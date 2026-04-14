@@ -564,7 +564,7 @@ window.SyRoleMng = {
 
   <!-- 사용자 선택 모달 -->
   <admin-user-select-modal v-if="userSelectOpen"
-    :admin-data="adminData"
+    :disp-dataset="adminData"
     @select="onUserSelect"
     @close="userSelectOpen=false" />
 

@@ -754,11 +754,11 @@
   </div><!-- /admin-body -->
 
   <!-- 선택 모달들 -->
-  <site-select-modal v-if="selectModal.show && selectModal.type==='site'" :admin-data="adminData" @select="onSelectItem('site', $event)" @close="closeSelectModal" />
-  <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'" :admin-data="adminData" @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
-  <admin-user-select-modal v-if="selectModal.show && selectModal.type==='adminUser'" :admin-data="adminData" @select="onSelectItem('adminUser', $event)" @close="closeSelectModal" />
-  <member-select-modal v-if="selectModal.show && selectModal.type==='member'" :admin-data="adminData" @select="onSelectItem('member', $event)" @close="closeSelectModal" />
-  <order-select-modal v-if="selectModal.show && selectModal.type==='order'" :admin-data="adminData" @select="onSelectItem('order', $event)" @close="closeSelectModal" />
+  <site-select-modal v-if="selectModal.show && selectModal.type==='site'" :disp-dataset="adminData" @select="onSelectItem('site', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'" :disp-dataset="adminData" @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
+  <admin-user-select-modal v-if="selectModal.show && selectModal.type==='adminUser'" :disp-dataset="adminData" @select="onSelectItem('adminUser', $event)" @close="closeSelectModal" />
+  <member-select-modal v-if="selectModal.show && selectModal.type==='member'" :disp-dataset="adminData" @select="onSelectItem('member', $event)" @close="closeSelectModal" />
+  <order-select-modal v-if="selectModal.show && selectModal.type==='order'" :disp-dataset="adminData" @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
   <admin-ref-modal v-if="refModal.show" :state="refModal" :admin-data="adminData" @close="closeRefModal" />
