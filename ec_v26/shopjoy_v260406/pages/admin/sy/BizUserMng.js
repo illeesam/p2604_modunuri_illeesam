@@ -170,7 +170,7 @@ window.SyBizUserMng = {
   },
   template: /* html */`
 <div class="admin-wrap">
-  <div class="page-title">사업자사용자</div>
+  <div class="page-title">업체사용자</div>
 
   <div class="card">
     <div class="search-bar">

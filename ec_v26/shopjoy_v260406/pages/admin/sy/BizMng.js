@@ -100,7 +100,7 @@ window.SyBizMng = {
   },
   template: /* html */`
 <div class="admin-wrap">
-  <div class="page-title">사업자</div>
+  <div class="page-title">업체</div>
 
   <div class="card">
     <div class="search-bar">
