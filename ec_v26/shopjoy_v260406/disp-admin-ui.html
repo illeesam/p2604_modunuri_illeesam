@@ -9,23 +9,6 @@
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
        ═══════════════════════════════════════════════════════════════════ */
     const DEFAULT_FRONT_SITE_NO = '01';
-    /* 구 localStorage 키 → 신 키 마이그레이션 (1회) */
-    (function(){
-      try {
-        var mig = [
-          ['FRONT_SITE_NO', 'modu-front-site_no'],
-          ['ADMIN_SITE_NO', 'modu-admin-site_no'],
-          ['shopjoy-theme', 'modu-front-theme'],
-          ['shopjoy_token', 'modu-front-token'],
-          ['shopjoy_user',  'modu-front-user'],
-        ];
-        mig.forEach(function(p){
-          var old = localStorage.getItem(p[0]);
-          if (old !== null && localStorage.getItem(p[1]) === null) localStorage.setItem(p[1], old);
-          if (old !== null) localStorage.removeItem(p[0]);
-        });
-      } catch(_){}
-    })();
     window.FRONT_SITE_NO = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-front-site_no')) || DEFAULT_FRONT_SITE_NO;
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){

@@ -1,7 +1,4 @@
 -- ============================================================
--- sy_role : 역할 (권한그룹) / sy_role_menu : 역할-메뉴 매핑
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
--- ============================================================
 CREATE TABLE sy_role (
     role_id         VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id

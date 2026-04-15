@@ -890,8 +890,12 @@
       </div>
       <div v-show="rightPanelOpen" class="right-panel-body">
         <div class="popup-sel">
-          <div class="popup-sel-label">사이트 <span style="color:#e8587a;font-size:10px;">필수</span></div>
+          <div class="popup-sel-label">사이트 <span style="color:#e8587a;font-size:10px;">필수</span>
+            <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#555;font-size:10px;text-align:center;line-height:14px;margin-left:4px;cursor:help;font-weight:700;"
+              title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
+          </div>
           <div class="popup-sel-row" @click="openSelectModal('site')">
+            <span v-if="filterSite" style="font-family:monospace;font-size:11px;color:#e8587a;font-weight:700;margin-right:6px;">{{ String(filterSite.siteId).padStart(2,'0') }}</span>
             <span v-if="filterSite" class="popup-sel-name">{{ filterSite.siteNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="filterSite" class="popup-sel-id">{{ filterSite.siteCode }}</span>

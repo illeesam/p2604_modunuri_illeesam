@@ -1,0 +1,3 @@
+-- ============================================================
+-- ec_coupon : 쿠폰 / ec_coupon_usage : 쿠폰 사용 이력
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)

@@ -1,0 +1,3 @@
+-- ============================================================
+-- sy_alarm : 알림 / sy_alarm_send_hist : 알림 발송 이력
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)

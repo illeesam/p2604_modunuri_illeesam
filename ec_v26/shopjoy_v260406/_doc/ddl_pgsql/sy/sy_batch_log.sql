@@ -1,7 +1,4 @@
 -- ============================================================
--- sy_batch : 배치 / sy_batch_log : 배치 실행 로그
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
--- ============================================================
 CREATE TABLE sy_batch (
     batch_id        VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id

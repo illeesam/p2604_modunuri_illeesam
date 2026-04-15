@@ -54,9 +54,9 @@ npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tail
 
 | 진입점 | 용도 | 주 CSS | 주 데이터 소스 |
 |---|---|---|---|
-| `index.html` | **사용자 페이스** (front office) | `assets/css/frontOfficeStyle0N.css` | `base/config.js` + `api/*` JSON |
-| `admin.html` | **관리자 페이스** (back office) | `assets/css/backOfficeStyle.css` | `pages/admin/AdminData.js` (목업) |
-| `disp-ui.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/backOfficeStyle.css` | `adminData` + `api/xs/*` |
+| `index.html` | **사용자 페이스** (front office) | `assets/css/frontGlobalStyle0N.css` | `base/config.js` + `api/*` JSON |
+| `admin.html` | **관리자 페이스** (back office) | `assets/css/adminGlobalStyle0N.css` | `pages/admin/AdminData.js` (목업) |
+| `disp-front-ui.html` / `disp-admin-ui.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/adminGlobalStyle0N.css` | `adminData` + `api/xs/*` |
 
 테스트 프레임워크 없음. 브라우저 콘솔에서 직접 검증.
 
@@ -88,18 +88,18 @@ npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tail
 index.html
 ├─ head: FRONT_SITE_NO 결정 + 해당 CSS/JS 동적 로드
 ├─ base/config.js        (window.SITE_CONFIG, window.FRONT_SITE_NO)
-├─ base/stores/*.js      (Pinia: authStore, myStore)
-├─ layout/AppHeader.js + AppSidebar.js + AppFooter.js + MyLayout.js
+├─ base/stores/frontAuthStore.js + frontMyStore.js    (Pinia)
+├─ layout/frontAppHeader.js + frontAppSidebar.js + frontAppFooter.js + frontMyLayout.js
 ├─ pages/Home{NO}.js   pages/Prod{NO}List.js   pages/Prod{NO}View.js
 ├─ pages/{Cart,Order,Contact,Faq,Login,Event,Blog,Like,Location,About,...}.js
 ├─ pages/my/My*.js       (Pinia 의존)
 ├─ components/modals/BaseModal.js + components/comp/BaseComp.js
-└─ base/app.js           (마지막. Vue 앱 생성/마운트)
+└─ base/frontApp.js      (마지막. Vue 앱 생성/마운트) + base/frontAuth.js + base/frontConfig.js
 ```
 
 **라우팅**: 해시 기반 (`#page=xxx&pid=N`). `base/app.js`의 `navigate(pageId)`.
 
-**유효 페이지 ID** (`validPages` in `base/app.js`): `home, prodList, prodView, cart, order, contact, faq, event, eventView, blog, blogView, blogEdit, like, location, about, myOrder, myClaim, myCoupon, myCache, myContact, myChatt, dispUi01~06, sample01~23`.
+**유효 페이지 ID** (`validPages` in `base/app.js`): `home, prodList, prodView, cart, order, contact, faq, event, eventView, blog, blogView, blogEdit, like, location, about, myOrder, myClaim, myCoupon, myCache, myContact, myChatt, dispUi01~06, sample01~23, error401/404/500`.
 
 **URL → 컴포넌트 매핑** (FRONT_SITE_NO 기준 동적):
 - `#page=home` → `<component :is="frontHomeComp">` = `window['Home' + FRONT_SITE_NO]`
@@ -111,9 +111,9 @@ index.html
 구조:
 ```
 admin.html
-├─ head: Vue, Yup, Quill, backOfficeStyle.css
+├─ head: Vue, Yup, Quill, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js   (window.adminData - 모든 목업)
-├─ utils/adminUtil.js         (window.adminCommonFilter/adminApiCall/adminUtil)
+├─ utils/adminAxios.js (window.adminApi) + utils/adminUtil.js (window.adminUtil/adminApiCall)
 ├─ components/modals/BaseModal.js + comp/BaseComp.js
 ├─ pages/admin/ec/*.js        (EC 도메인: Member/Prod/Order/Claim/Dliv/Coupon/Cache/Category/Event/Notice/Chatt/CustInfo/Disp*)
 ├─ pages/admin/sy/*.js        (시스템: User/Dept/Menu/Role/Site/Code/Brand/Template/Vendor/Attach/Batch/Alarm/Bbm/Bbs/Contact)
@@ -132,14 +132,14 @@ admin.html
 2. `AdminApp.js`의 `PAGE_COMP_MAP`에 `pageId → kebab-case` 추가
 3. `app.component('ClassName', window.ClassName)` 등록
 
-### 3) `disp-ui.html` — 전시 UI 미리보기
+### 3) `disp-front-ui.html` / `disp-admin-ui.html` — 전시 UI 미리보기
 
 구조:
 ```
-disp-ui.html
-├─ head: Vue, axios, yup, backOfficeStyle.css
+disp-admin-ui.html (관리자 컨텍스트)  |  disp-front-ui.html (사용자 컨텍스트)
+├─ head: Vue, axios, yup, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js + utils/adminUtil.js
-├─ components/comp/BaseComp.js + pages/base/NotFound.js
+├─ components/comp/BaseComp.js + pages/base/(admin|front)Error404.js
 ├─ components/disp/DispX01Ui.js ~ DispX04Widget.js  (계층별 렌더러)
 ├─ pages/xd/DispUi01.js ~ DispUi06.js + DispUiPage.js
 └─ 자체 인라인 스크립트로 Vue 앱 생성
@@ -155,11 +155,11 @@ disp-ui.html
 | `window.FRONT_SITE_NO` | `index.html` head 인라인 스크립트 | `'01' \| '02' \| ...` 사이트 번호. `?FRONT_SITE_NO=02` 쿼리로 오버라이드 후 localStorage 저장 |
 | `window.adminData` | `pages/admin/AdminData.js` | 관리자 전 도메인 목업 데이터 (sites, members, products, orders, claims, deliveries, displays, codes, roles, depts, menus 등) |
 | `window.adminCommonFilter` | `utils/adminUtil.js` | 관리자 공통 필터 reactive (사이트/업체/회원/주문) |
-| `window.axiosApi` | `utils/axiosUtil.js` | axios 래퍼. `api/` 기준 경로 자동 변환 |
+| `window.frontApi` / `window.adminApi` | `utils/frontAxios.js` · `utils/adminAxios.js` | axios 래퍼. `api/` 기준 경로 자동 변환 |
 | `window.adminApiCall` | `utils/adminUtil.js` | 확인 → 낙관적 업데이트 → API → 토스트 표준 패턴 |
 | `window.adminUtil` | `utils/adminUtil.js` | `DATE_RANGE_OPTIONS`, `getDateRange`, `isInRange`, `exportCsv`, `getSiteNm` |
 | `window.yup` | `assets/cdn/yup.js` | Yup shim |
-| `window.shopjoyAuth` | `base/shopjoyAuth.js` | 인증 init/logout/state |
+| `window.frontAuth` | `base/frontAuth.js` | 인증 init/logout/state |
 | `window.visibilityUtil` | `utils/adminUtil.js` | 공개/회원등급/권한 등 노출 대상 인코딩 (`^PUBLIC^MEMBER^VIP^`) |
 | `window._ec{X}DtlState` | 각 Dtl/Hist 파일 상단 | `{ tab, viewMode }` - 행 전환에도 탭/뷰모드 유지 |
 | `window._ecCustInfoState` | `CustInfoMng.js` | 고객종합정보 탭/뷰모드 영속화 |
@@ -168,26 +168,17 @@ disp-ui.html
 
 ### `_doc/ddl_pgsql/` — **PostgreSQL DDL 정의**
 
-실 운영 DB 스키마. 테이블 생성/인덱스/제약조건 정의.
+실 운영 DB 스키마. **파일당 테이블 1개** 원칙. 도메인별 하위 폴더로 구분.
 
-**EC 도메인** (전자상거래):
-- `ec_member.sql`, `ec_member_addr.sql`, `ec_member_login_log.sql`, `ec_member_token_log.sql`
-- `ec_prod.sql`, `ec_prod_tag.sql`, `ec_category.sql`, `ec_review.sql`, `ec_like.sql`
-- `ec_order.sql`, `ec_cart.sql`, `ec_claim.sql`, `ec_dliv.sql`
-- `ec_coupon.sql`, `ec_cache.sql`, `ec_event.sql`, `ec_notice.sql`, `ec_blog.sql`, `ec_chatt.sql`
-- `ec_disp_panel.sql`, `ec_disp_widget_lib.sql`
-- `ec_page_view_log.sql`, `ec_push_log.sql`
-
-**SY 도메인** (시스템):
-- `sy_site.sql`, `sy_code.sql`, `sy_brand.sql`, `sy_vendor.sql`
-- `sy_user.sql`, `sy_user_login_log.sql`, `sy_user_token_log.sql`, `sy_dept.sql`, `sy_role.sql`, `sy_menu.sql`
-- `sy_attach.sql`, `sy_template.sql`, `sy_batch.sql`, `sy_alarm.sql`
-- `sy_bbm.sql`, `sy_bbs.sql`, `sy_contact.sql`
-- `sy_send_email_log.sql`, `sy_send_msg_log.sql`, `sy_api_log.sql`
-
-**보조 문서**:
-- `단어사전.sql` - 용어 표준
-- `zz.*.txt` - 설계 메모(카테고리/쿠폰/이벤트/전시/사용자/사이트/업체/첨부 이슈 정리)
+```
+_doc/ddl_pgsql/
+├─ ec/    (46 파일) — 전자상거래: 회원/상품/옵션/주문/클레임/배송/쿠폰/캐쉬/
+│                    전시(panel/widget/area)/이벤트/블로그/리뷰/채팅/공지/로그
+├─ sy/    (26 파일) — 시스템: 사이트/코드/브랜드/업체/사용자/부서/권한/메뉴/
+│                    첨부/템플릿/배치/알람/게시판/문의/로그
+├─ 단어사전.sql     — 용어 표준
+└─ zz.*.txt         — 설계 메모(카테고리/쿠폰/이벤트/전시 등 이슈 정리)
+```
 
 ### `_doc/sample_insert_pgsql/` — **샘플 INSERT 데이터**
 
@@ -275,7 +266,7 @@ Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt Dtl + Prod/Member/Order/Claim/Dli
 
 ## CSS 규칙
 
-### 관리자 (`assets/css/backOfficeStyle.css`)
+### 관리자 (`assets/css/adminGlobalStyle0N.css`)
 
 | 클래스 | 용도 |
 |---|---|
@@ -299,7 +290,7 @@ Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt Dtl + Prod/Member/Order/Claim/Dli
 | `dtl-tab-grid.cols-1/2/3/4` | Dtl 탭 컨텐츠 그리드 |
 | `dtl-tab-card-title` | 1/2/3/4열 모드에서만 보이는 카드 헤더 |
 
-### 사용자 (`assets/css/frontOfficeStyle{01\|02}.css`)
+### 사용자 (`assets/css/frontGlobalStyle{01|02|03}.css`)
 
 CSS 변수 기반 테마 전환:
 - `--accent`, `--text-primary`, `--bg-base`, `--bg-card`, `--border`, `--shadow` 등
@@ -313,7 +304,7 @@ CSS 변수 기반 테마 전환:
 
 | 대상 | 동작 |
 |---|---|
-| CSS | `frontOfficeStyle{NO}.css` 자동 로드 |
+| CSS | `frontGlobalStyle{NO}.css` 자동 로드 |
 | 스크립트 | `pages/Home{NO}.js`, `Prod{NO}List.js`, `Prod{NO}View.js` document.write로 동적 삽입 |
 | 컴포넌트 등록 | `app.component('Home'+NO, window['Home'+NO])` |
 | 런타임 렌더 | `<component :is="frontHomeComp">` (window['Home'+NO] 참조) |
@@ -321,9 +312,9 @@ CSS 변수 기반 테마 전환:
 | 헤더 배지 | AppHeader 로고 옆 `01/02/03` 작은 뱃지 (hover 시 툴팁) |
 
 **사이트 테마 프리셋**:
-- **01** — 기본 모듈 (베이지/카키, `frontOfficeStyle01.css`)
-- **02** — Mint Edition (민트/세이지 그린, `frontOfficeStyle02.css`, 상단에 🌿 리본)
-- **03** — Luxe Edition (로얄 퍼플, `frontOfficeStyle03.css`, 상단에 👑 리본)
+- **01** — 기본 모듈 (베이지/카키, `frontGlobalStyle01.css`)
+- **02** — Mint Edition (민트/세이지 그린, `frontGlobalStyle02.css`, 상단에 🌿 리본)
+- **03** — Luxe Edition (로얄 퍼플, `frontGlobalStyle03.css`, 상단에 👑 리본)
 
 **URL 단축**: `/index.html` → `/` (history.replaceState로 자동), 해시/쿼리 유지.
 
@@ -367,7 +358,67 @@ Order/Claim/Dliv Mng의 "변경작업 선택" 모달:
 
 ### 왜 빌드가 필요한가?
 
-Tailwind는 사용된 유틸리티 클래스만 추려 CSS로 출력하는 **JIT(Just-In-Time)** 방식입니다. 빌드 없이 Play CDN을 사용하면 런타임에 3MB의 JS가 브라우저에서 CSS를 생성해 **치명적인 성능 저하**를 유발합니다. 따라서 **CLI로 빌드하여 최종 CSS 파일만 브라우저에 서빙**합니다.
+Tailwind는 사용된 유틸리티 클래스만 추려 CSS로 출력하는 **JIT(Just-In-Time)** 방식입니다.
+
+**빌드 CLI**: `tailwind.config.js` 의 `content` 경로를 스캔하여 프로젝트에서 **실제 사용된 클래스만** 추출 → 최소 크기 CSS 파일 생성 (수십 KB).
+**빌드 없이 Play CDN 사용 시**: 브라우저가 3MB+ JS를 받아 런타임에 CSS를 생성 → 첫 렌더 수백 ms 지연, 매 요청마다 반복. **프로덕션 사용 금지**.
+
+### 언제 다시 빌드해야 하는가?
+
+| 상황 | 재빌드 |
+|---|---|
+| HTML/JS/Vue 템플릿에 **새 Tailwind 클래스** 사용 (`class="mt-8 grid-cols-5"` 등) | ✅ 필요 |
+| `tailwind.config.js` 수정 (색상/content 경로 변경) | ✅ 필요 |
+| `src/tailwind.css` 수정 (`@layer`/`@apply` 커스텀) | ✅ 필요 |
+| 기존 클래스 재사용 (이미 tailwind.min.css 에 존재) | ❌ 불필요 |
+| JS 로직 변경, API 호출, 컴포넌트 이름 변경 | ❌ 불필요 |
+| `(front|admin)GlobalStyle*.css` 수정 | ❌ 불필요 (별도 CSS) |
+
+**운영 규칙**: 개발 중엔 `npm run dev` (watch) 켜놓기 → 자동. **배포 직전 `npm run build` 1회 필수**.
+
+### 안 하면 어떻게 되는가?
+
+- **새 클래스 무시됨**: `class="bg-sky-500"` 사용해도 CSS 규칙이 없어 스타일 미적용
+- **서버에 오래된 빌드 배포**: 개발 PC에서만 watch로 동작하고 `tailwind.min.css` 가 구 버전이면 **배포 사이트에서 스타일 깨짐**
+- **CI 빌드 생략**: 배포 파이프라인에 `npm run build` 없으면 로컬 빌드와 배포본이 어긋남
+
+### 자동화 방법
+
+**① 개발 중 watch (가장 실용적)**
+```bash
+npm run dev   # 저장 시마다 tailwind.min.css 즉시 갱신
+```
+
+**② VS Code 워크스페이스 자동 시작** — `.vscode/tasks.json`
+```json
+{
+  "version": "2.0.0",
+  "tasks": [{
+    "label": "tailwind:watch",
+    "type": "npm", "script": "dev",
+    "runOptions": { "runOn": "folderOpen" },
+    "isBackground": true,
+    "presentation": { "reveal": "silent" }
+  }]
+}
+```
+→ VS Code 폴더 열면 background로 watch 자동 실행.
+
+**③ Git pre-commit hook** — `.husky/pre-commit`
+```bash
+#!/bin/sh
+npm run build && git add assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css
+```
+
+**④ GitHub Actions CI** — `.github/workflows/tailwind.yml` 발췌
+```yaml
+- run: npm ci
+- run: npm run build
+- run: |
+    git config user.email "ci@bot" && git config user.name "CI"
+    git add assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css
+    git diff --cached --quiet || (git commit -m "chore: rebuild tailwind" && git push)
+```
 
 ### 빌드 구성 파일
 
@@ -427,7 +478,7 @@ npm run build
 <link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">
 ```
 
-기존 `backOfficeStyle.css` / `frontOfficeStyle0N.css`와 **공존 가능**. 점진적으로 유틸리티 클래스로 이관.
+기존 `adminGlobalStyle0N.css` / `frontGlobalStyle0N.css`와 **공존 가능**. 점진적으로 유틸리티 클래스로 이관.
 
 ### 브랜드 색상 사용
 

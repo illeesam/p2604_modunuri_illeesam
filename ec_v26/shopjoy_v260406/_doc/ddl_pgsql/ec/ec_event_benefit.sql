@@ -1,7 +1,4 @@
 -- ============================================================
--- ec_event : 이벤트
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
--- ============================================================
 CREATE TABLE ec_event (
     event_id        VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id

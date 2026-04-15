@@ -9,26 +9,6 @@
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
        ═══════════════════════════════════════════════════════════════════ */
     const DEFAULT_ADMIN_SITE_NO = '01';
-
-    /* 구 localStorage 키 → 신 키 마이그레이션 (1회) */
-    (function(){
-      try {
-        var mig = [
-          ['FRONT_SITE_NO', 'modu-front-site_no'],
-          ['ADMIN_SITE_NO', 'modu-admin-site_no'],
-          ['shopjoy-theme', 'modu-front-theme'],
-          ['shopjoy_token', 'modu-front-token'],
-          ['shopjoy_user',  'modu-front-user'],
-        ];
-        mig.forEach(function(p){
-          var old = localStorage.getItem(p[0]);
-          if (old !== null && localStorage.getItem(p[1]) === null) {
-            localStorage.setItem(p[1], old);
-          }
-          if (old !== null) localStorage.removeItem(p[0]);
-        });
-      } catch(_){}
-    })();
     /* ADMIN_SITE_NO — URL ?ADMIN_SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
     (function(){
       try {

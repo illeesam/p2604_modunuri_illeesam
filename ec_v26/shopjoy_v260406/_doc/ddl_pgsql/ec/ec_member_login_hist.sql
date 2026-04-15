@@ -1,7 +1,4 @@
 -- ============================================================
--- ec_member : 회원
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
--- ============================================================
 CREATE TABLE ec_member (
     member_id       VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id

@@ -539,20 +539,25 @@ window.SiteSelectModal = {
     const filtered = computed(() => props.dispDataset.sites.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k);
+      const siteNo = String(s.siteId).padStart(2,'0');
+      return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k) || siteNo.includes(k);
     }));
     return { siteNm, kw, filtered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
+    <div class="modal-header"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span>
+      <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
+        title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
+    </span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <input class="form-control" v-model="kw" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="s in filtered" :key="s.siteId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ s.siteNm }}</div>
         <span class="sel-modal-item-id">{{ s.siteCode }}</span>
+        <span style="font-family:monospace;font-size:12px;color:#e8587a;font-weight:700;min-width:26px;text-align:right;">{{ String(s.siteId).padStart(2,'0') }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', s)">선택</button>
       </div>
     </div>

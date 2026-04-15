@@ -1,7 +1,4 @@
 -- ============================================================
--- ec_chatt : 채팅방 / ec_chatt_msg : 채팅 메시지
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
--- ============================================================
 CREATE TABLE ec_chatt (
     chatt_id        VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id

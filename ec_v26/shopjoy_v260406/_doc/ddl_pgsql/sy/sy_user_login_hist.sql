@@ -1,7 +1,4 @@
 -- ============================================================
--- sy_user : 관리자 사용자
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
--- ============================================================
 CREATE TABLE sy_user (
     user_id         VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
