@@ -79,7 +79,7 @@ window.EcDispWidgetLibMng = {
       })
     );
 
-    /* ── 사용위치 트리 ── */
+    /* ── 표시경로 ── */
     const selectedTreeKey = ref('');   /* '' = 전체, 'top' or 'top>sub' */
     const tree = computed(() => {
       const map = {};
@@ -252,10 +252,10 @@ window.EcDispWidgetLibMng = {
   <!-- 본문: 좌측 트리 + 우측 목록 -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
 
-  <!-- 좌측 사용위치 트리 -->
+  <!-- 좌측 표시경로 -->
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-      <span style="font-size:12px;font-weight:700;color:#555;">사용위치 트리</span>
+      <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
       <span style="font-size:10px;color:#aaa;">{{ tree.length }}그룹</span>
     </div>
     <!-- 전체펼치기 / 전체닫기 -->

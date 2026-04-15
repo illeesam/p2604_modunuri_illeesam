@@ -3,6 +3,19 @@ window.SyBbmMng = {
   name: 'SyBbmMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
+    const selectedPath = Vue.ref(null);
+    const expanded = Vue.reactive(new Set([null]));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { selectedPath.value = id; };
+    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_bbm'));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+    const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchUseYn = ref('');
@@ -29,6 +42,10 @@ window.SyBbmMng = {
       if (kw && !b.bbmNm.toLowerCase().includes(kw) && !b.bbmCode.toLowerCase().includes(kw)) return false;
       if (applied.type && b.bbmType !== applied.type) return false;
       if (applied.useYn && b.useYn !== applied.useYn) return false;
+      if (selectedPath.value != null) {
+        const _desc = window.adminUtil.getPathDescendants('sy_bbm', selectedPath.value);
+        if (_desc && !_desc.has(b.pathId)) return false;
+      }
       return true;
     }));
     const total = computed(() => filtered.value.length);
@@ -69,7 +86,9 @@ window.SyBbmMng = {
     const bbsCount = (bbmId) => props.adminData.bbss.filter(b => b.bbmId === bbmId).length;
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { siteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel };
+    return { siteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel,
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
 <div>
@@ -85,6 +104,19 @@ window.SyBbmMng = {
       </div>
     </div>
   </div>
+  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath"
+          :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시판목록 <span class="list-count">{{ total }}건</span></span>
@@ -94,10 +126,11 @@ window.SyBbmMng = {
       </div>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th style="min-width:140px;">표시경로</th><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="b in pageList" :key="b.bbmId" :style="selectedId===b.bbmId?'background:#fff8f9;':''">
+          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:b.pathId!=null?'#374151':'#9ca3af',fontWeight:b.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(b.pathId) || '경로 선택...' }}</span><button type="button" @click.stop="openPathPick(b)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td>{{ b.bbmId }}</td>
           <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
           <td><span class="title-link" @click="loadDetail(b.bbmId)" :style="selectedId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="selectedId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -141,6 +174,12 @@ window.SyBbmMng = {
     </div>
     <sy-bbm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
+  </div><!-- /grid 25/75 -->
+
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
+    :value="pathPickModal.row && pathPickModal.row.pathId"
+    title="게시판관리 표시경로 선택"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

@@ -196,4 +196,55 @@
     a.href = url; a.download = filename || 'export.csv'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
+
+  /* ──────────────────────────────────────────────
+     sy_path 기반 트리 헬퍼 (공통)
+  ────────────────────────────────────────────── */
+  window.adminUtil.buildPathTree = function (bizCd) {
+    const list = (window.adminData.paths || [])
+      .filter(p => p.bizCd === bizCd && p.useYn !== 'N');
+    const byParent = {};
+    list.forEach(p => {
+      const k = p.parentPathId == null ? '__root__' : p.parentPathId;
+      (byParent[k] = byParent[k] || []).push(p);
+    });
+    const build = (parentKey) => (byParent[parentKey] || [])
+      .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+      .map(p => ({
+        pathId: p.pathId, path: p.pathId,
+        name: p.pathLabel, pathLabel: p.pathLabel,
+        children: build(p.pathId), count: 0,
+      }));
+    const root = {
+      pathId: null, path: null, name: '전체', pathLabel: '전체',
+      children: build('__root__'), count: list.length,
+    };
+    const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
+    recur(root);
+    return root;
+  };
+
+  window.adminUtil.getPathDescendants = function (bizCd, pathId) {
+    if (pathId == null) return null;
+    const set = new Set([pathId]);
+    const list = (window.adminData.paths || []).filter(p => p.bizCd === bizCd);
+    let added = true;
+    while (added) {
+      added = false;
+      list.forEach(p => {
+        if (set.has(p.parentPathId) && !set.has(p.pathId)) { set.add(p.pathId); added = true; }
+      });
+    }
+    return set;
+  };
+
+  window.adminUtil.getPathLabel = function (pathId) {
+    if (pathId == null) return '';
+    const list = window.adminData.paths || [];
+    const byId = Object.fromEntries(list.map(p => [p.pathId, p]));
+    const labels = [];
+    let cur = byId[pathId];
+    while (cur) { labels.unshift(cur.pathLabel); cur = byId[cur.parentPathId]; }
+    return labels.join(' > ');
+  };
 })();

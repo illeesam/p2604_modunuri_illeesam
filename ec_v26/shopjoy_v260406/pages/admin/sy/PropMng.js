@@ -4,6 +4,19 @@ window.SyPropMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
 
   setup(props) {
+    /* ── 표시경로 선택 모달 (sy_path) ── */
+    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+    const onPathPicked = (pathId) => {
+      const row = pathPickModal.row;
+      if (row) {
+        row.pathId = pathId;
+        if (row._row_status === 'N') row._row_status = 'U';
+      }
+    };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { ref, reactive, computed, watch } = Vue;
     const ad = props.adminData || window.adminData;
 
@@ -30,28 +43,7 @@ window.SyPropMng = {
     });
 
     /* ── 트리 구성 (disp_path 점 분리) ── */
-    const tree = computed(() => {
-      const root = { name: '전체', path: '', count: 0, children: {}, _list: [] };
-      filteredBySite.value.forEach(r => {
-        if (r._status === 'D') return;
-        const segs = (r.dispPath || '').split('.');
-        let node = root;
-        node.count++;
-        let acc = '';
-        segs.forEach((seg, i) => {
-          acc = acc ? acc + '.' + seg : seg;
-          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {}, _list: [] };
-          node = node.children[seg];
-          node.count++;
-          if (i === segs.length - 1) node._list.push(r);
-        });
-      });
-      const toArr = (n) => ({
-        ...n,
-        children: Object.values(n.children).sort((a,b) => a.name.localeCompare(b.name)).map(toArr),
-      });
-      return toArr(root);
-    });
+    const tree = computed(() => window.adminUtil.buildPathTree('sy_prop'));
 
     /* ── 트리 펼침 상태 ── */
     const expanded = reactive(new Set(['']));
@@ -187,6 +179,7 @@ window.SyPropMng = {
     };
 
     return {
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       kw, useFlt, typeFlt, TYPES, tree, expanded, toggleNode, expandAll, collapseAll,
       selectedPath, selectNode, gridRows, pagedRows, dirtyRows,
       pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
@@ -275,7 +268,15 @@ window.SyPropMng = {
               <span v-else-if="r._status==='D'" class="badge badge-red badge-xs">삭제</span>
               <span v-else class="badge badge-gray badge-xs">{{ r.propId }}</span>
             </td>
-            <td><input class="grid-input grid-mono" :value="r.dispPath" @input="onChange(r,'dispPath',$event.target.value)"></td>
+            <td>
+              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: r.pathId != null ? '#374151' : '#9ca3af',fontWeight: r.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
+                <span style="flex:1;">{{ pathLabel(r.pathId) || '경로 선택...' }}</span>
+                <button type="button" @click="openPathPick(r)" title="표시경로 선택"
+                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
+                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
+                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+              </div>
+            </td>
             <td><input class="grid-input grid-mono" :value="r.propKey" @input="onChange(r,'propKey',$event.target.value)"></td>
             <td><input class="grid-input" :value="r.propValue" @input="onChange(r,'propValue',$event.target.value)"></td>
             <td><input class="grid-input" :value="r.propLabel" @input="onChange(r,'propLabel',$event.target.value)"></td>
@@ -344,6 +345,10 @@ window.PropTreeNode = {
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
+
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_prop"
+    :value="pathPickModal.row && pathPickModal.row.pathId"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
 };

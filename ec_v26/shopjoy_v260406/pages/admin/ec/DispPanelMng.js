@@ -299,7 +299,7 @@ window.EcDispPanelMng = {
     };
     const onWidgetDragEnd = () => { widgetDragPanel.value = null; widgetDragSrcWi.value = null; widgetDragOverWi.value = null; };
 
-    /* ── 사용위치 트리 (영역별 그룹) ── */
+    /* ── 표시경로 (영역별 그룹) ── */
     const selectedTreeKey = ref('');   /* '' = 전체, '<areaCode>' = 특정 영역 */
     const treeOpen = ref(new Set(['__root__']));
     const toggleTree = (k) => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
@@ -382,10 +382,10 @@ window.EcDispPanelMng = {
   </div>
   <!-- 본문: 좌측 트리 + 우측 목록 -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
-  <!-- 좌측 사용위치 트리 -->
+  <!-- 좌측 표시경로 -->
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-      <span style="font-size:12px;font-weight:700;color:#555;">사용위치 트리</span>
+      <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
       <span style="font-size:10px;color:#aaa;">{{ panelTree.length }}그룹</span>
     </div>
     <div style="display:flex;gap:4px;margin-bottom:8px;">

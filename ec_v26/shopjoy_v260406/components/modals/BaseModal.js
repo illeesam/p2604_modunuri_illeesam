@@ -2936,3 +2936,175 @@ window.WidgetLibPickModal = {
 </div>
   `,
 };
+
+/* ─────────────────────────────────────────────────────────────
+   PathPickModal — sy_path 표시경로 선택 (트리 + 추가)
+   props: bizCd (필수), value (현재 path_id), title
+   emits: select(pathId), close
+───────────────────────────────────────────────────────────── */
+window.PathPickModal = {
+  name: 'PathPickModal',
+  props: ['bizCd', 'value', 'title'],
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed } = Vue;
+    const ad = window.adminData;
+    const tree = computed(() => window.adminUtil.buildPathTree(props.bizCd));
+    const expanded = reactive(new Set([null]));
+    const toggle = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const expandAll = () => { expanded.clear(); expanded.add(null); const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    const selectedId = ref(props.value || null);
+    const select = (id) => { selectedId.value = id; };
+    const confirm = () => { emit('select', selectedId.value); emit('close'); };
+    const addParent = ref(null);
+    const addLabel = ref('');
+    const setAddParent = (id) => { addParent.value = id; };
+    const doAdd = () => {
+      if (!addLabel.value.trim()) return;
+      const list = ad.paths || (ad.paths = []);
+      const newId = (list.reduce((m,x) => Math.max(m, x.pathId), 0) || 0) + 1;
+      list.push({ pathId: newId, bizCd: props.bizCd, parentPathId: addParent.value,
+        pathLabel: addLabel.value.trim(), sortOrd: 99, useYn: 'Y', remark: '' });
+      addLabel.value = '';
+      expanded.add(addParent.value);
+      selectedId.value = newId;
+    };
+    const labelOf = (id) => window.adminUtil.getPathLabel(id);
+    return { tree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
+             addParent, addLabel, setAddParent, doAdd, labelOf };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:640px;padding:0;overflow:hidden;border-radius:14px;">
+
+    <!-- 헤더 -->
+    <div style="background:#ffffff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">📂</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#1f2937;letter-spacing:-0.2px;">{{ title || '표시경로 선택' }}</div>
+          <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">biz_cd · {{ bizCd }}</div>
+        </div>
+        <span class="modal-close" style="color:#9ca3af;cursor:pointer;font-size:20px;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;"
+          @click="$emit('close')"
+          @mouseover="$event.currentTarget.style.background='#f3f4f6';$event.currentTarget.style.color='#374151';"
+          @mouseout="$event.currentTarget.style.background='transparent';$event.currentTarget.style.color='#9ca3af';">✕</span>
+      </div>
+      <!-- 선택 경로 미리보기 -->
+      <div style="margin-top:12px;padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:10.5px;color:#6b7280;font-weight:600;">현재 선택</span>
+        <span style="flex:1;font-size:13px;font-weight:600;color:selectedId==null?'#9ca3af':'#1f2937';">
+          <span v-if="selectedId == null" style="color:#9ca3af;font-weight:400;">— 선택된 경로가 없습니다 —</span>
+          <span v-else style="color:#e8587a;">{{ labelOf(selectedId) || ('#'+selectedId) }}</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- 본문 -->
+    <div style="padding:14px 22px 18px;background:#fafbfc;">
+
+      <!-- 트리 도구 -->
+      <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;">
+        <span style="font-size:11.5px;font-weight:700;color:#374151;">경로 트리</span>
+        <span style="font-size:10px;color:#9ca3af;background:#fff;border:1px solid #e5e7eb;padding:2px 8px;border-radius:10px;">클릭: 선택 · 더블클릭: 즉시 적용</span>
+        <span style="flex:1;"></span>
+        <button @click="expandAll" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">▼ 펼치기</button>
+        <button @click="collapseAll" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">▶ 접기</button>
+      </div>
+
+      <div style="max-height:42vh;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:8px;margin-bottom:14px;">
+        <div @click="select(null); setAddParent(null);"
+          @dblclick="select(null); confirm();"
+          :style="{padding:'8px 12px',cursor:'pointer',borderRadius:'8px',transition:'all .12s',marginBottom:'2px',
+                   background: selectedId===null ? '#fef2f4' : (addParent===null ? '#ecfdf5' : 'transparent'),
+                   color:      selectedId===null ? '#e8587a' : '#374151',
+                   fontWeight: selectedId===null ? 700 : 500, fontSize:'13px',
+                   border:     selectedId===null ? '1px solid #fecdd3' : (addParent===null ? '1px solid #a7f3d0' : '1px solid transparent')}"
+          @mouseover="(selectedId!==null && addParent!==null) && ($event.currentTarget.style.background='#f9fafb')"
+          @mouseout="(selectedId!==null && addParent!==null) && ($event.currentTarget.style.background='transparent')">
+          <span style="margin-right:8px;">📁</span>(루트)
+          <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">{{ tree.count }}</span>
+        </div>
+        <path-pick-tree-node :node="tree" :expanded="expanded" :selected="selectedId" :add-parent="addParent"
+          :on-toggle="toggle" :on-select="select" :on-set-parent="setAddParent" :on-confirm="confirm" :depth="0" />
+      </div>
+
+      <!-- 추가 입력 -->
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+        <div style="display:flex;gap:8px;align-items:center;font-size:11px;color:#6b7280;margin-bottom:8px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#10b981;color:#fff;font-size:11px;font-weight:700;">+</span>
+          <span style="font-weight:600;">하위 추가 위치:</span>
+          <span style="background:#ecfdf5;color:#059669;padding:2px 10px;border-radius:6px;font-weight:700;font-size:11px;">
+            {{ addParent == null ? '(루트)' : (labelOf(addParent) || ('#'+addParent)) }}
+          </span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <input class="form-control" v-model="addLabel" placeholder="새 경로명 입력 후 Enter" style="flex:1;height:34px;font-size:12.5px;" @keyup.enter="doAdd" />
+          <button @click="doAdd"
+            style="padding:0 16px;font-size:12px;font-weight:700;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;"
+            @mouseover="$event.currentTarget.style.background='#059669'"
+            @mouseout="$event.currentTarget.style.background='#10b981'">+ 추가</button>
+        </div>
+      </div>
+
+      <!-- 액션 -->
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button @click="$emit('close')"
+          style="padding:9px 20px;font-size:12.5px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:7px;cursor:pointer;">취소</button>
+        <button @click="confirm"
+          style="padding:9px 22px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg,#e8587a,#d14165);color:#fff;border:none;border-radius:7px;cursor:pointer;box-shadow:0 2px 6px rgba(232,88,122,.25);">✓ 선택</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+};
+
+window.PathPickTreeNode = {
+  name: 'PathPickTreeNode',
+  props: ['node', 'expanded', 'selected', 'addParent', 'onToggle', 'onSelect', 'onSetParent', 'onConfirm', 'depth'],
+  template: /* html */`
+<div v-if="(node.children||[]).length > 0" style="position:relative;">
+  <div v-for="(ch, ci) in node.children" :key="ch.pathId" style="position:relative;">
+    <!-- 노드 행 -->
+    <div @click="onSelect(ch.pathId); onSetParent(ch.pathId);"
+      @dblclick="onSelect(ch.pathId); onConfirm && onConfirm();"
+      :style="{position:'relative',display:'flex',alignItems:'center',padding:'4px 8px 4px 0',cursor:'pointer',transition:'background .12s',
+               paddingLeft: (depth*20 + 8) + 'px',
+               background: selected===ch.pathId ? '#fef2f4' : (addParent===ch.pathId ? '#ecfdf5' : 'transparent'),
+               color:      selected===ch.pathId ? '#e8587a' : '#374151',
+               fontWeight: selected===ch.pathId ? 700 : 500, fontSize:'13px',
+               borderLeft: selected===ch.pathId ? '3px solid #e8587a' : '3px solid transparent'}"
+      @mouseover="(selected!==ch.pathId) && ($event.currentTarget.style.background='#f3f4f6')"
+      @mouseout="(selected!==ch.pathId) && ($event.currentTarget.style.background = (addParent===ch.pathId ? '#ecfdf5' : 'transparent'))">
+
+      <!-- 트리 라인 (가로 ─) -->
+      <span :style="{position:'absolute',left:(depth*20 + 11)+'px',top:'50%',width:'10px',height:'1px',borderTop:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
+
+      <!-- 토글 박스 (윈도우 [+]/[-]) -->
+      <span v-if="(ch.children||[]).length>0" @click.stop="onToggle(ch.pathId)"
+        style="position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid #94a3b8;background:#fff;font-size:10px;line-height:1;color:#475569;cursor:pointer;user-select:none;flex-shrink:0;font-family:monospace;font-weight:700;border-radius:2px;">{{ expanded.has(ch.pathId) ? '−' : '+' }}</span>
+      <span v-else style="display:inline-block;width:16px;height:16px;flex-shrink:0;"></span>
+
+      <!-- 폴더/파일 아이콘 -->
+      <span style="margin:0 6px 0 4px;font-size:13px;flex-shrink:0;">{{ (ch.children||[]).length>0 ? (expanded.has(ch.pathId) ? '📂' : '📁') : '📄' }}</span>
+
+      <span style="flex:1;">{{ ch.pathLabel }}</span>
+      <span v-if="ch.count>0" style="font-size:10px;color:#6b7280;background:#fff;padding:1px 7px;border-radius:10px;border:1px solid #e5e7eb;font-weight:500;margin-right:4px;">{{ ch.count }}</span>
+    </div>
+
+    <!-- 자식 영역 (세로 │ 라인 포함) -->
+    <div v-if="expanded.has(ch.pathId) && (ch.children||[]).length>0"
+      :style="{position:'relative'}">
+      <!-- 세로 dotted 라인 -->
+      <span :style="{position:'absolute',left:(depth*20 + 16)+'px',top:'0',bottom: (ci===node.children.length-1) ? '50%' : '0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
+      <path-pick-tree-node :node="ch" :expanded="expanded" :selected="selected" :add-parent="addParent"
+        :on-toggle="onToggle" :on-select="onSelect" :on-set-parent="onSetParent" :on-confirm="onConfirm" :depth="depth+1" />
+    </div>
+
+    <!-- 형제 노드 사이 세로 라인 (현재 노드의 부모 라인 — depth가 0이 아닌 경우) -->
+    <span v-if="depth > 0 && ci < node.children.length - 1"
+      :style="{position:'absolute',left:(depth*20 + 16 - 20)+'px',top:'0',bottom:'0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
+  </div>
+</div>`,
+};

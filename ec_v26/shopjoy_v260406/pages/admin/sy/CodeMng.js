@@ -41,13 +41,27 @@ window.SyCodeMng = {
     ═══════════════════════════════════════════════════════ */
     const grpRows = reactive([]);
     let _grpTempId = -1;
-    const GRP_FIELDS = ['codeGrp', 'grpNm', 'dispPath', 'description', 'useYn'];
+    const GRP_FIELDS = ['codeGrp', 'grpNm', 'pathId', 'description', 'useYn'];
+
+    /* ── 표시경로 선택 모달 (sy_path) ── */
+    const pathPickModal = reactive({ show: false, row: null });
+    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+    const onPathPicked = (pathId) => {
+      const row = pathPickModal.row;
+      if (row) {
+        row.pathId = pathId;
+        if (row._row_status === 'N') row._row_status = 'U';
+      }
+    };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const loadGrp = () => {
       grpRows.splice(0);
       (props.adminData.codeGroups || []).forEach(g => grpRows.push({
         ...g,
         _row_status: 'N',
-        _orig: { codeGrp: g.codeGrp, grpNm: g.grpNm, dispPath: g.dispPath || '', description: g.description || '', useYn: g.useYn || 'Y' },
+        pathId: g.pathId == null ? null : g.pathId,
+        _orig: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId == null ? null : g.pathId, description: g.description || '', useYn: g.useYn || 'Y' },
       }));
     };
     loadGrp();
@@ -90,22 +104,7 @@ window.SyCodeMng = {
     const grpSelectNode = (path) => { grpSelectedPath.value = path; };
     const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(grpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
-    const grpTree = computed(() => {
-      const root = { name: '전체', path: '', count: 0, children: {} };
-      grpRows.filter(r => r._row_status !== 'D').forEach(r => {
-        const p = r.dispPath || '기타';
-        const segs = p.split('.');
-        let node = root; node.count++;
-        let acc = '';
-        segs.forEach(seg => {
-          acc = acc ? acc + '.' + seg : seg;
-          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
-          node = node.children[seg]; node.count++;
-        });
-      });
-      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
-      return toArr(root);
-    });
+    const grpTree = computed(() => window.adminUtil.buildPathTree('sy_code_grp'));
     const filteredGrpRows = computed(() => {
       const sp = grpSelectedPath.value;
       if (!sp) return grpRows;
@@ -362,6 +361,7 @@ window.SyCodeMng = {
       grpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, grpSelectedPath, filteredGrpRows,
       grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
       selectedGrp, onGrpRowClick,
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
     };
   },
   template: /* html */`
@@ -446,7 +446,21 @@ window.SyCodeMng = {
             style="cursor:pointer;"
             @click="onGrpRowClick(g)">
             <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(g._row_status)">{{ g._row_status }}</span></td>
-            <td><input class="grid-input grid-mono" v-model="g.dispPath" :disabled="g._row_status==='D'" placeholder="aa.bb.cc" @input="onGrpChange(g)" /></td>
+            <td>
+              <div :style="{padding:'5px 6px 5px 10px', border:'1px solid #e5e7eb', borderRadius:'5px', fontSize:'12px', minHeight:'26px',
+                            background:'#f5f5f7',
+                            color: g.pathId != null ? '#374151' : '#9ca3af',
+                            fontWeight: g.pathId != null ? 600 : 400,
+                            display:'flex',alignItems:'center',gap:'6px'}">
+                <span style="flex:1;">{{ pathLabel(g.pathId) || '경로 선택...' }}</span>
+                <button type="button" :disabled="g._row_status==='D'"
+                  @click="openPathPick(g)" @dblclick.stop="openPathPick(g)"
+                  title="표시경로 선택"
+                  :style="{cursor: g._row_status==='D' ? 'not-allowed' : 'pointer', display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: g._row_status==='D' ? 0.4 : 1}"
+                  @mouseover="(g._row_status!=='D') && ($event.currentTarget.style.background='#eef2ff')"
+                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+              </div>
+            </td>
             <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
             <td><input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
             <td><input class="grid-input" v-model="g.description" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
@@ -578,6 +592,12 @@ window.SyCodeMng = {
       </div>
     </div>
   </div>
+
+  <!-- 표시경로 선택 모달 -->
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_code_grp"
+    :value="pathPickModal.row && pathPickModal.row.pathId"
+    title="공통코드그룹 표시경로 선택"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
 };

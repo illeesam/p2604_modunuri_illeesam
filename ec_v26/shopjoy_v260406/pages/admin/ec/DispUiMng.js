@@ -49,7 +49,7 @@ window.EcDispUiMng = {
     const allUis = computed(() =>
       (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_UI')
     );
-    /* 사용위치 트리 (uiType 그룹) */
+    /* 표시경로 (uiType 그룹) */
     const selectedTreeKey = ref('');
     const treeOpen = ref(new Set(['__root__']));
     const toggleTree = (k) => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
@@ -190,7 +190,7 @@ window.EcDispUiMng = {
     <!-- 좌측 트리 -->
     <div class="card" style="width:220px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
       <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-        <span style="font-size:12px;font-weight:700;color:#555;">사용위치 트리</span>
+        <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
         <span style="font-size:10px;color:#aaa;">{{ uiTree.length }}그룹</span>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">

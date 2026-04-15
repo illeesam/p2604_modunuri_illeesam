@@ -3,29 +3,26 @@ window.SyRoleMng = {
   name: 'SyRoleMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
+    /* ── 표시경로 선택 모달 (sy_path) ── */
+    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+    const onPathPicked = (pathId) => {
+      const row = pathPickModal.row;
+      if (row) {
+        row.pathId = pathId;
+        if (row._row_status === 'N') row._row_status = 'U';
+      }
+    };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = Vue.ref('');
+    const selectedPath = Vue.ref(null);
     const expanded = Vue.reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => {
-      const root = { name: '전체', path: '', count: 0, children: {} };
-      const src = (props.adminData.roles || []);
-      src.forEach(r => {
-        const p = r.dispPath || '기타';
-        const segs = p.split('.');
-        let node = root; node.count++;
-        let acc = '';
-        segs.forEach(seg => {
-          acc = acc ? acc + '.' + seg : seg;
-          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
-          node = node.children[seg]; node.count++;
-        });
-      });
-      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
-      return toArr(root);
-    });
+    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_role'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
 
@@ -334,6 +331,7 @@ window.SyRoleMng = {
 
 
     return {
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       siteNm, ROLE_TYPES, PERM_LEVELS, permColor, depthBullet, depthColor, statusClass,
       searchKw, searchType, searchUseYn, applied, onSearch, onReset,
@@ -426,7 +424,15 @@ window.SyRoleMng = {
         <tr v-for="(row, idx) in pagedRows" :key="row.roleId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
-          <td><span style="font-family:monospace;font-size:11px;color:#e8587a;">{{ row.dispPath || '-' }}</span></td>
+          <td>
+              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
+                <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
+                <button type="button" @click="openPathPick(row)" title="표시경로 선택"
+                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
+                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
+                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+              </div>
+            </td>
 
           <td class="col-id-val">{{ row.roleId > 0 ? row.roleId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
@@ -624,6 +630,10 @@ window.SyRoleMng = {
     @select="onParentSelect"
     @close="roleTreeModal.show=false" />
 </div></div>
+
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_role"
+    :value="pathPickModal.row && pathPickModal.row.pathId"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
 };

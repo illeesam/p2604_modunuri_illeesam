@@ -7,6 +7,7 @@ CREATE TABLE sy_bbm (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     bbm_code        VARCHAR(50)     NOT NULL,
     bbm_nm          VARCHAR(100)    NOT NULL,
+    disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     bbm_type        VARCHAR(20)     DEFAULT 'NORMAL',       -- NORMAL/FAQ/REVIEW/QNA
     allow_comment   CHAR(1)         DEFAULT 'N',
     allow_attach    CHAR(1)         DEFAULT 'N',

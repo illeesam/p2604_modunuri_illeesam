@@ -3,10 +3,23 @@ window.SyBrandMng = {
   name: 'SyBrandMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    /* ── 표시경로 선택 모달 (sy_path) ── */
+    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+    const onPathPicked = (pathId) => {
+      const row = pathPickModal.row;
+      if (row) {
+        row.pathId = pathId;
+        if (row._row_status === 'N') row._row_status = 'U';
+      }
+    };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { ref, reactive, computed } = Vue;
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
-    const selectedPath = ref('');
+    const selectedPath = ref(null);
 
     /* ── 검색 ── */
     const searchKw        = ref('');
@@ -49,7 +62,7 @@ window.SyBrandMng = {
                  && !b.brandNm?.toLowerCase().includes(kw)
                  && !b.brandEnNm?.toLowerCase().includes(kw)) return false;
           if (applied.useYn && b.useYn !== applied.useYn) return false;
-          if (selectedPath.value && !(b.dispPath || '').startsWith(selectedPath.value)) return false;
+          if (selectedPath.value != null) { const _desc = window.adminUtil.getPathDescendants('sy_brand', selectedPath.value); if (_desc && !_desc.has(b.pathId)) return false; }
           const d = String(b.regDate || '').slice(0, 10);
           if (applied.dateStart && d < applied.dateStart) return false;
           if (applied.dateEnd   && d > applied.dateEnd)   return false;
@@ -231,27 +244,13 @@ window.SyBrandMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = computed(() => {
-      const root = { name: '전체', path: '', count: 0, children: {} };
-      (props.adminData.brands || []).forEach(b => {
-        const p = b.dispPath || '기타';
-        const segs = p.split('.');
-        let node = root; node.count++;
-        let acc = '';
-        segs.forEach(seg => {
-          acc = acc ? acc + '.' + seg : seg;
-          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
-          node = node.children[seg]; node.count++;
-        });
-      });
-      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
-      return toArr(root);
-    });
+    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_brand'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     Vue.watch(selectedPath, () => loadGrid());
 
     return {
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -364,10 +363,14 @@ window.SyBrandMng = {
             <input type="checkbox" v-model="row._row_check" />
           </td>
           <td>
-            <input class="grid-input grid-mono" v-model="row.dispPath"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="aa.bb.cc" />
-          </td>
+              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
+                <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
+                <button type="button" @click="openPathPick(row)" title="표시경로 선택"
+                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
+                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
+                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+              </div>
+            </td>
           <td>
             <input class="grid-input grid-mono" v-model="row.brandCode"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
@@ -438,6 +441,10 @@ window.SyBrandMng = {
     </div>
   </div>
   </div><!-- /grid 25/75 -->
+
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_brand"
+    :value="pathPickModal.row && pathPickModal.row.pathId"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
 };

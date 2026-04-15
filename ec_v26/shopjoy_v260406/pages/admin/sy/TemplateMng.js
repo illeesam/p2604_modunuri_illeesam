@@ -3,29 +3,26 @@ window.SyTemplateMng = {
   name: 'SyTemplateMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    /* ── 표시경로 선택 모달 (sy_path) ── */
+    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+    const onPathPicked = (pathId) => {
+      const row = pathPickModal.row;
+      if (row) {
+        row.pathId = pathId;
+        if (row._row_status === 'N') row._row_status = 'U';
+      }
+    };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = Vue.ref('');
+    const selectedPath = Vue.ref(null);
     const expanded = Vue.reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => {
-      const root = { name: '전체', path: '', count: 0, children: {} };
-      const src = (props.adminData.templates || []);
-      src.forEach(r => {
-        const p = r.dispPath || '기타';
-        const segs = p.split('.');
-        let node = root; node.count++;
-        let acc = '';
-        segs.forEach(seg => {
-          acc = acc ? acc + '.' + seg : seg;
-          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
-          node = node.children[seg]; node.count++;
-        });
-      });
-      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
-      return toArr(root);
-    });
+    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_template'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
 
@@ -143,6 +140,7 @@ window.SyTemplateMng = {
 
 
     return {
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, useYnBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
   },
   template: /* html */`
@@ -197,7 +195,7 @@ window.SyTemplateMng = {
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="t in pageList" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
-          <td><span style="font-family:monospace;font-size:11px;color:#e8587a;">{{ t.dispPath || '-' }}</span></td>
+          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:t.pathId!=null?'#374151':'#9ca3af',fontWeight:t.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(t.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(t)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td>{{ t.templateId }}</td>
           <td><span class="badge" :class="typeBadge(t.templateTypeCd)">{{ t.templateTypeCd }}</span></td>
           <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ t.templateCode || '-' }}</code></td>

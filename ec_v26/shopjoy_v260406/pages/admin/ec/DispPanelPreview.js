@@ -582,7 +582,7 @@ window.EcDispPanelPreview = {
     <!-- 왼쪽: 트리 (카드) -->
     <div class="card" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;padding:0;overflow:hidden;">
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
-        <span>사용위치 트리</span>
+        <span>표시경로</span>
         <span style="font-size:10px;color:#aaa;font-weight:400;">⠿ 드래그하여 배치</span>
       </div>
       <!-- 전체펼치기 / 전체닫기 -->
