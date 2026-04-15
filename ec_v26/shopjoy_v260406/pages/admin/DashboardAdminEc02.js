@@ -62,6 +62,23 @@
       };
       const isSel = (list, v) => list.includes(v);
 
+      const doSearch = () => {
+        console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
+      };
+      const doExcelDownload = () => {
+        const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
+        monthLabels.value.forEach((m, i) => {
+          rows.push([m, monthlySales.value[i], monthlyJoin.value[i], monthlyLeave.value[i], monthlyClicks.value[i], monthlyOrders.value[i]]);
+        });
+        const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+        const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'dashboard_'+filters.startDt+'_'+filters.endDt+'.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
       const resetFilters = () => {
         filters.startDt = startDef;
         filters.endDt   = endDef;
@@ -252,7 +269,7 @@
 
       return {
         fmt, pct, filters, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
-        toggle, toggleAll, isSel, resetFilters,
+        toggle, toggleAll, isSel, resetFilters, doSearch, doExcelDownload,
         filterExpand, activeTab, TABS, viewMode, VIEW_MODES, gridCols, showPanel,
         monthLabels, monthlySales, monthlyJoin, monthlyLeave, monthlyClicks, monthlyOrders, channelMonthly,
         linePoints, areaPath, maxOf,
@@ -285,6 +302,8 @@
         {{ filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
       <span style="flex:1;"></span>
+      <button class="btn btn-sm btn-primary" @click="doSearch" style="font-size:11px;">🔍 검색</button>
+      <button class="btn btn-sm" @click="doExcelDownload" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">📥 엑셀다운로드</button>
       <button class="btn btn-sm" @click="resetFilters" style="font-size:11px;">🔄 초기화</button>
     </div>
     <div v-if="filterExpand" style="display:flex;flex-direction:column;gap:8px;border-top:1px dashed #eee;padding-top:10px;">
