@@ -1,8 +1,8 @@
 -- ============================================================
--- ec_notice : 공지사항
+-- sy_notice : 공지사항
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
-CREATE TABLE ec_notice (
+CREATE TABLE sy_notice (
     notice_id       VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
     title           VARCHAR(200)    NOT NULL,
@@ -21,19 +21,19 @@ CREATE TABLE ec_notice (
     PRIMARY KEY (notice_id)
 );
 
-COMMENT ON TABLE  ec_notice               IS '공지사항';
-COMMENT ON COLUMN ec_notice.notice_id     IS '공지ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN ec_notice.site_id       IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN ec_notice.title         IS '제목';
-COMMENT ON COLUMN ec_notice.notice_type_cd IS '공지유형 (코드: NOTICE_TYPE)';
-COMMENT ON COLUMN ec_notice.is_fixed      IS '상단고정 Y/N';
-COMMENT ON COLUMN ec_notice.content_html  IS '내용 (HTML)';
-COMMENT ON COLUMN ec_notice.attach_grp_id IS '첨부파일그룹ID';
-COMMENT ON COLUMN ec_notice.start_date    IS '노출시작일';
-COMMENT ON COLUMN ec_notice.end_date      IS '노출종료일';
-COMMENT ON COLUMN ec_notice.status_cd     IS '상태 (ACTIVE/INACTIVE)';
-COMMENT ON COLUMN ec_notice.view_count    IS '조회수';
-COMMENT ON COLUMN ec_notice.reg_by        IS '등록자 (sy_user.user_id)';
-COMMENT ON COLUMN ec_notice.reg_date      IS '등록일';
-COMMENT ON COLUMN ec_notice.upd_by        IS '수정자 (sy_user.user_id)';
-COMMENT ON COLUMN ec_notice.upd_date      IS '수정일';
+COMMENT ON TABLE  sy_notice               IS '공지사항';
+COMMENT ON COLUMN sy_notice.notice_id     IS '공지ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_notice.site_id       IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN sy_notice.title         IS '제목';
+COMMENT ON COLUMN sy_notice.notice_type_cd IS '공지유형 (코드: NOTICE_TYPE)';
+COMMENT ON COLUMN sy_notice.is_fixed      IS '상단고정 Y/N';
+COMMENT ON COLUMN sy_notice.content_html  IS '내용 (HTML)';
+COMMENT ON COLUMN sy_notice.attach_grp_id IS '첨부파일그룹ID';
+COMMENT ON COLUMN sy_notice.start_date    IS '노출시작일';
+COMMENT ON COLUMN sy_notice.end_date      IS '노출종료일';
+COMMENT ON COLUMN sy_notice.status_cd     IS '상태 (ACTIVE/INACTIVE)';
+COMMENT ON COLUMN sy_notice.view_count    IS '조회수';
+COMMENT ON COLUMN sy_notice.reg_by        IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_notice.reg_date      IS '등록일';
+COMMENT ON COLUMN sy_notice.upd_by        IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_notice.upd_date      IS '수정일';
