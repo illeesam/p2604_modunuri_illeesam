@@ -150,12 +150,69 @@ window.SyPathMng = {
       .filter(r => r._status !== 'D' && r.bizCd === row.bizCd && r.pathId !== row.pathId)
       .map(r => ({ value: r.pathId, label: r.pathLabel }));
 
+    /* 부모경로 선택 모달 */
+    const parentModalState = reactive({ show: false, targetRow: null, bizCd: '', expanded: new Set([null]) });
+    const openParentModal = (row) => {
+      parentModalState.targetRow = row;
+      parentModalState.bizCd = row.bizCd;
+
+      /* 3레벨까지 자동 펼치기 */
+      const biz = row.bizCd;
+      const exclude = row.pathId;
+      const list = rows.value.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
+      const expanded = new Set([null]);
+
+      /* 깊이 계산 및 3레벨까지 펼치기 */
+      const getDepth = (pathId, depth = 0) => {
+        if (depth <= 2) {
+          expanded.add(pathId);
+          list.filter(r => r.parentPathId === pathId).forEach(r => getDepth(r.pathId, depth + 1));
+        }
+      };
+      list.filter(r => r.parentPathId == null).forEach(r => getDepth(r.pathId, 1));
+
+      parentModalState.expanded = expanded;
+      parentModalState.show = true;
+    };
+    const closeParentModal = () => { parentModalState.show = false; parentModalState.targetRow = null; };
+    const selectParent = (pathId) => {
+      if (parentModalState.targetRow) {
+        onChange(parentModalState.targetRow, 'parentPathId', pathId);
+      }
+      closeParentModal();
+    };
+    const parentTree = computed(() => {
+      const biz = parentModalState.bizCd;
+      const exclude = parentModalState.targetRow?.pathId;
+      const list = rows.value.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
+      const byParent = {};
+      list.forEach(r => {
+        const pk = r.parentPathId == null ? 'null' : r.parentPathId;
+        (byParent[pk] = byParent[pk] || []).push(r);
+      });
+      const build = (parentKey) => (byParent[parentKey] || [])
+        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
+        .map(r => ({ ...r, children: build(r.pathId) }));
+      const root = { pathId: null, pathLabel: '전체 ('+ bizLabel(biz) +')', children: build('null') };
+      return root;
+    });
+    const toggleParentNode = (id) => {
+      if (parentModalState.expanded.has(id)) parentModalState.expanded.delete(id);
+      else parentModalState.expanded.add(id);
+    };
+    const getParentLabel = (pathId) => {
+      if (pathId == null) return '(루트)';
+      const r = rows.value.find(x => x.pathId === pathId);
+      return r ? r.pathLabel : '';
+    };
+
     return {
       kw, useFlt, bizFlt, BIZ_OPTIONS, bizLabel,
       selectedBiz, selectedPathId, tree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       gridRows, pagedRows, dirtyRows,
       pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
       onChange, addRow, delRow, cancelRow, save, reset, parentOptions,
+      parentModalState, openParentModal, closeParentModal, selectParent, parentTree, toggleParentNode, getParentLabel,
     };
   },
 
@@ -248,10 +305,10 @@ window.SyPathMng = {
               </select>
             </td>
             <td>
-              <select class="grid-select" :value="r.parentPathId" @change="onChange(r,'parentPathId',$event.target.value === '' ? null : Number($event.target.value))">
-                <option :value="null">(루트)</option>
-                <option v-for="o in parentOptions(r)" :key="o.value" :value="o.value">{{ o.label }}</option>
-              </select>
+              <button class="btn btn-sm" @click="openParentModal(r)"
+                style="font-size:11px;background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;">
+                {{ getParentLabel(r.parentPathId) }} ▼
+              </button>
             </td>
             <td><input class="grid-input" :value="r.pathLabel" @input="onChange(r,'pathLabel',$event.target.value)" /></td>
             <td><input class="grid-input grid-num" type="number" :value="r.sortOrd" @input="onChange(r,'sortOrd',Number($event.target.value))" /></td>
@@ -286,6 +343,32 @@ window.SyPathMng = {
       </div>
     </div>
   </div>
+
+  <!-- 부모경로 선택 모달 -->
+  <div v-if="parentModalState.show" class="modal-overlay" @click.self="closeParentModal">
+    <div class="modal-box" style="max-width:400px;">
+      <div class="modal-header">
+        <span class="modal-title">부모경로 선택 ({{ bizLabel(parentModalState.bizCd) }})</span>
+        <span class="modal-close" @click="closeParentModal">×</span>
+      </div>
+      <div style="padding:12px;max-height:60vh;overflow-y:auto;">
+        <div style="margin-bottom:8px;">
+          <button class="btn btn-sm" @click="(() => {
+            const biz = parentModalState.bizCd;
+            const exclude = parentModalState.targetRow?.pathId;
+            const list = rows.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
+            parentModalState.expanded.clear();
+            parentModalState.expanded.add(null);
+            list.forEach(r => parentModalState.expanded.add(r.pathId));
+          })()"
+            style="margin-right:4px;font-size:11px;">▼ 전체펼치기</button>
+          <button class="btn btn-sm" @click="parentModalState.expanded.clear(); parentModalState.expanded.add(null);"
+            style="font-size:11px;">▶ 전체닫기</button>
+        </div>
+        <path-parent-selector :node="parentTree" :expanded="parentModalState.expanded" :on-toggle="toggleParentNode" :on-select="selectParent" :depth="0" />
+      </div>
+    </div>
+  </div>
 </div>
 `,
 };
@@ -313,6 +396,35 @@ window.PathTreeNode = {
     <path-tree-node v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
+  </div>
+</div>
+`,
+};
+
+/* ── 부모경로 선택 노드 (재귀) ── */
+window.PathParentSelector = {
+  name: 'PathParentSelector',
+  props: ['node', 'expanded', 'onToggle', 'onSelect', 'depth'],
+  template: /* html */`
+<div>
+  <div @click="onSelect(node.pathId)"
+    :style="{display:'flex',alignItems:'center',gap:'4px',padding:'6px 8px',cursor:'pointer',borderRadius:'4px',
+             paddingLeft: (6 + depth*14) + 'px',
+             background: 'transparent',
+             color: '#444',
+             fontWeight: 400}"
+    @mouseover="$event.currentTarget.style.background = '#f0f2f5'"
+    @mouseout="$event.currentTarget.style.background = 'transparent'">
+    <span v-if="(node.children||[]).length>0" @click.stop="onToggle(node.pathId)"
+      style="width:16px;font-size:11px;color:#666;cursor:pointer;font-weight:700;">
+      {{ expanded.has(node.pathId) ? '▼' : '▶' }}
+    </span>
+    <span v-else style="width:16px;"></span>
+    <span style="flex:1;">{{ node.pathLabel || '(이름없음)' }}</span>
+  </div>
+  <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
+    <path-parent-selector v-for="ch in node.children" :key="ch.pathId"
+      :node="ch" :expanded="expanded" :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
 </div>
 `,

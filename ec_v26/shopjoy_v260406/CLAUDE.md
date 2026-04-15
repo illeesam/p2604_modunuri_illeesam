@@ -532,6 +532,20 @@ package-lock.json       ← npm 관리용
 }
 ```
 
+## 데이터베이스 연결 설정
+
+| 항목 | 값 |
+|---|---|
+| **DB 타입** | PostgreSQL |
+| **Host** | illeesam.synology.me |
+| **Port** | 17632 |
+| **Database** | postgres |
+| **Username** | postgres |
+| **Password** | (별도 전달) |
+| **Default Schema** | shopjoy_2604 |
+
+> 데이터베이스 접속 비밀번호는 이후 별도로 전달 예정
+
 ## 작업 지침
 
 1. **새 관리자 페이지 추가 3단계 누락 금지**: `admin.html` script 태그 + `AdminApp.js` PAGE_COMP_MAP + `app.component()`

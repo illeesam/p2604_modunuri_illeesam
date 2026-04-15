@@ -153,21 +153,28 @@ window.EcDispAreaMng = {
     };
 
     /* ── 엑셀 ── */
-    const exportExcel = () => window.adminUtil.exportCsv(
-      filtered.value,
-      [
-        { label: 'ID', key: 'codeId' },
-        { label: '영역코드', key: 'codeValue' },
-        { label: '영역명', key: 'codeLabel' },
-        { label: '유형', key: 'areaType' },
-        { label: '표시방식', key: 'layoutType' },
-        { label: '열수', key: 'gridCols' },
-        { label: '순서', key: 'sortOrd' },
-        { label: '사용', key: 'useYn' },
-        { label: '설명', key: 'remark' },
-      ],
-      '전시영역목록.csv'
-    );
+    const exportExcel = () => {
+      const dataWithPath = filtered.value.map(a => ({
+        ...a,
+        pathLabel: a.pathId ? (window.adminUtil.getPathLabel(a.pathId) || '') : '',
+      }));
+      window.adminUtil.exportCsv(
+        dataWithPath,
+        [
+          { label: 'ID', key: 'codeId' },
+          { label: '영역코드', key: 'codeValue' },
+          { label: '영역명', key: 'codeLabel' },
+          { label: '경로정보', key: 'pathLabel' },
+          { label: '유형', key: 'areaType' },
+          { label: '표시방식', key: 'layoutType' },
+          { label: '열수', key: 'gridCols' },
+          { label: '순서', key: 'sortOrd' },
+          { label: '사용', key: 'useYn' },
+          { label: '설명', key: 'remark' },
+        ],
+        '전시영역목록.csv'
+      );
+    };
 
     /* ── 드래그 정렬 ── */
     const dragSrc     = ref(null);

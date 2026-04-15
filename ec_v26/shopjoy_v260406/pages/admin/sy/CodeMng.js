@@ -41,7 +41,7 @@ window.SyCodeMng = {
     ═══════════════════════════════════════════════════════ */
     const grpRows = reactive([]);
     let _grpTempId = -1;
-    const GRP_FIELDS = ['codeGrp', 'grpNm', 'pathId', 'description', 'useYn'];
+    const GRP_FIELDS = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
 
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
@@ -61,7 +61,7 @@ window.SyCodeMng = {
         ...g,
         _row_status: 'N',
         pathId: g.pathId == null ? null : g.pathId,
-        _orig: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId == null ? null : g.pathId, description: g.description || '', useYn: g.useYn || 'Y' },
+        _orig: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId == null ? null : g.pathId, description: g.description || '', type: g.type || '일반', useYn: g.useYn || 'Y' },
       }));
     };
     loadGrp();
@@ -72,7 +72,7 @@ window.SyCodeMng = {
     };
     const addGrp = () => {
       grpRows.push({
-        codeGrp: 'NEW_GRP', grpNm: '신규 그룹', dispPath: 'new.path', description: '', useYn: 'Y',
+        codeGrp: 'NEW_GRP', grpNm: '신규 그룹', pathId: null, dispPath: 'new.path', description: '', type: '일반', useYn: 'Y',
         _row_status: 'I', _tempId: _grpTempId--, _orig: {},
       });
     };
@@ -92,7 +92,7 @@ window.SyCodeMng = {
       const ok = await props.showConfirm('저장', `${grpDirty.value}건 저장하시겠습니까?`);
       if (!ok) return;
       props.adminData.codeGroups = grpRows.filter(r => r._row_status !== 'D').map(r => ({
-        codeGrp: r.codeGrp, grpNm: r.grpNm, dispPath: r.dispPath, description: r.description, useYn: r.useYn,
+        codeGrp: r.codeGrp, grpNm: r.grpNm, pathId: r.pathId, dispPath: r.dispPath, description: r.description, type: r.type, useYn: r.useYn,
       }));
       loadGrp();
       props.showToast('저장되었습니다.', 'success');
@@ -352,6 +352,40 @@ window.SyCodeMng = {
       '공통코드목록.csv'
     );
 
+    /* ── 코드 트리 탭 ── */
+    const activeCodeTab = ref('일반');
+    const codeTreeExpanded = reactive(new Set());
+    const codeToggleNode = (codeValue) => {
+      if (codeTreeExpanded.has(codeValue)) codeTreeExpanded.delete(codeValue);
+      else codeTreeExpanded.add(codeValue);
+    };
+    const codeTree = computed(() => {
+      if (!selectedGrp.value) return { value: '__root__', label: 'Root', children: [], count: 0 };
+      const visible = gridRows.filter(r => r._row_status !== 'D');
+      const byValue = new Map();
+      visible.forEach(c => { byValue.set(c.codeValue, c); });
+      const roots = [];
+      const children = new Map(); // parentValue -> [children]
+      visible.forEach(c => {
+        const parentVal = c.parentCodeValue || null;
+        if (!parentVal || !byValue.has(parentVal)) {
+          roots.push(c);
+        } else {
+          if (!children.has(parentVal)) children.set(parentVal, []);
+          children.get(parentVal).push(c);
+        }
+      });
+      const build = (c) => ({
+        value: c.codeValue,
+        label: c.codeLabel,
+        code: c,
+        children: (children.get(c.codeValue) || []).map(build),
+      });
+      const walk = (nodes) => nodes.length + nodes.reduce((sum, n) => sum + walk(n.children), 0);
+      const rootNodes = roots.map(build);
+      return { value: '__root__', label: 'Root', children: rootNodes, count: walk(rootNodes) };
+    });
+
     return {
       siteNm,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
@@ -367,6 +401,7 @@ window.SyCodeMng = {
       grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
       selectedGrp, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode,
     };
   },
   template: /* html */`
@@ -435,6 +470,7 @@ window.SyCodeMng = {
             <th>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
             <th>코드그룹</th>
             <th>그룹명</th>
+            <th style="width:70px;">유형</th>
             <th>설명</th>
             <th class="col-use">사용</th>
             <th class="col-act-cancel"></th>
@@ -468,6 +504,12 @@ window.SyCodeMng = {
             </td>
             <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
             <td><input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
+            <td style="text-align:center;">
+              <span v-if="g.type" style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;"
+                :style="g.type==='트리' ? {background:'#fecaca',color:'#991b1b'} : {background:'#dbeafe',color:'#1e40af'}">
+                {{ g.type }}
+              </span>
+            </td>
             <td><input class="grid-input" v-model="g.description" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
             <td>
               <select class="grid-select" v-model="g.useYn" :disabled="g._row_status==='D'" @change="onGrpChange(g)">
@@ -520,7 +562,19 @@ window.SyCodeMng = {
       </div>
     </div>
 
-    <table class="admin-table crud-grid">
+    <!-- 일반/트리 탭 -->
+    <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
+      <button @click="activeCodeTab='일반'" :class="{active: activeCodeTab==='일반'}"
+        style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
+        :style="activeCodeTab==='일반' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">일반</button>
+      <button @click="activeCodeTab='트리'" :disabled="!selectedGrp" :class="{active: activeCodeTab==='트리'}"
+        style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
+        :style="activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}"
+        :disabled="!selectedGrp">트리</button>
+    </div>
+
+    <!-- 일반 탭: 테이블 -->
+    <table v-if="activeCodeTab==='일반'" class="admin-table crud-grid">
       <thead>
         <tr>
           <th class="col-drag"></th>
@@ -596,6 +650,28 @@ window.SyCodeMng = {
         </select>
       </div>
     </div>
+
+    <!-- 트리 탭: 테이블 형식 -->
+    <table v-if="activeCodeTab==='트리' && selectedGrp" class="admin-table crud-grid" style="margin-top:0;">
+      <thead>
+        <tr>
+          <th style="width:30px;"></th>
+          <th>코드라벨</th>
+          <th>코드값</th>
+          <th class="col-ord">순서</th>
+          <th class="col-use">사용여부</th>
+          <th>비고</th>
+          <th style="width:80px;">사이트명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="codeTree.count===0">
+          <td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+        </tr>
+        <code-tree-row v-else v-for="node in codeTree.children" :key="node.value" :node="node"
+          :expanded="codeTreeExpanded" :on-toggle="codeToggleNode" :depth="0" :site-nm="siteNm" />
+      </tbody>
+    </table>
   </div>
 
   <!-- 표시경로 선택 모달 -->
@@ -604,5 +680,50 @@ window.SyCodeMng = {
     title="공통코드그룹 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
+`,
+};
+
+/* ── 공통코드 트리 행 컴포넌트 (테이블 형식) ── */
+window.CodeTreeRow = {
+  name: 'CodeTreeRow',
+  props: ['node', 'expanded', 'onToggle', 'depth', 'siteNm'],
+  setup(props) {
+    const { computed } = Vue;
+    const isExpanded = computed(() => props.expanded.has(props.node.value));
+    const handleToggle = () => { props.onToggle(props.node.value); };
+    const paddingLeft = computed(() => (props.depth * 20) + 'px');
+    return { isExpanded, handleToggle, paddingLeft };
+  },
+  template: /* html */`
+<template>
+  <tr>
+    <td style="padding:0;text-align:center;">
+      <span v-if="node.children.length > 0"
+        @click="handleToggle"
+        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;color:#6b7280;font-size:12px;">
+        {{ isExpanded ? '▼' : '▶' }}
+      </span>
+    </td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span :style="{ marginLeft: paddingLeft }"></span>
+        <span style="font-weight:600;color:#374151;">{{ node.label }}</span>
+      </div>
+    </td>
+    <td><span style="font-family:monospace;color:#6b7280;font-size:12px;">{{ node.value }}</span></td>
+    <td style="text-align:right;color:#6b7280;font-size:12px;">{{ node.code ? node.code.sortOrd : '' }}</td>
+    <td style="text-align:center;">
+      <span v-if="node.code" style="display:inline-block;min-width:50px;text-align:center;padding:3px 6px;background:#fff;border:1px solid #d1d5db;border-radius:3px;font-size:11px;"
+        :style="node.code.useYn==='Y' ? {color:'#10b981',borderColor:'#10b981'} : {color:'#ef4444',borderColor:'#ef4444'}">
+        {{ node.code.useYn === 'Y' ? '사용' : '미사용' }}
+      </span>
+    </td>
+    <td style="color:#6b7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ node.code ? node.code.remark : '' }}</td>
+    <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+  </tr>
+  <code-tree-row v-if="isExpanded && node.children.length > 0"
+    v-for="child in node.children" :key="child.value" :node="child"
+    :expanded="expanded" :on-toggle="onToggle" :depth="depth + 1" :site-nm="siteNm" />
+</template>
 `,
 };

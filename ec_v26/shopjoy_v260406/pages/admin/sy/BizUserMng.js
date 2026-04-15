@@ -409,7 +409,7 @@ window.SyBizUserMng = {
   </div>
 
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
+    <div class="card" style="padding:12px;display:flex;flex-direction:column;min-width:0;height:fit-content;max-height:35vh;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할정보</span></div>
       <select disabled :value="treeRoleCat" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;background:#f5f5f7;color:#6b7280;">
         <option value="">역할구분 전체</option>
@@ -421,19 +421,20 @@ window.SyBizUserMng = {
         <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
-      <div style="max-height:65vh;overflow:auto;">
+      <div style="flex:1;overflow:auto;min-height:0;">
         <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
 
-    <div>
-      <div class="card">
+    <div style="min-width:0;display:flex;flex-direction:column;">
+      <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0;">
         <div class="toolbar">
           <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ filtered.length }}건</span></span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
           </div>
         </div>
+        <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;min-height:0;">
         <table class="admin-table">
           <thead><tr>
             <th>표시경로</th><th>업체유형</th><th>역할구분</th><th>업체</th><th>이름</th><th>직위</th><th>역할</th><th>부서</th><th>휴대전화</th><th>상태</th><th style="text-align:right;">관리</th>
@@ -462,6 +463,7 @@ window.SyBizUserMng = {
             </tr>
           </tbody>
         </table>
+        </div>
         <div class="pagination">
           <div></div>
           <div class="pager">
@@ -492,7 +494,7 @@ window.SyBizUserMng = {
             <button class="btn btn-primary btn-sm" @click="saveForm">저장</button>
           </div>
         </div>
-        <div style="padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
           <div class="form-group"><label class="form-label">사업자</label>
             <input class="form-control" :value="formData.bizId != null ? bizSummary(formData.bizId) : ''" readonly disabled
               style="background:#f3f4f6;color:#374151;cursor:not-allowed;" />
