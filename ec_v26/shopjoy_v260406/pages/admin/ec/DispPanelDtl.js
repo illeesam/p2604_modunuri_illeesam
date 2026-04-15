@@ -3,6 +3,13 @@ window.EcDispPanelDtl = {
   name: 'EcDispPanelDtl',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    /* ── 표시경로 선택 모달 (sy_path) ── */
+    const pathPickModal = Vue.reactive({ show: false, target: null });
+    const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
+    const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
@@ -61,7 +68,7 @@ window.EcDispPanelDtl = {
       condition: '항상 표시', authRequired: false, authGrade: '',
       /* 신규: 공개 대상 (기본 전체공개) */
       visibilityTargets: '^PUBLIC^',
-      displayPath: '',
+      displayPath: '', pathId: null,
     });
 
     /* ── 행별 독립 데이터 팩토리 ── */
@@ -629,6 +636,7 @@ window.EcDispPanelDtl = {
     };
 
     return {
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       libPickOpen, libPickMode, openLibPick, onLibPicked,
       rowCopyOpen, onRowCopy,
       visibilityOptions, hasVisibility, toggleVisibility,
@@ -737,7 +745,13 @@ window.EcDispPanelDtl = {
             </div>
             <div class="form-group">
               <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FRONT.모바일메인)</span></label>
-              <input class="form-control" v-model="form.displayPath" placeholder="FRONT.모바일메인" :readonly="viewMode" style="font-family:monospace;" />
+              <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+            <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+            <button type="button" @click="openPathPick('form')" title="표시경로 선택"
+              :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
+              @mouseover="$event.currentTarget.style.background='#eef2ff'"
+              @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+          </div>
             </div>
             <div class="form-group">
               <label class="form-label">포함된 화면영역
@@ -1263,7 +1277,13 @@ window.EcDispPanelDtl = {
               </div>
               <div class="form-group">
                 <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FRONT.모바일메인)</span></label>
-                <input class="form-control" v-model="form.displayPath" placeholder="FRONT.모바일메인" :readonly="viewMode" style="font-family:monospace;" />
+                <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+                  <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+                  <button type="button" v-if="!viewMode" @click="openPathPick('form')" title="표시경로 선택"
+                    :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
+                    @mouseover="$event.currentTarget.style.background='#eef2ff'"
+                    @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+                </div>
               </div>
               <div class="form-group">
                 <label class="form-label">포함된 화면영역
@@ -1534,7 +1554,7 @@ window.EcDispPanelDtl = {
   />
 
   <!-- 패널미리보기 오버레이 -->
-  <div v-if="cardPreview.show"
+  <div v-if="cardPreview && cardPreview.show"
     @click.self="closeCardPreview"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:14px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
@@ -1603,6 +1623,11 @@ window.EcDispPanelDtl = {
     :exclude-panel-id="form.dispId"
     @close="rowCopyOpen=false"
     @pick-multi="onRowCopy" />
+
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel"
+    :value="form.pathId"
+    title="표시경로 선택"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
 };

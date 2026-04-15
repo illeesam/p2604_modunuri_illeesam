@@ -3,6 +3,8 @@ window.EcDispPanelMng = {
   name: 'EcDispPanelMng',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
@@ -328,6 +330,7 @@ window.EcDispPanelMng = {
     });
 
     return {
+      pathLabel,
       panelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, searchLayoutType, CONDITION_OPTS, AUTH_GRADE_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
@@ -487,7 +490,7 @@ window.EcDispPanelMng = {
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
                 <span><b style="color:#888;">표시경로:</b>
                   <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                    {{ d.displayPath || ((d.area||'').split('_')[0] + '.' + areaLabel(d.area)) }}
+                    {{ pathLabel(d.pathId) || d.displayPath || ((d.area||'').split('_')[0] + '.' + areaLabel(d.area)) }}
                   </span>
                 </span>
                 <span><b style="color:#888;">화면영역:</b>

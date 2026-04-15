@@ -11,6 +11,11 @@ window.SyBbmMng = {
     const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_bbm'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    /* _expand3: 기본 3레벨 펼침 */
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
     const pathPickModal = Vue.reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -104,7 +109,7 @@ window.SyBbmMng = {
       </div>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -176,8 +181,8 @@ window.SyBbmMng = {
   </div>
   </div><!-- /grid 25/75 -->
 
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
-    :value="pathPickModal.row && pathPickModal.row.pathId"
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_bbm"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     title="게시판관리 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>

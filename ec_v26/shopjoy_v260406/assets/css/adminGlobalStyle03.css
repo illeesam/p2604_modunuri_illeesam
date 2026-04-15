@@ -2,7 +2,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; }
 
-.admin-wrap { padding: 20px; max-width: 1400px; margin: 0 auto; }
+.admin-wrap { padding: 20px; max-width: 1550px; margin: 0 auto; }
 .page-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #1a1a2e; }
 
 .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 20px; margin-bottom: 16px; }

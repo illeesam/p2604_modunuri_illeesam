@@ -307,7 +307,7 @@ window.EcChattDtl = {
   </template>
 
   <!-- 메시지 내 참조 모달 (상품/주문/클레임) -->
-  <div v-if="refModal.show" class="modal-overlay" @click.self="closeRefModal">
+  <div v-if="refModal && refModal.show" class="modal-overlay" @click.self="closeRefModal">
     <div class="modal-box">
       <div class="modal-header">
         <span class="modal-title">

@@ -2954,6 +2954,17 @@ window.PathPickModal = {
     const toggle = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const expandAll = () => { expanded.clear(); expanded.add(null); const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    /* 3레벨 자동 펼침 (모달 오픈 시) */
+    const expandLevels = (maxDepth) => {
+      expanded.clear(); expanded.add(null);
+      const walk = (n, d) => {
+        if (d >= maxDepth) return;
+        (n.children || []).forEach(ch => { expanded.add(ch.pathId); walk(ch, d + 1); });
+      };
+      walk(tree.value, 0);
+    };
+    Vue.onMounted(() => expandLevels(2));
+
     const selectedId = ref(props.value || null);
     const select = (id) => { selectedId.value = id; };
     const confirm = () => { emit('select', selectedId.value); emit('close'); };
@@ -2961,18 +2972,64 @@ window.PathPickModal = {
     const addLabel = ref('');
     const setAddParent = (id) => { addParent.value = id; };
     const doAdd = () => {
-      if (!addLabel.value.trim()) return;
+      const txt = addLabel.value.trim();
+      if (!txt) {
+        if (window.adminToast) window.adminToast('새 경로명을 입력해주세요.', 'warning');
+        else alert('새 경로명을 입력해주세요.');
+        return;
+      }
       const list = ad.paths || (ad.paths = []);
+      /* 동일 부모 + 동일 라벨 중복 체크 */
+      const dup = list.find(p => p.bizCd === props.bizCd && p.parentPathId === addParent.value && p.pathLabel === txt);
+      if (dup) {
+        if (window.adminToast) window.adminToast(`'${txt}' 경로가 이미 존재합니다.`, 'error');
+        else alert('이미 존재하는 경로입니다: ' + txt);
+        return;
+      }
       const newId = (list.reduce((m,x) => Math.max(m, x.pathId), 0) || 0) + 1;
       list.push({ pathId: newId, bizCd: props.bizCd, parentPathId: addParent.value,
-        pathLabel: addLabel.value.trim(), sortOrd: 99, useYn: 'Y', remark: '' });
+        pathLabel: txt, sortOrd: 99, useYn: 'Y', remark: '', _userAdded: true });
       addLabel.value = '';
       expanded.add(addParent.value);
       selectedId.value = newId;
+      if (window.adminToast) window.adminToast(`'${txt}' 경로가 추가되었습니다.`, 'success');
     };
+
+    /* 인라인 수정 */
+    const editingId = ref(null);
+    const editLabel = ref('');
+    const startEdit = (node) => { editingId.value = node.pathId; editLabel.value = node.pathLabel; };
+    const saveEdit = () => {
+      const id = editingId.value;
+      if (id != null && editLabel.value.trim()) {
+        const item = (ad.paths || []).find(p => p.pathId === id);
+        if (item) item.pathLabel = editLabel.value.trim();
+      }
+      editingId.value = null;
+    };
+    const cancelEdit = () => { editingId.value = null; };
+
+    /* 삭제 (자식 없는 경우만) — adminConfirm 디자인 다이얼로그 사용 */
+    const deleteNode = async (node) => {
+      if ((node.children || []).length > 0) {
+        if (window.adminConfirm) await window.adminConfirm('삭제 불가', '하위 경로가 있어 삭제할 수 없습니다.', { btnCancel: '' });
+        else alert('하위 경로가 있어 삭제할 수 없습니다.');
+        return;
+      }
+      const ok = window.adminConfirm
+        ? await window.adminConfirm('표시경로 삭제', '이 경로를 삭제하시겠습니까?', { details: node.pathLabel })
+        : window.confirm('이 경로를 삭제하시겠습니까?\n\n' + node.pathLabel);
+      if (!ok) return;
+      const idx = (ad.paths || []).findIndex(p => p.pathId === node.pathId);
+      if (idx >= 0) ad.paths.splice(idx, 1);
+      if (selectedId.value === node.pathId) selectedId.value = null;
+      if (addParent.value === node.pathId) addParent.value = null;
+    };
+
     const labelOf = (id) => window.adminUtil.getPathLabel(id);
     return { tree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
-             addParent, addLabel, setAddParent, doAdd, labelOf };
+             addParent, addLabel, setAddParent, doAdd, labelOf,
+             editingId, editLabel, startEdit, saveEdit, cancelEdit, deleteNode };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3013,7 +3070,7 @@ window.PathPickModal = {
         <button @click="collapseAll" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">▶ 접기</button>
       </div>
 
-      <div style="max-height:42vh;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:8px;margin-bottom:14px;">
+      <div style="height:340px;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:8px;margin-bottom:14px;">
         <div @click="select(null); setAddParent(null);"
           @dblclick="select(null); confirm();"
           :style="{padding:'8px 12px',cursor:'pointer',borderRadius:'8px',transition:'all .12s',marginBottom:'2px',
@@ -3027,7 +3084,10 @@ window.PathPickModal = {
           <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">{{ tree.count }}</span>
         </div>
         <path-pick-tree-node :node="tree" :expanded="expanded" :selected="selectedId" :add-parent="addParent"
-          :on-toggle="toggle" :on-select="select" :on-set-parent="setAddParent" :on-confirm="confirm" :depth="0" />
+          :editing-id="editingId" :edit-label="editLabel"
+          :on-toggle="toggle" :on-select="select" :on-set-parent="setAddParent" :on-confirm="confirm"
+          :on-start-edit="startEdit" :on-save-edit="saveEdit" :on-cancel-edit="cancelEdit"
+          :on-update-label="(v) => editLabel = v" :on-delete="deleteNode" :depth="0" />
       </div>
 
       <!-- 추가 입력 -->
@@ -3062,14 +3122,16 @@ window.PathPickModal = {
 
 window.PathPickTreeNode = {
   name: 'PathPickTreeNode',
-  props: ['node', 'expanded', 'selected', 'addParent', 'onToggle', 'onSelect', 'onSetParent', 'onConfirm', 'depth'],
+  props: ['node', 'expanded', 'selected', 'addParent', 'editingId', 'editLabel',
+          'onToggle', 'onSelect', 'onSetParent', 'onConfirm',
+          'onStartEdit', 'onSaveEdit', 'onCancelEdit', 'onUpdateLabel', 'onDelete', 'depth'],
   template: /* html */`
 <div v-if="(node.children||[]).length > 0" style="position:relative;">
   <div v-for="(ch, ci) in node.children" :key="ch.pathId" style="position:relative;">
     <!-- 노드 행 -->
-    <div @click="onSelect(ch.pathId); onSetParent(ch.pathId);"
-      @dblclick="onSelect(ch.pathId); onConfirm && onConfirm();"
-      :style="{position:'relative',display:'flex',alignItems:'center',padding:'4px 8px 4px 0',cursor:'pointer',transition:'background .12s',
+    <div @click="(editingId !== ch.pathId) && (onSelect(ch.pathId), onSetParent(ch.pathId))"
+      @dblclick="(editingId !== ch.pathId) && (onSelect(ch.pathId), onConfirm && onConfirm())"
+      :style="{position:'relative',display:'flex',alignItems:'center',padding:'4px 8px 4px 0',cursor: editingId===ch.pathId ? 'default' : 'pointer',transition:'background .12s',
                paddingLeft: (depth*20 + 8) + 'px',
                background: selected===ch.pathId ? '#fef2f4' : (addParent===ch.pathId ? '#ecfdf5' : 'transparent'),
                color:      selected===ch.pathId ? '#e8587a' : '#374151',
@@ -3078,31 +3140,48 @@ window.PathPickTreeNode = {
       @mouseover="(selected!==ch.pathId) && ($event.currentTarget.style.background='#f3f4f6')"
       @mouseout="(selected!==ch.pathId) && ($event.currentTarget.style.background = (addParent===ch.pathId ? '#ecfdf5' : 'transparent'))">
 
-      <!-- 트리 라인 (가로 ─) -->
       <span :style="{position:'absolute',left:(depth*20 + 11)+'px',top:'50%',width:'10px',height:'1px',borderTop:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
 
-      <!-- 토글 박스 (윈도우 [+]/[-]) -->
       <span v-if="(ch.children||[]).length>0" @click.stop="onToggle(ch.pathId)"
         style="position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid #94a3b8;background:#fff;font-size:10px;line-height:1;color:#475569;cursor:pointer;user-select:none;flex-shrink:0;font-family:monospace;font-weight:700;border-radius:2px;">{{ expanded.has(ch.pathId) ? '−' : '+' }}</span>
       <span v-else style="display:inline-block;width:16px;height:16px;flex-shrink:0;"></span>
 
-      <!-- 폴더/파일 아이콘 -->
       <span style="margin:0 6px 0 4px;font-size:13px;flex-shrink:0;">{{ (ch.children||[]).length>0 ? (expanded.has(ch.pathId) ? '📂' : '📁') : '📄' }}</span>
 
-      <span style="flex:1;">{{ ch.pathLabel }}</span>
-      <span v-if="ch.count>0" style="font-size:10px;color:#6b7280;background:#fff;padding:1px 7px;border-radius:10px;border:1px solid #e5e7eb;font-weight:500;margin-right:4px;">{{ ch.count }}</span>
+      <!-- 인라인 수정 모드 -->
+      <template v-if="editingId === ch.pathId">
+        <input type="text" :value="editLabel" @input="onUpdateLabel($event.target.value)"
+          @keyup.enter="onSaveEdit" @keyup.esc="onCancelEdit" @click.stop
+          style="flex:1;padding:3px 8px;font-size:12px;border:1px solid #6366f1;border-radius:4px;outline:none;" />
+        <button @click.stop="onSaveEdit" title="저장"
+          style="margin-left:4px;width:22px;height:22px;border:none;background:#10b981;color:#fff;border-radius:4px;cursor:pointer;font-size:11px;">✓</button>
+        <button @click.stop="onCancelEdit" title="취소"
+          style="margin-left:2px;width:22px;height:22px;border:none;background:#9ca3af;color:#fff;border-radius:4px;cursor:pointer;font-size:11px;">✕</button>
+      </template>
+      <template v-else>
+        <span style="flex:1;">{{ ch.pathLabel }}</span>
+        <span v-if="ch.count>0" style="font-size:10px;color:#6b7280;background:#fff;padding:1px 7px;border-radius:10px;border:1px solid #e5e7eb;font-weight:500;margin-right:4px;">{{ ch.count }}</span>
+        <!-- 사용자 추가 항목만 수정/삭제 노출 -->
+        <template v-if="ch.userAdded">
+          <button @click.stop="onStartEdit(ch)" title="수정"
+            style="width:22px;height:22px;border:1px solid #c7d2fe;background:#eef2ff;color:#4f46e5;border-radius:4px;cursor:pointer;font-size:10px;margin-right:2px;">✏</button>
+          <button @click.stop="onDelete(ch)" title="삭제"
+            :disabled="(ch.children||[]).length>0"
+            :style="{width:'22px',height:'22px',border:'1px solid '+((ch.children||[]).length>0?'#e5e7eb':'#fecaca'),background:(ch.children||[]).length>0?'#f3f4f6':'#fee2e2',color:(ch.children||[]).length>0?'#9ca3af':'#dc2626',borderRadius:'4px',cursor:(ch.children||[]).length>0?'not-allowed':'pointer',fontSize:'10px',marginRight:'4px'}">🗑</button>
+        </template>
+      </template>
     </div>
 
-    <!-- 자식 영역 (세로 │ 라인 포함) -->
     <div v-if="expanded.has(ch.pathId) && (ch.children||[]).length>0"
       :style="{position:'relative'}">
-      <!-- 세로 dotted 라인 -->
       <span :style="{position:'absolute',left:(depth*20 + 16)+'px',top:'0',bottom: (ci===node.children.length-1) ? '50%' : '0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
       <path-pick-tree-node :node="ch" :expanded="expanded" :selected="selected" :add-parent="addParent"
-        :on-toggle="onToggle" :on-select="onSelect" :on-set-parent="onSetParent" :on-confirm="onConfirm" :depth="depth+1" />
+        :editing-id="editingId" :edit-label="editLabel"
+        :on-toggle="onToggle" :on-select="onSelect" :on-set-parent="onSetParent" :on-confirm="onConfirm"
+        :on-start-edit="onStartEdit" :on-save-edit="onSaveEdit" :on-cancel-edit="onCancelEdit"
+        :on-update-label="onUpdateLabel" :on-delete="onDelete" :depth="depth+1" />
     </div>
 
-    <!-- 형제 노드 사이 세로 라인 (현재 노드의 부모 라인 — depth가 0이 아닌 경우) -->
     <span v-if="depth > 0 && ci < node.children.length - 1"
       :style="{position:'absolute',left:(depth*20 + 16 - 20)+'px',top:'0',bottom:'0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
   </div>

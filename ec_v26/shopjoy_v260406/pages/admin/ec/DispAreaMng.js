@@ -3,6 +3,8 @@ window.EcDispAreaMng = {
   name: 'EcDispAreaMng',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { ref, reactive, computed } = Vue;
 
     const AREA_TYPE_OPTS = [
@@ -197,6 +199,7 @@ window.EcDispAreaMng = {
     const statusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
     return {
+      pathLabel,
       searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
@@ -328,7 +331,7 @@ window.EcDispAreaMng = {
             <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
               <span><b style="color:#888;">표시경로:</b>
                 <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                  {{ a.displayPath || ((a.codeValue||'').split('_')[0] + '.' + (a.codeLabel || a.codeValue)) }}
+                  {{ pathLabel(a.pathId) || a.displayPath || ((a.codeValue||'').split('_')[0] + '.' + (a.codeLabel || a.codeValue)) }}
                 </span>
               </span>
               <span><b style="color:#888;">유형:</b> {{ areaTypeLabel(a.areaType) }}</span>

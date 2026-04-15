@@ -104,6 +104,11 @@ window.SyCodeMng = {
     const grpSelectNode = (path) => { grpSelectedPath.value = path; };
     const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(grpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
+    /* _expand3_grp: 그룹 트리 3레벨 펼침 */
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(grpTree.value, 2);
+      grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
+    });
     const grpTree = computed(() => window.adminUtil.buildPathTree('sy_code_grp'));
     const filteredGrpRows = computed(() => {
       const sp = grpSelectedPath.value;
@@ -395,7 +400,7 @@ window.SyCodeMng = {
   </div>
 
   <!-- ═══ 상단: 표시경로 트리 + 코드그룹 CRUD ═══ -->
-  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;margin-bottom:14px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;margin-bottom:14px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title" style="font-size:13px;">📂 표시경로 <span class="list-count">{{ grpTree.count }}</span></span>
@@ -594,8 +599,8 @@ window.SyCodeMng = {
   </div>
 
   <!-- 표시경로 선택 모달 -->
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_code_grp"
-    :value="pathPickModal.row && pathPickModal.row.pathId"
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_code_grp"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     title="공통코드그룹 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>

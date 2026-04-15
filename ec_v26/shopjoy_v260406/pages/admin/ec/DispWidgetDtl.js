@@ -4,6 +4,13 @@ window.EcDispWidgetDtl = {
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
+    /* ── 표시경로 선택 모달 (sy_path, 다중) ── */
+    const pathPickModal = Vue.reactive({ show: false });
+    const openPathPick = () => { pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; };
+    const onPathPicked = (pathId) => { form.pathId = pathId; };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
 
@@ -41,7 +48,7 @@ window.EcDispWidgetDtl = {
     const makeForm = () => ({
       libId: null, libCode: '', name: '', widgetType: 'image_banner', desc: '', tags: '', status: '활성',
       titleYn: 'N', title: '',
-      usedPaths: [],
+      pathId: null,
       regDate: new Date().toISOString().slice(0, 10),
       /* 위젯 공통 */
       clickAction: 'none', clickTarget: '',
@@ -458,6 +465,7 @@ window.EcDispWidgetDtl = {
     };
 
     return {
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       libPickOpen, libPickMode, openLibPick, onLibPicked,
       isNew, form, errors, WIDGET_TYPES,
       isImage, isProduct, isCondProduct, isChart, isText, isInfo,
@@ -588,15 +596,15 @@ window.EcDispWidgetDtl = {
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;">
           표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로 (예: FRONT.모바일메인)</span>
         </div>
-        <div v-for="(path, pi) in form.usedPaths" :key="pi"
-          style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
-          <input :value="path" @input="form.usedPaths[pi]=$event.target.value"
-            class="form-control" placeholder="FRONT.모바일메인" style="margin:0;flex:1;font-size:12px;font-family:monospace;" />
-          <button @click="form.usedPaths.splice(pi,1)"
-            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0;">✕</button>
+        <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+          <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+          <button type="button" @click="openPathPick()" title="표시경로 선택"
+            :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
+            @mouseover="$event.currentTarget.style.background='#eef2ff'"
+            @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+          <button v-if="form.pathId != null" type="button" @click="form.pathId=null"
+            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:11px;">✕</button>
         </div>
-        <button @click="form.usedPaths.push('')"
-          style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;cursor:pointer;font-size:12px;margin-top:2px;">+ 경로 추가</button>
       </div>
 
       <!-- 클릭 액션 (html_editor·file_list·embed 제외) -->
@@ -725,6 +733,11 @@ window.EcDispWidgetDtl = {
       </div>
     </div>
   </div>
+
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget"
+    :value="form.pathId"
+    title="위젯 표시경로 선택"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

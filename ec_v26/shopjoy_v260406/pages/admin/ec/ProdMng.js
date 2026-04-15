@@ -184,7 +184,7 @@ window.EcProdMng = {
 
   <!-- 카테고리 선택 모달 -->
   <category-tree-modal
-    v-if="catModal.show"
+    v-if="catModal && catModal.show"
     :disp-dataset="dispDataset"
     :exclude-id="null"
     @select="onCatSelect"

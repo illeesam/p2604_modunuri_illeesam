@@ -247,6 +247,11 @@ window.SyBrandMng = {
     const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_brand'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
+    /* _expand3: 기본 3레벨 펼침 */
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
     Vue.watch(selectedPath, () => loadGrid());
 
     return {
@@ -290,7 +295,7 @@ window.SyBrandMng = {
   </div>
 
   <!-- 좌 트리 + 우 그리드 -->
-  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title" style="font-size:13px;">📂 표시경로</span>
@@ -337,14 +342,13 @@ window.SyBrandMng = {
           <th style="min-width:200px;">로고 URL</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
-          <th style="min-width:140px;">비고</th>
           <th class="col-act-cancel"></th>
           <th class="col-act-delete"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.brandId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -408,10 +412,6 @@ window.SyBrandMng = {
               <option value="Y">사용</option><option value="N">미사용</option>
             </select>
           </td>
-          <td>
-            <input class="grid-input" v-model="row.remark"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)" />
-          </td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
@@ -442,8 +442,8 @@ window.SyBrandMng = {
   </div>
   </div><!-- /grid 25/75 -->
 
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_brand"
-    :value="pathPickModal.row && pathPickModal.row.pathId"
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_brand"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />
 </div>
 `,

@@ -25,6 +25,11 @@ window.SyAlarmMng = {
     const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_alarm'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
+    /* _expand3: 기본 3레벨 펼침 */
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
 
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -125,7 +130,7 @@ window.SyAlarmMng = {
 
 
   <!-- 좌 트리 + 우 영역 -->
-  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -191,6 +196,10 @@ window.SyAlarmMng = {
     <sy-alarm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div></div>
+
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_alarm"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

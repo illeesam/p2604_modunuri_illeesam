@@ -342,7 +342,7 @@ window.SyDeptMng = {
   </div>
 
   <dept-tree-modal
-    v-if="deptTreeModal.show"
+    v-if="deptTreeModal && deptTreeModal.show"
     :disp-dataset="adminData"
     :exclude-id="deptTreeModal.targetRow && deptTreeModal.targetRow.deptId > 0 ? deptTreeModal.targetRow.deptId : null"
     @select="onParentSelect"

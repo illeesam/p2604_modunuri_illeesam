@@ -3,6 +3,8 @@ window.EcDispWidgetMng = {
   name: 'EcDispWidgetMng',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
 
@@ -203,6 +205,7 @@ window.EcDispWidgetMng = {
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
 
     return {
+      pathLabel,
       WIDGET_TYPES, wTypeLabel, wIcon, doDelete,
       searchKw, searchType, searchStatus, pager, PAGE_SIZES,
       filtered, totalCount, pageList, totalPages, pageNumbers,

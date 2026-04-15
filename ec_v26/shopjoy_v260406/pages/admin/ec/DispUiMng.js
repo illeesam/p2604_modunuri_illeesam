@@ -5,6 +5,8 @@ window.EcDispUiMng = {
   name: 'EcDispUiMng',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { ref, reactive, computed } = Vue;
 
     const UI_TYPE_OPTS = [
@@ -144,6 +146,7 @@ window.EcDispUiMng = {
       (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === uiCode).length;
 
     return {
+      pathLabel,
       searchKw, searchUiType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       UI_TYPE_OPTS,
@@ -261,7 +264,7 @@ window.EcDispUiMng = {
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
                 <span><b style="color:#888;">표시경로:</b>
-                  <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ u.displayPath || ((u.uiType || '-') + '.' + u.codeLabel) }}</span>
+                  <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ pathLabel(u.pathId) || u.displayPath || ((u.uiType || '-') + '.' + u.codeLabel) }}</span>
                 </span>
                 <span><b style="color:#888;">유형:</b> {{ uiTypeLabel(u.uiType) }}</span>
                 <span><b style="color:#888;">포함 영역:</b>

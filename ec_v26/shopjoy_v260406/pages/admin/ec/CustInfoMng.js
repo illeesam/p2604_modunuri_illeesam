@@ -606,7 +606,7 @@
   </template>
 
   <!-- ── 고객 선택 모달 ── -->
-  <div v-if="memberModal.show" class="modal-overlay" @click.self="memberModal.show=false">
+  <div v-if="memberModal && memberModal.show" class="modal-overlay" @click.self="memberModal.show=false">
     <div class="modal-box" style="max-width:760px;width:96%;max-height:85vh;display:flex;flex-direction:column;">
       <div class="modal-header">
         <span class="modal-title">고객 검색</span>

@@ -1515,6 +1515,28 @@
       { pathId: 31, bizCd: 'ec_disp_area', parentPathId: 30,   pathLabel: '모바일',  sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 32, bizCd: 'ec_disp_area', parentPathId: 30,   pathLabel: 'PC',      sortOrd: 2, useYn: 'Y', remark: '' },
       { pathId: 33, bizCd: 'ec_disp_area', parentPathId: null, pathLabel: 'ADMIN',   sortOrd: 2, useYn: 'Y', remark: '' },
+      /* ec_disp_panel */
+      { pathId: 40, bizCd: 'ec_disp_panel', parentPathId: null, pathLabel: 'FRONT',  sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 41, bizCd: 'ec_disp_panel', parentPathId: 40,   pathLabel: '모바일', sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 42, bizCd: 'ec_disp_panel', parentPathId: 40,   pathLabel: 'PC',     sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 43, bizCd: 'ec_disp_panel', parentPathId: null, pathLabel: 'ADMIN',  sortOrd: 2, useYn: 'Y', remark: '' },
+      /* ec_disp_widget */
+      { pathId: 50, bizCd: 'ec_disp_widget', parentPathId: null, pathLabel: 'FRONT',  sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 51, bizCd: 'ec_disp_widget', parentPathId: 50,   pathLabel: '모바일', sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 52, bizCd: 'ec_disp_widget', parentPathId: 50,   pathLabel: 'PC',     sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 53, bizCd: 'ec_disp_widget', parentPathId: null, pathLabel: 'ADMIN',  sortOrd: 2, useYn: 'Y', remark: '' },
+      /* ec_disp_widget_lib */
+      { pathId: 60, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '배너',   sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 61, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '상품',   sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 62, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '차트',   sortOrd: 3, useYn: 'Y', remark: '' },
+      { pathId: 63, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '이벤트', sortOrd: 4, useYn: 'Y', remark: '' },
+      { pathId: 64, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '기타',   sortOrd: 5, useYn: 'Y', remark: '' },
+      /* ec_disp_ui */
+      { pathId: 70, bizCd: 'ec_disp_ui', parentPathId: null, pathLabel: 'FRONT', sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 71, bizCd: 'ec_disp_ui', parentPathId: 70,   pathLabel: '메인',  sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 72, bizCd: 'ec_disp_ui', parentPathId: 70,   pathLabel: '상품',  sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 73, bizCd: 'ec_disp_ui', parentPathId: 70,   pathLabel: '마이',  sortOrd: 3, useYn: 'Y', remark: '' },
+      { pathId: 74, bizCd: 'ec_disp_ui', parentPathId: null, pathLabel: 'ADMIN', sortOrd: 2, useYn: 'Y', remark: '' },
     ],
 
     /* BIZ_CD 코드그룹 (sy_code 등록 항목) */
@@ -1529,6 +1551,7 @@
       { codeValue: 'sy_batch',     codeLabel: '배치' },
       { codeValue: 'sy_alarm',     codeLabel: '알림' },
       { codeValue: 'sy_role',      codeLabel: '권한' },
+      { codeValue: 'ec_disp_ui',   codeLabel: '전시 UI' },
       { codeValue: 'ec_disp_area', codeLabel: '전시영역' },
       { codeValue: 'ec_disp_panel',codeLabel: '전시패널' },
       { codeValue: 'ec_disp_widget',codeLabel:'전시위젯' },

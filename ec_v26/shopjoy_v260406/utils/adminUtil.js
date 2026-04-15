@@ -213,6 +213,7 @@
       .map(p => ({
         pathId: p.pathId, path: p.pathId,
         name: p.pathLabel, pathLabel: p.pathLabel,
+        userAdded: !!p._userAdded,
         children: build(p.pathId), count: 0,
       }));
     const root = {
@@ -235,6 +236,17 @@
         if (set.has(p.parentPathId) && !set.has(p.pathId)) { set.add(p.pathId); added = true; }
       });
     }
+    return set;
+  };
+
+  /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
+  window.adminUtil.collectExpandedToDepth = function (tree, maxDepth) {
+    const set = new Set([null]);
+    const walk = (n, d) => {
+      if (d >= maxDepth) return;
+      (n.children || []).forEach(ch => { set.add(ch.pathId); walk(ch, d + 1); });
+    };
+    walk(tree, 0);
     return set;
   };
 

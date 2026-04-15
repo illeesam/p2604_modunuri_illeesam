@@ -25,6 +25,11 @@ window.SyTemplateMng = {
     const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_template'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
+    /* _expand3: 기본 3레벨 펼침 */
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
 
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
@@ -167,7 +172,7 @@ window.SyTemplateMng = {
 
 
   <!-- 좌 트리 + 우 영역 -->
-  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -237,17 +242,21 @@ window.SyTemplateMng = {
   </div>
 
   <!-- 미리보기 모달 -->
-  <template-preview-modal v-if="previewModal.show"
+  <template-preview-modal v-if="previewModal && previewModal.show"
     :tmpl="previewModal.template"
     :sample-params="previewModal.template?.sampleParams || '{}'"
     @close="closePreview" />
 
   <!-- 발송하기 모달 -->
-  <template-send-modal v-if="sendModal.show"
+  <template-send-modal v-if="sendModal && sendModal.show"
     :tmpl="sendModal.template" :admin-data="adminData"
     :show-toast="showToast" :show-confirm="showConfirm"
     @close="closeSend" />
 </div></div>
+
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

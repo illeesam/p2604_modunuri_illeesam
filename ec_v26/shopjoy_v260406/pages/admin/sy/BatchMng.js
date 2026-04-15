@@ -25,6 +25,11 @@ window.SyBatchMng = {
     const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_batch'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
+    /* _expand3: 기본 3레벨 펼침 */
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
 
     const { ref, reactive, computed } = Vue;
 
@@ -387,7 +392,7 @@ window.SyBatchMng = {
 
 
   <!-- 좌 트리 + 우 영역 -->
-  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -512,7 +517,7 @@ window.SyBatchMng = {
   </div>
 
   <!-- ── Cron 편집 모달 ── -->
-  <div v-if="cronPicker.show"
+  <div v-if="cronPicker && cronPicker.show"
     style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;"
     @click.self="cronPicker.show=false">
     <div style="background:#fff;border-radius:16px;width:500px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.08);overflow:hidden;border:1px solid rgba(255,255,255,.6);">
@@ -575,8 +580,8 @@ window.SyBatchMng = {
   </div>
 </div></div>
 
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_batch"
-    :value="pathPickModal.row && pathPickModal.row.pathId"
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />
 </div>
 `,

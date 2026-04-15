@@ -3,6 +3,13 @@ window.EcDispUiDtl = {
   name: 'EcDispUiDtl',
   props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
+    /* ── 표시경로 선택 모달 (sy_path) ── */
+    const pathPickModal = Vue.reactive({ show: false, target: null });
+    const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
+    const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
     const { reactive, computed, ref, onMounted } = Vue;
 
     const UI_TYPE_OPTS = [
@@ -19,7 +26,7 @@ window.EcDispUiDtl = {
       codeId: null, codeGrp: 'DISP_UI',
       codeValue: '', codeLabel: '',
       uiType: 'FRONT',
-      remark: '', sortOrd: 1, useYn: 'Y', regDate: '', displayPath: '',
+      remark: '', sortOrd: 1, useYn: 'Y', regDate: '', displayPath: '', pathId: null,
     });
 
     const errors = reactive({});
@@ -36,7 +43,7 @@ window.EcDispUiDtl = {
             codeId: u.codeId, codeGrp: u.codeGrp,
             codeValue: u.codeValue || '', codeLabel: u.codeLabel || '',
             uiType: u.uiType || 'FRONT',
-            remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y', displayPath: u.displayPath || '',
+            remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y', displayPath: u.displayPath || '', pathId: u.pathId == null ? null : u.pathId,
             regDate: u.regDate || '',
           });
         }
@@ -213,6 +220,7 @@ window.EcDispUiDtl = {
     const doCancel = () => { props.navigate('ecDispUiMng'); };
 
     return {
+      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, isNew, UI_TYPE_OPTS,
       save, doCancel, relatedAreas, panelsOfArea,
       activeTab, selectTab, activeArea, expanded, moveArea,
@@ -318,7 +326,13 @@ window.EcDispUiDtl = {
         <div class="form-row" style="margin-bottom:8px;">
           <div class="form-group" style="grid-column:1 / -1;">
             <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">UI가 노출되는 경로 (예: FRONT.모바일메인)</span></label>
-            <input class="form-control" v-model="form.displayPath" placeholder="FRONT.모바일메인" style="font-family:monospace;" />
+            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+            <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+            <button type="button" @click="openPathPick('form')" title="표시경로 선택"
+              :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
+              @mouseover="$event.currentTarget.style.background='#eef2ff'"
+              @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+          </div>
           </div>
         </div>
         <div class="form-row" style="margin-bottom:8px;">
@@ -432,6 +446,10 @@ window.EcDispUiDtl = {
     :exclude-ui="form.codeValue"
     @close="closePick"
     @pick="onAreaPicked" />
+
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_ui"
+    :value="form.pathId" title="UI 표시경로 선택"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
   `,
 };

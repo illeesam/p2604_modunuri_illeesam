@@ -307,6 +307,8 @@
           }, duration);
         }
       };
+      /* 전역 노출 (BaseModal 등에서 props 없이 호출) */
+      window.adminToast = showToast;
       const closeToast = (id) => {
         const idx = toasts.findIndex(t => t.id === id);
         if (idx !== -1) toasts.splice(idx, 1);
@@ -327,6 +329,8 @@
           btnCancel: opts.btnCancel || '취소',
           resolve: r,
         }));
+      /* 전역 노출 (BaseModal 등에서 props 없이 호출 가능) */
+      window.adminConfirm = showConfirm;
       const closeConfirm = v => { confirmState.show = false; confirmState.resolve?.(v); };
 
       /* ── 참조 모달 ── */
@@ -963,10 +967,10 @@
   <order-select-modal v-if="selectModal.show && selectModal.type==='order'" :disp-dataset="adminData" @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
-  <admin-ref-modal v-if="refModal.show" :state="refModal" :admin-data="adminData" @close="closeRefModal" />
+  <admin-ref-modal v-if="refModal && refModal.show" :state="refModal" :admin-data="adminData" @close="closeRefModal" />
 
   <!-- Confirm -->
-  <div v-if="confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
+  <div v-if="confirmState && confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
     <div class="confirm-box">
       <div class="confirm-icon">💾</div>
       <div class="confirm-title">{{ confirmState.title }}</div>
@@ -996,7 +1000,7 @@
   </div>
 
   <!-- API 응답 패널 -->
-  <div v-if="apiResPanel.show" style="position:fixed;bottom:20px;right:20px;z-index:8900;width:440px;max-height:55vh;background:#1e1e2e;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;overflow:hidden;">
+  <div v-if="apiResPanel && apiResPanel.show" style="position:fixed;bottom:20px;right:20px;z-index:8900;width:440px;max-height:55vh;background:#1e1e2e;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#2a2a3e;flex-shrink:0;">
       <span style="font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
         API 응답
@@ -1013,7 +1017,7 @@
   </div>
 
   <!-- 탭 컨텍스트 메뉴 -->
-  <div v-if="ctxMenu.show"
+  <div v-if="ctxMenu && ctxMenu.show"
     class="tab-ctx-menu"
     :style="{left: ctxMenu.x+'px', top: ctxMenu.y+'px'}"
     @click.stop>
@@ -1029,7 +1033,7 @@
   </div>
 
   <!-- 프로필 모달 -->
-  <div v-if="profileModal.show" class="modal-overlay" @click.self="profileModal.show=false">
+  <div v-if="profileModal && profileModal.show" class="modal-overlay" @click.self="profileModal.show=false">
     <div class="modal-box" style="max-width:440px;">
       <div class="modal-header">
         <span class="modal-title">🙍 프로필</span>
@@ -1069,7 +1073,7 @@
   </div>
 
   <!-- 비밀번호 변경 모달 -->
-  <div v-if="pwModal.show" class="modal-overlay" @click.self="pwModal.show=false">
+  <div v-if="pwModal && pwModal.show" class="modal-overlay" @click.self="pwModal.show=false">
     <div class="modal-box" style="max-width:380px;">
       <div class="modal-header">
         <span class="modal-title">🔑 비밀번호 변경</span>
@@ -1096,7 +1100,7 @@
   </div>
 
   <!-- 로그인 / 회원가입 모달 -->
-  <div v-if="loginModal.show" class="modal-overlay" @click.self="closeLogin">
+  <div v-if="loginModal && loginModal.show" class="modal-overlay" @click.self="closeLogin">
     <div class="login-modal-box">
       <div class="login-modal-header">
         <div class="login-tabs">

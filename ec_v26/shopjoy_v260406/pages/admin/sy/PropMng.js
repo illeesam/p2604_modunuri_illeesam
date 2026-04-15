@@ -55,6 +55,11 @@ window.SyPropMng = {
       walk(tree.value);
     };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
+    /* _expand3: 기본 3레벨 펼침 */
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
 
     /* ── 선택 노드 ── */
     const selectedPath = ref('');
@@ -346,8 +351,8 @@ window.PropTreeNode = {
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
 
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_prop"
-    :value="pathPickModal.row && pathPickModal.row.pathId"
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_prop"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
