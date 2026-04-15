@@ -114,6 +114,7 @@ window.frontAppHeader = {
       pwOpen, pw, openPw, savePw, IS,
       frontSiteNo: window.FRONT_SITE_NO || '01',
       adminSiteNo: (typeof localStorage !== 'undefined' && localStorage.getItem('modu-admin-site_no')) || '01',
+      openQuickMenu: () => window.dispatchEvent(new CustomEvent('open-quick-menu')),
     };
   },
 
@@ -170,9 +171,10 @@ window.frontAppHeader = {
       <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">
         {{ config.tagline }}
         <span class="front-site-badge"
-          :title="'FRONT_SITE_NO=' + (frontSiteNo || '-') + ' ADMIN_SITE_NO=' + (adminSiteNo || '-')"
+          :title="'FRONT_SITE_NO=' + (frontSiteNo || '-') + ' ADMIN_SITE_NO=' + (adminSiteNo || '-') + ' — 클릭: 메뉴 바로가기'"
           :data-tip="'FRONT_SITE_NO=' + (frontSiteNo || '-') + ' ADMIN_SITE_NO=' + (adminSiteNo || '-')"
-          style="cursor:help;">
+          style="cursor:pointer;"
+          @click.stop="openQuickMenu">
           <span :style="{fontWeight:800,marginLeft:'4px',color: frontSiteNo==='03' ? '#7b1fa2' : frontSiteNo==='02' ? '#2e7d6b' : frontSiteNo==='9999' ? '#888' : '#9f2946'}">{{ frontSiteNo || '-' }}</span>
           <span :style="{fontWeight:800,marginLeft:'3px',color: adminSiteNo==='03' ? '#7b1fa2' : adminSiteNo==='02' ? '#2e7d6b' : adminSiteNo==='9999' ? '#888' : '#9f2946'}">{{ adminSiteNo || '-' }}</span>
         </span>

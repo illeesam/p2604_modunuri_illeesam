@@ -8,6 +8,8 @@ window.frontAppFooter = {
     const menuOpen = ref(false);
     const toggleMenu = () => { menuOpen.value = !menuOpen.value; };
     const closeMenu  = () => { menuOpen.value = false; };
+    /* 외부(헤더 등)에서 팝업 오픈 요청 수신 */
+    window.addEventListener('open-quick-menu', () => { menuOpen.value = true; });
     const goItem = (root, target) => {
       if (root === 'frontOffice') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');

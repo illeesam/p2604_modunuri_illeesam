@@ -599,9 +599,10 @@
     <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
       ShopJoy
       <span class="front-site-badge"
-        :title="'FRONT_SITE_NO=' + (currentFrontNo || '-') + ' ADMIN_SITE_NO=' + (currentAdminSiteNo || '-')"
+        :title="'FRONT_SITE_NO=' + (currentFrontNo || '-') + ' ADMIN_SITE_NO=' + (currentAdminSiteNo || '-') + ' — 클릭: 연관사이트'"
         :data-tip="'FRONT_SITE_NO=' + (currentFrontNo || '-') + ' ADMIN_SITE_NO=' + (currentAdminSiteNo || '-')"
-        style="display:inline-flex;gap:4px;font-family:monospace;font-size:11px;cursor:help;">
+        style="display:inline-flex;gap:4px;font-family:monospace;font-size:11px;cursor:pointer;"
+        @click.stop="toggleRelatedSite">
         <span :style="{fontWeight:800,color: currentFrontNo==='03'?'#7b1fa2':currentFrontNo==='02'?'#2e7d6b':currentFrontNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentFrontNo || '-' }}</span>
         <span :style="{fontWeight:800,color: currentAdminSiteNo==='03'?'#7b1fa2':currentAdminSiteNo==='02'?'#2e7d6b':currentAdminSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentAdminSiteNo || '-' }}</span>
       </span>
