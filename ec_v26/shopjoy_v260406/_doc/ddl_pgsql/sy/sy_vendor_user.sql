@@ -1,56 +1,56 @@
 -- ============================================================
--- sy_biz_user : 사업자 사용자 (사업자에 소속된 담당자/실무자)
+-- sy_vendor_user : 판매/배송업체 사용자 (판매/배송업체에 소속된 담당자/실무자)
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
--- 한 사업자(sy_biz)는 여러 담당자를 가질 수 있고,
+-- 한 판매/배송업체(sy_vendor)는 여러 담당자를 가질 수 있고,
 -- 한 담당자(user)는 ec_user 와 연결되어 로그인 가능 (선택)
 -- ============================================================
-CREATE TABLE sy_biz_user (
-    biz_user_id   VARCHAR(16)     NOT NULL,
+CREATE TABLE sy_vendor_user (
+    vendor_user_id   VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
-    biz_id          VARCHAR(16)     NOT NULL,               -- sy_biz.biz_id
+    vendor_id          VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
     user_id       VARCHAR(16),                            -- ec_user.user_id (NULL = 비로그인 단순 담당자)
     position_cd     VARCHAR(20),                            -- 코드: POSITION (대표/이사/팀장/사원 등)
-    role_cd         VARCHAR(20),                            -- 코드: BIZ_MEMBER_ROLE (OWNER/MANAGER/STAFF)
+    role_cd         VARCHAR(20),                            -- 코드: VENDOR_MEMBER_ROLE (OWNER/MANAGER/STAFF)
     dept_nm         VARCHAR(100),                           -- 부서/팀명
     phone           VARCHAR(20),
     mobile          VARCHAR(20),
     email           VARCHAR(100),
     is_main         CHAR(1)         DEFAULT 'N',            -- 대표 담당자 여부 Y/N
-    auth_yn         CHAR(1)         DEFAULT 'N',            -- 사업자 관리권한 여부 Y/N
+    auth_yn         CHAR(1)         DEFAULT 'N',            -- 판매/배송업체 관리권한 여부 Y/N
     join_date       DATE,                                   -- 등록(합류) 일자
     leave_date      DATE,                                   -- 퇴직/탈퇴 일자
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: BIZ_MEMBER_STATUS (ACTIVE/LEFT/SUSPENDED)
+    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_MEMBER_STATUS (ACTIVE/LEFT/SUSPENDED)
     remark          VARCHAR(500),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
-    PRIMARY KEY (biz_user_id),
-    UNIQUE (biz_id, user_id)
+    PRIMARY KEY (vendor_user_id),
+    UNIQUE (vendor_id, user_id)
 );
 
-COMMENT ON TABLE  sy_biz_user                IS '사업자 사용자 (담당자/실무자)';
-COMMENT ON COLUMN sy_biz_user.biz_user_id  IS '사업자사용자ID (PK)';
-COMMENT ON COLUMN sy_biz_user.site_id        IS '사이트ID';
-COMMENT ON COLUMN sy_biz_user.biz_id         IS '사업자ID (sy_biz.biz_id)';
-COMMENT ON COLUMN sy_biz_user.user_id      IS '사용자ID (ec_user.user_id, NULL=비로그인)';
-COMMENT ON COLUMN sy_biz_user.position_cd    IS '직위/직책 (코드: POSITION)';
-COMMENT ON COLUMN sy_biz_user.role_cd        IS '담당자 역할 (코드: BIZ_MEMBER_ROLE)';
-COMMENT ON COLUMN sy_biz_user.dept_nm        IS '부서/팀명';
-COMMENT ON COLUMN sy_biz_user.phone          IS '사무실 전화';
-COMMENT ON COLUMN sy_biz_user.mobile         IS '휴대전화';
-COMMENT ON COLUMN sy_biz_user.email          IS '이메일';
-COMMENT ON COLUMN sy_biz_user.is_main        IS '대표 담당자 여부 (사업자당 1명 권장)';
-COMMENT ON COLUMN sy_biz_user.auth_yn        IS '사업자 관리권한 여부 (Y=사업자 정보 수정 가능)';
-COMMENT ON COLUMN sy_biz_user.join_date      IS '등록(합류) 일자';
-COMMENT ON COLUMN sy_biz_user.leave_date     IS '퇴직/탈퇴 일자';
-COMMENT ON COLUMN sy_biz_user.status_cd      IS '상태 (코드: BIZ_MEMBER_STATUS)';
-COMMENT ON COLUMN sy_biz_user.remark         IS '비고';
-COMMENT ON COLUMN sy_biz_user.reg_by         IS '등록자';
-COMMENT ON COLUMN sy_biz_user.reg_date       IS '등록일';
-COMMENT ON COLUMN sy_biz_user.upd_by         IS '수정자';
-COMMENT ON COLUMN sy_biz_user.upd_date       IS '수정일';
+COMMENT ON TABLE  sy_vendor_user                IS '판매/배송업체 사용자 (담당자/실무자)';
+COMMENT ON COLUMN sy_vendor_user.vendor_user_id  IS '판매/배송업체사용자ID (PK)';
+COMMENT ON COLUMN sy_vendor_user.site_id        IS '사이트ID';
+COMMENT ON COLUMN sy_vendor_user.vendor_id         IS '판매/배송업체ID (sy_vendor.vendor_id)';
+COMMENT ON COLUMN sy_vendor_user.user_id      IS '사용자ID (ec_user.user_id, NULL=비로그인)';
+COMMENT ON COLUMN sy_vendor_user.position_cd    IS '직위/직책 (코드: POSITION)';
+COMMENT ON COLUMN sy_vendor_user.role_cd        IS '담당자 역할 (코드: VENDOR_MEMBER_ROLE)';
+COMMENT ON COLUMN sy_vendor_user.dept_nm        IS '부서/팀명';
+COMMENT ON COLUMN sy_vendor_user.phone          IS '사무실 전화';
+COMMENT ON COLUMN sy_vendor_user.mobile         IS '휴대전화';
+COMMENT ON COLUMN sy_vendor_user.email          IS '이메일';
+COMMENT ON COLUMN sy_vendor_user.is_main        IS '대표 담당자 여부 (판매/배송업체당 1명 권장)';
+COMMENT ON COLUMN sy_vendor_user.auth_yn        IS '판매/배송업체 관리권한 여부 (Y=판매/배송업체 정보 수정 가능)';
+COMMENT ON COLUMN sy_vendor_user.join_date      IS '등록(합류) 일자';
+COMMENT ON COLUMN sy_vendor_user.leave_date     IS '퇴직/탈퇴 일자';
+COMMENT ON COLUMN sy_vendor_user.status_cd      IS '상태 (코드: VENDOR_MEMBER_STATUS)';
+COMMENT ON COLUMN sy_vendor_user.remark         IS '비고';
+COMMENT ON COLUMN sy_vendor_user.reg_by         IS '등록자';
+COMMENT ON COLUMN sy_vendor_user.reg_date       IS '등록일';
+COMMENT ON COLUMN sy_vendor_user.upd_by         IS '수정자';
+COMMENT ON COLUMN sy_vendor_user.upd_date       IS '수정일';
 
-CREATE INDEX idx_sy_biz_user_biz    ON sy_biz_user (biz_id);
-CREATE INDEX idx_sy_biz_user_user ON sy_biz_user (user_id);
-CREATE INDEX idx_sy_biz_user_status ON sy_biz_user (status_cd);
+CREATE INDEX idx_sy_vendor_user_vendor    ON sy_vendor_user (vendor_id);
+CREATE INDEX idx_sy_vendor_user_user ON sy_vendor_user (user_id);
+CREATE INDEX idx_sy_vendor_user_status ON sy_vendor_user (status_cd);
