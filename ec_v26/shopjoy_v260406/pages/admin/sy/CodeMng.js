@@ -386,6 +386,19 @@ window.SyCodeMng = {
       return { value: '__root__', label: 'Root', children: rootNodes, count: walk(rootNodes) };
     });
 
+    /* 트리를 평탄화된 행 목록으로 변환 (렌더링용) */
+    const flatTreeRows = computed(() => {
+      const result = [];
+      const walk = (node, depth) => {
+        result.push({ node, depth, isExpanded: codeTreeExpanded.has(node.value) });
+        if (codeTreeExpanded.has(node.value)) {
+          node.children.forEach(child => walk(child, depth + 1));
+        }
+      };
+      codeTree.value.children.forEach(node => walk(node, 0));
+      return result;
+    });
+
     return {
       siteNm,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
@@ -401,7 +414,7 @@ window.SyCodeMng = {
       grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
       selectedGrp, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode,
+      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode, flatTreeRows,
     };
   },
   template: /* html */`
@@ -668,8 +681,31 @@ window.SyCodeMng = {
         <tr v-if="codeTree.count===0">
           <td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <code-tree-row v-else v-for="node in codeTree.children" :key="node.value" :node="node"
-          :expanded="codeTreeExpanded" :on-toggle="codeToggleNode" :depth="0" :site-nm="siteNm" />
+        <tr v-else v-for="row in flatTreeRows" :key="row.node.value" style="user-select:none;">
+          <td style="padding:0;text-align:center;">
+            <span v-if="row.node.children.length > 0"
+              @click="codeToggleNode(row.node.value)"
+              style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;color:#6b7280;font-size:12px;">
+              {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span :style="{ marginLeft: (row.depth * 20) + 'px' }"></span>
+              <span style="font-weight:600;color:#374151;">{{ row.node.label }}</span>
+            </div>
+          </td>
+          <td><span style="font-family:monospace;color:#6b7280;font-size:12px;">{{ row.node.value }}</span></td>
+          <td style="text-align:right;color:#6b7280;font-size:12px;">{{ row.node.code.sortOrd }}</td>
+          <td style="text-align:center;">
+            <span style="display:inline-block;min-width:50px;text-align:center;padding:3px 6px;background:#fff;border:1px solid #d1d5db;border-radius:3px;font-size:11px;"
+              :style="row.node.code.useYn==='Y' ? {color:'#10b981',borderColor:'#10b981'} : {color:'#ef4444',borderColor:'#ef4444'}">
+              {{ row.node.code.useYn === 'Y' ? '사용' : '미사용' }}
+            </span>
+          </td>
+          <td style="color:#6b7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.node.code.remark }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -680,50 +716,5 @@ window.SyCodeMng = {
     title="공통코드그룹 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
-`,
-};
-
-/* ── 공통코드 트리 행 컴포넌트 (테이블 형식) ── */
-window.CodeTreeRow = {
-  name: 'CodeTreeRow',
-  props: ['node', 'expanded', 'onToggle', 'depth', 'siteNm'],
-  setup(props) {
-    const { computed } = Vue;
-    const isExpanded = computed(() => props.expanded.has(props.node.value));
-    const handleToggle = () => { props.onToggle(props.node.value); };
-    const paddingLeft = computed(() => (props.depth * 20) + 'px');
-    return { isExpanded, handleToggle, paddingLeft };
-  },
-  template: /* html */`
-<template>
-  <tr>
-    <td style="padding:0;text-align:center;">
-      <span v-if="node.children.length > 0"
-        @click="handleToggle"
-        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;color:#6b7280;font-size:12px;">
-        {{ isExpanded ? '▼' : '▶' }}
-      </span>
-    </td>
-    <td>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span :style="{ marginLeft: paddingLeft }"></span>
-        <span style="font-weight:600;color:#374151;">{{ node.label }}</span>
-      </div>
-    </td>
-    <td><span style="font-family:monospace;color:#6b7280;font-size:12px;">{{ node.value }}</span></td>
-    <td style="text-align:right;color:#6b7280;font-size:12px;">{{ node.code ? node.code.sortOrd : '' }}</td>
-    <td style="text-align:center;">
-      <span v-if="node.code" style="display:inline-block;min-width:50px;text-align:center;padding:3px 6px;background:#fff;border:1px solid #d1d5db;border-radius:3px;font-size:11px;"
-        :style="node.code.useYn==='Y' ? {color:'#10b981',borderColor:'#10b981'} : {color:'#ef4444',borderColor:'#ef4444'}">
-        {{ node.code.useYn === 'Y' ? '사용' : '미사용' }}
-      </span>
-    </td>
-    <td style="color:#6b7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ node.code ? node.code.remark : '' }}</td>
-    <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
-  </tr>
-  <code-tree-row v-if="isExpanded && node.children.length > 0"
-    v-for="child in node.children" :key="child.value" :node="child"
-    :expanded="expanded" :on-toggle="onToggle" :depth="depth + 1" :site-nm="siteNm" />
-</template>
 `,
 };

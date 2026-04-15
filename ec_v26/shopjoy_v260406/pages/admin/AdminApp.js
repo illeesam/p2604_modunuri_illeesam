@@ -1367,7 +1367,6 @@
   .component('SySiteDtl',      window.SySiteDtl)
   .component('SyCodeMng',      window.SyCodeMng)
   .component('SyCodeDtl',      window.SyCodeDtl)
-  .component('CodeTreeRow',    window.CodeTreeRow)
   .component('SyBrandMng',     window.SyBrandMng)
   /* ── pages/admin/sy/ — 템플릿/업체/첨부 ── */
   .component('SyTemplateMng',  window.SyTemplateMng)
