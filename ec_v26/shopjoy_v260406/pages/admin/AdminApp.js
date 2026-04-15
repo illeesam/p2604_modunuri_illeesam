@@ -68,7 +68,7 @@
       { id: 'syDeptMng',     label: '부서관리' },
       { group: '메뉴' },
       { id: 'syMenuMng',     label: '메뉴관리' },
-      { id: 'syRoleMng',     label: '권한관리' },
+      { id: 'syRoleMng',     label: '역할관리' },
       { group: '이력조회' },
       { id: 'syMemberLoginHist', label: '회원로그인이력' },
       { id: 'syUserLoginHist',   label: '사용자로그인이력' },
@@ -683,12 +683,12 @@
     <div class="top-nav-user" @click.stop>
       <template v-if="currentUser">
         <select v-if="currentUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
-          :title="'권한 ' + currentUserRoles.length + '개 보유'"
+          :title="'역할 ' + currentUserRoles.length + '개 보유'"
           style="margin-right:4px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:480px;min-width:320px;">
           <option v-for="r in currentUserRoles" :key="r.roleId" :value="r.roleId">{{ rolePath(r) }}</option>
         </select>
         <span v-if="currentUserRoles.length >= 2"
-          :title="'권한 ' + currentUserRoles.length + '개 보유'"
+          :title="'역할 ' + currentUserRoles.length + '개 보유'"
           style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentUserRoles.length }}</span>
         <span v-else-if="currentUserRoles.length === 1" class="user-role-label"
           style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentUserRoles[0]) }}</span>
@@ -1265,7 +1265,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">권한</label>
+          <label class="form-label">역할</label>
           <select class="form-control" v-model="regForm.role">
             <option>슈퍼관리자</option><option>관리자</option><option>운영자</option><option>영업관리자</option><option>일반사용자</option>
           </select>

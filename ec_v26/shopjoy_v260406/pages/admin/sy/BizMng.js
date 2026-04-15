@@ -50,6 +50,10 @@ window.SyBizMng = {
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
     const vendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const vendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
+    /* 업체유형 → 역할구분 매핑 */
+    const ROLE_CAT_BY_VENDOR = { SALES:['판매업체역할','#16a34a'], DELIVERY:['배송업체역할','#f59e0b'], PARTNER:['사이트역할','#2563eb'], INTERNAL:['사이트역할','#2563eb'] };
+    const roleCatLabel = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[0];
+    const roleCatColor = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[1];
     const statusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
     const statusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
 
@@ -75,7 +79,7 @@ window.SyBizMng = {
       if (formMode.value === 'new') {
         const newId = ((ad.bizs || []).reduce((m,x) => Math.max(m, x.bizId), 0) || 0) + 1;
         ad.bizs.push({ ...formData, bizId: newId });
-        if (window.adminToast) window.adminToast('신규 사업자가 등록되었습니다.', 'success');
+        if (window.adminToast) window.adminToast('신규 업체가 등록되었습니다.', 'success');
       } else {
         const idx = (ad.bizs || []).findIndex(b => b.bizId === formData.bizId);
         if (idx >= 0) ad.bizs[idx] = { ...formData };
@@ -93,7 +97,7 @@ window.SyBizMng = {
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
       filtered, pagedRows, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
-      pathLabel, vendorTypeLabel, vendorTypeBadge, statusBadge, statusLabel,
+      pathLabel, vendorTypeLabel, vendorTypeBadge, roleCatLabel, roleCatColor, statusBadge, statusLabel,
       formMode, formData, openNew, openEdit, closeForm, saveForm,
       pathPickModal, openPathPick, closePathPick, onPathPicked,
     };
@@ -113,6 +117,10 @@ window.SyBizMng = {
         <option value="">상태 전체</option>
         <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
       </select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="pager.page=1">검색</button>
+        <button class="btn btn-secondary btn-sm" @click="kw='';vendorTypeFlt='';statusFlt='';pager.page=1">초기화</button>
+      </div>
     </div>
   </div>
 
@@ -131,7 +139,7 @@ window.SyBizMng = {
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사업자목록 <span class="list-count">{{ filtered.length }}건</span></span>
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ filtered.length }}건</span></span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
           </div>
@@ -139,20 +147,20 @@ window.SyBizMng = {
         <table class="admin-table">
           <thead><tr>
             <th style="min-width:120px;">표시경로</th>
-            <th>업체유형</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>구분</th><th>업태/종목</th><th>전화</th><th>이메일</th><th>상태</th><th>등록일</th><th style="text-align:right;">관리</th>
+            <th>업체유형</th><th>역할구분</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>구분</th><th>업태/종목</th><th>전화</th><th>상태</th><th>등록일</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
             <tr v-if="pagedRows.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
             <tr v-for="b in pagedRows" :key="b.bizId">
               <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
               <td><span class="badge" :class="vendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(b.vendorTypeCd) }}</span></td>
+              <td><span :style="{background:roleCatColor(b.vendorTypeCd),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ roleCatLabel(b.vendorTypeCd) }}</span></td>
               <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ b.bizNo }}</code></td>
               <td style="font-weight:600;">{{ b.bizNm }}</td>
               <td>{{ b.ceoNm }}</td>
               <td><span class="badge badge-blue" style="font-size:10px;">{{ b.bizClassCd }}</span></td>
               <td style="font-size:11.5px;color:#666;">{{ b.bizType }} / {{ b.bizItem }}</td>
               <td style="font-size:11.5px;">{{ b.phone }}</td>
-              <td style="font-size:11.5px;color:#0369a1;">{{ b.email }}</td>
               <td><span class="badge" :class="statusBadge(b.statusCd)" style="font-size:10px;">{{ statusLabel(b.statusCd) }}</span></td>
               <td style="font-size:11px;color:#888;">{{ (b.contractDate||'').slice(0,10) }}</td>
               <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="openEdit(b)">수정</button></td>
@@ -180,7 +188,7 @@ window.SyBizMng = {
       <div v-if="formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
         <div class="toolbar">
           <span class="list-title">
-            <span style="color:#e8587a;">{{ formMode==='new' ? '+ 신규 사업자' : '✏ 사업자 수정' }}</span>
+            <span style="color:#e8587a;">{{ formMode==='new' ? '+ 신규 업체' : '✏ 업체 수정' }}</span>
             <span v-if="formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.bizId }}</span>
           </span>
           <div style="display:flex;gap:6px;">
@@ -193,6 +201,12 @@ window.SyBizMng = {
             <select class="form-control" v-model="formData.vendorTypeCd">
               <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
             </select>
+          </div>
+          <div class="form-group"><label class="form-label">역할구분</label>
+            <div class="form-control" style="background:#f9fafb;display:flex;align-items:center;">
+              <span :style="{background:roleCatColor(formData.vendorTypeCd),color:'#fff',fontSize:'11px',fontWeight:700,padding:'3px 10px',borderRadius:'10px'}">{{ roleCatLabel(formData.vendorTypeCd) }}</span>
+              <span style="margin-left:8px;font-size:11px;color:#9ca3af;">(업체유형에 따라 자동)</span>
+            </div>
           </div>
           <div class="form-group"><label class="form-label">사업자번호 <span class="req">*</span></label>
             <input class="form-control" v-model="formData.bizNo" placeholder="123-45-67890" />
@@ -273,7 +287,7 @@ window.SyBizMng = {
   </div>
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_biz"
-    :value="formData.pathId" title="사업자 표시경로 선택"
+    :value="formData.pathId" title="업체 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
 `,

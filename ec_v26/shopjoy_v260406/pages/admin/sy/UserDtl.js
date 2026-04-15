@@ -57,7 +57,7 @@ window.SyUserDtl = {
     };
     const clearDept = () => { form.deptId = null; form.dept = ''; };
 
-    /* ── 현재 적용 권한 목록 ── */
+    /* ── 현재 적용 역할 목록 ── */
     const userRoles = computed(() => {
       if (isNew.value) return [];
       return props.adminData.roleUsers
@@ -168,7 +168,7 @@ window.SyUserDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">권한</label>
+        <label class="form-label">역할</label>
         <select class="form-control" v-model="form.role" :disabled="viewMode">
           <option>슈퍼관리자</option><option>운영자</option><option>MD</option><option>CS</option><option>배송관리</option>
         </select>
@@ -208,25 +208,25 @@ window.SyUserDtl = {
     </div>
   </div>
 
-  <!-- 적용 권한 목록 -->
+  <!-- 적용 역할 목록 -->
   <div v-if="!isNew" class="card">
     <div class="toolbar" style="margin-bottom:12px;">
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-        적용 권한 목록
+        적용 역할 목록
         <span class="list-count">{{ userRoles.length }}건</span>
       </span>
     </div>
     <div v-if="userRoles.length === 0"
       style="text-align:center;color:#bbb;padding:24px;font-size:13px;">
-      배정된 권한이 없습니다.
+      배정된 역할이 없습니다.
     </div>
     <table v-else class="admin-table">
       <thead>
         <tr>
           <th style="width:50px;">ID</th>
-          <th style="width:130px;">권한코드</th>
-          <th>권한명</th>
+          <th style="width:130px;">역할코드</th>
+          <th>역할명</th>
           <th style="width:80px;">유형</th>
           <th style="width:80px;">제한</th>
           <th style="width:60px;">사용</th>

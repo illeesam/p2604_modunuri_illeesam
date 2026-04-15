@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 권한관리 (Tree CRUD 그리드 + 하단 메뉴/사용자 배분) */
+/* ShopJoy Admin - 역할관리 (Tree CRUD 그리드 + 하단 메뉴/사용자 배분) */
 window.SyRoleMng = {
   name: 'SyRoleMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
@@ -27,6 +27,7 @@ window.SyRoleMng = {
       const rolesById = Object.fromEntries((window.adminData.roles || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
+      const ROOT_BY_CAT = { ADMIN:'SUPER_ADMIN', SITE:'SITE_GROUP', SALES:'SITE_MGR_ROOT', DLIV:'DLIV_ROOT' };
       const enrich = (n) => {
         if (n._raw && n._raw.roleId != null) {
           let cur = n._raw;
@@ -36,6 +37,12 @@ window.SyRoleMng = {
         (n.children || []).forEach(enrich);
       };
       enrich(t);
+      if (treeCatFilter.value) {
+        const wantRootCode = ROOT_BY_CAT[treeCatFilter.value];
+        t.children = (t.children || []).filter(ch => ch._raw && ch._raw.roleCode === wantRootCode);
+        const recount = (n) => { n.count = (n.children || []).reduce((s, c) => s + recount(c) + 1, 0); return n.count; };
+        recount(t);
+      }
       return t;
     });
     /* 선택 권한 + 자손 roleId Set */
@@ -56,9 +63,9 @@ window.SyRoleMng = {
     const siteNm  = computed(() => window.adminUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const PERM_LEVELS = ['없음', '읽기', '쓰기', '관리', '차단'];
-    const ROLE_CATS   = [['ADMIN','관리자권한'],['SITE','사이트권한'],['SALES','판매업체권한'],['DLIV','배송업체권한']];
+    const ROLE_CATS   = [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']];
     const ROLE_CAT_COLOR = { ADMIN:'#7c3aed', SITE:'#2563eb', SALES:'#16a34a', DLIV:'#f59e0b' };
-    /* 루트 권한코드 → 자동 카테고리 매핑 */
+    /* 루트 역할코드 → 자동 카테고리 매핑 */
     const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
     const deriveRoleCat = (role) => {
       const roles = props.adminData.roles || [];
@@ -97,8 +104,9 @@ window.SyRoleMng = {
     const searchKw    = ref('');
     const searchType  = ref('');
     const searchUseYn = ref('');
+    const searchCat   = ref('');
     const treeCatFilter = ref('');
-    const applied = Vue.reactive({ kw: '', type: '', useYn: '' });
+    const applied = Vue.reactive({ kw: '', type: '', useYn: '', cat: '' });
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -151,6 +159,10 @@ window.SyRoleMng = {
         if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && r.roleType !== applied.type)  return false;
         if (applied.useYn && r.useYn    !== applied.useYn) return false;
+        if (applied.cat) {
+          const cats = window.adminUtil.__roleCatOf ? window.adminUtil.__roleCatOf(r.roleId) : [];
+          if (!cats.includes(applied.cat)) return false;
+        }
         if (allowedRoleIds.value && !allowedRoleIds.value.has(r.roleId)) return false;
         if (treeCatFilter.value) {
           const cats = window.adminUtil.__roleCatOf ? window.adminUtil.__roleCatOf(r.roleId) : [];
@@ -171,12 +183,12 @@ window.SyRoleMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const onSearch = () => {
-      Object.assign(applied, { kw: searchKw.value, type: searchType.value, useYn: searchUseYn.value });
+      Object.assign(applied, { kw: searchKw.value, type: searchType.value, useYn: searchUseYn.value, cat: searchCat.value });
       loadGrid();
     };
     const onReset = () => {
-      searchKw.value = ''; searchType.value = ''; searchUseYn.value = '';
-      Object.assign(applied, { kw: '', type: '', useYn: '' });
+      searchKw.value = ''; searchType.value = ''; searchUseYn.value = ''; searchCat.value = '';
+      Object.assign(applied, { kw: '', type: '', useYn: '', cat: '' });
       loadGrid();
     };
 
@@ -258,7 +270,7 @@ window.SyRoleMng = {
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.roleCode || !r.roleNm) { props.showToast('권한코드와 권한명은 필수 항목입니다.', 'error'); return; }
+        if (!r.roleCode || !r.roleNm) { props.showToast('역할코드와 역할명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
@@ -392,8 +404,8 @@ window.SyRoleMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'roleId'},{label:'권한코드',key:'roleCode'},{label:'권한명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
-      '권한목록.csv'
+      [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
+      '역할목록.csv'
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
@@ -404,7 +416,7 @@ window.SyRoleMng = {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       siteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, treeCatFilter, permColor, depthBullet, depthColor, statusClass,
-      searchKw, searchType, searchUseYn, applied, onSearch, onReset,
+      searchKw, searchType, searchUseYn, searchCat, applied, onSearch, onReset,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
@@ -418,10 +430,14 @@ window.SyRoleMng = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">권한관리</div>  <!-- 검색 -->
+  <div class="page-title">역할관리</div>  <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="권한코드 / 권한명 검색" />
+      <input v-model="searchKw" placeholder="역할코드 / 역할명 검색" />
+      <select v-model="searchCat">
+        <option value="">역할구분 전체</option>
+        <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
+      </select>
       <select v-model="searchUseYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
@@ -440,9 +456,9 @@ window.SyRoleMng = {
   <!-- 좌 트리 + 우 영역 -->
   <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 권한</span></div>
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할</span></div>
       <select v-model="treeCatFilter" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
-        <option value="">권한구분 전체</option>
+        <option value="">역할구분 전체</option>
         <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
       </select>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -457,7 +473,7 @@ window.SyRoleMng = {
 <!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>권한목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
@@ -473,12 +489,12 @@ window.SyRoleMng = {
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
           <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
-          <th style="width:120px;">권한코드</th>
-          <th style="min-width:150px;">권한명</th>
-          <th style="min-width:120px;">상위권한</th>
+          <th style="width:120px;">역할코드</th>
+          <th style="min-width:150px;">역할명</th>
+          <th style="min-width:120px;">상위역할</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
-          <th style="width:100px;">권한구분</th>
+          <th style="width:100px;">역할구분</th>
           <th>비고</th>
           <th style="width:80px;">사이트명</th>
           <th class="col-act-cancel"></th>
@@ -497,7 +513,7 @@ window.SyRoleMng = {
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.roleCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
-          <!-- 권한명 (블릿 트리) -->
+          <!-- 역할명 (블릿 트리) -->
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
@@ -508,7 +524,7 @@ window.SyRoleMng = {
             </div>
           </td>
 
-          <!-- 상위권한 -->
+          <!-- 상위역할 -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"
@@ -516,7 +532,7 @@ window.SyRoleMng = {
                 :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위권한 선택"
+                style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위역할 선택"
                 @click.stop="openParentModal(row)">🔍</button>
             </div>
           </td>
@@ -576,7 +592,7 @@ window.SyRoleMng = {
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <b style="font-size:13px;">메뉴 접근권한</b>
             <span v-if="selectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ selectedRoleNm }}</span>
-            <span v-else style="font-size:12px;color:#bbb;">권한을 선택하면 메뉴를 배분할 수 있습니다</span>
+            <span v-else style="font-size:12px;color:#bbb;">역할을 선택하면 메뉴를 배분할 수 있습니다</span>
           </div>
           <div v-if="selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
             <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
@@ -622,7 +638,7 @@ window.SyRoleMng = {
           </div>
         </div>
         <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
-          위 목록에서 권한을 선택하세요.
+          위 목록에서 역할을 선택하세요.
         </div>
       </div>
     </div>
@@ -634,7 +650,7 @@ window.SyRoleMng = {
           <div>
             <b style="font-size:13px;">대상사용자</b>
             <span v-if="selectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ selectedRoleNm }}</span>
-            <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">권한을 선택하면 사용자를 추가할 수 있습니다</span>
+            <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">역할을 선택하면 사용자를 추가할 수 있습니다</span>
           </div>
           <button v-if="selectedRoleId" class="btn btn-primary btn-sm"
             @click="userSelectOpen=true">+ 사용자 추가</button>
@@ -665,7 +681,7 @@ window.SyRoleMng = {
           </div>
         </div>
         <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
-          위 목록에서 권한을 선택하세요.
+          위 목록에서 역할을 선택하세요.
         </div>
       </div>
     </div>
@@ -677,7 +693,7 @@ window.SyRoleMng = {
     @select="onUserSelect"
     @close="userSelectOpen=false" />
 
-  <!-- 상위권한 선택 모달 -->
+  <!-- 상위역할 선택 모달 -->
   <role-tree-modal
     v-if="roleTreeModal && roleTreeModal.show"
     :disp-dataset="adminData"

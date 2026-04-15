@@ -1371,15 +1371,15 @@ window.RoleTreeModal = {
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위권한 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
-        <div style="font-size:11px;color:#aaa;margin-top:1px;">권한을 클릭하면 상위권한으로 지정됩니다</div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위역할 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
+        <div style="font-size:11px;color:#aaa;margin-top:1px;">역할을 클릭하면 상위역할로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
     </div>
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="kw" placeholder="권한명 또는 권한코드 검색"
+        <input class="form-control" v-model="kw" placeholder="역할명 또는 역할코드 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
     </div>
