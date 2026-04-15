@@ -400,7 +400,7 @@ window.SyCodeMng = {
   </div>
 
   <!-- ═══ 상단: 표시경로 트리 + 코드그룹 CRUD ═══ -->
-  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;margin-bottom:14px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;margin-bottom:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title" style="font-size:13px;">📂 표시경로 <span class="list-count">{{ grpTree.count }}</span></span>

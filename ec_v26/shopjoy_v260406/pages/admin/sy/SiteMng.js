@@ -170,7 +170,7 @@ window.SySiteMng = {
 
 
   <!-- 좌 트리 + 우 영역 -->
-  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">

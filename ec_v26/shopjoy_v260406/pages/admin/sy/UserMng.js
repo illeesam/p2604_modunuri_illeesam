@@ -3,6 +3,26 @@ window.SyUserMng = {
   name: 'SyUserMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    /* 좌측 부서 트리 */
+    const selectedDeptId = Vue.ref(null);
+    const expanded = Vue.reactive(new Set([null]));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { selectedDeptId.value = id; };
+    const tree = Vue.computed(() => window.adminUtil.buildDeptTree());
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
+    /* 선택 부서 + 자손의 dept 이름 Set */
+    const allowedDeptNms = Vue.computed(() => {
+      if (selectedDeptId.value == null) return null;
+      const desc = window.adminUtil.collectDescendantIds(window.adminData.depts, 'deptId', 'parentId', selectedDeptId.value);
+      if (!desc) return null;
+      return new Set((window.adminData.depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
+    });
+
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
@@ -35,6 +55,7 @@ window.SyUserMng = {
     const applied = Vue.reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => props.adminData.adminUsers.filter(u => {
+      if (allowedDeptNms.value && !allowedDeptNms.value.has(u.dept)) return false;
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
       if (applied.role && u.role !== applied.role) return false;
@@ -97,11 +118,12 @@ window.SyUserMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'adminUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
   <div class="page-title">사용자관리</div>
+
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="이름 / 로그인ID / 이메일 검색" />
@@ -118,7 +140,20 @@ window.SyUserMng = {
       </div>
     </div>
   </div>
-  <div class="card">
+  
+  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 부서</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedDeptId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
+<div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
@@ -172,6 +207,7 @@ window.SyUserMng = {
     </div>
     <sy-user-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
+</div>
 </div>
 `
 };

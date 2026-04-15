@@ -50,7 +50,8 @@
       { id: 'sySiteMng',     label: '사이트관리' },
       { id: 'syCodeMng',     label: '공통코드관리' },
       { id: 'syBrandMng',    label: '브랜드관리' },
-      { id: 'syVendorMng',   label: '업체정보' },
+      { id: 'syBizMng',      label: '사업자' },
+      { id: 'syBizUserMng',  label: '사업자사용자' },
       { group: '공통업무' },
       { id: 'ecNoticeMng',   label: '공지사항관리' },
       { id: 'syBbmMng',      label: '게시판관리' },
@@ -152,7 +153,7 @@
         'syCodeMng':'sy-code-mng', 'syCodeDtl':'sy-code-dtl',
         'syBrandMng':'sy-brand-mng', 'syAttachMng':'sy-attach-mng',
         'syTemplateMng':'sy-template-mng', 'syTemplateDtl':'sy-template-dtl',
-        'syVendorMng':'sy-vendor-mng', 'syVendorDtl':'sy-vendor-dtl',
+        'syVendorMng':'sy-vendor-mng', 'syVendorDtl':'sy-vendor-dtl', 'syBizMng':'sy-biz-mng', 'syBizUserMng':'sy-biz-user-mng',
         'ecCategoryMng':'ec-category-mng', 'ecCategoryDtl':'ec-category-dtl',
         'syUserMng':'sy-user-mng', 'syUserDtl':'sy-user-dtl',
         'syBatchMng':'sy-batch-mng', 'syBatchDtl':'sy-batch-dtl',
@@ -347,6 +348,7 @@
       const onSelectItem  = (type, item) => {
         if      (type === 'site')      commonFilter.siteId   = item?.siteId   ?? null;
         else if (type === 'vendor')    commonFilter.vendorId = item?.vendorId  ?? null;
+        else if (type === 'dlivVendor') commonFilter.dlivVendorId = item?.vendorId ?? null;
         else if (type === 'adminUser') commonFilter.userId   = item?.adminUserId ?? null;
         else if (type === 'member')    commonFilter.memberId = item?.memberId  ?? null;
         else if (type === 'order')     commonFilter.orderId  = item?.orderId   ?? null;
@@ -355,6 +357,7 @@
       const clearFilter   = (type) => {
         if      (type === 'site')      commonFilter.siteId   = null;
         else if (type === 'vendor')    commonFilter.vendorId = null;
+        else if (type === 'dlivVendor') commonFilter.dlivVendorId = null;
         else if (type === 'adminUser') commonFilter.userId   = null;
         else if (type === 'member')    commonFilter.memberId = null;
         else if (type === 'order')     commonFilter.orderId  = null;
@@ -362,6 +365,7 @@
       /* 공통 필터 표시용 헬퍼 (adminData에서 조회) */
       const filterSite      = computed(() => adminData.sites?.find(s => s.siteId   === commonFilter.siteId)   || null);
       const filterVendor    = computed(() => adminData.vendors?.find(v => v.vendorId === commonFilter.vendorId) || null);
+      const filterDlivVendor = computed(() => adminData.vendors?.find(v => v.vendorId === commonFilter.dlivVendorId) || null);
       const filterAdminUser = computed(() => adminData.adminUsers?.find(u => u.adminUserId === commonFilter.userId) || null);
       const filterMember    = computed(() => adminData.members?.find(m => m.memberId === commonFilter.memberId) || null);
       const filterOrder     = computed(() => adminData.orders?.find(o => o.orderId  === commonFilter.orderId)  || null);
@@ -387,6 +391,45 @@
         } catch(_) { return null; }
       };
       const currentUser = ref(_restoreAdminUser());
+      const activeRoleId = ref(null);
+      const currentUserRoles = computed(() => {
+        if (!currentUser.value) return [];
+        const ids = (adminData.roleUsers || [])
+          .filter(ru => ru.adminUserId === currentUser.value.adminUserId)
+          .map(ru => ru.roleId);
+        const roleMap = Object.fromEntries((adminData.roles || []).map(r => [r.roleId, r]));
+        return ids.map(id => roleMap[id]).filter(Boolean);
+      });
+      const rolePath = (r) => {
+        if (!r) return '';
+        const m = Object.fromEntries((adminData.roles || []).map(x => [x.roleId, x]));
+        const seg = []; let cur = r;
+        while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
+        return seg.join(' > ');
+      };
+      const onRoleChange = () => { location.reload(); };
+      const rolesOfUser = (uid) => {
+        const ids = (adminData.roleUsers || []).filter(ru => ru.adminUserId === uid).map(ru => ru.roleId);
+        const m = Object.fromEntries((adminData.roles || []).map(r => [r.roleId, r]));
+        return ids.map(id => m[id]).filter(Boolean);
+      };
+      const bizInfoOfUser = (uid) => {
+        const bus = (adminData.bizUsers || []).filter(b => b.userId === uid);
+        const bm = Object.fromEntries((adminData.bizs || []).map(b => [b.bizId, b]));
+        const typeLabel = { SALES:'판매업체', DELIVERY:'배송업체', PARTNER:'제휴사', INTERNAL:'내부법인' };
+        return bus.map(bu => {
+          const b = bm[bu.bizId]; if (!b) return '';
+          return '[' + (typeLabel[b.vendorTypeCd] || b.vendorTypeCd) + '] ' + b.bizNm;
+        }).filter(Boolean).join(' / ');
+      };
+      watch(currentUser, (u) => {
+        if (u) {
+          const roles = currentUserRoles.value;
+          if (!roles.find(r => r.roleId === activeRoleId.value)) {
+            activeRoleId.value = roles[0]?.roleId || null;
+          }
+        } else { activeRoleId.value = null; }
+      }, { immediate: true });
       const loginModal  = reactive({ show: false, tab: 'login' });
       const loginForm   = reactive({ email: 'admin1@demo.com', password: 'demo1234', authMethod: '메인' });
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
@@ -584,9 +627,10 @@
         refModal, showRefModal, closeRefModal,
         adminData: window.adminData,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
-        filterSite, filterVendor, filterAdminUser, filterMember, filterOrder,
+        filterSite, filterVendor, filterDlivVendor, filterAdminUser, filterMember, filterOrder,
         tabBarRef, scrollTabs,
-        currentUser, loginModal, loginForm, regForm, loginError, userMenuShow,
+        currentUser, currentUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
+        loginModal, loginForm, regForm, loginError, userMenuShow,
         openLogin, closeLogin, doLogin, quickLogin, doLogout, doRegister,
         profileModal, profileForm, openProfile, saveProfile,
         pwModal, pwForm, pwError, openPwChange, savePwChange,
@@ -623,6 +667,13 @@
     <!-- 로그인/유저 영역 -->
     <div class="top-nav-user" @click.stop>
       <template v-if="currentUser">
+        <select v-if="currentUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
+          :title="'권한 ' + currentUserRoles.length + '개 보유'"
+          style="margin-right:8px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:240px;">
+          <option v-for="r in currentUserRoles" :key="r.roleId" :value="r.roleId">({{ currentUserRoles.length }}) {{ rolePath(r) }}</option>
+        </select>
+        <span v-else-if="currentUserRoles.length === 1" class="user-role-label"
+          style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentUserRoles[0]) }}</span>
         <span class="user-name-label">{{ currentUser.name }}</span>
         <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentUser.email">
           {{ currentUser.name[0] }}
@@ -867,6 +918,8 @@
         <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <sy-biz-mng     v-else-if="page==='syBizMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <sy-biz-user-mng v-else-if="page==='syBizUserMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <ec-category-mng v-else-if="page==='ecCategoryMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-category-dtl v-else-if="page==='ecCategoryDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
@@ -933,6 +986,17 @@
           </div>
         </div>
         <div class="popup-sel">
+          <div class="popup-sel-label">배송업체
+            <span v-if="commonFilter.dlivVendorId" class="popup-sel-clear" @click.stop="clearFilter('dlivVendor')">✕</span>
+          </div>
+          <div class="popup-sel-row" @click="openSelectModal('dlivVendor')">
+            <span v-if="filterDlivVendor" class="popup-sel-name">{{ filterDlivVendor.vendorNm }}</span>
+            <span v-else class="popup-sel-placeholder">선택하세요</span>
+            <span v-if="filterDlivVendor" class="popup-sel-id">{{ filterDlivVendor.vendorId }}</span>
+            <span class="popup-sel-btn">🔍</span>
+          </div>
+        </div>
+        <div class="popup-sel">
           <div class="popup-sel-label">회원
             <span v-if="commonFilter.memberId" class="popup-sel-clear" @click.stop="clearFilter('member')">✕</span>
           </div>
@@ -962,6 +1026,7 @@
   <!-- 선택 모달들 -->
   <site-select-modal v-if="selectModal.show && selectModal.type==='site'" :disp-dataset="adminData" @select="onSelectItem('site', $event)" @close="closeSelectModal" />
   <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'" :disp-dataset="adminData" @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show && selectModal.type==='dlivVendor'" :disp-dataset="adminData" @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
   <admin-user-select-modal v-if="selectModal.show && selectModal.type==='adminUser'" :disp-dataset="adminData" @select="onSelectItem('adminUser', $event)" @close="closeSelectModal" />
   <member-select-modal v-if="selectModal.show && selectModal.type==='member'" :disp-dataset="adminData" @select="onSelectItem('member', $event)" @close="closeSelectModal" />
   <order-select-modal v-if="selectModal.show && selectModal.type==='order'" :disp-dataset="adminData" @select="onSelectItem('order', $event)" @close="closeSelectModal" />
@@ -1138,13 +1203,17 @@
         </div>
         <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;">
           <div style="font-weight:700;margin-bottom:6px;color:#555;">테스트 계정 <span style="font-weight:400;color:#aaa;">(클릭 시 자동 로그인)</span></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
-            <button v-for="em in ['admin1@demo.com','admin2@demo.com','admin3@demo.com','oper1@demo.com','oper2@demo.com','oper3@demo.com']"
-              :key="em" type="button" @click="quickLogin(em)"
-              style="padding:5px 8px;font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:5px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
-              onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';this.style.color='#e8587a';"
-              onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#444';">
-              {{ em }}
+          <div style="display:flex;flex-direction:column;gap:4px;max-height:280px;overflow:auto;">
+            <button v-for="u in adminData.adminUsers" :key="u.adminUserId" type="button" @click="quickLogin(u.email)"
+              style="display:grid;grid-template-columns:170px 28px 1fr;align-items:center;gap:8px;padding:5px 8px;font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:5px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
+              onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';"
+              onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';">
+              <span style="font-weight:600;color:#374151;">{{ u.email }}</span>
+              <span style="display:inline-block;text-align:center;background:#e8587a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">{{ rolesOfUser(u.adminUserId).length }}</span>
+              <span style="color:#6b7280;font-size:10.5px;line-height:1.35;white-space:normal;">
+                {{ rolesOfUser(u.adminUserId).map(rolePath).join(' / ') }}
+                <span v-if="bizInfoOfUser(u.adminUserId)" style="display:block;margin-top:2px;color:#2563eb;font-weight:600;">{{ bizInfoOfUser(u.adminUserId) }}</span>
+              </span>
             </button>
           </div>
           <div style="margin-top:6px;color:#aaa;">비밀번호는 모두 <code style="background:#eef;padding:1px 4px;border-radius:3px;">demo1234</code></div>
@@ -1285,6 +1354,8 @@
   .component('SyTemplateMng',  window.SyTemplateMng)
   .component('SyTemplateDtl',  window.SyTemplateDtl)
   .component('SyVendorMng',    window.SyVendorMng)
+  .component('SyBizMng',       window.SyBizMng)
+  .component('SyBizUserMng',   window.SyBizUserMng)
   .component('SyVendorDtl',    window.SyVendorDtl)
   .component('SyAttachMng',    window.SyAttachMng)
   /* ── pages/admin/sy/ — 배치 ── */
@@ -1297,6 +1368,8 @@
   .component('SyPathMng',      window.SyPathMng)
   .component('PathTreeNode',   window.PathTreeNode)
   .component('PathPickModal',  window.PathPickModal)
+  .component('BizPickModal',   window.BizPickModal)
+  .component('SimpleUserPickModal', window.SimpleUserPickModal)
   .component('PathPickTreeNode', window.PathPickTreeNode)
   .component('PropTreeNode',   window.PropTreeNode)
   .component('SyAlarmDtl',     window.SyAlarmDtl)

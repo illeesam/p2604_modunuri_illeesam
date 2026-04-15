@@ -3187,3 +3187,152 @@ window.PathPickTreeNode = {
   </div>
 </div>`,
 };
+
+/* ─────────────────────────────────────────────────────────────
+   BizPickModal — 사업자 선택 (sy_biz)
+───────────────────────────────────────────────────────────── */
+window.BizPickModal = {
+  name: 'BizPickModal',
+  props: ['value', 'title'],
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed } = Vue;
+    const ad = window.adminData;
+    const kw = ref('');
+    const typeFlt = ref('');
+    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
+    const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
+    const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
+
+    /* 좌측 표시경로 트리 (sy_biz) */
+    const selectedPathId = ref(null);
+    const expanded = reactive(new Set([null]));
+    const tree = computed(() => window.adminUtil.buildPathTree('sy_biz'));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { selectedPathId.value = id; };
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
+    const allowedPathIds = computed(() => selectedPathId.value == null ? null : window.adminUtil.getPathDescendants('sy_biz', selectedPathId.value));
+
+    const filtered = computed(() => (ad.bizs || []).filter(b => {
+      const k = kw.value.trim().toLowerCase();
+      if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
+      if (typeFlt.value && b.vendorTypeCd !== typeFlt.value) return false;
+      if (allowedPathIds.value && !allowedPathIds.value.has(b.pathId)) return false;
+      return true;
+    }));
+    const pickAndClose = (b) => { emit('select', b); emit('close'); };
+    return { kw, typeFlt, VENDOR_TYPES, vtLabel, vtBadge, filtered, pickAndClose,
+             selectedPathId, expanded, tree, toggleNode, selectNode };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:820px;padding:0;overflow:hidden;border-radius:14px;">
+    <div style="background:#fff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#fff0f4;color:#e8587a;font-size:16px;">🏢</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#1f2937;">{{ title || '사업자 선택' }}</div>
+          <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">sy_biz</div>
+        </div>
+        <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:12px;">
+        <input class="form-control" v-model="kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="flex:1;height:32px;font-size:12px;" />
+        <select class="form-control" v-model="typeFlt" style="width:140px;height:32px;font-size:12px;">
+          <option value="">업체유형 전체</option>
+          <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
+        </select>
+      </div>
+    </div>
+    <div style="background:#fafbfc;display:grid;grid-template-columns:200px 1fr;max-height:50vh;">
+      <!-- 좌측 표시경로 트리 -->
+      <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;padding:8px;">
+        <div style="font-size:11px;font-weight:700;color:#666;margin-bottom:6px;padding:0 4px;">📂 표시경로</div>
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPathId"
+          :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+      <!-- 우측 사업자 목록 -->
+      <div style="overflow:auto;">
+        <table class="admin-table" style="background:#fff;">
+          <thead><tr>
+            <th>업체유형</th><th>사업자번호</th><th>상호</th><th>대표자</th><th></th>
+          </tr></thead>
+          <tbody>
+            <tr v-if="filtered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">검색 결과가 없습니다.</td></tr>
+            <tr v-for="b in filtered" :key="b.bizId" @dblclick="pickAndClose(b)" style="cursor:pointer;">
+              <td><span class="badge" :class="vtBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vtLabel(b.vendorTypeCd) }}</span></td>
+              <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ b.bizNo }}</code></td>
+              <td style="font-weight:600;">{{ b.bizNm }}</td>
+              <td>{{ b.ceoNm }}</td>
+              <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="pickAndClose(b)">선택</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
+      <button class="btn btn-secondary" @click="$emit('close')">취소</button>
+    </div>
+  </div>
+</div>`,
+};
+
+/* ─────────────────────────────────────────────────────────────
+   SimpleUserPickModal — 단일 사용자 선택 (sy_user / adminUsers)
+───────────────────────────────────────────────────────────── */
+window.SimpleUserPickModal = {
+  name: 'SimpleUserPickModal',
+  props: ['title', 'excludeIds'],
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, computed } = Vue;
+    const ad = window.adminData;
+    const kw = ref('');
+    const excl = computed(() => new Set(props.excludeIds || []));
+    const filtered = computed(() => (ad.adminUsers || []).filter(u => {
+      if (excl.value.has(u.adminUserId)) return false;
+      const k = kw.value.trim().toLowerCase();
+      if (k && !(u.name||'').toLowerCase().includes(k) && !(u.loginId||'').toLowerCase().includes(k) && !(u.email||'').toLowerCase().includes(k)) return false;
+      return true;
+    }));
+    const pick = (u) => { emit('select', u); emit('close'); };
+    return { kw, filtered, pick };
+  },
+  template: /* html */`
+<div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-box" style="max-width:600px;padding:0;overflow:hidden;border-radius:14px;">
+    <div style="background:#fff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">👤</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#1f2937;">{{ title || '사용자 선택' }}</div>
+          <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">sy_user</div>
+        </div>
+        <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
+      </div>
+      <input class="form-control" v-model="kw" placeholder="이름 / 로그인ID / 이메일 검색" style="margin-top:12px;height:32px;font-size:12px;" />
+    </div>
+    <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
+      <table class="admin-table" style="background:#fff;">
+        <thead><tr><th>이름</th><th>로그인ID</th><th>이메일</th><th>부서</th><th></th></tr></thead>
+        <tbody>
+          <tr v-if="filtered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">결과가 없습니다.</td></tr>
+          <tr v-for="u in filtered" :key="u.adminUserId" @dblclick="pick(u)" style="cursor:pointer;">
+            <td style="font-weight:600;">{{ u.name }}</td>
+            <td><code style="font-size:11px;color:#2563eb;">{{ u.loginId }}</code></td>
+            <td style="font-size:11.5px;color:#0369a1;">{{ u.email }}</td>
+            <td style="font-size:11.5px;color:#666;">{{ u.dept }}</td>
+            <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="pick(u)">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
+      <button class="btn btn-secondary" @click="$emit('close')">취소</button>
+    </div>
+  </div>
+</div>`,
+};

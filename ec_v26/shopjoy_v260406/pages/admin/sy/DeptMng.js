@@ -3,6 +3,24 @@ window.SyDeptMng = {
   name: 'SyDeptMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
+    /* 좌측 부서 트리 */
+    const selectedTreeId = Vue.ref(null);
+    const expanded = Vue.reactive(new Set([null]));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { selectedTreeId.value = id; };
+    const tree = Vue.computed(() => window.adminUtil.buildDeptTree());
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
+    const allowedTreeIds = Vue.computed(() => {
+      if (selectedTreeId.value == null) return null;
+      return window.adminUtil.collectDescendantIds(window.adminData.depts, 'deptId', 'parentId', selectedTreeId.value);
+    });
+    Vue.watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
+
     const { ref, reactive, computed } = Vue;
 
     /* ── 검색 ── */
@@ -57,6 +75,7 @@ window.SyDeptMng = {
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = props.adminData.depts.filter(d => {
+        if (allowedTreeIds.value && !allowedTreeIds.value.has(d.deptId)) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !d.deptCode.toLowerCase().includes(kw) && !d.deptNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && d.deptTypeCd !== applied.type)  return false;
@@ -199,7 +218,7 @@ window.SyDeptMng = {
       '부서목록.csv'
     );
 
-    return {
+    return { selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       searchKw, searchType, searchUseYn, typeOptions, DEPT_TYPES, applied,
       siteNm,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -231,6 +250,19 @@ window.SyDeptMng = {
       </div>
     </div>
   </div>
+
+  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 부서</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
 
   <div class="card">
     <div class="toolbar">

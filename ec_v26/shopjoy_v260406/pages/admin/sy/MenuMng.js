@@ -3,6 +3,24 @@ window.SyMenuMng = {
   name: 'SyMenuMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
+    /* 좌측 메뉴 트리 */
+    const selectedTreeId = Vue.ref(null);
+    const expanded = Vue.reactive(new Set([null]));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { selectedTreeId.value = id; };
+    const tree = Vue.computed(() => window.adminUtil.buildMenuTree());
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    Vue.onMounted(() => {
+      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
+    const allowedTreeIds = Vue.computed(() => {
+      if (selectedTreeId.value == null) return null;
+      return window.adminUtil.collectDescendantIds(window.adminData.menus, 'menuId', 'parentId', selectedTreeId.value);
+    });
+    Vue.watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
+
     const { ref, reactive, computed } = Vue;
 
     /* ── 검색 ── */
@@ -51,6 +69,7 @@ window.SyMenuMng = {
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = props.adminData.menus.filter(m => {
+        if (allowedTreeIds.value && !allowedTreeIds.value.has(m.menuId)) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && m.menuType !== applied.type)  return false;
@@ -200,7 +219,7 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    return {
+    return { selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       searchKw, searchType, searchUseYn, MENU_TYPES, applied,
       siteNm,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -215,6 +234,7 @@ window.SyMenuMng = {
   template: /* html */`
 <div>
   <div class="page-title">메뉴관리</div>
+
 
   <div class="card">
     <div class="search-bar">
@@ -233,7 +253,20 @@ window.SyMenuMng = {
     </div>
   </div>
 
-  <div class="card">
+  
+  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 메뉴</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
+<div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">

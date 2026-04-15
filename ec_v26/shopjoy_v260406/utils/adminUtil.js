@@ -5,7 +5,8 @@
   /* ── 공통 필터 전역 상태 (window.adminCommonFilter) ── */
   window.adminCommonFilter = reactive({
     siteId:   null,   // sy_site.siteId
-    vendorId: null,   // sy_vendor.vendorId
+    vendorId: null,   // sy_vendor.vendorId (판매업체)
+    dlivVendorId: null, // sy_vendor.vendorId (배송업체)
     userId:   null,   // sy_user.userId (관리자)
     memberId: null,   // ec_member.memberId
     orderId:  null,   // ec_order.orderId
@@ -234,6 +235,53 @@
       added = false;
       list.forEach(p => {
         if (set.has(p.parentPathId) && !set.has(p.pathId)) { set.add(p.pathId); added = true; }
+      });
+    }
+    return set;
+  };
+
+  /* 일반 부모-자식 트리 빌더
+   * items: 배열, idKey: PK, parentKey: 부모 FK, labelKey: 표시명, sortKey: 정렬 (선택)
+   */
+  window.adminUtil.buildGenericTree = function (items, idKey, parentKey, labelKey, sortKey) {
+    const list = (items || []).filter(x => x.useYn !== 'N');
+    const byParent = {};
+    list.forEach(x => {
+      const k = x[parentKey] == null ? '__root__' : x[parentKey];
+      (byParent[k] = byParent[k] || []).push(x);
+    });
+    const build = (pk) => (byParent[pk] || [])
+      .sort((a, b) => (a[sortKey] || 0) - (b[sortKey] || 0))
+      .map(x => ({
+        pathId: x[idKey], path: x[idKey],
+        name: x[labelKey], pathLabel: x[labelKey],
+        children: build(x[idKey]), count: 0,
+        _raw: x,
+      }));
+    const root = { pathId: null, path: null, name: '전체', pathLabel: '전체',
+                   children: build('__root__'), count: list.length };
+    const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
+    recur(root);
+    return root;
+  };
+  window.adminUtil.buildDeptTree = function () {
+    return window.adminUtil.buildGenericTree(window.adminData.depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
+  };
+  window.adminUtil.buildMenuTree = function () {
+    return window.adminUtil.buildGenericTree(window.adminData.menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
+  };
+  window.adminUtil.buildRoleTree = function () {
+    return window.adminUtil.buildGenericTree(window.adminData.roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
+  };
+  /* 일반 트리 후손 ID Set */
+  window.adminUtil.collectDescendantIds = function (items, idKey, parentKey, rootId) {
+    if (rootId == null) return null;
+    const set = new Set([rootId]);
+    let added = true;
+    while (added) {
+      added = false;
+      (items || []).forEach(x => {
+        if (set.has(x[parentKey]) && !set.has(x[idKey])) { set.add(x[idKey]); added = true; }
       });
     }
     return set;

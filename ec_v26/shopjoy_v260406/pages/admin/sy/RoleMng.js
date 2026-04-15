@@ -22,7 +22,12 @@ window.SyRoleMng = {
     const expanded = Vue.reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_role'));
+    const tree = Vue.computed(() => window.adminUtil.buildRoleTree());
+    /* 선택 권한 + 자손 roleId Set */
+    const allowedRoleIds = Vue.computed(() => {
+      if (selectedPath.value == null) return null;
+      return window.adminUtil.collectDescendantIds(window.adminData.roles, 'roleId', 'parentId', selectedPath.value);
+    });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
@@ -95,6 +100,7 @@ window.SyRoleMng = {
         if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && r.roleType !== applied.type)  return false;
         if (applied.useYn && r.useYn    !== applied.useYn) return false;
+        if (allowedRoleIds.value && !allowedRoleIds.value.has(r.roleId)) return false;
         return true;
       });
       buildTreeRows(filtered).forEach(r => gridRows.push(makeRow(r)));
@@ -377,9 +383,9 @@ window.SyRoleMng = {
 
 
   <!-- 좌 트리 + 우 영역 -->
-  <div style="display:grid;grid-template-columns:17% 83%;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 권한</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
         <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>

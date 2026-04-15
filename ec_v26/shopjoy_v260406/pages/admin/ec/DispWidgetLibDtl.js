@@ -497,7 +497,7 @@ window.EcDispWidgetLibDtl = {
       <!-- 기본 정보 -->
       <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">기본 정보</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="form-group" style="margin:0;">
             <label class="form-label">Lib코드 <span style="color:#e8587a;">*</span></label>
             <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="DL_YYMMDD_HHMMSS" style="margin:0;font-family:monospace;" />
@@ -574,7 +574,7 @@ window.EcDispWidgetLibDtl = {
       <div v-if="!isHtmlEditor && !isFileList && !isEmbed"
         style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">클릭 액션</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="form-group" style="margin:0;">
             <label class="form-label">클릭 동작</label>
             <select v-model="form.clickAction" class="form-control" style="margin:0;">

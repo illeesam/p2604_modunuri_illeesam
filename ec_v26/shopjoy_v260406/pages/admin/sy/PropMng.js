@@ -217,7 +217,7 @@ window.SyPropMng = {
   </div>
 
   <!-- 좌 트리 + 우 그리드 -->
-  <div style="display:grid;grid-template-columns:280px 1fr;gap:12px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
 
     <!-- 트리 -->
     <div class="card" style="padding:12px;">

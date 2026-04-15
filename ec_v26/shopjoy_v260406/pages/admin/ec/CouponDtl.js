@@ -203,7 +203,7 @@ window.EcCouponDtl = {
     <!-- 사용 통계 -->
     <div class="card" v-show="showTab('stats')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📊 사용 통계</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
         <div style="text-align:center;padding:20px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
           <div style="font-size:28px;font-weight:700;color:#e8587a;">{{ form.issueCount }}</div>
           <div style="font-size:12px;color:#888;margin-top:4px;">총 발급 수량</div>
