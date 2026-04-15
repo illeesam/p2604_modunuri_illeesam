@@ -167,9 +167,10 @@ window.EcDispUiDtl = {
       if (!form.codeValue) return props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error');
       window.open(`${window.pageUrl('index.html')}`, '_blank', 'width=1280,height=900');
     };
-    const openAreaPreview = () => {
+    const openAreaPreview = (scope) => {
       if (!activeArea.value) return props.showToast && props.showToast('미리볼 영역을 선택하세요.', 'error');
-      window.open(`${window.pageUrl('disp-ui.html')}?areas=${activeArea.value.codeValue}&date=${form.regDate}&time=00:00`,
+      const file = scope === 'admin' ? 'disp-admin-ui.html' : 'disp-front-ui.html';
+      window.open(`${window.pageUrl(file)}?areas=${activeArea.value.codeValue}&date=${form.regDate}&time=00:00`,
         '_blank', 'width=1280,height=900');
     };
 
@@ -239,7 +240,8 @@ window.EcDispUiDtl = {
         <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">{{ relatedAreas.length }}개</span>
       </span>
       <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openUiPreview">🖼 UI미리보기</button>
-      <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;" @click="openAreaPreview">👁 영역미리보기</button>
+      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="openAreaPreview('front')">👁 사용자 미리보기</button>
+      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="openAreaPreview('admin')">👁 관리자 미리보기</button>
       <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
       <button class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
     </div>

@@ -33,7 +33,7 @@ window.Prod03List = {
     const loadProducts = async () => {
       loading.value = true;
       try {
-        const res = await window.axiosApi.get('products/list.json');
+        const res = await window.frontApi.get('products/list.json');
         allProducts.value = res.data.map(p => assignImage({
           ...p,
           priceNum: p.price,

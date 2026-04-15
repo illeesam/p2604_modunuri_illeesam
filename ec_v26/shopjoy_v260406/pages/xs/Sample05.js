@@ -42,7 +42,7 @@ window.XsSample05 = {
     };
 
     onMounted(async () => {
-      try { const r = await window.axiosApi.get('xs/sample05.json'); (r.data || []).forEach(d => allData.push(d)); loadGrid(); }
+      try { const r = await window.frontApi.get('xs/sample05.json'); (r.data || []).forEach(d => allData.push(d)); loadGrid(); }
       catch { showToast('데이터 로딩 실패', 'error'); }
     });
 

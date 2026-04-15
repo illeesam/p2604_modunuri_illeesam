@@ -94,7 +94,7 @@ window.XsSample04 = {
 
     onMounted(async () => {
       try {
-        const r = await window.axiosApi.get('xs/sample04.json');
+        const r = await window.frontApi.get('xs/sample04.json');
         (r.data || []).forEach(d => members.push(d));
       } catch {}
     });

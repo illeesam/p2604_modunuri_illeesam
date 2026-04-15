@@ -124,7 +124,7 @@ window.EcOrderDtl = {
     };
     onMounted(async () => {
       try {
-        const res = await window.axiosApi.get('my/orders.json');
+        const res = await window.adminApi.get('my/orders.json');
         const o = (res.data || []).find(x => x.orderId === props.editId);
         if (o && o.items && o.items.length) orderItems.value = o.items;
         else orderItems.value = sampleOrderItems();

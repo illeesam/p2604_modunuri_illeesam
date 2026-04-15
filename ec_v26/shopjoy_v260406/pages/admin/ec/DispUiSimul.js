@@ -709,13 +709,20 @@ window.EcDispUiSimul = {
       '/index.html#page=dispUi04',
       '/index.html#page=dispUi05',
       '/index.html#page=dispUi06',
-      '/disp-ui.html#page=dispUiPage',
-      '/disp-ui.html#page=dispUi01',
-      '/disp-ui.html#page=dispUi02',
-      '/disp-ui.html#page=dispUi03',
-      '/disp-ui.html#page=dispUi04',
-      '/disp-ui.html#page=dispUi05',
-      '/disp-ui.html#page=dispUi06',
+      '/disp-front-ui.html#page=dispUiPage',
+      '/disp-front-ui.html#page=dispUi01',
+      '/disp-front-ui.html#page=dispUi02',
+      '/disp-front-ui.html#page=dispUi03',
+      '/disp-front-ui.html#page=dispUi04',
+      '/disp-front-ui.html#page=dispUi05',
+      '/disp-front-ui.html#page=dispUi06',
+      '/disp-admin-ui.html#page=dispUiPage',
+      '/disp-admin-ui.html#page=dispUi01',
+      '/disp-admin-ui.html#page=dispUi02',
+      '/disp-admin-ui.html#page=dispUi03',
+      '/disp-admin-ui.html#page=dispUi04',
+      '/disp-admin-ui.html#page=dispUi05',
+      '/disp-admin-ui.html#page=dispUi06',
     ];
     const otherMenuOpen = ref(false);
     const openDispUiOther = () => { otherMenuOpen.value = !otherMenuOpen.value; };
@@ -729,7 +736,7 @@ window.EcDispUiSimul = {
       otherMenuOpen.value = false;
     };
 
-    const openDispUiPopup = () => {
+    const openDispUiPopup = (scope) => {
       if (!_validateDispUi()) return;
       const p = dispUiParamObj.value;
       const qs = new URLSearchParams({
@@ -744,8 +751,9 @@ window.EcDispUiSimul = {
         memberId:     p.memberId,
         viewOpts:     p.viewOpts,
       }).toString();
+      const file = scope === 'admin' ? 'disp-admin-ui.html' : 'disp-front-ui.html';
       window.open(
-        `${window.pageUrl('disp-ui.html')}?${qs}`,
+        `${window.pageUrl(file)}?${qs}`,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'
       );
       /* 레이어 닫지 않음 */
@@ -1097,9 +1105,13 @@ window.EcDispUiSimul = {
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
           🗔 모달오픈
         </button>
-        <button @click="openDispUiPopup"
-          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #a5d6a7;background:#e8f5e9;color:#2e7d32;cursor:pointer;font-weight:600;">
-          🔗 팝업오픈
+        <button @click="openDispUiPopup('front')"
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #bae6fd;background:#e0f2fe;color:#0369a1;cursor:pointer;font-weight:600;">
+          🔗 사용자 팝업
+        </button>
+        <button @click="openDispUiPopup('admin')"
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #f5e8de;background:#fef3eb;color:#c2410c;cursor:pointer;font-weight:600;">
+          🔗 관리자 팝업
         </button>
         <div style="position:relative;">
           <button @click="openDispUiOther"
@@ -1131,7 +1143,7 @@ window.EcDispUiSimul = {
     :disp-dataset="dispDataset" :disp-opt="dispOpt"
     title="DispUi미리보기"
     @close="dispUiModalOpen=false"
-    @open-popup="openDispUiPopup(); dispUiModalOpen=false;"
+    @open-popup="(scope) => { openDispUiPopup(scope || 'front'); dispUiModalOpen=false; }"
   />
 
   <!-- DispUi 사이트 선택 모달 -->

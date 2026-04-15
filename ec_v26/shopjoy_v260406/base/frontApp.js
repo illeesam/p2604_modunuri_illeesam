@@ -7,15 +7,15 @@
 
   /* ── Pinia 생성 및 Auth 초기화 ── */
   const pinia = Pinia.createPinia();
-  window.shopjoyAuth.init(pinia);
+  window.frontAuth.init(pinia);
 
   const app = createApp({
   setup() {
     /* ── Theme ── */
-    const theme = ref(localStorage.getItem('shopjoy-theme') || 'light');
+    const theme = ref(localStorage.getItem('modu-front-theme') || 'light');
     const applyTheme = t => {
       theme.value = t;
-      localStorage.setItem('shopjoy-theme', t);
+      localStorage.setItem('modu-front-theme', t);
       document.documentElement.setAttribute('data-theme', t);
     };
     applyTheme(theme.value);
@@ -23,6 +23,14 @@
 
     /* ── Navigation ── */
     const page = ref('home');
+    const errorMessage = ref('');
+    /* API 에러 → 오류 페이지 이동 (baseAxios 계열에서 window dispatchEvent 호출) */
+    window.addEventListener('api-error', (ev) => {
+      const d = ev.detail || {};
+      const st = d.status;
+      if (st === 401) { errorMessage.value = d.message || ''; page.value = 'error401'; }
+      else if (st >= 500 || st === 0) { errorMessage.value = d.message || ''; page.value = 'error500'; }
+    });
     const sidebarOpen = ref(true);
     const mobileOpen  = ref(false);
     let replaceNextHash = false;
@@ -231,16 +239,16 @@
     };
 
     /* ── Auth ── */
-    const auth = window.shopjoyAuth.state;
+    const auth = window.frontAuth.state;
     const showLogin = ref(false);
     const onShowLogin = () => { showLogin.value = true; };
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
     const onLogout = () => {
-      window.shopjoyAuth.logout();
+      window.frontAuth.logout();
       showToast('로그아웃되었습니다.', 'info');
       if (MY_PAGES.includes(page.value)) page.value = 'home';
     };
-    /* shopjoy_token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
+    /* modu-front-token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
     watch(() => auth.user, u => {
       if (!u && MY_PAGES.includes(page.value)) page.value = 'home';
     });
@@ -254,13 +262,14 @@
       'dispUi01', 'dispUi02', 'dispUi03', 'dispUi04', 'dispUi05', 'dispUi06',
       'sample01','sample02','sample03','sample04','sample05','sample06','sample07',
       'sample08','sample09','sample10','sample11','sample12','sample13','sample14',
-      'sample21','sample22','sample23'];
+      'sample21','sample22','sample23',
+      'error401','error404','error500'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
       const hasPageParam = rawHash.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawHash) : null;
       const isMyPage = p => ['myOrder','myClaim','myCoupon','myCache','myContact','myChatt'].includes(p);
-      const isLoggedIn = !!(localStorage.getItem('shopjoy_token'));
+      const isLoggedIn = !!(localStorage.getItem('modu-front-token'));
       if (hasPageParam) {
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;
@@ -395,13 +404,14 @@
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
       }),
+      errorMessage,
     };
   },
 
   template: /* html */ `
 <div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
 
-  <app-header
+  <front-app-header
     :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
     :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cartCount" :like-count="likeCount"
     :auth="auth" :on-show-login="onShowLogin" :on-logout="onLogout"
@@ -409,7 +419,7 @@
   />
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
-    <app-sidebar
+    <front-app-sidebar
       :page="page" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
       :config="config" :navigate="navigate" :cart-count="cartCount" :auth="auth"
       @toggle-sidebar="sidebarOpen=!sidebarOpen" @close-mobile="closeMobileMenu"
@@ -539,10 +549,12 @@
       <xs-sample22 v-else-if="page==='sample22'" />
       <xs-sample23 v-else-if="page==='sample23'" />
 
-      <!-- 404 Not Found -->
-      <not-found v-else-if="page==='notFound'" :navigate="navigate" :page-id="notFoundPageId" />
+      <!-- Error Pages -->
+      <front-error-401 v-else-if="page==='error401'" :navigate="navigate" />
+      <front-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
+      <front-error-404 v-else-if="page==='notFound' || page==='error404'" :navigate="navigate" :page-id="notFoundPageId" />
 
-      <app-footer :config="config" :navigate="navigate" />
+      <front-app-footer :config="config" :navigate="navigate" />
     </main>
   </div>
 
@@ -586,11 +598,13 @@
 `,
   })
   /* ── layout/ ── */
-  .component('AppHeader',   window.AppHeader)
-  .component('AppSidebar',  window.AppSidebar)
-  .component('AppFooter',   window.AppFooter)
+  .component('FrontAppHeader',   window.frontAppHeader)
+  .component('FrontAppSidebar',  window.frontAppSidebar)
+  .component('FrontAppFooter',   window.frontAppFooter)
   /* ── pages/base/ ── */
-  .component('NotFound',     window.NotFound)
+  .component('FrontError404',    window.frontError404)
+  .component('FrontError401',    window.frontError401)
+  .component('FrontError500',    window.frontError500)
   /* ── pages/ (사용자 페이스 - FRONT_SITE_NO 기준 동적) ── */
   .component('Home'+window.FRONT_SITE_NO,        window['Home'+window.FRONT_SITE_NO])
   .component('Prod'+window.FRONT_SITE_NO+'List', window['Prod'+window.FRONT_SITE_NO+'List'])

@@ -130,8 +130,8 @@ window.Contact = {
 
     const submitForm = async () => {
       if (!validate()) return;
-      if (window.axiosApi) {
-        await window.axiosApi.post('contact-intake.json', {
+      if (window.frontApi) {
+        await window.frontApi.post('contact-intake.json', {
           source: 'shopjoy',
           name: form.name,
           email: form.email,

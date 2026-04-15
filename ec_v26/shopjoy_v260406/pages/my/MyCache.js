@@ -4,7 +4,7 @@ window.MyCache = {
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
     const { reactive, onMounted } = Vue;
-    const myStore = window.useMyStore();
+    const myStore = window.useFrontMyStore();
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
 
     const cashPager = reactive({ page: 1, size: 50 });
@@ -42,7 +42,7 @@ window.MyCache = {
     };
   },
   template: /* html */ `
-<MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
+<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
 
   <MyDateFilter @search="onDateSearch" />
 
@@ -149,10 +149,10 @@ window.MyCache = {
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
   </Teleport>
 
-</MyLayout>
+</FrontMyLayout>
   `,
   components: {
-    MyLayout:         window.MyLayout,
+    FrontMyLayout:         window.frontMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

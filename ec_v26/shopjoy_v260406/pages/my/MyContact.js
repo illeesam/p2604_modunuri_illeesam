@@ -4,7 +4,7 @@ window.MyContact = {
   props: ['navigate', 'cartCount', 'showToast', 'showConfirm'],
   setup(props) {
     const { reactive, onMounted } = Vue;
-    const myStore = window.useMyStore();
+    const myStore = window.useFrontMyStore();
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);
 
     const inquiryPager = reactive({ page: 1, size: 50 });
@@ -30,7 +30,7 @@ window.MyContact = {
     };
   },
   template: /* html */ `
-<MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
+<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
 
   <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredInquiries.length" :pager="inquiryPager" />
@@ -62,10 +62,10 @@ window.MyContact = {
 
   <Pagination :total="inquiries.length" :pager="inquiryPager" />
 
-</MyLayout>
+</FrontMyLayout>
   `,
   components: {
-    MyLayout:    window.MyLayout,
+    FrontMyLayout:    window.frontMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,
   }

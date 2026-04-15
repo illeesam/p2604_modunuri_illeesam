@@ -92,7 +92,7 @@ window.EcClaimDtl = {
     };
     onMounted(async () => {
       try {
-        const res = await window.axiosApi.get('my/claims.json');
+        const res = await window.adminApi.get('my/claims.json');
         const c = (res.data || []).find(x => x.claimId === props.editId);
         if (c && c.items && c.items.length) claimItems.value = c.items;
         else if (c && c.prodNm) claimItems.value = [{ prodNm: c.prodNm, qty: 1, price: c.refundAmount || 0 }];

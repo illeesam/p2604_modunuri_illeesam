@@ -221,9 +221,10 @@ window.EcDispAreaDtl = {
       const hash = areaPageMap[form.codeValue] || '';
       window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900');
     };
-    const openWidgetPreview = () => {
+    const openWidgetPreview = (scope) => {
       if (!activePanel.value) return props.showToast && props.showToast('미리볼 패널을 선택하세요.', 'error');
-      window.open(`${window.pageUrl('disp-ui.html')}?areas=${form.codeValue}&date=${form.regDate}&time=00:00`, '_blank', 'width=1280,height=900');
+      const file = scope === 'admin' ? 'disp-admin-ui.html' : 'disp-front-ui.html';
+      window.open(`${window.pageUrl(file)}?areas=${form.codeValue}&date=${form.regDate}&time=00:00`, '_blank', 'width=1280,height=900');
     };
 
     /* ── 패널 유형 레이블 / 위젯 요약 ── */
@@ -270,7 +271,8 @@ window.EcDispAreaDtl = {
         <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">{{ relatedPanels.length }}개</span>
       </span>
       <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openPanelPreview">🖼 패널미리보기</button>
-      <button class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;" @click="openWidgetPreview">👁 위젯미리보기</button>
+      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="openWidgetPreview('front')">👁 사용자 미리보기</button>
+      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="openWidgetPreview('admin')">👁 관리자 미리보기</button>
       <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
       <button class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
     </div>

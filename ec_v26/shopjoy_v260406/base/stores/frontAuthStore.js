@@ -1,10 +1,10 @@
 /* ShopJoy - Auth Store (Pinia) */
-window.useAuthStore = Pinia.defineStore('auth', {
+window.useFrontAuthStore = Pinia.defineStore('frontAuth', {
   state: () => {
-    const token = localStorage.getItem('shopjoy_token') || null;
+    const token = localStorage.getItem('modu-front-token') || null;
     let user = null;
     if (token) {
-      try { user = JSON.parse(localStorage.getItem('shopjoy_user') || 'null'); } catch (e) {}
+      try { user = JSON.parse(localStorage.getItem('modu-front-user') || 'null'); } catch (e) {}
     }
     return { token, user };
   },
@@ -17,29 +17,29 @@ window.useAuthStore = Pinia.defineStore('auth', {
     setSession(user, token) {
       this.user  = user;
       this.token = token;
-      localStorage.setItem('shopjoy_token', token);
-      localStorage.setItem('shopjoy_user',  JSON.stringify(user));
+      localStorage.setItem('modu-front-token', token);
+      localStorage.setItem('modu-front-user',  JSON.stringify(user));
     },
 
     clearSession() {
       this.user  = null;
       this.token = null;
-      localStorage.removeItem('shopjoy_token');
-      localStorage.removeItem('shopjoy_user');
+      localStorage.removeItem('modu-front-token');
+      localStorage.removeItem('modu-front-user');
     },
 
     /** localStorage와 실시간 동기화 (DevTools 조작 감지용) */
     syncFromStorage() {
-      const storedToken = localStorage.getItem('shopjoy_token');
+      const storedToken = localStorage.getItem('modu-front-token');
       if (!storedToken && this.token) {
         // 토큰이 외부에서 삭제됨 → 로그아웃
         this.user  = null;
         this.token = null;
-        localStorage.removeItem('shopjoy_user');
+        localStorage.removeItem('modu-front-user');
       } else if (storedToken && storedToken !== this.token) {
         // 토큰이 외부에서 변경됨 → 재동기화
         this.token = storedToken;
-        try { this.user = JSON.parse(localStorage.getItem('shopjoy_user') || 'null'); } catch (e) {}
+        try { this.user = JSON.parse(localStorage.getItem('modu-front-user') || 'null'); } catch (e) {}
       }
     },
   },

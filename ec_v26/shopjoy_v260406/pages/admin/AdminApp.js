@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 메인 앱 (Top + Left Nav + 탭 라우팅 + 로그인) */
 (function () {
-  const { createApp, ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
+  const { createApp, ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
   /* ── 메뉴 구조 ── */
   /* ADMIN_SITE_NO 기준으로 상단 메뉴 필터링
@@ -103,6 +103,14 @@
     setup() {
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
+      const errorMessage = ref('');
+      /* API 에러 → 오류 페이지 전환 (adminAxios 에서 window.dispatchEvent('api-error')) */
+      window.addEventListener('api-error', (ev) => {
+        const d = ev.detail || {};
+        const st = d.status;
+        if (st === 401) { errorMessage.value = d.message || ''; page.value = 'error401'; }
+        else if (st >= 500 || st === 0) { errorMessage.value = d.message || ''; page.value = 'error500'; }
+      });
       const editId = ref(null);
 
       /* ── 탭 관리 ── */
@@ -362,8 +370,16 @@
         if (tabBarRef.value) tabBarRef.value.scrollBy({ left: dir * 180, behavior: 'smooth' });
       };
 
-      /* ── 로그인 상태 ── */
-      const currentUser = ref(null);
+      /* ── 로그인 상태 (localStorage 영속화) ── */
+      const _mkAdminToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+      const _restoreAdminUser = () => {
+        try {
+          const tok = localStorage.getItem('modu-admin-token');
+          if (!tok) return null;
+          return JSON.parse(localStorage.getItem('modu-admin-user') || 'null');
+        } catch(_) { return null; }
+      };
+      const currentUser = ref(_restoreAdminUser());
       const loginModal  = reactive({ show: false, tab: 'login' });
       const loginForm   = reactive({ email: 'admin1@demo.com', password: 'demo1234', authMethod: '메인' });
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
@@ -411,6 +427,12 @@
       };
       const closeLogin = () => { loginModal.show = false; loginError.value = ''; };
 
+      const quickLogin = (email) => {
+        loginForm.email = email;
+        loginForm.password = 'demo1234';
+        loginForm.authMethod = '메인';
+        doLogin();
+      };
       const doLogin = () => {
         loginError.value = '';
         if (!loginForm.email || !loginForm.password) { loginError.value = '이메일과 비밀번호를 입력하세요.'; return; }
@@ -420,6 +442,10 @@
         currentUser.value = u;
         const now = new Date();
         u.lastLogin = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        try {
+          localStorage.setItem('modu-admin-token', _mkAdminToken());
+          localStorage.setItem('modu-admin-user', JSON.stringify(u));
+        } catch(_){}
         /* 모든 탭 닫고 대시보드로 */
         openTabs.splice(0);
         loginForm.email = ''; loginForm.password = '';
@@ -430,10 +456,28 @@
 
       const doLogout = () => {
         currentUser.value = null; userMenuShow.value = false;
+        try {
+          localStorage.removeItem('modu-admin-token');
+          localStorage.removeItem('modu-admin-user');
+        } catch(_){}
         openTabs.splice(0);
         navigate('dashboard');
         showToast('로그아웃되었습니다.');
       };
+      /* 프로필/비번 변경 시 localStorage 갱신 */
+      const _persistAdminUser = () => {
+        try {
+          if (currentUser.value) localStorage.setItem('modu-admin-user', JSON.stringify(currentUser.value));
+        } catch(_){}
+      };
+      watch(currentUser, _persistAdminUser, { deep: true });
+      /* 다른 탭에서 로그인/로그아웃 동기화 */
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'modu-admin-token' || e.key === 'modu-admin-user') {
+          const u = _restoreAdminUser();
+          currentUser.value = u;
+        }
+      });
 
       const doRegister = () => {
         loginError.value = '';
@@ -463,16 +507,16 @@
         relatedSiteOpen.value = false;
       };
       const goFrontSite = (no) => {
-        try { localStorage.setItem('FRONT_SITE_NO', no); } catch(_){}
+        try { localStorage.setItem('modu-front-site_no', no); } catch(_){}
         window.open('index.html?FRONT_SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
       const goAdminSite = (no) => {
-        try { localStorage.setItem('ADMIN_SITE_NO', no); } catch(_){}
+        try { localStorage.setItem('modu-admin-site_no', no); } catch(_){}
         window.open('admin.html?ADMIN_SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
-      const currentFrontNo = (typeof localStorage !== 'undefined' && localStorage.getItem('FRONT_SITE_NO')) || '01';
+      const currentFrontNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-front-site_no')) || '01';
       const currentAdminSiteNo = window.ADMIN_SITE_NO || '01';
       const SITE_PAIR_MENU = [
         { front:'01',   admin:'01' },
@@ -481,13 +525,13 @@
         { front:'9999', admin:'9999' },
       ];
       const DISP_LINKS = [
-        { label: '통합 페이지',  url: 'disp-ui.html#page=dispUiPage', icon:'🌐' },
-        { label: 'UI 샘플 01',   url: 'disp-ui.html#page=dispUi01',   icon:'1️⃣' },
-        { label: 'UI 샘플 02',   url: 'disp-ui.html#page=dispUi02',   icon:'2️⃣' },
-        { label: 'UI 샘플 03',   url: 'disp-ui.html#page=dispUi03',   icon:'3️⃣' },
-        { label: 'UI 샘플 04',   url: 'disp-ui.html#page=dispUi04',   icon:'4️⃣' },
-        { label: 'UI 샘플 05',   url: 'disp-ui.html#page=dispUi05',   icon:'5️⃣' },
-        { label: 'UI 샘플 06',   url: 'disp-ui.html#page=dispUi06',   icon:'6️⃣' },
+        { label: '통합 페이지', hash: '#page=dispUiPage', icon:'🌐' },
+        { label: 'UI 샘플 01',  hash: '#page=dispUi01',   icon:'1️⃣' },
+        { label: 'UI 샘플 02',  hash: '#page=dispUi02',   icon:'2️⃣' },
+        { label: 'UI 샘플 03',  hash: '#page=dispUi03',   icon:'3️⃣' },
+        { label: 'UI 샘플 04',  hash: '#page=dispUi04',   icon:'4️⃣' },
+        { label: 'UI 샘플 05',  hash: '#page=dispUi05',   icon:'5️⃣' },
+        { label: 'UI 샘플 06',  hash: '#page=dispUi06',   icon:'6️⃣' },
       ];
 
       /* ── 즐겨찾기 ── */
@@ -521,7 +565,7 @@
       const onRootClick = () => { closeCtxMenu(); userMenuShow.value = false; };
 
       return {
-        page, editId, navigate,
+        page, editId, navigate, errorMessage,
         TOP_MENUS, LEFT_MENUS, AUTH_METHODS,
         openTabs, closeTab, activeTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
         ctxMenu, showCtxMenu, closeCtxMenu,
@@ -536,7 +580,7 @@
         filterSite, filterVendor, filterAdminUser, filterMember, filterOrder,
         tabBarRef, scrollTabs,
         currentUser, loginModal, loginForm, regForm, loginError, userMenuShow,
-        openLogin, closeLogin, doLogin, doLogout, doRegister,
+        openLogin, closeLogin, doLogin, quickLogin, doLogout, doRegister,
         profileModal, profileForm, openProfile, saveProfile,
         pwModal, pwForm, pwError, openPwChange, savePwChange,
         favorites, favKeepSet, sidebarTab, isFav, toggleFav, favList, toggleFavKeep,
@@ -738,15 +782,17 @@
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
               <div style="font-size:12px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">🖥 dispUi (샘플)</div>
               <div style="display:flex;flex-direction:column;gap:2px;">
-                <button v-for="it in DISP_LINKS" :key="it.url"
-                  @click="openRelatedLink(it.url)"
-                  style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
-                  onmouseover="this.style.background='#fef3eb';this.style.color='#c2410c';"
-                  onmouseout="this.style.background='transparent';this.style.color='#333';">
-                  <span style="width:18px;text-align:center;">{{ it.icon }}</span>
-                  <span style="flex:1;">{{ it.label }}</span>
-                  <span style="font-size:10px;color:#aaa;">↗</span>
-                </button>
+                <div v-for="it in DISP_LINKS" :key="it.hash"
+                  style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
+                  <span style="width:18px;text-align:center;font-size:12.5px;">{{ it.icon }}</span>
+                  <span style="flex:1;font-size:12.5px;color:#333;">{{ it.label }}</span>
+                  <button @click="openRelatedLink('disp-front-ui.html' + it.hash)"
+                    style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
+                    title="사용자 미리보기">사용자 ↗</button>
+                  <button @click="openRelatedLink('disp-admin-ui.html' + it.hash)"
+                    style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
+                    title="관리자 미리보기">관리자 ↗</button>
+                </div>
               </div>
             </div>
           </div>
@@ -827,7 +873,9 @@
         <sy-alarm-mng   v-else-if="page==='syAlarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbm-mng     v-else-if="page==='syBbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbs-mng     v-else-if="page==='syBbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
-        <not-found v-else :navigate="navigate" :page-id="page" />
+        <admin-error-401 v-else-if="page==='error401'" :navigate="navigate" />
+        <admin-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
+        <admin-error-404 v-else :navigate="navigate" :page-id="page" />
         </div><!-- /비고정 탭 래퍼 -->
       </div>
     </div>
@@ -1074,10 +1122,18 @@
           <span>계정이 없으신가요?</span>
           <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='register';loginError=''">회원가입</span>
         </div>
-        <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;line-height:1.8;">
-          <b>테스트 계정</b><br>
-          admin1@demo.com / demo1234<br>
-          oper1@demo.com / demo1234
+        <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;">
+          <div style="font-weight:700;margin-bottom:6px;color:#555;">테스트 계정 <span style="font-weight:400;color:#aaa;">(클릭 시 자동 로그인)</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+            <button v-for="em in ['admin1@demo.com','admin2@demo.com','admin3@demo.com','oper1@demo.com','oper2@demo.com','oper3@demo.com']"
+              :key="em" type="button" @click="quickLogin(em)"
+              style="padding:5px 8px;font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:5px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
+              onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';this.style.color='#e8587a';"
+              onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#444';">
+              {{ em }}
+            </button>
+          </div>
+          <div style="margin-top:6px;color:#aaa;">비밀번호는 모두 <code style="background:#eef;padding:1px 4px;border-radius:3px;">demo1234</code></div>
         </div>
       </div>
 
@@ -1126,7 +1182,9 @@
 `,
   })
   /* ── pages/base/ ── */
-  .component('NotFound',         window.NotFound)
+  .component('AdminError404',        window.adminError404)
+  .component('AdminError401',        window.adminError401)
+  .component('AdminError500',        window.adminError500)
   /* ── components/disp/ (전시 핵심 컴포넌트) ── */
   .component('DispX01Ui',        window.DispX01Ui)
   .component('DispX02Area',      window.DispX02Area)

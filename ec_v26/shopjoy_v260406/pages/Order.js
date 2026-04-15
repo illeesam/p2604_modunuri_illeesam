@@ -17,7 +17,7 @@ window.Order = {
     const allCoupons  = ref([]);
     const loadCoupons = async () => {
       try {
-        const res = await window.axiosApi.get('my/coupons.json');
+        const res = await window.frontApi.get('my/coupons.json');
         allCoupons.value = (res.data || []).filter(c => !c.used);
       } catch (e) { allCoupons.value = []; }
     };
@@ -76,7 +76,7 @@ window.Order = {
     const cashInput   = ref(0);
     const loadCash = async () => {
       try {
-        const res = await window.axiosApi.get('my/cash.json');
+        const res = await window.frontApi.get('my/cash.json');
         cashBalance.value = res.data.balance || 0;
       } catch (e) {}
     };
@@ -126,7 +126,7 @@ window.Order = {
 
     onMounted(async () => {
       await Promise.all([loadCoupons(), loadCash()]);
-      const u = window.shopjoyAuth?.state?.user;
+      const u = window.frontAuth?.state?.user;
       if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
     });
 
@@ -169,7 +169,7 @@ window.Order = {
           cashUsed:           appliedCash.value,
           finalPrice:         finalPrice.value,
         };
-        if (window.axiosApi) await window.axiosApi.post('order-intake.json', payload).catch(() => {});
+        if (window.frontApi) await window.frontApi.post('order-intake.json', payload).catch(() => {});
         resultData.value = payload;
         view.value = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음

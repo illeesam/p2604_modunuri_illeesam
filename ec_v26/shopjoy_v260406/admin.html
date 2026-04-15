@@ -10,6 +10,25 @@
        ═══════════════════════════════════════════════════════════════════ */
     const DEFAULT_ADMIN_SITE_NO = '01';
 
+    /* 구 localStorage 키 → 신 키 마이그레이션 (1회) */
+    (function(){
+      try {
+        var mig = [
+          ['FRONT_SITE_NO', 'modu-front-site_no'],
+          ['ADMIN_SITE_NO', 'modu-admin-site_no'],
+          ['shopjoy-theme', 'modu-front-theme'],
+          ['shopjoy_token', 'modu-front-token'],
+          ['shopjoy_user',  'modu-front-user'],
+        ];
+        mig.forEach(function(p){
+          var old = localStorage.getItem(p[0]);
+          if (old !== null && localStorage.getItem(p[1]) === null) {
+            localStorage.setItem(p[1], old);
+          }
+          if (old !== null) localStorage.removeItem(p[0]);
+        });
+      } catch(_){}
+    })();
     /* ADMIN_SITE_NO — URL ?ADMIN_SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
     (function(){
       try {
@@ -17,7 +36,7 @@
         var v = qs.get('ADMIN_SITE_NO');
         if (v) {
           window.ADMIN_SITE_NO = v;
-          try { localStorage.setItem('ADMIN_SITE_NO', v); } catch(_){}
+          try { localStorage.setItem('modu-admin-site_no', v); } catch(_){}
           try {
             qs.delete('ADMIN_SITE_NO');
             var newSearch = qs.toString();
@@ -25,9 +44,9 @@
           } catch(_){}
         } else {
           var saved = null;
-          try { saved = localStorage.getItem('ADMIN_SITE_NO'); } catch(_){}
+          try { saved = localStorage.getItem('modu-admin-site_no'); } catch(_){}
           window.ADMIN_SITE_NO = saved || DEFAULT_ADMIN_SITE_NO;
-          if (!saved) { try { localStorage.setItem('ADMIN_SITE_NO', DEFAULT_ADMIN_SITE_NO); } catch(_){} }
+          if (!saved) { try { localStorage.setItem('modu-admin-site_no', DEFAULT_ADMIN_SITE_NO); } catch(_){} }
         }
       } catch(e) { window.ADMIN_SITE_NO = DEFAULT_ADMIN_SITE_NO; }
       /* ADMIN_SITE_NO 기준 CSS 로드 */
@@ -35,7 +54,7 @@
     })();
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
-      if ((e.key === 'ADMIN_SITE_NO' || e.key === 'FRONT_SITE_NO') && e.newValue !== e.oldValue) {
+      if ((e.key === 'modu-admin-site_no' || e.key === 'modu-front-site_no') && e.newValue !== e.oldValue) {
         location.reload();
       }
     });
@@ -67,9 +86,11 @@
     <div class="txt">로딩 중…</div>
   </div>
   <div id="app"></div>
-  <script src="pages/base/NotFound.js"></script>
+  <script src="pages/base/adminError404.js"></script>
+  <script src="pages/base/adminError401.js"></script>
+  <script src="pages/base/adminError500.js"></script>
   <script src="pages/admin/AdminData.js"></script>
-  <script src="utils/axiosUtil.js"></script>
+  <script src="utils/adminAxios.js"></script>
   <script src="utils/adminUtil.js"></script>
   <script src="components/modals/BaseModal.js"></script>
   <script src="pages/admin/AdminModals.js"></script>

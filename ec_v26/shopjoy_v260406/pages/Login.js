@@ -17,9 +17,9 @@ window.Login = {
     const doLogin = async () => {
       loginErr.value = '';
       if (!form.email || !form.password) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
-      const r = await window.shopjoyAuth.login(form.email, form.password);
+      const r = await window.frontAuth.login(form.email, form.password);
       if (r.ok) {
-        props.showToast(window.shopjoyAuth.state.user.memberNm + '님, 환영합니다!', 'success');
+        props.showToast(window.frontAuth.state.user.memberNm + '님, 환영합니다!', 'success');
         emit('close');
       } else { loginErr.value = r.msg; }
     };
@@ -27,8 +27,8 @@ window.Login = {
     /* 소셜 로그인 (기존 회원) vs 소셜 회원가입 분기 */
     const doSocial = provider => {
       // 로그인 탭에서 클릭 → 바로 로그인
-      window.shopjoyAuth.loginSocial(provider);
-      props.showToast(window.shopjoyAuth.state.user.memberNm + '님, 환영합니다!', 'success');
+      window.frontAuth.loginSocial(provider);
+      props.showToast(window.frontAuth.state.user.memberNm + '님, 환영합니다!', 'success');
       emit('close');
     };
 
@@ -101,7 +101,7 @@ window.Login = {
       if (!sf.phoneVerified)    { signupErr.value = '휴대폰 인증이 필요합니다.'; return; }
       if (sf.password.length < 6){ signupErr.value = '비밀번호는 6자 이상이어야 합니다.'; return; }
       if (sf.password !== sf.password2){ signupErr.value = '비밀번호가 일치하지 않습니다.'; return; }
-      window.shopjoyAuth.signup(sf.memberNm, sf.email, sf.phone, {
+      window.frontAuth.signup(sf.memberNm, sf.email, sf.phone, {
         postcode: sf.postcode, address: sf.address, addressDetail: sf.addressDetail,
         birthdate: sf.birthdate, gender: sf.gender,
       });
@@ -145,7 +145,7 @@ window.Login = {
       if (!snsNickname.value.trim()) { snsErr.value = '이름/닉네임을 입력하세요.'; return; }
       if (!snsPhoneVerified.value)   { snsErr.value = '휴대폰 인증이 필요합니다.'; return; }
       const demos = { google: 'google.sns@gmail.com', kakao: 'kakao.sns@kakao.com', naver: 'naver.sns@naver.com' };
-      window.shopjoyAuth.signup(snsNickname.value, demos[snsProvider.value] || 'sns@demo.com', snsPhone.value, {
+      window.frontAuth.signup(snsNickname.value, demos[snsProvider.value] || 'sns@demo.com', snsPhone.value, {
         provider: snsProvider.value,
         postcode: snsSf.postcode, address: snsSf.address, addressDetail: snsSf.addressDetail,
         birthdate: snsSf.birthdate, gender: snsSf.gender,
@@ -166,7 +166,7 @@ window.Login = {
       providerLabel, providerColor, providerTextColor, IS,
     };
   },
-  computed: { shopjoyAuth() { return window.shopjoyAuth; } },
+  computed: { frontAuth() { return window.frontAuth; } },
   template: /* html */ `
 <div class="modal-overlay" @click.self="$emit('close')" style="z-index:200;">
   <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">
@@ -183,8 +183,8 @@ window.Login = {
         <input v-model="form.email" type="email" placeholder="이메일" @keyup.enter="doLogin" :style="IS">
         <input v-model="form.password" type="password" placeholder="비밀번호" @keyup.enter="doLogin" :style="IS">
         <div v-if="loginErr" style="color:#e8587a;font-size:0.82rem;text-align:center;">{{ loginErr }}</div>
-        <button @click="doLogin" :disabled="shopjoyAuth.state.loading" class="btn-blue" style="width:100%;padding:12px;">
-          {{ shopjoyAuth.state.loading ? '로그인 중...' : '로그인' }}
+        <button @click="doLogin" :disabled="frontAuth.state.loading" class="btn-blue" style="width:100%;padding:12px;">
+          {{ frontAuth.state.loading ? '로그인 중...' : '로그인' }}
         </button>
       </div>
 

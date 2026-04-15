@@ -3,11 +3,11 @@
  * 실패 시 config.js 값 유지. app.js 에서 await __SITE_CONFIG_READY__ 권장.
  */
 (function () {
-  if (!window.axiosApi) {
+  if (!window.frontApi) {
     window.__SITE_CONFIG_READY__ = Promise.resolve();
     return;
   }
-  window.__SITE_CONFIG_READY__ = window.axiosApi
+  window.__SITE_CONFIG_READY__ = window.frontApi
     .get('base/site-config.json')
     .then(function (res) {
       window.SITE_CONFIG = res.data;

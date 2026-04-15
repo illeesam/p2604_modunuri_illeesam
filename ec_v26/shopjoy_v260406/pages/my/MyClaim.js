@@ -4,7 +4,7 @@ window.MyClaim = {
   props: ['navigate', 'config', 'cartCount', 'showToast', 'showConfirm'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
-    const myStore = window.useMyStore();
+    const myStore = window.useFrontMyStore();
     const { claims, claimFilter, filteredClaims, orders } = Pinia.storeToRefs(myStore);
 
     const claimPager = reactive({ page: 1, size: 50 });
@@ -23,7 +23,7 @@ window.MyClaim = {
       .filter(c => !claimStatusFilter.value.length || claimStatusFilter.value.includes(c.status))
     );
 
-    const authUser = computed(() => window.shopjoyAuth.state.user);
+    const authUser = computed(() => window.frontAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
@@ -76,7 +76,7 @@ window.MyClaim = {
     };
   },
   template: /* html */ `
-<MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
+<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
 
   <MyDateFilter @search="onDateSearch" @reset="claimStatusFilter.splice(0)" />
 
@@ -281,10 +281,10 @@ window.MyClaim = {
     <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
   </Teleport>
 
-</MyLayout>
+</FrontMyLayout>
   `,
   components: {
-    MyLayout:         window.MyLayout,
+    FrontMyLayout:         window.frontMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

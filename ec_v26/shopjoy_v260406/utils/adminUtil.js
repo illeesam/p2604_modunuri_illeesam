@@ -153,7 +153,7 @@
     /* 3. API 호출 */
     try {
       let res;
-      const api = window.axiosApi;
+      const api = window.adminApi;
       if (method === 'get')    res = await api.get(path);
       else if (method === 'post')   res = await api.post(path, data);
       else if (method === 'put')    res = await api.put(path, data);

@@ -26,7 +26,7 @@ window.XsSample14 = {
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
 
     /* 현재 사용자 인증 상태 */
-    const auth       = window.useAuthStore ? window.useAuthStore() : null;
+    const auth       = window.useFrontAuthStore ? window.useFrontAuthStore() : null;
     const isLoggedIn = auth ? auth.isLoggedIn : false;
     const userGrade  = (auth && auth.user) ? (auth.user.grade  || '일반') : '';
     const userName   = (auth && auth.user) ? (auth.user.userName || auth.user.email || '') : '';

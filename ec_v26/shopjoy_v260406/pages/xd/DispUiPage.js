@@ -20,8 +20,8 @@ window.DispUiPage = {
       siteId:       qs.get('siteId')       || '',
       memberId:     qs.get('memberId')     || '',
       viewOpts:     qs.get('viewOpts')     || '',
-      isLoggedIn:   qs.get('isLoggedIn') === 'true' || (window.shopjoyAuth?.isLoggedIn ?? false),
-      userGrade:    qs.get('userGrade')    || (window.shopjoyAuth?.userGrade ?? ''),
+      isLoggedIn:   qs.get('isLoggedIn') === 'true' || (window.frontAuth?.isLoggedIn ?? false),
+      userGrade:    qs.get('userGrade')    || (window.frontAuth?.userGrade ?? ''),
     };
 
     const dispDataset = window.adminData || window.dispDataset || { displays: [], codes: [] };

@@ -1,6 +1,6 @@
 /* ShopJoy - AppHeader */
-window.AppHeader = {
-  name: 'AppHeader',
+window.frontAppHeader = {
+  name: 'FrontAppHeader',
   props: ['page', 'theme', 'sidebarOpen', 'mobileOpen', 'config', 'navigate',
           'toggleTheme', 'cartCount', 'likeCount', 'auth', 'onShowLogin', 'onLogout'],
   emits: ['toggle-sidebar', 'toggle-mobile'],
@@ -38,9 +38,9 @@ window.AppHeader = {
         });
         /* Pinia store 에도 반영 */
         try {
-          const store = window.useAuthStore(Pinia.getActivePinia());
+          const store = window.useFrontAuthStore(Pinia.getActivePinia());
           store.user = { ...u };
-          localStorage.setItem('shopjoy_user', JSON.stringify(store.user));
+          localStorage.setItem('modu-front-user', JSON.stringify(store.user));
         } catch (e) {}
       }
       profileOpen.value = false;
@@ -65,7 +65,7 @@ window.AppHeader = {
       if (pw.next !== pw.next2) { pw.err = '새 비밀번호가 일치하지 않습니다.'; return; }
       /* 데모: users.json에서 현재 비번 확인 */
       try {
-        const res = await window.axiosApi.get('base/users.json');
+        const res = await window.frontApi.get('base/users.json');
         const u = res.data.find(x => x.email === props.auth.user?.email);
         if (u && u.password !== pw.current) { pw.err = '현재 비밀번호가 올바르지 않습니다.'; return; }
       } catch (e) {}
@@ -113,7 +113,7 @@ window.AppHeader = {
       profileOpen, pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pwOpen, pw, openPw, savePw, IS,
       frontSiteNo: window.FRONT_SITE_NO || '01',
-      adminSiteNo: (typeof localStorage !== 'undefined' && localStorage.getItem('ADMIN_SITE_NO')) || '01',
+      adminSiteNo: (typeof localStorage !== 'undefined' && localStorage.getItem('modu-admin-site_no')) || '01',
     };
   },
 

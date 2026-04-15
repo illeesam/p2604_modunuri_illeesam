@@ -446,7 +446,7 @@ window.XsSample07 = {
     onMounted(async () => {
       loadSettings(); refreshLs();
       try {
-        const res = await window.axiosApi.get('xs/sample07.json');
+        const res = await window.frontApi.get('xs/sample07.json');
         (res.data || []).forEach(n => treeRoot.push(makeNode(n)));
         treeLoaded.value = true;
       } catch {

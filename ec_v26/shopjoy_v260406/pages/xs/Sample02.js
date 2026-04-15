@@ -60,7 +60,7 @@ window.XsSample02 = {
 
     onMounted(async () => {
       try {
-        const r = await window.axiosApi.get('xs/sample02.json');
+        const r = await window.frontApi.get('xs/sample02.json');
         (r.data || []).forEach(d => allData.push(d));
         loadGrid();
         Vue.nextTick(setupObserver);

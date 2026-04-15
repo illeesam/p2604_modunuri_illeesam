@@ -4,7 +4,7 @@ window.MyChatt = {
   props: ['navigate', 'cartCount'],
   setup(props) {
     const { reactive, onMounted } = Vue;
-    const myStore = window.useMyStore();
+    const myStore = window.useFrontMyStore();
     const { chats, expandedChat } = Pinia.storeToRefs(myStore);
 
     const chatPager = reactive({ page: 1, size: 50 });
@@ -19,7 +19,7 @@ window.MyChatt = {
     return { myStore, chats, expandedChat, chatPager, paginate, dateFilteredChats, onDateSearch };
   },
   template: /* html */ `
-<MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
+<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
 
   <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredChats.length" :pager="chatPager" />
@@ -56,10 +56,10 @@ window.MyChatt = {
 
   <Pagination :total="chats.length" :pager="chatPager" />
 
-</MyLayout>
+</FrontMyLayout>
   `,
   components: {
-    MyLayout:    window.MyLayout,
+    FrontMyLayout:    window.frontMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,
   }

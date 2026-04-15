@@ -108,7 +108,7 @@ window.EcDlivDtl = {
     };
     onMounted(async () => {
       try {
-        const res = await window.axiosApi.get('my/orders.json');
+        const res = await window.adminApi.get('my/orders.json');
         const oid = props.editId && props.adminData.deliveries.find(d=>d.dlivId===props.editId)?.orderId;
         const o = (res.data || []).find(x => x.orderId === oid);
         if (o && o.items && o.items.length) dlivItems.value = o.items;

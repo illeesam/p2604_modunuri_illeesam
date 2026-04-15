@@ -4,7 +4,7 @@ window.MyCoupon = {
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const myStore = window.useMyStore();
+    const myStore = window.useFrontMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
 
     const couponPager = reactive({ page: 1, size: 50 });
@@ -54,7 +54,7 @@ window.MyCoupon = {
     };
   },
   template: /* html */ `
-<MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
+<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
 
   <MyDateFilter @search="onDateSearch" />
 
@@ -173,10 +173,10 @@ window.MyCoupon = {
 
   <Pagination :total="dateFilteredCoupons.length" :pager="couponPager" />
 
-</MyLayout>
+</FrontMyLayout>
   `,
   components: {
-    MyLayout:    window.MyLayout,
+    FrontMyLayout:    window.frontMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,
   }

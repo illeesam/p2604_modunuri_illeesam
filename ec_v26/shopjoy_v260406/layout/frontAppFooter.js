@@ -1,6 +1,6 @@
 /* ShopJoy - AppFooter */
-window.AppFooter = {
-  name: 'AppFooter',
+window.frontAppFooter = {
+  name: 'FrontAppFooter',
   props: ['config', 'navigate'],
   emits: [],
   setup() {
@@ -14,23 +14,25 @@ window.AppFooter = {
         if (target && typeof window.navigate === 'function') window.navigate(target);
       } else if (root === 'backOffice') {
         window.open((window.pageUrl ? window.pageUrl('admin.html') : 'admin.html') + (target ? '#page=' + target : ''), '_blank');
-      } else if (root === 'dispUi') {
-        window.open((window.pageUrl ? window.pageUrl('disp-ui.html') : 'disp-ui.html') + (target ? '#page=' + target : ''), '_blank');
+      } else if (root === 'dispFrontUi') {
+        window.open((window.pageUrl ? window.pageUrl('disp-front-ui.html') : 'disp-front-ui.html') + (target ? '#page=' + target : ''), '_blank');
+      } else if (root === 'dispAdminUi') {
+        window.open((window.pageUrl ? window.pageUrl('disp-admin-ui.html') : 'disp-admin-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'frontSite') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FRONT_SITE_NO=' + target;
       } else if (root === 'frontOnly') {
         /* target = FRONT 번호만, index.html 이동 */
-        try { localStorage.setItem('FRONT_SITE_NO', target); } catch(_){}
+        try { localStorage.setItem('modu-front-site_no', target); } catch(_){}
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FRONT_SITE_NO=' + target;
       } else if (root === 'backOnly') {
         /* target = BACK 번호만, admin.html 새창 오픈 */
-        try { localStorage.setItem('ADMIN_SITE_NO', target); } catch(_){}
+        try { localStorage.setItem('modu-admin-site_no', target); } catch(_){}
         window.open((window.pageUrl ? window.pageUrl('admin.html') : 'admin.html') + '?ADMIN_SITE_NO=' + target, '_blank');
       }
       menuOpen.value = false;
     };
     const currentSiteNo  = window.FRONT_SITE_NO || '01';
-    const currentAdminNo = (typeof localStorage !== 'undefined' && localStorage.getItem('ADMIN_SITE_NO')) || '01';
+    const currentAdminNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-admin-site_no')) || '01';
 
     const FRONT_MENU = [
       { id:'home',       label:'홈',         icon:'🏠' },
@@ -207,14 +209,17 @@ window.AppFooter = {
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
               <div style="font-size:13px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">🖥 dispUi (샘플)</div>
               <div style="display:flex;flex-direction:column;gap:2px;">
-                <button v-for="m in DISP_MENU" :key="m.id" type="button"
-                  @click="goItem('dispUi', m.id)"
-                  style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
-                  onmouseover="this.style.background='#fef3eb';this.style.color='#c2410c';"
-                  onmouseout="this.style.background='transparent';this.style.color='#333';">
+                <div v-for="m in DISP_MENU" :key="m.id"
+                  style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
                   <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
-                  <span>{{ m.label }}</span>
-                </button>
+                  <span style="flex:1;font-size:12.5px;color:#333;">{{ m.label }}</span>
+                  <button type="button" @click="goItem('dispFrontUi', m.id); closeMenu();"
+                    style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
+                    title="사용자 미리보기">사용자 ↗</button>
+                  <button type="button" @click="goItem('dispAdminUi', m.id); closeMenu();"
+                    style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
+                    title="관리자 미리보기">관리자 ↗</button>
+                </div>
               </div>
             </div>
           </div>

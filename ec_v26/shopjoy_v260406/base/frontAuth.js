@@ -1,14 +1,14 @@
 /* ShopJoy - Auth Module (Pinia + localStorage token 연계) */
 (function () {
   /* ── 초기 상태: 토큰 + 유저 모두 있을 때만 로그인으로 처리 ── */
-  const _initToken = localStorage.getItem('shopjoy_token');
+  const _initToken = localStorage.getItem('modu-front-token');
   let _initUser = null;
   if (_initToken) {
-    try { _initUser = JSON.parse(localStorage.getItem('shopjoy_user') || 'null'); } catch (e) {}
+    try { _initUser = JSON.parse(localStorage.getItem('modu-front-user') || 'null'); } catch (e) {}
   }
   if (!_initToken) {
     /* 토큰 없으면 유저 정보도 정리 */
-    localStorage.removeItem('shopjoy_user');
+    localStorage.removeItem('modu-front-user');
   }
 
   /* ── 레거시 reactive state (app.js에서 auth.user 로 참조) ── */
@@ -25,7 +25,7 @@
 
   /* ── Pinia 초기화 (app.js에서 호출) ── */
   const init = pinia => {
-    _store = window.useAuthStore(pinia);
+    _store = window.useFrontAuthStore(pinia);
 
     /* 초기 동기화 */
     _sync();
@@ -38,7 +38,7 @@
 
     /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
     window.addEventListener('storage', e => {
-      if (e.key === 'shopjoy_token' || e.key === 'shopjoy_user') {
+      if (e.key === 'modu-front-token' || e.key === 'modu-front-user') {
         _store.syncFromStorage();
         _sync();
       }
@@ -49,8 +49,8 @@
   const login = async (email, password) => {
     state.loading = true;
     try {
-      if (!window.axiosApi) throw new Error('no api');
-      const res = await window.axiosApi.get('base/users.json');
+      if (!window.frontApi) throw new Error('no api');
+      const res = await window.frontApi.get('base/users.json');
       const u = res.data.find(x => x.email === email && x.password === password);
       if (u) {
         const user  = { userId: u.userId, email: u.email, memberNm: u.memberNm, phone: u.phone };
@@ -93,5 +93,5 @@
     _sync();
   };
 
-  window.shopjoyAuth = { state, init, login, loginSocial, signup, logout };
+  window.frontAuth = { state, init, login, loginSocial, signup, logout };
 })();

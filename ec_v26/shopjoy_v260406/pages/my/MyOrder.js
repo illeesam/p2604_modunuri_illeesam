@@ -4,7 +4,7 @@ window.MyOrder = {
   props: ['navigate', 'config', 'cart', 'cartCount', 'showToast', 'showConfirm', 'removeFromCart', 'updateCartQty'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const myStore = window.useMyStore();
+    const myStore = window.useFrontMyStore();
     const { orders, claimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
 
     /* ── 로컬 페이저 ── */
@@ -109,7 +109,7 @@ window.MyOrder = {
     };
 
     /* ── 공유 모달 ── */
-    const authUser = computed(() => window.shopjoyAuth.state.user);
+    const authUser = computed(() => window.frontAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
@@ -186,7 +186,7 @@ window.MyOrder = {
     };
   },
   template: /* html */ `
-<MyLayout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
+<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
 
   <MyDateFilter @search="onDateSearch" @reset="flowStatusFilter.splice(0)" />
 
@@ -730,10 +730,10 @@ window.MyOrder = {
   <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
 
   </Teleport>
-</MyLayout>
+</FrontMyLayout>
   `,
   components: {
-    MyLayout:         window.MyLayout,
+    FrontMyLayout:         window.frontMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

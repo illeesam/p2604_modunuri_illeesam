@@ -23,7 +23,8 @@ module.exports = {
   content: [
     './index.html',
     './admin.html',
-    './disp-ui.html',
+    './disp-front-ui.html',
+    './disp-admin-ui.html',
     './base/**/*.js',
     './layout/**/*.js',
     './pages/**/*.js',

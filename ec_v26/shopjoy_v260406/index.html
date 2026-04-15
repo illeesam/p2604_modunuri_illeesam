@@ -27,6 +27,25 @@
         }
       } catch(_){}
     })();
+    /* 구 localStorage 키 → 신 키 마이그레이션 (1회) */
+    (function(){
+      try {
+        var mig = [
+          ['FRONT_SITE_NO', 'modu-front-site_no'],
+          ['ADMIN_SITE_NO', 'modu-admin-site_no'],
+          ['shopjoy-theme', 'modu-front-theme'],
+          ['shopjoy_token', 'modu-front-token'],
+          ['shopjoy_user',  'modu-front-user'],
+        ];
+        mig.forEach(function(p){
+          var old = localStorage.getItem(p[0]);
+          if (old !== null && localStorage.getItem(p[1]) === null) {
+            localStorage.setItem(p[1], old);
+          }
+          if (old !== null) localStorage.removeItem(p[0]);
+        });
+      } catch(_){}
+    })();
     /* FRONT_SITE_NO — URL ?FRONT_SITE_NO=02 로 오버라이드 가능 */
     (function(){
       try {
@@ -34,7 +53,7 @@
         var v = qs.get('FRONT_SITE_NO');
         if (v) {
           window.FRONT_SITE_NO = v;
-          try { localStorage.setItem('FRONT_SITE_NO', v); } catch(_){}
+          try { localStorage.setItem('modu-front-site_no', v); } catch(_){}
           try {
             qs.delete('FRONT_SITE_NO');
             var newSearch = qs.toString();
@@ -42,14 +61,14 @@
           } catch(_){}
         } else {
           var saved = null;
-          try { saved = localStorage.getItem('FRONT_SITE_NO'); } catch(_){}
+          try { saved = localStorage.getItem('modu-front-site_no'); } catch(_){}
           window.FRONT_SITE_NO = saved || DEFAULT_FRONT_SITE_NO;
         }
       } catch(e) { window.FRONT_SITE_NO = DEFAULT_FRONT_SITE_NO; }
       /* ADMIN_SITE_NO 기본값은 admin.html에서 전적으로 관리. front 진입 시 저장된 값만 읽음 (덮어쓰지 않음) */
       try {
         var savedA = null;
-        try { savedA = localStorage.getItem('ADMIN_SITE_NO'); } catch(_){}
+        try { savedA = localStorage.getItem('modu-admin-site_no'); } catch(_){}
         window.ADMIN_SITE_NO = savedA || '';
       } catch(e) { window.ADMIN_SITE_NO = ''; }
     })();
@@ -57,7 +76,7 @@
     document.write('<link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">');
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
-      if ((e.key === 'FRONT_SITE_NO' || e.key === 'ADMIN_SITE_NO') && e.newValue !== e.oldValue) {
+      if ((e.key === 'modu-front-site_no' || e.key === 'modu-admin-site_no') && e.newValue !== e.oldValue) {
         location.reload();
       }
     });
@@ -83,18 +102,20 @@
   <div id="app"></div>
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
   <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
-  <script src="utils/axiosUtil.js"></script>
-  <script src="utils/cmUtil.js"></script>
-  <script src="base/config.js"></script>
+  <script src="utils/frontAxios.js"></script>
+  <script src="utils/frontCmUtil.js"></script>
+  <script src="base/frontConfig.js"></script>
   <script src="js/index.js"></script>
-  <script src="base/stores/authStore.js"></script>
-  <script src="base/stores/myStore.js"></script>
-  <script src="base/shopjoyAuth.js"></script>
-  <script src="layout/AppHeader.js"></script>
-  <script src="layout/AppSidebar.js"></script>
-  <script src="layout/AppFooter.js"></script>
-  <script src="layout/MyLayout.js"></script>
-  <script src="pages/base/NotFound.js"></script>
+  <script src="base/stores/frontAuthStore.js"></script>
+  <script src="base/stores/frontMyStore.js"></script>
+  <script src="base/frontAuth.js"></script>
+  <script src="layout/frontAppHeader.js"></script>
+  <script src="layout/frontAppSidebar.js"></script>
+  <script src="layout/frontAppFooter.js"></script>
+  <script src="layout/frontMyLayout.js"></script>
+  <script src="pages/base/frontError404.js"></script>
+  <script src="pages/base/frontError401.js"></script>
+  <script src="pages/base/frontError500.js"></script>
   <script>
     /* FRONT_SITE_NO 기준 동적 페이지 스크립트 로드 */
     (function(){
@@ -155,6 +176,6 @@
   <script src="pages/xs/Sample21.js"></script>
   <script src="pages/xs/Sample22.js"></script>
   <script src="pages/xs/Sample23.js"></script>
-  <script src="base/app.js"></script>
+  <script src="base/frontApp.js"></script>
 </body>
 </html>
