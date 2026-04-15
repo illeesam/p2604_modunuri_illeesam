@@ -23,6 +23,7 @@ CREATE TABLE sy_site (
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
+    disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (site_id),
     UNIQUE (site_code)
 );
@@ -48,3 +49,4 @@ COMMENT ON COLUMN sy_site.reg_by         IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_site.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_site.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_site.upd_date       IS '수정일';
+COMMENT ON COLUMN sy_site.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';

@@ -3,6 +3,32 @@ window.SyBbsMng = {
   name: 'SyBbsMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+
+    /* ── 좌측 표시경로 트리 ── */
+    const selectedPath = Vue.ref('');
+    const expanded = Vue.reactive(new Set(['']));
+    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
+    const selectNode = (path) => { selectedPath.value = path; };
+    const tree = Vue.computed(() => {
+      const root = { name: '전체', path: '', count: 0, children: {} };
+      const src = (props.adminData.bbss || []);
+      src.forEach(r => {
+        const p = r.dispPath || '기타';
+        const segs = p.split('.');
+        let node = root; node.count++;
+        let acc = '';
+        segs.forEach(seg => {
+          acc = acc ? acc + '.' + seg : seg;
+          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
+          node = node.children[seg]; node.count++;
+        });
+      });
+      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
+      return toArr(root);
+    });
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(''); };
+
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchBbmId = ref(''); const searchStatus = ref('');
@@ -74,13 +100,16 @@ window.SyBbsMng = {
       });
     };
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
+    /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
+    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
-    return { siteNm, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbmOptions, bbmNm, exportExcel };
+
+    return {
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, siteNm, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`
 <div>
-  <div class="page-title">게시글관리</div>
-  <div class="card">
+  <div class="page-title">게시글관리</div>  <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="제목 / 작성자 검색" />
       <select v-model="searchBbmId">
@@ -97,7 +126,24 @@ window.SyBbsMng = {
       </div>
     </div>
   </div>
-  <div class="card">
+  
+
+
+
+  <!-- 좌 트리 + 우 영역 -->
+  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
+<div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
@@ -106,10 +152,12 @@ window.SyBbsMng = {
       </div>
     </div>
     <table class="admin-table">
-      <thead><tr><th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr>
+          <th style="min-width:140px;">표시경로</th><th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="b in pageList" :key="b.bbsId" :style="selectedId===b.bbsId?'background:#fff8f9;':''">
+          <td><span style="font-family:monospace;font-size:11px;color:#e8587a;">{{ b.dispPath || '-' }}</span></td>
           <td>{{ b.bbsId }}</td>
           <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
           <td><span class="title-link" @click="loadDetail(b.bbsId)" :style="selectedId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="selectedId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -149,6 +197,7 @@ window.SyBbsMng = {
     </div>
     <sy-bbs-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
+</div></div>
 </div>
 `
 };

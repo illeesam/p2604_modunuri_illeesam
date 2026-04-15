@@ -26,6 +26,7 @@ CREATE TABLE sy_vendor (
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
+    disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (vendor_id)
 );
 
@@ -53,3 +54,4 @@ COMMENT ON COLUMN sy_vendor.reg_by         IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_vendor.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_vendor.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_vendor.upd_date       IS '수정일';
+COMMENT ON COLUMN sy_vendor.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';

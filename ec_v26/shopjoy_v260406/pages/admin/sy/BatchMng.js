@@ -3,6 +3,32 @@ window.SyBatchMng = {
   name: 'SyBatchMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+
+    /* ── 좌측 표시경로 트리 ── */
+    const selectedPath = Vue.ref('');
+    const expanded = Vue.reactive(new Set(['']));
+    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
+    const selectNode = (path) => { selectedPath.value = path; };
+    const tree = Vue.computed(() => {
+      const root = { name: '전체', path: '', count: 0, children: {} };
+      const src = (props.adminData.batches || []);
+      src.forEach(r => {
+        const p = r.dispPath || '기타';
+        const segs = p.split('.');
+        let node = root; node.count++;
+        let acc = '';
+        segs.forEach(seg => {
+          acc = acc ? acc + '.' + seg : seg;
+          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
+          node = node.children[seg]; node.count++;
+        });
+      });
+      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
+      return toArr(root);
+    });
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(''); };
+
     const { ref, reactive, computed } = Vue;
 
     /* ── 검색 ── */
@@ -313,8 +339,12 @@ window.SyBatchMng = {
       [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
       '배치목록.csv'
     );
+    /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
+    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+
 
     return {
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       siteNm, searchKw, searchStatus, searchRunStatus, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -328,9 +358,7 @@ window.SyBatchMng = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">배치스케즐관리</div>
-
-  <!-- 검색 -->
+  <div class="page-title">배치스케즐관리</div>  <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="배치명 / 배치코드 검색" />
@@ -355,7 +383,25 @@ window.SyBatchMng = {
     </div>
   </div>
 
-  <!-- CRUD 그리드 -->
+  
+
+
+
+
+  <!-- 좌 트리 + 우 영역 -->
+  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
+<!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ total }}건</span></span>
@@ -372,6 +418,7 @@ window.SyBatchMng = {
     <table class="admin-table crud-grid" style="min-width:1000px;">
       <thead>
         <tr>
+          <th style="min-width:140px;">표시경로</th>
           <th class="col-drag"></th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
@@ -391,7 +438,7 @@ window.SyBatchMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.batchId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -400,6 +447,7 @@ window.SyBatchMng = {
           @dragstart="onDragStart(getRealIdx(idx))"
           @dragover="onDragOver($event, getRealIdx(idx))"
           @dragend="onDragEnd">
+          <td><span style="font-family:monospace;font-size:11px;color:#e8587a;">{{ row.dispPath || '-' }}</span></td>
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td class="col-id-val">{{ row.batchId > 0 ? row.batchId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
@@ -519,6 +567,7 @@ window.SyBatchMng = {
       </div>
     </div>
   </div>
+</div></div>
 </div>
 `,
 };

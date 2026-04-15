@@ -3,6 +3,32 @@ window.SyRoleMng = {
   name: 'SyRoleMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
   setup(props) {
+
+    /* ── 좌측 표시경로 트리 ── */
+    const selectedPath = Vue.ref('');
+    const expanded = Vue.reactive(new Set(['']));
+    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
+    const selectNode = (path) => { selectedPath.value = path; };
+    const tree = Vue.computed(() => {
+      const root = { name: '전체', path: '', count: 0, children: {} };
+      const src = (props.adminData.roles || []);
+      src.forEach(r => {
+        const p = r.dispPath || '기타';
+        const segs = p.split('.');
+        let node = root; node.count++;
+        let acc = '';
+        segs.forEach(seg => {
+          acc = acc ? acc + '.' + seg : seg;
+          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
+          node = node.children[seg]; node.count++;
+        });
+      });
+      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
+      return toArr(root);
+    });
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(''); };
+
     const { ref, reactive, computed, watch } = Vue;
 
     const siteNm  = computed(() => window.adminUtil.getSiteNm());
@@ -303,8 +329,12 @@ window.SyRoleMng = {
       [{label:'ID',key:'roleId'},{label:'권한코드',key:'roleCode'},{label:'권한명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
       '권한목록.csv'
     );
+    /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
+    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+
 
     return {
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       siteNm, ROLE_TYPES, PERM_LEVELS, permColor, depthBullet, depthColor, statusClass,
       searchKw, searchType, searchUseYn, applied, onSearch, onReset,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -320,9 +350,7 @@ window.SyRoleMng = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">권한관리</div>
-
-  <!-- 검색 -->
+  <div class="page-title">권한관리</div>  <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="권한코드 / 권한명 검색" />
@@ -340,7 +368,25 @@ window.SyRoleMng = {
     </div>
   </div>
 
-  <!-- CRUD 그리드 -->
+  
+
+
+
+
+  <!-- 좌 트리 + 우 영역 -->
+  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
+<!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>권한목록 <span class="list-count">{{ total }}건</span></span>
@@ -356,6 +402,7 @@ window.SyRoleMng = {
     <table class="admin-table crud-grid">
       <thead>
         <tr>
+          <th style="min-width:140px;">표시경로</th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
           <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
@@ -374,11 +421,12 @@ window.SyRoleMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.roleId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
+          <td><span style="font-family:monospace;font-size:11px;color:#e8587a;">{{ row.dispPath || '-' }}</span></td>
 
           <td class="col-id-val">{{ row.roleId > 0 ? row.roleId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
@@ -575,6 +623,7 @@ window.SyRoleMng = {
     :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
     @select="onParentSelect"
     @close="roleTreeModal.show=false" />
+</div></div>
 </div>
 `,
 };

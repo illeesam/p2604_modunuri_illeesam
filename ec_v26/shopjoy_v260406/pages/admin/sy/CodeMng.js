@@ -427,9 +427,9 @@ window.SyCodeMng = {
         <thead>
           <tr>
             <th class="col-status">상태</th>
+            <th>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
             <th>코드그룹</th>
             <th>그룹명</th>
-            <th>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
             <th>설명</th>
             <th class="col-use">사용</th>
             <th class="col-act-cancel"></th>
@@ -446,9 +446,9 @@ window.SyCodeMng = {
             style="cursor:pointer;"
             @click="onGrpRowClick(g)">
             <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(g._row_status)">{{ g._row_status }}</span></td>
+            <td><input class="grid-input grid-mono" v-model="g.dispPath" :disabled="g._row_status==='D'" placeholder="aa.bb.cc" @input="onGrpChange(g)" /></td>
             <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
             <td><input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
-            <td><input class="grid-input grid-mono" v-model="g.dispPath" :disabled="g._row_status==='D'" placeholder="aa.bb.cc" @input="onGrpChange(g)" /></td>
             <td><input class="grid-input" v-model="g.description" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
             <td>
               <select class="grid-select" v-model="g.useYn" :disabled="g._row_status==='D'" @change="onGrpChange(g)">

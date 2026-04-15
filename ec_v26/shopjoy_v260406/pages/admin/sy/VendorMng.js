@@ -3,6 +3,32 @@ window.SyVendorMng = {
   name: 'SyVendorMng',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+
+    /* ── 좌측 표시경로 트리 ── */
+    const selectedPath = Vue.ref('');
+    const expanded = Vue.reactive(new Set(['']));
+    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
+    const selectNode = (path) => { selectedPath.value = path; };
+    const tree = Vue.computed(() => {
+      const root = { name: '전체', path: '', count: 0, children: {} };
+      const src = (props.adminData.vendors || []);
+      src.forEach(r => {
+        const p = r.dispPath || '기타';
+        const segs = p.split('.');
+        let node = root; node.count++;
+        let acc = '';
+        segs.forEach(seg => {
+          acc = acc ? acc + '.' + seg : seg;
+          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
+          node = node.children[seg]; node.count++;
+        });
+      });
+      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
+      return toArr(root);
+    });
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(''); };
+
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
@@ -95,13 +121,16 @@ window.SyVendorMng = {
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
+    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+
+    return {
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
-  <div class="page-title">업체정보</div>
-  <div class="card">
+  <div class="page-title">업체정보</div>  <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="업체명 / 사업자번호 검색" />
       <select v-model="searchType">
@@ -117,7 +146,24 @@ window.SyVendorMng = {
       </div>
     </div>
   </div>
-  <div class="card">
+  
+
+
+
+  <!-- 좌 트리 + 우 영역 -->
+  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
+<div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>거래처목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
@@ -127,11 +173,13 @@ window.SyVendorMng = {
     </div>
     <table class="admin-table">
       <thead><tr>
+          <th style="min-width:140px;">표시경로</th>
         <th>ID</th><th>업체유형</th><th>업체명</th><th>대표자</th><th>사업자번호</th><th>전화번호</th><th>이메일</th><th>계약일</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="v in pageList" :key="v.vendorId" :style="selectedId===v.vendorId?'background:#fff8f9;':''">
+          <td><span style="font-family:monospace;font-size:11px;color:#e8587a;">{{ v.dispPath || '-' }}</span></td>
           <td>{{ v.vendorId }}</td>
           <td><span class="badge" :class="typeBadge(v.vendorType)">{{ v.vendorType }}</span></td>
           <td><span class="title-link" @click="loadDetail(v.vendorId)" :style="selectedId===v.vendorId?'color:#e8587a;font-weight:700;':''">{{ v.vendorNm }}<span v-if="selectedId===v.vendorId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -171,6 +219,7 @@ window.SyVendorMng = {
     </div>
     <sy-vendor-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
+</div></div>
 </div>
 `
 };

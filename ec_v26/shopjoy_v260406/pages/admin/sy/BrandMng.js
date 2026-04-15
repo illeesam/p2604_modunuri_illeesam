@@ -5,6 +5,9 @@ window.SyBrandMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
 
+    /* 트리 선택 path (loadGrid 보다 먼저 선언) */
+    const selectedPath = ref('');
+
     /* ── 검색 ── */
     const searchKw        = ref('');
     const searchUseYn     = ref('');
@@ -28,7 +31,7 @@ window.SyBrandMng = {
     const PAGE_SIZES = [10, 20, 50, 100];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'dispPath', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
 
     const makeRow = (b) => ({
       ...b,
@@ -46,6 +49,7 @@ window.SyBrandMng = {
                  && !b.brandNm?.toLowerCase().includes(kw)
                  && !b.brandEnNm?.toLowerCase().includes(kw)) return false;
           if (applied.useYn && b.useYn !== applied.useYn) return false;
+          if (selectedPath.value && !(b.dispPath || '').startsWith(selectedPath.value)) return false;
           const d = String(b.regDate || '').slice(0, 10);
           if (applied.dateStart && d < applied.dateStart) return false;
           if (applied.dateEnd   && d > applied.dateEnd)   return false;
@@ -81,6 +85,7 @@ window.SyBrandMng = {
     const addRow = () => {
       const newRow = {
         brandId: _tempId--, brandCode: '', brandNm: '', brandEnNm: '',
+        dispPath: selectedPath.value || 'fashion.misc',
         logoUrl: '', sortOrd: gridRows.length + 1, useYn: 'Y', remark: '',
         _row_status: 'I', _row_check: false, _orig: null,
       };
@@ -210,6 +215,7 @@ window.SyBrandMng = {
       gridRows.filter(r => r._row_status !== 'D'),
       [
         { label: 'ID',       key: 'brandId' },
+        { label: '표시경로',   key: 'dispPath' },
         { label: '브랜드코드', key: 'brandCode' },
         { label: '브랜드명',  key: 'brandNm' },
         { label: '영문명',    key: 'brandEnNm' },
@@ -221,6 +227,30 @@ window.SyBrandMng = {
       '브랜드목록.csv'
     );
 
+    /* ── 좌측 표시경로 트리 (브랜드의 dispPath 기반) ── */
+    const expanded = reactive(new Set(['']));
+    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
+    const selectNode = (path) => { selectedPath.value = path; };
+    const tree = computed(() => {
+      const root = { name: '전체', path: '', count: 0, children: {} };
+      (props.adminData.brands || []).forEach(b => {
+        const p = b.dispPath || '기타';
+        const segs = p.split('.');
+        let node = root; node.count++;
+        let acc = '';
+        segs.forEach(seg => {
+          acc = acc ? acc + '.' + seg : seg;
+          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
+          node = node.children[seg]; node.count++;
+        });
+      });
+      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
+      return toArr(root);
+    });
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(''); };
+    Vue.watch(selectedPath, () => loadGrid());
+
     return {
       searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
@@ -229,6 +259,7 @@ window.SyBrandMng = {
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
       checkAll, toggleCheckAll, statusClass, exportExcel,
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
     };
   },
   template: /* html */`
@@ -259,12 +290,30 @@ window.SyBrandMng = {
     </div>
   </div>
 
+  <!-- 좌 트리 + 우 그리드 -->
+  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;">
+        <span class="list-title" style="font-size:13px;">📂 표시경로</span>
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:65vh;overflow:auto;">
+        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath"
+          :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+
   <!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-        브랜드목록 <span class="list-count">{{ total }}건</span>
+        브랜드목록
+        <span v-if="selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ selectedPath }}</span>
+        <span class="list-count">{{ total }}건</span>
       </span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
@@ -282,6 +331,7 @@ window.SyBrandMng = {
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
           <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th style="min-width:140px;">표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
           <th style="min-width:110px;">브랜드코드</th>
           <th style="min-width:130px;">브랜드명</th>
           <th style="min-width:130px;">영문명</th>
@@ -295,7 +345,7 @@ window.SyBrandMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.brandId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -312,6 +362,11 @@ window.SyBrandMng = {
           </td>
           <td class="col-check-val">
             <input type="checkbox" v-model="row._row_check" />
+          </td>
+          <td>
+            <input class="grid-input grid-mono" v-model="row.dispPath"
+              :disabled="row._row_status==='D'" @input="onCellChange(row)"
+              placeholder="aa.bb.cc" />
           </td>
           <td>
             <input class="grid-input grid-mono" v-model="row.brandCode"
@@ -382,6 +437,7 @@ window.SyBrandMng = {
       </div>
     </div>
   </div>
+  </div><!-- /grid 25/75 -->
 </div>
 `,
 };

@@ -8,6 +8,7 @@ CREATE TABLE sy_brand (
     brand_code      VARCHAR(50)     NOT NULL,
     brand_nm        VARCHAR(100)    NOT NULL,
     brand_en_nm     VARCHAR(100),
+    disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로 (예: sports.outdoor)
     logo_url        VARCHAR(500),
     vendor_id       VARCHAR(16),
     sort_ord        INTEGER         DEFAULT 0,
@@ -27,6 +28,7 @@ COMMENT ON COLUMN sy_brand.site_id       IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_brand.brand_code    IS '브랜드코드';
 COMMENT ON COLUMN sy_brand.brand_nm      IS '브랜드명 (한글)';
 COMMENT ON COLUMN sy_brand.brand_en_nm   IS '브랜드영문명';
+COMMENT ON COLUMN sy_brand.disp_path     IS '점(.) 구분 표시경로 (트리 빌드용)';
 COMMENT ON COLUMN sy_brand.logo_url      IS '로고URL';
 COMMENT ON COLUMN sy_brand.vendor_id     IS '업체ID';
 COMMENT ON COLUMN sy_brand.sort_ord      IS '정렬순서';
