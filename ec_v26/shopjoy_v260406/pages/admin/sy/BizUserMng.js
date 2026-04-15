@@ -27,11 +27,16 @@ window.SyBizUserMng = {
         .map(r => ({ pathId: r.roleCode, path: r.roleCode, name: r.roleNm, pathLabel: r.roleNm,
                      _raw: r, _badge: badgeOf(r), children: childrenOf(r.roleId), count: 0 }));
       let kids = childrenOf(null);
+      const CAT_ROOT_MAP = { SALES: 'SITE_MGR_ROOT', DELIVERY: 'DLIV_ROOT', SITE: 'SITE_GROUP', ADMIN: 'SUPER_ADMIN' };
+      if (treeRoleCat.value && CAT_ROOT_MAP[treeRoleCat.value]) {
+        const wantRoot = CAT_ROOT_MAP[treeRoleCat.value];
+        kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
+      }
       return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids, count: roles.length };
     });
-    const expandAll = () => { expanded.add(null); };
+    const expandAll = () => { expanded.add(null); (ad.roles || []).forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    Vue.onMounted(() => { expanded.clear(); expanded.add(null); });
+    Vue.onMounted(() => { expandAll(); });
     /* 사업자 표시경로 트리 필터는 사용 안 함 — 검색 사업자가 우선 */
     const allowedBizIds = computed(() => null);
 
@@ -59,7 +64,8 @@ window.SyBizUserMng = {
 
     /* 검색 입력 (사용자가 변경) */
     const searchBizId = ref(null);
-    const roleCatFilter = ref('');
+    const roleCatFilter = ref('');    /* 검색란 역할구분 (사용자 조작) */
+    const treeRoleCat  = ref('');     /* 업체행 클릭 시 자동 설정 (트리/사용자 필터용) */
     const bizKw = ref('');
     const bizVendorFlt = ref('');
     const bizStatusFlt = ref('');
@@ -89,11 +95,10 @@ window.SyBizUserMng = {
     const bizPagedRows = computed(() => bizList.value.slice((bizPager.page-1)*bizPager.size, bizPager.page*bizPager.size));
     const setBizPage = n => { if (n>=1 && n<=bizTotalPages.value) bizPager.page = n; };
     const pickBizRow = (b) => {
-      searchBizId.value = b.bizId;
       applied.bizId = b.bizId;
-      roleCatFilter.value = b.vendorTypeCd === 'SALES' ? 'SALES'
-                          : b.vendorTypeCd === 'DELIVERY' ? 'DELIVERY'
-                          : (b.vendorTypeCd === 'PARTNER' || b.vendorTypeCd === 'INTERNAL') ? 'SITE' : '';
+      treeRoleCat.value = b.vendorTypeCd === 'SALES' ? 'SALES'
+                        : b.vendorTypeCd === 'DELIVERY' ? 'DELIVERY'
+                        : (b.vendorTypeCd === 'PARTNER' || b.vendorTypeCd === 'INTERNAL') ? 'SITE' : '';
       if (typeof pager !== 'undefined' && pager) pager.page = 1;
     };
     const bizStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
@@ -144,11 +149,11 @@ window.SyBizUserMng = {
     const filtered = computed(() => (ad.bizUsers || []).filter(u => {
       if (applied.bizId != null && u.bizId !== applied.bizId) return false;
       if (pathRoleCodes.value && !pathRoleCodes.value.has(u.roleCd)) return false;
-      if (roleCatFilter.value) {
+      if (treeRoleCat.value) {
         const vt = bizVendorType(u.bizId);
-        const matchCat = roleCatFilter.value === 'SALES' ? vt === 'SALES'
-                       : roleCatFilter.value === 'DELIVERY' ? vt === 'DELIVERY'
-                       : roleCatFilter.value === 'SITE' ? (vt === 'PARTNER' || vt === 'INTERNAL') : true;
+        const matchCat = treeRoleCat.value === 'SALES' ? vt === 'SALES'
+                       : treeRoleCat.value === 'DELIVERY' ? vt === 'DELIVERY'
+                       : treeRoleCat.value === 'SITE' ? (vt === 'PARTNER' || vt === 'INTERNAL') : true;
         if (!matchCat) return false;
       }
       return true;
@@ -301,7 +306,7 @@ window.SyBizUserMng = {
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       ROLES, STATUS, VENDOR_TYPES,
       searchBizId, applied, onSearch, onReset, bizSummary,
-      searchRoleCatLabel, searchRoleCatColor, roleCatFilter,
+      searchRoleCatLabel, searchRoleCatColor, roleCatFilter, treeRoleCat,
       bizKw, bizVendorFlt, bizStatusFlt, BIZ_STATUS,
       bizList, bizPager, bizTotalPages, bizPageNums, bizPagedRows, setBizPage,
       pickBizRow, bizStatusBadge, bizStatusLabel,
@@ -406,7 +411,7 @@ window.SyBizUserMng = {
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할정보</span></div>
-      <select disabled :value="roleCatFilter" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;background:#f5f5f7;color:#6b7280;">
+      <select disabled :value="treeRoleCat" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;background:#f5f5f7;color:#6b7280;">
         <option value="">역할구분 전체</option>
         <option value="SALES">판매업체역할</option>
         <option value="DELIVERY">배송업체역할</option>
@@ -555,43 +560,62 @@ window.SyBizUserMng = {
   <!-- 역할 선택 모달 -->
   <div v-if="roleModalOpen" class="modal-overlay" @click.self="closeRoleModal">
     <div style="background:#fff;border-radius:16px;width:min(1000px,95vw);height:min(720px,90vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
-      <!-- 헤더 (핑크 그라데이션) -->
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);border-bottom:1px solid #fbd5e0;">
+      <!-- 헤더 (블루-인디고 그라데이션) -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 60%,#bfdbfe 100%);border-bottom:1px solid #bfdbfe;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-weight:800;font-size:16px;color:#1f2937;">🎭 역할 선택</span>
-          <span v-if="formAllowedRootCode" style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:10px;background:#fff;border:1px solid #f9a8c4;color:#db2777;font-weight:700;font-size:11px;">
-            역할구분: {{ formAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
+          <span v-if="formAllowedRootCode"
+            :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color: formAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':formAllowedRootCode==='DLIV_ROOT'?'#d97706':'#2563eb'}">
+            역할구분: {{ formAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : formAllowedRootCode==='DLIV_ROOT' ? '배송업체역할' : '사이트역할' }}
           </span>
         </div>
         <span @click="closeRoleModal"
           style="cursor:pointer;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:16px;color:#6b7280;transition:all .15s;"
-          @mouseover="$event.currentTarget.style.background='#fff';$event.currentTarget.style.color='#db2777';$event.currentTarget.style.transform='rotate(90deg)'"
+          @mouseover="$event.currentTarget.style.background='#dbeafe';$event.currentTarget.style.color='#2563eb';$event.currentTarget.style.transform='rotate(90deg)'"
           @mouseout="$event.currentTarget.style.background='transparent';$event.currentTarget.style.color='#6b7280';$event.currentTarget.style.transform='rotate(0)'">✕</span>
       </div>
 
       <!-- 본문 2-컬럼 -->
       <div style="display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;background:#fafbfc;">
-        <!-- 좌: 권한 트리 -->
+        <!-- 좌: 역할 트리 -->
         <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 14px 8px;border-bottom:1px solid #f3f4f6;font-size:12px;font-weight:700;color:#374151;z-index:1;">📂 역할 트리</div>
           <div style="padding:6px 8px;">
             <div v-if="!formAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">선택한 사업자의 업체유형이 없어 역할을 선택할 수 없습니다.</div>
             <template v-for="root in formRoleTree" :key="root.roleId">
-              <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',color: root.roleCode===formAllowedRootCode ? '#db2777' : '#cbd5e1',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px'}"
+              <!-- 루트 노드 (역할구분 뱃지 포함) -->
+              <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
+                color: root.roleCode===formAllowedRootCode ? '#1e40af' : '#cbd5e1'}"
                 @click="toggleRoleNode(root.roleId)"
-                @mouseover="root.roleCode===formAllowedRootCode && ($event.currentTarget.style.background='#fff0f4')"
+                @mouseover="root.roleCode===formAllowedRootCode && ($event.currentTarget.style.background='#eff6ff')"
                 @mouseout="$event.currentTarget.style.background='transparent'">
                 <span style="width:12px;font-size:10px;color:#9ca3af;">{{ roleTreeExpanded.has(root.roleId) ? '▾' : '▸' }}</span>
                 <span>📁 {{ root.roleNm }}</span>
+                <span :style="{marginLeft:'auto',fontSize:'10px',fontWeight:700,padding:'1px 7px',borderRadius:'8px',color:'#fff',flexShrink:0,
+                  background: root.roleCode==='SUPER_ADMIN'?'#7c3aed':root.roleCode==='SITE_GROUP'?'#2563eb':root.roleCode==='SITE_MGR_ROOT'?'#16a34a':root.roleCode==='DLIV_ROOT'?'#f59e0b':'#9ca3af'}">
+                  {{ root.roleCode==='SUPER_ADMIN'?'관리자':root.roleCode==='SITE_GROUP'?'사이트':root.roleCode==='SITE_MGR_ROOT'?'판매업체':root.roleCode==='DLIV_ROOT'?'배송업체':'' }}
+                </span>
               </div>
+              <!-- 자식 노드 -->
               <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:14px;margin-bottom:6px;">
                 <div v-for="ch in root.children" :key="ch.roleId"
                   @click="pickRoleInModal(ch)"
-                  :style="{padding:'7px 10px',fontSize:'12.5px',cursor: ch.allowed ? 'pointer' : 'not-allowed',color: ch.allowed ? (roleModalTemp===ch.roleCode ? '#fff' : '#374151') : '#d1d5db',background: roleModalTemp===ch.roleCode ? 'linear-gradient(135deg,#ec4899,#db2777)' : 'transparent',borderRadius:'6px',fontWeight: roleModalTemp===ch.roleCode ? 700 : 500,marginBottom:'2px',display:'flex',alignItems:'center',gap:'6px',boxShadow: roleModalTemp===ch.roleCode ? '0 2px 6px rgba(219,39,119,.3)' : 'none',transition:'all .1s'}"
-                  @mouseover="ch.allowed && roleModalTemp!==ch.roleCode && ($event.currentTarget.style.background='#fff0f4')"
+                  :style="{padding:'7px 10px',fontSize:'12.5px',cursor: ch.allowed ? 'pointer' : 'not-allowed',
+                    color: ch.allowed ? (roleModalTemp===ch.roleCode ? '#fff' : '#374151') : '#d1d5db',
+                    background: roleModalTemp===ch.roleCode ? 'linear-gradient(135deg,#3b82f6,#2563eb)' : 'transparent',
+                    borderRadius:'6px',fontWeight: roleModalTemp===ch.roleCode ? 700 : 500,marginBottom:'2px',
+                    display:'flex',alignItems:'center',gap:'6px',
+                    boxShadow: roleModalTemp===ch.roleCode ? '0 2px 6px rgba(37,99,235,.3)' : 'none',transition:'all .1s'}"
+                  @mouseover="ch.allowed && roleModalTemp!==ch.roleCode && ($event.currentTarget.style.background='#eff6ff')"
                   @mouseout="roleModalTemp!==ch.roleCode && ($event.currentTarget.style.background='transparent')">
-                  <span :style="{fontSize:'9px',color: roleModalTemp===ch.roleCode ? '#fff' : '#db2777'}">●</span>
+                  <span :style="{fontSize:'9px',color: roleModalTemp===ch.roleCode ? '#fff' :
+                    (root.roleCode==='SUPER_ADMIN'?'#7c3aed':root.roleCode==='SITE_GROUP'?'#2563eb':root.roleCode==='SITE_MGR_ROOT'?'#16a34a':'#f59e0b')}">●</span>
                   <span>{{ ch.roleNm }}</span>
+                  <span :style="{marginLeft:'auto',fontSize:'9px',fontWeight:700,padding:'1px 5px',borderRadius:'7px',flexShrink:0,
+                    color: roleModalTemp===ch.roleCode ? '#fff' : '#fff',opacity: roleModalTemp===ch.roleCode ? 0.85 : 1,
+                    background: root.roleCode==='SUPER_ADMIN'?'#7c3aed':root.roleCode==='SITE_GROUP'?'#2563eb':root.roleCode==='SITE_MGR_ROOT'?'#16a34a':'#f59e0b'}">
+                    {{ root.roleCode==='SUPER_ADMIN'?'관리자':root.roleCode==='SITE_GROUP'?'사이트':root.roleCode==='SITE_MGR_ROOT'?'판매업체':'배송업체' }}
+                  </span>
                 </div>
               </div>
             </template>
@@ -602,7 +626,7 @@ window.SyBizUserMng = {
         <div style="overflow:auto;background:#fff;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 16px 8px;border-bottom:1px solid #f3f4f6;z-index:1;">
             <div style="font-size:12px;font-weight:700;color:#374151;">🔐 메뉴 접근권한
-              <span v-if="selectedModalRole" style="color:#db2777;font-weight:700;margin-left:8px;">— {{ selectedModalRole.roleNm }}</span>
+              <span v-if="selectedModalRole" style="color:#2563eb;font-weight:700;margin-left:8px;">— {{ selectedModalRole.roleNm }}</span>
             </div>
             <div v-if="selectedModalRole" style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:#6b7280;">
               <span>권한레벨:</span>
@@ -641,7 +665,7 @@ window.SyBizUserMng = {
       <!-- 푸터 -->
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 22px;border-top:1px solid #eef0f3;background:#fafbfc;">
         <div style="font-size:11px;color:#6b7280;">
-          <span v-if="roleModalTemp">선택: <b style="color:#db2777;">{{ roleNmByCode(roleModalTemp) }}</b></span>
+          <span v-if="roleModalTemp">선택: <b style="color:#2563eb;">{{ roleNmByCode(roleModalTemp) }}</b></span>
           <span v-else style="color:#9ca3af;">역할을 선택해주세요</span>
         </div>
         <div style="display:flex;gap:8px;">
