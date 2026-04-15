@@ -185,12 +185,30 @@ window.SyCodeMng = {
       return grp?.type === '트리';
     });
 
-    /* 트리형 코드 그룹일 때 상위코드 목록 */
+    /* 코드값으로 전체 계층 경로 구성 (루트부터 현재까지) */
+    const getCodeHierarchyPath = (codeValue) => {
+      if (!codeValue) return '';
+      const codes = gridRows.filter(r => r._row_status !== 'D');
+      const byValue = new Map(codes.map(c => [c.codeValue, c]));
+      const path = [];
+      let current = byValue.get(codeValue);
+      while (current) {
+        path.unshift(`${current.codeLabel}(${current.codeValue})`);
+        current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
+      }
+      return path.length > 0 ? path.join(' > ') : '';
+    };
+
+    /* 트리형 코드 그룹일 때 상위코드 목록 (계층 경로 포함) */
     const parentCodeOptions = computed(() => {
       if (!isTreeTypeGrp.value) return [];
       return gridRows
         .filter(r => r._row_status !== 'D')
-        .map(r => ({ label: `${r.codeLabel}(${r.codeValue})`, value: r.codeValue }));
+        .map(r => ({
+          label: `${r.codeLabel}(${r.codeValue})`,
+          value: r.codeValue,
+          path: getCodeHierarchyPath(r.codeValue)
+        }));
     });
 
     const onSearch = () => {
@@ -435,7 +453,7 @@ window.SyCodeMng = {
       selectedGrp, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode, flatTreeRows, parentCodeOptions, isTreeTypeGrp,
-      selectedCodeId, loadDetail, closeDetail,
+      selectedCodeId, loadDetail, closeDetail, getCodeHierarchyPath,
     };
   },
   template: /* html */`
@@ -697,8 +715,7 @@ window.SyCodeMng = {
     <table v-if="activeCodeTab==='트리' && selectedGrp" class="admin-table crud-grid" style="margin-top:0;">
       <thead>
         <tr>
-          <th style="width:30px;"></th>
-          <th style="min-width:200px;">코드라벨</th>
+          <th style="min-width:220px;">코드라벨</th>
           <th>코드값</th>
           <th style="width:140px;">상위코드값</th>
           <th class="col-ord">순서</th>
@@ -709,29 +726,33 @@ window.SyCodeMng = {
       </thead>
       <tbody>
         <tr v-if="codeTree.count===0">
-          <td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-else v-for="row in flatTreeRows" :key="row.node.value" style="user-select:none;">
-          <td style="padding:0;text-align:center;">
-            <span v-if="row.node.children.length > 0"
-              @click="codeToggleNode(row.node.value)"
-              style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;color:#6b7280;font-size:12px;">
-              {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
-            </span>
-          </td>
           <td style="padding-left:0;">
             <div style="display:flex;align-items:center;gap:0;">
               <span :style="{ minWidth: (row.depth * 24 + 8) + 'px', flexShrink: 0 }"></span>
+              <span v-if="row.node.children.length > 0"
+                @click="codeToggleNode(row.node.value)"
+                style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
+                {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
+              </span>
+              <span v-else style="width:20px;flex-shrink:0;"></span>
               <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:4px;font-weight:300;">├</span>
               <span style="font-weight:600;color:#374151;">{{ row.node.label }}</span>
             </div>
           </td>
           <td><span style="font-family:monospace;color:#6b7280;font-size:12px;">{{ row.node.value }}</span></td>
           <td>
-            <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" @change="onCellChange(row.node.code)">
-              <option :value="null">-- 없음 --</option>
-              <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" @change="onCellChange(row.node.code)">
+                <option :value="null">-- 없음 --</option>
+                <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value" :title="opt.path">{{ opt.label }}</option>
+              </select>
+              <span v-if="row.node.code.parentCodeValue" style="font-size:10px;color:#6b7280;line-height:1.2;">
+                📍 {{ getCodeHierarchyPath(row.node.code.parentCodeValue) }}
+              </span>
+            </div>
           </td>
           <td style="text-align:right;color:#6b7280;font-size:12px;">{{ row.node.code.sortOrd }}</td>
           <td style="text-align:center;">
