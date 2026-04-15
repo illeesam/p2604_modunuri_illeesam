@@ -5,6 +5,10 @@ window.SyCodeMng = {
   setup(props) {
     const { ref, reactive, computed } = Vue;
 
+    /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
+    const selectedGrp = ref('');
+    const grpSelectedPath = ref('');
+
     /* ── 검색 ── */
     const searchKw        = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
@@ -32,6 +36,101 @@ window.SyCodeMng = {
 
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark'];
 
+    /* ═══════════════════════════════════════════════════════
+       상단 섹션: 표시경로 트리 + 코드그룹 CRUD 그리드
+    ═══════════════════════════════════════════════════════ */
+    const grpRows = reactive([]);
+    let _grpTempId = -1;
+    const GRP_FIELDS = ['codeGrp', 'grpNm', 'dispPath', 'description', 'useYn'];
+    const loadGrp = () => {
+      grpRows.splice(0);
+      (props.adminData.codeGroups || []).forEach(g => grpRows.push({
+        ...g,
+        _row_status: 'N',
+        _orig: { codeGrp: g.codeGrp, grpNm: g.grpNm, dispPath: g.dispPath || '', description: g.description || '', useYn: g.useYn || 'Y' },
+      }));
+    };
+    loadGrp();
+    const onGrpChange = (row) => {
+      if (row._row_status === 'I' || row._row_status === 'D') return;
+      const changed = GRP_FIELDS.some(f => String(row[f] || '') !== String(row._orig[f] || ''));
+      row._row_status = changed ? 'U' : 'N';
+    };
+    const addGrp = () => {
+      grpRows.push({
+        codeGrp: 'NEW_GRP', grpNm: '신규 그룹', dispPath: 'new.path', description: '', useYn: 'Y',
+        _row_status: 'I', _tempId: _grpTempId--, _orig: {},
+      });
+    };
+    const delGrp = (idx) => {
+      const r = grpRows[idx];
+      if (r._row_status === 'I') grpRows.splice(idx, 1);
+      else r._row_status = r._row_status === 'D' ? 'N' : 'D';
+    };
+    const cancelGrp = (idx) => {
+      const r = grpRows[idx];
+      if (r._row_status === 'I') { grpRows.splice(idx, 1); return; }
+      Object.assign(r, r._orig); r._row_status = 'N';
+    };
+    const grpDirty = computed(() => grpRows.filter(r => r._row_status !== 'N').length);
+    const saveGrp = async () => {
+      if (!grpDirty.value) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
+      const ok = await props.showConfirm('저장', `${grpDirty.value}건 저장하시겠습니까?`);
+      if (!ok) return;
+      props.adminData.codeGroups = grpRows.filter(r => r._row_status !== 'D').map(r => ({
+        codeGrp: r.codeGrp, grpNm: r.grpNm, dispPath: r.dispPath, description: r.description, useYn: r.useYn,
+      }));
+      loadGrp();
+      props.showToast('저장되었습니다.', 'success');
+    };
+
+    /* 좌측 표시경로 트리 (codeGroups의 dispPath 기반) */
+    const grpExpanded = reactive(new Set(['']));
+    const grpToggleNode = (path) => { if (grpExpanded.has(path)) grpExpanded.delete(path); else grpExpanded.add(path); };
+    const grpSelectNode = (path) => { grpSelectedPath.value = path; };
+    const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(grpTree.value); };
+    const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
+    const grpTree = computed(() => {
+      const root = { name: '전체', path: '', count: 0, children: {} };
+      grpRows.filter(r => r._row_status !== 'D').forEach(r => {
+        const p = r.dispPath || '기타';
+        const segs = p.split('.');
+        let node = root; node.count++;
+        let acc = '';
+        segs.forEach(seg => {
+          acc = acc ? acc + '.' + seg : seg;
+          if (!node.children[seg]) node.children[seg] = { name: seg, path: acc, count: 0, children: {} };
+          node = node.children[seg]; node.count++;
+        });
+      });
+      const toArr = (n) => ({ ...n, children: Object.values(n.children).sort((a,b)=>a.name.localeCompare(b.name)).map(toArr) });
+      return toArr(root);
+    });
+    const filteredGrpRows = computed(() => {
+      const sp = grpSelectedPath.value;
+      if (!sp) return grpRows;
+      return grpRows.filter(r => (r.dispPath || '').startsWith(sp));
+    });
+
+    /* 공통코드그룹 페이징 (default 5건) */
+    const grpPager = reactive({ page: 1, size: 5 });
+    const GRP_PAGE_SIZES = [5, 10, 20, 50, 100];
+    const grpTotalPages = computed(() => Math.max(1, Math.ceil(filteredGrpRows.value.length / grpPager.size)));
+    const grpPageNums = computed(() => { const c = grpPager.page, l = grpTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setGrpPage = n => { if (n >= 1 && n <= grpTotalPages.value) grpPager.page = n; };
+    const onGrpSizeChange = () => { grpPager.page = 1; };
+    const grpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return filteredGrpRows.value.slice(s, s + grpPager.size); });
+    Vue.watch(() => filteredGrpRows.value.length, () => { if (grpPager.page > grpTotalPages.value) grpPager.page = Math.max(1, grpTotalPages.value); });
+    /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
+    Vue.watch(grpSelectedPath, () => { grpPager.page = 1; selectedGrp.value = ''; loadGrid(); });
+    /* selectedGrp 변경 시 코드목록 재조회 */
+    Vue.watch(selectedGrp, () => loadGrid());
+
+    /* 그룹 행 클릭 → 코드목록 필터 (토글) */
+    const onGrpRowClick = (g) => {
+      selectedGrp.value = (selectedGrp.value === g.codeGrp) ? '' : g.codeGrp;
+    };
+
     const makeRow = (c) => ({
       ...c,
       _row_status: 'N',
@@ -42,6 +141,12 @@ window.SyCodeMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      /* 트리 선택 시 해당 path에 속하는 codeGrp 집합 */
+      const allowedGrps = grpSelectedPath.value
+        ? new Set((props.adminData.codeGroups || [])
+            .filter(g => (g.dispPath || '').startsWith(grpSelectedPath.value))
+            .map(g => g.codeGrp))
+        : null;
       props.adminData.codes
         .filter(c => {
           const kw = applied.kw.trim().toLowerCase();
@@ -50,6 +155,8 @@ window.SyCodeMng = {
                  && !c.codeValue.toLowerCase().includes(kw)) return false;
           if (applied.grp   && c.codeGrp !== applied.grp)   return false;
           if (applied.useYn && c.useYn   !== applied.useYn) return false;
+          if (selectedGrp.value && c.codeGrp !== selectedGrp.value) return false;
+          if (allowedGrps && !allowedGrps.has(c.codeGrp)) return false;
           const _d = String(c.regDate || '').slice(0, 10);
           if (applied.dateStart && _d < applied.dateStart) return false;
           if (applied.dateEnd   && _d > applied.dateEnd)   return false;
@@ -251,6 +358,10 @@ window.SyCodeMng = {
       dragSrc, onDragStart, onDragOver, onDragEnd,
       checkAll, toggleCheckAll, statusClass,
       exportExcel,
+      grpRows, grpDirty, addGrp, delGrp, cancelGrp, saveGrp, onGrpChange,
+      grpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, grpSelectedPath, filteredGrpRows,
+      grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
+      selectedGrp, onGrpRowClick,
     };
   },
   template: /* html */`
@@ -283,10 +394,104 @@ window.SyCodeMng = {
     </div>
   </div>
 
+  <!-- ═══ 상단: 표시경로 트리 + 코드그룹 CRUD ═══ -->
+  <div style="display:grid;grid-template-columns:25% 75%;gap:12px;margin-bottom:14px;align-items:flex-start;">
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;">
+        <span class="list-title" style="font-size:13px;">📂 표시경로 <span class="list-count">{{ grpTree.count }}</span></span>
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="grpExpandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="grpCollapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:50vh;overflow:auto;">
+        <prop-tree-node :node="grpTree" :expanded="grpExpanded" :selected="grpSelectedPath"
+          :on-toggle="grpToggleNode" :on-select="grpSelectNode" :depth="0" />
+      </div>
+    </div>
+
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <span class="list-title">
+          <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+          공통코드그룹관리
+          <span v-if="grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ grpSelectedPath }}</span>
+          <span class="list-count">{{ filteredGrpRows.filter(r=>r._row_status!=='D').length }}건</span>
+        </span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-green btn-sm" @click="addGrp">+ 행추가</button>
+          <button class="btn btn-primary btn-sm" @click="saveGrp" :disabled="!grpDirty">저장 <span v-if="grpDirty">({{ grpDirty }})</span></button>
+        </div>
+      </div>
+      <table class="admin-table crud-grid">
+        <thead>
+          <tr>
+            <th class="col-status">상태</th>
+            <th>코드그룹</th>
+            <th>그룹명</th>
+            <th>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
+            <th>설명</th>
+            <th class="col-use">사용</th>
+            <th class="col-act-cancel"></th>
+            <th class="col-act-delete"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="grpPagedRows.length===0">
+            <td colspan="8" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td>
+          </tr>
+          <tr v-for="(g, idx) in grpPagedRows" :key="g.codeGrp + (g._tempId || '')"
+            class="crud-row"
+            :class="['status-'+g._row_status, selectedGrp===g.codeGrp ? 'focused' : '']"
+            style="cursor:pointer;"
+            @click="onGrpRowClick(g)">
+            <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(g._row_status)">{{ g._row_status }}</span></td>
+            <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
+            <td><input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
+            <td><input class="grid-input grid-mono" v-model="g.dispPath" :disabled="g._row_status==='D'" placeholder="aa.bb.cc" @input="onGrpChange(g)" /></td>
+            <td><input class="grid-input" v-model="g.description" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
+            <td>
+              <select class="grid-select" v-model="g.useYn" :disabled="g._row_status==='D'" @change="onGrpChange(g)">
+                <option value="Y">사용</option><option value="N">미사용</option>
+              </select>
+            </td>
+            <td class="col-act-cancel-val">
+              <button v-if="['U','I','D'].includes(g._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelGrp(idx)">취소</button>
+            </td>
+            <td class="col-act-delete-val">
+              <button v-if="['N','U'].includes(g._row_status)" class="btn btn-danger btn-xs" @click.stop="delGrp(idx)">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <div></div>
+        <div class="pager">
+          <button :disabled="grpPager.page===1" @click="setGrpPage(1)">«</button>
+          <button :disabled="grpPager.page===1" @click="setGrpPage(grpPager.page-1)">‹</button>
+          <button v-for="n in grpPageNums" :key="n" :class="{active:grpPager.page===n}" @click="setGrpPage(n)">{{ n }}</button>
+          <button :disabled="grpPager.page===grpTotalPages" @click="setGrpPage(grpPager.page+1)">›</button>
+          <button :disabled="grpPager.page===grpTotalPages" @click="setGrpPage(grpTotalPages)">»</button>
+        </div>
+        <div class="pager-right">
+          <select class="size-select" v-model.number="grpPager.size" @change="onGrpSizeChange">
+            <option v-for="s in GRP_PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>코드목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>코드목록
+        <span v-if="selectedGrp" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ selectedGrp }}</span>
+        <span v-else-if="grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ grpSelectedPath }}</span>
+        <span class="list-count">{{ total }}건</span>
+      </span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>

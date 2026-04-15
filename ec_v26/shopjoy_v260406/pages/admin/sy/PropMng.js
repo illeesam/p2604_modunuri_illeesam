@@ -85,6 +85,16 @@ window.SyPropMng = {
       return arr.filter(r => r._status !== 'D');
     });
 
+    /* ── 페이징 ── */
+    const pager = reactive({ page: 1, size: 20 });
+    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
+    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.value.length / pager.size)));
+    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.value.slice(s, s + pager.size); });
+    watch(() => gridRows.value.length, () => { if (pager.page > totalPages.value) pager.page = Math.max(1, totalPages.value); });
+
     /* ── 행 변경 추적 ── */
     const onChange = (row, field, val) => {
       row[field] = val;
@@ -178,7 +188,8 @@ window.SyPropMng = {
 
     return {
       kw, useFlt, typeFlt, TYPES, tree, expanded, toggleNode, expandAll, collapseAll,
-      selectedPath, selectNode, gridRows, dirtyRows,
+      selectedPath, selectNode, gridRows, pagedRows, dirtyRows,
+      pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
       onChange, addRow, delRow, cancelRow, save, reset, exportCsv,
     };
   },
@@ -254,10 +265,10 @@ window.SyPropMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="gridRows.length===0">
+          <tr v-if="pagedRows.length===0">
             <td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="r in gridRows" :key="r.propId" class="crud-row" :class="'status-' + (r._status || '')">
+          <tr v-for="r in pagedRows" :key="r.propId" class="crud-row" :class="'status-' + (r._status || '')">
             <td class="col-status-val">
               <span v-if="r._status==='I'" class="badge badge-green badge-xs">신규</span>
               <span v-else-if="r._status==='U'" class="badge badge-orange badge-xs">수정</span>
@@ -287,6 +298,22 @@ window.SyPropMng = {
           </tr>
         </tbody>
       </table>
+
+      <div class="pagination">
+        <div></div>
+        <div class="pager">
+          <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+          <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+          <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+          <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+          <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        </div>
+        <div class="pager-right">
+          <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
 </div>
