@@ -50,7 +50,7 @@
         }
       } catch(e) { window.ADMIN_SITE_NO = DEFAULT_ADMIN_SITE_NO; }
       /* ADMIN_SITE_NO 기준 CSS 로드 */
-      document.write('<link rel="stylesheet" href="assets/css/backOfficeStyle' + window.ADMIN_SITE_NO + '.css">');
+      document.write('<link rel="stylesheet" href="assets/css/adminGlobalStyle' + window.ADMIN_SITE_NO + '.css">');
     })();
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
@@ -150,6 +150,9 @@
   <script src="pages/admin/ec/CategoryMng.js"></script>
   <script src="pages/admin/ec/CategoryDtl.js"></script>
   <script src="pages/admin/sy/DashboardMng.js"></script>
+  <script src="pages/admin/DashboardAdminEc01.js"></script>
+  <script src="pages/admin/DashboardAdminEc02.js"></script>
+  <script src="pages/admin/DashboardAdminEc03.js"></script>
   <script src="pages/admin/sy/UserMng.js"></script>
   <script src="pages/admin/sy/UserDtl.js"></script>
   <script src="pages/admin/sy/BatchMng.js"></script>

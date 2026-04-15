@@ -103,6 +103,7 @@
     setup() {
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
+      const dashboardComp = computed(() => 'DashboardAdminEc' + (window.ADMIN_SITE_NO || '01'));
       const errorMessage = ref('');
       /* API 에러 → 오류 페이지 전환 (adminAxios 에서 window.dispatchEvent('api-error')) */
       window.addEventListener('api-error', (ev) => {
@@ -125,7 +126,7 @@
         else keptTabIds.add(tabId);
       };
       const PAGE_COMP_MAP = {
-        'dashboard':'sy-dashboard-mng', 'ecMemberMng':'ec-member-mng', 'ecMemberDtl':'ec-member-dtl',
+        'dashboard':'dashboard-admin-ec'+(window.ADMIN_SITE_NO||'01'), 'ecMemberMng':'ec-member-mng', 'ecMemberDtl':'ec-member-dtl',
         'ecProdMng':'ec-prod-mng', 'ecProdDtl':'ec-prod-dtl',
         'ecOrderMng':'ec-order-mng', 'ecOrderDtl':'ec-order-dtl',
         'ecClaimMng':'ec-claim-mng', 'ecClaimDtl':'ec-claim-dtl',
@@ -565,7 +566,7 @@
       const onRootClick = () => { closeCtxMenu(); userMenuShow.value = false; };
 
       return {
-        page, editId, navigate, errorMessage,
+        page, editId, navigate, errorMessage, dashboardComp,
         TOP_MENUS, LEFT_MENUS, AUTH_METHODS,
         openTabs, closeTab, activeTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
         ctxMenu, showCtxMenu, closeCtxMenu,
@@ -816,7 +817,7 @@
         />
         <!-- 비고정 현재 탭: 전환 시 재마운트 -->
         <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
-        <sy-dashboard-mng v-if="page==='dashboard'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" />
+        <component v-if="page==='dashboard'" :is="dashboardComp" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" />
         <ec-member-mng  v-else-if="page==='ecMemberMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-member-dtl  v-else-if="page==='ecMemberDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <ec-prod-mng    v-else-if="page==='ecProdMng'"    :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -1253,6 +1254,9 @@
   .component('EcCustInfoMng',  window.EcCustInfoMng)
   /* ── pages/admin/sy/ — 대시보드 ── */
   .component('SyDashboardMng', window.SyDashboardMng)
+  .component('DashboardAdminEc01', window.DashboardAdminEc01)
+  .component('DashboardAdminEc02', window.DashboardAdminEc02)
+  .component('DashboardAdminEc03', window.DashboardAdminEc03)
   /* ── pages/admin/sy/ — 사용자/권한/조직 ── */
   .component('SyUserMng',      window.SyUserMng)
   .component('SyUserDtl',      window.SyUserDtl)

@@ -764,7 +764,7 @@ window.XsSample04 = {
     @keyframes s04_spin        { to   { transform:rotate(360deg); } }
     @keyframes s04_fadeIn      { from { opacity:0; } to { opacity:1; } }
 
-    /* ── 관리자 공통 모달 CSS (backOfficeStyle.css 미포함 환경용) ── */
+    /* ── 관리자 공통 모달 CSS (adminGlobalStyle.css 미포함 환경용) ── */
     .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9100;display:flex;align-items:center;justify-content:center;padding:20px; }
     .modal-box     { background:#fff;border-radius:12px;padding:24px;width:100%;max-width:580px;max-height:85vh;overflow-y:auto; }
     .modal-box.wide { max-width:820px; }

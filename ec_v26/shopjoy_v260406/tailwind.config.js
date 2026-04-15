@@ -35,7 +35,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        /* ShopJoy 브랜드 색상 (frontOfficeStyle01/02.css와 동기화) */
+        /* ShopJoy 브랜드 색상 (frontGlobalStyle01/02.css와 동기화) */
         brand: {
           pink:    '#e8587a',
           'pink-dark': '#d64669',
