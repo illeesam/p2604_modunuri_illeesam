@@ -173,11 +173,21 @@ window.SyCodeMng = {
 
     const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
+    /* 상세 조회 */
+    const selectedCodeId = ref(null);
+    const loadDetail = (codeId) => { selectedCodeId.value = codeId; };
+    const closeDetail = () => { selectedCodeId.value = null; };
+
+    /* 현재 선택된 그룹이 트리형인지 여부 */
+    const isTreeTypeGrp = computed(() => {
+      if (!selectedGrp.value || !props.adminData?.codeGroups) return false;
+      const grp = props.adminData.codeGroups.find(g => g.codeGrp === selectedGrp.value);
+      return grp?.type === '트리';
+    });
+
     /* 트리형 코드 그룹일 때 상위코드 목록 */
     const parentCodeOptions = computed(() => {
-      if (!selectedGrp.value) return [];
-      const grp = props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp.value);
-      if (!grp || grp.type !== '트리') return [];
+      if (!isTreeTypeGrp.value) return [];
       return gridRows
         .filter(r => r._row_status !== 'D')
         .map(r => ({ label: `${r.codeLabel}(${r.codeValue})`, value: r.codeValue }));
@@ -424,7 +434,8 @@ window.SyCodeMng = {
       grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
       selectedGrp, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode, flatTreeRows, parentCodeOptions,
+      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode, flatTreeRows, parentCodeOptions, isTreeTypeGrp,
+      selectedCodeId, loadDetail, closeDetail,
     };
   },
   template: /* html */`
@@ -607,7 +618,7 @@ window.SyCodeMng = {
           <th>코드그룹</th>
           <th>코드라벨</th>
           <th>코드값</th>
-          <th v-if="selectedGrp && (props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp)?.type === '트리')" style="width:140px;">상위코드값</th>
+          <th v-if="isTreeTypeGrp" style="width:140px;">상위코드값</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
           <th>비고</th>
@@ -618,12 +629,13 @@ window.SyCodeMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td :colspan="(selectedGrp && (props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp)?.type === '트리')) ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td :colspan="isTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.codeId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
+          @dblclick="loadDetail(row.codeId)"
           @dragstart="onDragStart(getRealIdx(idx))"
           @dragover="onDragOver($event, getRealIdx(idx))"
           @dragend="onDragEnd">
@@ -639,7 +651,7 @@ window.SyCodeMng = {
           <td><input class="grid-input" v-model="row.codeGrp"   :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td><input class="grid-input" v-model="row.codeLabel"  :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td v-if="selectedGrp && (props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp)?.type === '트리')">
+          <td v-if="isTreeTypeGrp">
             <select class="grid-select" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
               <option :value="null">-- 없음 --</option>
               <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
@@ -732,6 +744,16 @@ window.SyCodeMng = {
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     title="공통코드그룹 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
+
+  <!-- 코드 상세 조회 (인라인 임베드) -->
+  <div v-if="selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
+      <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">코드 상세</h3>
+      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+    </div>
+    <sy-code-dtl :navigate="navigate" :admin-data="adminData" :show-toast="showToast"
+      :show-confirm="showConfirm" :set-api-res="() => {}" :edit-id="selectedCodeId" />
+  </div>
 </div>
 `,
 };
