@@ -34,7 +34,7 @@ window.SyCodeMng = {
     const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
 
     /* ═══════════════════════════════════════════════════════
        상단 섹션: 표시경로 트리 + 코드그룹 CRUD 그리드
@@ -140,7 +140,7 @@ window.SyCodeMng = {
       _row_status: 'N',
       _row_check:  false,
       _orig: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
-               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark },
+               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, parentCodeValue: c.parentCodeValue || null },
     });
 
     const loadGrid = () => {
@@ -172,6 +172,16 @@ window.SyCodeMng = {
     loadGrid();
 
     const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+
+    /* 트리형 코드 그룹일 때 상위코드 목록 */
+    const parentCodeOptions = computed(() => {
+      if (!selectedGrp.value) return [];
+      const grp = props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp.value);
+      if (!grp || grp.type !== '트리') return [];
+      return gridRows
+        .filter(r => r._row_status !== 'D')
+        .map(r => ({ label: `${r.codeLabel}(${r.codeValue})`, value: r.codeValue }));
+    });
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, grp: searchGrp.value, useYn: searchUseYn.value,
@@ -295,13 +305,13 @@ window.SyCodeMng = {
         const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
         if (idx !== -1) Object.assign(props.adminData.codes[idx],
           { codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
-            sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark });
+            sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null });
       });
       let nextId = Math.max(...props.adminData.codes.map(c => c.codeId), 0);
       iRows.forEach(r => {
         props.adminData.codes.push({
           codeId: ++nextId, codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
-          sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark,
+          sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null,
           regDate: new Date().toISOString().slice(0, 10),
         });
       });
@@ -414,7 +424,7 @@ window.SyCodeMng = {
       grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
       selectedGrp, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode, flatTreeRows,
+      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode, flatTreeRows, parentCodeOptions,
     };
   },
   template: /* html */`
@@ -597,6 +607,7 @@ window.SyCodeMng = {
           <th>코드그룹</th>
           <th>코드라벨</th>
           <th>코드값</th>
+          <th v-if="selectedGrp && (props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp)?.type === '트리')" style="width:140px;">상위코드값</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
           <th>비고</th>
@@ -607,7 +618,7 @@ window.SyCodeMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td :colspan="(selectedGrp && (props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp)?.type === '트리')) ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.codeId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -628,6 +639,12 @@ window.SyCodeMng = {
           <td><input class="grid-input" v-model="row.codeGrp"   :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td><input class="grid-input" v-model="row.codeLabel"  :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td v-if="selectedGrp && (props.adminData.codeGroups?.find(g => g.codeGrp === selectedGrp)?.type === '트리')">
+            <select class="grid-select" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              <option :value="null">-- 없음 --</option>
+              <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+            </select>
+          </td>
           <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td>
             <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
