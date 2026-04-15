@@ -7,8 +7,9 @@ CREATE TABLE sy_prop (
     prop_id         BIGSERIAL       NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id (NULL = 전역)
     disp_path       VARCHAR(200)    NOT NULL,               -- 점 구분 표시경로 (aa.bb.cc)
-    prop_label      VARCHAR(200)    NOT NULL,               -- 표시명
+    prop_key        VARCHAR(100)    NOT NULL,               -- 키 (코드 식별자, snake_case 권장)
     prop_value      TEXT,                                   -- 값 (JSON/문자열/숫자 등)
+    prop_label      VARCHAR(200)    NOT NULL,               -- 표시명
     prop_type       VARCHAR(20)     DEFAULT 'STRING',       -- STRING/NUMBER/BOOLEAN/JSON
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
@@ -17,15 +18,17 @@ CREATE TABLE sy_prop (
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
-    PRIMARY KEY (prop_id)
+    PRIMARY KEY (prop_id),
+    UNIQUE (site_id, disp_path, prop_key)                   -- 사이트 + 표시경로 + 키 조합 유일
 );
 
 COMMENT ON TABLE  sy_prop              IS '프로퍼티 (환경설정/공통 파라미터)';
 COMMENT ON COLUMN sy_prop.prop_id      IS '프로퍼티ID (PK, auto)';
 COMMENT ON COLUMN sy_prop.site_id      IS '사이트ID (sy_site.site_id, NULL=전역)';
 COMMENT ON COLUMN sy_prop.disp_path    IS '점(.) 구분 표시경로 (aa.bb.cc)';
-COMMENT ON COLUMN sy_prop.prop_label   IS '표시명';
+COMMENT ON COLUMN sy_prop.prop_key     IS '키 (코드 식별자)';
 COMMENT ON COLUMN sy_prop.prop_value   IS '값';
+COMMENT ON COLUMN sy_prop.prop_label   IS '표시명';
 COMMENT ON COLUMN sy_prop.prop_type    IS '값 타입 (STRING/NUMBER/BOOLEAN/JSON)';
 COMMENT ON COLUMN sy_prop.sort_ord     IS '같은 표시경로 내 정렬순서';
 COMMENT ON COLUMN sy_prop.use_yn       IS '사용여부 Y/N';

@@ -76,6 +76,7 @@ window.SyPropMng = {
       const k = kw.value.trim().toLowerCase();
       if (k) arr = arr.filter(r =>
         (r.dispPath||'').toLowerCase().includes(k) ||
+        (r.propKey||'').toLowerCase().includes(k) ||
         (r.propLabel||'').toLowerCase().includes(k) ||
         (r.propValue||'').toString().toLowerCase().includes(k)
       );
@@ -94,6 +95,7 @@ window.SyPropMng = {
         propId: _newId.value--,
         siteId: siteId.value || 1,
         dispPath: selectedPath.value || 'new.prop',
+        propKey: 'new_key',
         propLabel: '신규 프로퍼티',
         propValue: '',
         propType: 'STRING',
@@ -161,10 +163,10 @@ window.SyPropMng = {
     };
 
     const exportCsv = () => {
-      const header = ['ID','경로','라벨','값','타입','정렬','사용','비고'];
+      const header = ['ID','표시경로','키','값','라벨','타입','정렬','사용','비고'];
       const lines = [header.join(',')];
       gridRows.value.forEach(r => {
-        lines.push([r.propId, r.dispPath, r.propLabel, r.propValue, r.propType, r.sortOrd, r.useYn, r.remark || '']
+        lines.push([r.propId, r.dispPath, r.propKey, r.propValue, r.propLabel, r.propType, r.sortOrd, r.useYn, r.remark || '']
           .map(c => '"' + String(c).replace(/"/g,'""') + '"').join(','));
       });
       const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -188,7 +190,7 @@ window.SyPropMng = {
   <!-- 검색 바 -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
-      <input class="form-control" v-model="kw" placeholder="표시경로 / 라벨 / 값 검색" style="min-width:280px;flex:1;max-width:420px;">
+      <input class="form-control" v-model="kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;">
       <select class="form-control" v-model="typeFlt" style="width:120px;">
         <option value="">전체 타입</option>
         <option v-for="t in TYPES" :key="t" :value="t">{{ t }}</option>
@@ -241,8 +243,9 @@ window.SyPropMng = {
           <tr>
             <th class="col-status">상태</th>
             <th>표시경로</th>
-            <th>라벨</th>
+            <th>키</th>
             <th>값</th>
+            <th>라벨</th>
             <th class="col-id">타입</th>
             <th class="col-ord">정렬</th>
             <th class="col-use">사용</th>
@@ -252,7 +255,7 @@ window.SyPropMng = {
         </thead>
         <tbody>
           <tr v-if="gridRows.length===0">
-            <td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+            <td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
           <tr v-for="r in gridRows" :key="r.propId" class="crud-row" :class="'status-' + (r._status || '')">
             <td class="col-status-val">
@@ -262,8 +265,9 @@ window.SyPropMng = {
               <span v-else class="badge badge-gray badge-xs">{{ r.propId }}</span>
             </td>
             <td><input class="grid-input grid-mono" :value="r.dispPath" @input="onChange(r,'dispPath',$event.target.value)"></td>
-            <td><input class="grid-input" :value="r.propLabel" @input="onChange(r,'propLabel',$event.target.value)"></td>
+            <td><input class="grid-input grid-mono" :value="r.propKey" @input="onChange(r,'propKey',$event.target.value)"></td>
             <td><input class="grid-input" :value="r.propValue" @input="onChange(r,'propValue',$event.target.value)"></td>
+            <td><input class="grid-input" :value="r.propLabel" @input="onChange(r,'propLabel',$event.target.value)"></td>
             <td>
               <select class="grid-select" :value="r.propType" @change="onChange(r,'propType',$event.target.value)">
                 <option v-for="t in TYPES" :key="t" :value="t">{{ t }}</option>
