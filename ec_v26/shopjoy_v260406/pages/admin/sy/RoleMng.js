@@ -22,7 +22,22 @@ window.SyRoleMng = {
     const expanded = Vue.reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => window.adminUtil.buildRoleTree());
+    const tree = Vue.computed(() => {
+      const t = window.adminUtil.buildRoleTree();
+      const rolesById = Object.fromEntries((window.adminData.roles || []).map(r => [r.roleId, r]));
+      const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
+                          SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
+      const enrich = (n) => {
+        if (n._raw && n._raw.roleId != null) {
+          let cur = n._raw;
+          while (cur && cur.parentId) cur = rolesById[cur.parentId];
+          n._badge = cur ? ROOT_MAP[cur.roleCode] : null;
+        }
+        (n.children || []).forEach(enrich);
+      };
+      enrich(t);
+      return t;
+    });
     /* 선택 권한 + 자손 roleId Set */
     const allowedRoleIds = Vue.computed(() => {
       if (selectedPath.value == null) return null;
@@ -41,6 +56,36 @@ window.SyRoleMng = {
     const siteNm  = computed(() => window.adminUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const PERM_LEVELS = ['없음', '읽기', '쓰기', '관리', '차단'];
+    const ROLE_CATS   = [['ADMIN','관리자권한'],['SITE','사이트권한'],['SALES','판매업체권한'],['DLIV','배송업체권한']];
+    const ROLE_CAT_COLOR = { ADMIN:'#7c3aed', SITE:'#2563eb', SALES:'#16a34a', DLIV:'#f59e0b' };
+    /* 루트 권한코드 → 자동 카테고리 매핑 */
+    const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
+    const deriveRoleCat = (role) => {
+      const roles = props.adminData.roles || [];
+      const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
+      let cur = role;
+      while (cur && cur.parentId) cur = m[cur.parentId];
+      const code = cur && ROOT_CAT_MAP[cur.roleCode];
+      return code ? [code] : [];
+    };
+    const effectiveRoleCat = (row) => (row.roleCat && row.roleCat.length) ? row.roleCat : deriveRoleCat(row);
+    const toggleRoleCat = (row, code) => {
+      const cur = effectiveRoleCat(row);
+      row.roleCat = (cur.length === 1 && cur[0] === code) ? [] : [code];
+      onCellChange(row);
+    };
+    window.adminUtil.__roleCatOf = (roleId) => {
+      const roles = (window.adminData && window.adminData.roles) || [];
+      const r = roles.find(x => x.roleId === roleId);
+      if (!r) return [];
+      if (r.roleCat && r.roleCat.length) return r.roleCat;
+      const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
+      let cur = r; while (cur && cur.parentId) cur = m[cur.parentId];
+      const code = cur && ROOT_CAT_MAP[cur.roleCode];
+      return code ? [code] : [];
+    };
+    window.adminUtil.__roleCatLabel = (code) => (ROLE_CATS.find(x=>x[0]===code) || [,code])[1];
+    window.adminUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
     const PERM_COLORS = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
     const permColor   = (p) => PERM_COLORS[p] || '#9ca3af';
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
@@ -52,6 +97,7 @@ window.SyRoleMng = {
     const searchKw    = ref('');
     const searchType  = ref('');
     const searchUseYn = ref('');
+    const treeCatFilter = ref('');
     const applied = Vue.reactive({ kw: '', type: '', useYn: '' });
 
     /* ── CRUD 그리드 ── */
@@ -65,7 +111,7 @@ window.SyRoleMng = {
     const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
-    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'remark'];
+    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'remark'];
 
     /* ── 트리 정렬 ── */
     const buildTreeRows = (items) => {
@@ -85,13 +131,18 @@ window.SyRoleMng = {
       return result;
     };
 
-    const makeRow = (r) => ({
-      ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
-      restrictPerm: r.restrictPerm || '없음',
-      _orig: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
-               roleType: r.roleType, sortOrd: r.sortOrd, useYn: r.useYn,
-               restrictPerm: r.restrictPerm || '없음', remark: r.remark },
-    });
+    const makeRow = (r) => {
+      const cat = Array.isArray(r.roleCat) ? [...r.roleCat] : [];
+      return {
+        ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
+        restrictPerm: r.restrictPerm || '없음',
+        roleCat: cat,
+        _orig: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
+                 roleType: r.roleType, sortOrd: r.sortOrd, useYn: r.useYn,
+                 restrictPerm: r.restrictPerm || '없음',
+                 roleCat: JSON.stringify(cat), remark: r.remark },
+      };
+    };
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
@@ -101,6 +152,10 @@ window.SyRoleMng = {
         if (applied.type  && r.roleType !== applied.type)  return false;
         if (applied.useYn && r.useYn    !== applied.useYn) return false;
         if (allowedRoleIds.value && !allowedRoleIds.value.has(r.roleId)) return false;
+        if (treeCatFilter.value) {
+          const cats = window.adminUtil.__roleCatOf ? window.adminUtil.__roleCatOf(r.roleId) : [];
+          if (!cats.includes(treeCatFilter.value)) return false;
+        }
         return true;
       });
       buildTreeRows(filtered).forEach(r => gridRows.push(makeRow(r)));
@@ -133,7 +188,10 @@ window.SyRoleMng = {
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
+      const changed = EDIT_FIELDS.some(f => {
+        if (f === 'roleCat') return JSON.stringify(row.roleCat || []) !== (row._orig.roleCat || '[]');
+        return String(row[f]) !== String(row._orig[f]);
+      });
       row._row_status = changed ? 'U' : 'N';
     };
 
@@ -143,7 +201,7 @@ window.SyRoleMng = {
         roleId: _tempId--, roleCode: '', roleNm: '', parentId: ref ? ref.parentId : null,
         roleType: ref ? ref.roleType : '업무',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
-        useYn: 'Y', restrictPerm: '없음', remark: '',
+        useYn: 'Y', restrictPerm: '없음', roleCat: [], remark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
       const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
@@ -214,9 +272,9 @@ window.SyRoleMng = {
         props.adminData.roleMenus = props.adminData.roleMenus.filter(x => x.roleId !== r.roleId);
         props.adminData.roleUsers = props.adminData.roleUsers.filter(x => x.roleId !== r.roleId);
       });
-      uRows.forEach(r => { const i = props.adminData.roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(props.adminData.roles[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', remark: r.remark }); });
+      uRows.forEach(r => { const i = props.adminData.roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(props.adminData.roles[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark }); });
       let nextId = Math.max(...props.adminData.roles.map(r => r.roleId), 0);
-      iRows.forEach(r => { props.adminData.roles.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      iRows.forEach(r => { props.adminData.roles.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
@@ -339,12 +397,13 @@ window.SyRoleMng = {
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    Vue.watch(treeCatFilter, () => loadGrid());
 
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
-      siteNm, ROLE_TYPES, PERM_LEVELS, permColor, depthBullet, depthColor, statusClass,
+      siteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, treeCatFilter, permColor, depthBullet, depthColor, statusClass,
       searchKw, searchType, searchUseYn, applied, onSearch, onReset,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onCellChange,
@@ -363,10 +422,6 @@ window.SyRoleMng = {
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="권한코드 / 권한명 검색" />
-      <select v-model="searchType">
-        <option value="">유형 전체</option>
-        <option v-for="t in ROLE_TYPES" :key="t">{{ t }}</option>
-      </select>
       <select v-model="searchUseYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
@@ -383,9 +438,13 @@ window.SyRoleMng = {
 
 
   <!-- 좌 트리 + 우 영역 -->
-  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 권한</span></div>
+      <select v-model="treeCatFilter" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
+        <option value="">권한구분 전체</option>
+        <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
+      </select>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
         <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
@@ -411,17 +470,15 @@ window.SyRoleMng = {
     <table class="admin-table crud-grid">
       <thead>
         <tr>
-          <th style="min-width:140px;">표시경로</th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
           <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
           <th style="width:120px;">권한코드</th>
           <th style="min-width:150px;">권한명</th>
           <th style="min-width:120px;">상위권한</th>
-          <th style="width:75px;">유형</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
-          <th style="width:80px;">제한권한</th>
+          <th style="width:100px;">권한구분</th>
           <th>비고</th>
           <th style="width:80px;">사이트명</th>
           <th class="col-act-cancel"></th>
@@ -430,21 +487,11 @@ window.SyRoleMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in pagedRows" :key="row.roleId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
-          <td>
-              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
-                <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
-                <button type="button" @click="openPathPick(row)" title="표시경로 선택"
-                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
-                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
-                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-              </div>
-            </td>
-
           <td class="col-id-val">{{ row.roleId > 0 ? row.roleId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
@@ -474,11 +521,6 @@ window.SyRoleMng = {
             </div>
           </td>
 
-          <td>
-            <select class="grid-select" v-model="row.roleType" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="t in ROLE_TYPES" :key="t">{{ t }}</option>
-            </select>
-          </td>
           <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td>
             <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
@@ -486,9 +528,11 @@ window.SyRoleMng = {
             </select>
           </td>
           <td style="padding:3px 6px;">
-            <select class="grid-select" v-model="row.restrictPerm" :disabled="row._row_status==='D'" @change="onCellChange(row)"
-              :style="{ color: permColor(row.restrictPerm), fontWeight: row.restrictPerm!=='없음'?'700':'400' }">
-              <option v-for="p in PERM_LEVELS" :key="p">{{ p }}</option>
+            <select class="grid-select" :value="(effectiveRoleCat(row)[0] || '')" :disabled="row._row_status==='D'"
+              @change="$event.target.value ? (row.roleCat=[$event.target.value], onCellChange(row)) : (row.roleCat=[], onCellChange(row))"
+              :style="{color: ROLE_CAT_COLOR[effectiveRoleCat(row)[0]] || '#9ca3af', fontWeight: effectiveRoleCat(row).length ? 700 : 400}">
+              <option value="">-</option>
+              <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>

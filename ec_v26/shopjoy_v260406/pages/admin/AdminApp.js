@@ -400,12 +400,27 @@
         const roleMap = Object.fromEntries((adminData.roles || []).map(r => [r.roleId, r]));
         return ids.map(id => roleMap[id]).filter(Boolean);
       });
-      const rolePath = (r) => {
+      const rolePath = (r, uid) => {
         if (!r) return '';
         const m = Object.fromEntries((adminData.roles || []).map(x => [x.roleId, x]));
-        const seg = []; let cur = r;
-        while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
-        return seg.join(' > ');
+        const seg = []; let cur = r; let root = r;
+        while (cur) { seg.unshift(cur.roleNm); root = cur; cur = cur.parentId ? m[cur.parentId] : null; }
+        const path = seg.join(' > ');
+        const wantType = root.roleCode === 'SITE_MGR_ROOT' ? 'SALES'
+                       : root.roleCode === 'DLIV_ROOT'     ? 'DELIVERY' : null;
+        if (wantType) {
+          const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
+          const targetUid = uid != null ? uid : currentUser.value?.adminUserId;
+          let names = [];
+          if (targetUid != null) {
+            const bus = (adminData.bizUsers || []).filter(b => b.userId === targetUid);
+            const bm = Object.fromEntries((adminData.bizs || []).map(b => [b.bizId, b]));
+            names = bus.map(bu => bm[bu.bizId]).filter(b => b && b.vendorTypeCd === wantType).map(b => b.bizNm);
+          }
+          const nameStr = names.length ? names.join(', ') : '(소속없음)';
+          return '[' + typeLabel + '] ' + nameStr + ' :: ' + path;
+        }
+        return path;
       };
       const onRoleChange = () => { location.reload(); };
       const rolesOfUser = (uid) => {
@@ -669,9 +684,12 @@
       <template v-if="currentUser">
         <select v-if="currentUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
           :title="'권한 ' + currentUserRoles.length + '개 보유'"
-          style="margin-right:8px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:240px;">
-          <option v-for="r in currentUserRoles" :key="r.roleId" :value="r.roleId">({{ currentUserRoles.length }}) {{ rolePath(r) }}</option>
+          style="margin-right:4px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:480px;min-width:320px;">
+          <option v-for="r in currentUserRoles" :key="r.roleId" :value="r.roleId">{{ rolePath(r) }}</option>
         </select>
+        <span v-if="currentUserRoles.length >= 2"
+          :title="'권한 ' + currentUserRoles.length + '개 보유'"
+          style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentUserRoles.length }}</span>
         <span v-else-if="currentUserRoles.length === 1" class="user-role-label"
           style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentUserRoles[0]) }}</span>
         <span class="user-name-label">{{ currentUser.name }}</span>
@@ -1203,16 +1221,16 @@
         </div>
         <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;">
           <div style="font-weight:700;margin-bottom:6px;color:#555;">테스트 계정 <span style="font-weight:400;color:#aaa;">(클릭 시 자동 로그인)</span></div>
-          <div style="display:flex;flex-direction:column;gap:4px;max-height:280px;overflow:auto;">
+          <div style="display:flex;flex-direction:column;gap:4px;max-height:420px;overflow:auto;">
             <button v-for="u in adminData.adminUsers" :key="u.adminUserId" type="button" @click="quickLogin(u.email)"
-              style="display:grid;grid-template-columns:170px 28px 1fr;align-items:center;gap:8px;padding:5px 8px;font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:5px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
+              style="display:grid;grid-template-columns:200px 32px 1fr;align-items:center;gap:10px;padding:7px 10px;font-size:12px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
               onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';"
               onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';">
               <span style="font-weight:600;color:#374151;">{{ u.email }}</span>
               <span style="display:inline-block;text-align:center;background:#e8587a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">{{ rolesOfUser(u.adminUserId).length }}</span>
-              <span style="color:#6b7280;font-size:10.5px;line-height:1.35;white-space:normal;">
-                {{ rolesOfUser(u.adminUserId).map(rolePath).join(' / ') }}
-                <span v-if="bizInfoOfUser(u.adminUserId)" style="display:block;margin-top:2px;color:#2563eb;font-weight:600;">{{ bizInfoOfUser(u.adminUserId) }}</span>
+              <span style="color:#6b7280;font-size:10.5px;line-height:1.5;white-space:normal;display:flex;flex-direction:column;gap:2px;">
+                <span v-for="(r, i) in rolesOfUser(u.adminUserId)" :key="i">• {{ rolePath(r, u.adminUserId) }}</span>
+                <span v-if="bizInfoOfUser(u.adminUserId)" style="margin-top:2px;color:#2563eb;font-weight:600;">{{ bizInfoOfUser(u.adminUserId) }}</span>
               </span>
             </button>
           </div>

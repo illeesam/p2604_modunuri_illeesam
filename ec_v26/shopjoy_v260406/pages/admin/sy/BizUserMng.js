@@ -11,15 +11,14 @@ window.SyBizUserMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPath.value = id; };
-    /* sy_role 데이터에서 '사이트담당자' 루트 하위 트리만 노출 */
+    /* sy_role 데이터의 모든 권한 트리 노출 (루트 권한별 그룹 포함) */
     const tree = computed(() => {
       const roles = ad.roles || [];
-      const root = roles.find(r => r.roleCode === 'SITE_MGR_ROOT');
       const childrenOf = (pid) => roles
         .filter(r => r.parentId === pid)
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
         .map(r => ({ pathId: r.roleCode, path: r.roleCode, name: r.roleNm, pathLabel: r.roleNm, children: childrenOf(r.roleId), count: 0 }));
-      const kids = root ? childrenOf(root.roleId) : [];
+      const kids = childrenOf(null);
       return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids, count: kids.length };
     });
     const expandAll = () => { expanded.add(null); };
@@ -98,6 +97,46 @@ window.SyBizUserMng = {
     const vendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const vendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
 
+    /* 역할 선택 트리 (폼 내부) */
+    const roleTreeOpen = ref(false);
+    const roleTreeExpanded = reactive(new Set());
+    const formBizVendorType = computed(() => bizVendorType(formData.bizId));
+    const formAllowedRootCode = computed(() =>
+      formBizVendorType.value === 'SALES'    ? 'SITE_MGR_ROOT' :
+      formBizVendorType.value === 'DELIVERY' ? 'DLIV_ROOT' : null
+    );
+    const formRoleTree = computed(() => {
+      const roles = ad.roles || [];
+      const allowedRootCode = formAllowedRootCode.value;
+      const buildBranch = (pid, allowed) => roles
+        .filter(r => r.parentId === pid)
+        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
+        .map(r => {
+          const isAllowedRoot = r.parentId === null && r.roleCode === allowedRootCode;
+          const branchAllowed = allowed || isAllowedRoot;
+          return { roleId: r.roleId, roleCode: r.roleCode, roleNm: r.roleNm,
+                   isRoot: r.parentId === null, allowed: branchAllowed && r.parentId !== null,
+                   children: buildBranch(r.roleId, branchAllowed) };
+        });
+      return buildBranch(null, false);
+    });
+    const toggleRoleNode = (id) => { if (roleTreeExpanded.has(id)) roleTreeExpanded.delete(id); else roleTreeExpanded.add(id); };
+    const pickRole = (n) => { if (!n.allowed) return; formData.roleCd = n.roleCode; roleTreeOpen.value = false; };
+    const roleNmByCode = (code) => {
+      const roles = ad.roles || [];
+      const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
+      let cur = roles.find(x => x.roleCode === code);
+      if (!cur) return code;
+      const seg = [];
+      while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
+      return seg.join(' > ');
+    };
+    Vue.watch(() => formData.bizId, () => {
+      roleTreeExpanded.clear();
+      const root = (ad.roles || []).find(r => r.roleCode === formAllowedRootCode.value);
+      if (root) roleTreeExpanded.add(root.roleId);
+    });
+
     /* 인라인 폼 */
     const formMode = ref('');
     const formData = reactive({});
@@ -158,6 +197,7 @@ window.SyBizUserMng = {
       bizs: computed(() => ad.bizs || []), bizNm, bizVendorType, bizPathLabel,
       roleBadge, roleLabel, statusBadge, statusLabel, vendorTypeLabel, vendorTypeBadge,
       formMode, formData, openNew, openEdit, closeForm, saveForm, deleteRow,
+      roleTreeOpen, roleTreeExpanded, formRoleTree, toggleRoleNode, pickRole, roleNmByCode, formAllowedRootCode,
       sendJoinMail: () => {
         if (!formData.email) { window.adminToast && window.adminToast('이메일을 입력해주세요.', 'warning'); return; }
         window.adminToast && window.adminToast(formData.email + ' 로 회원가입 메일을 보냈습니다.', 'success');
@@ -274,10 +314,30 @@ window.SyBizUserMng = {
           <div class="form-group"><label class="form-label">직위</label>
             <input class="form-control" v-model="formData.positionCd" />
           </div>
-          <div class="form-group"><label class="form-label">역할</label>
-            <select class="form-control" v-model="formData.roleCd">
-              <option v-for="r in ROLES" :key="r[0]" :value="r[0]">{{ r[1] }}</option>
-            </select>
+          <div class="form-group" style="position:relative;"><label class="form-label">역할</label>
+            <div class="form-control" @click="roleTreeOpen=!roleTreeOpen"
+              style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+              <span :style="{color: formData.roleCd ? '#374151' : '#9ca3af'}">{{ formData.roleCd ? roleNmByCode(formData.roleCd) : '역할 선택...' }}</span>
+              <span style="color:#9ca3af;font-size:10px;">{{ roleTreeOpen ? '▲' : '▼' }}</span>
+            </div>
+            <div v-if="roleTreeOpen"
+              style="position:absolute;top:100%;left:0;right:0;z-index:30;margin-top:4px;max-height:320px;overflow:auto;background:#fff;border:1px solid #d1d5db;border-radius:6px;box-shadow:0 8px 20px rgba(0,0,0,0.12);padding:6px;">
+              <div v-if="!formAllowedRootCode" style="padding:8px;font-size:11px;color:#dc2626;">선택한 사업자의 업체유형(판매/배송)이 없어 역할을 선택할 수 없습니다.</div>
+              <template v-for="root in formRoleTree" :key="root.roleId">
+                <div :style="{padding:'4px 6px',fontWeight:700,fontSize:'12px',color: root.roleCode===formAllowedRootCode ? '#e8587a' : '#cbd5e1',display:'flex',alignItems:'center',gap:'4px',cursor:'pointer'}"
+                  @click="toggleRoleNode(root.roleId)">
+                  <span style="width:10px;font-size:9px;">{{ roleTreeExpanded.has(root.roleId) ? '▼' : '▶' }}</span>
+                  <span>📁 {{ root.roleNm }}</span>
+                </div>
+                <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:18px;">
+                  <div v-for="ch in root.children" :key="ch.roleId"
+                    @click="pickRole(ch)"
+                    :style="{padding:'4px 6px',fontSize:'12px',cursor: ch.allowed ? 'pointer' : 'not-allowed',color: ch.allowed ? (formData.roleCd===ch.roleCode ? '#e8587a' : '#374151') : '#cbd5e1',background: formData.roleCd===ch.roleCode ? '#fff0f4' : 'transparent',borderRadius:'4px',fontWeight: formData.roleCd===ch.roleCode ? 700 : 400}">
+                    • {{ ch.roleNm }}
+                  </div>
+                </div>
+              </template>
+            </div>
           </div>
           <div class="form-group"><label class="form-label">부서</label>
             <input class="form-control" v-model="formData.deptNm" />

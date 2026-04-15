@@ -332,17 +332,19 @@ window.PropTreeNode = {
   props: ['node', 'expanded', 'selected', 'onToggle', 'onSelect', 'depth'],
   template: /* html */`
 <div>
-  <div @click="onSelect(node.path); onToggle(node.path)"
-    :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',
+  <div :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',
              paddingLeft: (8 + depth*14) + 'px',
              background: selected===node.path ? '#fff0f4' : 'transparent',
              color:      selected===node.path ? '#e8587a' : '#444',
              fontWeight: selected===node.path ? 700 : 400}"
     @mouseover="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : '#f8f9fb'"
     @mouseout="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : 'transparent'">
-    <span v-if="node.children.length>0" style="width:14px;font-size:10px;color:#999;">{{ expanded.has(node.path) ? '▼' : '▶' }}</span>
+    <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;"
+      @click.stop="onToggle(node.path)">{{ expanded.has(node.path) ? '▼' : '▶' }}</span>
     <span v-else style="width:14px;"></span>
-    <span style="font-size:13px;flex:1;">{{ node.name || '전체' }}</span>
+    <span style="font-size:13px;flex:1;" @click="onSelect(node.path)">{{ node.name || '전체' }}</span>
+    <span v-if="node._badge"
+      :style="{fontSize:'9px',padding:'1px 5px',borderRadius:'7px',color:'#fff',fontWeight:700,background:node._badge[1]}">{{ node._badge[0] }}</span>
     <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
   </div>
   <div v-if="expanded.has(node.path) && node.children.length>0">
