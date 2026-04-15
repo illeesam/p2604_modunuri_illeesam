@@ -711,61 +711,88 @@ window.SyCodeMng = {
       </div>
     </div>
 
-    <!-- 트리 탭: 테이블 형식 -->
-    <table v-if="activeCodeTab==='트리' && selectedGrp" class="admin-table crud-grid" style="margin-top:0;">
-      <thead>
-        <tr>
-          <th style="min-width:220px;">코드라벨</th>
-          <th>코드값</th>
-          <th style="width:140px;">상위코드값</th>
-          <th class="col-ord">순서</th>
-          <th class="col-use">사용여부</th>
-          <th>비고</th>
-          <th style="width:80px;">사이트명</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="codeTree.count===0">
-          <td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-else v-for="row in flatTreeRows" :key="row.node.value" style="user-select:none;">
-          <td style="padding-left:0;">
-            <div style="display:flex;align-items:center;gap:0;">
-              <span :style="{ minWidth: (row.depth * 24 + 8) + 'px', flexShrink: 0 }"></span>
+    <!-- 트리 탭: 편집 가능한 테이블 형식 -->
+    <div v-if="activeCodeTab==='트리' && selectedGrp">
+      <div class="toolbar" style="background:#f9fafb;padding:12px;border-bottom:1px solid #e5e7eb;">
+        <span class="list-title">트리 형식 편집</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
+          <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
+          <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        </div>
+      </div>
+      <table class="admin-table crud-grid" style="margin-top:0;">
+        <thead>
+          <tr>
+            <th style="width:30px;"></th>
+            <th class="col-status">상태</th>
+            <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+            <th style="min-width:180px;">코드라벨</th>
+            <th>코드값</th>
+            <th style="width:120px;">상위코드값</th>
+            <th class="col-ord">순서</th>
+            <th class="col-use">사용여부</th>
+            <th>비고</th>
+            <th style="width:80px;">사이트명</th>
+            <th class="col-act-cancel"></th>
+            <th class="col-act-delete"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="codeTree.count===0">
+            <td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          </tr>
+          <tr v-else v-for="(row, idx) in flatTreeRows" :key="row.node.value" class="crud-row" :class="['status-'+row.node.code._row_status]" style="user-select:none;" @click="setFocused(gridRows.indexOf(row.node.code))">
+            <td style="padding:0;text-align:center;">
               <span v-if="row.node.children.length > 0"
-                @click="codeToggleNode(row.node.value)"
-                style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
+                @click.stop="codeToggleNode(row.node.value)"
+                style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;color:#6b7280;font-size:12px;">
                 {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
               </span>
-              <span v-else style="width:20px;flex-shrink:0;"></span>
-              <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:4px;font-weight:300;">├</span>
-              <span style="font-weight:600;color:#374151;">{{ row.node.label }}</span>
-            </div>
-          </td>
-          <td><span style="font-family:monospace;color:#6b7280;font-size:12px;">{{ row.node.value }}</span></td>
-          <td>
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" @change="onCellChange(row.node.code)">
+            </td>
+            <td class="col-status-val">
+              <span class="badge badge-xs" :class="statusClass(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
+            </td>
+            <td class="col-check-val">
+              <input type="checkbox" v-model="row.node.code._row_check" />
+            </td>
+            <td style="padding-left:0;">
+              <div style="display:flex;align-items:center;gap:0;">
+                <span :style="{ minWidth: (row.depth * 20 + 4) + 'px', flexShrink: 0 }"></span>
+                <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:2px;font-weight:300;font-size:11px;">├</span>
+                <input class="grid-input" style="flex:1;" v-model="row.node.code.codeLabel" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" />
+              </div>
+            </td>
+            <td><input class="grid-input grid-mono" v-model="row.node.code.codeValue" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
+            <td>
+              <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
                 <option :value="null">-- 없음 --</option>
-                <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value" :title="opt.path">{{ opt.label }}</option>
+                <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
               </select>
-              <span v-if="row.node.code.parentCodeValue" style="font-size:10px;color:#6b7280;line-height:1.2;">
+              <span v-if="row.node.code.parentCodeValue" style="font-size:9px;color:#6b7280;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;">
                 📍 {{ getCodeHierarchyPath(row.node.code.parentCodeValue) }}
               </span>
-            </div>
-          </td>
-          <td style="text-align:right;color:#6b7280;font-size:12px;">{{ row.node.code.sortOrd }}</td>
-          <td style="text-align:center;">
-            <span style="display:inline-block;min-width:50px;text-align:center;padding:3px 6px;background:#fff;border:1px solid #d1d5db;border-radius:3px;font-size:11px;"
-              :style="row.node.code.useYn==='Y' ? {color:'#10b981',borderColor:'#10b981'} : {color:'#ef4444',borderColor:'#ef4444'}">
-              {{ row.node.code.useYn === 'Y' ? '사용' : '미사용' }}
-            </span>
-          </td>
-          <td style="color:#6b7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ row.node.code.remark }}</td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
-        </tr>
-      </tbody>
-    </table>
+            </td>
+            <td><input class="grid-input grid-num" type="number" v-model.number="row.node.code.sortOrd" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
+            <td>
+              <select class="grid-select" v-model="row.node.code.useYn" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
+                <option value="Y">사용</option><option value="N">미사용</option>
+              </select>
+            </td>
+            <td><input class="grid-input" v-model="row.node.code.remark" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
+            <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+            <td class="col-act-cancel-val">
+              <button v-if="['U','I','D'].includes(row.node.code._row_status)"
+                class="btn btn-secondary btn-xs" @click.stop="cancelRow(gridRows.indexOf(row.node.code))">취소</button>
+            </td>
+            <td class="col-act-delete-val">
+              <button v-if="['N','U'].includes(row.node.code._row_status)"
+                class="btn btn-danger btn-xs" @click.stop="deleteRow(gridRows.indexOf(row.node.code))">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- 표시경로 선택 모달 -->
