@@ -260,8 +260,8 @@ window.EcDispUiMng = {
                 <span class="badge" :class="statusBadge(u.useYn)" style="font-size:11px;margin-left:8px;">{{ u.useYn==='Y'?'사용':'미사용' }}</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
-                <span><b style="color:#888;">사용위치경로:</b>
-                  <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ u.uiType || '-' }} &gt; {{ u.codeLabel }}</span>
+                <span><b style="color:#888;">표시경로:</b>
+                  <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ u.displayPath || ((u.uiType || '-') + '.' + u.codeLabel) }}</span>
                 </span>
                 <span><b style="color:#888;">유형:</b> {{ uiTypeLabel(u.uiType) }}</span>
                 <span><b style="color:#888;">포함 영역:</b>

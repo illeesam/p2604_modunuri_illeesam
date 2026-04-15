@@ -19,7 +19,7 @@ window.EcDispUiDtl = {
       codeId: null, codeGrp: 'DISP_UI',
       codeValue: '', codeLabel: '',
       uiType: 'FRONT',
-      remark: '', sortOrd: 1, useYn: 'Y', regDate: '',
+      remark: '', sortOrd: 1, useYn: 'Y', regDate: '', displayPath: '',
     });
 
     const errors = reactive({});
@@ -36,7 +36,7 @@ window.EcDispUiDtl = {
             codeId: u.codeId, codeGrp: u.codeGrp,
             codeValue: u.codeValue || '', codeLabel: u.codeLabel || '',
             uiType: u.uiType || 'FRONT',
-            remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y',
+            remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y', displayPath: u.displayPath || '',
             regDate: u.regDate || '',
           });
         }
@@ -313,6 +313,12 @@ window.EcDispUiDtl = {
             <select class="form-control" v-model="form.uiType">
               <option v-for="o in UI_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group" style="grid-column:1 / -1;">
+            <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">UI가 노출되는 경로 (예: FRONT.모바일메인)</span></label>
+            <input class="form-control" v-model="form.displayPath" placeholder="FRONT.모바일메인" style="font-family:monospace;" />
           </div>
         </div>
         <div class="form-row" style="margin-bottom:8px;">

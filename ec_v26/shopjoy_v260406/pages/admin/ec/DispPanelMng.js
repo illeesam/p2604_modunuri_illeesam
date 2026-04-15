@@ -485,9 +485,9 @@ window.EcDispPanelMng = {
               </div>
               <!-- label:value 라인 -->
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
-                <span><b style="color:#888;">사용위치경로:</b>
+                <span><b style="color:#888;">표시경로:</b>
                   <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                    {{ (d.area||'').split('_')[0] || '-' }} &gt; {{ areaLabel(d.area) }}
+                    {{ d.displayPath || ((d.area||'').split('_')[0] + '.' + areaLabel(d.area)) }}
                   </span>
                 </span>
                 <span><b style="color:#888;">화면영역:</b>

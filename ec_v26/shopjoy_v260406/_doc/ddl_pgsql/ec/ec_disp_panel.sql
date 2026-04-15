@@ -12,6 +12,7 @@ CREATE TABLE ec_disp_panel (
     auth_required   CHAR(1)         DEFAULT 'N',             -- [DEPRECATED] → visibility_targets에 VERIFIED 포함
     auth_grade_cd   VARCHAR(20),                             -- [DEPRECATED] → visibility_targets에 VIP/PREMIUM 포함
     visibility_targets VARCHAR(200),                         -- 공개대상(^CODE^CODE^ 형식), 코드: VISIBILITY_TARGET
+    disp_path       VARCHAR(200),                            -- 점(.) 구분 표시경로 (예: FRONT.모바일메인)
     sort_ord        INTEGER         DEFAULT 0,
     status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: DISP_STATUS
     content_json    TEXT,                                   -- 패널별 확장 데이터 (JSON)
@@ -44,3 +45,4 @@ COMMENT ON COLUMN ec_disp_panel.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_disp_panel.upd_date       IS '수정일';
 
 -- 패널에 배치된 위젯 인스턴스
+COMMENT ON COLUMN ec_disp_panel.disp_path IS '점(.) 구분 표시경로';

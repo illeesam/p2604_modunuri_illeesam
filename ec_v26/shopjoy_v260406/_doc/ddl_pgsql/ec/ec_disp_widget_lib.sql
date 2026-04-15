@@ -9,6 +9,7 @@ CREATE TABLE ec_disp_widget_lib (
     widget_nm       VARCHAR(100)    NOT NULL,
     widget_type     VARCHAR(30)     NOT NULL,               -- BANNER/PRODUCT/CATEGORY/HTML/SLIDER
     description     TEXT,
+    disp_path       VARCHAR(500),                            -- 점(.) 구분 표시경로(다중: 콤마 구분)
     thumbnail_url   VARCHAR(500),
     template_html   TEXT,                                   -- 위젯 기본 HTML 템플릿
     config_schema   TEXT,                                   -- 설정 스키마 (JSON)
@@ -40,3 +41,4 @@ COMMENT ON COLUMN ec_disp_widget_lib.reg_by         IS '등록자 (sy_user.user_
 COMMENT ON COLUMN ec_disp_widget_lib.reg_date       IS '등록일';
 COMMENT ON COLUMN ec_disp_widget_lib.upd_by         IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_disp_widget_lib.upd_date       IS '수정일';
+COMMENT ON COLUMN ec_disp_widget_lib.disp_path IS '점(.) 구분 표시경로';

@@ -1,3 +1,52 @@
 -- ============================================================
--- sy_user : 관리자 사용자
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+CREATE TABLE sy_user (
+    user_id         VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
+    login_id        VARCHAR(50)     NOT NULL,
+    password        VARCHAR(255)    NOT NULL,
+    name            VARCHAR(50)     NOT NULL,
+    email           VARCHAR(100),
+    phone           VARCHAR(20),
+    dept_id         VARCHAR(16),
+    role_id         VARCHAR(16),
+    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USER_STATUS
+    last_login      TIMESTAMP,
+    login_fail_cnt  SMALLINT        DEFAULT 0,
+    memo            TEXT,
+    reg_by          VARCHAR(16),
+    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
+    upd_date        TIMESTAMP,
+    -- ── 부서/권한/인증 ──
+    dept_id         VARCHAR(16),                            -- sy_dept.dept_id
+    role_id         VARCHAR(16),                            -- sy_role.role_id
+    auth_method_cd  VARCHAR(20)     DEFAULT 'MAIN',         -- 코드: AUTH_METHOD (MAIN/SMS/OTP/AUTHENTICATOR)
+    last_login_date TIMESTAMP,
+
+    PRIMARY KEY (user_id),
+    UNIQUE (login_id)
+);
+
+COMMENT ON TABLE  sy_user                  IS '관리자 사용자';
+COMMENT ON COLUMN sy_user.user_id          IS '사용자ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_user.site_id          IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN sy_user.login_id         IS '로그인 아이디';
+COMMENT ON COLUMN sy_user.password         IS '비밀번호 (bcrypt)';
+COMMENT ON COLUMN sy_user.name             IS '이름';
+COMMENT ON COLUMN sy_user.email            IS '이메일';
+COMMENT ON COLUMN sy_user.phone            IS '연락처';
+COMMENT ON COLUMN sy_user.dept_id          IS '부서ID';
+COMMENT ON COLUMN sy_user.role_id          IS '역할ID';
+COMMENT ON COLUMN sy_user.status_cd        IS '상태 (코드: USER_STATUS)';
+COMMENT ON COLUMN sy_user.last_login       IS '최근 로그인';
+COMMENT ON COLUMN sy_user.login_fail_cnt   IS '로그인 실패 횟수';
+COMMENT ON COLUMN sy_user.memo             IS '메모';
+COMMENT ON COLUMN sy_user.reg_by           IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_user.reg_date         IS '등록일';
+COMMENT ON COLUMN sy_user.upd_by           IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_user.upd_date         IS '수정일';
+
+COMMENT ON COLUMN sy_user.dept_id         IS '부서ID (sy_dept.dept_id)';
+COMMENT ON COLUMN sy_user.role_id         IS '권한ID (sy_role.role_id)';
+COMMENT ON COLUMN sy_user.auth_method_cd  IS '인증방식 (코드: AUTH_METHOD)';
+COMMENT ON COLUMN sy_user.last_login_date IS '마지막 로그인 일시';

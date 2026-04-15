@@ -583,15 +583,15 @@ window.EcDispWidgetDtl = {
         </div>
       </div>
 
-      <!-- 사용위치경로 -->
+      <!-- 표시경로 -->
       <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;">
-          사용위치경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 사용되는 경로 (예: 홈 > 메인배너)</span>
+          표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로 (예: FRONT.모바일메인)</span>
         </div>
         <div v-for="(path, pi) in form.usedPaths" :key="pi"
           style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
           <input :value="path" @input="form.usedPaths[pi]=$event.target.value"
-            class="form-control" placeholder="홈 > 메인배너" style="margin:0;flex:1;font-size:12px;" />
+            class="form-control" placeholder="FRONT.모바일메인" style="margin:0;flex:1;font-size:12px;font-family:monospace;" />
           <button @click="form.usedPaths.splice(pi,1)"
             style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0;">✕</button>
         </div>

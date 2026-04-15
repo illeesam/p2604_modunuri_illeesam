@@ -60,6 +60,7 @@
       { id: 'syTemplateMng', label: '템플릿관리' },
       { id: 'syBatchMng',    label: '배치스케즐관리' },
       { id: 'syAlarmMng',    label: '알림관리' },
+      { id: 'syPropMng',     label: '프로퍼티관리' },
       { group: '조직' },
       { id: 'syUserMng',     label: '사용자관리' },
       { id: 'syDeptMng',     label: '부서관리' },
@@ -155,7 +156,7 @@
         'syUserMng':'sy-user-mng', 'syUserDtl':'sy-user-dtl',
         'syBatchMng':'sy-batch-mng', 'syBatchDtl':'sy-batch-dtl',
         'syDeptMng':'sy-dept-mng', 'syMenuMng':'sy-menu-mng', 'syRoleMng':'sy-role-mng',
-        'ecNoticeMng':'ec-notice-mng', 'syAlarmMng':'sy-alarm-mng',
+        'ecNoticeMng':'ec-notice-mng', 'syAlarmMng':'sy-alarm-mng', 'syPropMng':'sy-prop-mng',
         'syBbmMng':'sy-bbm-mng', 'syBbsMng':'sy-bbs-mng',
       };
 
@@ -873,6 +874,7 @@
         <sy-role-mng    v-else-if="page==='syRoleMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-notice-mng  v-else-if="page==='ecNoticeMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-alarm-mng   v-else-if="page==='syAlarmMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <sy-prop-mng    v-else-if="page==='syPropMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbm-mng     v-else-if="page==='syBbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbs-mng     v-else-if="page==='syBbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <admin-error-401 v-else-if="page==='error401'" :navigate="navigate" />
@@ -1285,6 +1287,8 @@
   .component('SyBatchHist',    window.SyBatchHist)
   /* ── pages/admin/sy/ — 알림/게시판/문의 ── */
   .component('SyAlarmMng',     window.SyAlarmMng)
+  .component('SyPropMng',      window.SyPropMng)
+  .component('PropTreeNode',   window.PropTreeNode)
   .component('SyAlarmDtl',     window.SyAlarmDtl)
   .component('SyBbmMng',       window.SyBbmMng)
   .component('SyBbmDtl',       window.SyBbmDtl)

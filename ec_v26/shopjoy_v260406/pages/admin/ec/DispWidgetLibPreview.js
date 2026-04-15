@@ -515,7 +515,7 @@ window.EcDispWidgetLibPreview = {
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
       전시위젯Lib 위젯미리보기
-      <span style="font-size:13px;font-weight:400;color:#888;">사용위치경로 트리 &amp; 드래그하여 배치</span>
+      <span style="font-size:13px;font-weight:400;color:#888;">표시경로 트리 &amp; 드래그하여 배치</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
       🌐 {{ siteNm }}

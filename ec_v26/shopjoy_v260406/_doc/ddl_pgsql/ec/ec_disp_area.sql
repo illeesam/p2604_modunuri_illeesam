@@ -9,6 +9,7 @@ CREATE TABLE ec_disp_area (
     area_nm         VARCHAR(100)    NOT NULL,
     area_type       VARCHAR(30),                            -- FULL/SIDEBAR/POPUP 등
     description     VARCHAR(300),
+    disp_path       VARCHAR(200),                            -- 점(.) 구분 표시경로 (예: FRONT.모바일메인)
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     reg_by          VARCHAR(16),
@@ -36,3 +37,4 @@ COMMENT ON COLUMN ec_disp_area.upd_date     IS '수정일';
 -- ============================================================
 -- ec_disp_panel : 디스플레이 패널
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+COMMENT ON COLUMN ec_disp_area.disp_path IS '점(.) 구분 표시경로';

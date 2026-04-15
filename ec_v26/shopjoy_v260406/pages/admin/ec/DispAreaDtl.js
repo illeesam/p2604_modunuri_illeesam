@@ -25,7 +25,7 @@ window.EcDispAreaDtl = {
       codeValue: '', codeLabel: '', areaType: '',
       layoutType: 'grid', gridCols: 1,
       titleYn: 'N', title: '',
-      remark: '', sortOrd: 1, useYn: 'Y', regDate: '',
+      remark: '', sortOrd: 1, useYn: 'Y', regDate: '', displayPath: '',
     });
 
     const errors = reactive({});
@@ -45,7 +45,7 @@ window.EcDispAreaDtl = {
             areaType: a.areaType || '', layoutType: a.layoutType || 'grid',
             gridCols: a.gridCols || 1, titleYn: a.titleYn || 'N', title: a.title || '',
             remark: a.remark || '', sortOrd: a.sortOrd || 0, useYn: a.useYn || 'Y',
-            regDate: a.regDate || '',
+            regDate: a.regDate || '', displayPath: a.displayPath || '',
           });
         }
       } else {
@@ -360,6 +360,12 @@ window.EcDispAreaDtl = {
             <select class="form-control" v-model="form.areaType">
               <option v-for="o in AREA_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group" style="grid-column:1 / -1;">
+            <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">영역이 노출되는 경로 (예: FRONT.모바일메인)</span></label>
+            <input class="form-control" v-model="form.displayPath" placeholder="FRONT.모바일메인" style="font-family:monospace;" />
           </div>
         </div>
 

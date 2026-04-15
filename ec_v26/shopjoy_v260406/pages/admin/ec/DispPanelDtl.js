@@ -61,6 +61,7 @@ window.EcDispPanelDtl = {
       condition: '항상 표시', authRequired: false, authGrade: '',
       /* 신규: 공개 대상 (기본 전체공개) */
       visibilityTargets: '^PUBLIC^',
+      displayPath: '',
     });
 
     /* ── 행별 독립 데이터 팩토리 ── */
@@ -735,6 +736,10 @@ window.EcDispPanelDtl = {
               <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
             </div>
             <div class="form-group">
+              <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FRONT.모바일메인)</span></label>
+              <input class="form-control" v-model="form.displayPath" placeholder="FRONT.모바일메인" :readonly="viewMode" style="font-family:monospace;" />
+            </div>
+            <div class="form-group">
               <label class="form-label">포함된 화면영역
                 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(전시영역관리에서 편집)</span>
               </label>
@@ -1255,6 +1260,10 @@ window.EcDispPanelDtl = {
               <div class="form-group">
                 <label class="form-label">패널명 <span v-if="!viewMode" class="req">*</span></label>
                 <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FRONT.모바일메인)</span></label>
+                <input class="form-control" v-model="form.displayPath" placeholder="FRONT.모바일메인" :readonly="viewMode" style="font-family:monospace;" />
               </div>
               <div class="form-group">
                 <label class="form-label">포함된 화면영역

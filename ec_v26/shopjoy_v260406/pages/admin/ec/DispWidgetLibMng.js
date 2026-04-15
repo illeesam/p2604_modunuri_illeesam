@@ -351,8 +351,9 @@ window.EcDispWidgetLibMng = {
               <span><b style="color:#888;">타이틀:</b>
                 {{ d.titleYn==='Y' ? (d.title || '표시') : '미표시' }}
               </span>
-              <span><b style="color:#888;">사용위치경로:</b>
-                <template v-if="d.usedPaths && d.usedPaths.length">
+              <span><b style="color:#888;">표시경로:</b>
+                <span v-if="d.displayPath" style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;font-family:monospace;">{{ d.displayPath }}</span>
+                <template v-else-if="d.usedPaths && d.usedPaths.length">
                   <span v-for="(p,pi) in d.usedPaths" :key="pi"
                     style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ p }}</span>
                 </template>

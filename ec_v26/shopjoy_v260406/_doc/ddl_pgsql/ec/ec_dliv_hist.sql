@@ -1,3 +1,4 @@
+-- 배송 상태 이력
 CREATE TABLE ec_dliv_hist (
     dliv_hist_id    VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id

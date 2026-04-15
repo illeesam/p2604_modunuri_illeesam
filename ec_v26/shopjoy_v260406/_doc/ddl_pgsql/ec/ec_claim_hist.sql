@@ -1,3 +1,4 @@
+-- 클레임 상태 이력
 CREATE TABLE ec_claim_hist (
     claim_hist_id   VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id

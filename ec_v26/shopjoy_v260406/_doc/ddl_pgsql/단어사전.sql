@@ -45,6 +45,14 @@
 -- log              로그
 -- hist             이력
 -- snap             스냅샷
+-- path             경로
+-- disp_path        표시경로 (전시/프로퍼티 트리 빌드용 점(.) 구분 경로, 예: FRONT.모바일메인)
+-- approval         결재 / 결재처리
+-- aprv             결재(승인) 약어
+-- prop             프로퍼티 (환경설정/공통 파라미터)
+-- balance          잔액
+-- target           대상
+-- reason           사유
 -- ------------------------------------------------
 -- by               처리자 ID (sy_user.user_id 참조)
 -- ------------------------------------------------
@@ -98,6 +106,7 @@
 -- bbm              게시판 메시지
 -- template         템플릿
 -- code             공통코드
+-- prop             프로퍼티 (sy_prop)
 -- ------------------------------------------------
 
 -- [ 주소/연락처 관련 ]
@@ -151,4 +160,16 @@
 -- LOGIN_RESULT         SUCCESS / FAIL_PWD / FAIL_LOCKED / FAIL_NOT_FOUND
 -- MEDIA_TYPE           IMAGE / VIDEO
 -- DISP_AREA            (전시영역코드 — 사이트별 정의)
+-- DISP_UI              (전시 UI 타입 — FRONT_MAIN/FRONT_PROD/FRONT_MY/MOBILE_MAIN/ADMIN_DASH 등)
+-- DISP_STATUS          ACTIVE / INACTIVE
+-- WIDGET_TYPE          image_banner / product_slider / product / cond_product / chart_bar / chart_line / chart_pie /
+--                      text_banner / info_card / popup / file / file_list / coupon / html_editor /
+--                      event_banner / cache_banner / widget_embed / barcode / countdown
+-- VISIBILITY_TARGET    PUBLIC / MEMBER / VERIFIED / VIP / PREMIUM / GUEST 등 (^CODE^ 인코딩)
+-- APPROVAL_STATUS      REQ / APPROVED / REJECTED / DONE
+-- APPROVAL_TARGET      ORDER / PROD / DLIV / EXTRA
+-- AUTH_METHOD          MAIN / SMS / OTP / AUTHENTICATOR
+-- PROP_TYPE            STRING / NUMBER / BOOLEAN / JSON
+-- ALARM_TYPE           PUSH / EMAIL / SMS / INAPP
+-- ALARM_STATUS         DRAFT / SCHEDULED / SENT / FAILED
 -- ------------------------------------------------
