@@ -698,8 +698,9 @@ window.SyCodeMng = {
       <thead>
         <tr>
           <th style="width:30px;"></th>
-          <th>코드라벨</th>
+          <th style="min-width:200px;">코드라벨</th>
           <th>코드값</th>
+          <th style="width:140px;">상위코드값</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
           <th>비고</th>
@@ -708,7 +709,7 @@ window.SyCodeMng = {
       </thead>
       <tbody>
         <tr v-if="codeTree.count===0">
-          <td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-else v-for="row in flatTreeRows" :key="row.node.value" style="user-select:none;">
           <td style="padding:0;text-align:center;">
@@ -718,13 +719,20 @@ window.SyCodeMng = {
               {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
             </span>
           </td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span :style="{ marginLeft: (row.depth * 20) + 'px' }"></span>
+          <td style="padding-left:0;">
+            <div style="display:flex;align-items:center;gap:0;">
+              <span :style="{ minWidth: (row.depth * 24 + 8) + 'px', flexShrink: 0 }"></span>
+              <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:4px;font-weight:300;">├</span>
               <span style="font-weight:600;color:#374151;">{{ row.node.label }}</span>
             </div>
           </td>
           <td><span style="font-family:monospace;color:#6b7280;font-size:12px;">{{ row.node.value }}</span></td>
+          <td>
+            <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" @change="onCellChange(row.node.code)">
+              <option :value="null">-- 없음 --</option>
+              <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+            </select>
+          </td>
           <td style="text-align:right;color:#6b7280;font-size:12px;">{{ row.node.code.sortOrd }}</td>
           <td style="text-align:center;">
             <span style="display:inline-block;min-width:50px;text-align:center;padding:3px 6px;background:#fff;border:1px solid #d1d5db;border-radius:3px;font-size:11px;"
