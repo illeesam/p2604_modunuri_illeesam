@@ -13,7 +13,7 @@ CREATE TABLE sy_brand (
     vendor_id       VARCHAR(16),
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    remark          VARCHAR(300),
+    brand_remark    VARCHAR(300),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -33,7 +33,7 @@ COMMENT ON COLUMN sy_brand.logo_url      IS '로고URL';
 COMMENT ON COLUMN sy_brand.vendor_id     IS '업체ID';
 COMMENT ON COLUMN sy_brand.sort_ord      IS '정렬순서';
 COMMENT ON COLUMN sy_brand.use_yn        IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_brand.remark        IS '비고';
+COMMENT ON COLUMN sy_brand.brand_remark  IS '비고';
 COMMENT ON COLUMN sy_brand.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_brand.reg_date      IS '등록일';
 COMMENT ON COLUMN sy_brand.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';

@@ -13,7 +13,7 @@ CREATE TABLE sy_menu (
     icon_class      VARCHAR(100),
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    remark          VARCHAR(300),
+    menu_remark     VARCHAR(300),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -33,7 +33,7 @@ COMMENT ON COLUMN sy_menu.menu_type      IS '메뉴유형 (PAGE/FOLDER/LINK)';
 COMMENT ON COLUMN sy_menu.icon_class     IS '아이콘 CSS 클래스';
 COMMENT ON COLUMN sy_menu.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN sy_menu.use_yn         IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_menu.remark         IS '비고';
+COMMENT ON COLUMN sy_menu.menu_remark    IS '비고';
 COMMENT ON COLUMN sy_menu.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_menu.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_menu.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';

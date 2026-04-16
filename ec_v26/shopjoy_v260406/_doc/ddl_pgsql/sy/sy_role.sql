@@ -12,7 +12,7 @@ CREATE TABLE sy_role (
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     restrict_perm   CHAR(1)         DEFAULT 'N',            -- 제한권한여부
-    remark          VARCHAR(300),
+    role_remark     VARCHAR(300),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -32,7 +32,7 @@ COMMENT ON COLUMN sy_role.role_type        IS '역할유형 (SYSTEM/CUSTOM)';
 COMMENT ON COLUMN sy_role.sort_ord         IS '정렬순서';
 COMMENT ON COLUMN sy_role.use_yn           IS '사용여부 Y/N';
 COMMENT ON COLUMN sy_role.restrict_perm    IS '제한권한여부 Y/N';
-COMMENT ON COLUMN sy_role.remark           IS '비고';
+COMMENT ON COLUMN sy_role.role_remark      IS '비고';
 COMMENT ON COLUMN sy_role.reg_by           IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_role.reg_date         IS '등록일';
 COMMENT ON COLUMN sy_role.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';

@@ -13,7 +13,7 @@ CREATE TABLE sy_prop (
     prop_type       VARCHAR(20)     DEFAULT 'STRING',       -- STRING/NUMBER/BOOLEAN/JSON
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    remark          VARCHAR(500),
+    prop_remark     VARCHAR(500),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -32,7 +32,7 @@ COMMENT ON COLUMN sy_prop.prop_label   IS '표시명';
 COMMENT ON COLUMN sy_prop.prop_type    IS '값 타입 (STRING/NUMBER/BOOLEAN/JSON)';
 COMMENT ON COLUMN sy_prop.sort_ord     IS '같은 표시경로 내 정렬순서';
 COMMENT ON COLUMN sy_prop.use_yn       IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_prop.remark       IS '비고';
+COMMENT ON COLUMN sy_prop.prop_remark  IS '비고';
 
 CREATE INDEX idx_sy_disp_path  ON sy_prop (disp_path);
 CREATE INDEX idx_sy_prop_site  ON sy_prop (site_id);

@@ -16,7 +16,7 @@ CREATE TABLE sy_bbm (
     scope_type      VARCHAR(20)     DEFAULT 'ALL',          -- ALL/MEMBER/ADMIN
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    remark          VARCHAR(300),
+    bbm_remark      VARCHAR(300),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -38,7 +38,7 @@ COMMENT ON COLUMN sy_bbm.content_type     IS '내용유형 (TEXT/HTML)';
 COMMENT ON COLUMN sy_bbm.scope_type       IS '접근범위 (ALL/MEMBER/ADMIN)';
 COMMENT ON COLUMN sy_bbm.sort_ord         IS '정렬순서';
 COMMENT ON COLUMN sy_bbm.use_yn           IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_bbm.remark           IS '비고';
+COMMENT ON COLUMN sy_bbm.bbm_remark       IS '비고';
 COMMENT ON COLUMN sy_bbm.reg_by           IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_bbm.reg_date         IS '등록일';
 COMMENT ON COLUMN sy_bbm.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';

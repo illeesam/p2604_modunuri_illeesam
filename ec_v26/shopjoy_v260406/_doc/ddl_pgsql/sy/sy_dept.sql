@@ -12,7 +12,7 @@ CREATE TABLE sy_dept (
     manager_id      VARCHAR(16),                            -- sy_user.user_id
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    remark          VARCHAR(300),
+    dept_remark     VARCHAR(300),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -31,7 +31,7 @@ COMMENT ON COLUMN sy_dept.dept_type_cd   IS '부서유형 (코드: DEPT_TYPE)';
 COMMENT ON COLUMN sy_dept.manager_id     IS '부서장 (sy_user.user_id)';
 COMMENT ON COLUMN sy_dept.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN sy_dept.use_yn         IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_dept.remark         IS '비고';
+COMMENT ON COLUMN sy_dept.dept_remark    IS '비고';
 COMMENT ON COLUMN sy_dept.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_dept.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_dept.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';

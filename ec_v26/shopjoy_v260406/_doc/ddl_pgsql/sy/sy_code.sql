@@ -7,7 +7,7 @@ CREATE TABLE sy_code (
     code_label      VARCHAR(100)    NOT NULL,               -- 화면 표시 라벨
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    remark          VARCHAR(300),
+    code_remark     VARCHAR(300),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -24,7 +24,7 @@ COMMENT ON COLUMN sy_code.code_value     IS '코드값 (저장값)';
 COMMENT ON COLUMN sy_code.code_label     IS '코드라벨 (표시명)';
 COMMENT ON COLUMN sy_code.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN sy_code.use_yn         IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_code.remark         IS '비고';
+COMMENT ON COLUMN sy_code.code_remark    IS '비고';
 COMMENT ON COLUMN sy_code.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_code.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_code.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
