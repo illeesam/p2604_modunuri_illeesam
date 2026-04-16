@@ -22,9 +22,9 @@ COMMENT ON COLUMN ec_prod_content.content_type IS '컨텐츠유형 (상세설명
 COMMENT ON COLUMN ec_prod_content.content_html IS 'HTML 에디터 컨텐츠';
 COMMENT ON COLUMN ec_prod_content.sort_ord     IS '정렬순서';
 COMMENT ON COLUMN ec_prod_content.use_yn       IS '사용여부 Y/N';
-COMMENT ON COLUMN ec_prod_content.reg_by       IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_prod_content.reg_by       IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_prod_content.reg_date     IS '등록일';
-COMMENT ON COLUMN ec_prod_content.upd_by       IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_prod_content.upd_by       IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_prod_content.upd_date     IS '수정일';
 
 CREATE INDEX idx_ec_prod_content_prod ON ec_prod_content (prod_id, content_type);

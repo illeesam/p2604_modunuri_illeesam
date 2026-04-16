@@ -25,9 +25,9 @@ COMMENT ON COLUMN sy_code.code_label     IS '코드라벨 (표시명)';
 COMMENT ON COLUMN sy_code.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN sy_code.use_yn         IS '사용여부 Y/N';
 COMMENT ON COLUMN sy_code.remark         IS '비고';
-COMMENT ON COLUMN sy_code.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_code.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_code.reg_date       IS '등록일';
-COMMENT ON COLUMN sy_code.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_code.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_code.upd_date       IS '수정일';
 
 -- ============================================================

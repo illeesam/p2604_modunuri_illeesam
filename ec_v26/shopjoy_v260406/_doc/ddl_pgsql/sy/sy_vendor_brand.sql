@@ -38,9 +38,9 @@ COMMENT ON COLUMN sy_vendor_brand.commission_rate IS '수수료율 (%)';
 COMMENT ON COLUMN sy_vendor_brand.sort_ord        IS '정렬순서';
 COMMENT ON COLUMN sy_vendor_brand.use_yn          IS '사용여부 Y/N';
 COMMENT ON COLUMN sy_vendor_brand.remark          IS '비고';
-COMMENT ON COLUMN sy_vendor_brand.reg_by          IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_vendor_brand.reg_by          IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_vendor_brand.reg_date        IS '등록일';
-COMMENT ON COLUMN sy_vendor_brand.upd_by          IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_vendor_brand.upd_by          IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_vendor_brand.upd_date        IS '수정일';
 
 CREATE INDEX idx_sy_vendor_brand_vendor ON sy_vendor_brand (vendor_id);

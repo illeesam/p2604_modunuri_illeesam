@@ -53,9 +53,9 @@ COMMENT ON COLUMN ec_dliv.status_cd         IS '배송상태 (코드: DLIV_STATU
 COMMENT ON COLUMN ec_dliv.ship_date         IS '출고일시';
 COMMENT ON COLUMN ec_dliv.dliv_date         IS '배송완료일시';
 COMMENT ON COLUMN ec_dliv.memo              IS '메모';
-COMMENT ON COLUMN ec_dliv.reg_by            IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_dliv.reg_by            IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_dliv.reg_date          IS '등록일';
-COMMENT ON COLUMN ec_dliv.upd_by            IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_dliv.upd_by            IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_dliv.upd_date          IS '수정일';
 
 COMMENT ON COLUMN ec_dliv.approval_status_cd IS '결재상태 (코드: APPROVAL_STATUS)';

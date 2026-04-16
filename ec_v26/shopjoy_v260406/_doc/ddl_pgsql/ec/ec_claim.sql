@@ -51,9 +51,9 @@ COMMENT ON COLUMN ec_claim.request_date   IS '요청일시';
 COMMENT ON COLUMN ec_claim.proc_date      IS '처리일시';
 COMMENT ON COLUMN ec_claim.proc_user_id        IS '처리자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_claim.memo           IS '관리메모';
-COMMENT ON COLUMN ec_claim.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_claim.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_claim.reg_date       IS '등록일';
-COMMENT ON COLUMN ec_claim.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_claim.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_claim.upd_date       IS '수정일';
 
 COMMENT ON COLUMN ec_claim.approval_status_cd IS '결재상태 (코드: APPROVAL_STATUS)';

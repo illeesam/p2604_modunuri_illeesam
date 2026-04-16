@@ -28,9 +28,9 @@ COMMENT ON COLUMN ec_prod_content_chg_hist.content_after  IS '변경후 HTML 컨
 COMMENT ON COLUMN ec_prod_content_chg_hist.chg_reason    IS '변경사유 (예: 내용 오류 수정, 계절 업데이트)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.chg_user_id        IS '처리자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.chg_date      IS '처리일시';
-COMMENT ON COLUMN ec_prod_content_chg_hist.reg_by        IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_prod_content_chg_hist.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.reg_date      IS '등록일';
-COMMENT ON COLUMN ec_prod_content_chg_hist.upd_by        IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_prod_content_chg_hist.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.upd_date      IS '수정일';
 
 CREATE INDEX idx_ec_prod_content_chg_hist_prod ON ec_prod_content_chg_hist (prod_id, chg_date DESC);

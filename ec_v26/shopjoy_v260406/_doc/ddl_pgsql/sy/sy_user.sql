@@ -41,9 +41,9 @@ COMMENT ON COLUMN sy_user.status_cd        IS '상태 (코드: USER_STATUS)';
 COMMENT ON COLUMN sy_user.last_login       IS '최근 로그인';
 COMMENT ON COLUMN sy_user.login_fail_cnt   IS '로그인 실패 횟수';
 COMMENT ON COLUMN sy_user.memo             IS '메모';
-COMMENT ON COLUMN sy_user.reg_by           IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_user.reg_by           IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_user.reg_date         IS '등록일';
-COMMENT ON COLUMN sy_user.upd_by           IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_user.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_user.upd_date         IS '수정일';
 
 COMMENT ON COLUMN sy_user.dept_id         IS '부서ID (sy_dept.dept_id)';

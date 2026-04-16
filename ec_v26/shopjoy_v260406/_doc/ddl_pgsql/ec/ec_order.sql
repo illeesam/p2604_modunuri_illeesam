@@ -61,9 +61,9 @@ COMMENT ON COLUMN ec_order.recv_addr_detail IS '수령자상세주소';
 COMMENT ON COLUMN ec_order.recv_memo        IS '배송메모';
 COMMENT ON COLUMN ec_order.coupon_id        IS '사용쿠폰ID';
 COMMENT ON COLUMN ec_order.memo             IS '관리메모';
-COMMENT ON COLUMN ec_order.reg_by           IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order.reg_by           IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_order.reg_date         IS '등록일';
-COMMENT ON COLUMN ec_order.upd_by           IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_order.upd_date         IS '수정일';
 
 COMMENT ON COLUMN ec_order.approval_status_cd IS '결재상태 (코드: APPROVAL_STATUS)';

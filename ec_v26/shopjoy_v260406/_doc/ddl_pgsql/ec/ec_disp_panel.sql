@@ -39,9 +39,9 @@ COMMENT ON COLUMN ec_disp_panel.visibility_targets IS '공개대상 (코드: VIS
 COMMENT ON COLUMN ec_disp_panel.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN ec_disp_panel.status_cd      IS '상태 (코드: DISP_STATUS)';
 COMMENT ON COLUMN ec_disp_panel.content_json   IS '확장데이터 (JSON)';
-COMMENT ON COLUMN ec_disp_panel.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_disp_panel.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_disp_panel.reg_date       IS '등록일';
-COMMENT ON COLUMN ec_disp_panel.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_disp_panel.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_disp_panel.upd_date       IS '수정일';
 
 -- 패널에 배치된 위젯 인스턴스

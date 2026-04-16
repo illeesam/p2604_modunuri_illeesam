@@ -22,7 +22,7 @@ COMMENT ON COLUMN ec_blog_img.img_url     IS '원본 이미지 URL';
 COMMENT ON COLUMN ec_blog_img.thumb_url   IS '썸네일 이미지 URL';
 COMMENT ON COLUMN ec_blog_img.img_alt_text IS '이미지 대체텍스트';
 COMMENT ON COLUMN ec_blog_img.sort_ord    IS '정렬순서';
-COMMENT ON COLUMN ec_blog_img.reg_by      IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_blog_img.reg_by      IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_blog_img.reg_date    IS '등록일';
 
 CREATE INDEX idx_ec_blog_img_blog ON ec_blog_img (blog_id);

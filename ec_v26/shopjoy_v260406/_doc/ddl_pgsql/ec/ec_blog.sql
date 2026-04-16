@@ -34,9 +34,9 @@ COMMENT ON COLUMN ec_blog.prod_id      IS '상품ID (ec_prod.prod_id, 상품 관
 COMMENT ON COLUMN ec_blog.view_count   IS '조회수';
 COMMENT ON COLUMN ec_blog.use_yn       IS '공개여부 Y/N (비공개 글)';
 COMMENT ON COLUMN ec_blog.is_notice    IS '공지글 여부 Y/N (상단 고정)';
-COMMENT ON COLUMN ec_blog.reg_by       IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_blog.reg_by       IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_blog.reg_date     IS '등록일';
-COMMENT ON COLUMN ec_blog.upd_by       IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_blog.upd_by       IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_blog.upd_date     IS '수정일';
 
 CREATE INDEX idx_ec_blog_cate ON ec_blog (blog_cate_id);

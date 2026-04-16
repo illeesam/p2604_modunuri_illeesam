@@ -50,9 +50,9 @@ COMMENT ON COLUMN sy_vendor_content.status_cd         IS '상태 (코드: VENDOR
 COMMENT ON COLUMN sy_vendor_content.use_yn            IS '사용여부 Y/N';
 COMMENT ON COLUMN sy_vendor_content.view_count        IS '조회수';
 COMMENT ON COLUMN sy_vendor_content.remark            IS '비고';
-COMMENT ON COLUMN sy_vendor_content.reg_by            IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_vendor_content.reg_by            IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_vendor_content.reg_date          IS '등록일';
-COMMENT ON COLUMN sy_vendor_content.upd_by            IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_vendor_content.upd_by            IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_vendor_content.upd_date          IS '수정일';
 
 CREATE INDEX idx_sy_vendor_content_vendor ON sy_vendor_content (vendor_id);

@@ -37,9 +37,9 @@ COMMENT ON COLUMN sy_user_token_log.prev_token      IS '갱신 전 토큰 해시
 COMMENT ON COLUMN sy_user_token_log.ip              IS 'IP주소';
 COMMENT ON COLUMN sy_user_token_log.device          IS 'User-Agent';
 COMMENT ON COLUMN sy_user_token_log.revoke_reason   IS '폐기 사유 (LOGOUT/FORCE/EXPIRED 등)';
-COMMENT ON COLUMN sy_user_token_log.reg_by          IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_user_token_log.reg_by          IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_user_token_log.reg_date        IS '등록일';
-COMMENT ON COLUMN sy_user_token_log.upd_by          IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_user_token_log.upd_by          IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_user_token_log.upd_date        IS '수정일';
 
 CREATE INDEX idx_sy_user_token_log_user      ON sy_user_token_log (user_id);

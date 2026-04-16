@@ -40,9 +40,9 @@ COMMENT ON COLUMN ec_cart.unit_price   IS '단가 (담을 시점 가격)';
 COMMENT ON COLUMN ec_cart.order_qty    IS '수량';
 COMMENT ON COLUMN ec_cart.item_price   IS '소계 (단가 × 수량)';
 COMMENT ON COLUMN ec_cart.is_checked   IS '주문선택여부 Y/N';
-COMMENT ON COLUMN ec_cart.reg_by       IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_cart.reg_by       IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_cart.reg_date     IS '등록일';
-COMMENT ON COLUMN ec_cart.upd_by       IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_cart.upd_by       IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_cart.upd_date     IS '수정일';
 
 CREATE INDEX idx_ec_cart_member  ON ec_cart (member_id);

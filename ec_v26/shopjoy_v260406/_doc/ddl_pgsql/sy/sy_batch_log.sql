@@ -34,9 +34,9 @@ COMMENT ON COLUMN sy_batch_log.proc_count    IS '처리건수';
 COMMENT ON COLUMN sy_batch_log.error_count   IS '오류건수';
 COMMENT ON COLUMN sy_batch_log.message       IS '결과메시지';
 COMMENT ON COLUMN sy_batch_log.detail        IS '상세로그 (JSON)';
-COMMENT ON COLUMN sy_batch_log.reg_by        IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_batch_log.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_batch_log.reg_date      IS '등록일';
-COMMENT ON COLUMN sy_batch_log.upd_by        IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_batch_log.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_batch_log.upd_date      IS '수정일';
 
 CREATE INDEX idx_sy_batch_log_batch  ON sy_batch_log (batch_id);

@@ -42,9 +42,9 @@ COMMENT ON COLUMN sy_api_log.elapsed_ms   IS '응답시간 (밀리초)';
 COMMENT ON COLUMN sy_api_log.ref_type     IS '연관유형 (ORDER/DLIV/PUSH 등)';
 COMMENT ON COLUMN sy_api_log.ref_id       IS '연관ID';
 COMMENT ON COLUMN sy_api_log.call_date    IS 'API 호출일시';
-COMMENT ON COLUMN sy_api_log.reg_by       IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_api_log.reg_by       IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_api_log.reg_date     IS '등록일';
-COMMENT ON COLUMN sy_api_log.upd_by       IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_api_log.upd_by       IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_api_log.upd_date     IS '수정일';
 
 CREATE INDEX idx_sy_api_log_type ON sy_api_log (api_type, result_cd);

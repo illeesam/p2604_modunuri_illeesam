@@ -64,9 +64,9 @@ COMMENT ON COLUMN sy_vendor.contract_date  IS '계약일자';
 COMMENT ON COLUMN sy_vendor.status_cd      IS '상태 (코드: VENDOR_STATUS)';
 COMMENT ON COLUMN sy_vendor.disp_path      IS '점(.) 구분 표시경로';
 COMMENT ON COLUMN sy_vendor.remark         IS '비고';
-COMMENT ON COLUMN sy_vendor.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_vendor.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_vendor.reg_date       IS '등록일';
-COMMENT ON COLUMN sy_vendor.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_vendor.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_vendor.upd_date       IS '수정일';
 
 CREATE INDEX idx_sy_vendor_site   ON sy_vendor (site_id);

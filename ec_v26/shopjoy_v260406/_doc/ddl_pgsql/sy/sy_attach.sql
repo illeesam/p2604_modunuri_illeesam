@@ -36,7 +36,7 @@ COMMENT ON COLUMN sy_attach.cdn_img_url      IS 'CDN 원본 이미지 URL (NULL�
 COMMENT ON COLUMN sy_attach.cdn_thumb_url    IS 'CDN 썸네일 URL (이미지 파일, 목록/검색용)';
 COMMENT ON COLUMN sy_attach.sort_ord         IS '정렬순서';
 COMMENT ON COLUMN sy_attach.memo             IS '메모';
-COMMENT ON COLUMN sy_attach.reg_by           IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_attach.reg_by           IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_attach.reg_date         IS '등록일';
-COMMENT ON COLUMN sy_attach.upd_by           IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_attach.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_attach.upd_date         IS '수정일';

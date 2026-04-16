@@ -30,8 +30,8 @@ COMMENT ON COLUMN ec_disp_widget.click_target   IS '클릭대상 (URL 또는 ID)
 COMMENT ON COLUMN ec_disp_widget.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN ec_disp_widget.status_cd      IS '상태 (코드: DISP_STATUS)';
 COMMENT ON COLUMN ec_disp_widget.content_json   IS '위젯 콘텐츠 데이터 (JSON)';
-COMMENT ON COLUMN ec_disp_widget.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_disp_widget.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_disp_widget.reg_date       IS '등록일';
-COMMENT ON COLUMN ec_disp_widget.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_disp_widget.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_disp_widget.upd_date       IS '수정일';
 COMMENT ON COLUMN ec_disp_widget.disp_path IS '점(.) 구분 표시경로';

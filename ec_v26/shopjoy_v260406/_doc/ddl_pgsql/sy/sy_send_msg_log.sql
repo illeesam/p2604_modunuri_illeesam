@@ -51,9 +51,9 @@ COMMENT ON COLUMN sy_send_msg_log.fail_reason    IS '실패 사유';
 COMMENT ON COLUMN sy_send_msg_log.send_date      IS '발송일시';
 COMMENT ON COLUMN sy_send_msg_log.ref_type       IS '연관유형 (ORDER/CLAIM/JOIN/AUTH 등)';
 COMMENT ON COLUMN sy_send_msg_log.ref_id         IS '연관ID';
-COMMENT ON COLUMN sy_send_msg_log.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_send_msg_log.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_send_msg_log.reg_date       IS '등록일';
-COMMENT ON COLUMN sy_send_msg_log.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_send_msg_log.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_send_msg_log.upd_date       IS '수정일';
 
 CREATE INDEX idx_sy_send_msg_log_member   ON sy_send_msg_log (member_id);

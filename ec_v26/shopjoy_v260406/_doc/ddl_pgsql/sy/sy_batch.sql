@@ -41,8 +41,8 @@ COMMENT ON COLUMN sy_batch.status_cd      IS '활성상태 (코드: BATCH_STATUS
 COMMENT ON COLUMN sy_batch.run_status     IS '실행상태 (IDLE/RUNNING/SUCCESS/FAILED)';
 COMMENT ON COLUMN sy_batch.timeout_sec    IS '타임아웃(초)';
 COMMENT ON COLUMN sy_batch.memo           IS '메모';
-COMMENT ON COLUMN sy_batch.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_batch.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_batch.reg_date       IS '등록일';
-COMMENT ON COLUMN sy_batch.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_batch.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_batch.upd_date       IS '수정일';
 COMMENT ON COLUMN sy_batch.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';

@@ -37,8 +37,8 @@ COMMENT ON COLUMN ec_disp_widget_lib.config_schema  IS '설정 스키마 (JSON)'
 COMMENT ON COLUMN ec_disp_widget_lib.is_system      IS '시스템기본위젯 Y/N';
 COMMENT ON COLUMN ec_disp_widget_lib.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN ec_disp_widget_lib.use_yn         IS '사용여부 Y/N';
-COMMENT ON COLUMN ec_disp_widget_lib.reg_by         IS '등록자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_disp_widget_lib.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_disp_widget_lib.reg_date       IS '등록일';
-COMMENT ON COLUMN ec_disp_widget_lib.upd_by         IS '수정자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_disp_widget_lib.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_disp_widget_lib.upd_date       IS '수정일';
 COMMENT ON COLUMN ec_disp_widget_lib.disp_path IS '점(.) 구분 표시경로';
