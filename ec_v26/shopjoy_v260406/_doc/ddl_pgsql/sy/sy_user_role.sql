@@ -5,7 +5,7 @@
 CREATE TABLE sy_user_role (
     user_id         VARCHAR(16)     NOT NULL,               -- sy_user.user_id
     role_id         VARCHAR(16)     NOT NULL,               -- sy_role.role_id
-    grant_by        VARCHAR(16),                            -- 부여자 (sy_user.user_id)
+    grant_user_id        VARCHAR(16),                            -- 부여자 (sy_user.user_id)
     grant_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     valid_from      DATE,                                   -- 적용 시작일 (NULL = 즉시)
     valid_to        DATE,                                   -- 적용 종료일 (NULL = 무기한)
@@ -20,7 +20,7 @@ CREATE TABLE sy_user_role (
 COMMENT ON TABLE  sy_user_role             IS '관리자 사용자-역할 매핑 (N:M)';
 COMMENT ON COLUMN sy_user_role.user_id     IS '사용자ID (sy_user.user_id)';
 COMMENT ON COLUMN sy_user_role.role_id     IS '역할ID (sy_role.role_id)';
-COMMENT ON COLUMN sy_user_role.grant_by    IS '부여자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_user_role.grant_user_id    IS '부여자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_user_role.grant_date  IS '부여일시';
 COMMENT ON COLUMN sy_user_role.valid_from  IS '적용 시작일';
 COMMENT ON COLUMN sy_user_role.valid_to    IS '적용 종료일';

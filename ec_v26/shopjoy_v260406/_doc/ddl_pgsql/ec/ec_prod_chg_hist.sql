@@ -6,7 +6,7 @@ CREATE TABLE ec_prod_chg_hist (
     before_val      TEXT,
     after_val       TEXT,
     chg_reason      VARCHAR(200),
-    chg_by          VARCHAR(16),
+    chg_user_id          VARCHAR(16),
     chg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -23,7 +23,7 @@ COMMENT ON COLUMN ec_prod_chg_hist.chg_type     IS '변경유형 (PRICE/STOCK/ST
 COMMENT ON COLUMN ec_prod_chg_hist.before_val   IS '변경전값';
 COMMENT ON COLUMN ec_prod_chg_hist.after_val    IS '변경후값';
 COMMENT ON COLUMN ec_prod_chg_hist.chg_reason   IS '변경사유';
-COMMENT ON COLUMN ec_prod_chg_hist.chg_by       IS '처리자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_prod_chg_hist.chg_user_id       IS '처리자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_prod_chg_hist.chg_date     IS '처리일시';
 COMMENT ON COLUMN ec_prod_chg_hist.reg_by       IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_prod_chg_hist.reg_date     IS '등록일';

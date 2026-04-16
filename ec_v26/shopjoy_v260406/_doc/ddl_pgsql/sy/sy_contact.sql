@@ -13,7 +13,7 @@ CREATE TABLE sy_contact (
     attach_grp_id   VARCHAR(16),
     status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CONTACT_STATUS
     answer          TEXT,
-    answer_by       VARCHAR(16),
+    answer_user_id       VARCHAR(16),
     answer_date     TIMESTAMP,
     contact_date    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(16),
@@ -34,7 +34,7 @@ COMMENT ON COLUMN sy_contact.content        IS '문의내용';
 COMMENT ON COLUMN sy_contact.attach_grp_id  IS '첨부파일그룹ID';
 COMMENT ON COLUMN sy_contact.status_cd      IS '처리상태 (코드: CONTACT_STATUS)';
 COMMENT ON COLUMN sy_contact.answer         IS '답변내용';
-COMMENT ON COLUMN sy_contact.answer_by      IS '답변자 (sy_user.user_id)';
+COMMENT ON COLUMN sy_contact.answer_user_id      IS '답변자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_contact.answer_date    IS '답변일시';
 COMMENT ON COLUMN sy_contact.contact_date   IS '문의일시';
 COMMENT ON COLUMN sy_contact.reg_by         IS '등록자 (sy_user.user_id)';

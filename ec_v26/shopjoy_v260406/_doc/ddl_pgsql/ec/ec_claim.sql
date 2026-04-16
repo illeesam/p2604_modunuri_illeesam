@@ -14,7 +14,7 @@ CREATE TABLE ec_claim (
     refund_amt      BIGINT          DEFAULT 0,
     request_date    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     proc_date       TIMESTAMP,
-    proc_by         VARCHAR(16),
+    proc_user_id         VARCHAR(16),
     memo            TEXT,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -26,9 +26,9 @@ CREATE TABLE ec_claim (
     approval_target_cd VARCHAR(30),                         -- 코드: APPROVAL_TARGET (ORDER/PROD/DLIV/EXTRA)
     approval_target_nm VARCHAR(200),                        -- 결재 대상명
     approval_reason    VARCHAR(500),                        -- 사유/메모
-    approval_req_by    VARCHAR(16),                         -- 요청자 (sy_user.user_id)
+    approval_req_user_id    VARCHAR(16),                         -- 요청자 (sy_user.user_id)
     approval_req_date  TIMESTAMP,                           -- 요청일시
-    approval_aprv_by   VARCHAR(16),                         -- 결재자 (sy_user.user_id)
+    approval_aprv_user_id   VARCHAR(16),                         -- 결재자 (sy_user.user_id)
     approval_aprv_date TIMESTAMP,                           -- 결재일시
 
     PRIMARY KEY (claim_id)
@@ -49,7 +49,7 @@ COMMENT ON COLUMN ec_claim.refund_method_cd IS '환불수단 (코드: REFUND_MET
 COMMENT ON COLUMN ec_claim.refund_amt    IS '환불금액';
 COMMENT ON COLUMN ec_claim.request_date   IS '요청일시';
 COMMENT ON COLUMN ec_claim.proc_date      IS '처리일시';
-COMMENT ON COLUMN ec_claim.proc_by        IS '처리자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_claim.proc_user_id        IS '처리자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_claim.memo           IS '관리메모';
 COMMENT ON COLUMN ec_claim.reg_by         IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_claim.reg_date       IS '등록일';
@@ -61,7 +61,7 @@ COMMENT ON COLUMN ec_claim.approval_amt       IS '결재 요청금액';
 COMMENT ON COLUMN ec_claim.approval_target_cd IS '결재대상 구분 (코드: APPROVAL_TARGET)';
 COMMENT ON COLUMN ec_claim.approval_target_nm IS '결재 대상명';
 COMMENT ON COLUMN ec_claim.approval_reason    IS '사유/메모';
-COMMENT ON COLUMN ec_claim.approval_req_by    IS '결재 요청자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_claim.approval_req_user_id    IS '결재 요청자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_claim.approval_req_date  IS '결재 요청일시';
-COMMENT ON COLUMN ec_claim.approval_aprv_by   IS '결재자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_claim.approval_aprv_user_id   IS '결재자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_claim.approval_aprv_date IS '결재일시';

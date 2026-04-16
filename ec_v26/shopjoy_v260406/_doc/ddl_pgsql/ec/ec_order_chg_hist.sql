@@ -11,7 +11,7 @@ CREATE TABLE ec_order_chg_hist (
     before_val         TEXT,                                   -- 변경전값
     after_val          TEXT,                                   -- 변경후값
     chg_reason         VARCHAR(300),                           -- 변경사유
-    chg_by             VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id             VARCHAR(16),                            -- 처리자 (sy_user.user_id)
     chg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by             VARCHAR(16),
     reg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -29,7 +29,7 @@ COMMENT ON COLUMN ec_order_chg_hist.chg_field          IS '변경 필드명';
 COMMENT ON COLUMN ec_order_chg_hist.before_val         IS '변경전값';
 COMMENT ON COLUMN ec_order_chg_hist.after_val          IS '변경후값';
 COMMENT ON COLUMN ec_order_chg_hist.chg_reason         IS '변경사유';
-COMMENT ON COLUMN ec_order_chg_hist.chg_by             IS '처리자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order_chg_hist.chg_user_id             IS '처리자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_order_chg_hist.chg_date           IS '처리일시';
 COMMENT ON COLUMN ec_order_chg_hist.reg_by             IS '등록자';
 COMMENT ON COLUMN ec_order_chg_hist.reg_date           IS '등록일';
