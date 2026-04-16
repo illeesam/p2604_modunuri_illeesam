@@ -5,7 +5,7 @@
 CREATE TABLE sy_site (
     site_id         VARCHAR(16)     NOT NULL,
     site_code       VARCHAR(50)     NOT NULL,
-    site_type       VARCHAR(20),                            -- EC/ADMIN/API
+    site_type_cd    VARCHAR(20),                            -- 코드: SITE_TYPE (EC/ADMIN/API)
     site_nm         VARCHAR(100)    NOT NULL,
     site_domain     VARCHAR(200),
     logo_url        VARCHAR(500),
@@ -31,7 +31,7 @@ CREATE TABLE sy_site (
 COMMENT ON TABLE  sy_site                IS '사이트';
 COMMENT ON COLUMN sy_site.site_id        IS '사이트ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN sy_site.site_code      IS '사이트코드';
-COMMENT ON COLUMN sy_site.site_type      IS '사이트유형 (EC/ADMIN/API)';
+COMMENT ON COLUMN sy_site.site_type_cd    IS '사이트유형 (코드: SITE_TYPE — EC/ADMIN/API)';
 COMMENT ON COLUMN sy_site.site_nm        IS '사이트명';
 COMMENT ON COLUMN sy_site.site_domain    IS '도메인';
 COMMENT ON COLUMN sy_site.logo_url       IS '로고URL';

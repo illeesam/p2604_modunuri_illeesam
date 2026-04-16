@@ -7,7 +7,7 @@ CREATE TABLE ec_order_item_chg_hist (
     site_id                 VARCHAR(16),                            -- sy_site.site_id
     order_id                VARCHAR(16)     NOT NULL,               -- ec_order.order_id
     order_item_id           VARCHAR(16)     NOT NULL,               -- ec_order_item.order_item_id
-    chg_type                VARCHAR(30)     NOT NULL,               -- 변경유형 (QTY/PRICE/OPT/STATUS/AMOUNT/COUPON)
+    chg_type_cd             VARCHAR(30)     NOT NULL,               -- 변경유형코드 (QTY/PRICE/OPT/STATUS/AMOUNT/COUPON)
     chg_field               VARCHAR(50),                            -- 변경 필드명
     before_val              TEXT,                                   -- 변경전값
     after_val               TEXT,                                   -- 변경후값
@@ -26,7 +26,7 @@ COMMENT ON COLUMN ec_order_item_chg_hist.order_item_chg_hist_id  IS '이력ID';
 COMMENT ON COLUMN ec_order_item_chg_hist.site_id                 IS '사이트ID';
 COMMENT ON COLUMN ec_order_item_chg_hist.order_id                IS '주문ID (ec_order.order_id)';
 COMMENT ON COLUMN ec_order_item_chg_hist.order_item_id           IS '주문품목ID (ec_order_item.order_item_id)';
-COMMENT ON COLUMN ec_order_item_chg_hist.chg_type                IS '변경유형 (QTY/PRICE/OPT/STATUS/AMOUNT/COUPON)';
+COMMENT ON COLUMN ec_order_item_chg_hist.chg_type_cd             IS '변경유형코드 (QTY/PRICE/OPT/STATUS/AMOUNT/COUPON)';
 COMMENT ON COLUMN ec_order_item_chg_hist.chg_field               IS '변경 필드명';
 COMMENT ON COLUMN ec_order_item_chg_hist.before_val              IS '변경전값';
 COMMENT ON COLUMN ec_order_item_chg_hist.after_val               IS '변경후값';
@@ -40,5 +40,5 @@ COMMENT ON COLUMN ec_order_item_chg_hist.upd_date                IS '수정일';
 
 CREATE INDEX idx_ec_order_item_chg_hist_order ON ec_order_item_chg_hist (order_id);
 CREATE INDEX idx_ec_order_item_chg_hist_item  ON ec_order_item_chg_hist (order_item_id);
-CREATE INDEX idx_ec_order_item_chg_hist_type  ON ec_order_item_chg_hist (chg_type);
+CREATE INDEX idx_ec_order_item_chg_hist_type  ON ec_order_item_chg_hist (chg_type_cd);
 CREATE INDEX idx_ec_order_item_chg_hist_date  ON ec_order_item_chg_hist (chg_date);

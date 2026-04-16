@@ -3,7 +3,7 @@ CREATE TABLE ec_prod_opt_sku_chg_hist (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     sku_id          VARCHAR(16)     NOT NULL,              -- FK: ec_prod_opt_sku.sku_id
     prod_id         VARCHAR(16)     NOT NULL,              -- FK: ec_prod.prod_id
-    chg_type        VARCHAR(30),                            -- PRICE / STOCK / STATUS 등
+    chg_type_cd     VARCHAR(30),                            -- 변경유형코드 (PRICE / STOCK / STATUS 등)
     before_val      TEXT,                                   -- 변경전값
     after_val       TEXT,                                   -- 변경후값
     chg_reason      VARCHAR(200),                           -- 변경사유
@@ -21,7 +21,7 @@ COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.hist_id      IS '이력ID (YYMMDDhhmm
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.site_id      IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.sku_id       IS 'SKU ID (ec_prod_opt_sku.sku_id)';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.prod_id      IS '상품ID (ec_prod.prod_id)';
-COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.chg_type     IS '변경유형 (PRICE=가격, STOCK=재고, STATUS=상태)';
+COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.chg_type_cd  IS '변경유형코드 (PRICE=가격, STOCK=재고, STATUS=상태)';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.before_val   IS '변경전값';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.after_val    IS '변경후값';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.chg_reason   IS '변경사유 (예: 가격인상, 재고입고, 옵션폐기)';

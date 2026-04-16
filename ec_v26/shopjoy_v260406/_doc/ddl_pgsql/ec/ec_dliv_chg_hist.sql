@@ -6,7 +6,7 @@ CREATE TABLE ec_dliv_chg_hist (
     dliv_chg_hist_id  VARCHAR(16)     NOT NULL,
     site_id           VARCHAR(16),                            -- sy_site.site_id
     dliv_id           VARCHAR(16)     NOT NULL,
-    chg_type          VARCHAR(30)     NOT NULL,               -- 변경유형 (COURIER/TRACKING/RECV_INFO/MEMO/SPLIT/MERGE)
+    chg_type_cd       VARCHAR(30)     NOT NULL,               -- 변경유형코드 (COURIER/TRACKING/RECV_INFO/MEMO/SPLIT/MERGE)
     chg_field         VARCHAR(50),                            -- 변경 필드명 (예: courier_cd, tracking_no, recv_addr)
     before_val        TEXT,                                   -- 변경전값
     after_val         TEXT,                                   -- 변경후값
@@ -24,7 +24,7 @@ COMMENT ON TABLE  ec_dliv_chg_hist                   IS '배송 변경 이력';
 COMMENT ON COLUMN ec_dliv_chg_hist.dliv_chg_hist_id  IS '이력ID';
 COMMENT ON COLUMN ec_dliv_chg_hist.site_id           IS '사이트ID';
 COMMENT ON COLUMN ec_dliv_chg_hist.dliv_id           IS '배송ID';
-COMMENT ON COLUMN ec_dliv_chg_hist.chg_type          IS '변경유형 (COURIER/TRACKING/RECV_INFO/MEMO/SPLIT/MERGE)';
+COMMENT ON COLUMN ec_dliv_chg_hist.chg_type_cd       IS '변경유형코드 (COURIER/TRACKING/RECV_INFO/MEMO/SPLIT/MERGE)';
 COMMENT ON COLUMN ec_dliv_chg_hist.chg_field         IS '변경 필드명';
 COMMENT ON COLUMN ec_dliv_chg_hist.before_val        IS '변경전값';
 COMMENT ON COLUMN ec_dliv_chg_hist.after_val         IS '변경후값';
@@ -37,5 +37,5 @@ COMMENT ON COLUMN ec_dliv_chg_hist.upd_by            IS '수정자';
 COMMENT ON COLUMN ec_dliv_chg_hist.upd_date          IS '수정일';
 
 CREATE INDEX idx_ec_dliv_chg_hist_dliv ON ec_dliv_chg_hist (dliv_id);
-CREATE INDEX idx_ec_dliv_chg_hist_type ON ec_dliv_chg_hist (chg_type);
+CREATE INDEX idx_ec_dliv_chg_hist_type ON ec_dliv_chg_hist (chg_type_cd);
 CREATE INDEX idx_ec_dliv_chg_hist_date ON ec_dliv_chg_hist (chg_date);

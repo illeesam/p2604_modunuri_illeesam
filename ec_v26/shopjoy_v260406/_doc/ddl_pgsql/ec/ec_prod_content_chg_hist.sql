@@ -4,7 +4,7 @@ CREATE TABLE ec_prod_content_chg_hist (
     site_id          VARCHAR(16),                            -- sy_site.site_id
     prod_id          VARCHAR(16)     NOT NULL,              -- FK: ec_prod.prod_id
     prod_content_id  VARCHAR(16)     NOT NULL,              -- FK: ec_prod_content.prod_content_id
-    content_type     VARCHAR(50),                            -- 컨텐츠유형 (상세설명, 사용설명 등)
+    content_type_cd  VARCHAR(50),                            -- 컨텐츠유형코드 (상세설명, 사용설명 등)
     content_before   TEXT,                                   -- 변경전 컨텐츠
     content_after    TEXT,                                   -- 변경후 컨텐츠
     chg_reason       VARCHAR(200),                           -- 변경사유
@@ -22,7 +22,7 @@ COMMENT ON COLUMN ec_prod_content_chg_hist.hist_id      IS '이력ID (YYMMDDhhmm
 COMMENT ON COLUMN ec_prod_content_chg_hist.site_id      IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.prod_id      IS '상품ID (ec_prod.prod_id)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.prod_content_id IS '상품컨텐츠ID (ec_prod_content.prod_content_id)';
-COMMENT ON COLUMN ec_prod_content_chg_hist.content_type IS '컨텐츠유형 (상세설명, 사용설명, 배송정보 등)';
+COMMENT ON COLUMN ec_prod_content_chg_hist.content_type_cd IS '컨텐츠유형코드 (상세설명, 사용설명, 배송정보 등)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.content_before IS '변경전 HTML 컨텐츠';
 COMMENT ON COLUMN ec_prod_content_chg_hist.content_after  IS '변경후 HTML 컨텐츠';
 COMMENT ON COLUMN ec_prod_content_chg_hist.chg_reason    IS '변경사유 (예: 내용 오류 수정, 계절 업데이트)';

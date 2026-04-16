@@ -21,7 +21,7 @@ CREATE TABLE sy_send_msg_log (
     result_msg      VARCHAR(200),                          -- 통신사/카카오 응답 메시지
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    ref_type        VARCHAR(30),                           -- 연관유형 (ORDER/CLAIM/JOIN/AUTH 등)
+    ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/JOIN/AUTH 등)
     ref_id          VARCHAR(16),                           -- 연관ID
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -49,7 +49,7 @@ COMMENT ON COLUMN sy_send_msg_log.result_cd      IS '발송결과 (코드: SEND_
 COMMENT ON COLUMN sy_send_msg_log.result_msg     IS '통신사/카카오 응답 메시지';
 COMMENT ON COLUMN sy_send_msg_log.fail_reason    IS '실패 사유';
 COMMENT ON COLUMN sy_send_msg_log.send_date      IS '발송일시';
-COMMENT ON COLUMN sy_send_msg_log.ref_type       IS '연관유형 (ORDER/CLAIM/JOIN/AUTH 등)';
+COMMENT ON COLUMN sy_send_msg_log.ref_type_cd    IS '연관유형코드 (ORDER/CLAIM/JOIN/AUTH 등)';
 COMMENT ON COLUMN sy_send_msg_log.ref_id         IS '연관ID';
 COMMENT ON COLUMN sy_send_msg_log.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_send_msg_log.reg_date       IS '등록일';
@@ -61,4 +61,4 @@ CREATE INDEX idx_sy_send_msg_log_user     ON sy_send_msg_log (user_id);
 CREATE INDEX idx_sy_send_msg_log_template ON sy_send_msg_log (template_id);
 CREATE INDEX idx_sy_send_msg_log_channel  ON sy_send_msg_log (channel_cd, result_cd);
 CREATE INDEX idx_sy_send_msg_log_date     ON sy_send_msg_log (send_date);
-CREATE INDEX idx_sy_send_msg_log_ref      ON sy_send_msg_log (ref_type, ref_id);
+CREATE INDEX idx_sy_send_msg_log_ref      ON sy_send_msg_log (ref_type_cd, ref_id);

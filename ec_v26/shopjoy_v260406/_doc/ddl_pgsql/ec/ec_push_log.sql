@@ -15,7 +15,7 @@ CREATE TABLE ec_push_log (
     result_cd       VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: PUSH_RESULT (SUCCESS/FAIL/PENDING)
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    ref_type        VARCHAR(30),                           -- 연관유형 (ORDER/CLAIM/EVENT 등)
+    ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/EVENT 등)
     ref_id          VARCHAR(16),                           -- 연관ID (order_id 등)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -36,7 +36,7 @@ COMMENT ON COLUMN ec_push_log.push_log_content IS '발송 내용';
 COMMENT ON COLUMN ec_push_log.result_cd    IS '발송결과 (코드: PUSH_RESULT)';
 COMMENT ON COLUMN ec_push_log.fail_reason  IS '실패 사유';
 COMMENT ON COLUMN ec_push_log.send_date    IS '발송일시';
-COMMENT ON COLUMN ec_push_log.ref_type     IS '연관유형 (ORDER/CLAIM/EVENT 등)';
+COMMENT ON COLUMN ec_push_log.ref_type_cd  IS '연관유형코드 (ORDER/CLAIM/EVENT 등)';
 COMMENT ON COLUMN ec_push_log.ref_id       IS '연관ID';
 COMMENT ON COLUMN ec_push_log.reg_by       IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_push_log.reg_date     IS '등록일';
