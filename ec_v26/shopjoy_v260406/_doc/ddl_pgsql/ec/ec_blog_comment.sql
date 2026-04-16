@@ -7,6 +7,7 @@ CREATE TABLE ec_blog_comment (
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     blog_comment_content TEXT            NOT NULL,
     comment_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)
+    comment_status_cd_before VARCHAR(20),                    -- 변경 전 댓글상태
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -23,6 +24,7 @@ COMMENT ON COLUMN ec_blog_comment.writer_id    IS '작성자ID';
 COMMENT ON COLUMN ec_blog_comment.writer_nm    IS '작성자명';
 COMMENT ON COLUMN ec_blog_comment.blog_comment_content IS '댓글 내용';
 COMMENT ON COLUMN ec_blog_comment.comment_status_cd IS '상태 (코드: COMMENT_STATUS)';
+COMMENT ON COLUMN ec_blog_comment.comment_status_cd_before IS '변경 전 댓글상태 (코드: COMMENT_STATUS)';
 COMMENT ON COLUMN ec_blog_comment.reg_by       IS '등록자';
 COMMENT ON COLUMN ec_blog_comment.reg_date     IS '등록일';
 COMMENT ON COLUMN ec_blog_comment.upd_by       IS '수정자';

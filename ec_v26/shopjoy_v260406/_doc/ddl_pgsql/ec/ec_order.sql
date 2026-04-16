@@ -13,6 +13,7 @@ CREATE TABLE ec_order (
     pay_method_cd   VARCHAR(20),                            -- 코드: PAY_METHOD
     pay_date        TIMESTAMP,
     order_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: ORDER_STATUS
+    order_status_cd_before VARCHAR(20),                     -- 변경 전 주문상태
     recv_nm         VARCHAR(50),
     recv_phone      VARCHAR(20),
     recv_zip        VARCHAR(10),
@@ -21,12 +22,20 @@ CREATE TABLE ec_order (
     recv_memo       VARCHAR(200),
     coupon_id       VARCHAR(16),
     memo            TEXT,
+    -- ── 배송 정보 ──
+    outbound_shipping_fee BIGINT       DEFAULT 0,           -- 출고배송료
+    dliv_courier_cd VARCHAR(30),                            -- 최근 출고 택배사
+    dliv_tracking_no VARCHAR(100),                          -- 최근 출고 송장
+    dliv_status_cd  VARCHAR(20),                            -- 배송상태 (최신)
+    dliv_status_cd_before VARCHAR(20),                      -- 변경 전 배송상태
+    dliv_ship_date  TIMESTAMP,                              -- 최근 출고일시
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     -- ── 결재처리/추가결재요청 (관리자 일괄작업) ──
     appr_status_cd VARCHAR(20),                          -- 코드: APPROVAL_STATUS (REQ/APPROVED/REJECTED/DONE)
+    appr_status_cd_before VARCHAR(20),                  -- 변경 전 결재상태
     appr_amt       BIGINT,                              -- 결재 요청 금액
     appr_target_cd VARCHAR(30),                         -- 코드: APPROVAL_TARGET (ORDER/PROD/DLIV/EXTRA)
     appr_target_nm VARCHAR(200),                        -- 결재 대상명
@@ -52,7 +61,8 @@ COMMENT ON COLUMN ec_order.cache_use        IS '적립금사용';
 COMMENT ON COLUMN ec_order.pay_price        IS '실결제금액';
 COMMENT ON COLUMN ec_order.pay_method_cd    IS '결제수단 (코드: PAY_METHOD)';
 COMMENT ON COLUMN ec_order.pay_date         IS '결제일시';
-COMMENT ON COLUMN ec_order.status_cd        IS '주문상태 (코드: ORDER_STATUS)';
+COMMENT ON COLUMN ec_order.order_status_cd  IS '주문상태 (코드: ORDER_STATUS)';
+COMMENT ON COLUMN ec_order.order_status_cd_before IS '변경 전 주문상태 (코드: ORDER_STATUS)';
 COMMENT ON COLUMN ec_order.recv_nm          IS '수령자명';
 COMMENT ON COLUMN ec_order.recv_phone       IS '수령자연락처';
 COMMENT ON COLUMN ec_order.recv_zip         IS '수령자우편번호';
@@ -61,12 +71,19 @@ COMMENT ON COLUMN ec_order.recv_addr_detail IS '수령자상세주소';
 COMMENT ON COLUMN ec_order.recv_memo        IS '배송메모';
 COMMENT ON COLUMN ec_order.coupon_id        IS '사용쿠폰ID';
 COMMENT ON COLUMN ec_order.memo             IS '관리메모';
+COMMENT ON COLUMN ec_order.outbound_shipping_fee IS '출고배송료';
+COMMENT ON COLUMN ec_order.dliv_courier_cd  IS '최근 출고 택배사 (코드: COURIER)';
+COMMENT ON COLUMN ec_order.dliv_tracking_no IS '최근 출고 송장번호';
+COMMENT ON COLUMN ec_order.dliv_status_cd   IS '배송상태 (코드: DLIV_STATUS, 최신값)';
+COMMENT ON COLUMN ec_order.dliv_status_cd_before IS '변경 전 배송상태 (코드: DLIV_STATUS)';
+COMMENT ON COLUMN ec_order.dliv_ship_date   IS '최근 출고일시';
 COMMENT ON COLUMN ec_order.reg_by           IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_order.reg_date         IS '등록일';
 COMMENT ON COLUMN ec_order.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_order.upd_date         IS '수정일';
 
 COMMENT ON COLUMN ec_order.appr_status_cd IS '결재상태 (코드: APPROVAL_STATUS)';
+COMMENT ON COLUMN ec_order.appr_status_cd_before IS '변경 전 결재상태 (코드: APPROVAL_STATUS)';
 COMMENT ON COLUMN ec_order.appr_amt       IS '결재 요청금액';
 COMMENT ON COLUMN ec_order.appr_target_cd IS '결재대상 구분 (코드: APPROVAL_TARGET)';
 COMMENT ON COLUMN ec_order.appr_target_nm IS '결재 대상명';

@@ -15,6 +15,7 @@ CREATE TABLE ec_disp_panel (
     sort_ord        INTEGER         DEFAULT 0,
     condition_type_cd VARCHAR(30),                           -- [DEPRECATED] ALL/GRADE/LOGIN — visibility_targets로 대체
     disp_panel_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: DISP_STATUS
+    disp_panel_status_cd_before VARCHAR(20),                -- 변경 전 패널상태
     content_json    TEXT,                                   -- 패널별 확장 데이터 (JSON)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -38,6 +39,7 @@ COMMENT ON COLUMN ec_disp_panel.visibility_targets IS '공개대상 (코드: VIS
 COMMENT ON COLUMN ec_disp_panel.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN ec_disp_panel.condition_type_cd IS '[DEPRECATED] 노출조건 (코드: DISP_CONDITION_TYPE — ALL/GRADE/LOGIN) — visibility_targets로 대체';
 COMMENT ON COLUMN ec_disp_panel.disp_panel_status_cd IS '상태 (코드: DISP_STATUS)';
+COMMENT ON COLUMN ec_disp_panel.disp_panel_status_cd_before IS '변경 전 패널상태 (코드: DISP_STATUS)';
 COMMENT ON COLUMN ec_disp_panel.content_json   IS '확장데이터 (JSON)';
 COMMENT ON COLUMN ec_disp_panel.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_disp_panel.reg_date       IS '등록일';

@@ -13,6 +13,7 @@ CREATE TABLE ec_dliv_item (
     unit_price      BIGINT          DEFAULT 0,
     dliv_qty        INTEGER         DEFAULT 1,              -- 이 배송의 출고수량 (부분출고 시 < 주문수량)
     dliv_item_status_cd VARCHAR(20)     DEFAULT 'READY',        -- 코드: DLIV_STATUS (항목별 추적)
+    dliv_item_status_cd_before VARCHAR(20),                  -- 변경 전 배송상태
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -32,7 +33,8 @@ COMMENT ON COLUMN ec_dliv_item.opt_id_2      IS '옵션2 값ID (ec_prod_opt.opt_
 COMMENT ON COLUMN ec_dliv_item.dliv_type_cd  IS '입출고구분 (OUT:출고 / IN:입고반품)';
 COMMENT ON COLUMN ec_dliv_item.unit_price    IS '단가 (주문시점 스냅샷)';
 COMMENT ON COLUMN ec_dliv_item.dliv_qty      IS '출고수량 (부분출고 시 주문수량보다 적을 수 있음)';
-COMMENT ON COLUMN ec_dliv_item.status_cd     IS '항목 배송상태 (코드: DLIV_STATUS)';
+COMMENT ON COLUMN ec_dliv_item.dliv_item_status_cd IS '항목 배송상태 (코드: DLIV_STATUS)';
+COMMENT ON COLUMN ec_dliv_item.dliv_item_status_cd_before IS '변경 전 배송상태 (코드: DLIV_STATUS)';
 COMMENT ON COLUMN ec_dliv_item.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_dliv_item.reg_date      IS '등록일';
 COMMENT ON COLUMN ec_dliv_item.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';

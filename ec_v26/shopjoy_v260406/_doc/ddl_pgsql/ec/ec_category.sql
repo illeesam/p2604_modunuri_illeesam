@@ -10,6 +10,7 @@ CREATE TABLE ec_category (
     category_depth  SMALLINT        DEFAULT 1,              -- 1: 대, 2: 중, 3: 소
     sort_ord        INTEGER         DEFAULT 0,
     category_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USE_YN
+    category_status_cd_before VARCHAR(20),                   -- 변경 전 카테고리상태
     img_url         VARCHAR(500),
     category_desc   TEXT,
     reg_by          VARCHAR(16),
@@ -26,7 +27,8 @@ COMMENT ON COLUMN ec_category.parent_category_id     IS '상위 카테고리ID';
 COMMENT ON COLUMN ec_category.category_nm   IS '카테고리명';
 COMMENT ON COLUMN ec_category.category_depth IS '깊이 (1:대/2:중/3:소)';
 COMMENT ON COLUMN ec_category.sort_ord      IS '정렬순서';
-COMMENT ON COLUMN ec_category.status_cd     IS '상태 (ACTIVE/INACTIVE)';
+COMMENT ON COLUMN ec_category.category_status_cd IS '상태 (코드: USE_YN)';
+COMMENT ON COLUMN ec_category.category_status_cd_before IS '변경 전 카테고리상태 (코드: USE_YN)';
 COMMENT ON COLUMN ec_category.img_url       IS '이미지URL';
 COMMENT ON COLUMN ec_category.category_desc IS '설명';
 COMMENT ON COLUMN ec_category.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';

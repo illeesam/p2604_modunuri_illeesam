@@ -13,6 +13,7 @@ CREATE TABLE ec_review (
     helpful_cnt     INTEGER         DEFAULT 0,              -- 도움이 돼요 수
     unhelpful_cnt   INTEGER         DEFAULT 0,              -- 도움이 안 돼요 수
     review_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: REVIEW_STATUS (ACTIVE/HIDDEN/DELETED)
+    review_status_cd_before VARCHAR(20),                     -- 변경 전 리뷰상태
     review_date     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -32,6 +33,7 @@ COMMENT ON COLUMN ec_review.rating          IS '평점 (1.0~5.0)';
 COMMENT ON COLUMN ec_review.helpful_cnt     IS '도움이 돼요 수';
 COMMENT ON COLUMN ec_review.unhelpful_cnt   IS '도움이 안 돼요 수';
 COMMENT ON COLUMN ec_review.review_status_cd IS '상태 (코드: REVIEW_STATUS)';
+COMMENT ON COLUMN ec_review.review_status_cd_before IS '변경 전 리뷰상태 (코드: REVIEW_STATUS)';
 COMMENT ON COLUMN ec_review.review_date     IS '리뷰작성일';
 COMMENT ON COLUMN ec_review.reg_by          IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_review.reg_date        IS '등록일';

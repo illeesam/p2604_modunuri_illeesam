@@ -13,6 +13,12 @@ CREATE TABLE ec_order_item (
     complet_qty     INTEGER         DEFAULT 0,              -- 판매완료수량
     item_price      BIGINT          DEFAULT 0,
     order_item_status_cd VARCHAR(20)     DEFAULT 'NORMAL',       -- 코드: ORDER_STATUS
+    order_item_status_cd_before VARCHAR(20),                 -- 변경 전 상품상태
+    -- ── 부분배송 시 배송정보 ──
+    outbound_shipping_fee BIGINT       DEFAULT 0,           -- 해당 항목의 배송료
+    dliv_courier_cd VARCHAR(30),                            -- 배송 택배사
+    dliv_tracking_no VARCHAR(100),                          -- 배송 송장
+    dliv_ship_date  TIMESTAMP,                              -- 출고일시
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -33,7 +39,12 @@ COMMENT ON COLUMN ec_order_item.order_qty     IS '주문수량';
 COMMENT ON COLUMN ec_order_item.cancel_qty    IS '취소수량';
 COMMENT ON COLUMN ec_order_item.complet_qty   IS '판매완료수량';
 COMMENT ON COLUMN ec_order_item.item_price    IS '소계 (unit_price × order_qty)';
-COMMENT ON COLUMN ec_order_item.status_cd     IS '품목상태 (코드: ORDER_STATUS)';
+COMMENT ON COLUMN ec_order_item.order_item_status_cd IS '품목상태 (코드: ORDER_STATUS)';
+COMMENT ON COLUMN ec_order_item.order_item_status_cd_before IS '변경 전 품목상태 (코드: ORDER_STATUS)';
+COMMENT ON COLUMN ec_order_item.outbound_shipping_fee IS '해당 항목의 배송료 (부분배송 시)';
+COMMENT ON COLUMN ec_order_item.dliv_courier_cd IS '해당 항목의 배송 택배사 (코드: COURIER)';
+COMMENT ON COLUMN ec_order_item.dliv_tracking_no IS '해당 항목의 배송 송장번호';
+COMMENT ON COLUMN ec_order_item.dliv_ship_date IS '해당 항목의 출고일시';
 COMMENT ON COLUMN ec_order_item.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_order_item.reg_date      IS '등록일';
 COMMENT ON COLUMN ec_order_item.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';

@@ -18,6 +18,7 @@ CREATE TABLE ec_coupon (
     valid_from      DATE,                                   -- 유효기간 시작
     valid_to        DATE,                                   -- 유효기간 종료
     coupon_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COUPON_STATUS (ACTIVE/INACTIVE/EXPIRED)
+    coupon_status_cd_before VARCHAR(20),                     -- 변경 전 쿠폰상태
     use_yn          CHAR(1)         DEFAULT 'Y',
     target_type_cd  VARCHAR(20),                            -- 코드: COUPON_TARGET (ALL/MEMBER/GRADE)
     target_value    VARCHAR(200),                           -- 적용대상값 (등급코드, 회원ID 등)
@@ -46,6 +47,7 @@ COMMENT ON COLUMN ec_coupon.coupon_desc         IS '쿠폰설명';
 COMMENT ON COLUMN ec_coupon.valid_from          IS '유효기간 시작';
 COMMENT ON COLUMN ec_coupon.valid_to            IS '유효기간 종료';
 COMMENT ON COLUMN ec_coupon.coupon_status_cd    IS '상태 (코드: COUPON_STATUS)';
+COMMENT ON COLUMN ec_coupon.coupon_status_cd_before IS '변경 전 쿠폰상태 (코드: COUPON_STATUS)';
 COMMENT ON COLUMN ec_coupon.use_yn              IS '사용여부 Y/N';
 COMMENT ON COLUMN ec_coupon.target_type_cd      IS '적용대상 (코드: COUPON_TARGET)';
 COMMENT ON COLUMN ec_coupon.target_value        IS '적용대상값';

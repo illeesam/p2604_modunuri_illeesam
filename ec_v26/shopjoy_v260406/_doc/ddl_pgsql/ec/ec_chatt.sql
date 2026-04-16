@@ -10,6 +10,7 @@ CREATE TABLE ec_chatt (
     admin_user_id   VARCHAR(16),                            -- 담당 관리자 (sy_user.user_id)
     subject         VARCHAR(200),                           -- 채팅 주제
     chatt_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CHATT_STATUS (PENDING/ONGOING/CLOSED)
+    chatt_status_cd_before VARCHAR(20),                     -- 변경 전 채팅상태
     last_msg_date   TIMESTAMP,                              -- 마지막 메시지 일시
     member_unread_cnt  INTEGER       DEFAULT 0,              -- 고객 미읽 개수
     admin_unread_cnt   INTEGER       DEFAULT 0,              -- 관리자 미읽 개수
@@ -31,6 +32,7 @@ COMMENT ON COLUMN ec_chatt.member_nm            IS '회원명';
 COMMENT ON COLUMN ec_chatt.admin_user_id        IS '담당관리자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_chatt.subject              IS '채팅주제';
 COMMENT ON COLUMN ec_chatt.chatt_status_cd      IS '상태 (코드: CHATT_STATUS)';
+COMMENT ON COLUMN ec_chatt.chatt_status_cd_before IS '변경 전 채팅상태 (코드: CHATT_STATUS)';
 COMMENT ON COLUMN ec_chatt.last_msg_date        IS '마지막 메시지 일시';
 COMMENT ON COLUMN ec_chatt.member_unread_cnt    IS '고객 미읽메시지 수';
 COMMENT ON COLUMN ec_chatt.admin_unread_cnt     IS '관리자 미읽메시지 수';

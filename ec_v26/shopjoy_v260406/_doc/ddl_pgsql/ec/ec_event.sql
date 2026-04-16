@@ -15,6 +15,7 @@ CREATE TABLE ec_event (
     notice_start    DATE,                                   -- 예고 시작일
     notice_end      DATE,                                   -- 예고 종료일
     event_status_cd VARCHAR(20)     DEFAULT 'DRAFT',        -- 코드: EVENT_STATUS (DRAFT/ACTIVE/PAUSED/ENDED/CLOSED)
+    event_status_cd_before VARCHAR(20),                     -- 변경 전 이벤트상태
     target_type_cd  VARCHAR(20),                            -- 코드: EVENT_TARGET (ALL/MEMBER/GRADE/GUEST)
     sort_ord        INTEGER         DEFAULT 0,
     view_cnt        INTEGER         DEFAULT 0,
@@ -40,6 +41,7 @@ COMMENT ON COLUMN ec_event.end_date             IS '이벤트 종료일';
 COMMENT ON COLUMN ec_event.notice_start         IS '예고 시작일';
 COMMENT ON COLUMN ec_event.notice_end           IS '예고 종료일';
 COMMENT ON COLUMN ec_event.event_status_cd      IS '상태 (코드: EVENT_STATUS)';
+COMMENT ON COLUMN ec_event.event_status_cd_before IS '변경 전 이벤트상태 (코드: EVENT_STATUS)';
 COMMENT ON COLUMN ec_event.target_type_cd       IS '대상유형 (코드: EVENT_TARGET)';
 COMMENT ON COLUMN ec_event.sort_ord             IS '정렬순서';
 COMMENT ON COLUMN ec_event.view_cnt             IS '조회수';

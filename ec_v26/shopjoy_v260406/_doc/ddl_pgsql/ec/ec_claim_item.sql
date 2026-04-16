@@ -12,6 +12,11 @@ CREATE TABLE ec_claim_item (
     item_price      BIGINT          DEFAULT 0,              -- 소계 (unit_price * claim_qty)
     refund_amt      BIGINT          DEFAULT 0,              -- 항목별 환불금액
     claim_item_status_cd VARCHAR(20)     DEFAULT 'REQUESTED',    -- 코드: CLAIM_STATUS
+    claim_item_status_cd_before VARCHAR(20),                 -- 변경 전 클레임상태
+    -- ── 클레임 항목별 배송료 ──
+    return_shipping_fee  BIGINT       DEFAULT 0,           -- 수거배송료
+    inbound_shipping_fee BIGINT       DEFAULT 0,           -- 반입배송료
+    exchange_shipping_fee BIGINT      DEFAULT 0,           -- 교환상품 발송배송료
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -31,7 +36,11 @@ COMMENT ON COLUMN ec_claim_item.unit_price    IS '단가';
 COMMENT ON COLUMN ec_claim_item.claim_qty     IS '클레임 수량';
 COMMENT ON COLUMN ec_claim_item.item_price    IS '소계 (단가 × 클레임 수량)';
 COMMENT ON COLUMN ec_claim_item.refund_amt    IS '항목별 환불금액';
-COMMENT ON COLUMN ec_claim_item.status_cd     IS '항목상태 (코드: CLAIM_STATUS)';
+COMMENT ON COLUMN ec_claim_item.claim_item_status_cd IS '항목상태 (코드: CLAIM_STATUS)';
+COMMENT ON COLUMN ec_claim_item.claim_item_status_cd_before IS '변경 전 클레임상태 (코드: CLAIM_STATUS)';
+COMMENT ON COLUMN ec_claim_item.return_shipping_fee   IS '해당 항목의 수거배송료';
+COMMENT ON COLUMN ec_claim_item.inbound_shipping_fee  IS '해당 항목의 반입배송료';
+COMMENT ON COLUMN ec_claim_item.exchange_shipping_fee IS '해당 항목의 교환 발송배송료';
 COMMENT ON COLUMN ec_claim_item.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_claim_item.reg_date      IS '등록일';
 COMMENT ON COLUMN ec_claim_item.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';

@@ -10,6 +10,7 @@ CREATE TABLE ec_member (
     birth_date      DATE,
     grade_cd        VARCHAR(20)     DEFAULT 'BASIC',        -- 코드: MEMBER_GRADE
     member_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: MEMBER_STATUS
+    member_status_cd_before VARCHAR(20),                    -- 변경 전 회원상태
     join_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     last_login      TIMESTAMP,
     order_count     INTEGER         DEFAULT 0,
@@ -38,6 +39,7 @@ COMMENT ON COLUMN ec_member.member_gender  IS '성별 M/F';
 COMMENT ON COLUMN ec_member.birth_date     IS '생년월일';
 COMMENT ON COLUMN ec_member.grade_cd       IS '등급 (코드: MEMBER_GRADE)';
 COMMENT ON COLUMN ec_member.member_status_cd IS '상태 (코드: MEMBER_STATUS)';
+COMMENT ON COLUMN ec_member.member_status_cd_before IS '변경 전 회원상태 (코드: MEMBER_STATUS)';
 COMMENT ON COLUMN ec_member.join_date      IS '가입일';
 COMMENT ON COLUMN ec_member.last_login     IS '최근 로그인';
 COMMENT ON COLUMN ec_member.order_count    IS '주문 건수';
