@@ -6,7 +6,7 @@ CREATE TABLE ec_prod_opt_sku (
     opt_id_2    VARCHAR(16),                            -- 옵션2 값ID (예: 사이즈-M)
     sku_code        VARCHAR(50),                            -- 자체 SKU 코드
     add_price       BIGINT          DEFAULT 0,              -- 옵션 추가금액
-    stock           INTEGER         DEFAULT 0,              -- 옵션 조합별 재고
+    prod_opt_stock  INTEGER         DEFAULT 0,              -- 옵션 조합별 재고
     use_yn          CHAR(1)         DEFAULT 'Y',
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -23,7 +23,7 @@ COMMENT ON COLUMN ec_prod_opt_sku.opt_id_1 IS '옵션1 값ID (ec_prod_opt.opt_id
 COMMENT ON COLUMN ec_prod_opt_sku.opt_id_2 IS '옵션2 값ID (ec_prod_opt.opt_id)';
 COMMENT ON COLUMN ec_prod_opt_sku.sku_code     IS '자체 SKU 코드';
 COMMENT ON COLUMN ec_prod_opt_sku.add_price    IS '옵션 추가금액 (기본가 대비)';
-COMMENT ON COLUMN ec_prod_opt_sku.stock        IS '해당 옵션 조합 재고수량';
+COMMENT ON COLUMN ec_prod_opt_sku.prod_opt_stock IS '해당 옵션 조합 재고수량';
 COMMENT ON COLUMN ec_prod_opt_sku.use_yn       IS '사용여부 Y/N';
 COMMENT ON COLUMN ec_prod_opt_sku.reg_by       IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_prod_opt_sku.reg_date     IS '등록일';

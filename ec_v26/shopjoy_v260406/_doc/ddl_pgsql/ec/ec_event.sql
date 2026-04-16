@@ -8,8 +8,8 @@ CREATE TABLE ec_event (
     event_nm        VARCHAR(100)    NOT NULL,
     event_type_cd   VARCHAR(20),                            -- 코드: EVENT_TYPE (PROMOTION/FLASH/CAMPAIGN/COUPON)
     img_url         VARCHAR(500),                           -- 배너이미지
-    title           VARCHAR(200),                           -- 이벤트 제목
-    content         TEXT,                                   -- 이벤트 상세 내용
+    event_title     VARCHAR(200),                           -- 이벤트 제목
+    event_content   TEXT,                                   -- 이벤트 상세 내용
     start_date      DATE            NOT NULL,              -- 이벤트 시작일
     end_date        DATE            NOT NULL,              -- 이벤트 종료일
     notice_start    DATE,                                   -- 예고 시작일
@@ -33,8 +33,8 @@ COMMENT ON COLUMN ec_event.site_id              IS '사이트ID (sy_site.site_id
 COMMENT ON COLUMN ec_event.event_nm             IS '이벤트명';
 COMMENT ON COLUMN ec_event.event_type_cd        IS '이벤트유형 (코드: EVENT_TYPE)';
 COMMENT ON COLUMN ec_event.img_url              IS '배너이미지URL';
-COMMENT ON COLUMN ec_event.title                IS '이벤트 제목';
-COMMENT ON COLUMN ec_event.content              IS '이벤트 상세내용';
+COMMENT ON COLUMN ec_event.event_title         IS '이벤트 제목';
+COMMENT ON COLUMN ec_event.event_content       IS '이벤트 상세내용';
 COMMENT ON COLUMN ec_event.start_date           IS '이벤트 시작일';
 COMMENT ON COLUMN ec_event.end_date             IS '이벤트 종료일';
 COMMENT ON COLUMN ec_event.notice_start         IS '예고 시작일';

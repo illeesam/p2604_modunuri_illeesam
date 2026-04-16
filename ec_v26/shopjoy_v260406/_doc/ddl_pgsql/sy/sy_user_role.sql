@@ -10,7 +10,7 @@ CREATE TABLE sy_user_role (
     grant_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     valid_from      DATE,                                   -- 적용 시작일 (NULL = 즉시)
     valid_to        DATE,                                   -- 적용 종료일 (NULL = 무기한)
-    remark          VARCHAR(500),
+    user_role_remark VARCHAR(500),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -27,7 +27,7 @@ COMMENT ON COLUMN sy_user_role.grant_user_id IS '부여자 (sy_user.user_id)';
 COMMENT ON COLUMN sy_user_role.grant_date  IS '부여일시';
 COMMENT ON COLUMN sy_user_role.valid_from  IS '적용 시작일';
 COMMENT ON COLUMN sy_user_role.valid_to    IS '적용 종료일';
-COMMENT ON COLUMN sy_user_role.remark      IS '비고';
+COMMENT ON COLUMN sy_user_role.user_role_remark IS '비고';
 COMMENT ON COLUMN sy_user_role.reg_by      IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_user_role.reg_date    IS '등록일';
 COMMENT ON COLUMN sy_user_role.upd_by      IS '수정자 (sy_user.user_id, ec_member.member_id)';

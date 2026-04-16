@@ -16,7 +16,7 @@ CREATE TABLE sy_vendor_brand (
     commission_rate NUMERIC(5,2),                           -- 수수료율 (%)
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    remark          VARCHAR(500),
+    vendor_brand_remark VARCHAR(500),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -37,7 +37,7 @@ COMMENT ON COLUMN sy_vendor_brand.end_date        IS '계약 종료일';
 COMMENT ON COLUMN sy_vendor_brand.commission_rate IS '수수료율 (%)';
 COMMENT ON COLUMN sy_vendor_brand.sort_ord        IS '정렬순서';
 COMMENT ON COLUMN sy_vendor_brand.use_yn          IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_vendor_brand.remark          IS '비고';
+COMMENT ON COLUMN sy_vendor_brand.vendor_brand_remark IS '비고';
 COMMENT ON COLUMN sy_vendor_brand.reg_by          IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_vendor_brand.reg_date        IS '등록일';
 COMMENT ON COLUMN sy_vendor_brand.upd_by          IS '수정자 (sy_user.user_id, ec_member.member_id)';

@@ -42,10 +42,10 @@ COMMENT ON COLUMN ec_coupon.min_order_amt       IS '최소주문금액';
 COMMENT ON COLUMN ec_coupon.max_discount_amt    IS '최대할인한도';
 COMMENT ON COLUMN ec_coupon.issue_limit         IS '총발급한도 (NULL=무제한)';
 COMMENT ON COLUMN ec_coupon.issue_cnt           IS '발급된 개수';
-COMMENT ON COLUMN ec_coupon.desc                IS '쿠폰설명';
+COMMENT ON COLUMN ec_coupon.coupon_desc         IS '쿠폰설명';
 COMMENT ON COLUMN ec_coupon.valid_from          IS '유효기간 시작';
 COMMENT ON COLUMN ec_coupon.valid_to            IS '유효기간 종료';
-COMMENT ON COLUMN ec_coupon.status_cd           IS '상태 (코드: COUPON_STATUS)';
+COMMENT ON COLUMN ec_coupon.coupon_status_cd    IS '상태 (코드: COUPON_STATUS)';
 COMMENT ON COLUMN ec_coupon.use_yn              IS '사용여부 Y/N';
 COMMENT ON COLUMN ec_coupon.target_type_cd      IS '적용대상 (코드: COUPON_TARGET)';
 COMMENT ON COLUMN ec_coupon.target_value        IS '적용대상값';
@@ -57,4 +57,4 @@ COMMENT ON COLUMN ec_coupon.upd_date            IS '수정일';
 
 CREATE INDEX idx_ec_coupon_code ON ec_coupon (coupon_cd);
 CREATE INDEX idx_ec_coupon_type ON ec_coupon (coupon_type_cd);
-CREATE INDEX idx_ec_coupon_status ON ec_coupon (status_cd);
+CREATE INDEX idx_ec_coupon_status ON ec_coupon (coupon_status_cd);

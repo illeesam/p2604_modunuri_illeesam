@@ -6,7 +6,7 @@ CREATE TABLE ec_review_reply (
     writer_type     VARCHAR(20)     DEFAULT 'MEMBER',      -- MEMBER / SELLER / ADMIN
     writer_id       VARCHAR(16),                           -- member_id 또는 user_id
     writer_nm       VARCHAR(50),
-    content         TEXT            NOT NULL,
+    review_reply_content TEXT            NOT NULL,
     reply_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',      -- ACTIVE/HIDDEN/DELETED
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -23,8 +23,8 @@ COMMENT ON COLUMN ec_review_reply.parent_reply_id IS '상위댓글ID (대댓글)
 COMMENT ON COLUMN ec_review_reply.writer_type   IS '작성자유형 (MEMBER/SELLER/ADMIN)';
 COMMENT ON COLUMN ec_review_reply.writer_id     IS '작성자ID';
 COMMENT ON COLUMN ec_review_reply.writer_nm     IS '작성자명';
-COMMENT ON COLUMN ec_review_reply.content       IS '댓글 내용';
-COMMENT ON COLUMN ec_review_reply.status_cd     IS '상태 (ACTIVE/HIDDEN/DELETED)';
+COMMENT ON COLUMN ec_review_reply.review_reply_content IS '댓글 내용';
+COMMENT ON COLUMN ec_review_reply.reply_status_cd IS '상태 (ACTIVE/HIDDEN/DELETED)';
 COMMENT ON COLUMN ec_review_reply.reg_by        IS '등록자';
 COMMENT ON COLUMN ec_review_reply.reg_date      IS '등록일';
 COMMENT ON COLUMN ec_review_reply.upd_by        IS '수정자';

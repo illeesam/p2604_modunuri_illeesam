@@ -14,6 +14,10 @@
 --    예: 환불금액 → refund_amt, 할인금액 → discount_amt, 결재금액 → appr_amt
 --    ⚠️ 단독 amt 금지 (반드시 복합어: discount_amt, refund_amt, cache_amt, balance_amt 등)
 --
+-- 2-1. 재고 관련: "재고" 으로 끝나는 설명 → _stock 서픽스 사용
+--    예: 상품재고 → prod_stock, 옵션재고 → prod_opt_stock
+--    ⚠️ 단독 stock 금지 (반드시 entity_stock 형식)
+--
 -- 3. 수량 관련: "수량" 으로 끝나는 설명 → _qty 서픽스 사용
 --    예: 주문수량 → order_qty, 클레임수량 → claim_qty, 재고수량 → stock_qty
 --    ⚠️ 단독 qty 금지 (반드시 복합어만 사용)
@@ -30,6 +34,15 @@
 -- 6. 설명 컬럼: description 대신 entity_desc 패턴 사용
 --    예: product_desc, category_desc, coupon_desc, event_desc, area_desc (테이블명_desc 형식)
 --    ⚠️ 단독 desc 금지 (반드시 entity_desc 형식)
+--
+-- 6-1. 제목/내용: title/content 단독 금지 → entity_title, entity_content 패턴
+--    예: push_log_title, push_log_content, review_title, review_content, review_reply_content
+--    ⚠️ 단독 title, content 금지
+--
+-- 6-2. 이름/전화/이메일/비밀번호/성별/주소/메모: name, phone, email, password, gender, addr, memo 단독 금지
+--    예: member_nm, member_phone, member_email, member_password, member_gender, member_addr, member_zip_code, chatt_memo
+--    예: user_nm, user_phone, user_email, user_password, user_gender, user_addr
+--    ⚠️ 단독 name, phone, email, password, gender, addr, addr_detail, zip_code, memo 금지
 --
 -- 7. 결재 컬럼: approval 대신 appr 사용
 --    예: appr_status_cd, appr_amt, appr_reason, appr_req_user_id, appr_aprv_user_id
@@ -53,14 +66,47 @@
 -- qty              수량 (⚠️ 단독사용 금지, 복합어만: order_qty, claim_qty, stock_qty 등)
 -- amt              금액 (⚠️ 단독사용 금지, 복합어만: cache_amt, refund_amt, balance_amt, discount_amt 등)
 -- price            가격 (⚠️ 단독사용 금지, 복합어만: list_price, sale_price, unit_price, item_price 등)
+-- stock            재고 (⚠️ 단독사용 금지, 복합어만: prod_stock, prod_opt_stock 등)
+-- title            제목 (⚠️ 단독사용 금지, 복합어만: event_title, notice_title, push_log_title, review_title 등)
+-- content          내용 (⚠️ 단독사용 금지, 복합어만: event_content, push_log_content, review_content, blog_comment_content 등)
+-- name             이름 (⚠️ 단독사용 금지, 복합어만: member_nm, prod_nm 등)
+-- phone            전화 (⚠️ 단독사용 금지, 복합어만: member_phone, user_phone 등)
+-- email            이메일 (⚠️ 단독사용 금지, 복합어만: member_email, user_email 등)
+-- password         비밀번호 (⚠️ 단독사용 금지, 복합어만: member_password, user_password 등)
+-- gender           성별 (⚠️ 단독사용 금지, 복합어만: member_gender, user_gender 등)
+-- addr             주소 (⚠️ 단독사용 금지, 복합어만: member_addr, user_addr 등)
+-- addr_detail      상세주소 (⚠️ 단독사용 금지, 복합어만: member_addr_detail, user_addr_detail 등)
+-- zip_code         우편번호 (⚠️ 단독사용 금지, 복합어만: member_zip_code, user_zip_code 등)
+-- memo             메모 (⚠️ 단독사용 금지, 복합어만: chatt_memo, order_memo 등)
+-- subject          주제/제목 (⚠️ 단독사용 금지, 복합어만: template_subject, contact_subject 등)
+-- answer           답변 (⚠️ 단독사용 금지, 복합어만: contact_answer, faq_answer 등)
+-- remark           비고 (⚠️ 단독사용 금지, 복합어만: user_role_remark 등)
 -- rate             비율 (%)
 -- ord              순서 (정렬)
 -- dt               일자 (DATE형)
 -- date             일시 (TIMESTAMP형)
 -- url              URL 경로
 -- html             HTML 내용
--- ip               IP 주소
--- memo             메모 / 비고
+-- ip               IP 주소 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- device           장치 (User-Agent) (⚠️ 예외: *_log 테이블은 단독 허용)
+-- os               운영체제 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- browser          브라우저 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- country          국가 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- referrer         유입경로 URL (⚠️ 예외: *_log 테이블은 단독 허용)
+-- token            토큰 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- access_token     액세스 토큰 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- refresh_token    리프레시 토큰 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- prev_token       이전 토큰 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- revoke_reason    폐기 사유 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- token_exp        토큰 만료일시 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- api_nm           API명 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- req_body         요청 본문 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- res_body         응답 본문 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- http_status      HTTP 상태코드 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- error_msg        오류 메시지 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- elapsed_ms       응답시간(ms) (⚠️ 예외: *_log 테이블은 단독 허용)
+-- call_date        호출 일시 (⚠️ 예외: *_log 테이블은 단독 허용)
+-- view_date        조회 일시 (⚠️ 예외: *_log 테이블은 단독 허용)
 -- desc             설명 (⚠️ description 대신 사용하되, 반드시 entity_desc 형식: product_desc, category_desc 등)
 -- content          본문 내용
 -- title            제목

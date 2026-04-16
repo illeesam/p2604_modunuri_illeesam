@@ -10,8 +10,8 @@ CREATE TABLE ec_push_log (
     template_id     VARCHAR(16),                           -- sy_template.template_id
     member_id       VARCHAR(16),                           -- 대상 회원 (시스템 발송 시 NULL)
     recv_addr       VARCHAR(200)    NOT NULL,              -- 수신처 (이메일, 전화번호, 토큰 등)
-    title           VARCHAR(200),                          -- 발송 제목
-    content         TEXT,                                  -- 발송 내용
+    push_log_title  VARCHAR(200),                          -- 발송 제목
+    push_log_content TEXT,                                  -- 발송 내용
     result_cd       VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: PUSH_RESULT (SUCCESS/FAIL/PENDING)
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -31,8 +31,8 @@ COMMENT ON COLUMN ec_push_log.channel_cd   IS '발송채널 (코드: PUSH_CHANNE
 COMMENT ON COLUMN ec_push_log.template_id  IS '템플릿ID (sy_template.template_id)';
 COMMENT ON COLUMN ec_push_log.member_id    IS '대상 회원ID';
 COMMENT ON COLUMN ec_push_log.recv_addr    IS '수신처 (이메일/전화번호/디바이스토큰)';
-COMMENT ON COLUMN ec_push_log.title        IS '발송 제목';
-COMMENT ON COLUMN ec_push_log.content      IS '발송 내용';
+COMMENT ON COLUMN ec_push_log.push_log_title IS '발송 제목';
+COMMENT ON COLUMN ec_push_log.push_log_content IS '발송 내용';
 COMMENT ON COLUMN ec_push_log.result_cd    IS '발송결과 (코드: PUSH_RESULT)';
 COMMENT ON COLUMN ec_push_log.fail_reason  IS '실패 사유';
 COMMENT ON COLUMN ec_push_log.send_date    IS '발송일시';

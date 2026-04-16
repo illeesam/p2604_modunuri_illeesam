@@ -12,7 +12,7 @@ CREATE TABLE ec_prod (
     prod_code       VARCHAR(50),
     list_price      BIGINT          DEFAULT 0,
     sale_price      BIGINT          DEFAULT 0,
-    stock           INTEGER         DEFAULT 0,
+    prod_stock      INTEGER         DEFAULT 0,
     prod_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: PRODUCT_STATUS
     thumbnail_url   VARCHAR(500),
     content_html    TEXT,
@@ -39,8 +39,8 @@ COMMENT ON COLUMN ec_prod.prod_nm       IS '상품명';
 COMMENT ON COLUMN ec_prod.prod_code     IS '상품코드(SKU)';
 COMMENT ON COLUMN ec_prod.list_price    IS '정가';
 COMMENT ON COLUMN ec_prod.sale_price    IS '판매가';
-COMMENT ON COLUMN ec_prod.stock         IS '재고수량';
-COMMENT ON COLUMN ec_prod.status_cd     IS '상태 (코드: PRODUCT_STATUS)';
+COMMENT ON COLUMN ec_prod.prod_stock    IS '재고수량';
+COMMENT ON COLUMN ec_prod.prod_status_cd IS '상태 (코드: PRODUCT_STATUS)';
 COMMENT ON COLUMN ec_prod.thumbnail_url IS '썸네일URL';
 COMMENT ON COLUMN ec_prod.content_html  IS '상세설명 (HTML)';
 COMMENT ON COLUMN ec_prod.weight        IS '무게(kg)';

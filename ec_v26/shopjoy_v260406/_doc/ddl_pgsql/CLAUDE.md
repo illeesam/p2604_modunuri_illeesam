@@ -217,9 +217,40 @@ upd_date        TIMESTAMP,                             -- 수정일
 - [ ] **수량**: 모든 수량 컬럼이 `_qty` 서픽스 사용
 - [ ] **설명**: `description` 대신 `entity_desc` 패턴 사용 (테이블명_desc)
 - [ ] **감사필드**: reg_by, reg_date, upd_by, upd_date 포함
-- [ ] **코멘트**: 테이블과 모든 컬럼에 한글 설명 추가
-- [ ] **인덱스**: FK 및 자주 검색되는 컬럼에 인덱스 추가
+- [ ] **코멘트**: 테이블과 모든 컬럼에 한글 설명 추가 (실제 컬럼명과 일치 필수)
+- [ ] **인덱스**: FK 및 자주 검색되는 컬럼에 인덱스 추가 (실제 컬럼명으로 정의)
 - [ ] **UNIQUE**: 필요하면 UNIQUE INDEX로 정의
+- [ ] **코멘트-컬럼 검증**: COMMENT ON COLUMN이 실제 컬럼명과 정확히 일치하는지 확인
+
+### ⚠️ 자주 나는 실수: 코멘트와 인덱스 불일치
+
+**문제**: 컬럼명은 `coupon_status_cd`인데 COMMENT와 INDEX가 `status_cd`를 참조
+
+```sql
+-- 잘못된 예
+CREATE TABLE ec_coupon (
+    ...
+    coupon_status_cd VARCHAR(20) ...  -- ✅ 컬럼명 (복합어)
+    ...
+);
+
+COMMENT ON COLUMN ec_coupon.status_cd ...  -- ❌ 오류: 실제 컬럼명은 coupon_status_cd
+CREATE INDEX idx_ec_coupon_status ON ec_coupon (status_cd);  -- ❌ 오류
+```
+
+**올바른 예**:
+```sql
+CREATE TABLE ec_coupon (
+    ...
+    coupon_status_cd VARCHAR(20) ...
+    ...
+);
+
+COMMENT ON COLUMN ec_coupon.coupon_status_cd ...  -- ✅ 실제 컬럼명 일치
+CREATE INDEX idx_ec_coupon_status ON ec_coupon (coupon_status_cd);  -- ✅ 실제 컬럼명 일치
+```
+
+**검증 방법**: 각 테이블 수정 시 `COMMENT ON COLUMN 테이블명.컬럼명` 의 컬럼명이 CREATE TABLE 정의와 100% 일치하는지 확인
 
 ## 🔗 도메인 접두사
 
@@ -235,14 +266,47 @@ upd_date        TIMESTAMP,                             -- 수정일
 
 ## ⚠️ 자주 하는 실수
 
-❌ **단독 단어 사용**
+❌ **단독 단어 사용 금지**
 ```sql
 qty                -- X (order_qty, stock_qty 사용)
 amt                -- X (discount_amt, refund_amt 사용)
 price              -- X (list_price, sale_price 사용)
+stock              -- X (prod_stock, prod_opt_stock 사용)
+title              -- X (event_title, notice_title, review_title, push_log_title, contact_title, bbs_title 사용)
+content            -- X (event_content, push_log_content, review_content, blog_comment_content, contact_content, template_content 등)
+name               -- X (member_nm, prod_nm, category_nm 사용)
+phone              -- X (member_phone, user_phone 사용)
+email              -- X (member_email, user_email 사용)
+password           -- X (member_password, user_password 사용)
+gender             -- X (member_gender, user_gender 사용)
+addr               -- X (member_addr, user_addr 사용)
+addr_detail        -- X (member_addr_detail, user_addr_detail 사용)
+zip_code           -- X (member_zip_code, user_zip_code 사용)
+memo               -- X (chatt_memo, order_memo 사용)
+subject            -- X (template_subject, contact_subject 사용)
+answer             -- X (contact_answer, faq_answer 사용)
+remark             -- X (user_role_remark, vendor_content_remark, vendor_remark, vendor_user_remark, vendor_brand_remark 사용)
+title              -- X (vendor_content_title, event_title 등 이미 포함)
+subtitle           -- X (vendor_content_subtitle 사용)
+fax                -- X (vendor_fax 사용)
+homepage           -- X (vendor_homepage 사용)
+mobile             -- X (vendor_user_mobile 사용)
 desc               -- X (product_desc, category_desc, coupon_desc 등)
 description        -- X (entity_desc 패턴 사용)
 approval_*         -- X (appr_* 사용)
+```
+⚠️ **예외: *_log, *_hist 테이블은 1단어 컬럼 허용**
+```sql
+-- _log 테이블: 단독 1단어 허용 (ip, device, token, os, browser 등)
+sy_user_login_log.ip, sy_user_login_log.device, sy_user_login_log.os, sy_user_login_log.browser
+sy_user_token_log.token, sy_user_token_log.ip, sy_user_token_log.device
+ec_member_login_log.ip, ec_member_login_log.device, ec_member_login_log.country
+ec_member_token_log.token, ec_member_token_log.ip, ec_member_token_log.device
+sy_api_log.api_nm, sy_api_log.req_body, sy_api_log.res_body, sy_api_log.http_status
+ec_prod_view_log.ip, ec_prod_view_log.device, ec_prod_view_log.referrer
+
+-- _hist 테이블: 원본테이블명_컬럼명 + 기타 1단어 허용
+ec_order_chg_hist: order_id, order_no (원본), chg_type, chg_reason (1단어)
 ```
 
 ❌ **비표준 PK**
@@ -261,6 +325,51 @@ status_cd          -- X (alarm_status_cd, order_status_cd 사용)
 order_qty          -- O
 discount_amt       -- O
 list_price         -- O
+prod_stock         -- O (entity_stock 패턴)
+prod_opt_stock     -- O
+event_title        -- O (entity_title 패턴)
+notice_title       -- O
+push_log_title     -- O
+review_title       -- O
+contact_title      -- O
+bbs_title          -- O
+event_content      -- O (entity_content 패턴)
+push_log_content   -- O
+review_content     -- O
+blog_comment_content -- O
+contact_content    -- O
+template_content   -- O
+member_nm          -- O (entity_nm 패턴)
+member_phone       -- O (entity_phone 패턴)
+member_email       -- O (entity_email 패턴)
+member_password    -- O (entity_password 패턴)
+member_gender      -- O (entity_gender 패턴)
+member_addr        -- O (entity_addr 패턴)
+member_addr_detail -- O
+member_zip_code    -- O
+chatt_memo         -- O (entity_memo 패턴)
+template_subject   -- O (entity_subject 패턴)
+contact_answer     -- O (entity_answer 패턴)
+user_role_remark   -- O (entity_remark 패턴)
+vendor_content_remark -- O
+vendor_remark      -- O
+vendor_user_remark -- O
+vendor_content_title -- O (entity_title 패턴)
+vendor_content_subtitle -- O (entity_subtitle 패턴)
+vendor_phone       -- O (entity_phone 패턴)
+vendor_email       -- O (entity_email 패턴)
+vendor_addr        -- O (entity_addr 패턴)
+vendor_zip_code    -- O
+vendor_fax         -- O
+vendor_homepage    -- O
+vendor_bank_nm     -- O
+vendor_bank_account -- O
+vendor_bank_holder -- O
+vendor_user_phone  -- O
+vendor_user_email  -- O
+vendor_user_mobile -- O
+vendor_user_dept_nm -- O
+vendor_brand_remark -- O (entity_remark 패턴)
 product_desc       -- O (entity_desc 패턴)
 coupon_desc        -- O
 appr_amt           -- O
