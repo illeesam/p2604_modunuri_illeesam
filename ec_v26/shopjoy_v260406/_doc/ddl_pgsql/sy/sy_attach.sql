@@ -8,7 +8,10 @@ CREATE TABLE sy_attach (
     file_ext        VARCHAR(20),
     mime_type       VARCHAR(100),
     stored_nm       VARCHAR(300),                           -- 서버 저장 파일명
-    url             VARCHAR(500),
+    url             VARCHAR(500),                           -- 기본 저장소 접근 URL
+    cdn_host        VARCHAR(100),                           -- CDN 호스트 (예: cdn.example.com)
+    cdn_img_url     VARCHAR(500),                           -- CDN 원본 이미지 URL (없으면 url 사용)
+    cdn_thumb_url   VARCHAR(500),                           -- CDN 썸네일 URL (이미지 파일용)
     sort_ord        INTEGER         DEFAULT 0,
     memo            VARCHAR(300),
     reg_by          VARCHAR(16),
@@ -27,7 +30,10 @@ COMMENT ON COLUMN sy_attach.file_size        IS '파일크기(bytes)';
 COMMENT ON COLUMN sy_attach.file_ext         IS '확장자';
 COMMENT ON COLUMN sy_attach.mime_type        IS 'MIME 타입';
 COMMENT ON COLUMN sy_attach.stored_nm        IS '저장 파일명 (UUID)';
-COMMENT ON COLUMN sy_attach.url              IS '접근 URL';
+COMMENT ON COLUMN sy_attach.url              IS '기본 저장소 접근 URL';
+COMMENT ON COLUMN sy_attach.cdn_host         IS 'CDN 호스트명 (예: cdn.example.com)';
+COMMENT ON COLUMN sy_attach.cdn_img_url      IS 'CDN 원본 이미지 URL (NULL이면 url 사용)';
+COMMENT ON COLUMN sy_attach.cdn_thumb_url    IS 'CDN 썸네일 URL (이미지 파일, 목록/검색용)';
 COMMENT ON COLUMN sy_attach.sort_ord         IS '정렬순서';
 COMMENT ON COLUMN sy_attach.memo             IS '메모';
 COMMENT ON COLUMN sy_attach.reg_by           IS '등록자 (sy_user.user_id)';

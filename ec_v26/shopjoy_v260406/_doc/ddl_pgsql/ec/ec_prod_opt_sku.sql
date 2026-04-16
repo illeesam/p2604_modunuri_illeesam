@@ -30,4 +30,5 @@ COMMENT ON COLUMN ec_prod_opt_sku.reg_date     IS '등록일';
 COMMENT ON COLUMN ec_prod_opt_sku.upd_by       IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_prod_opt_sku.upd_date     IS '수정일';
 
--- 상품 변경 이력
+-- 관련 이력 테이블:
+-- ec_prod_opt_sku_chg_hist: SKU 변경 이력 (가격/재고/상태 변경 추적)

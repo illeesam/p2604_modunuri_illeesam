@@ -1,9 +1,36 @@
-/* ShopJoy Admin - 카테고리관리 (Tree CRUD 그리드) */
+/* ShopJoy Admin - 카테고리관리 (좌측 트리 + 우측 그리드 CRUD) */
 window.EcCategoryMng = {
   name: 'EcCategoryMng',
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+
+    /* ── 좌측 카테고리 트리 ── */
+    const selectedCatId = ref(null);
+    const expanded = reactive(new Set(['']));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { selectedCatId.value = id; };
+
+    const buildCatTree = () => {
+      const map = {};
+      const cats = props.adminData.categories;
+      cats.forEach(c => { map[c.categoryId] = { ...c, _children: [] }; });
+      const roots = [];
+      cats.forEach(c => {
+        if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]);
+        else roots.push(map[c.categoryId]);
+      });
+      const result = [];
+      const traverse = (node, depth) => {
+        result.push({ ...node, _depth: depth });
+        node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
+      };
+      roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(r => traverse(r, 0));
+      return result;
+    };
+    const catTree = computed(() => buildCatTree());
+    const expandAll = () => { catTree.value.forEach(c => expanded.add(c.categoryId)); };
+    const collapseAll = () => { expanded.clear(); };
 
     /* ── 검색 ── */
     const searchKw     = ref('');
@@ -17,8 +44,8 @@ window.EcCategoryMng = {
     const focusedIdx = ref(null);
 
     /* ── 페이징 ── */
-    const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
+    const pager      = reactive({ page: 1, size: 10 });
+    const PAGE_SIZES = [5, 10, 20, 50, 100];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status', 'imgUrl'];
@@ -211,6 +238,7 @@ window.EcCategoryMng = {
     );
 
     return {
+      selectedCatId, expanded, toggleNode, selectNode, expandAll, collapseAll, catTree,
       searchKw, searchDepth, searchStatus, applied,
       siteNm,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -243,103 +271,126 @@ window.EcCategoryMng = {
     </div>
   </div>
 
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>카테고리목록 <span class="list-count">{{ total }}건</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+  <!-- 좌 트리 + 우 그리드 -->
+  <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
+    <!-- 좌측: 카테고리 트리 -->
+    <div class="card" style="padding:12px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📁 카테고리</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      </div>
+      <div style="max-height:70vh;overflow:auto;">
+        <div style="font-size:13px;line-height:1.6;">
+          <div v-for="cat in catTree" :key="cat.categoryId"
+            :style="{paddingLeft:(cat._depth*16)+'px',cursor:'pointer',padding:'6px 8px',borderRadius:'4px',background:selectedCatId===cat.categoryId?'#fce4ec':'transparent',color:selectedCatId===cat.categoryId?'#e8587a':'#333',fontWeight:selectedCatId===cat.categoryId?600:400}"
+            @click="selectNode(cat.categoryId)">
+            <span v-if="cat._children && cat._children.length" style="cursor:pointer;user-select:none;margin-right:4px;" @click.stop="toggleNode(cat.categoryId)">{{ expanded.has(cat.categoryId) ? '▼' : '▶' }}</span>
+            <span v-else style="display:inline-block;width:16px;"></span>
+            <span :style="{fontSize:cat._depth===0?'12px':'11px',fontWeight:cat._depth===0?600:400,color:depthColor(cat._depth)}">{{ depthBullet(cat._depth) }}</span>
+            <span style="margin-left:6px;">{{ cat.categoryNm }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <table class="admin-table crud-grid">
-      <thead>
-        <tr>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
-          <th style="min-width:160px;">카테고리명</th>
-          <th style="min-width:140px;">상위카테고리</th>
-          <th class="col-ord">순서</th>
-          <th style="min-width:180px;">설명</th>
-          <th style="width:70px;">상태</th>
-          <th style="width:80px;">사이트명</th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="gridRows.length===0">
-          <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-for="(row, idx) in pagedRows" :key="row.categoryId"
-          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
-          @click="setFocused(getRealIdx(idx))">
-
-          <td class="col-id-val">{{ row.categoryId > 0 ? row.categoryId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
-          <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
-
-          <!-- 카테고리명 (블릿 트리) -->
-          <td style="padding:3px 6px;">
-            <div style="display:flex;align-items:center;">
-              <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                              fontSize: row._depth===0 ? '7px' : '12px', flexShrink:0,
-                              color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
-              <input class="grid-input" v-model="row.categoryNm" :disabled="row._row_status==='D'"
-                @input="onCellChange(row)" style="flex:1;" />
-            </div>
-          </td>
-
-          <!-- 상위카테고리 -->
-          <td style="padding:3px 8px;">
-            <div style="display:flex;align-items:center;gap:5px;">
-              <span v-if="row.parentId"
-                style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
-              <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
-              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위카테고리 선택"
-                @click.stop="openParentModal(row)">🔍</button>
-            </div>
-          </td>
-
-          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td><input class="grid-input" v-model="row.description" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td>
-            <select class="grid-select" v-model="row.status" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option>활성</option><option>비활성</option>
-            </select>
-          </td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
-          <td class="col-act-cancel-val">
-            <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
-          </td>
-          <td class="col-act-delete-val">
-            <button v-if="['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+    <!-- 우측: 카테고리 그리드 -->
+    <div class="card">
+      <div class="toolbar">
+        <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>카테고리목록 <span class="list-count">{{ total }}건</span></span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+          <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
+          <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
+          <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
+          <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        </div>
       </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-        </select>
+
+      <table class="admin-table crud-grid">
+        <thead>
+          <tr>
+            <th class="col-id">ID</th>
+            <th class="col-status">상태</th>
+            <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+            <th style="min-width:140px;">카테고리명</th>
+            <th style="min-width:120px;">상위카테고리</th>
+            <th class="col-ord">순서</th>
+            <th style="min-width:160px;">설명</th>
+            <th style="width:60px;">상태</th>
+            <th class="col-act-cancel"></th>
+            <th class="col-act-delete"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="gridRows.length===0">
+            <td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          </tr>
+          <tr v-for="(row, idx) in pagedRows" :key="row.categoryId"
+            class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+            @click="setFocused(getRealIdx(idx))">
+
+            <td class="col-id-val">{{ row.categoryId > 0 ? row.categoryId : 'NEW' }}</td>
+            <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
+            <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
+
+            <!-- 카테고리명 (블릿 트리) -->
+            <td style="padding:3px 6px;">
+              <div style="display:flex;align-items:center;">
+                <span :style="{ marginLeft:(row._depth*12)+'px', marginRight:'6px', fontWeight:'700',
+                                fontSize: row._depth===0 ? '7px' : '11px', flexShrink:0,
+                                color: depthColor(row._depth) }">{{ depthBullet(row._depth) }}</span>
+                <input class="grid-input" v-model="row.categoryNm" :disabled="row._row_status==='D'"
+                  @input="onCellChange(row)" style="flex:1;" />
+              </div>
+            </td>
+
+            <!-- 상위카테고리 -->
+            <td style="padding:3px 8px;">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span v-if="row.parentId"
+                  style="flex:1;font-size:11px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                  :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
+                <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
+                <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
+                  style="flex-shrink:0;padding:2px 7px;font-size:11px;line-height:1.4;color:#e8587a;" title="상위카테고리 선택"
+                  @click.stop="openParentModal(row)">🔍</button>
+              </div>
+            </td>
+
+            <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td><input class="grid-input" v-model="row.description" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td>
+              <select class="grid-select" v-model="row.status" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+                <option>활성</option><option>비활성</option>
+              </select>
+            </td>
+            <td class="col-act-cancel-val">
+              <button v-if="['U','I','D'].includes(row._row_status)"
+                class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
+            </td>
+            <td class="col-act-delete-val">
+              <button v-if="['N','U'].includes(row._row_status)"
+                class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <div></div>
+        <div class="pager">
+          <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+          <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+          <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+          <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+          <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        </div>
+        <div class="pager-right">
+          <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
