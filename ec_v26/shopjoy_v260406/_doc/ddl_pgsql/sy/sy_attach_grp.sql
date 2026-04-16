@@ -13,7 +13,7 @@ CREATE TABLE sy_attach_grp (
     storage_path    VARCHAR(300),                           -- 저장 경로 (예: /products/images, /members/documents)
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
-    attach_grp_remarks VARCHAR(500),                           -- 비고/설명
+    attach_grp_remark VARCHAR(500),                            -- 비고/설명
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -32,7 +32,7 @@ COMMENT ON COLUMN sy_attach_grp.max_file_count IS '최대 파일 개수 (기본 
 COMMENT ON COLUMN sy_attach_grp.storage_path   IS '저장 경로 (예: /ec/products/images, /sy/members/docs)';
 COMMENT ON COLUMN sy_attach_grp.use_yn         IS '사용여부 Y/N';
 COMMENT ON COLUMN sy_attach_grp.sort_ord       IS '정렬순서';
-COMMENT ON COLUMN sy_attach_grp.remarks        IS '비고 (용도 설명, 주의사항 등)';
+COMMENT ON COLUMN sy_attach_grp.attach_grp_remark IS '비고 (용도 설명, 주의사항 등)';
 COMMENT ON COLUMN sy_attach_grp.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_attach_grp.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_attach_grp.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';

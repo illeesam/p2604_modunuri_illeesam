@@ -570,8 +570,8 @@ package-lock.json       ← npm 관리용
 - `sy_site.sql`: domain→site_domain, email→site_email, phone→site_phone, zip_code→site_zip_code, address→site_address, business_no→site_business_no, ceo→site_ceo
 - `sy_batch.sql`: last_run→batch_last_run, next_run→batch_next_run, run_count→batch_run_count, run_status→batch_run_status, timeout_sec→batch_timeout_sec, memo→batch_memo
 - `sy_attach.sql`: url→attach_url, memo→attach_memo
-- `sy_attach_grp.sql`: remarks→attach_grp_remarks
-- `sy_alarm.sql`: title→alarm_title, message→alarm_message, send_date→alarm_send_date, send_count→alarm_send_count, fail_count→alarm_fail_count
+- `sy_attach_grp.sql`: remarks→attach_grp_remark
+- `sy_alarm.sql`: title→alarm_title, message→alarm_msg, send_date→alarm_send_date, send_count→alarm_send_count, fail_count→alarm_fail_count
 - `sy_code.sql`: remark→code_remark
 - `sy_brand.sql`: remark→brand_remark
 - `sy_dept.sql`: remark→dept_remark
