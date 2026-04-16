@@ -7,7 +7,7 @@ CREATE TABLE ec_disp_widget_lib (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     widget_code     VARCHAR(50)     NOT NULL,
     widget_nm       VARCHAR(100)    NOT NULL,
-    widget_type     VARCHAR(30)     NOT NULL,               -- BANNER/PRODUCT/CATEGORY/HTML/SLIDER
+    widget_type_cd  VARCHAR(30)     NOT NULL,               -- 코드: WIDGET_TYPE (BANNER/PRODUCT/CATEGORY/HTML/SLIDER)
     widget_lib_desc TEXT,
     disp_path       VARCHAR(500),                            -- 점(.) 구분 표시경로(다중: 콤마 구분)
     thumbnail_url   VARCHAR(500),
@@ -29,7 +29,7 @@ COMMENT ON COLUMN ec_disp_widget_lib.widget_lib_id  IS '위젯라이브러리ID 
 COMMENT ON COLUMN ec_disp_widget_lib.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_disp_widget_lib.widget_code    IS '위젯코드';
 COMMENT ON COLUMN ec_disp_widget_lib.widget_nm      IS '위젯명';
-COMMENT ON COLUMN ec_disp_widget_lib.widget_type    IS '위젯유형 (BANNER/PRODUCT/CATEGORY/HTML/SLIDER)';
+COMMENT ON COLUMN ec_disp_widget_lib.widget_type_cd IS '위젯유형 (코드: WIDGET_TYPE — BANNER/PRODUCT/CATEGORY/HTML/SLIDER)';
 COMMENT ON COLUMN ec_disp_widget_lib.widget_lib_desc IS '위젯라이브러리설명';
 COMMENT ON COLUMN ec_disp_widget_lib.thumbnail_url  IS '미리보기 썸네일URL';
 COMMENT ON COLUMN ec_disp_widget_lib.template_html  IS '위젯 HTML 템플릿';
