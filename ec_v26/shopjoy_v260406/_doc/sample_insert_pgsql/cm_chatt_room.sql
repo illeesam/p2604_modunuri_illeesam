@@ -3,14 +3,14 @@
 -- ============================================================
 
 -- 채팅방
-INSERT INTO od_chatt (chatt_id, member_id, member_name, subject, last_msg, last_msg_date, status, unread_count, reg_date) VALUES
+INSERT INTO cm_chatt_room (chatt_id, member_id, member_name, subject, last_msg, last_msg_date, status, unread_count, reg_date) VALUES
 ('2604110002600001', '2604110001000001', '김민준', '반품 관련 문의',    '네, 확인하겠습니다.',        '2026-04-08 14:30:00', 'OPEN',   0, NOW()),
 ('2604110002600002', '2604110001000003', '박지훈', '교환 상품 사이즈',  '교환 진행해 드리겠습니다.',  '2026-04-07 10:00:00', 'OPEN',   2, NOW()),
 ('2604110002600003', '2604110001000008', '오지은', '반품 접수 확인',    '접수되었습니다.',            '2026-04-09 20:30:00', 'OPEN',   1, NOW()),
 ('2604110002600004', '2604110001000004', '최수아', '배송 언제 되나요?', '감사합니다.',                '2026-04-07 16:00:00', 'CLOSED', 0, NOW());
 
 -- 채팅 메시지
-INSERT INTO od_chatt_msg (msg_id, chatt_id, sender, msg_text, ref_type, ref_id, send_date, read_yn) VALUES
+INSERT INTO cm_chatt_room_msg (msg_id, chatt_id, sender, msg_text, ref_type, ref_id, send_date, read_yn) VALUES
 ('2604110002610001', '2604110002600001', 'MEMBER', '반품 신청했는데 언제 처리되나요?',        'CLAIM', '2604110002300001', '2026-04-08 14:00:00', 'Y'),
 ('2604110002610002', '2604110002600001', 'ADMIN',  '네, 확인하겠습니다.',                     NULL,    NULL,               '2026-04-08 14:30:00', 'Y'),
 ('2604110002610003', '2604110002600002', 'MEMBER', '배송받은 신발 사이즈가 달라요.',           'ORDER', '2604110002000002', '2026-04-06 18:00:00', 'Y'),

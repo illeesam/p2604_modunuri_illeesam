@@ -10,7 +10,7 @@
 --    biz_code='ec_prop'     → 프로퍼티 분류 트리
 --    biz_code='ec_disp_*'   → 전시영역/패널 분류 트리
 -- ============================================================
-CREATE TABLE sy_path (
+CREATE TABLE cm_path (
     path_id         BIGSERIAL       NOT NULL,
     biz_cd        VARCHAR(50)     NOT NULL,               -- 업무코드 (테이블명)
     parent_path_id  BIGINT,                                 -- 부모 경로ID (sy_path., 루트는 NULL)
@@ -25,18 +25,18 @@ CREATE TABLE sy_path (
     PRIMARY KEY (path_id)
 );
 
-COMMENT ON TABLE sy_path IS '경로 (업무별 트리)';
-COMMENT ON COLUMN sy_path.path_id        IS '경로ID (PK, auto)';
-COMMENT ON COLUMN sy_path.biz_cd       IS '업무코드 (참조 테이블명, 예: sy_brand / sy_code_grp / ec_prop)';
-COMMENT ON COLUMN sy_path.parent_path_id IS '부모 경로ID (sy_path., 루트는 NULL)';
-COMMENT ON COLUMN sy_path.path_label     IS '경로 라벨 (한글 표시명)';
-COMMENT ON COLUMN sy_path.sort_ord       IS '동일 부모 내 정렬순서';
-COMMENT ON COLUMN sy_path.use_yn         IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_path.path_remark    IS '비고';
-COMMENT ON COLUMN sy_path.reg_by         IS '등록자 (sy_user.user_id, mb_mem.member_id)';
-COMMENT ON COLUMN sy_path.reg_date       IS '등록일';
-COMMENT ON COLUMN sy_path.upd_by         IS '수정자 (sy_user.user_id, mb_mem.member_id)';
-COMMENT ON COLUMN sy_path.upd_date       IS '수정일';
+COMMENT ON TABLE cm_path IS '경로 (업무별 트리)';
+COMMENT ON COLUMN cm_path.path_id        IS '경로ID (PK, auto)';
+COMMENT ON COLUMN cm_path.path_idbiz_cd       IS '업무코드 (참조 테이블명, 예: sy_brand / sy_code_grp / ec_prop)';
+COMMENT ON COLUMN cm_path.path_idparent_path_id IS '부모 경로ID (sy_path., 루트는 NULL)';
+COMMENT ON COLUMN cm_path.path_idpath_label     IS '경로 라벨 (한글 표시명)';
+COMMENT ON COLUMN cm_path.path_idsort_ord       IS '동일 부모 내 정렬순서';
+COMMENT ON COLUMN cm_path.path_iduse_yn         IS '사용여부 Y/N';
+COMMENT ON COLUMN cm_path.path_idpath_remark    IS '비고';
+COMMENT ON COLUMN cm_path.path_idreg_by         IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cm_path.path_idreg_date       IS '등록일';
+COMMENT ON COLUMN cm_path.path_idupd_by         IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cm_path.path_idupd_date       IS '수정일';
 
-CREATE INDEX idx_sy_path_biz    ON sy_path (biz_code);
-CREATE INDEX idx_sy_path_parent ON sy_path (parent_path_id);
+CREATE INDEX idx_sy_path_biz ON cm_path (biz_code);
+CREATE INDEX idx_sy_path_parent ON cm_path (parent_path_id);
