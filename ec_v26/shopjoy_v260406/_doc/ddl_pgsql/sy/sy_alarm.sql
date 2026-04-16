@@ -8,7 +8,7 @@ CREATE TABLE sy_alarm (
     alarm_title      VARCHAR(200)    NOT NULL,
     alarm_type_cd    VARCHAR(30),                            -- 코드: ALARM_TYPE
     channel_cd       VARCHAR(20),                            -- 코드: ALARM_CHANNEL (EMAIL/SMS/PUSH/KAKAO)
-    target_type      VARCHAR(20),                            -- ALL/GRADE/MEMBER
+    target_type_cd   VARCHAR(20),                            -- 코드: ALARM_TARGET_TYPE (ALL/GRADE/MEMBER)
     target_id        VARCHAR(16),                            -- 특정 회원 or 등급코드
     template_id      VARCHAR(16),
     alarm_msg        TEXT,
@@ -30,7 +30,7 @@ COMMENT ON COLUMN sy_alarm.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_alarm.alarm_title    IS '알림제목';
 COMMENT ON COLUMN sy_alarm.alarm_type_cd  IS '알림유형 (코드: ALARM_TYPE)';
 COMMENT ON COLUMN sy_alarm.channel_cd     IS '발송채널 (코드: ALARM_CHANNEL)';
-COMMENT ON COLUMN sy_alarm.target_type    IS '대상유형 (ALL/GRADE/MEMBER)';
+COMMENT ON COLUMN sy_alarm.target_type_cd IS '대상유형 (코드: ALARM_TARGET_TYPE — ALL/GRADE/MEMBER)';
 COMMENT ON COLUMN sy_alarm.target_id      IS '대상ID (회원ID 또는 등급코드)';
 COMMENT ON COLUMN sy_alarm.template_id    IS '템플릿ID';
 COMMENT ON COLUMN sy_alarm.alarm_msg      IS '발송내용';
