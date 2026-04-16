@@ -9,7 +9,7 @@ CREATE TABLE sy_menu (
     menu_nm         VARCHAR(100)    NOT NULL,
     parent_menu_id       VARCHAR(16),
     menu_url        VARCHAR(200),
-    menu_type       VARCHAR(20)     DEFAULT 'PAGE',         -- PAGE/FOLDER/LINK
+    menu_type_cd    VARCHAR(20)     DEFAULT 'PAGE',         -- 코드: MENU_TYPE (PAGE/FOLDER/LINK)
     icon_class      VARCHAR(100),
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
@@ -29,7 +29,7 @@ COMMENT ON COLUMN sy_menu.menu_code      IS '메뉴코드';
 COMMENT ON COLUMN sy_menu.menu_nm        IS '메뉴명';
 COMMENT ON COLUMN sy_menu.parent_menu_id      IS '상위메뉴ID';
 COMMENT ON COLUMN sy_menu.menu_url       IS '메뉴URL';
-COMMENT ON COLUMN sy_menu.menu_type      IS '메뉴유형 (PAGE/FOLDER/LINK)';
+COMMENT ON COLUMN sy_menu.menu_type_cd   IS '메뉴유형 (코드: MENU_TYPE — PAGE/FOLDER/LINK)';
 COMMENT ON COLUMN sy_menu.icon_class     IS '아이콘 CSS 클래스';
 COMMENT ON COLUMN sy_menu.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN sy_menu.use_yn         IS '사용여부 Y/N';
