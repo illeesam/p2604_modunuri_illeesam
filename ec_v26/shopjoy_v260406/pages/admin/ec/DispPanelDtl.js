@@ -13,6 +13,7 @@ window.EcDispPanelDtl = {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
+    const showComponentTooltip = ref(false);
     const previewMode = ref('default');
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
@@ -642,7 +643,7 @@ window.EcDispPanelDtl = {
       libPickOpen, libPickMode, openLibPick, onLibPicked,
       rowCopyOpen, onRowCopy,
       visibilityOptions, hasVisibility, toggleVisibility,
-      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
+      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
       MAX_WIDGETS, addWidget, removeWidget,
       activeRowIdx, activeRow, moveRow,
@@ -1175,7 +1176,13 @@ window.EcDispPanelDtl = {
       }">
         <!-- 위젯미리보기 타이틀 -->
         <div style="padding:10px 14px;border-bottom:1px solid #e0e0e0;background:#f0f2f7;flex-shrink:0;display:flex;align-items:center;gap:6px;">
-          <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;">👁 {{ tab==='info' ? '패널' : '전시항목' }}미리보기</span>
+          <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;cursor:help;position:relative;"
+            @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
+            👁 {{ tab==='info' ? '패널' : '전시항목' }}미리보기
+            <span style="position:absolute;bottom:-28px;left:0;background:#333;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;" :style="{opacity: showComponentTooltip ? 1 : 0}">
+              {{ tab==='info' ? '&lt;disp-x03-panel /&gt;' : '&lt;disp-x04-widget /&gt;' }}
+            </span>
+          </span>
           <span style="font-size:10px;color:#aaa;margin-left:auto;">
             {{ tab==='info' ? '전체 전시항목' : (TAB_LABELS.find(t=>t.key===tab)||{}).label }}
           </span>

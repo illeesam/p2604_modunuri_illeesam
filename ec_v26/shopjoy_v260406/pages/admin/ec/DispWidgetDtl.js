@@ -293,6 +293,7 @@ window.EcDispWidgetDtl = {
 
     /* ── 디바이스 모드 + 스플리터 ── */
     const previewMode = ref('default');
+    const showComponentTooltip = ref(false);
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 420  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -472,7 +473,7 @@ window.EcDispWidgetDtl = {
       isPopup, isFile, isFileList, isCoupon, isHtmlEditor, isEvent, isCache, isEmbed,
       displayRows, fileListItems, addFileItem, removeFileItem, updateFileItem,
       previewWidget, sampleJson, jsonCopied, copyJson, save, remove,
-      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
+      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       htmlContentEl, htmlSourceMode, toggleHtmlSource,
     };
   },
@@ -691,7 +692,13 @@ window.EcDispWidgetDtl = {
     </div>
     <!-- 오른쪽: 위젯미리보기 -->
     <div :style="{ width: previewPaneWidth + 'px', flexShrink:0, padding:'20px', background:'#f8f8f8', overflowX:'auto', transition:'width .2s' }">
-      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;">👁 위젯미리보기</div>
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;cursor:help;position:relative;"
+        @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
+        👁 위젯미리보기
+        <span style="position:absolute;bottom:-28px;left:0;background:#333;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;" :style="{opacity: showComponentTooltip ? 1 : 0}">
+          &lt;disp-x04-widget /&gt;
+        </span>
+      </div>
       <!-- 디바이스 모드 버튼 -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
         <button v-for="m in PREVIEW_MODES" :key="m.value"

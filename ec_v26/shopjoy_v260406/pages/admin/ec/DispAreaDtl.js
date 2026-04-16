@@ -138,6 +138,7 @@ window.EcDispAreaDtl = {
     const activeTab = ref('base');          /* 'base' | 'panel_<dispId>' */
     const expanded  = ref(false);           /* 우측 미리보기 펼치기 */
     const previewMode = ref('default');     /* 'default' | 'pc' | 'tablet' | 'mobile' */
+    const showComponentTooltip = ref(false);
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -276,7 +277,7 @@ window.EcDispAreaDtl = {
       save, doCancel, relatedPanels,
       pickOpen, pickKw, pickSel, availablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
       activeTab, selectTab, activePanel, expanded,
-      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
+      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       openPanelPreview, openWidgetPreview, addPanelShortcut, wLabel,
       visibilityOptions, hasPanelVisibility, togglePanelVisibility,
     };
@@ -531,7 +532,13 @@ window.EcDispAreaDtl = {
       overflowX:'auto',
     }">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-size:12px;font-weight:700;color:#555;">👁 {{ activeTab==='base' ? '영역' : '패널' }} 미리보기</span>
+        <span style="font-size:12px;font-weight:700;color:#555;cursor:help;position:relative;"
+          @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
+          👁 {{ activeTab==='base' ? '영역' : '패널' }} 미리보기
+          <span style="position:absolute;bottom:-28px;left:0;background:#333;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;" :style="{opacity: showComponentTooltip ? 1 : 0}">
+            {{ activeTab==='base' ? '&lt;disp-x02-area /&gt;' : '&lt;disp-x03-panel /&gt;' }}
+          </span>
+        </span>
         <span style="font-size:10px;color:#aaa;">{{ relatedPanels.length }}개 패널</span>
       </div>
       <!-- 디바이스 모드 버튼 -->

@@ -105,10 +105,36 @@ window.EcDispPanelMng = {
       /* 트리 선택 필터 */
       if (selectedTreeKey.value) {
         const k = selectedTreeKey.value;
-        if (k.startsWith('grp_')) {
-          if (d.area !== k.slice(4)) return false;
+        if (k.startsWith('panel_')) {
+          if (d.dispId !== k.slice(6)) return false;
         } else {
-          if (!(d.area || '').startsWith(k + '_')) return false;
+          // top-level prefix or sub-group
+          const codes = props.dispDataset.codes || [];
+          const areaNm = (code) => {
+            const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
+            return c ? c.codeLabel : code;
+          };
+
+          if (k.includes('_')) {
+            // sub-group: "HOME_홈 배너" → find matching area
+            const [topPrefix, ...labelParts] = k.split('_');
+            const targetLabel = labelParts.join('_');
+            const area = d.area || '';
+            if (!area.startsWith(topPrefix + '_')) return false;
+            if (areaNm(area) !== targetLabel) return false;
+          } else {
+            // top-level: just prefix like "HOME" or "FOOTER"
+            const area = d.area || '';
+            if (area === k) {
+              // Exact match for simple prefixes like "FOOTER"
+              return true;
+            } else if (area.startsWith(k + '_')) {
+              // Prefix match for "HOME_*" when selecting "HOME"
+              return true;
+            } else {
+              return false;
+            }
+          }
         }
       }
       return true;
@@ -307,25 +333,42 @@ window.EcDispPanelMng = {
     const toggleTree = (k) => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
     const isTreeOpen = (k) => treeOpen.value.has(k);
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
-    const expandAll  = () => { areas.value.forEach(a => treeOpen.value.add('grp_'+a.codeValue)); treeOpen.value.add('__root__'); };
+    const expandAll  = () => {
+      treeOpen.value.add('__root__');
+      panelTree.value.forEach(n => {
+        treeOpen.value.add('grp_'+n.label);
+        n.children.forEach(c => treeOpen.value.add(n.label+'_'+c.label));
+      });
+    };
     const collapseAll= () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
 
     /* 패널 목록 (영역별 그룹) */
     const panelTree = computed(() => {
-      const group = {};
+      const codes = props.dispDataset.codes || [];
+      const areaNm = (code) => {
+        const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
+        return c ? c.codeLabel : code;
+      };
+      const map = {};
       (props.dispDataset.displays || []).forEach(p => {
-        const area = p.area || '(미분류)';
-        if (!group[area]) group[area] = [];
-        group[area].push(p);
+        const area = p.area || '(미등록)';
+        const top = area.split('_')[0] || '(기타)';
+        const subKey = areaNm(area);
+        if (!map[top]) map[top] = {};
+        if (!map[top][subKey]) map[top][subKey] = [];
+        map[top][subKey].push(p);
       });
-      return Object.keys(group).sort().map(area => ({
-        label: area,
-        count: group[area].length,
-        areaLabel: areaLabel(area),
-        children: group[area].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => ({
-          label: p.name,
-          panelId: p.dispId,
-          area: p.area,
+      return Object.keys(map).sort().map(top => ({
+        label: top,
+        children: Object.keys(map[top]).sort().map(sub => ({
+          label: sub,
+          count: map[top][sub].length,
+          panels: map[top][sub].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => ({
+            label: p.name,
+            panelId: p.dispId,
+            area: p.area,
+            dispId: p.dispId,
+          })),
         })),
       }));
     });
@@ -421,27 +464,45 @@ window.EcDispPanelMng = {
           <span @click.stop="toggleTree('grp_'+node.label)" style="cursor:pointer;font-size:9px;transition:transform .2s;display:inline-block;width:12px;flex-shrink:0;"
             :style="isTreeOpen('grp_'+node.label) ? 'transform:rotate(90deg);' : ''">▶</span>
           <span @click.stop="selectTree(node.label)" style="cursor:pointer;flex:1;min-width:0;">{{ node.label }}</span>
-          <span @click.stop="selectTree(node.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+          <span @click.stop="selectTree(node.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.children.reduce((acc,c)=>acc+c.count,0) }}</span>
         </div>
-        <!-- 영역별 패널 아이템들 -->
+        <!-- 서브그룹 -->
         <div v-if="isTreeOpen('grp_'+node.label)" style="padding-left:12px;border-left:1px solid #e0e0e0;margin-left:6px;margin-bottom:4px;">
-          <div v-for="sub in node.children" :key="sub.panelId"
-            @click.stop="selectTree('panel_'+sub.panelId)"
-            :style="{
-              display:'flex',alignItems:'center',justifyContent:'space-between',
-              padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
-              background: selectedTreeKey===('panel_'+sub.panelId) ? '#fff3e0' : 'transparent',
-              color: selectedTreeKey===('panel_'+sub.panelId) ? '#e65100' : '#555',
-              fontWeight: selectedTreeKey===('panel_'+sub.panelId) ? 600 : 400,
-            }">
-            <span style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow:hidden;">
-              <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;font-weight:600;white-space:nowrap;flex-shrink:0;">(패널)</span>
-              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ sub.label }}</span>
-            </span>
-            <span style="font-size:9px;background:#e8f0fe;color:#0277bd;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;margin-left:4px;white-space:nowrap;">
-              {{ (dispDataset.displays||[]).find(d => d.dispId===sub.panelId)?.rows?.length||0 }}
-            </span>
-          </div>
+          <template v-for="sub in node.children" :key="node.label+'_'+sub.label">
+            <div @click="selectTree(node.label+'_'+sub.label)"
+              :style="{
+                display:'flex',alignItems:'center',justifyContent:'space-between',
+                padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
+                background: selectedTreeKey===(node.label+'_'+sub.label) ? '#f9fafb' : 'transparent',
+                color: selectedTreeKey===(node.label+'_'+sub.label) ? '#1565c0' : '#555',
+                fontWeight: selectedTreeKey===(node.label+'_'+sub.label) ? 600 : 400,
+              }">
+              <span @click.stop="toggleTree(node.label+'_'+sub.label)" style="cursor:pointer;font-size:9px;transition:transform .2s;display:inline-block;width:12px;flex-shrink:0;"
+                :style="isTreeOpen(node.label+'_'+sub.label) ? 'transform:rotate(90deg);' : ''">▶</span>
+              <span @click.stop="selectTree(node.label+'_'+sub.label)" style="cursor:pointer;flex:1;min-width:0;">{{ sub.label }}</span>
+              <span @click.stop="selectTree(node.label+'_'+sub.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ sub.count }}</span>
+            </div>
+            <!-- 패널 아이템들 -->
+            <div v-if="isTreeOpen(node.label+'_'+sub.label)" style="padding-left:12px;border-left:1px solid #e0e0e0;margin-left:6px;margin-bottom:4px;">
+              <div v-for="panel in sub.panels" :key="panel.panelId"
+                @click.stop="selectTree('panel_'+panel.panelId)"
+                :style="{
+                  display:'flex',alignItems:'center',justifyContent:'space-between',
+                  padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
+                  background: selectedTreeKey===('panel_'+panel.panelId) ? '#fff3e0' : 'transparent',
+                  color: selectedTreeKey===('panel_'+panel.panelId) ? '#e65100' : '#555',
+                  fontWeight: selectedTreeKey===('panel_'+panel.panelId) ? 600 : 400,
+                }">
+                <span style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow:hidden;">
+                  <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;font-weight:600;white-space:nowrap;flex-shrink:0;">(패널)</span>
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ panel.label }}</span>
+                </span>
+                <span style="font-size:9px;background:#e8f0fe;color:#0277bd;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;margin-left:4px;white-space:nowrap;">
+                  {{ (dispDataset.displays||[]).find(d => d.dispId===panel.panelId)?.rows?.length||0 }}
+                </span>
+              </div>
+            </div>
+          </template>
         </div>
       </template>
     </div>

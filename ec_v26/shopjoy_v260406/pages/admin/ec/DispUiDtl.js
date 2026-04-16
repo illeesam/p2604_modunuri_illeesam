@@ -80,6 +80,7 @@ window.EcDispUiDtl = {
 
     /* 디바이스 모드 + 스플리터 */
     const previewMode = ref('default');
+    const showComponentTooltip = ref(false);
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -245,7 +246,7 @@ window.EcDispUiDtl = {
       form, errors, isNew, UI_TYPE_OPTS,
       save, doCancel, relatedAreas, panelsOfArea,
       activeTab, selectTab, activeArea, expanded, moveArea,
-      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
+      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       pickOpen, pickKw, pickSel, availableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
       openUiPreview, openAreaPreview,
       visibilityOptions, hasAreaVisibility, toggleAreaVisibility,
@@ -433,7 +434,13 @@ window.EcDispUiDtl = {
       transition:'width .2s', overflowX:'auto',
     }">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-size:12px;font-weight:700;color:#555;">👁 {{ activeTab==='base' ? 'UI' : '영역' }} 미리보기</span>
+        <span style="font-size:12px;font-weight:700;color:#555;cursor:help;position:relative;"
+          @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
+          👁 {{ activeTab==='base' ? 'UI' : '영역' }} 미리보기
+          <span style="position:absolute;bottom:-28px;left:0;background:#333;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;" :style="{opacity: showComponentTooltip ? 1 : 0}">
+            {{ activeTab==='base' ? '&lt;disp-x01-ui /&gt;' : '&lt;disp-x02-area /&gt;' }}
+          </span>
+        </span>
         <span style="font-size:10px;color:#aaa;">{{ relatedAreas.length }}개 영역</span>
       </div>
       <!-- 디바이스 모드 -->
