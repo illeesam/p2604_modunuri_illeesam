@@ -249,6 +249,27 @@ window.EcDispAreaDtl = {
       props.navigate('ecDispPanelDtl', { editId: null, preset: { area: form.codeValue } });
     };
 
+    /* ── 공개 대상 (Area-Panel 매핑) ── */
+    const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
+    const hasPanelVisibility = (code) => {
+      if (!activePanel.value) return false;
+      if (!activePanel.value.visibilityTargets) activePanel.value.visibilityTargets = '^PUBLIC^';
+      return window.visibilityUtil.has(activePanel.value.visibilityTargets, code);
+    };
+    const togglePanelVisibility = (code) => {
+      if (!activePanel.value) return;
+      if (!activePanel.value.visibilityTargets) activePanel.value.visibilityTargets = '^PUBLIC^';
+      const list = window.visibilityUtil.parse(activePanel.value.visibilityTargets);
+      const i = list.indexOf(code);
+      if (i >= 0) list.splice(i, 1); else list.push(code);
+      if (code === 'PUBLIC' && i < 0) {
+        activePanel.value.visibilityTargets = '^PUBLIC^';
+        return;
+      }
+      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      activePanel.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
+    };
+
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, isNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
@@ -257,6 +278,7 @@ window.EcDispAreaDtl = {
       activeTab, selectTab, activePanel, expanded,
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
       openPanelPreview, openWidgetPreview, addPanelShortcut, wLabel,
+      visibilityOptions, hasPanelVisibility, togglePanelVisibility,
     };
   },
   template: /* html */`
@@ -453,6 +475,29 @@ window.EcDispAreaDtl = {
             </template>
             <span v-else style="color:#ccc;">없음</span>
           </span>
+        </div>
+        <!-- 공개 대상 -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            🔒 공개 대상 (하나라도 해당하면 노출)
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+              :style="{
+                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
+                border:'1px solid '+(hasPanelVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+                background:hasPanelVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+                color:hasPanelVisibility(opt.codeValue)?'#1565c0':'#666',
+                fontSize:'12px',fontWeight:hasPanelVisibility(opt.codeValue)?700:500,
+                cursor:'pointer',
+              }">
+              <input type="checkbox" :checked="hasPanelVisibility(opt.codeValue)"
+                @change="togglePanelVisibility(opt.codeValue)"
+                style="accent-color:#1565c0;" />
+              {{ opt.codeLabel }}
+            </label>
+          </div>
+          <div v-if="!activePanel.visibilityTargets" style="font-size:11px;color:#d32f2f;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
         </div>
         <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">▸ 위젯 구성 ({{ (activePanel.rows||[]).length }}개)</div>
         <div v-if="(activePanel.rows||[]).length" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">

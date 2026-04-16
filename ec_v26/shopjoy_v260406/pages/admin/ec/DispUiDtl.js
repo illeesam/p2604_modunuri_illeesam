@@ -169,6 +169,27 @@ window.EcDispUiDtl = {
       });
     };
 
+    /* ── 공개 대상 (UI-Area 매핑) ── */
+    const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
+    const hasAreaVisibility = (code) => {
+      if (!activeArea.value) return false;
+      if (!activeArea.value.visibilityTargets) activeArea.value.visibilityTargets = '^PUBLIC^';
+      return window.visibilityUtil.has(activeArea.value.visibilityTargets, code);
+    };
+    const toggleAreaVisibility = (code) => {
+      if (!activeArea.value) return;
+      if (!activeArea.value.visibilityTargets) activeArea.value.visibilityTargets = '^PUBLIC^';
+      const list = window.visibilityUtil.parse(activeArea.value.visibilityTargets);
+      const i = list.indexOf(code);
+      if (i >= 0) list.splice(i, 1); else list.push(code);
+      if (code === 'PUBLIC' && i < 0) {
+        activeArea.value.visibilityTargets = '^PUBLIC^';
+        return;
+      }
+      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      activeArea.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
+    };
+
     /* 미리보기 액션 */
     const openUiPreview = () => {
       if (!form.codeValue) return props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error');
@@ -227,6 +248,7 @@ window.EcDispUiDtl = {
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag,
       pickOpen, pickKw, pickSel, availableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
       openUiPreview, openAreaPreview,
+      visibilityOptions, hasAreaVisibility, toggleAreaVisibility,
     };
   },
   template: /* html */`
@@ -370,6 +392,29 @@ window.EcDispUiDtl = {
           <span><b style="color:#888;">순서:</b> {{ activeArea.sortOrd ?? '-' }}</span>
           <span><b style="color:#888;">포함 패널:</b> {{ panelsOfArea(activeArea.codeValue).length }}개</span>
           <span v-if="activeArea.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ activeArea.remark }}</span>
+        </div>
+        <!-- 공개 대상 -->
+        <div style="margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            🔒 공개 대상 (하나라도 해당하면 노출)
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+              :style="{
+                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
+                border:'1px solid '+(hasAreaVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+                background:hasAreaVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+                color:hasAreaVisibility(opt.codeValue)?'#1565c0':'#666',
+                fontSize:'12px',fontWeight:hasAreaVisibility(opt.codeValue)?700:500,
+                cursor:'pointer',
+              }">
+              <input type="checkbox" :checked="hasAreaVisibility(opt.codeValue)"
+                @change="toggleAreaVisibility(opt.codeValue)"
+                style="accent-color:#1565c0;" />
+              {{ opt.codeLabel }}
+            </label>
+          </div>
+          <div v-if="!activeArea.visibilityTargets" style="font-size:11px;color:#d32f2f;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
         </div>
       </div>
     </div>

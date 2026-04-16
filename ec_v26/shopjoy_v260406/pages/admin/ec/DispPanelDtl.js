@@ -66,8 +66,6 @@ window.EcDispPanelDtl = {
       dispEndDate:   DEFAULT_END_DATE,   dispEndTime:   '23:59',
       /* 패널 레벨 노출조건 (레거시 유지) */
       condition: '항상 표시', authRequired: false, authGrade: '',
-      /* 신규: 공개 대상 (기본 전체공개) */
-      visibilityTargets: '^PUBLIC^',
       displayPath: '', pathId: null,
     });
 
@@ -105,6 +103,8 @@ window.EcDispPanelDtl = {
       eventId: '',
       cacheDesc: '', cacheAmount: 0,
       embedCode: '',
+      /* 공개대상 (기본 전체공개) */
+      visibilityTargets: '^PUBLIC^',
       ...overrides,
     });
 
@@ -424,8 +424,6 @@ window.EcDispPanelDtl = {
           form.condition     = d.condition     || '항상 표시';
           form.authRequired  = d.authRequired  || false;
           form.authGrade     = d.authGrade     || '';
-          form.visibilityTargets = d.visibilityTargets
-            || window.visibilityUtil.fromLegacy(d.condition, d.authRequired, d.authGrade);
           form.layoutType    = d.layoutType    || 'grid';
           form.gridCols      = d.gridCols      || 1;
           form.titleYn       = d.titleYn       || 'N';
@@ -585,19 +583,23 @@ window.EcDispPanelDtl = {
       }
     };
 
-    /* ── 공개 대상 멀티체크 토글 ── */
+    /* ── 공개 대상 멀티체크 토글 (전시항목별) ── */
     const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
-    const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
+    const hasVisibility = (code) => {
+      if (!activeRow.value) return false;
+      return window.visibilityUtil.has(activeRow.value.visibilityTargets, code);
+    };
     const toggleVisibility = (code) => {
-      const list = window.visibilityUtil.parse(form.visibilityTargets);
+      if (!activeRow.value) return;
+      const list = window.visibilityUtil.parse(activeRow.value.visibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
       if (code === 'PUBLIC' && i < 0) {
-        form.visibilityTargets = '^PUBLIC^';
+        activeRow.value.visibilityTargets = '^PUBLIC^';
         return;
       }
       const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
-      form.visibilityTargets = window.visibilityUtil.serialize(filtered);
+      activeRow.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
     /* ── 전시항목 복사 팝업 ── */
@@ -850,29 +852,6 @@ window.EcDispPanelDtl = {
             <span>{{ form.dispEndDate || '?' }} {{ form.dispEndTime }}</span>
           </div>
 
-          <!-- 공개 대상 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            🔒 공개 대상 (하나라도 해당하면 노출)
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
-              :style="{
-                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
-                border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
-                background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
-                color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
-                fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
-                cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
-              }">
-              <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
-                :disabled="viewMode"
-                @change="toggleVisibility(opt.codeValue)"
-                style="accent-color:#1565c0;" />
-              {{ opt.codeLabel }}
-            </label>
-          </div>
-          <div v-if="!form.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:12px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
-
           <!-- HTML 설명 (Quill) -->
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
             📝 HTML 설명
@@ -967,6 +946,29 @@ window.EcDispPanelDtl = {
             <input v-model="activeRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
               style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
           </div>
+
+          <!-- § 공개 대상 -->
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            🔒 공개 대상 (하나라도 해당하면 노출)
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+              :style="{
+                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
+                border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+                background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+                color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
+                fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
+                cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+              }">
+              <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
+                :disabled="viewMode"
+                @change="toggleVisibility(opt.codeValue)"
+                style="accent-color:#1565c0;" />
+              {{ opt.codeLabel }}
+            </label>
+          </div>
+          <div v-if="!activeRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:12px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
 
           <!-- § 표현 설정 -->
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
@@ -1334,24 +1336,6 @@ window.EcDispPanelDtl = {
               <span style="color:#aaa;">~</span>
               <span>{{ form.dispEndDate || '?' }} {{ form.dispEndTime }}</span>
             </div>
-            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🔒 공개 대상 (하나라도 해당하면 노출)</div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-              <label v-for="opt in visibilityOptions" :key="opt.codeValue"
-                :style="{
-                  display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
-                  border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
-                  background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
-                  color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
-                  fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
-                  cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
-                }">
-                <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
-                  :disabled="viewMode" @change="toggleVisibility(opt.codeValue)"
-                  style="accent-color:#1565c0;" />
-                {{ opt.codeLabel }}
-              </label>
-            </div>
-            <div v-if="!form.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:12px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📝 HTML 설명</div>
             <div v-if="viewMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;margin-bottom:16px;">
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
@@ -1573,14 +1557,6 @@ window.EcDispPanelDtl = {
         </div>
         <!-- 패널명 -->
         <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">{{ form.name || '(패널명 없음)' }}</div>
-        <!-- 공개 대상 배지 -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
-          <template v-for="opt in visibilityOptions" :key="opt.codeValue">
-            <span v-if="hasVisibility(opt.codeValue)"
-              style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:4px 12px;">{{ opt.codeLabel }}</span>
-          </template>
-          <span v-if="!form.visibilityTargets" style="font-size:12px;background:#ffebee;color:#c62828;border-radius:12px;padding:4px 12px;">노출 대상 없음</span>
-        </div>
         <!-- 전시 기간 -->
         <div v-if="form.dispStartDate || form.dispEndDate"
           style="font-size:12px;color:#555;background:#f8faff;border:1px solid #e0e8f8;border-radius:8px;padding:10px 14px;margin-bottom:16px;">

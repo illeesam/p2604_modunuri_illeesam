@@ -309,7 +309,10 @@ window.EcDispWidgetLibMng = {
               color: selectedTreeKey===(node.label+'>'+sub.label) ? '#1565c0' : '#666',
               fontWeight: selectedTreeKey===(node.label+'>'+sub.label) ? 700 : 500,
             }">
-            <span>▸ {{ sub.label }}</span>
+            <span>▸
+              <span style="font-size:9px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;padding:1px 6px;margin-right:4px;font-weight:600;">(위젯Lib)</span>
+              {{ sub.label }}
+            </span>
             <span style="font-size:10px;background:#f0f2f5;color:#888;border-radius:10px;padding:1px 7px;">{{ sub.count }}</span>
           </div>
         </div>

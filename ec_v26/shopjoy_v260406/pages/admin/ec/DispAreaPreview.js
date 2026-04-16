@@ -643,6 +643,7 @@ window.EcDispAreaPreview = {
                   <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
                   <span style="font-size:13px;flex-shrink:0;">{{ wIcon(lib.widgetType) }}</span>
                   <span style="font-size:9px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:3px;padding:0 4px;white-space:nowrap;flex-shrink:0;">{{ lib.widgetType ? lib.widgetType.replace('_',' ') : '-' }}</span>
+                  <span style="font-size:9px;background:#e8f0fe;color:#1a73e8;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;white-space:nowrap;">(영역)</span>
                   <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ lib.name }}</span>
                   <span style="font-size:9px;color:#9ca3af;flex-shrink:0;">#{{ String(lib.libId).padStart(4,'0') }}</span>
                 </div>

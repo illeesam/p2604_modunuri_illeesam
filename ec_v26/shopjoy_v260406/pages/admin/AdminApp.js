@@ -38,11 +38,13 @@
       { id: 'ecDispUiMng',            label: '전시UI관리' },
       { id: 'ecDispAreaMng',          label: '전시영역관리' },
       { id: 'ecDispPanelMng',         label: '전시패널관리' },
+      { group: '전시위젯관리' },
       { id: 'ecDispWidgetMng',        label: '전시위젯관리' },
       { group: '전시리소스' },
       { id: 'ecDispWidgetLibMng',     label: '전시위젯Lib' },
       { group: '개발지원' },
       { id: 'ecDispUiSimul',          label: '전시UI시뮬레이션' },
+      { id: 'ecDispRelationMng',      label: '전시관계도' },
     ],
     customer:  [{ id: 'ecCustInfoMng', label: '고객종합정보' }, { id: 'syContactMng',  label: '문의관리' }, { id: 'ecChattMng', label: '채팅관리' }],
     system:    [
@@ -142,6 +144,7 @@
         'ecDispAreaDtl':'ec-disp-area-dtl',
         'ecDispUiMng':'ec-disp-ui-mng', 'ecDispUiDtl':'ec-disp-ui-dtl',
         'ecDispWidgetMng':'ec-disp-widget-mng', 'ecDispWidgetDtl':'ec-disp-widget-dtl',
+        'ecDispRelationMng':'ec-disp-relation-mng',
         'ecDispPanelDtl':'ec-disp-panel-dtl',
         'ecDispWidgetLibMng':'ec-disp-widget-lib-mng', 'ecDispWidgetLibDtl':'ec-disp-widget-lib-dtl',
         'ecDispWidgetLibPreview':'ec-disp-widget-lib-preview',
@@ -920,6 +923,7 @@
         <ec-disp-widget-lib-mng     v-else-if="page==='ecDispWidgetLibMng'"     :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-disp-widget-lib-dtl     v-else-if="page==='ecDispWidgetLibDtl'"     :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <ec-disp-widget-lib-preview v-else-if="page==='ecDispWidgetLibPreview'" :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <ec-disp-relation-mng v-else-if="page==='ecDispRelationMng'" :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-event-mng   v-else-if="page==='ecEventMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <ec-event-dtl   v-else-if="page==='ecEventDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <ec-cust-info-mng v-else-if="page==='ecCustInfoMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -1339,6 +1343,7 @@
   .component('EcDispWidgetLibMng',    window.EcDispWidgetLibMng)
   .component('EcDispWidgetLibDtl',    window.EcDispWidgetLibDtl)
   .component('EcDispWidgetLibPreview',window.EcDispWidgetLibPreview)
+  .component('EcDispRelationMng',      window.EcDispRelationMng)
   /* ── pages/admin/ec/ — 카테고리 ── */
   .component('EcCategoryMng',  window.EcCategoryMng)
   .component('EcCategoryDtl',  window.EcCategoryDtl)

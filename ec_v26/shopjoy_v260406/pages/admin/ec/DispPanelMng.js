@@ -310,21 +310,22 @@ window.EcDispPanelMng = {
     const expandAll  = () => { areas.value.forEach(a => treeOpen.value.add('grp_'+a.codeValue)); treeOpen.value.add('__root__'); };
     const collapseAll= () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
 
-    /* 최상위 카테고리 추출 (영역코드 '_' 앞부분) */
+    /* 패널 목록 (영역별 그룹) */
     const panelTree = computed(() => {
       const group = {};
       (props.dispDataset.displays || []).forEach(p => {
-        const area = p.area || '(미등록)';
-        const top  = area.split('_')[0] || '(기타)';
-        if (!group[top]) group[top] = {};
-        if (!group[top][area]) group[top][area] = 0;
-        group[top][area]++;
+        const area = p.area || '(미분류)';
+        if (!group[area]) group[area] = [];
+        group[area].push(p);
       });
-      return Object.keys(group).sort().map(top => ({
-        label: top,
-        count: Object.values(group[top]).reduce((a,b)=>a+b,0),
-        children: Object.keys(group[top]).sort().map(a => ({
-          label: a, count: group[top][a], areaCode: a,
+      return Object.keys(group).sort().map(area => ({
+        label: area,
+        count: group[area].length,
+        areaLabel: areaLabel(area),
+        children: group[area].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => ({
+          label: p.name,
+          panelId: p.dispId,
+          area: p.area,
         })),
       }));
     });
@@ -396,7 +397,7 @@ window.EcDispPanelMng = {
       <button @click="collapseAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▶ 전체닫기</button>
     </div>
     <!-- 루트 -->
-    <div @click="toggleTree('__root__'); selectTree('')"
+    <div @click="selectTree('')"
       :style="{
         display:'flex',alignItems:'center',justifyContent:'space-between',
         padding:'7px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',
@@ -404,12 +405,12 @@ window.EcDispPanelMng = {
         color: selectedTreeKey==='' ? '#1565c0' : '#222',
         fontWeight:700, border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
       }">
-      <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
+      <span @click.stop="toggleTree('__root__')" style="cursor:pointer;">{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
       <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
     </div>
     <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-      <div v-for="node in panelTree" :key="node.label">
-        <div @click="toggleTree('grp_top_'+node.label); selectTree(node.label)"
+      <template v-for="node in panelTree" :key="node.label">
+        <div @click="selectTree(node.label)"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
             padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',
@@ -417,24 +418,32 @@ window.EcDispPanelMng = {
             color: selectedTreeKey===node.label ? '#1565c0' : '#333',
             fontWeight: selectedTreeKey===node.label ? 700 : 500,
           }">
-          <span>{{ isTreeOpen('grp_top_'+node.label) ? '▼' : '▶' }} {{ node.label }}</span>
-          <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+          <span @click.stop="toggleTree('grp_'+node.label)" style="cursor:pointer;font-size:9px;transition:transform .2s;display:inline-block;width:12px;flex-shrink:0;"
+            :style="isTreeOpen('grp_'+node.label) ? 'transform:rotate(90deg);' : ''">▶</span>
+          <span @click.stop="selectTree(node.label)" style="cursor:pointer;flex:1;min-width:0;">{{ node.label }}</span>
+          <span @click.stop="selectTree(node.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
         </div>
-        <div v-if="isTreeOpen('grp_top_'+node.label)" style="padding-left:16px;">
-          <div v-for="sub in node.children" :key="sub.areaCode"
-            @click.stop="selectTree('grp_'+sub.areaCode)"
+        <!-- 영역별 패널 아이템들 -->
+        <div v-if="isTreeOpen('grp_'+node.label)" style="padding-left:12px;border-left:1px solid #e0e0e0;margin-left:6px;margin-bottom:4px;">
+          <div v-for="sub in node.children" :key="sub.panelId"
+            @click.stop="selectTree('panel_'+sub.panelId)"
             :style="{
               display:'flex',alignItems:'center',justifyContent:'space-between',
-              padding:'4px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'11px',marginBottom:'2px',
-              background: selectedTreeKey===('grp_'+sub.areaCode) ? '#e3f2fd' : 'transparent',
-              color: selectedTreeKey===('grp_'+sub.areaCode) ? '#1565c0' : '#666',
-              fontWeight: selectedTreeKey===('grp_'+sub.areaCode) ? 700 : 500,
+              padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
+              background: selectedTreeKey===('panel_'+sub.panelId) ? '#fff3e0' : 'transparent',
+              color: selectedTreeKey===('panel_'+sub.panelId) ? '#e65100' : '#555',
+              fontWeight: selectedTreeKey===('panel_'+sub.panelId) ? 600 : 400,
             }">
-            <span>▸ {{ areaLabel(sub.areaCode) }}</span>
-            <span style="font-size:10px;background:#f0f2f5;color:#888;border-radius:10px;padding:1px 7px;">{{ sub.count }}</span>
+            <span style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow:hidden;">
+              <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;font-weight:600;white-space:nowrap;flex-shrink:0;">(패널)</span>
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ sub.label }}</span>
+            </span>
+            <span style="font-size:9px;background:#e8f0fe;color:#0277bd;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;margin-left:4px;white-space:nowrap;">
+              {{ (dispDataset.displays||[]).find(d => d.dispId===sub.panelId)?.rows?.length||0 }}
+            </span>
           </div>
         </div>
-      </div>
+      </template>
     </div>
   </div>
 
@@ -489,9 +498,15 @@ window.EcDispPanelMng = {
               <!-- label:value 라인 -->
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
                 <span><b style="color:#888;">표시경로:</b>
-                  <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                    {{ pathLabel(d.pathId) || d.displayPath || ((d.area||'').split('_')[0] + '.' + areaLabel(d.area)) }}
-                  </span>
+                  <template v-if="pathLabel(d.pathId) || d.displayPath">
+                    <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ pathLabel(d.pathId) || d.displayPath }}</span>
+                  </template>
+                  <template v-else>
+                    <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;margin-left:3px;font-weight:600;white-space:nowrap;">(패널)</span>
+                    <span style="background:#e8f0fe;color:#0277bd;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ (d.area||'').split('_')[0] }}</span>
+                    <span style="color:#ccc;margin:0 3px;">·</span>
+                    <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">{{ areaLabel(d.area) }}</span>
+                  </template>
                 </span>
                 <span><b style="color:#888;">화면영역:</b>
                   <code style="font-size:10px;background:#f0f2f5;padding:1px 5px;border-radius:3px;margin:0 3px;">{{ d.area }}</code>
@@ -534,7 +549,7 @@ window.EcDispPanelMng = {
           <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
             <td colspan="5" style="padding:0;background:#f8f9fb;border-top:none;">
               <div style="padding:10px 16px 12px 44px;">
-                <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">▸ 전시항목 구성</div>
+                <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">📌 연결된 항목 ({{ (d.rows||[]).length }}개)</div>
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">
                   <thead>
                     <tr style="background:#eef0f3;color:#666;">
@@ -543,7 +558,7 @@ window.EcDispPanelMng = {
                       <th style="padding:4px 8px;font-weight:600;">전시항목명</th>
                       <th style="padding:4px 8px;text-align:center;width:120px;font-weight:600;">유형</th>
                       <th style="padding:4px 8px;text-align:center;width:100px;font-weight:600;">클릭동작</th>
-                      <th style="padding:4px 8px;text-align:center;width:60px;font-weight:600;">상태</th>
+                      <th style="padding:4px 8px;text-align:center;width:60px;font-weight:600;">사용여부</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -558,14 +573,17 @@ window.EcDispPanelMng = {
                         :style="'border-bottom:1px solid #e8eaed;' + (wi % 2 === 1 ? 'background:#fff;' : '') + (widgetDragOverWi===wi && widgetDragPanel===d.dispId ? 'outline:2px solid #1d4ed8;background:#e3f2fd;' : '')">
                         <td style="padding:4px 4px;text-align:center;cursor:grab;color:#bbb;font-size:14px;user-select:none;">⠿</td>
                         <td style="padding:4px 8px;text-align:center;color:#aaa;">{{ w.sortOrder || (wi+1) }}</td>
-                        <td style="padding:4px 8px;color:#444;">{{ w.widgetNm || ('전시항목 ' + (wi+1)) }}</td>
+                        <td style="padding:4px 8px;color:#444;">
+                          <span style="font-size:10px;background:#e8f4f8;color:#0277bd;border-radius:8px;padding:2px 8px;font-weight:600;margin-right:6px;white-space:nowrap;">아이템</span>
+                          {{ w.widgetNm || ('전시항목 ' + (wi+1)) }}
+                        </td>
                         <td style="padding:4px 8px;text-align:center;">
                           <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 7px;font-size:10px;">{{ wLabel(w.widgetType) }}</span>
                         </td>
                         <td style="padding:4px 8px;text-align:center;color:#888;">{{ w.clickAction || '-' }}</td>
                         <td style="padding:4px 8px;text-align:center;">
-                          <span v-if="w.useYn === 'N'" style="color:#ccc;">비활성</span>
-                          <span v-else style="color:#43a047;">활성</span>
+                          <span v-if="w.useYn === 'Y'" class="badge badge-green" style="font-size:11px;">사용</span>
+                          <span v-else class="badge badge-gray" style="font-size:11px;">미사용</span>
                         </td>
                       </tr>
                     </template>

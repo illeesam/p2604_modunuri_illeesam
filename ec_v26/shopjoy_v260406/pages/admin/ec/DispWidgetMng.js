@@ -220,8 +220,10 @@ window.EcDispWidgetMng = {
   template: /* html */`
 <div>
   <div class="page-title">
-    전시위젯
-    <span style="font-size:13px;font-weight:400;color:#888;">위젯 유형별 리소스 등록·재활용</span>
+    <span style="font-size:14px;font-weight:600;color:#333;">전시위젯관리</span>
+    <span style="font-size:13px;font-weight:400;color:#999;margin:0 8px;">&gt;</span>
+    <span style="font-size:14px;font-weight:600;color:#666;">전시위젯관리</span>
+    <span style="font-size:13px;font-weight:400;color:#888;display:block;margin-top:4px;">위젯 유형별 리소스 등록·재활용</span>
   </div>
 
   <!-- 검색 필터 -->
@@ -309,7 +311,10 @@ window.EcDispWidgetMng = {
               color: selectedTreeKey===(node.label+'>'+sub.label) ? '#1565c0' : '#666',
               fontWeight: selectedTreeKey===(node.label+'>'+sub.label) ? 700 : 500,
             }">
-            <span>▸ {{ sub.label }}</span>
+            <span>▸
+              <span style="font-size:9px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;padding:1px 6px;margin-right:4px;font-weight:600;">(위젯)</span>
+              {{ sub.label }}
+            </span>
             <span style="font-size:10px;background:#f0f2f5;color:#888;border-radius:10px;padding:1px 7px;">{{ sub.count }}</span>
           </div>
         </div>

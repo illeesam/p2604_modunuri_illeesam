@@ -67,10 +67,19 @@ window.EcDispAreaMng = {
         .filter(c => c.codeGrp === 'DISP_AREA')
         .forEach(a => {
           const top = (a.codeValue || '').split('_')[0] || '(기타)';
-          if (!group[top]) group[top] = 0;
-          group[top]++;
+          if (!group[top]) group[top] = [];
+          group[top].push(a);
         });
-      return Object.keys(group).sort().map(top => ({ label: top, count: group[top] }));
+      return Object.keys(group).sort().map(top => ({
+        label: top,
+        count: group[top].length,
+        children: group[top].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).map(a => ({
+          codeId: a.codeId,
+          codeValue: a.codeValue,
+          codeLabel: a.codeLabel,
+          count: 1,
+        })),
+      }));
     });
     const expandAll   = () => { areaTree.value.forEach(n => treeOpen.value.add('grp_'+n.label)); treeOpen.value.add('__root__'); };
     const collapseAll = () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
@@ -205,6 +214,20 @@ window.EcDispAreaMng = {
     const areaTypeLabel = (v) => (AREA_TYPE_OPTS.find(o => o.value === v) || {}).label || '-';
     const statusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
+    /* 영역 하위 패널 목록 */
+    const panelsOfArea = (areaCode) =>
+      (props.dispDataset.displays || [])
+        .filter(p => p.area === areaCode)
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+    /* 펼치기 기능 */
+    const expandedAreas = ref(new Set());
+    const toggleExpandArea = (areaId) => {
+      if (expandedAreas.value.has(areaId)) expandedAreas.value.delete(areaId);
+      else expandedAreas.value.add(areaId);
+    };
+    const isAreaExpanded = (areaId) => expandedAreas.value.has(areaId);
+
     return {
       pathLabel,
       searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
@@ -214,7 +237,8 @@ window.EcDispAreaMng = {
       onSearch, onReset, doDelete, exportExcel,
       selectedId, openMode, loadDetail, openNew, closeDetail, inlineNavigate, detailEditId,
       dragSrc, dragOverIdx, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd,
-      areaTypeLabel, statusBadge,
+      areaTypeLabel, statusBadge, panelsOfArea,
+      expandedAreas, toggleExpandArea, isAreaExpanded,
       areaTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
     };
   },
@@ -262,7 +286,7 @@ window.EcDispAreaMng = {
       <button @click="expandAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▼ 전체펼치기</button>
       <button @click="collapseAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▶ 전체닫기</button>
     </div>
-    <div @click="toggleTree('__root__'); selectTree('')"
+    <div @click="selectTree('')"
       :style="{
         display:'flex',alignItems:'center',justifyContent:'space-between',
         padding:'7px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',
@@ -270,21 +294,41 @@ window.EcDispAreaMng = {
         color: selectedTreeKey==='' ? '#1565c0' : '#222',
         fontWeight:700, border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
       }">
-      <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
+      <span @click.stop="toggleTree('__root__')" style="cursor:pointer;">{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
       <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
     </div>
     <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-      <div v-for="node in areaTree" :key="node.label"
-        @click="selectTree(node.label)"
-        :style="{
-          display:'flex',alignItems:'center',justifyContent:'space-between',
-          padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',
-          background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',
-          color: selectedTreeKey===node.label ? '#1565c0' : '#333',
-          fontWeight: selectedTreeKey===node.label ? 700 : 500,
-        }">
-        <span>▸ {{ node.label }}</span>
-        <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+      <div v-for="node in areaTree" :key="node.label">
+        <div @click="selectTree(node.label)"
+          :style="{
+            display:'flex',alignItems:'center',justifyContent:'space-between',
+            padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',
+            background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',
+            color: selectedTreeKey===node.label ? '#1565c0' : '#333',
+            fontWeight: selectedTreeKey===node.label ? 700 : 500,
+          }">
+          <span @click.stop="toggleTree('grp_'+node.label)" style="cursor:pointer;font-size:11px;display:inline-block;width:14px;flex-shrink:0;">{{ isTreeOpen('grp_'+node.label) ? '▼' : '▶' }}</span>
+          <span @click.stop="selectTree(node.label)" style="cursor:pointer;flex:1;min-width:0;">{{ node.label }}</span>
+          <span @click.stop="selectTree(node.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
+        </div>
+        <div v-if="isTreeOpen('grp_'+node.label)" style="padding-left:16px;">
+          <div v-for="child in node.children" :key="child.codeId"
+            @click.stop="selectTree(child.codeValue)"
+            :style="{
+              display:'flex',alignItems:'center',justifyContent:'space-between',
+              padding:'4px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'11px',marginBottom:'2px',
+              background: selectedTreeKey===child.codeValue ? '#e8f0fe' : 'transparent',
+              color: selectedTreeKey===child.codeValue ? '#1565c0' : '#666',
+              fontWeight: selectedTreeKey===child.codeValue ? 700 : 500,
+            }">
+            <span style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow:hidden;">
+              <span style="font-size:9px;background:#e8f0fe;color:#1565c0;border-radius:6px;padding:1px 6px;font-weight:600;white-space:nowrap;flex-shrink:0;">(영역)</span>
+              <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;font-weight:600;white-space:nowrap;flex-shrink:0;">{{ child.codeValue }}</span>
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ child.codeLabel }}</span>
+            </span>
+            <span style="font-size:10px;background:#f0f2f5;color:#888;border-radius:10px;padding:1px 7px;">{{ child.count }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -313,56 +357,86 @@ window.EcDispAreaMng = {
         <tr v-if="pageList.length===0">
           <td colspan="4" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(a, pageIdx) in pageList" :key="a.codeId"
-          draggable="true"
-          @dragstart="onDragStart($event, pageIdx)"
-          @dragover="onDragOver($event, pageIdx)"
-          @dragleave="onDragLeave"
-          @drop="onDrop($event, pageIdx)"
-          @dragend="onDragEnd"
-          :style="(selectedId===a.codeId?'background:#fff8f9;':'') + (dragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
-          <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">⠿</td>
-          <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">{{ a.codeId }}</td>
-          <td style="padding:10px 12px;">
-            <!-- 영역명 + 상태 -->
-            <div style="margin-bottom:6px;">
-              <code style="font-size:12px;background:#f0f2f5;color:#555;padding:2px 8px;border-radius:4px;letter-spacing:.3px;">{{ a.codeValue }}</code>
-              <span class="title-link" @click="loadDetail(a.codeId)"
-                :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===a.codeId?'color:#e8587a;':'color:#222;')">
-                {{ a.codeLabel }}
-                <span v-if="selectedId===a.codeId" style="font-size:10px;margin-left:3px;">▼</span>
-              </span>
-              <span class="badge" :class="statusBadge(a.useYn)" style="font-size:11px;margin-left:8px;">{{ a.useYn==='Y'?'사용':'미사용' }}</span>
-            </div>
-            <!-- label:value 라인 -->
-            <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
-              <span><b style="color:#888;">표시경로:</b>
-                <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                  {{ pathLabel(a.pathId) || a.displayPath || ((a.codeValue||'').split('_')[0] + '.' + (a.codeLabel || a.codeValue)) }}
+        <template v-for="(a, pageIdx) in pageList" :key="a.codeId">
+          <tr draggable="true"
+            @dragstart="onDragStart($event, pageIdx)"
+            @dragover="onDragOver($event, pageIdx)"
+            @dragleave="onDragLeave"
+            @drop="onDrop($event, pageIdx)"
+            @dragend="onDragEnd"
+            :style="(selectedId===a.codeId?'background:#fff8f9;':'') + (dragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
+            <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">⠿</td>
+            <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">
+              <button @click="toggleExpandArea(a.codeId)" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;margin-right:4px;"
+                :title="isAreaExpanded(a.codeId)?'축소':'펼치기'">{{ isAreaExpanded(a.codeId) ? '▼' : '▶' }}</button>
+              {{ a.codeId }}
+            </td>
+            <td style="padding:10px 12px;">
+              <!-- 영역명 + 상태 -->
+              <div style="margin-bottom:6px;">
+                <code style="font-size:12px;background:#f0f2f5;color:#555;padding:2px 8px;border-radius:4px;letter-spacing:.3px;">{{ a.codeValue }}</code>
+                <span class="title-link" @click="loadDetail(a.codeId)"
+                  :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===a.codeId?'color:#e8587a;':'color:#222;')">
+                  {{ a.codeLabel }}
+                  <span v-if="selectedId===a.codeId" style="font-size:10px;margin-left:3px;">▼</span>
                 </span>
-              </span>
-              <span><b style="color:#888;">유형:</b> {{ areaTypeLabel(a.areaType) }}</span>
-              <span><b style="color:#888;">표시:</b>
-                {{ a.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (a.gridCols||1) + '열' }}
-              </span>
-              <span><b style="color:#888;">타이틀:</b>
-                {{ a.titleYn==='Y' ? (a.title || '표시') : '미표시' }}
-              </span>
-              <span><b style="color:#888;">순서:</b> {{ a.sortOrd ?? '-' }}</span>
-              <span><b style="color:#888;">등록일:</b> {{ a.regDate || '-' }}</span>
-              <span><b style="color:#888;">사이트:</b>
-                <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ siteNm }}</span>
-              </span>
-              <span v-if="a.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ a.remark }}</span>
-            </div>
-          </td>
-          <td style="vertical-align:top;padding-top:10px;">
-            <div class="actions" style="justify-content:flex-end;">
-              <button class="btn btn-blue btn-sm" @click="loadDetail(a.codeId)">수정</button>
-              <button class="btn btn-danger btn-sm" @click="doDelete(a)">삭제</button>
-            </div>
-          </td>
-        </tr>
+                <span class="badge" :class="statusBadge(a.useYn)" style="font-size:11px;margin-left:8px;">{{ a.useYn==='Y'?'사용':'미사용' }}</span>
+              </div>
+              <!-- label:value 라인 -->
+              <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
+                <span><b style="color:#888;">표시경로:</b>
+                  <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
+                    {{ pathLabel(a.pathId) || a.displayPath || ((a.codeValue||'').split('_')[0] + '.' + (a.codeLabel || a.codeValue)) }}
+                  </span>
+                </span>
+                <span><b style="color:#888;">유형:</b> {{ areaTypeLabel(a.areaType) }}</span>
+                <span><b style="color:#888;">표시:</b>
+                  {{ a.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (a.gridCols||1) + '열' }}
+                </span>
+                <span><b style="color:#888;">타이틀:</b>
+                  {{ a.titleYn==='Y' ? (a.title || '표시') : '미표시' }}
+                </span>
+                <span><b style="color:#888;">순서:</b> {{ a.sortOrd ?? '-' }}</span>
+                <span><b style="color:#888;">등록일:</b> {{ a.regDate || '-' }}</span>
+                <span><b style="color:#888;">사이트:</b>
+                  <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ siteNm }}</span>
+                </span>
+                <span v-if="a.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ a.remark }}</span>
+              </div>
+            </td>
+            <td style="vertical-align:top;padding-top:10px;">
+              <div class="actions" style="justify-content:flex-end;">
+                <button class="btn btn-blue btn-sm" @click="loadDetail(a.codeId)">수정</button>
+                <button class="btn btn-danger btn-sm" @click="doDelete(a)">삭제</button>
+              </div>
+            </td>
+          </tr>
+          <!-- 펼쳤을 때 패널 목록 표시 -->
+          <tr v-if="isAreaExpanded(a.codeId)" :key="'expand_'+a.codeId">
+            <td colspan="4" style="background:#fafafa;padding:12px 16px;">
+              <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e0e0e0;">
+                📌 연결된 패널 ({{ panelsOfArea(a.codeValue).length }}개)
+              </div>
+              <div v-if="panelsOfArea(a.codeValue).length===0" style="color:#bbb;font-size:11px;padding:8px 0;">패널이 없습니다.</div>
+              <div v-else style="display:grid;gap:8px;">
+                <div v-for="p in panelsOfArea(a.codeValue)" :key="p.dispId"
+                  style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <span style="font-size:10px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 8px;font-weight:600;white-space:nowrap;">패널</span>
+                  <span style="font-size:12px;color:#333;font-weight:600;flex:1;">{{ p.name }}</span>
+                  <span v-if="p.visibilityTargets" style="font-size:10px;background:#e8f0fe;color:#1565c0;border-radius:8px;padding:2px 8px;">
+                    {{ (p.visibilityTargets || '^PUBLIC^').split('^').filter(Boolean).join(', ') }}
+                  </span>
+                  <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;font-weight:600;">
+                    {{ (p.rows||[]).length }}개 항목
+                  </span>
+                  <span :style="'font-size:10px;border-radius:8px;padding:2px 8px;font-weight:600;'+(p.useYn==='Y'?'background:#c8e6c9;color:#2e7d32;':'background:#f1f1f1;color:#666;')">
+                    {{ p.useYn==='Y' ? '사용' : '미사용' }}
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
     <div class="pagination">
