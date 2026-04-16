@@ -8,9 +8,10 @@ CREATE TABLE ec_prod_img (
     prod_id         VARCHAR(16)     NOT NULL,              -- FK: ec_prod.prod_id
     opt_id_1        VARCHAR(16),                            -- 옵션1 값ID (ec_prod_opt.opt_id, 예: 색상-블랙)
     opt_id_2        VARCHAR(16),                            -- 옵션2 값ID (ec_prod_opt.opt_id, 예: 사이즈-M)
-    attach_id       VARCHAR(16),                            -- FK: sy_attach.attach_id (선택사항, 파일 관리 시스템 연계용)
-    img_url         VARCHAR(500)    NOT NULL,              -- 원본 이미지 URL (상세 페이지용)
-    thumb_url       VARCHAR(500),                           -- 썸네일 이미지 URL (목록/검색/카테고리에서 사용)
+    attach_id       VARCHAR(16),                            -- FK: sy_attach.attach_id (원본 파일 참조)
+    cdn_host        VARCHAR(100),                           -- CDN 호스트명 (예: cdn.example.com)
+    cdn_img_url     VARCHAR(500),                           -- CDN 원본 이미지 URL (상세 페이지용)
+    cdn_thumb_url   VARCHAR(500),                           -- CDN 썸네일 이미지 URL (목록/검색/카테고리용)
     img_alt_text    VARCHAR(200),                           -- 이미지 대체텍스트 (SEO/접근성)
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     is_thumb        CHAR(1)         DEFAULT 'N',            -- 대표이미지여부 Y/N
@@ -27,9 +28,10 @@ COMMENT ON COLUMN ec_prod_img.site_id     IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_prod_img.prod_id     IS '상품ID (ec_prod.prod_id)';
 COMMENT ON COLUMN ec_prod_img.opt_id_1    IS '옵션1 값ID (색상 등, NULL이면 공통 이미지)';
 COMMENT ON COLUMN ec_prod_img.opt_id_2    IS '옵션2 값ID (사이즈 등, NULL이면 색상 공통)';
-COMMENT ON COLUMN ec_prod_img.attach_id   IS '첨부파일ID (sy_attach.attach_id, 선택사항)';
-COMMENT ON COLUMN ec_prod_img.img_url     IS '원본 이미지 URL (상세 페이지, CDN 또는 sy_attach의 파일 경로)';
-COMMENT ON COLUMN ec_prod_img.thumb_url   IS '썸네일 이미지 URL (목록/검색/카테고리 등에서 사용)';
+COMMENT ON COLUMN ec_prod_img.attach_id   IS '첨부파일ID (sy_attach.attach_id, 원본 파일 보관용)';
+COMMENT ON COLUMN ec_prod_img.cdn_host    IS 'CDN 호스트명 (예: cdn.example.com, 원본 시점의 CDN)';
+COMMENT ON COLUMN ec_prod_img.cdn_img_url IS 'CDN 원본 이미지 URL (상세 페이지용, sy_attach 기준)';
+COMMENT ON COLUMN ec_prod_img.cdn_thumb_url IS 'CDN 썸네일 URL (목록/검색/카테고리용, sy_attach 기준)';
 COMMENT ON COLUMN ec_prod_img.img_alt_text IS '이미지 대체텍스트 (alt 속성, SEO/접근성)';
 COMMENT ON COLUMN ec_prod_img.sort_ord    IS '정렬순서';
 COMMENT ON COLUMN ec_prod_img.is_thumb    IS '대표이미지여부 Y/N';

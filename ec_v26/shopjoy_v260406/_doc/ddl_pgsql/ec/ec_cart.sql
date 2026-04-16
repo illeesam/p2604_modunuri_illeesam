@@ -15,8 +15,8 @@ CREATE TABLE ec_cart (
     opt_nm_1        VARCHAR(100),                          -- 옵션1명 스냅샷 (예: 블랙)
     opt_nm_2        VARCHAR(100),                          -- 옵션2명 스냅샷 (예: M)
     unit_price      BIGINT          DEFAULT 0,             -- 단가 (담을 시점)
-    qty             INTEGER         DEFAULT 1,
-    item_price      BIGINT          DEFAULT 0,             -- 소계 (unit_price × qty)
+    order_qty       INTEGER         DEFAULT 1,
+    item_price      BIGINT          DEFAULT 0,             -- 소계 (unit_price × order_qty)
     is_checked      CHAR(1)         DEFAULT 'Y',           -- 주문 선택 여부 Y/N
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -37,7 +37,7 @@ COMMENT ON COLUMN ec_cart.opt_id_2     IS '옵션2 값ID (ec_prod_opt.opt_id, �
 COMMENT ON COLUMN ec_cart.opt_nm_1     IS '옵션1명 스냅샷 (예: 블랙)';
 COMMENT ON COLUMN ec_cart.opt_nm_2     IS '옵션2명 스냅샷 (예: M)';
 COMMENT ON COLUMN ec_cart.unit_price   IS '단가 (담을 시점 가격)';
-COMMENT ON COLUMN ec_cart.qty          IS '수량';
+COMMENT ON COLUMN ec_cart.order_qty    IS '수량';
 COMMENT ON COLUMN ec_cart.item_price   IS '소계 (단가 × 수량)';
 COMMENT ON COLUMN ec_cart.is_checked   IS '주문선택여부 Y/N';
 COMMENT ON COLUMN ec_cart.reg_by       IS '등록자 (sy_user.user_id)';
