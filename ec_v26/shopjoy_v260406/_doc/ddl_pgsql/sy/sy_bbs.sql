@@ -16,7 +16,7 @@ CREATE TABLE sy_bbs (
     like_count      INTEGER         DEFAULT 0,
     comment_count   INTEGER         DEFAULT 0,
     is_fixed        CHAR(1)         DEFAULT 'N',
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/DELETED/HIDDEN
+    bbs_status_cd   VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/DELETED/HIDDEN
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),

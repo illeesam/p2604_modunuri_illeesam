@@ -14,7 +14,7 @@ CREATE TABLE ec_disp_panel (
     visibility_targets VARCHAR(200),                         -- 공개대상(^CODE^CODE^ 형식), 코드: VISIBILITY_TARGET
     disp_path       VARCHAR(200),                            -- 점(.) 구분 표시경로 (예: FRONT.모바일메인)
     sort_ord        INTEGER         DEFAULT 0,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: DISP_STATUS
+    disp_panel_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: DISP_STATUS
     content_json    TEXT,                                   -- 패널별 확장 데이터 (JSON)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

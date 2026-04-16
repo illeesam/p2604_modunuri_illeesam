@@ -8,7 +8,7 @@ CREATE TABLE sy_api_log (
     site_id         VARCHAR(16),
     api_type        VARCHAR(50)     NOT NULL,              -- 연동유형 (PG/LOGISTICS/KAKAO/NAVER/SMS 등)
     api_nm          VARCHAR(100),                          -- API명 (예: 결제승인, 운송장등록)
-    method          VARCHAR(10),                           -- HTTP 메서드 (GET/POST/PUT/DELETE)
+    method_cd       VARCHAR(10),                           -- HTTP 메서드 (GET/POST/PUT/DELETE)
     endpoint        VARCHAR(500),                          -- 호출 URL
     req_body        TEXT,                                  -- 요청 파라미터 (민감정보 마스킹)
     res_body        TEXT,                                  -- 응답 본문
@@ -31,7 +31,7 @@ COMMENT ON COLUMN sy_api_log.log_id       IS '로그ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN sy_api_log.site_id      IS '사이트ID';
 COMMENT ON COLUMN sy_api_log.api_type     IS '연동유형 (PG/LOGISTICS/KAKAO/NAVER/SMS 등)';
 COMMENT ON COLUMN sy_api_log.api_nm       IS 'API명 (예: 결제승인)';
-COMMENT ON COLUMN sy_api_log.method       IS 'HTTP 메서드';
+COMMENT ON COLUMN sy_api_log.method_cd    IS 'HTTP 메서드';
 COMMENT ON COLUMN sy_api_log.endpoint     IS '호출 URL';
 COMMENT ON COLUMN sy_api_log.req_body     IS '요청 파라미터 (민감정보 마스킹 처리)';
 COMMENT ON COLUMN sy_api_log.res_body     IS '응답 본문';

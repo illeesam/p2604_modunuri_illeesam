@@ -13,7 +13,7 @@ CREATE TABLE ec_prod (
     list_price      BIGINT          DEFAULT 0,
     sale_price      BIGINT          DEFAULT 0,
     stock           INTEGER         DEFAULT 0,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: PRODUCT_STATUS
+    prod_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: PRODUCT_STATUS
     thumbnail_url   VARCHAR(500),
     content_html    TEXT,
     weight          NUMERIC(10,2),

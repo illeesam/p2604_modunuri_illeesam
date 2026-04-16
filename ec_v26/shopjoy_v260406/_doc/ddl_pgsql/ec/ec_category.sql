@@ -7,11 +7,11 @@ CREATE TABLE ec_category (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     parent_category_id       VARCHAR(16),
     category_nm     VARCHAR(100)    NOT NULL,
-    depth           SMALLINT        DEFAULT 1,              -- 1: 대, 2: 중, 3: 소
+    category_depth  SMALLINT        DEFAULT 1,              -- 1: 대, 2: 중, 3: 소
     sort_ord        INTEGER         DEFAULT 0,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USE_YN
+    category_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USE_YN
     img_url         VARCHAR(500),
-    description     TEXT,
+    desc            TEXT,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -24,11 +24,11 @@ COMMENT ON COLUMN ec_category.category_id   IS '카테고리ID (YYMMDDhhmmss+ran
 COMMENT ON COLUMN ec_category.site_id       IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_category.parent_category_id     IS '상위 카테고리ID';
 COMMENT ON COLUMN ec_category.category_nm   IS '카테고리명';
-COMMENT ON COLUMN ec_category.depth         IS '깊이 (1:대/2:중/3:소)';
+COMMENT ON COLUMN ec_category.category_depth IS '깊이 (1:대/2:중/3:소)';
 COMMENT ON COLUMN ec_category.sort_ord      IS '정렬순서';
 COMMENT ON COLUMN ec_category.status_cd     IS '상태 (ACTIVE/INACTIVE)';
 COMMENT ON COLUMN ec_category.img_url       IS '이미지URL';
-COMMENT ON COLUMN ec_category.description   IS '설명';
+COMMENT ON COLUMN ec_category.desc          IS '설명';
 COMMENT ON COLUMN ec_category.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_category.reg_date      IS '등록일';
 COMMENT ON COLUMN ec_category.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';

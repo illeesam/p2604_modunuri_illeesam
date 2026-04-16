@@ -7,13 +7,13 @@ CREATE TABLE sy_batch (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     batch_code      VARCHAR(50)     NOT NULL,
     batch_nm        VARCHAR(100)    NOT NULL,
-    description     TEXT,
+    desc            TEXT,
     cron_expr       VARCHAR(100),                           -- cron 표현식 (예: 0 0 * * *)
     batch_cycle_cd  VARCHAR(20),                            -- 코드: BATCH_CYCLE
     last_run        TIMESTAMP,
     next_run        TIMESTAMP,
     run_count       INTEGER         DEFAULT 0,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: BATCH_STATUS
+    batch_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: BATCH_STATUS
     run_status      VARCHAR(20)     DEFAULT 'IDLE',         -- IDLE/RUNNING/SUCCESS/FAILED
     timeout_sec     INTEGER         DEFAULT 300,
     memo            TEXT,
@@ -31,7 +31,7 @@ COMMENT ON COLUMN sy_batch.batch_id       IS '배치ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN sy_batch.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_batch.batch_code     IS '배치코드';
 COMMENT ON COLUMN sy_batch.batch_nm       IS '배치명';
-COMMENT ON COLUMN sy_batch.description    IS '설명';
+COMMENT ON COLUMN sy_batch.desc           IS '설명';
 COMMENT ON COLUMN sy_batch.cron_expr      IS 'Cron 표현식';
 COMMENT ON COLUMN sy_batch.batch_cycle_cd IS '주기유형 (코드: BATCH_CYCLE)';
 COMMENT ON COLUMN sy_batch.last_run       IS '최근실행일시';

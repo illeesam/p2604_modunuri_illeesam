@@ -12,7 +12,7 @@ CREATE TABLE ec_order (
     pay_price       BIGINT          DEFAULT 0,              -- 실결제금액
     pay_method_cd   VARCHAR(20),                            -- 코드: PAY_METHOD
     pay_date        TIMESTAMP,
-    status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: ORDER_STATUS
+    order_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: ORDER_STATUS
     recv_nm         VARCHAR(50),
     recv_phone      VARCHAR(20),
     recv_zip        VARCHAR(10),
@@ -26,15 +26,15 @@ CREATE TABLE ec_order (
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     -- ── 결재처리/추가결재요청 (관리자 일괄작업) ──
-    approval_status_cd VARCHAR(20),                          -- 코드: APPROVAL_STATUS (REQ/APPROVED/REJECTED/DONE)
-    approval_amt       BIGINT,                              -- 결재 요청 금액
-    approval_target_cd VARCHAR(30),                         -- 코드: APPROVAL_TARGET (ORDER/PROD/DLIV/EXTRA)
-    approval_target_nm VARCHAR(200),                        -- 결재 대상명
-    approval_reason    VARCHAR(500),                        -- 사유/메모
-    approval_req_user_id    VARCHAR(16),                         -- 요청자 (sy_user.user_id)
-    approval_req_date  TIMESTAMP,                           -- 요청일시
-    approval_aprv_user_id   VARCHAR(16),                         -- 결재자 (sy_user.user_id)
-    approval_aprv_date TIMESTAMP,                           -- 결재일시
+    appr_status_cd VARCHAR(20),                          -- 코드: APPROVAL_STATUS (REQ/APPROVED/REJECTED/DONE)
+    appr_amt       BIGINT,                              -- 결재 요청 금액
+    appr_target_cd VARCHAR(30),                         -- 코드: APPROVAL_TARGET (ORDER/PROD/DLIV/EXTRA)
+    appr_target_nm VARCHAR(200),                        -- 결재 대상명
+    appr_reason    VARCHAR(500),                        -- 사유/메모
+    appr_req_user_id    VARCHAR(16),                         -- 요청자 (sy_user.user_id)
+    appr_req_date  TIMESTAMP,                           -- 요청일시
+    appr_aprv_user_id   VARCHAR(16),                         -- 결재자 (sy_user.user_id)
+    appr_aprv_date TIMESTAMP,                           -- 결재일시
 
     PRIMARY KEY (order_id)
 );
@@ -66,12 +66,12 @@ COMMENT ON COLUMN ec_order.reg_date         IS '등록일';
 COMMENT ON COLUMN ec_order.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_order.upd_date         IS '수정일';
 
-COMMENT ON COLUMN ec_order.approval_status_cd IS '결재상태 (코드: APPROVAL_STATUS)';
-COMMENT ON COLUMN ec_order.approval_amt       IS '결재 요청금액';
-COMMENT ON COLUMN ec_order.approval_target_cd IS '결재대상 구분 (코드: APPROVAL_TARGET)';
-COMMENT ON COLUMN ec_order.approval_target_nm IS '결재 대상명';
-COMMENT ON COLUMN ec_order.approval_reason    IS '사유/메모';
-COMMENT ON COLUMN ec_order.approval_req_user_id    IS '결재 요청자 (sy_user.user_id)';
-COMMENT ON COLUMN ec_order.approval_req_date  IS '결재 요청일시';
-COMMENT ON COLUMN ec_order.approval_aprv_user_id   IS '결재자 (sy_user.user_id)';
-COMMENT ON COLUMN ec_order.approval_aprv_date IS '결재일시';
+COMMENT ON COLUMN ec_order.appr_status_cd IS '결재상태 (코드: APPROVAL_STATUS)';
+COMMENT ON COLUMN ec_order.appr_amt       IS '결재 요청금액';
+COMMENT ON COLUMN ec_order.appr_target_cd IS '결재대상 구분 (코드: APPROVAL_TARGET)';
+COMMENT ON COLUMN ec_order.appr_target_nm IS '결재 대상명';
+COMMENT ON COLUMN ec_order.appr_reason    IS '사유/메모';
+COMMENT ON COLUMN ec_order.appr_req_user_id    IS '결재 요청자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order.appr_req_date  IS '결재 요청일시';
+COMMENT ON COLUMN ec_order.appr_aprv_user_id   IS '결재자 (sy_user.user_id)';
+COMMENT ON COLUMN ec_order.appr_aprv_date IS '결재일시';

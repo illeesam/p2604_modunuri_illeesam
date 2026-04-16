@@ -6,7 +6,7 @@ CREATE TABLE ec_blog_comment (
     writer_id       VARCHAR(16),                            -- 작성자ID (ec_member.member_id)
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     content         TEXT            NOT NULL,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)
+    comment_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),

@@ -10,14 +10,14 @@ CREATE TABLE sy_site (
     domain          VARCHAR(200),
     logo_url        VARCHAR(500),
     favicon_url     VARCHAR(500),
-    description     TEXT,
+    desc            TEXT,
     email           VARCHAR(100),
     phone           VARCHAR(20),
     zip_code        VARCHAR(10),
     address         VARCHAR(300),
     business_no     VARCHAR(20),
     ceo             VARCHAR(50),
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: SITE_STATUS
+    site_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: SITE_STATUS
     config_json     TEXT,                                   -- 사이트별 확장 설정 (JSON)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -36,7 +36,7 @@ COMMENT ON COLUMN sy_site.site_nm        IS '사이트명';
 COMMENT ON COLUMN sy_site.domain         IS '도메인';
 COMMENT ON COLUMN sy_site.logo_url       IS '로고URL';
 COMMENT ON COLUMN sy_site.favicon_url    IS '파비콘URL';
-COMMENT ON COLUMN sy_site.description    IS '설명';
+COMMENT ON COLUMN sy_site.desc           IS '설명';
 COMMENT ON COLUMN sy_site.email          IS '대표이메일';
 COMMENT ON COLUMN sy_site.phone          IS '대표전화';
 COMMENT ON COLUMN sy_site.zip_code       IS '우편번호';

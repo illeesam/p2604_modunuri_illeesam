@@ -11,7 +11,7 @@ CREATE TABLE ec_claim_item (
     claim_qty       INTEGER         DEFAULT 1,
     item_price      BIGINT          DEFAULT 0,              -- 소계 (unit_price * claim_qty)
     refund_amt      BIGINT          DEFAULT 0,              -- 항목별 환불금액
-    status_cd       VARCHAR(20)     DEFAULT 'REQUESTED',    -- 코드: CLAIM_STATUS
+    claim_item_status_cd VARCHAR(20)     DEFAULT 'REQUESTED',    -- 코드: CLAIM_STATUS
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),

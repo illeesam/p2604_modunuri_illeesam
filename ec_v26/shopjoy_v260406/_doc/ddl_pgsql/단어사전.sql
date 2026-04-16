@@ -5,18 +5,39 @@
 --
 -- [ 필수 명명 규칙 ]
 --
--- 1. 금액 관련: "금액" 으로 끝나는 설명 → _amt 서픽스 사용
---    예: 환불금액 → refund_amt, 할인금액 → discount_amt
+-- 1. PRIMARY KEY: 항상 테이블명_id (UUID/TIMESTAMP+Random 형식)
+--    예: site_id, user_id, order_id, code_grp_id, user_role_id
+--    ⚠️ 복합 PK 금지, 필요시 UNIQUE INDEX로 구성
+--    예: sy_user_role(user_role_id) + UNIQUE(user_id, role_id)
 --
--- 2. 수량 관련: "수량" 으로 끝나는 설명 → _qty 서픽스 사용
---    예: 주문수량 → order_qty, 클레임수량 → claim_qty
---    ⚠️ 단독 qty, amount, balance 컬럼 금지 (반드시 복합어로)
+-- 2. 금액 관련: "금액" 으로 끝나는 설명 → _amt 서픽스 사용
+--    예: 환불금액 → refund_amt, 할인금액 → discount_amt, 결재금액 → appr_amt
+--    ⚠️ 단독 amt 금지 (반드시 복합어: discount_amt, refund_amt, cache_amt, balance_amt 등)
 --
--- 3. 가격 관련: price 단독 사용 금지, 반드시 수식어 붙이기
---    예: list_price (정가), sale_price (판매가), unit_price (단가)
+-- 3. 수량 관련: "수량" 으로 끝나는 설명 → _qty 서픽스 사용
+--    예: 주문수량 → order_qty, 클레임수량 → claim_qty, 재고수량 → stock_qty
+--    ⚠️ 단독 qty 금지 (반드시 복합어만 사용)
 --
--- 4. 코드형 컬럼: 컬럼명_cd (VARCHAR) / 테이블명_code (VARCHAR, PK)
---    테이블 PRIMARY KEY인 경우는 _code 유지, FK는 _cd 사용
+-- 4. 가격 관련: price 단독 사용 금지, 반드시 수식어 붙이기
+--    예: list_price (정가), sale_price (판매가), unit_price (단가), item_price (소계)
+--    ⚠️ 단독 price 금지
+--
+-- 5. 코드형 컬럼: 테이블명_status_cd 형식 (코드값 컬럼)
+--    예: alarm_status_cd, order_status_cd, member_status_cd, prod_status_cd
+--    패턴: [도메인_][엔티티_]상태명_cd
+--    코드 테이블 PK: 테이블명_code (VARCHAR) - FK는 _cd 사용
+--
+-- 6. 설명 컬럼: description 대신 desc 사용
+--    예: product_desc, category_desc (not product_description)
+--
+-- 7. 결재 컬럼: approval 대신 appr 사용
+--    예: appr_status_cd, appr_amt, appr_reason, appr_req_user_id, appr_aprv_user_id
+--
+-- 8. 계층/깊이: depth 대신 테이블명_depth 사용
+--    예: category_depth (not depth)
+--
+-- 9. 발신자: sender 대신 sender_cd 사용 (코드형)
+--    예: sender_cd (MEMBER/ADMIN)
 --
 -- ============================================================
 
@@ -24,13 +45,13 @@
 -- ------------------------------------------------
 -- id               아이디 (식별자)
 -- nm               이름 / 명칭
--- cd               코드
+-- cd               코드 (⚠️ 코드형 컬럼은 반드시 _cd로 끝나야 함, 테이블명_status_cd 형식: alarm_status_cd, order_status_cd, member_status_cd 등)
 -- no               번호
 -- yn               여부 (Y/N)
 -- cnt              건수 / 개수
--- qty              수량 (⚠️ 단독사용 금지, 복합어만: order_qty, claim_qty 등)
--- amt              금액 (⚠️ 단독사용 금지, 복합어만: cache_amt, refund_amt, balance_amt 등)
--- price            가격 (⚠️ 단독사용 금지, 복합어만: list_price, sale_price, unit_price 등)
+-- qty              수량 (⚠️ 단독사용 금지, 복합어만: order_qty, claim_qty, stock_qty 등)
+-- amt              금액 (⚠️ 단독사용 금지, 복합어만: cache_amt, refund_amt, balance_amt, discount_amt 등)
+-- price            가격 (⚠️ 단독사용 금지, 복합어만: list_price, sale_price, unit_price, item_price 등)
 -- rate             비율 (%)
 -- ord              순서 (정렬)
 -- dt               일자 (DATE형)
@@ -39,13 +60,13 @@
 -- html             HTML 내용
 -- ip               IP 주소
 -- memo             메모 / 비고
--- desc             설명
+-- desc             설명 (⚠️ description 대신 desc 사용)
 -- content          본문 내용
 -- title            제목
--- type             유형
--- status           상태
--- result           결과
--- method           수단 / 방식
+-- type             유형 (⚠️ 코드형이면 type_cd로: device_cd, etc)
+-- status           상태 (⚠️ 코드형이면 status_cd로: alarm status_cd, batch status_cd 등)
+-- result           결과 (⚠️ 코드형이면 result_cd로: login result_cd 등)
+-- method           수단 / 방식 (⚠️ 코드형이면 method_cd로: HTTP method_cd 등)
 -- grp              그룹
 -- val              값
 -- key              키
@@ -64,8 +85,8 @@
 -- snap             스냅샷
 -- path             경로
 -- disp_path        표시경로 (전시/프로퍼티 트리 빌드용 점(.) 구분 경로, 예: FRONT.모바일메인)
--- approval         결재 / 결재처리
--- aprv             결재(승인) 약어
+-- appr             결재 / 결재처리 (⚠️ approval 대신 appr 사용: appr_status_cd, appr_amt, appr_reason 등)
+-- aprv             결재(승인) 약어 (appr_aprv_user_id, appr_aprv_date 등)
 -- prop             프로퍼티 (환경설정/공통 파라미터)
 -- target           대상
 -- reason           사유

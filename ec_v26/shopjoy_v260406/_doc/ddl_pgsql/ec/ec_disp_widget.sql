@@ -9,7 +9,7 @@ CREATE TABLE ec_disp_widget (
     click_action    VARCHAR(30),                           -- LINK/MODAL/NONE
     click_target    VARCHAR(500),                          -- URL 또는 대상 ID
     sort_ord        INTEGER         DEFAULT 0,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',      -- 코드: DISP_STATUS
+    disp_widget_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',      -- 코드: DISP_STATUS
     content_json    TEXT,                                  -- 위젯별 콘텐츠 데이터 (JSON)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

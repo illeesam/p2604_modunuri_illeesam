@@ -12,7 +12,7 @@ CREATE TABLE sy_notice (
     attach_grp_id   VARCHAR(16),
     start_date      TIMESTAMP,
     end_date        TIMESTAMP,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/INACTIVE
+    notice_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/INACTIVE
     view_count      INTEGER         DEFAULT 0,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

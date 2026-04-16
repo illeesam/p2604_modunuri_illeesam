@@ -12,7 +12,7 @@ CREATE TABLE ec_order_item (
     cancel_qty      INTEGER         DEFAULT 0,              -- 취소수량
     complet_qty     INTEGER         DEFAULT 0,              -- 판매완료수량
     item_price      BIGINT          DEFAULT 0,
-    status_cd       VARCHAR(20)     DEFAULT 'NORMAL',       -- 코드: ORDER_STATUS
+    order_item_status_cd VARCHAR(20)     DEFAULT 'NORMAL',       -- 코드: ORDER_STATUS
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),

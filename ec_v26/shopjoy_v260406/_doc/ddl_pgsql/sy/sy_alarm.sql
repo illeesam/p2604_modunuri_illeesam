@@ -13,7 +13,7 @@ CREATE TABLE sy_alarm (
     template_id     VARCHAR(16),
     message         TEXT,
     send_date       TIMESTAMP,
-    status          VARCHAR(20)     DEFAULT 'PENDING',      -- PENDING/SENT/FAILED/CANCELLED
+    alarm_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- PENDING/SENT/FAILED/CANCELLED
     send_count      INTEGER         DEFAULT 0,
     fail_count      INTEGER         DEFAULT 0,
     reg_by          VARCHAR(16),
@@ -35,7 +35,7 @@ COMMENT ON COLUMN sy_alarm.target_id     IS '대상ID (회원ID 또는 등급코
 COMMENT ON COLUMN sy_alarm.template_id   IS '템플릿ID';
 COMMENT ON COLUMN sy_alarm.message       IS '발송내용';
 COMMENT ON COLUMN sy_alarm.send_date     IS '발송예정일시';
-COMMENT ON COLUMN sy_alarm.status        IS '발송상태 (PENDING/SENT/FAILED/CANCELLED)';
+COMMENT ON COLUMN sy_alarm.status_cd     IS '발송상태 (PENDING/SENT/FAILED/CANCELLED)';
 COMMENT ON COLUMN sy_alarm.send_count    IS '발송성공수';
 COMMENT ON COLUMN sy_alarm.fail_count    IS '발송실패수';
 COMMENT ON COLUMN sy_alarm.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';

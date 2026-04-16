@@ -1,6 +1,6 @@
 -- 상품 컨텐츠 변경 이력
 CREATE TABLE ec_prod_content_chg_hist (
-    hist_no          VARCHAR(16)     NOT NULL,
+    hist_id          VARCHAR(16)     NOT NULL,
     site_id          VARCHAR(16),                            -- sy_site.site_id
     prod_id          VARCHAR(16)     NOT NULL,              -- FK: ec_prod.prod_id
     prod_content_id  VARCHAR(16)     NOT NULL,              -- FK: ec_prod_content.prod_content_id
@@ -14,11 +14,11 @@ CREATE TABLE ec_prod_content_chg_hist (
     reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(16),
     upd_date         TIMESTAMP,
-    PRIMARY KEY (hist_no)
+    PRIMARY KEY (hist_id)
 );
 
 COMMENT ON TABLE  ec_prod_content_chg_hist              IS '상품 컨텐츠 변경 이력';
-COMMENT ON COLUMN ec_prod_content_chg_hist.hist_no      IS '이력번호 (Primary Key)';
+COMMENT ON COLUMN ec_prod_content_chg_hist.hist_id      IS '이력ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.site_id      IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.prod_id      IS '상품ID (ec_prod.prod_id)';
 COMMENT ON COLUMN ec_prod_content_chg_hist.prod_content_id IS '상품컨텐츠ID (ec_prod_content.prod_content_id)';

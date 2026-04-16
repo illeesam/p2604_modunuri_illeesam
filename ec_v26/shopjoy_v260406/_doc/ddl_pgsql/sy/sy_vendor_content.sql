@@ -19,7 +19,7 @@ CREATE TABLE sy_vendor_content (
     start_date        TIMESTAMP,                              -- 노출 시작
     end_date          TIMESTAMP,                              -- 노출 종료
     sort_ord          INTEGER         DEFAULT 0,
-    status_cd         VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_CONTENT_STATUS (DRAFT/ACTIVE/INACTIVE)
+    vendor_content_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_CONTENT_STATUS (DRAFT/ACTIVE/INACTIVE)
     use_yn            CHAR(1)         DEFAULT 'Y',
     view_count        INTEGER         DEFAULT 0,
     remark            VARCHAR(500),

@@ -9,7 +9,7 @@ CREATE TABLE ec_member (
     gender          VARCHAR(1),                             -- M/F
     birth_date      DATE,
     grade_cd        VARCHAR(20)     DEFAULT 'BASIC',        -- 코드: MEMBER_GRADE
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: MEMBER_STATUS
+    member_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: MEMBER_STATUS
     join_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     last_login      TIMESTAMP,
     order_count     INTEGER         DEFAULT 0,

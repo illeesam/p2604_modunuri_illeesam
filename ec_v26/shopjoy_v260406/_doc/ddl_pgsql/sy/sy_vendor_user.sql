@@ -22,7 +22,7 @@ CREATE TABLE sy_vendor_user (
     auth_yn         CHAR(1)         DEFAULT 'N',            -- 업체 관리권한 여부 Y/N
     join_date       DATE,                                   -- 등록(합류) 일자
     leave_date      DATE,                                   -- 퇴직/탈퇴 일자
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_MEMBER_STATUS (ACTIVE/LEFT/SUSPENDED)
+    vendor_user_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_MEMBER_STATUS (ACTIVE/LEFT/SUSPENDED)
     remark          VARCHAR(500),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

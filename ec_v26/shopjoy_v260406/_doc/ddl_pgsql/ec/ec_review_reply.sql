@@ -7,7 +7,7 @@ CREATE TABLE ec_review_reply (
     writer_id       VARCHAR(16),                           -- member_id 또는 user_id
     writer_nm       VARCHAR(50),
     content         TEXT            NOT NULL,
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',      -- ACTIVE/HIDDEN/DELETED
+    reply_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',      -- ACTIVE/HIDDEN/DELETED
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),

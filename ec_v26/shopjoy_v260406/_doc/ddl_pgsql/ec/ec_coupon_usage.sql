@@ -6,7 +6,7 @@ CREATE TABLE ec_coupon_usage (
     coupon_nm       VARCHAR(100),
     member_id       VARCHAR(16),
     order_id        VARCHAR(16),
-    discount_type   VARCHAR(20),
+    discount_type_cd VARCHAR(20),
     discount_value  INTEGER         DEFAULT 0,
     discount_amt    BIGINT          DEFAULT 0,              -- 실할인금액
     used_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -25,7 +25,7 @@ COMMENT ON COLUMN ec_coupon_usage.coupon_code  IS '쿠폰코드';
 COMMENT ON COLUMN ec_coupon_usage.coupon_nm    IS '쿠폰명';
 COMMENT ON COLUMN ec_coupon_usage.member_id    IS '회원ID';
 COMMENT ON COLUMN ec_coupon_usage.order_id     IS '주문ID';
-COMMENT ON COLUMN ec_coupon_usage.discount_type IS '할인유형';
+COMMENT ON COLUMN ec_coupon_usage.discount_type_cd IS '할인유형';
 COMMENT ON COLUMN ec_coupon_usage.discount_value IS '할인값';
 COMMENT ON COLUMN ec_coupon_usage.discount_amt IS '실할인금액';
 COMMENT ON COLUMN ec_coupon_usage.used_date    IS '사용일시';

@@ -1,5 +1,5 @@
 CREATE TABLE ec_prod_opt_sku_chg_hist (
-    hist_no         VARCHAR(16)     NOT NULL,
+    hist_id         VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
     sku_id          VARCHAR(16)     NOT NULL,              -- FK: ec_prod_opt_sku.sku_id
     prod_id         VARCHAR(16)     NOT NULL,              -- FK: ec_prod.prod_id
@@ -17,7 +17,7 @@ CREATE TABLE ec_prod_opt_sku_chg_hist (
 );
 
 COMMENT ON TABLE  ec_prod_opt_sku_chg_hist              IS 'SKU 변경 이력 (가격/재고/상태)';
-COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.hist_no      IS '이력번호 (Primary Key)';
+COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.hist_id      IS '이력ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.site_id      IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.sku_id       IS 'SKU ID (ec_prod_opt_sku.sku_id)';
 COMMENT ON COLUMN ec_prod_opt_sku_chg_hist.prod_id      IS '상품ID (ec_prod.prod_id)';

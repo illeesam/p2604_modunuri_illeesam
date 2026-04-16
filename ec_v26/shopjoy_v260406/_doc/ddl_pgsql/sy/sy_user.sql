@@ -9,7 +9,7 @@ CREATE TABLE sy_user (
     phone           VARCHAR(20),
     dept_id         VARCHAR(16),
     role_id         VARCHAR(16),
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USER_STATUS
+    user_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USER_STATUS
     last_login      TIMESTAMP,
     login_fail_cnt  SMALLINT        DEFAULT 0,
     memo            TEXT,

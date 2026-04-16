@@ -3,7 +3,7 @@ CREATE TABLE ec_chatt_msg (
     msg_id          VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
     chatt_id        VARCHAR(16)     NOT NULL,
-    sender          VARCHAR(20)     NOT NULL,               -- MEMBER / ADMIN
+    sender_cd       VARCHAR(20)     NOT NULL,               -- MEMBER / ADMIN
     msg_text        TEXT,
     ref_type        VARCHAR(20),                            -- ORDER / PRODUCT / CLAIM
     ref_id          VARCHAR(16),
@@ -20,7 +20,7 @@ COMMENT ON TABLE  ec_chatt_msg           IS '채팅 메시지';
 COMMENT ON COLUMN ec_chatt_msg.msg_id    IS '메시지ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN ec_chatt_msg.site_id   IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_chatt_msg.chatt_id  IS '채팅방ID';
-COMMENT ON COLUMN ec_chatt_msg.sender    IS '발신자유형 (MEMBER/ADMIN)';
+COMMENT ON COLUMN ec_chatt_msg.sender_cd  IS '발신자유형 (MEMBER/ADMIN)';
 COMMENT ON COLUMN ec_chatt_msg.msg_text  IS '메시지내용';
 COMMENT ON COLUMN ec_chatt_msg.ref_type  IS '참조유형 (ORDER/PRODUCT/CLAIM)';
 COMMENT ON COLUMN ec_chatt_msg.ref_id    IS '참조ID';

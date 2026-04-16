@@ -11,7 +11,7 @@ CREATE TABLE sy_contact (
     title           VARCHAR(200)    NOT NULL,
     content         TEXT            NOT NULL,
     attach_grp_id   VARCHAR(16),
-    status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CONTACT_STATUS
+    contact_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CONTACT_STATUS
     answer          TEXT,
     answer_user_id       VARCHAR(16),
     answer_date     TIMESTAMP,

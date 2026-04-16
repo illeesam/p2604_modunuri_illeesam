@@ -26,7 +26,7 @@ CREATE TABLE sy_vendor (
     vendor_reg_url     VARCHAR(500),                           -- 판매/배송업체등록증 첨부 URL
     open_date       DATE,                                   -- 개업일자
     contract_date   DATE,                                   -- 계약일자
-    status_cd       VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_STATUS (ACTIVE/SUSPENDED/TERMINATED)
+    vendor_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_STATUS (ACTIVE/SUSPENDED/TERMINATED)
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     remark          VARCHAR(500),
     reg_by          VARCHAR(16),
