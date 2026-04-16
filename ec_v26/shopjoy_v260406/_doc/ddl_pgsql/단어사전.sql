@@ -117,7 +117,7 @@
 -- type             유형 (⚠️ 코드형이면 type_cd로: device_cd, etc)
 -- status           상태 (⚠️ 코드형이면 status_cd로: alarm status_cd, batch status_cd 등)
 -- result           결과 (⚠️ 코드형이면 result_cd로: login result_cd 등)
--- method           수단 / 방식 (⚠️ 코드형이면 method_cd로: HTTP method_cd 등)
+-- method_cd        수단 / 방식 (⚠️ 코드형은 반드시 _cd로: pay_method_cd, refund_method_cd, auth_method_cd 등)
 -- grp              그룹
 -- val              값
 -- key              키
@@ -227,7 +227,7 @@
 -- cache_amt           적립금 금액 (양수:적립/음수:사용)
 -- balance_amt         잔액 (처리 후 계산 잔액)
 -- cache_balance_amt   적립금 잔액 (누적)
--- pay_method          결제수단
+-- pay_method_cd       결제수단 (코드: PAY_METHOD_CD)
 -- ------------------------------------------------
 
 -- [ 수량 관련 (복합어만 사용) ]
@@ -248,14 +248,14 @@
 -- PRODUCT_STATUS       ACTIVE / INACTIVE / SOLDOUT / DELETED
 -- ORDER_STATUS         PENDING / PAID / PREPARING / SHIPPED / DELIVERED / CANCELLED / REFUNDED
 -- CLAIM_TYPE           CANCEL / RETURN / EXCHANGE
--- CLAIM_STATUS         REQUESTED / PROCESSING / COMPLETED / REJECTED
+-- CLAIM_STATUS         REQUESTED / PROCESSING / COMPLT / REJECTED
 -- CLAIM_REASON         CHANGE_MIND / DEFECT / WRONG_ITEM / OTHER
 -- COUPON_TYPE          RATE / FIXED
 -- COUPON_STATUS        ACTIVE / INACTIVE / EXPIRED
 -- CART_STATUS          ACTIVE / ORDERED / EXPIRED
 -- REVIEW_STATUS        ACTIVE / HIDDEN / DELETED
--- REFUND_METHOD        CARD / ACCOUNT / CACHE
--- PAY_METHOD           CARD / ACCOUNT / CACHE / KAKAO / NAVER / TOSS
+-- REFUND_METHOD_CD     CARD / ACCOUNT / MOBILE
+-- PAY_METHOD_CD        BANK_TRANSFER / VBANK / TOSS / KAKAO / NAVER / MOBILE
 -- LOGIN_RESULT         SUCCESS / FAIL_PWD / FAIL_LOCKED / FAIL_NOT_FOUND
 -- MEDIA_TYPE           IMAGE / VIDEO
 -- DISP_AREA            (전시영역코드 — 사이트별 정의)
@@ -267,7 +267,7 @@
 -- VISIBILITY_TARGET    PUBLIC / MEMBER / VERIFIED / VIP / PREMIUM / GUEST 등 (^CODE^ 인코딩)
 -- APPROVAL_STATUS      REQ / APPROVED / REJECTED / DONE
 -- APPROVAL_TARGET      ORDER / PROD / DLIV / EXTRA
--- AUTH_METHOD          MAIN / SMS / OTP / AUTHENTICATOR
+-- AUTH_METHOD_CD       MAIN / SMS / OTP / AUTHENTICATOR
 -- PROP_TYPE            STRING / NUMBER / BOOLEAN / JSON
 -- ALARM_TYPE           PUSH / EMAIL / SMS / INAPP
 -- ALARM_STATUS         DRAFT / SCHEDULED / SENT / FAILED

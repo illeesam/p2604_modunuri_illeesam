@@ -156,7 +156,7 @@
             "children": [
               {"id":"sa_claim_list", "label":"클레임 목록", "type":"req","method":"GET", "url":"/api/admin/ec/claim",              "desc":"클레임 목록","params":[{"k":"page","v":"1"},{"k":"claimTypeCd","v":""},{"k":"statusCd","v":""}]},
               {"id":"sa_claim_dtl",  "label":"클레임 상세", "type":"req","method":"GET", "url":"/api/admin/ec/claim/CLM0001",      "desc":"클레임 상세"},
-              {"id":"sa_claim_proc", "label":"클레임 처리", "type":"req","method":"PUT", "url":"/api/admin/ec/claim/CLM0001/proc", "desc":"클레임 처리","body":"{\n  \"statusCd\": \"COMPLETED\",\n  \"refundMethodCd\": \"CARD\",\n  \"refundAmount\": 39000,\n  \"memo\": \"처리 완료\"\n}"},
+              {"id":"sa_claim_proc", "label":"클레임 처리", "type":"req","method":"PUT", "url":"/api/admin/ec/claim/CLM0001/proc", "desc":"클레임 처리","body":"{\n  \"statusCd\": \"COMPLT\",\n  \"refundMethodCd\": \"CARD\",\n  \"refundAmount\": 39000,\n  \"memo\": \"처리 완료\"\n}"},
               {"id":"sa_claim_hist", "label":"클레임 이력", "type":"req","method":"GET", "url":"/api/admin/ec/claim/CLM0001/hist", "desc":"클레임 이력"}
             ]
           },

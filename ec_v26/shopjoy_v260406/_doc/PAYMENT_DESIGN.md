@@ -12,7 +12,7 @@
 ```
 PAY_METHOD_CD = 'BANK_TRANSFER'
 PAY_CHANNEL_CD = NULL
-상태: PENDING (입금 대기) → COMPLETED (입금 확인)
+상태: PENDING (입금 대기) → COMPLT (입금 확인)
 특이사항: PG 사용 안함, 수동 입금 확인
 ```
 
@@ -20,7 +20,7 @@ PAY_CHANNEL_CD = NULL
 ```
 PAY_METHOD_CD = 'VBANK'
 PAY_CHANNEL_CD = NULL
-상태: PENDING (계좌 발급) → COMPLETED (입금 확인)
+상태: PENDING (계좌 발급) → COMPLT (입금 확인)
 필드: vbank_account, vbank_bank_code, vbank_due_date
 특이사항: PG가 계좌번호 발급 → 고객이 해당 계좌로 입금
 ```
@@ -30,7 +30,7 @@ PAY_CHANNEL_CD = NULL
 PAY_METHOD_CD = 'TOSS'
 PAY_CHANNEL_CD = 'CARD' | 'ACCOUNT' | 'KAKAO' | 'NAVER'
 PG_COMPANY_CD = 'TOSS'
-상태: PENDING (결제 진행) → COMPLETED (결제 완료)
+상태: PENDING (결제 진행) → COMPLT (결제 완료)
 필드: pg_transaction_id, pg_approval_no, card_no (카드일 경우)
 특이사항: 통합 결제 게이트웨이, 채널별 세분화 가능
 
@@ -54,7 +54,7 @@ PG_COMPANY_CD = 'TOSS'
 ```
 PAY_METHOD_CD = 'MOBILE'
 PAY_CHANNEL_CD = NULL
-상태: PENDING → COMPLETED
+상태: PENDING → COMPLT
 특이사항: 휴대폰 소액결제 (토스 미지원 시 별도 PG)
 ```
 
@@ -63,7 +63,7 @@ PAY_CHANNEL_CD = NULL
 PAY_METHOD_CD = 'KAKAO'
 PAY_CHANNEL_CD = NULL
 PG_COMPANY_CD = 'KAKAO'
-상태: PENDING → COMPLETED
+상태: PENDING → COMPLT
 특이사항: 카카오페이 자체 PG (토스가 아닌 카카오페이 API 직결)
 ```
 
@@ -72,7 +72,7 @@ PG_COMPANY_CD = 'KAKAO'
 PAY_METHOD_CD = 'NAVER'
 PAY_CHANNEL_CD = NULL
 PG_COMPANY_CD = 'NAVER'
-상태: PENDING → COMPLETED
+상태: PENDING → COMPLT
 특이사항: 네이버페이 자체 PG (토스가 아닌 네이버페이 API 직결)
 ```
 
@@ -89,7 +89,7 @@ PG_COMPANY_CD = 'NAVER'
 | **pay_method_cd** | CODE | 결제수단 (BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE) |
 | **pay_channel_cd** | CODE | 결제채널 (TOSS만: CARD/ACCOUNT/KAKAO/NAVER) |
 | **pay_amt** | BIGINT | 결제 금액 |
-| **pay_status_cd** | CODE | 결제상태 (PENDING/COMPLETED/FAILED/CANCELLED/REFUNDED) |
+| **pay_status_cd** | CODE | 결제상태 (PENDING/COMPLT/FAILED/CANCELLED/REFUNDED) |
 | **pay_date** | TIMESTAMP | 결제 완료일시 |
 | **pg_company_cd** | CODE | PG사 (TOSS/KAKAO/NAVER) |
 | **pg_transaction_id** | VARCHAR | PG 거래ID |
@@ -105,7 +105,7 @@ PG_COMPANY_CD = 'NAVER'
 | **card_type_cd** | CODE | 카드타입 (CREDIT/DEBIT/CHECK) |
 | **installment_month** | INT | 할부개월 (0=일시불) |
 | **refund_amt** | BIGINT | 환불금액 |
-| **refund_status_cd** | CODE | 환불상태 (PENDING/COMPLETED/FAILED) |
+| **refund_status_cd** | CODE | 환불상태 (PENDING/COMPLT/FAILED) |
 | **refund_date** | TIMESTAMP | 환불완료일시 |
 | **failure_reason** | VARCHAR | 실패사유 |
 | **failure_code** | VARCHAR | PG 오류코드 |
@@ -132,7 +132,7 @@ PG_COMPANY_CD = 'NAVER'
 ```
 PENDING (결제 진행)
   ↓
-COMPLETED (결제 완료)
+COMPLT (결제 완료)
 ```
 
 ### 결제 실패
@@ -141,12 +141,12 @@ PENDING (결제 진행)
   ↓
 FAILED (결제 실패)
   ↓
-RETRY (재시도) → COMPLETED 또는 FAILED
+RETRY (재시도) → COMPLT 또는 FAILED
 ```
 
 ### 환불
 ```
-COMPLETED (결제 완료)
+COMPLT (결제 완료)
   ↓
 REFUNDED (환불)
 ```
@@ -180,7 +180,7 @@ PAYMENT.pay_status_cd = 'PENDING'
 PG로부터 승인 콜백
   ↓
 PAYMENT 업데이트
-  - pay_status_cd = 'COMPLETED'
+  - pay_status_cd = 'COMPLT'
   - pg_transaction_id, pg_approval_no 저장
   - pay_date 기록
   ↓
@@ -194,8 +194,8 @@ ORDER 생성 (pay_price = 100,000)
 PAYMENT #1 생성 (pay_amt = 50,000) - 선금
   PAYMENT #2 생성 (pay_amt = 50,000) - 잔금
   ↓
-#1 COMPLETED → 배송 시작
-#2 COMPLETED → 배송 완료
+#1 COMPLT → 배송 시작
+#2 COMPLT → 배송 완료
 ```
 
 ### 환불
@@ -208,7 +208,7 @@ PAYMENT.refund_amt = X원
 PG에 환불 요청
   ↓
 PAYMENT_HIST 생성 (chg_type = 'REFUND')
-PAYMENT.refund_status_cd = 'COMPLETED'
+PAYMENT.refund_status_cd = 'COMPLT'
 PAYMENT.refund_date 기록
   ↓
 ORDER.pay_price 차감 또는 CLAIM.refund_amt로 계산
@@ -240,7 +240,7 @@ NAVER            = 네이버페이 (토스 경유)
 ### PAY_STATUS (결제상태)
 ```
 PENDING          = 결제 진행 중
-COMPLETED        = 결제 완료
+COMPLT        = 결제 완료
 FAILED           = 결제 실패
 CANCELLED        = 결제 취소 (사용자)
 REFUNDED         = 환불 완료
@@ -259,7 +259,7 @@ RETRY            = 재시도
 ### REFUND_STATUS (환불상태)
 ```
 PENDING          = 환불 대기
-COMPLETED        = 환불 완료
+COMPLT        = 환불 완료
 FAILED           = 환불 실패
 ```
 
@@ -315,7 +315,7 @@ BUSAN            = 부산은행
 2. PAYMENT.refund_status_cd = 'PENDING'
 3. 환불 API 호출 (PG에 환불 요청)
 4. PG로부터 승인 → PAYMENT_HIST 생성
-5. PAYMENT.refund_status_cd = 'COMPLETED'
+5. PAYMENT.refund_status_cd = 'COMPLT'
 ```
 
 ---
@@ -337,7 +337,7 @@ PAYMENT 생성 (payment_id='202604161234xyz1',
 토스 서버 → 콜백
   ↓
 PAYMENT 업데이트
-  - pay_status_cd='COMPLETED'
+  - pay_status_cd='COMPLT'
   - pg_transaction_id='toss_12345678'
   - pg_approval_no='ABC123'
   - pay_date=NOW()
@@ -369,7 +369,7 @@ PAYMENT 업데이트
 PG → 우리 서버 입금 알림 콜백
   ↓
 PAYMENT 업데이트
-  - pay_status_cd='COMPLETED'
+  - pay_status_cd='COMPLT'
   - vbank_deposit_nm='홍길동'
   - vbank_deposit_date=NOW()
 ```
@@ -390,7 +390,7 @@ PG 승인 → 콜백
   ↓
 PAYMENT_HIST 생성 (chg_type_cd='REFUND')
 PAYMENT 업데이트
-  - refund_status_cd='COMPLETED'
+  - refund_status_cd='COMPLT'
   - refund_date=NOW()
   
 CLAIM 업데이트

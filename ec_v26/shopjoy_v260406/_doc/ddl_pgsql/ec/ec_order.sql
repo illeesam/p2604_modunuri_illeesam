@@ -5,12 +5,12 @@ CREATE TABLE ec_order (
     member_id       VARCHAR(16)     NOT NULL,
     member_nm       VARCHAR(50),
     order_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    total_price     BIGINT          DEFAULT 0,
-    discount_amt    BIGINT          DEFAULT 0,
-    coupon_discount BIGINT          DEFAULT 0,
-    cache_use       BIGINT          DEFAULT 0,
-    pay_price       BIGINT          DEFAULT 0,              -- 실결제금액
-    pay_method_cd   VARCHAR(20),                            -- 코드: PAY_METHOD
+    total_amt       BIGINT          DEFAULT 0,              -- 상품합계금액
+    discount_amt    BIGINT          DEFAULT 0,              -- 할인금액
+    coupon_discount_amt BIGINT      DEFAULT 0,              -- 쿠폰할인금액
+    cache_use_amt   BIGINT          DEFAULT 0,              -- 적립금사용금액
+    pay_amt         BIGINT          DEFAULT 0,              -- 실결제금액
+    pay_method_cd   VARCHAR(20),                            -- 코드: PAY_METHOD_CD
     pay_date        TIMESTAMP,
     order_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: ORDER_STATUS
     order_status_cd_before VARCHAR(20),                     -- 변경 전 주문상태
@@ -54,12 +54,12 @@ COMMENT ON COLUMN ec_order.site_id          IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN ec_order.member_id        IS '회원ID';
 COMMENT ON COLUMN ec_order.member_nm        IS '주문자명';
 COMMENT ON COLUMN ec_order.order_date       IS '주문일시';
-COMMENT ON COLUMN ec_order.total_price      IS '상품합계';
+COMMENT ON COLUMN ec_order.total_amt        IS '상품합계금액';
 COMMENT ON COLUMN ec_order.discount_amt     IS '할인금액';
-COMMENT ON COLUMN ec_order.coupon_discount  IS '쿠폰할인';
-COMMENT ON COLUMN ec_order.cache_use        IS '적립금사용';
-COMMENT ON COLUMN ec_order.pay_price        IS '실결제금액';
-COMMENT ON COLUMN ec_order.pay_method_cd    IS '결제수단 (코드: PAY_METHOD)';
+COMMENT ON COLUMN ec_order.coupon_discount_amt IS '쿠폰할인금액';
+COMMENT ON COLUMN ec_order.cache_use_amt    IS '적립금사용금액';
+COMMENT ON COLUMN ec_order.pay_amt          IS '실결제금액';
+COMMENT ON COLUMN ec_order.pay_method_cd    IS '결제수단 (코드: PAY_METHOD_CD)';
 COMMENT ON COLUMN ec_order.pay_date         IS '결제일시';
 COMMENT ON COLUMN ec_order.order_status_cd  IS '주문상태 (코드: ORDER_STATUS)';
 COMMENT ON COLUMN ec_order.order_status_cd_before IS '변경 전 주문상태 (코드: ORDER_STATUS)';

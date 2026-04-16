@@ -1,6 +1,6 @@
 -- ============================================================
 -- ec_pay_status_hist : 결제 상태 이력 (결제 상태 변경만 추적)
--- 상태 변경: PENDING → COMPLETED, COMPLETED → REFUNDED 등
+-- 상태 변경: PENDING → COMPLT, COMPLT → REFUNDED 등
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE ec_pay_status_hist (

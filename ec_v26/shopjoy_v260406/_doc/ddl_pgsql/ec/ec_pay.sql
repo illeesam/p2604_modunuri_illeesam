@@ -11,7 +11,7 @@ CREATE TABLE ec_pay (
     pay_method_cd       VARCHAR(20)     NOT NULL,               -- 코드: PAY_METHOD (BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE)
     pay_channel_cd      VARCHAR(20),                            -- 코드: PAY_CHANNEL (TOSS인 경우: CARD/ACCOUNT/KAKAO/NAVER)
     pay_amt             BIGINT          NOT NULL,               -- 결제 금액
-    pay_status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: PAY_STATUS (PENDING/COMPLETED/FAILED/CANCELLED/REFUNDED)
+    pay_status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: PAY_STATUS (PENDING/COMPLT/FAILED/CANCELLED/REFUNDED)
     pay_status_cd_before VARCHAR(20),                            -- 변경 전 결제상태
     pay_date            TIMESTAMP,                              -- 결제 완료일시
     pg_company_cd       VARCHAR(20),                            -- PG사 (TOSS/KAKAO/NAVER 등)
@@ -34,7 +34,7 @@ CREATE TABLE ec_pay (
     installment_month   INTEGER         DEFAULT 0,              -- 할부 개월수 (0=일시불)
     -- ── 환불 정보 ──
     refund_amt          BIGINT          DEFAULT 0,              -- 환불 금액
-    refund_status_cd    VARCHAR(20),                            -- 환불 상태 (코드: REFUND_STATUS — PENDING/COMPLETED/FAILED)
+    refund_status_cd    VARCHAR(20),                            -- 환불 상태 (코드: REFUND_STATUS — PENDING/COMPLT/FAILED)
     refund_status_cd_before VARCHAR(20),                        -- 변경 전 환불상태
     refund_date         TIMESTAMP,                              -- 환불 완료일시
     refund_reason       VARCHAR(300),                           -- 환불 사유

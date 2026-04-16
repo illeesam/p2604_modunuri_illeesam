@@ -9,12 +9,14 @@ INSERT INTO sy_code_grp (code_grp, grp_name, description, use_yn) VALUES
 ('MEMBER_STATUS', '회원상태',       '회원 활동 상태',           'Y'),
 ('GENDER',        '성별',           '성별 구분',                'Y'),
 ('ORDER_STATUS',  '주문상태',       '주문 처리 단계',           'Y'),
+('ORDER_ITEM_STATUS', '주문항목상태',   '주문 항목별 처리 단계',     'Y'),
 ('PAY_METHOD',    '결제수단',       '결제 방법',                'Y'),
 ('REFUND_METHOD', '환불수단',       '환불 처리 방법',           'Y'),
 ('COURIER',       '택배사',         '배송 택배사',              'Y'),
 ('DLIV_STATUS',   '배송상태',       '배송 처리 단계',           'Y'),
 ('CLAIM_TYPE',    '클레임유형',     '취소/반품/교환 구분',      'Y'),
 ('CLAIM_STATUS',  '클레임상태',     '클레임 처리 단계',         'Y'),
+('CLAIM_ITEM_STATUS', '클레임항목상태',   '클레임 항목별 처리 단계',  'Y'),
 ('CLAIM_REASON',  '클레임사유',     '클레임 요청 사유',         'Y'),
 ('PRODUCT_STATUS','상품상태',       '상품 판매 상태',           'Y'),
 ('PRODUCT_SIZE',  '상품사이즈',     '의류 사이즈',              'Y'),
@@ -72,6 +74,16 @@ INSERT INTO sy_code (code_id, code_grp, code_value, code_label, sort_ord, use_yn
 ('2604110000004005', 'ORDER_STATUS', 'DELIVERED', '배송완료',  5, 'Y'),
 ('2604110000004006', 'ORDER_STATUS', 'CANCELLED', '취소',      6, 'Y');
 
+-- 주문항목상태
+INSERT INTO sy_code (code_id, code_grp, code_value, code_label, sort_ord, use_yn) VALUES
+('2604110000004101', 'ORDER_ITEM_STATUS', 'NORMAL',           '정상',       1, 'Y'),
+('2604110000004102', 'ORDER_ITEM_STATUS', 'PARTIAL_CANCELLED','부분취소',   2, 'Y'),
+('2604110000004103', 'ORDER_ITEM_STATUS', 'PARTIALLY_SHIPPED','부분배송',   3, 'Y'),
+('2604110000004104', 'ORDER_ITEM_STATUS', 'SHIPPED',          '배송완료',   4, 'Y'),
+('2604110000004105', 'ORDER_ITEM_STATUS', 'COMPLT',        '거래완료',   5, 'Y'),
+('2604110000004106', 'ORDER_ITEM_STATUS', 'CANCELLED',        '취소',       6, 'Y'),
+('2604110000004107', 'ORDER_ITEM_STATUS', 'RETURNED',         '반품',       7, 'Y');
+
 -- 결제수단
 INSERT INTO sy_code (code_id, code_grp, code_value, code_label, sort_ord, use_yn) VALUES
 ('2604110000005001', 'PAY_METHOD', 'CARD',   '신용카드',   1, 'Y'),
@@ -114,8 +126,22 @@ INSERT INTO sy_code (code_id, code_grp, code_value, code_label, sort_ord, use_yn
 ('2604110000010001', 'CLAIM_STATUS', 'REQUESTED',  '접수',    1, 'Y'),
 ('2604110000010002', 'CLAIM_STATUS', 'CONFIRMED',  '확인',    2, 'Y'),
 ('2604110000010003', 'CLAIM_STATUS', 'PROCESSING', '처리중',  3, 'Y'),
-('2604110000010004', 'CLAIM_STATUS', 'COMPLETED',  '완료',    4, 'Y'),
+('2604110000010004', 'CLAIM_STATUS', 'COMPLT',  '완료',    4, 'Y'),
 ('2604110000010005', 'CLAIM_STATUS', 'REJECTED',   '거절',    5, 'Y');
+
+-- 클레임항목상태
+INSERT INTO sy_code (code_id, code_grp, code_value, code_label, sort_ord, use_yn) VALUES
+('2604110000010101', 'CLAIM_ITEM_STATUS', 'REQUESTED',           '접수',         1, 'Y'),
+('2604110000010102', 'CLAIM_ITEM_STATUS', 'APPROVED',            '승인',         2, 'Y'),
+('2604110000010103', 'CLAIM_ITEM_STATUS', 'PARTIAL_APPROVED',    '부분승인',     3, 'Y'),
+('2604110000010104', 'CLAIM_ITEM_STATUS', 'IN_RETURN',           '반품진행중',   4, 'Y'),
+('2604110000010105', 'CLAIM_ITEM_STATUS', 'RETURNED',            '반품완료',     5, 'Y'),
+('2604110000010106', 'CLAIM_ITEM_STATUS', 'IN_REFUND',           '환불진행중',   6, 'Y'),
+('2604110000010107', 'CLAIM_ITEM_STATUS', 'REFUNDED',            '환불완료',     7, 'Y'),
+('2604110000010108', 'CLAIM_ITEM_STATUS', 'EXCHANGE_IN_RETURN',  '교환반품진행',  8, 'Y'),
+('2604110000010109', 'CLAIM_ITEM_STATUS', 'EXCHANGE_IN_DELIVERY','교환배송진행',  9, 'Y'),
+('2604110000010110', 'CLAIM_ITEM_STATUS', 'EXCHANGE_COMPLT',  '교환완료',    10, 'Y'),
+('2604110000010111', 'CLAIM_ITEM_STATUS', 'CANCELLED',           '취소',        11, 'Y');
 
 -- 클레임사유
 INSERT INTO sy_code (code_id, code_grp, code_value, code_label, sort_ord, use_yn) VALUES
