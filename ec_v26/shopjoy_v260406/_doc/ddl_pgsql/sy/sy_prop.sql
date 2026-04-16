@@ -10,7 +10,7 @@ CREATE TABLE sy_prop (
     prop_key        VARCHAR(100)    NOT NULL,               -- 키 (코드 식별자, snake_case 권장)
     prop_value      TEXT,                                   -- 값 (JSON/문자열/숫자 등)
     prop_label      VARCHAR(200)    NOT NULL,               -- 표시명
-    prop_type       VARCHAR(20)     DEFAULT 'STRING',       -- STRING/NUMBER/BOOLEAN/JSON
+    prop_type_cd    VARCHAR(20)     DEFAULT 'STRING',       -- 코드: PROP_TYPE (STRING/NUMBER/BOOLEAN/JSON)
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     prop_remark     VARCHAR(500),
@@ -29,7 +29,7 @@ COMMENT ON COLUMN sy_prop.disp_path    IS '점(.) 구분 표시경로 (aa.bb.cc)
 COMMENT ON COLUMN sy_prop.prop_key     IS '키 (코드 식별자)';
 COMMENT ON COLUMN sy_prop.prop_value   IS '값';
 COMMENT ON COLUMN sy_prop.prop_label   IS '표시명';
-COMMENT ON COLUMN sy_prop.prop_type    IS '값 타입 (STRING/NUMBER/BOOLEAN/JSON)';
+COMMENT ON COLUMN sy_prop.prop_type_cd IS '값 타입 (코드: PROP_TYPE — STRING/NUMBER/BOOLEAN/JSON)';
 COMMENT ON COLUMN sy_prop.sort_ord     IS '같은 표시경로 내 정렬순서';
 COMMENT ON COLUMN sy_prop.use_yn       IS '사용여부 Y/N';
 COMMENT ON COLUMN sy_prop.prop_remark  IS '비고';
