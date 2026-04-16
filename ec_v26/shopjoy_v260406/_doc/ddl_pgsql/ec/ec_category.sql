@@ -11,7 +11,7 @@ CREATE TABLE ec_category (
     sort_ord        INTEGER         DEFAULT 0,
     category_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USE_YN
     img_url         VARCHAR(500),
-    desc            TEXT,
+    category_desc   TEXT,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -28,7 +28,7 @@ COMMENT ON COLUMN ec_category.category_depth IS '깊이 (1:대/2:중/3:소)';
 COMMENT ON COLUMN ec_category.sort_ord      IS '정렬순서';
 COMMENT ON COLUMN ec_category.status_cd     IS '상태 (ACTIVE/INACTIVE)';
 COMMENT ON COLUMN ec_category.img_url       IS '이미지URL';
-COMMENT ON COLUMN ec_category.desc          IS '설명';
+COMMENT ON COLUMN ec_category.category_desc IS '설명';
 COMMENT ON COLUMN ec_category.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_category.reg_date      IS '등록일';
 COMMENT ON COLUMN ec_category.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';

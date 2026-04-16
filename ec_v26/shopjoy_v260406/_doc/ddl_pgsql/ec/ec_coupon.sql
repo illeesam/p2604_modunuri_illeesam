@@ -14,7 +14,7 @@ CREATE TABLE ec_coupon (
     max_discount_amt BIGINT,                                -- 최대할인한도
     issue_limit     INTEGER,                                -- 총발급한도 (NULL = 무제한)
     issue_cnt       INTEGER         DEFAULT 0,              -- 발급수
-    desc            TEXT,                                   -- 쿠폰설명
+    coupon_desc     TEXT,                                   -- 쿠폰설명
     valid_from      DATE,                                   -- 유효기간 시작
     valid_to        DATE,                                   -- 유효기간 종료
     coupon_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COUPON_STATUS (ACTIVE/INACTIVE/EXPIRED)

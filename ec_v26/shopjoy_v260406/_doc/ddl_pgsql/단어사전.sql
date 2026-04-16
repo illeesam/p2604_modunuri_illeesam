@@ -27,8 +27,9 @@
 --    패턴: [도메인_][엔티티_]상태명_cd
 --    코드 테이블 PK: 테이블명_code (VARCHAR) - FK는 _cd 사용
 --
--- 6. 설명 컬럼: description 대신 desc 사용
---    예: product_desc, category_desc (not product_description)
+-- 6. 설명 컬럼: description 대신 entity_desc 패턴 사용
+--    예: product_desc, category_desc, coupon_desc, event_desc, area_desc (테이블명_desc 형식)
+--    ⚠️ 단독 desc 금지 (반드시 entity_desc 형식)
 --
 -- 7. 결재 컬럼: approval 대신 appr 사용
 --    예: appr_status_cd, appr_amt, appr_reason, appr_req_user_id, appr_aprv_user_id
@@ -60,7 +61,7 @@
 -- html             HTML 내용
 -- ip               IP 주소
 -- memo             메모 / 비고
--- desc             설명 (⚠️ description 대신 desc 사용)
+-- desc             설명 (⚠️ description 대신 사용하되, 반드시 entity_desc 형식: product_desc, category_desc 등)
 -- content          본문 내용
 -- title            제목
 -- type             유형 (⚠️ 코드형이면 type_cd로: device_cd, etc)

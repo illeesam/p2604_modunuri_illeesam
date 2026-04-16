@@ -117,14 +117,18 @@ disp_panel_status_cd    (ec_disp_panel)
 disp_widget_status_cd   (ec_disp_widget)
 ```
 
-### 6. 설명 컬럼 (desc)
-**`description` 대신 `desc` 사용**
+### 6. 설명 컬럼 (entity_desc 패턴)
+**`description` 대신 `entity_desc` 패턴 사용 — 단독 `desc` 금지**
 
 ```sql
-product_desc           -- O
-category_desc          -- O
-template_desc          -- O
+product_desc           -- O (상품설명)
+category_desc          -- O (카테고리설명)
+coupon_desc            -- O (쿠폰설명)
+event_desc             -- O (이벤트설명)
+area_desc              -- O (영역설명)
+cache_desc             -- O (적립금설명)
 
+desc                   -- X (단독 금지)
 product_description    -- X
 ```
 
@@ -174,8 +178,8 @@ CREATE TABLE 도메인_엔티티명 (
     -- 수량: 복합어_qty
     order_qty       INTEGER         DEFAULT 1,
     
-    -- 설명: desc (not description)
-    desc            TEXT,
+    -- 설명: entity_desc (entity = 테이블/도메인명)
+    entity_desc     TEXT,
     
     -- 감사필드: 항상 이 4개 포함
     reg_by          VARCHAR(16),
@@ -211,7 +215,7 @@ upd_date        TIMESTAMP,                             -- 수정일
 - [ ] **코드형**: `테이블명_상태명_cd` 형식 적용
 - [ ] **금액**: 모든 금액 컬럼이 `_amt` 서픽스 사용
 - [ ] **수량**: 모든 수량 컬럼이 `_qty` 서픽스 사용
-- [ ] **설명**: `description` 대신 `desc` 사용
+- [ ] **설명**: `description` 대신 `entity_desc` 패턴 사용 (테이블명_desc)
 - [ ] **감사필드**: reg_by, reg_date, upd_by, upd_date 포함
 - [ ] **코멘트**: 테이블과 모든 컬럼에 한글 설명 추가
 - [ ] **인덱스**: FK 및 자주 검색되는 컬럼에 인덱스 추가
@@ -236,7 +240,8 @@ upd_date        TIMESTAMP,                             -- 수정일
 qty                -- X (order_qty, stock_qty 사용)
 amt                -- X (discount_amt, refund_amt 사용)
 price              -- X (list_price, sale_price 사용)
-description        -- X (desc 사용)
+desc               -- X (product_desc, category_desc, coupon_desc 등)
+description        -- X (entity_desc 패턴 사용)
 approval_*         -- X (appr_* 사용)
 ```
 
@@ -256,7 +261,8 @@ status_cd          -- X (alarm_status_cd, order_status_cd 사용)
 order_qty          -- O
 discount_amt       -- O
 list_price         -- O
-desc               -- O
+product_desc       -- O (entity_desc 패턴)
+coupon_desc        -- O
 appr_amt           -- O
 alarm_status_cd    -- O
 ```

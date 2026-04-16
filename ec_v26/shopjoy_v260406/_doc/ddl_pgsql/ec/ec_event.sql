@@ -19,7 +19,7 @@ CREATE TABLE ec_event (
     sort_ord        INTEGER         DEFAULT 0,
     view_cnt        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    desc            TEXT,
+    event_desc      TEXT,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -39,17 +39,17 @@ COMMENT ON COLUMN ec_event.start_date           IS '이벤트 시작일';
 COMMENT ON COLUMN ec_event.end_date             IS '이벤트 종료일';
 COMMENT ON COLUMN ec_event.notice_start         IS '예고 시작일';
 COMMENT ON COLUMN ec_event.notice_end           IS '예고 종료일';
-COMMENT ON COLUMN ec_event.status_cd            IS '상태 (코드: EVENT_STATUS)';
+COMMENT ON COLUMN ec_event.event_status_cd      IS '상태 (코드: EVENT_STATUS)';
 COMMENT ON COLUMN ec_event.target_type_cd       IS '대상유형 (코드: EVENT_TARGET)';
 COMMENT ON COLUMN ec_event.sort_ord             IS '정렬순서';
 COMMENT ON COLUMN ec_event.view_cnt             IS '조회수';
 COMMENT ON COLUMN ec_event.use_yn               IS '사용여부 Y/N';
-COMMENT ON COLUMN ec_event.desc                 IS '설명';
+COMMENT ON COLUMN ec_event.event_desc           IS '이벤트설명';
 COMMENT ON COLUMN ec_event.reg_by               IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_event.reg_date             IS '등록일';
 COMMENT ON COLUMN ec_event.upd_by               IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN ec_event.upd_date             IS '수정일';
 
 CREATE INDEX idx_ec_event_type ON ec_event (event_type_cd);
-CREATE INDEX idx_ec_event_status ON ec_event (status_cd);
+CREATE INDEX idx_ec_event_status ON ec_event (event_status_cd);
 CREATE INDEX idx_ec_event_date ON ec_event (start_date, end_date);
