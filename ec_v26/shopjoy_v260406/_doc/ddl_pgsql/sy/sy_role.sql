@@ -8,7 +8,7 @@ CREATE TABLE sy_role (
     role_code       VARCHAR(50)     NOT NULL,
     role_nm         VARCHAR(100)    NOT NULL,
     parent_role_id       VARCHAR(16),
-    role_type       VARCHAR(20),                            -- SYSTEM/CUSTOM
+    role_type_cd    VARCHAR(20),                            -- 코드: ROLE_TYPE (SYSTEM/CUSTOM)
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     restrict_perm   CHAR(1)         DEFAULT 'N',            -- 제한권한여부
@@ -28,7 +28,7 @@ COMMENT ON COLUMN sy_role.site_id          IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_role.role_code        IS '역할코드';
 COMMENT ON COLUMN sy_role.role_nm          IS '역할명';
 COMMENT ON COLUMN sy_role.parent_role_id        IS '상위역할ID';
-COMMENT ON COLUMN sy_role.role_type        IS '역할유형 (SYSTEM/CUSTOM)';
+COMMENT ON COLUMN sy_role.role_type_cd     IS '역할유형 (코드: ROLE_TYPE — SYSTEM/CUSTOM)';
 COMMENT ON COLUMN sy_role.sort_ord         IS '정렬순서';
 COMMENT ON COLUMN sy_role.use_yn           IS '사용여부 Y/N';
 COMMENT ON COLUMN sy_role.restrict_perm    IS '제한권한여부 Y/N';
