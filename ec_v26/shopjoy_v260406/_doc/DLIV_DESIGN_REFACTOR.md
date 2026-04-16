@@ -13,7 +13,7 @@
 | **입고/출고 미분류** | ec_dliv가 출고만 다룸 | 반품 배송 프로세스 불명확 |
 | **단일 택배사** | courier_cd 1개만 존재 | 반품/교환 시 수거/반입/발송 택배사 구분 불가 |
 | **배송비 미관리** | 배송비 관련 필드 없음 | 반품/교환 배송비 정산 불가 |
-| **주문/클레임 배송정보 부재** | ec_order, ec_claim에 배송 정보 없음 | 조회 시 ec_dliv join 필수 |
+| **주문/클레임 배송정보 부재** | od_order, ec_claim에 배송 정보 없음 | 조회 시 od_dliv join 필수 |
 | **클레임-배송 미연결** | claim_id 링크 없음 | 반품/교환 배송을 어느 클레임과 연결할지 불명확 |
 | **다중배송 추적 불가** | parent_dliv_id 없음 | 교환 시 반품배송+신상품배송 관계 추적 불가 |
 
@@ -21,7 +21,7 @@
 
 ## ✅ 개선 설계
 
-### 1) **ec_dliv 개선** (핵심)
+### 1) **od_dliv 개선** (핵심)
 
 #### 추가 컬럼
 
@@ -86,7 +86,7 @@ parent_dliv_id = '배송1_ID' (반품 배송 참조)
 
 ---
 
-### 2) **ec_order 개선**
+### 2) **od_order 개선**
 
 #### 추가 컬럼
 
@@ -100,11 +100,11 @@ dliv_ship_date           -- 최근 출고일시 (조회 편의)
 
 #### 용도
 - 주문 조회 시 배송 정보 바로 표시
-- ec_dliv join 없이도 최신 배송 상태 조회 가능
+- od_dliv join 없이도 최신 배송 상태 조회 가능
 
 ---
 
-### 3) **ec_order_item 개선**
+### 3) **od_order_item 개선**
 
 #### 추가 컬럼
 
@@ -121,7 +121,7 @@ dliv_ship_date           -- 해당 항목의 출고일시
 
 ---
 
-### 4) **ec_claim 개선** (가장 중요)
+### 4) **od_claim 개선** (가장 중요)
 
 #### 반품 관련 컬럼
 
@@ -136,7 +136,7 @@ return_status_cd         -- 수거 상태
 inbound_shipping_fee     -- 반입배송료
 inbound_courier_cd       -- 반입 택배사
 inbound_tracking_no      -- 반입 송장
-inbound_dliv_id          -- 반입 배송 ID (ec_dliv 참조)
+inbound_dliv_id          -- 반입 배송 ID (od_dliv 참조)
 ```
 
 #### 교환 관련 컬럼
@@ -146,7 +146,7 @@ inbound_dliv_id          -- 반입 배송 ID (ec_dliv 참조)
 exchange_shipping_fee    -- 교환상품 발송배송료
 exchange_courier_cd      -- 교환상품 발송 택배사
 exchange_tracking_no     -- 교환상품 발송 송장
-outbound_dliv_id         -- 교환상품 발송 배송 ID (ec_dliv 참조)
+outbound_dliv_id         -- 교환상품 발송 배송 ID (od_dliv 참조)
 ```
 
 #### 정산 관련 컬럼
@@ -160,7 +160,7 @@ shipping_fee_memo        -- 배송료 비고
 
 ---
 
-### 5) **ec_claim_item 개선**
+### 5) **od_claim_item 개선**
 
 #### 추가 컬럼
 
@@ -250,11 +250,11 @@ refund_amt = 상품가 + outbound_shipping_fee (원배송료 환불)
 
 | 파일 | 변경 사항 |
 |---|---|
-| **ec_dliv.sql** | dliv_div_cd, dliv_type_cd, claim_id, 택배사분리, 배송료 추가 |
-| **ec_order.sql** | 배송정보 스냅샷 (택배사/송장/상태/일시) 추가 |
-| **ec_order_item.sql** | 부분배송 배송정보 추가 |
-| **ec_claim.sql** | 반품/교환 배송정보, 배송료, 정산 필드 추가 |
-| **ec_claim_item.sql** | 항목별 배송료 추가 |
+| **od_dliv.sql** | dliv_div_cd, dliv_type_cd, claim_id, 택배사분리, 배송료 추가 |
+| **od_order.sql** | 배송정보 스냅샷 (택배사/송장/상태/일시) 추가 |
+| **od_order_item.sql** | 부분배송 배송정보 추가 |
+| **od_claim.sql** | 반품/교환 배송정보, 배송료, 정산 필드 추가 |
+| **od_claim_item.sql** | 항목별 배송료 추가 |
 | **sy_code.sql** | DLIV_DIV, DLIV_TYPE, SHIPPING_FEE_TYPE 코드 정의 |
 
 ---
@@ -264,8 +264,8 @@ refund_amt = 상품가 + outbound_shipping_fee (원배송료 환불)
 1. **미존재 컬럼 검증**: ec_dliv_item의 dliv_type_cd가 이미 있는지 확인
 2. **마이그레이션 가이드**: 기존 데이터 → 신규 스키마 변환 쿼리
 3. **관련 테이블 검토**:
-   - ec_dliv_item: 추가 필드 필요 여부
-   - ec_dliv_status_hist: 배송 상태 변경 이력
+   - od_dliv_item: 추가 필드 필요 여부
+   - od_dliv_status_hist: 배송 상태 변경 이력
 4. **API/BO 로직**: 배송 조회, 반품/교환 프로세스 구현
 5. **보고서 쿼리**: 배송료별 정산 리포트
 

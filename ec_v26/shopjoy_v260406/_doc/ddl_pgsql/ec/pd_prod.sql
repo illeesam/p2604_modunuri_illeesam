@@ -1,0 +1,57 @@
+-- ============================================================
+-- ec_prod : 상품
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ============================================================
+CREATE TABLE pd_prod (
+    prod_id         VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(16),                            -- sy_site.site_id
+    category_id     VARCHAR(16),
+    brand_id        VARCHAR(16),
+    vendor_id       VARCHAR(16),
+    prod_nm         VARCHAR(200)    NOT NULL,
+    prod_code       VARCHAR(50),
+    list_price      BIGINT          DEFAULT 0,
+    sale_price      BIGINT          DEFAULT 0,
+    prod_stock      INTEGER         DEFAULT 0,
+    prod_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: PRODUCT_STATUS
+    prod_status_cd_before VARCHAR(20),                       -- 변경 전 상품상태
+    thumbnail_url   VARCHAR(500),
+    content_html    TEXT,
+    weight          NUMERIC(10,2),
+    size_info_cd    VARCHAR(100),                           -- 코드: PRODUCT_SIZE
+    is_new          CHAR(1)         DEFAULT 'N',
+    is_best         CHAR(1)         DEFAULT 'N',
+    view_count      INTEGER         DEFAULT 0,
+    sale_count      INTEGER         DEFAULT 0,
+    reg_by          VARCHAR(16),
+    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(16),
+    upd_date        TIMESTAMP,
+    PRIMARY KEY (prod_id)
+);
+
+COMMENT ON TABLE pd_prod IS '상품';
+COMMENT ON COLUMN pd_prod.prod_idprod_id       IS '상품ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN pd_prod.prod_idsite_id       IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN pd_prod.prod_idcategory_id   IS '카테고리ID';
+COMMENT ON COLUMN pd_prod.prod_idbrand_id      IS '브랜드ID';
+COMMENT ON COLUMN pd_prod.prod_idvendor_id     IS '업체ID';
+COMMENT ON COLUMN pd_prod.prod_idprod_nm       IS '상품명';
+COMMENT ON COLUMN pd_prod.prod_idprod_code     IS '상품코드(SKU)';
+COMMENT ON COLUMN pd_prod.prod_idlist_price    IS '정가';
+COMMENT ON COLUMN pd_prod.prod_idsale_price    IS '판매가';
+COMMENT ON COLUMN pd_prod.prod_idprod_stock    IS '재고수량';
+COMMENT ON COLUMN pd_prod.prod_idprod_status_cd IS '상태 (코드: PRODUCT_STATUS)';
+COMMENT ON COLUMN pd_prod.prod_idprod_status_cd_before IS '변경 전 상품상태 (코드: PRODUCT_STATUS)';
+COMMENT ON COLUMN pd_prod.prod_idthumbnail_url IS '썸네일URL';
+COMMENT ON COLUMN pd_prod.prod_idcontent_html  IS '상세설명 (HTML)';
+COMMENT ON COLUMN pd_prod.prod_idweight        IS '무게(kg)';
+COMMENT ON COLUMN pd_prod.prod_idsize_info_cd  IS '사이즈 (코드: PRODUCT_SIZE)';
+COMMENT ON COLUMN pd_prod.prod_idis_new        IS '신상품여부 Y/N';
+COMMENT ON COLUMN pd_prod.prod_idis_best       IS '베스트여부 Y/N';
+COMMENT ON COLUMN pd_prod.prod_idview_count    IS '조회수';
+COMMENT ON COLUMN pd_prod.prod_idsale_count    IS '판매수';
+COMMENT ON COLUMN pd_prod.reg_by        IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod.prod_idreg_date      IS '등록일';
+COMMENT ON COLUMN pd_prod.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod.prod_idupd_date      IS '수정일';
