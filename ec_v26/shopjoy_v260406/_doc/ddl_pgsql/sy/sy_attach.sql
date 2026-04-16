@@ -6,7 +6,7 @@ CREATE TABLE sy_attach (
     file_nm         VARCHAR(300)    NOT NULL,
     file_size       BIGINT          DEFAULT 0,              -- bytes
     file_ext        VARCHAR(20),
-    mime_type       VARCHAR(100),
+    mime_type_cd    VARCHAR(100),
     stored_nm       VARCHAR(300),                           -- 서버 저장 파일명
     attach_url      VARCHAR(500),                           -- 기본 저장소 접근 URL
     cdn_host        VARCHAR(100),                           -- CDN 호스트 (예: cdn.example.com)
@@ -28,7 +28,7 @@ COMMENT ON COLUMN sy_attach.attach_grp_id    IS '첨부그룹ID';
 COMMENT ON COLUMN sy_attach.file_nm          IS '원본파일명';
 COMMENT ON COLUMN sy_attach.file_size        IS '파일크기(bytes)';
 COMMENT ON COLUMN sy_attach.file_ext         IS '확장자';
-COMMENT ON COLUMN sy_attach.mime_type        IS 'MIME 타입';
+COMMENT ON COLUMN sy_attach.mime_type_cd     IS 'MIME 타입 (코드: MIME_TYPE)';
 COMMENT ON COLUMN sy_attach.stored_nm        IS '저장 파일명 (UUID)';
 COMMENT ON COLUMN sy_attach.attach_url       IS '기본 저장소 접근 URL';
 COMMENT ON COLUMN sy_attach.cdn_host         IS 'CDN 호스트명 (예: cdn.example.com)';
