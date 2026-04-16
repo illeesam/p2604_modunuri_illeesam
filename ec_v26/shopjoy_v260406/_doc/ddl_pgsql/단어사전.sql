@@ -2,6 +2,23 @@
 -- 단어사전 : 컬럼/테이블 약어 정의
 -- 규칙: 약어는 소문자 snake_case 기준
 -- ============================================================
+--
+-- [ 필수 명명 규칙 ]
+--
+-- 1. 금액 관련: "금액" 으로 끝나는 설명 → _amt 서픽스 사용
+--    예: 환불금액 → refund_amt, 할인금액 → discount_amt
+--
+-- 2. 수량 관련: "수량" 으로 끝나는 설명 → _qty 서픽스 사용
+--    예: 주문수량 → order_qty, 클레임수량 → claim_qty
+--    ⚠️ 단독 qty, amount, balance 컬럼 금지 (반드시 복합어로)
+--
+-- 3. 가격 관련: price 단독 사용 금지, 반드시 수식어 붙이기
+--    예: list_price (정가), sale_price (판매가), unit_price (단가)
+--
+-- 4. 코드형 컬럼: 컬럼명_cd (VARCHAR) / 테이블명_code (VARCHAR, PK)
+--    테이블 PRIMARY KEY인 경우는 _code 유지, FK는 _cd 사용
+--
+-- ============================================================
 
 -- 단어약어          한글명
 -- ------------------------------------------------
@@ -11,9 +28,9 @@
 -- no               번호
 -- yn               여부 (Y/N)
 -- cnt              건수 / 개수
--- qty              수량
--- amt              금액
--- price            가격
+-- qty              수량 (⚠️ 단독사용 금지, 복합어만: order_qty, claim_qty 등)
+-- amt              금액 (⚠️ 단독사용 금지, 복합어만: cache_amt, refund_amt, balance_amt 등)
+-- price            가격 (⚠️ 단독사용 금지, 복합어만: list_price, sale_price, unit_price 등)
 -- rate             비율 (%)
 -- ord              순서 (정렬)
 -- dt               일자 (DATE형)
@@ -50,7 +67,6 @@
 -- approval         결재 / 결재처리
 -- aprv             결재(승인) 약어
 -- prop             프로퍼티 (환경설정/공통 파라미터)
--- balance          잔액
 -- target           대상
 -- reason           사유
 -- ------------------------------------------------
@@ -121,23 +137,34 @@
 -- ------------------------------------------------
 
 -- [ 금액/결제 관련 ]
--- 단어약어          한글명
+-- 단어약어              한글명
 -- ------------------------------------------------
--- unit_price       단가
--- sale_price       판매가
--- item_price       소계 (단가 × 수량)
--- total_price      합계금액
--- pay_price        실결제금액
--- discount_amt     할인금액
--- coupon_discount  쿠폰할인금액
--- refund_amount    환불금액
--- add_price        옵션 추가금액
--- min_order        최소주문금액
--- max_discount     최대할인한도
--- cache_use        적립금 사용
--- cache_give       적립금 지급
--- cache_balance    적립금 잔액
--- pay_method       결제수단
+-- list_price          정가 (원래가격)
+-- unit_price          단가
+-- sale_price          판매가
+-- item_price          소계 (unit_price × order_qty)
+-- total_purchase_amt  누적 구매금액
+-- total_price         합계금액
+-- pay_price           실결제금액
+-- discount_amt        할인금액
+-- coupon_discount_amt 쿠폰할인금액
+-- refund_amt          환불금액
+-- add_price           옵션 추가금액
+-- min_order_amt       최소주문금액
+-- max_discount_amt    최대할인한도
+-- cache_amt           적립금 금액 (양수:적립/음수:사용)
+-- balance_amt         잔액 (처리 후 계산 잔액)
+-- cache_balance_amt   적립금 잔액 (누적)
+-- pay_method          결제수단
+-- ------------------------------------------------
+
+-- [ 수량 관련 (복합어만 사용) ]
+-- 단어약어              한글명
+-- ------------------------------------------------
+-- order_qty           주문 수량
+-- claim_qty           클레임 수량
+-- stock_qty           재고 수량
+-- sale_cnt            판매 건수
 -- ------------------------------------------------
 
 -- [ 공통 코드 목록 ]
