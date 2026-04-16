@@ -3,7 +3,7 @@ CREATE TABLE ec_review_reply (
     site_id         VARCHAR(16),
     review_id       VARCHAR(16)     NOT NULL,
     parent_reply_id VARCHAR(16),                           -- 대댓글 시 상위 reply_id
-    writer_type     VARCHAR(20)     DEFAULT 'MEMBER',      -- MEMBER / SELLER / ADMIN
+    writer_type_cd  VARCHAR(20)     DEFAULT 'MEMBER',      -- 코드: REVIEW_WRITER_TYPE (MEMBER/SELLER/ADMIN)
     writer_id       VARCHAR(16),                           -- member_id 또는 user_id
     writer_nm       VARCHAR(50),
     review_reply_content TEXT            NOT NULL,
@@ -20,7 +20,7 @@ COMMENT ON COLUMN ec_review_reply.reply_id      IS '댓글ID';
 COMMENT ON COLUMN ec_review_reply.site_id       IS '사이트ID';
 COMMENT ON COLUMN ec_review_reply.review_id     IS '리뷰ID (ec_review.review_id)';
 COMMENT ON COLUMN ec_review_reply.parent_reply_id IS '상위댓글ID (대댓글)';
-COMMENT ON COLUMN ec_review_reply.writer_type   IS '작성자유형 (MEMBER/SELLER/ADMIN)';
+COMMENT ON COLUMN ec_review_reply.writer_type_cd IS '작성자유형 (코드: REVIEW_WRITER_TYPE — MEMBER/SELLER/ADMIN)';
 COMMENT ON COLUMN ec_review_reply.writer_id     IS '작성자ID';
 COMMENT ON COLUMN ec_review_reply.writer_nm     IS '작성자명';
 COMMENT ON COLUMN ec_review_reply.review_reply_content IS '댓글 내용';
