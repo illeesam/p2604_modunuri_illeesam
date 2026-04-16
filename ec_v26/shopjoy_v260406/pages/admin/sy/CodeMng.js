@@ -248,8 +248,9 @@ window.SyCodeMng = {
       const newRow = {
         codeId: _tempId--, codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
-        useYn: 'Y', remark: '',
-        _row_status: 'I', _row_check: false, _orig: null,
+        useYn: 'Y', remark: '', parentCodeValue: null,
+        _row_status: 'I', _row_check: false,
+        _orig: { codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '', sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1, useYn: 'Y', remark: '', parentCodeValue: null },
       };
       const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
