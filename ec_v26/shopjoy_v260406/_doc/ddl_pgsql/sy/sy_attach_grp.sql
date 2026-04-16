@@ -13,7 +13,7 @@ CREATE TABLE sy_attach_grp (
     storage_path    VARCHAR(300),                           -- 저장 경로 (예: /products/images, /members/documents)
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
-    remarks         VARCHAR(500),                           -- 비고/설명
+    attach_grp_remarks VARCHAR(500),                           -- 비고/설명
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),

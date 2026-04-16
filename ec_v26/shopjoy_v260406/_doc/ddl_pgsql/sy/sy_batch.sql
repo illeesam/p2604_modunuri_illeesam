@@ -10,13 +10,13 @@ CREATE TABLE sy_batch (
     batch_desc      TEXT,
     cron_expr       VARCHAR(100),                           -- cron 표현식 (예: 0 0 * * *)
     batch_cycle_cd  VARCHAR(20),                            -- 코드: BATCH_CYCLE
-    last_run        TIMESTAMP,
-    next_run        TIMESTAMP,
-    run_count       INTEGER         DEFAULT 0,
+    batch_last_run  TIMESTAMP,
+    batch_next_run  TIMESTAMP,
+    batch_run_count INTEGER         DEFAULT 0,
     batch_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: BATCH_STATUS
-    run_status      VARCHAR(20)     DEFAULT 'IDLE',         -- IDLE/RUNNING/SUCCESS/FAILED
-    timeout_sec     INTEGER         DEFAULT 300,
-    memo            TEXT,
+    batch_run_status VARCHAR(20)     DEFAULT 'IDLE',         -- IDLE/RUNNING/SUCCESS/FAILED
+    batch_timeout_sec INTEGER         DEFAULT 300,
+    batch_memo      TEXT,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -34,13 +34,13 @@ COMMENT ON COLUMN sy_batch.batch_nm       IS '배치명';
 COMMENT ON COLUMN sy_batch.batch_desc     IS '배치설명';
 COMMENT ON COLUMN sy_batch.cron_expr      IS 'Cron 표현식';
 COMMENT ON COLUMN sy_batch.batch_cycle_cd IS '주기유형 (코드: BATCH_CYCLE)';
-COMMENT ON COLUMN sy_batch.last_run       IS '최근실행일시';
-COMMENT ON COLUMN sy_batch.next_run       IS '다음실행예정일시';
-COMMENT ON COLUMN sy_batch.run_count      IS '실행횟수';
+COMMENT ON COLUMN sy_batch.batch_last_run IS '최근실행일시';
+COMMENT ON COLUMN sy_batch.batch_next_run IS '다음실행예정일시';
+COMMENT ON COLUMN sy_batch.batch_run_count IS '실행횟수';
 COMMENT ON COLUMN sy_batch.batch_status_cd IS '활성상태 (코드: BATCH_STATUS)';
-COMMENT ON COLUMN sy_batch.run_status     IS '실행상태 (IDLE/RUNNING/SUCCESS/FAILED)';
-COMMENT ON COLUMN sy_batch.timeout_sec    IS '타임아웃(초)';
-COMMENT ON COLUMN sy_batch.memo           IS '메모';
+COMMENT ON COLUMN sy_batch.batch_run_status IS '실행상태 (IDLE/RUNNING/SUCCESS/FAILED)';
+COMMENT ON COLUMN sy_batch.batch_timeout_sec IS '타임아웃(초)';
+COMMENT ON COLUMN sy_batch.batch_memo      IS '메모';
 COMMENT ON COLUMN sy_batch.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_batch.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_batch.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';

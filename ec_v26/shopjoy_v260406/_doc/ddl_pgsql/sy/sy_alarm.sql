@@ -3,43 +3,43 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE sy_alarm (
-    alarm_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    title           VARCHAR(200)    NOT NULL,
-    alarm_type_cd   VARCHAR(30),                            -- 코드: ALARM_TYPE
-    channel_cd      VARCHAR(20),                            -- 코드: ALARM_CHANNEL (EMAIL/SMS/PUSH/KAKAO)
-    target_type     VARCHAR(20),                            -- ALL/GRADE/MEMBER
-    target_id       VARCHAR(16),                            -- 특정 회원 or 등급코드
-    template_id     VARCHAR(16),
-    message         TEXT,
-    send_date       TIMESTAMP,
-    alarm_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- PENDING/SENT/FAILED/CANCELLED
-    send_count      INTEGER         DEFAULT 0,
-    fail_count      INTEGER         DEFAULT 0,
-    reg_by          VARCHAR(16),
-    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
-    upd_date        TIMESTAMP,
-    disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
+    alarm_id         VARCHAR(16)     NOT NULL,
+    site_id          VARCHAR(16),                            -- sy_site.site_id
+    alarm_title      VARCHAR(200)    NOT NULL,
+    alarm_type_cd    VARCHAR(30),                            -- 코드: ALARM_TYPE
+    channel_cd       VARCHAR(20),                            -- 코드: ALARM_CHANNEL (EMAIL/SMS/PUSH/KAKAO)
+    target_type      VARCHAR(20),                            -- ALL/GRADE/MEMBER
+    target_id        VARCHAR(16),                            -- 특정 회원 or 등급코드
+    template_id      VARCHAR(16),
+    alarm_message    TEXT,
+    alarm_send_date  TIMESTAMP,
+    alarm_status_cd  VARCHAR(20)     DEFAULT 'PENDING',      -- PENDING/SENT/FAILED/CANCELLED
+    alarm_send_count INTEGER         DEFAULT 0,
+    alarm_fail_count INTEGER         DEFAULT 0,
+    reg_by           VARCHAR(16),
+    reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by           VARCHAR(16),
+    upd_date         TIMESTAMP,
+    disp_path        VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (alarm_id)
 );
 
-COMMENT ON TABLE  sy_alarm               IS '알림';
-COMMENT ON COLUMN sy_alarm.alarm_id      IS '알림ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN sy_alarm.site_id       IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN sy_alarm.title         IS '알림제목';
-COMMENT ON COLUMN sy_alarm.alarm_type_cd IS '알림유형 (코드: ALARM_TYPE)';
-COMMENT ON COLUMN sy_alarm.channel_cd    IS '발송채널 (코드: ALARM_CHANNEL)';
-COMMENT ON COLUMN sy_alarm.target_type   IS '대상유형 (ALL/GRADE/MEMBER)';
-COMMENT ON COLUMN sy_alarm.target_id     IS '대상ID (회원ID 또는 등급코드)';
-COMMENT ON COLUMN sy_alarm.template_id   IS '템플릿ID';
-COMMENT ON COLUMN sy_alarm.message       IS '발송내용';
-COMMENT ON COLUMN sy_alarm.send_date     IS '발송예정일시';
-COMMENT ON COLUMN sy_alarm.status_cd     IS '발송상태 (PENDING/SENT/FAILED/CANCELLED)';
-COMMENT ON COLUMN sy_alarm.send_count    IS '발송성공수';
-COMMENT ON COLUMN sy_alarm.fail_count    IS '발송실패수';
-COMMENT ON COLUMN sy_alarm.reg_by        IS '등록자 (sy_user.user_id, ec_member.member_id)';
-COMMENT ON COLUMN sy_alarm.reg_date      IS '등록일';
-COMMENT ON COLUMN sy_alarm.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';
-COMMENT ON COLUMN sy_alarm.upd_date      IS '수정일';
+COMMENT ON TABLE  sy_alarm                IS '알림';
+COMMENT ON COLUMN sy_alarm.alarm_id       IS '알림ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_alarm.site_id        IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN sy_alarm.alarm_title    IS '알림제목';
+COMMENT ON COLUMN sy_alarm.alarm_type_cd  IS '알림유형 (코드: ALARM_TYPE)';
+COMMENT ON COLUMN sy_alarm.channel_cd     IS '발송채널 (코드: ALARM_CHANNEL)';
+COMMENT ON COLUMN sy_alarm.target_type    IS '대상유형 (ALL/GRADE/MEMBER)';
+COMMENT ON COLUMN sy_alarm.target_id      IS '대상ID (회원ID 또는 등급코드)';
+COMMENT ON COLUMN sy_alarm.template_id    IS '템플릿ID';
+COMMENT ON COLUMN sy_alarm.alarm_message  IS '발송내용';
+COMMENT ON COLUMN sy_alarm.alarm_send_date IS '발송예정일시';
+COMMENT ON COLUMN sy_alarm.alarm_status_cd IS '발송상태 (PENDING/SENT/FAILED/CANCELLED)';
+COMMENT ON COLUMN sy_alarm.alarm_send_count IS '발송성공수';
+COMMENT ON COLUMN sy_alarm.alarm_fail_count IS '발송실패수';
+COMMENT ON COLUMN sy_alarm.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
+COMMENT ON COLUMN sy_alarm.reg_date       IS '등록일';
+COMMENT ON COLUMN sy_alarm.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
+COMMENT ON COLUMN sy_alarm.upd_date       IS '수정일';
 COMMENT ON COLUMN sy_alarm.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';

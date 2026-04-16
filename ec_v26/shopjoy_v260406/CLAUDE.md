@@ -553,3 +553,37 @@ package-lock.json       ← npm 관리용
 3. **`window.*` 전역 의존이 많음** — 모듈화 이전에 건드릴 때 주입 순서 주의
 4. **`adminData` 직접 수정이 소스 오브 트루스** — 목업 변경하면 전 화면 즉시 반영
 5. **Dtl 탭 구조 변경 시** 5개 뷰모드 + 영속화 + dtl-tab-card-title 헤더 패턴 유지
+
+## DDL 컬럼명 표준화
+
+### 규칙
+
+- **단일 단어 컬럼은 테이블명 프리픽스 필수** (예: `name` → `member_nm`, `email` → `user_email`)
+- **복합어 컬럼명 변경** (예: `*_name` → `*_nm`, `*_remark` → `*_remark`)
+- **상태 코드는 `*_status_cd` 또는 `*_*_status_cd` 형식**
+- **예외: `*_log` 테이블은 단일 단어 컬럼 허용** (log, token, ip, device, msg 등)
+- **예외: `*_hist` 테이블은 원본 테이블 컬럼명 + 단일 단어 추가 허용**
+
+### 진행 상태 (2026-04-16)
+
+#### 완료 파일
+- `sy_site.sql`: domain→site_domain, email→site_email, phone→site_phone, zip_code→site_zip_code, address→site_address, business_no→site_business_no, ceo→site_ceo
+- `sy_batch.sql`: last_run→batch_last_run, next_run→batch_next_run, run_count→batch_run_count, run_status→batch_run_status, timeout_sec→batch_timeout_sec, memo→batch_memo
+- `sy_attach.sql`: url→attach_url, memo→attach_memo
+- `sy_attach_grp.sql`: remarks→attach_grp_remarks
+- `sy_alarm.sql`: title→alarm_title, message→alarm_message, send_date→alarm_send_date, send_count→alarm_send_count, fail_count→alarm_fail_count
+- `sy_code.sql`: remark→code_remark
+- `sy_brand.sql`: remark→brand_remark
+- `sy_dept.sql`: remark→dept_remark
+- `sy_bbm.sql`: remark→bbm_remark
+- `sy_menu.sql`: remark→menu_remark
+- `sy_path.sql`: remark→path_remark
+- `sy_prop.sql`: remark→prop_remark
+- `sy_role.sql`: remark→role_remark
+- `ec_path.sql`: remark→path_remark
+
+#### Log 테이블 (예외 - 단일 단어 유지)
+- `sy_user_token_log.sql`, `sy_user_login_log.sql`, `ec_member_login_log.sql`, `ec_member_token_log.sql`, `sy_api_log.sql`, `ec_prod_view_log.sql`
+
+#### 미완료 파일
+- 전체 감사 필요 (sy_*, ec_* 도메인 DDL 파일)
