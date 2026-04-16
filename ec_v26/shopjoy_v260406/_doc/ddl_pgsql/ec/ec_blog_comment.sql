@@ -2,7 +2,7 @@ CREATE TABLE ec_blog_comment (
     comment_id      VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),
     blog_id         VARCHAR(16)     NOT NULL,              -- ec_blog.blog_id
-    parent_id       VARCHAR(16),                            -- 대댓글 (ec_blog_comment.comment_id)
+    parent_comment_id VARCHAR(16),                          -- 대댓글 (ec_blog_comment.comment_id)
     writer_id       VARCHAR(16),                            -- 작성자ID (ec_member.member_id)
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     content         TEXT            NOT NULL,
@@ -18,7 +18,7 @@ COMMENT ON TABLE  ec_blog_comment              IS '블로그 댓글';
 COMMENT ON COLUMN ec_blog_comment.comment_id   IS '댓글ID';
 COMMENT ON COLUMN ec_blog_comment.site_id      IS '사이트ID';
 COMMENT ON COLUMN ec_blog_comment.blog_id      IS '블로그ID';
-COMMENT ON COLUMN ec_blog_comment.parent_id    IS '대댓글 부모ID';
+COMMENT ON COLUMN ec_blog_comment.parent_comment_id IS '대댓글 부모ID';
 COMMENT ON COLUMN ec_blog_comment.writer_id    IS '작성자ID';
 COMMENT ON COLUMN ec_blog_comment.writer_nm    IS '작성자명';
 COMMENT ON COLUMN ec_blog_comment.content      IS '댓글 내용';
@@ -29,4 +29,4 @@ COMMENT ON COLUMN ec_blog_comment.upd_by       IS '수정자';
 COMMENT ON COLUMN ec_blog_comment.upd_date     IS '수정일';
 
 CREATE INDEX idx_ec_blog_comment_blog   ON ec_blog_comment (blog_id);
-CREATE INDEX idx_ec_blog_comment_parent ON ec_blog_comment (parent_id);
+CREATE INDEX idx_ec_blog_comment_parent ON ec_blog_comment (parent_comment_id);
