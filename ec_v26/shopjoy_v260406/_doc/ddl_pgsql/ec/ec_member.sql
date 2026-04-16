@@ -13,8 +13,8 @@ CREATE TABLE ec_member (
     join_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     last_login      TIMESTAMP,
     order_count     INTEGER         DEFAULT 0,
-    total_purchase  BIGINT          DEFAULT 0,
-    cache_balance   BIGINT          DEFAULT 0,
+    total_purchase_amt BIGINT       DEFAULT 0,
+    cache_balance_amt  BIGINT       DEFAULT 0,
     zip_code        VARCHAR(10),
     addr            VARCHAR(200),
     addr_detail     VARCHAR(200),
@@ -41,8 +41,8 @@ COMMENT ON COLUMN ec_member.status_cd      IS '상태 (코드: MEMBER_STATUS)';
 COMMENT ON COLUMN ec_member.join_date      IS '가입일';
 COMMENT ON COLUMN ec_member.last_login     IS '최근 로그인';
 COMMENT ON COLUMN ec_member.order_count    IS '주문 건수';
-COMMENT ON COLUMN ec_member.total_purchase IS '누적 구매금액';
-COMMENT ON COLUMN ec_member.cache_balance  IS '적립금 잔액';
+COMMENT ON COLUMN ec_member.total_purchase_amt IS '누적 구매금액';
+COMMENT ON COLUMN ec_member.cache_balance_amt  IS '적립금 잔액';
 COMMENT ON COLUMN ec_member.zip_code       IS '우편번호';
 COMMENT ON COLUMN ec_member.addr           IS '주소';
 COMMENT ON COLUMN ec_member.addr_detail    IS '상세주소';

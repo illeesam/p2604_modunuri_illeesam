@@ -8,9 +8,9 @@ CREATE TABLE ec_claim_item (
     prod_nm         VARCHAR(200),                           -- 상품명 (주문시점 스냅샷)
     prod_option     VARCHAR(500),                           -- 옵션 (색상/사이즈 스냅샷)
     unit_price      BIGINT          DEFAULT 0,
-    qty             INTEGER         DEFAULT 1,
-    item_price      BIGINT          DEFAULT 0,              -- 소계 (unit_price * qty)
-    refund_amount   BIGINT          DEFAULT 0,              -- 항목별 환불금액
+    claim_qty       INTEGER         DEFAULT 1,
+    item_price      BIGINT          DEFAULT 0,              -- 소계 (unit_price * claim_qty)
+    refund_amt      BIGINT          DEFAULT 0,              -- 항목별 환불금액
     status_cd       VARCHAR(20)     DEFAULT 'REQUESTED',    -- 코드: CLAIM_STATUS
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -28,9 +28,9 @@ COMMENT ON COLUMN ec_claim_item.prod_id       IS '상품ID';
 COMMENT ON COLUMN ec_claim_item.prod_nm       IS '상품명 (주문시점 스냅샷)';
 COMMENT ON COLUMN ec_claim_item.prod_option   IS '옵션 (색상/사이즈 스냅샷)';
 COMMENT ON COLUMN ec_claim_item.unit_price    IS '단가';
-COMMENT ON COLUMN ec_claim_item.qty           IS '클레임 수량';
-COMMENT ON COLUMN ec_claim_item.item_price    IS '소계 (단가 × 수량)';
-COMMENT ON COLUMN ec_claim_item.refund_amount IS '항목별 환불금액';
+COMMENT ON COLUMN ec_claim_item.claim_qty     IS '클레임 수량';
+COMMENT ON COLUMN ec_claim_item.item_price    IS '소계 (단가 × 클레임 수량)';
+COMMENT ON COLUMN ec_claim_item.refund_amt    IS '항목별 환불금액';
 COMMENT ON COLUMN ec_claim_item.status_cd     IS '항목상태 (코드: CLAIM_STATUS)';
 COMMENT ON COLUMN ec_claim_item.reg_by        IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN ec_claim_item.reg_date      IS '등록일';

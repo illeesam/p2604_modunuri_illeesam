@@ -11,7 +11,7 @@ CREATE TABLE ec_claim (
     reason_detail   TEXT,
     prod_nm         VARCHAR(200),
     refund_method_cd VARCHAR(20),                           -- 코드: REFUND_METHOD
-    refund_amount   BIGINT          DEFAULT 0,
+    refund_amt      BIGINT          DEFAULT 0,
     request_date    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     proc_date       TIMESTAMP,
     proc_by         VARCHAR(16),
@@ -46,7 +46,7 @@ COMMENT ON COLUMN ec_claim.reason_cd      IS '사유 (코드: CLAIM_REASON)';
 COMMENT ON COLUMN ec_claim.reason_detail  IS '사유 상세';
 COMMENT ON COLUMN ec_claim.prod_nm        IS '상품명';
 COMMENT ON COLUMN ec_claim.refund_method_cd IS '환불수단 (코드: REFUND_METHOD)';
-COMMENT ON COLUMN ec_claim.refund_amount  IS '환불금액';
+COMMENT ON COLUMN ec_claim.refund_amt    IS '환불금액';
 COMMENT ON COLUMN ec_claim.request_date   IS '요청일시';
 COMMENT ON COLUMN ec_claim.proc_date      IS '처리일시';
 COMMENT ON COLUMN ec_claim.proc_by        IS '처리자 (sy_user.user_id)';
