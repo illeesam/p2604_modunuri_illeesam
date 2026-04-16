@@ -208,16 +208,28 @@ window.SyCodeMng = {
       return path.length > 0 ? path.join(' > ') : '';
     };
 
-    /* 트리형 코드 그룹일 때 상위코드 목록 (계층 경로 포함) */
+    /* 트리형 코드 그룹일 때 상위코드 목록 (트리 형식 표시용) */
     const parentCodeOptions = computed(() => {
       if (!isTreeTypeGrp.value) return [];
-      return gridRows
-        .filter(r => r._row_status !== 'D')
-        .map(r => ({
+      const codes = gridRows.filter(r => r._row_status !== 'D');
+      const byValue = new Map(codes.map(c => [c.codeValue, c]));
+
+      return codes.map(r => {
+        // 계층 깊이 계산
+        let depth = 0;
+        let current = r.parentCodeValue ? byValue.get(r.parentCodeValue) : null;
+        while (current) {
+          depth++;
+          current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
+        }
+        const indent = '　'.repeat(depth); // 전각 공백으로 들여쓰기
+        return {
           label: `${r.codeLabel}(${r.codeValue})`,
           value: r.codeValue,
-          path: getCodeHierarchyPath(r.codeValue)
-        }));
+          path: getCodeHierarchyPath(r.codeValue),
+          displayLabel: `${indent}${r.codeLabel}(${r.codeValue})`
+        };
+      });
     });
 
     const onSearch = () => {
@@ -735,12 +747,11 @@ window.SyCodeMng = {
       <table class="admin-table crud-grid" style="margin-top:0;">
         <thead>
           <tr>
-            <th style="width:30px;"></th>
             <th class="col-status">상태</th>
             <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
-            <th style="min-width:180px;">코드라벨</th>
+            <th style="min-width:220px;">코드라벨</th>
             <th>코드값</th>
-            <th style="width:120px;">상위코드값</th>
+            <th style="width:140px;">상위코드값</th>
             <th class="col-ord">순서</th>
             <th class="col-use">사용여부</th>
             <th>비고</th>
@@ -751,16 +762,9 @@ window.SyCodeMng = {
         </thead>
         <tbody>
           <tr v-if="codeTree.count===0">
-            <td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+            <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
           <tr v-else v-for="(row, idx) in pagedTreeRows" :key="row.node.value" class="crud-row" :class="['status-'+row.node.code._row_status]" style="user-select:none;" @click="setFocused(gridRows.indexOf(row.node.code))">
-            <td style="padding:0;text-align:center;">
-              <span v-if="row.node.children.length > 0"
-                @click.stop="codeToggleNode(row.node.value)"
-                style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;color:#6b7280;font-size:12px;">
-                {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
-              </span>
-            </td>
             <td class="col-status-val">
               <span class="badge badge-xs" :class="statusClass(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
             </td>
@@ -770,6 +774,12 @@ window.SyCodeMng = {
             <td style="padding-left:0;">
               <div style="display:flex;align-items:center;gap:0;">
                 <span :style="{ minWidth: (row.depth * 20 + 4) + 'px', flexShrink: 0 }"></span>
+                <span v-if="row.node.children.length > 0"
+                  @click.stop="codeToggleNode(row.node.value)"
+                  style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
+                  {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
+                </span>
+                <span v-else style="width:20px;flex-shrink:0;"></span>
                 <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:2px;font-weight:300;font-size:11px;">├</span>
                 <input class="grid-input" style="flex:1;" v-model="row.node.code.codeLabel" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" />
               </div>
@@ -778,11 +788,10 @@ window.SyCodeMng = {
             <td>
               <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
                 <option :value="null">-- 없음 --</option>
-                <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.displayLabel }}
+                </option>
               </select>
-              <span v-if="row.node.code.parentCodeValue" style="font-size:9px;color:#6b7280;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;">
-                📍 {{ getCodeHierarchyPath(row.node.code.parentCodeValue) }}
-              </span>
             </td>
             <td><input class="grid-input grid-num" type="number" v-model.number="row.node.code.sortOrd" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
             <td>
