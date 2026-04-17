@@ -26,7 +26,7 @@
     member:    [{ id: 'mbMemberMng',   label: '회원관리' }],
     product:   [{ id: 'pdCategoryMng', label: '카테고리관리' }, { id: 'pdProdMng', label: '상품관리' }],
     order:     [{ id: 'odOrderMng',    label: '주문관리' }, { id: 'odClaimMng', label: '클레임관리' }, { id: 'odDlivMng', label: '배송관리' }],
-    promotion: [{ id: 'pmCouponMng',   label: '쿠폰관리' }, { id: 'pmCacheMng', label: '캐쉬관리' }, { id: 'pmEventMng', label: '이벤트관리' }],
+    promotion: [{ id: 'pmCouponMng', label: '쿠폰관리' }, { id: 'pmCacheMng', label: '캐쉬관리' }, { id: 'pmEventMng', label: '이벤트관리' }, { id: 'pmPlanMng', label: '기획전관리' }, { id: 'pmDiscntMng', label: '판촉할인' }, { id: 'pmSaveMng', label: '판촉마일리지' }, { id: 'pmGiftMng', label: '판촉사은품' }],
     display:   [
       { group: '미리보기' },
       { id: 'dpDispUiPreview',        label: '전시UI미리보기' },
@@ -149,6 +149,8 @@
         'dpDispWidgetLibMng':'dp-disp-widget-lib-mng', 'dpDispWidgetLibDtl':'dp-disp-widget-lib-dtl',
         'dpDispWidgetLibPreview':'dp-disp-widget-lib-preview',
         'pmEventMng':'pm-event-mng', 'pmEventDtl':'pm-event-dtl',
+        'pmPlanMng':'pm-plan-mng', 'pmPlanDtl':'pm-plan-dtl',
+        'pmDiscntMng':'pm-discnt-mng', 'pmSaveMng':'pm-save-mng', 'pmGiftMng':'pm-gift-mng',
         'mbCustInfoMng':'mb-cust-info-mng',
         'syContactMng':'sy-contact-mng', 'syContactDtl':'sy-contact-dtl',
         'cmChattMng':'cm-chatt-mng', 'cmChattDtl':'cm-chatt-dtl',
@@ -909,6 +911,9 @@
         <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <pm-cache-mng   v-else-if="page==='pmCacheMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pm-save-mng    v-else-if="page==='pmSaveMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pm-gift-mng    v-else-if="page==='pmGiftMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pm-cache-dtl   v-else-if="page==='pmCacheDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <dp-disp-area-preview  v-else-if="page==='dpDispAreaPreview'"  :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -926,6 +931,8 @@
         <dp-disp-relation-mng v-else-if="page==='dpDispRelationMng'" :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pm-event-mng   v-else-if="page==='pmEventMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pm-event-dtl   v-else-if="page==='pmEventDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
+        <pm-plan-mng    v-else-if="page==='pmPlanMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pm-plan-dtl    v-else-if="page==='pmPlanDtl'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <mb-cust-info-mng v-else-if="page==='mbCustInfoMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
@@ -1350,6 +1357,14 @@
   /* ── pages/admin/ec/ — 이벤트/공지 ── */
   .component('PmEventMng',     window.PmEventMng)
   .component('PmEventDtl',     window.PmEventDtl)
+  .component('PmPlanMng',      window.PmPlanMng)
+  .component('PmPlanDtl',      window.PmPlanDtl)
+  .component('PmDiscntMng',    window.PmDiscntMng)
+  .component('PmDiscntDtl',    window.PmDiscntDtl)
+  .component('PmSaveMng',      window.PmSaveMng)
+  .component('PmSaveDtl',      window.PmSaveDtl)
+  .component('PmGiftMng',      window.PmGiftMng)
+  .component('PmGiftDtl',      window.PmGiftDtl)
   .component('CmNoticeMng',    window.CmNoticeMng)
   .component('CmNoticeDtl',    window.CmNoticeDtl)
   /* ── pages/admin/ec/ — 채팅/고객 ── */

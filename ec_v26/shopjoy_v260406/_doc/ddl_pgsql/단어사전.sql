@@ -11,8 +11,8 @@
 --    예: sy_user_role(user_role_id) + UNIQUE(user_id, role_id)
 --
 -- 2. 금액 관련: "금액" 으로 끝나는 설명 → _amt 서픽스 사용
---    예: 환불금액 → refund_amt, 할인금액 → discount_amt, 결재금액 → appr_amt
---    ⚠️ 단독 amt 금지 (반드시 복합어: discount_amt, refund_amt, cache_amt, balance_amt 등)
+--    예: 환불금액 → refund_amt, 할인금액 → discnt_amt, 결재금액 → appr_amt
+--    ⚠️ 단독 amt 금지 (반드시 복합어: discnt_amt, refund_amt, cache_amt, balance_amt 등)
 --
 -- 2-1. 재고 관련: "재고" 으로 끝나는 설명 → _stock 서픽스 사용
 --    예: 상품재고 → prod_stock, 옵션재고 → prod_opt_stock
@@ -64,7 +64,7 @@
 -- yn               여부 (Y/N)
 -- cnt              건수 / 개수
 -- qty              수량 (⚠️ 단독사용 금지, 복합어만: order_qty, claim_qty, stock_qty 등)
--- amt              금액 (⚠️ 단독사용 금지, 복합어만: cache_amt, refund_amt, balance_amt, discount_amt 등)
+-- amt              금액 (⚠️ 단독사용 금지, 복합어만: cache_amt, refund_amt, balance_amt, discnt_amt 등)
 -- price            가격 (⚠️ 단독사용 금지, 복합어만: list_price, sale_price, unit_price, item_price 등)
 -- stock            재고 (⚠️ 단독사용 금지, 복합어만: prod_stock, prod_opt_stock 등)
 -- title            제목 (⚠️ 단독사용 금지, 복합어만: event_title, notice_title, push_log_title, review_title, alarm_title 등)
@@ -218,12 +218,12 @@
 -- total_purchase_amt  누적 구매금액
 -- total_price         합계금액
 -- pay_price           실결제금액
--- discount_amt        할인금액
--- coupon_discount_amt 쿠폰할인금액
+-- discnt_amt        할인금액
+-- coupon_discnt_amt 쿠폰할인금액
 -- refund_amt          환불금액
 -- add_price           옵션 추가금액
 -- min_order_amt       최소주문금액
--- max_discount_amt    최대할인한도
+-- max_discnt_amt    최대할인한도
 -- cache_amt           적립금 금액 (양수:적립/음수:사용)
 -- balance_amt         잔액 (처리 후 계산 잔액)
 -- cache_balance_amt   적립금 잔액 (누적)
