@@ -86,13 +86,13 @@ window.PmDiscntMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value,
       [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntType'},{label:'할인값',key:'discntVal'},{label:'상태',key:'discntStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
-      '판촉할인목록.csv');
+      '할인목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
-  <div class="page-title">판촉할인관리</div>
+  <div class="page-title">할인관리</div>
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="할인명 / ID 검색" />

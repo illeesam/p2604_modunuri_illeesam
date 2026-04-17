@@ -26,7 +26,17 @@
     member:    [{ id: 'mbMemberMng',   label: '회원관리' }],
     product:   [{ id: 'pdCategoryMng', label: '카테고리관리' }, { id: 'pdProdMng', label: '상품관리' }],
     order:     [{ id: 'odOrderMng',    label: '주문관리' }, { id: 'odClaimMng', label: '클레임관리' }, { id: 'odDlivMng', label: '배송관리' }],
-    promotion: [{ id: 'pmCouponMng', label: '쿠폰관리' }, { id: 'pmCacheMng', label: '캐쉬관리' }, { id: 'pmEventMng', label: '이벤트관리' }, { id: 'pmPlanMng', label: '기획전관리' }, { id: 'pmDiscntMng', label: '판촉할인' }, { id: 'pmSaveMng', label: '판촉마일리지' }, { id: 'pmGiftMng', label: '판촉사은품' }],
+    promotion: [
+      { group: '판촉' },
+      { id: 'pmCouponMng',  label: '쿠폰관리' },
+      { id: 'pmCacheMng',   label: '캐쉬관리' },
+      { id: 'pmDiscntMng',  label: '할인관리' },
+      { id: 'pmSaveMng',    label: '마일리지관리' },
+      { id: 'pmGiftMng',    label: '사은품관리' },
+      { group: '이벤트' },
+      { id: 'pmEventMng',   label: '이벤트관리' },
+      { id: 'pmPlanMng',    label: '기획전관리' },
+    ],
     display:   [
       { group: '미리보기' },
       { id: 'dpDispUiPreview',        label: '전시UI미리보기' },

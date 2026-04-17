@@ -70,7 +70,7 @@ window.CmNoticeDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '공지사항 등록' : (viewMode ? '공지사항 상세' : '공지사항 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.noticeId }}</span></div>
+  <div class="page-title">{{ isNew ? '공지사항 등록' : (viewMode ? '공지사항 상세' : '공지사항 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.noticeId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group" style="flex:2">

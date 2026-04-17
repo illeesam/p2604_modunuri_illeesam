@@ -142,7 +142,7 @@ window.CmChattDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '채팅 등록' : (viewMode ? '채팅 상세' : '채팅 수정') }}</div><span v-if="!isNew && chat" style="font-size:12px;color:#999;">#{{ chat.chatId }}</span></div>
+  <div class="page-title">{{ isNew ? '채팅 등록' : (viewMode ? '채팅 상세' : '채팅 수정') }}<span v-if="!isNew && chat" style="font-size:12px;color:#999;margin-left:8px;">#{{ chat.chatId }}</span></div>
 
   <!-- 채팅 상세 -->
   <div v-if="!isNew">

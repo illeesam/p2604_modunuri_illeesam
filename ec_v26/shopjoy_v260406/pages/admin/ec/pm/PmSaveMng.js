@@ -86,13 +86,13 @@ window.PmSaveMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value,
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
-      '판촉마일리지목록.csv');
+      '마일리지목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
-  <div class="page-title">판촉마일리지관리</div>
+  <div class="page-title">마일리지관리</div>
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="마일리지명 / ID 검색" />

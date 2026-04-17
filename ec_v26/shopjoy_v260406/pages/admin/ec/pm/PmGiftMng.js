@@ -86,13 +86,13 @@ window.PmGiftMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value,
       [{label:'ID',key:'giftId'},{label:'사은품명',key:'giftNm'},{label:'유형',key:'giftType'},{label:'조건값',key:'condVal'},{label:'재고',key:'stock'},{label:'상태',key:'giftStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
-      '판촉사은품목록.csv');
+      '사은품목록.csv');
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
-  <div class="page-title">판촉사은품관리</div>
+  <div class="page-title">사은품관리</div>
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="사은품명 / ID 검색" />

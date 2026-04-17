@@ -75,7 +75,7 @@ window.PdCategoryDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '카테고리 등록' : '카테고리 수정' }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.categoryId }}</span></div>
+  <div class="page-title">{{ isNew ? '카테고리 등록' : '카테고리 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.categoryId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

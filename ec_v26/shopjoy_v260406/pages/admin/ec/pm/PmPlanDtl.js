@@ -192,7 +192,7 @@ window.PmPlanDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '기획전 등록' : '기획전 상세' }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.planId }}</span></div>
+  <div class="page-title">{{ isNew ? '기획전 등록' : '기획전 상세' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.planId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="viewMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
