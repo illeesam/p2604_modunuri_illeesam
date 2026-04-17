@@ -1,7 +1,7 @@
 /* ShopJoy - DispUi 공통 컴포넌트
  * 용도: DispAreaPreview 모달 + DispUiPage 팝업 공용
  * Props:
- *   params      - { areas[], date, time, status, condition, authRequired, authGrade, siteId, memberId, viewOpts }
+ *   params      - { areas[], date, time, status, visibilityTargets, siteId, memberId, viewOpts }
  *   dispDataset   - dispDataset 객체 (없으면 window.dispDataset fallback)
  *   layout      - 'auto' | 'simple' | 'detailed' (기본: 'auto')
  *   showHeader  - 섹션 헤더 표시 (기본: true)
@@ -178,17 +178,18 @@ window.DispX01Ui = {
               : '기간없음';
             const _pLayout = p.layoutType === 'dashboard' ? 'dashboard' : `${p.layoutType||'grid'}:${p.gridCols||1}`;
             const _pTitleYn = p.titleYn === 'Y' ? (p.title || '(제목없음)') : '미표시';
+            const _pVis = p.visibilityTargets ? p.visibilityTargets.replace(/\^/g,'').trim() : '전체';
             lines.push({ type:'panel-meta',
-              text:`    <!-- 표시형식:${_pLayout}, 정렬:${p.sortOrder??'-'}, 타이틀:${_pTitleYn}, 기간: ${_period}  |  상태: ${p.status||'-'}  |  노출조건: ${p.condition||'항상 표시'}  |  인증필요: ${p.authRequired?'필요':'불필요'} -->` });
+              text:`    <!-- 표시형식:${_pLayout}, 정렬:${p.sortOrder??'-'}, 타이틀:${_pTitleYn}, 기간: ${_period}  |  상태: ${p.status||'-'}  |  공개대상: ${_pVis} -->` });
             lines.push({ type:'panel-open',
-              text:`    <DispX03Panel id="#${String(p.dispId).padStart(4,'0')}" name="${p.name}" status="${p.status}" layoutType="${p.layoutType||'grid'}" gridCols="${p.gridCols||1}" condition="${p.condition||'항상 표시'}">` });
+              text:`    <DispX03Panel id="#${String(p.dispId).padStart(4,'0')}" name="${p.name}" status="${p.status}" layoutType="${p.layoutType||'grid'}" gridCols="${p.gridCols||1}">` });
 
             if (!(p.rows?.length)) {
               lines.push({ type:'comment', text:`      <!-- (위젯 없음) -->` });
             } else {
               (p.rows||[]).forEach(w => {
                 lines.push({ type:'widget',
-                  text:`      <DispX04Widget widgetType="${w.widgetType}" widgetNm="${w.widgetNm||''}" condition="${w.condition||''}" />` });
+                  text:`      <DispX04Widget widgetType="${w.widgetType}" widgetNm="${w.widgetNm||''}" />` });
               });
             }
             lines.push({ type:'panel-close', text:`    </DispX03Panel>` });
@@ -253,9 +254,7 @@ window.DispX01Ui = {
     <span v-if="params.areas.length" style="font-size:11px;background:#ede7f6;color:#4a148c;border-radius:8px;padding:2px 10px;">영역: {{ params.areas.join(', ') }}</span>
     <span v-if="params.date" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:8px;padding:2px 10px;">📅 {{ params.date }} {{ params.time }}</span>
     <span v-if="params.status" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 10px;">상태: {{ params.status }}</span>
-    <span v-if="params.condition" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 10px;">{{ params.condition }}</span>
-    <span v-if="params.authRequired" style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 10px;">인증: {{ params.authRequired==='Y'?'필요':'불필요' }}</span>
-    <span v-if="params.authGrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 10px;">등급: {{ params.authGrade }}↑</span>
+    <span v-if="params.visibilityTargets" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 10px;">공개대상: {{ params.visibilityTargets.replace(/\^/g,'') }}</span>
     <span v-if="params.siteId" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 10px;">siteId: {{ params.siteId }}</span>
     <span v-if="params.memberId" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 10px;">memberId: {{ params.memberId }}</span>
     <span v-if="params.viewOpts" style="font-size:11px;background:#f0f4ff;color:#4f46e5;border-radius:8px;padding:2px 10px;">보기: {{ params.viewOpts }}</span>
@@ -483,8 +482,6 @@ window.DispX01Ui = {
                   타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }},
                   기간: {{ (p.dispStartDate||p.dispEndDate) ? (p.dispStartDate||'∞')+' ~ '+(p.dispEndDate||'∞') : '기간없음' }}
                   &nbsp;|&nbsp;상태: {{ p.status||'-' }}
-                  &nbsp;|&nbsp;노출조건: {{ p.condition||'항상 표시' }}
-                  &nbsp;|&nbsp;인증필요: {{ p.authRequired ? '필요' : '불필요' }}
                 </span>
                 <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px;">위젯 {{ (p.rows||[]).length }}개</span>
               </div>
@@ -503,8 +500,6 @@ window.DispX01Ui = {
                   <span style="font-size:10px;color:#90caf9;flex-shrink:0;">{{ wi+1 }}.</span>
                   <span style="font-size:11px;background:#e8f0fe;color:#1a73e8;border-radius:5px;padding:1px 7px;flex-shrink:0;">{{ wLabel(w.widgetType) }}</span>
                   <span v-if="w.widgetNm" style="font-size:11px;color:#555;">{{ w.widgetNm }}</span>
-                  <span v-if="w.condition&&w.condition!=='항상 표시'"
-                    style="font-size:10px;color:#6a1b9a;margin-left:auto;flex-shrink:0;">{{ w.condition }}</span>
                 </div>
               </div>
             </div>
