@@ -21,12 +21,19 @@ window.DpDispUiSimul = {
     const selectedAreas = reactive(new Set());
 
     /* ── 패널 검색 필터 ── */
-    const searchStatus       = ref('활성');
-    const searchCondition    = ref('');
-    const searchAuthRequired = ref('');
-    const searchAuthGrade    = ref('');
-    const CONDITION_OPTS   = ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'];
-    const AUTH_GRADE_OPTS  = ['일반', '우수', 'VIP'];
+    const searchStatus     = ref('활성');
+    const searchVisibility = ref('');
+    const VISIBILITY_OPTS  = [
+      { value: '', label: '전체' },
+      { value: 'PUBLIC',    label: '전체공개' },
+      { value: 'MEMBER',    label: '회원공개' },
+      { value: 'VERIFIED',  label: '인증회원' },
+      { value: 'PREMIUM',   label: '우수회원↑' },
+      { value: 'VIP',       label: 'VIP전용' },
+      { value: 'INVITED',   label: '초대회원' },
+      { value: 'STAFF',     label: '직원' },
+      { value: 'EXECUTIVE', label: '임직원' },
+    ];
 
     /* ── 위젯 유형 메타 ── */
     const WIDGET_TYPE_LABELS = {
@@ -90,10 +97,7 @@ window.DpDispUiSimul = {
     const panelFilter = (p) => {
       if (searchStatus.value && p.status !== searchStatus.value) return false;
       if (!isDateInRange(p)) return false;
-      if (searchCondition.value && (p.condition || '항상 표시') !== searchCondition.value) return false;
-      if (searchAuthRequired.value === 'Y' && !p.authRequired) return false;
-      if (searchAuthRequired.value === 'N' && p.authRequired) return false;
-      if (searchAuthGrade.value && p.authGrade !== searchAuthGrade.value) return false;
+      if (searchVisibility.value && !window.visibilityUtil.has(p.visibilityTargets, searchVisibility.value)) return false;
       return true;
     };
 
@@ -267,9 +271,7 @@ window.DpDispUiSimul = {
       lines.push({ type:'source-header', htype:'disp', data:{
         datetime:     `${previewDate.value || '-'} ${previewTime.value || ''}`.trim(),
         status:       searchStatus.value || '전체',
-        condition:    searchCondition.value || '전체',
-        authRequired: searchAuthRequired.value === 'Y' ? '필요' : searchAuthRequired.value === 'N' ? '불필요' : '전체',
-        authGrade:    searchAuthGrade.value ? searchAuthGrade.value + ' 이상' : '전체',
+        visibility:   searchVisibility.value ? (VISIBILITY_OPTS.find(o => o.value === searchVisibility.value)?.label || searchVisibility.value) : '전체',
       }});
       lines.push({ type:'source-header', htype:'cond', data:{
         period:   '-',
@@ -595,9 +597,7 @@ window.DpDispUiSimul = {
       dispUiForm.date        = '';
       dispUiForm.time        = '';
       dispUiForm.status      = '';
-      dispUiForm.condition   = '';
-      dispUiForm.authRequired = '';
-      dispUiForm.authGrade   = '';
+      dispUiForm.visibility  = '';
       dispUiForm.siteId      = '';
       dispUiForm.siteNm      = '';
       dispUiForm.memberId    = '';
@@ -634,9 +634,7 @@ window.DpDispUiSimul = {
         dispUiForm.date         = previewDate.value;
         dispUiForm.time         = previewTime.value;
         dispUiForm.status       = searchStatus.value;
-        dispUiForm.condition    = searchCondition.value;
-        dispUiForm.authRequired = searchAuthRequired.value;
-        dispUiForm.authGrade    = searchAuthGrade.value;
+        dispUiForm.visibility   = searchVisibility.value;
         const cf   = window.adminCommonFilter || {};
         const site = (props.dispDataset.sites || []).find(s => s.siteId === cf.siteId);
         dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
@@ -657,9 +655,7 @@ window.DpDispUiSimul = {
         date:         dispUiForm.date,
         time:         dispUiForm.time,
         status:       dispUiForm.status,
-        condition:    dispUiForm.condition,
-        authRequired: dispUiForm.authRequired,
-        authGrade:    dispUiForm.authGrade,
+        visibilityTargets: dispUiForm.visibility ? '^' + dispUiForm.visibility + '^' : '',
         siteId:       dispUiForm.siteId,
         memberId:     dispUiForm.memberId,
         viewOpts,
@@ -689,9 +685,7 @@ window.DpDispUiSimul = {
     /* ── DispX02Area props ── */
     const filterParams = computed(() => ({
       status:       searchStatus.value,
-      condition:    searchCondition.value,
-      authRequired: searchAuthRequired.value,
-      authGrade:    searchAuthGrade.value,
+      visibilityTargets: searchVisibility.value ? '^' + searchVisibility.value + '^' : '',
       date:         previewDate.value,
       time:         previewTime.value,
       isLoggedIn:   false,
@@ -765,8 +759,8 @@ window.DpDispUiSimul = {
       previewDate, viewMode, showDesc, showAreaDrop,
       selectedAreas, allAreaListRaw, areaList,
       previewTime,
-      searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
-      CONDITION_OPTS, AUTH_GRADE_OPTS,
+      searchStatus, searchVisibility,
+      VISIBILITY_OPTS,
       toggleArea, selectAllAreas, clearAllAreas, areaBtnLabel,
       panelsForArea, totalPanels, resetDate, isDateInRange,
       filterParams, dispOpt, areaInfo,
@@ -839,31 +833,11 @@ window.DpDispUiSimul = {
         </select>
       </div>
 
-      <!-- 노출조건 -->
+      <!-- 공개대상 -->
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">노출조건</span>
-        <select v-model="searchCondition" class="form-control" style="width:120px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option v-for="c in CONDITION_OPTS" :key="c" :value="c">{{ c }}</option>
-        </select>
-      </div>
-
-      <!-- 인증필요 -->
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">인증필요</span>
-        <select v-model="searchAuthRequired" class="form-control" style="width:80px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option value="Y">필요</option>
-          <option value="N">불필요</option>
-        </select>
-      </div>
-
-      <!-- 등급제한 -->
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
-        <select v-model="searchAuthGrade" class="form-control" style="width:90px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }}↑</option>
+        <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
+        <select v-model="searchVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
+          <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
@@ -937,10 +911,7 @@ window.DpDispUiSimul = {
       <span style="font-size:11px;color:#aaa;">조회 조건:</span>
       <span style="font-size:12px;background:#fff8e1;color:#f57c00;border-radius:10px;padding:2px 10px;">📅 {{ previewDate }} {{ previewTime }}</span>
       <span v-if="searchStatus" style="font-size:12px;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 10px;">상태: {{ searchStatus }}</span>
-      <span v-if="searchCondition" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">{{ searchCondition }}</span>
-      <span v-if="searchAuthRequired==='Y'" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:10px;padding:2px 10px;">인증 필요</span>
-      <span v-if="searchAuthRequired==='N'" style="font-size:12px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 10px;">인증 불필요</span>
-      <span v-if="searchAuthGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">등급: {{ searchAuthGrade }}↑</span>
+      <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">공개: {{ VISIBILITY_OPTS.find(o => o.value === searchVisibility)?.label }}</span>
       <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
         <button @click="openDispUiLayer"
           style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
@@ -1020,24 +991,10 @@ window.DpDispUiSimul = {
           <option value="">전체</option><option>활성</option><option>비활성</option>
         </select>
         <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
-        <span class="search-label" style="font-size:11px;">노출조건</span>
-        <select v-model="dispUiForm.condition"
+        <span class="search-label" style="font-size:11px;">공개대상</span>
+        <select v-model="dispUiForm.visibility"
           style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option value="">전체</option>
-          <option v-for="c in CONDITION_OPTS" :key="c" :value="c">{{ c }}</option>
-        </select>
-        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
-        <span class="search-label" style="font-size:11px;">인증필요</span>
-        <select v-model="dispUiForm.authRequired"
-          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option value="">전체</option><option value="Y">필요</option><option value="N">불필요</option>
-        </select>
-        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
-        <span class="search-label" style="font-size:11px;">등급제한</span>
-        <select v-model="dispUiForm.authGrade"
-          style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option value="">전체</option>
-          <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }} 이상</option>
+          <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
 

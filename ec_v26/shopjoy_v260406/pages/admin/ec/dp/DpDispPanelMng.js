@@ -18,12 +18,19 @@ window.DpDispPanelMng = {
     const searchStatus = ref('');
     const searchDispDate = ref('');
     const searchDispTime = ref('');
-    const searchCondition = ref('');
-    const searchAuthRequired = ref('');
-    const searchAuthGrade = ref('');
+    const searchVisibility = ref('');
     const searchLayoutType = ref('');
-    const CONDITION_OPTS   = ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'];
-    const AUTH_GRADE_OPTS  = ['일반', '우수', 'VIP'];
+    const VISIBILITY_OPTS  = [
+      { value: '', label: '전체' },
+      { value: 'PUBLIC',    label: '전체공개' },
+      { value: 'MEMBER',    label: '회원공개' },
+      { value: 'VERIFIED',  label: '인증회원' },
+      { value: 'PREMIUM',   label: '우수회원↑' },
+      { value: 'VIP',       label: 'VIP전용' },
+      { value: 'INVITED',   label: '초대회원' },
+      { value: 'STAFF',     label: '직원' },
+      { value: 'EXECUTIVE', label: '임직원' },
+    ];
     const LAYOUT_TYPE_OPTS = [{ value:'grid', label:'그리드' }, { value:'dashboard', label:'대시보드' }];
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100, 200, 300];
@@ -80,7 +87,7 @@ window.DpDispPanelMng = {
       return '-';
     };
 
-    const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '', layoutType: '' });
+    const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
 
     const filtered = computed(() => props.dispDataset.displays.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
@@ -97,10 +104,7 @@ window.DpDispPanelMng = {
         const pe = `${d.dispEndDate   || '9999-12-31'} ${d.dispEndTime   || '23:59'}`;
         if (dt < ps || dt > pe) return false;
       }
-      if (applied.condition && (d.condition || '항상 표시') !== applied.condition) return false;
-      if (applied.authRequired === 'Y' && !d.authRequired) return false;
-      if (applied.authRequired === 'N' && d.authRequired) return false;
-      if (applied.authGrade && d.authGrade !== applied.authGrade) return false;
+      if (applied.visibility && !window.visibilityUtil.has(d.visibilityTargets, applied.visibility)) return false;
       if (applied.layoutType && (d.layoutType || 'grid') !== applied.layoutType) return false;
       /* 트리 선택 필터 */
       if (selectedTreeKey.value) {
@@ -191,9 +195,7 @@ window.DpDispPanelMng = {
         dateEnd: searchDateEnd.value,
         dispDate: searchDispDate.value,
         dispTime: searchDispTime.value,
-        condition: searchCondition.value,
-        authRequired: searchAuthRequired.value,
-        authGrade: searchAuthGrade.value,
+        visibility: searchVisibility.value,
         layoutType: searchLayoutType.value,
       });
       pager.page = 1;
@@ -204,9 +206,9 @@ window.DpDispPanelMng = {
       searchStatus.value = '';
       searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
       searchDispDate.value = ''; searchDispTime.value = '';
-      searchCondition.value = ''; searchAuthRequired.value = ''; searchAuthGrade.value = '';
+      searchVisibility.value = '';
       searchLayoutType.value = '';
-      Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', condition: '', authRequired: '', authGrade: '', layoutType: '' });
+      Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
       pager.page = 1;
     };
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
@@ -375,7 +377,7 @@ window.DpDispPanelMng = {
 
     return {
       pathLabel,
-      panelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchCondition, searchAuthRequired, searchAuthGrade, searchLayoutType, CONDITION_OPTS, AUTH_GRADE_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
+      panelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>
@@ -402,22 +404,9 @@ window.DpDispPanelMng = {
       <input type="time" v-model="searchDispTime" class="date-range-input" style="width:145px;" />
       <button @click="setDispNow" style="font-size:11px;padding:3px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
-      <span class="search-label">노출조건</span>
-      <select v-model="searchCondition" style="min-width:120px;">
-        <option value="">전체</option>
-        <option v-for="c in CONDITION_OPTS" :key="c" :value="c">{{ c }}</option>
-      </select>
-      <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
-      <span class="search-label">인증필요</span>
-      <select v-model="searchAuthRequired" style="min-width:90px;">
-        <option value="">전체</option>
-        <option value="Y">필요</option>
-        <option value="N">불필요</option>
-      </select>
-      <span class="search-label">등급제한</span>
-      <select v-model="searchAuthGrade" style="min-width:90px;">
-        <option value="">전체</option>
-        <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }} 이상</option>
+      <span class="search-label">공개대상</span>
+      <select v-model="searchVisibility" style="min-width:100px;">
+        <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">표시방식</span>
