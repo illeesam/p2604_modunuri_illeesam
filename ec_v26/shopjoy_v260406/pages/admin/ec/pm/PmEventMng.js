@@ -13,6 +13,7 @@ window.PmEventMng = {
     };
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchStatus = ref('');
+    const viewMode = ref('list'); // 'list' | 'card'
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -91,7 +92,7 @@ window.PmEventMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'유형',key:'eventType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -110,15 +111,22 @@ window.PmEventMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이벤트목록 <span class="list-count">{{ total }}건</span></span>
-      <div style="display:flex;gap:6px;">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
+          <button @click="viewMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
+            :style="viewMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 리스트</button>
+          <button @click="viewMode='card'" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+            :style="viewMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 카드</button>
+        </div>
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="admin-table">
+    <!-- 리스트 뷰 -->
+    <table class="admin-table" v-if="viewMode==='list'">
       <thead><tr><th>ID</th><th>이벤트 제목</th><th>대상상품</th><th>인증필요</th><th>시작일</th><th>종료일</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="e in pageList" :key="e.eventId" :style="selectedId===e.eventId?'background:#fff8f9;':''">
           <td>{{ e.eventId }}</td>
           <td><span class="title-link" @click="loadDetail(e.eventId)" :style="selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.title }}<span v-if="selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -135,6 +143,31 @@ window.PmEventMng = {
         </tr>
       </tbody>
     </table>
+
+    <!-- 카드 뷰 -->
+    <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:16px;">
+      <div v-if="pageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-for="e in pageList" :key="e.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
+        :style="selectedId===e.eventId?'border-color:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.15);':'hover':true?'box-shadow:0 2px 8px rgba(0,0,0,0.1);':''">
+        <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
+          <div style="font-size:12px;color:#999;margin-bottom:6px;">이벤트 #{{ e.eventId }}</div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="loadDetail(e.eventId)" :style="selectedId===e.eventId?'color:#e8587a;':'':''">{{ e.title }}<span v-if="selectedId===e.eventId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="badge" :class="statusBadge(e.status)" style="font-size:11px;">{{ e.status }}</span>
+            <span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'" style="font-size:11px;">{{ e.authRequired ? '인증필요' : '인증불필요' }}</span>
+          </div>
+          <div style="font-size:12px;color:#666;line-height:1.5;">
+            <div>🎯 {{ e.targetProducts.length }}개 상품</div>
+            <div>📅 {{ e.startDate }} ~ {{ e.endDate }}</div>
+            <div style="color:#999;margin-top:4px;">등록 {{ e.regDate }}</div>
+          </div>
+        </div>
+        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;">
+          <button class="btn btn-blue btn-sm" @click="loadDetail(e.eventId)" style="font-size:11px;padding:4px 12px;">수정</button>
+          <button class="btn btn-danger btn-sm" @click="doDelete(e)" style="font-size:11px;padding:4px 12px;">삭제</button>
+        </div>
+      </div>
+    </div>
     <div class="pagination">
       <div></div>
       <div class="pager">
