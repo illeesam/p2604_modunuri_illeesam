@@ -206,9 +206,6 @@ window.PmPlanDtl = {
     <!-- 기본정보 -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <!-- 배너 미리보기 -->
-      <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #e0e0e0;" v-html="form.bannerImage"></div>
-
       <div class="form-group">
         <label class="form-label">기획전명 <span class="req">*</span></label>
         <input class="form-control" v-model="form.planNm" placeholder="기획전명을 입력하세요" :class="errors.planNm ? 'is-invalid' : ''" />

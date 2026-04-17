@@ -206,9 +206,6 @@ window.PmEventDtl = {
     <!-- 기본정보 -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <!-- 배너 미리보기 -->
-      <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #e0e0e0;" v-html="form.bannerImage"></div>
-
       <div class="form-group">
         <label class="form-label">이벤트 제목 <span v-if="!viewMode" class="req">*</span></label>
         <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
