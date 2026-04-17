@@ -1,18 +1,21 @@
-/* ShopJoy Admin - 기획전관리 상세/등록 */
+/* ShopJoy Admin - 기획전관리 상세/등록 (Quill HTML Editor) */
 window._ecPlanDtlState = window._ecPlanDtlState || { tab: 'info', viewMode: 'tab' };
 window.PmPlanDtl = {
   name: 'PmPlanDtl',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { reactive, computed, ref, onMounted } = Vue;
+    const { reactive, computed, ref, onMounted, onUnmounted } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._ecPlanDtlState.tab || 'info');
     Vue.watch(tab, v => { window._ecPlanDtlState.tab = v; });
+    const viewMode2 = ref(window._ecPlanDtlState.viewMode || 'tab');
+    Vue.watch(viewMode2, v => { window._ecPlanDtlState.viewMode = v; });
+    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
-    const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
+    const DEFAULT_END = `${_today.getFullYear()+1}-12-31`;
 
     const CATEGORIES = [
       { value: '패션', label: '패션' },
@@ -33,7 +36,7 @@ window.PmPlanDtl = {
       planNm: '', category: '패션', theme: '', status: '활성',
       startDate: DEFAULT_START, endDate: DEFAULT_END,
       productIds: [], visibilityTargets: '^PUBLIC^',
-      desc: '',
+      desc: '', content1: '', content2: '', content3: '',
     });
     const errors = reactive({});
 
@@ -41,6 +44,50 @@ window.PmPlanDtl = {
       planNm: yup.string().required('기획전명을 입력해주세요.'),
       category: yup.string().required('카테고리를 선택해주세요.'),
     });
+
+    /* Quill 인스턴스 3개 */
+    const quillers = {};
+    const activeContentTab = ref(1);
+
+    const initQuill = (id, key) => {
+      const el = document.getElementById(id);
+      if (!el || typeof Quill === 'undefined') return;
+      if (quillers[key]) return;
+      quillers[key] = new Quill(el, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            ['clean'],
+          ],
+        },
+      });
+      quillers[key].on('text-change', () => { form[key] = quillers[key].root.innerHTML; });
+      if (form[key]) quillers[key].root.innerHTML = form[key];
+    };
+
+    const syncToQuill = () => {
+      for (let i = 1; i <= 3; i++) {
+        const key = 'content' + i;
+        if (quillers[key]) quillers[key].root.innerHTML = form[key] || '';
+      }
+    };
+
+    const onTabChange = (newTab) => {
+      tab.value = newTab;
+      if (newTab === 'content') {
+        setTimeout(() => {
+          for (let i = 1; i <= 3; i++) initQuill('quill-content' + i, 'content' + i);
+          syncToQuill();
+        }, 50);
+      }
+    };
 
     onMounted(() => {
       if (!isNew.value) {
@@ -51,6 +98,8 @@ window.PmPlanDtl = {
         }
       }
     });
+
+    onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
 
     /* 대상 상품 팝업 */
     const showProdPopup = ref(false);
@@ -64,9 +113,14 @@ window.PmPlanDtl = {
       if (idx === -1) form.productIds.push(pid);
       else form.productIds.splice(idx, 1);
     };
+    const isSelected = (pid) => form.productIds.includes(pid);
     const selectedProducts = computed(() =>
-      props.adminData.products.filter(p => form.productIds.includes(p.productId))
+      form.productIds.map(pid => props.adminData.products.find(p => p.productId === pid)).filter(Boolean)
     );
+    const removeProduct = (pid) => {
+      const idx = form.productIds.indexOf(pid);
+      if (idx !== -1) form.productIds.splice(idx, 1);
+    };
 
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -77,133 +131,219 @@ window.PmPlanDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-
       await window.adminApiCall({
         method: isNew.value ? 'post' : 'put',
         path: `plans${isNew.value ? '' : '/' + props.editId}`,
         data: form,
-        confirmTitle: '저장',
-        confirmMsg: '저장하시겠습니까?',
+        confirmTitle: isNew.value ? '등록' : '저장',
+        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
         showConfirm: props.showConfirm,
         showToast: props.showToast,
         setApiRes: props.setApiRes,
-        successMsg: '저장되었습니다.',
+        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
         onLocal: () => {
           if (isNew.value) {
             const newId = Math.max(...(props.adminData.plans || []).map(p => p.planId), 0) + 1;
-            const newPlan = {
-              planId: newId, ...form, regDate: new Date().toISOString().slice(0, 10),
+            props.adminData.plans.push({
+              ...form, planId: newId,
+              productIds: [...form.productIds],
+              regDate: new Date().toISOString().slice(0, 10),
               viewCount: 0, thumbUrl: '🎯',
-            };
-            props.adminData.plans.push(newPlan);
-            props.navigate('pmPlanMng');
+            });
           } else {
             const idx = props.adminData.plans.findIndex(x => x.planId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.plans[idx], form);
-            props.navigate('pmPlanMng');
+            if (idx !== -1) Object.assign(props.adminData.plans[idx], { ...form, productIds: [...form.productIds] });
           }
         },
+        navigate: props.navigate,
+        navigateTo: 'pmPlanMng',
       });
     };
 
-    const onCancel = () => {
-      if (confirm('저장되지 않은 변경사항이 있습니다. 계속하시겠습니까?')) {
-        props.navigate('pmPlanMng');
-      }
-    };
-
     return {
-      isNew, tab, form, errors, CATEGORIES, STATUS_OPTIONS, save, onCancel,
-      showProdPopup, prodSearch, filteredProds, toggleProduct, selectedProducts,
+      isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch,
+      filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, save,
+      CATEGORIES, STATUS_OPTIONS, viewMode2, showTab,
     };
   },
   template: /* html */`
-<div class="card dtl-tab-grid cols-1">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #f0f0f0;">
-    <h3 style="margin:0;font-size:14px;font-weight:700;color:#222;">{{ isNew ? '기획전 신규' : '기획전 상세' }}</h3>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" @click="save">💾 저장</button>
-      <button class="btn btn-secondary" @click="onCancel">취소</button>
+<div>
+  <div class="page-title">{{ isNew ? '기획전 등록' : '기획전 상세' }}</div>
+    <div class="tab-bar-row">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
+        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="onTabChange('content')">📝 내용입력</button>
+        <button class="tab-btn" :class="{active:tab==='products'}" :disabled="viewMode2!=='tab'" @click="onTabChange('products')">
+          🛍 대상 상품 <span class="tab-count">{{ form.productIds.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="viewMode2!=='tab'" @click="onTabChange('preview')">👁 미리보기</button>
+      </div>
+      <div class="tab-view-modes">
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
+      </div>
     </div>
-  </div>
+    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <div style="padding:16px;">
     <!-- 기본정보 -->
-    <div class="form-row">
-      <label class="form-label">기획전명 <span style="color:#e74c3c;">*</span></label>
-      <input v-model="form.planNm" class="form-control" placeholder="기획전명 입력" style="width:100%;" />
-      <div v-if="errors.planNm" class="field-error">{{ errors.planNm }}</div>
+    <div class="card" v-show="showTab('info')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <div class="form-group">
+        <label class="form-label">기획전명 <span class="req">*</span></label>
+        <input class="form-control" v-model="form.planNm" placeholder="기획전명을 입력하세요" :class="errors.planNm ? 'is-invalid' : ''" />
+        <span v-if="errors.planNm" class="field-error">{{ errors.planNm }}</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">카테고리 <span class="req">*</span></label>
+          <select class="form-control" v-model="form.category" :class="errors.category ? 'is-invalid' : ''">
+            <option v-for="c in CATEGORIES" :key="c.value" :value="c.value">{{ c.label }}</option>
+          </select>
+          <span v-if="errors.category" class="field-error">{{ errors.category }}</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">테마</label>
+          <input class="form-control" v-model="form.theme" placeholder="예: 봄맞이, 세일" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">상태</label>
+          <select class="form-control" v-model="form.status">
+            <option v-for="s in STATUS_OPTIONS" :key="s.value" :value="s.value">{{ s.label }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">공개대상</label>
+          <select class="form-control" v-model="form.visibilityTargets">
+            <option value="^PUBLIC^">전체공개</option>
+            <option value="^MEMBER^">회원공개</option>
+            <option value="^VERIFIED^">인증회원</option>
+            <option value="^VIP^">VIP전용</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">시작일</label>
+          <input class="form-control" type="date" v-model="form.startDate" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">종료일</label>
+          <input class="form-control" type="date" v-model="form.endDate" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">간단설명</label>
+        <textarea class="form-control" v-model="form.desc" placeholder="기획전 설명" style="min-height:60px;"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
+      </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="form-row">
-        <label class="form-label">카테고리 <span style="color:#e74c3c;">*</span></label>
-        <select v-model="form.category" class="form-control" style="width:100%;">
-          <option v-for="c in CATEGORIES" :key="c.value" :value="c.value">{{ c.label }}</option>
-        </select>
-        <div v-if="errors.category" class="field-error">{{ errors.category }}</div>
+    <!-- 내용입력 (HTML 에디터) -->
+    <div class="card" v-show="showTab('content')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 내용입력</div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;gap:2px;margin-bottom:12px;">
+          <button v-for="i in 3" :key="i" @click="activeContentTab=i"
+            class="tab-btn" :class="{active:activeContentTab===i}"
+            style="font-size:12px;padding:6px 14px;">컨텐츠 {{ i }}</button>
+        </div>
       </div>
-      <div class="form-row">
-        <label class="form-label">테마</label>
-        <input v-model="form.theme" class="form-control" placeholder="예: 봄맞이, 세일" style="width:100%;" />
-      </div>
-    </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="form-row">
-        <label class="form-label">상태</label>
-        <select v-model="form.status" class="form-control" style="width:100%;">
-          <option v-for="s in STATUS_OPTIONS" :key="s.value" :value="s.value">{{ s.label }}</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label class="form-label">공개대상</label>
-        <select v-model="form.visibilityTargets" class="form-control" style="width:100%;">
-          <option value="^PUBLIC^">전체공개</option>
-          <option value="^MEMBER^">회원공개</option>
-          <option value="^VERIFIED^">인증회원</option>
-          <option value="^VIP^">VIP전용</option>
-        </select>
-      </div>
-    </div>
+      <template v-if="activeContentTab===1">
+        <div id="quill-content1" style="min-height:400px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
+      </template>
+      <template v-if="activeContentTab===2">
+        <div id="quill-content2" style="min-height:400px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
+      </template>
+      <template v-if="activeContentTab===3">
+        <div id="quill-content3" style="min-height:400px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
+      </template>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="form-row">
-        <label class="form-label">시작일</label>
-        <input v-model="form.startDate" type="date" class="form-control" style="width:100%;" />
+      <div class="form-actions" style="margin-top:12px;">
+        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
-      <div class="form-row">
-        <label class="form-label">종료일</label>
-        <input v-model="form.endDate" type="date" class="form-control" style="width:100%;" />
-      </div>
-    </div>
-
-    <div class="form-row">
-      <label class="form-label">설명</label>
-      <textarea v-model="form.desc" class="form-control" placeholder="기획전 설명" style="width:100%;min-height:60px;"></textarea>
     </div>
 
     <!-- 대상상품 -->
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #e0e0e0;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <label class="form-label" style="margin:0;">대상상품 ({{ form.productIds.length }}개)</label>
-        <button class="btn btn-primary btn-sm" @click="showProdPopup=true">+ 상품선택</button>
+    <div class="card" v-show="showTab('products')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품</div>
+      <div style="margin-bottom:16px;">
+        <button class="btn btn-primary btn-sm" @click="showProdPopup=true" style="float:right;">+ 상품선택</button>
+        <div style="clear:both;"></div>
       </div>
 
-      <!-- 선택된 상품 표시 -->
-      <div v-if="selectedProducts.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
+      <div v-if="selectedProducts.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">
         <div v-for="p in selectedProducts" :key="p.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
           <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">📦</div>
           <div style="padding:8px;font-size:11px;">
             <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.prodNm }}</div>
-            <div style="color:#e8587a;font-weight:700;margin-bottom:4px;">{{ (p.price||0).toLocaleString() }}원</div>
-            <button style="width:100%;padding:4px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:10px;cursor:pointer;color:#666;" @click="toggleProduct(p.productId)">제거</button>
+            <div style="color:#e8587a;font-weight:700;margin-bottom:6px;">{{ (p.price||0).toLocaleString() }}원</div>
+            <button style="width:100%;padding:4px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:10px;cursor:pointer;color:#666;" @click="removeProduct(p.productId)">제거</button>
           </div>
         </div>
       </div>
-      <div v-else style="text-align:center;color:#999;padding:20px;background:#f9f9f9;border-radius:6px;">선택된 상품이 없습니다.</div>
+      <div v-else style="text-align:center;color:#999;padding:40px;background:#f9f9f9;border-radius:6px;">선택된 상품이 없습니다.</div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
+      </div>
     </div>
-  </div>
+
+    <!-- 미리보기 -->
+    <div class="card" v-show="showTab('preview')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
+      <div style="background:#f9f9f9;border-radius:6px;padding:20px;">
+        <div style="background:#fff;border-radius:6px;padding:20px;border:1px solid #e0e0e0;">
+          <div style="font-size:18px;font-weight:700;color:#222;margin-bottom:12px;">{{ form.planNm }}</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <span style="display:inline-block;font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:4px 8px;font-weight:600;">{{ form.category }}</span>
+            <span style="display:inline-block;font-size:11px;background:#fff3e0;color:#f57c00;border-radius:4px;padding:4px 8px;font-weight:600;">{{ form.theme }}</span>
+            <span style="display:inline-block;font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:4px 8px;font-weight:600;">{{ form.status }}</span>
+          </div>
+          <div style="color:#666;font-size:12px;line-height:1.6;margin-bottom:16px;">
+            <div>📅 기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
+            <div style="margin-top:4px;">{{ form.desc }}</div>
+          </div>
+
+          <!-- 컨텐츠 미리보기 -->
+          <template v-if="form.content1 || form.content2 || form.content3">
+            <div style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
+              <div v-if="form.content1" style="margin-bottom:16px;" v-html="form.content1"></div>
+              <div v-if="form.content2" style="margin-bottom:16px;" v-html="form.content2"></div>
+              <div v-if="form.content3" v-html="form.content3"></div>
+            </div>
+          </template>
+
+          <!-- 대상상품 미리보기 -->
+          <div v-if="selectedProducts.length > 0" style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
+            <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🎯 대상상품 ({{ selectedProducts.length }}개)</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
+              <div v-for="p in selectedProducts" :key="p.productId" style="text-align:center;padding:10px;background:#f9f9f9;border-radius:6px;">
+                <div style="font-size:32px;margin-bottom:4px;">📦</div>
+                <div style="font-size:11px;font-weight:600;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.prodNm }}</div>
+                <div style="font-size:12px;color:#e8587a;font-weight:700;margin-top:4px;">{{ (p.price||0).toLocaleString() }}원</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
+      </div>
+    </div>
+
+    </div>
 </div>
 
 <!-- 상품선택 모달 -->
@@ -221,14 +361,14 @@ window.PmPlanDtl = {
       <div v-for="p in filteredProds" :key="p.productId"
         @click="toggleProduct(p.productId)"
         style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
-        :style="form.productIds.includes(p.productId) ? 'background:#ede7f6;' : ''"
+        :style="isSelected(p.productId) ? 'background:#ede7f6;' : ''"
         @mouseenter="$event.target.parentElement.style.background='#f9f9f9'"
-        @mouseleave="$event.target.parentElement.style.background=form.productIds.includes(p.productId) ? '#ede7f6' : 'white'">
+        @mouseleave="$event.target.parentElement.style.background=isSelected(p.productId) ? '#ede7f6' : 'white'">
         <div style="flex:1;">
           <div style="font-weight:600;font-size:12px;color:#222;">{{ p.prodNm }}</div>
           <div style="font-size:11px;color:#999;margin-top:2px;">{{ (p.price||0).toLocaleString() }}원</div>
         </div>
-        <div v-if="form.productIds.includes(p.productId)" style="color:#6a1b9a;font-weight:700;font-size:18px;">✓</div>
+        <div v-if="isSelected(p.productId)" style="color:#6a1b9a;font-weight:700;font-size:18px;">✓</div>
       </div>
     </div>
     <div style="padding:12px 16px;border-top:1px solid #e0e0e0;display:flex;gap:8px;justify-content:flex-end;">
