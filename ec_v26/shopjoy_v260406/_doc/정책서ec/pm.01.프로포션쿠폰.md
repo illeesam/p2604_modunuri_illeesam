@@ -111,10 +111,17 @@
 | target_type_cd | 대상 | COUPON_TARGET 코드 |
 | target_value | 대상값 | 회원ID/등급코드 |
 
+## 쿠폰 적용 대상 항목 (pm_coupon_item)
+- `target_type_cd`: PRODUCT / CATEGORY / VENDOR / BRAND
+- 항목이 등록되지 않으면 전체 상품에 적용 (pm_coupon.target_type_cd = ALL)
+- 대상이 지정된 경우 해당 상품/카테고리/판매자/브랜드에 속한 상품에만 적용
+
 ## 관련 테이블
-- pm_coupon: 쿠폰 마스터
-- ec_coupon_user: 회원-쿠폰 매핑 (발급)
-- od_order: 쿠폰 사용내역 (coupon_id)
+- `pm_coupon`: 쿠폰 마스터
+- `pm_coupon_item`: 쿠폰 적용 대상 (상품/카테고리/판매자/브랜드)
+- `pm_coupon_issue`: 회원-쿠폰 발급
+- `pm_coupon_usage`: 쿠폰 사용 이력
+- `od_order`: 쿠폰 사용내역 (coupon_id)
 
 ## 제약사항
 - 정률쿠폰의 할인율은 최대 50% 초과 불가

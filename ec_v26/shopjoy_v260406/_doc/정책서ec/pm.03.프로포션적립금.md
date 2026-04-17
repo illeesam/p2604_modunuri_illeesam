@@ -85,9 +85,21 @@
 적립금 (GOLD): 92,500 × 2% = 1,850포인트
 ```
 
+## 적립금 테이블 구조
+- `pm_save`: 통합 원장 (EARN/USE/EXPIRE/CANCEL/ADMIN 전체 이력)
+- `pm_save_issue`: 지급 상세 (구매/이벤트/리뷰/추천/관리자별 발생 건, PENDING→CONFIRMED 상태 관리)
+  - `save_issue_type_cd`: ORDER / EVENT / REVIEW / REFERRAL / ADMIN
+  - `order_id`, `order_item_id`, `prod_id`: 구매적립 시 상품 추적
+  - `expire_date`: 건별 소멸예정일
+- `pm_save_usage`: 사용 상세 (주문 시 사용 건, order_id + order_item_id + prod_id)
+
 ## 관련 테이블
-- mb_mem: 적립금잔액 저장
-- ec_accumulation_txn: 적립금 거래 이력
+| 테이블명 | 한글설명 |
+|---------|---------|
+| `pm_save` | 적립금 통합 원장 (모든 입출 이력) |
+| `pm_save_issue` | 적립금 지급 이력 (발생 건별 상태 추적) |
+| `pm_save_usage` | 적립금 사용 이력 (주문 시 사용 건별) |
+| `mb_mem` | 회원 마스터 (적립금 잔액 요약 저장) |
 
 ## 제약사항
 - 환금 불가능 (캐시로만 전환, 10% 수수료)

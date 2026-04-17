@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "C:\\Users\\illee\\.claude\\projects\\c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406\\memory"
+    ],
+    "allow": [
+      "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/mb_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-mb/)",
+      "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/pd_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-pd/)",
+      "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/od_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-od/)",
+      "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/pm_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-pm/)",
+      "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/dp_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-dp/)"
+    ]
+  }
+}
