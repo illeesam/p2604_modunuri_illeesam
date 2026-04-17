@@ -16,19 +16,19 @@ CREATE TABLE cm_bltn_reply (
 );
 
 COMMENT ON TABLE cm_bltn_reply IS '블로그 댓글';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idcomment_id   IS '댓글ID';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idsite_id      IS '사이트ID';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idblog_id      IS '블로그ID';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idparent_comment_id IS '대댓글 부모ID';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idwriter_id    IS '작성자ID';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idwriter_nm    IS '작성자명';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idblog_comment_content IS '댓글 내용';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idcomment_status_cd IS '상태 (코드: COMMENT_STATUS)';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idcomment_status_cd_before IS '변경 전 댓글상태 (코드: COMMENT_STATUS)';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idreg_by       IS '등록자';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idreg_date     IS '등록일';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idupd_by       IS '수정자';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_idupd_date     IS '수정일';
+COMMENT ON COLUMN cm_bltn_reply.comment_id   IS '댓글ID';
+COMMENT ON COLUMN cm_bltn_reply.site_id      IS '사이트ID';
+COMMENT ON COLUMN cm_bltn_reply.blog_id      IS '블로그ID';
+COMMENT ON COLUMN cm_bltn_reply.parent_comment_id IS '대댓글 부모ID';
+COMMENT ON COLUMN cm_bltn_reply.writer_id    IS '작성자ID';
+COMMENT ON COLUMN cm_bltn_reply.writer_nm    IS '작성자명';
+COMMENT ON COLUMN cm_bltn_reply.blog_comment_content IS '댓글 내용';
+COMMENT ON COLUMN cm_bltn_reply.comment_status_cd IS '상태 (코드: COMMENT_STATUS)';
+COMMENT ON COLUMN cm_bltn_reply.comment_status_cd_before IS '변경 전 댓글상태 (코드: COMMENT_STATUS)';
+COMMENT ON COLUMN cm_bltn_reply.reg_by       IS '등록자';
+COMMENT ON COLUMN cm_bltn_reply.reg_date     IS '등록일';
+COMMENT ON COLUMN cm_bltn_reply.upd_by       IS '수정자';
+COMMENT ON COLUMN cm_bltn_reply.upd_date     IS '수정일';
 
 CREATE INDEX idx_cm_bltn_reply_blog   ON cm_bltn_reply (blog_id);
 CREATE INDEX idx_cm_bltn_reply_parent ON cm_bltn_reply (parent_comment_id);

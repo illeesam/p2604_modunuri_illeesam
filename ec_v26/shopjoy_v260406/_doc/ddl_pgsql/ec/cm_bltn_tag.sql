@@ -13,15 +13,15 @@ CREATE TABLE cm_bltn_tag (
 );
 
 COMMENT ON TABLE cm_bltn_tag IS '블로그 태그';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idblog_tag_id IS '태그ID';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idsite_id    IS '사이트ID';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idblog_id    IS '블로그ID';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idtag_nm     IS '태그명';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idsort_ord   IS '정렬순서';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idreg_by     IS '등록자';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idreg_date   IS '등록일';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idupd_by     IS '수정자';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_idupd_date   IS '수정일';
+COMMENT ON COLUMN cm_bltn_tag.blog_tag_id IS '태그ID';
+COMMENT ON COLUMN cm_bltn_tag.site_id    IS '사이트ID';
+COMMENT ON COLUMN cm_bltn_tag.blog_id    IS '블로그ID';
+COMMENT ON COLUMN cm_bltn_tag.tag_nm     IS '태그명';
+COMMENT ON COLUMN cm_bltn_tag.sort_ord   IS '정렬순서';
+COMMENT ON COLUMN cm_bltn_tag.reg_by     IS '등록자';
+COMMENT ON COLUMN cm_bltn_tag.reg_date   IS '등록일';
+COMMENT ON COLUMN cm_bltn_tag.upd_by     IS '수정자';
+COMMENT ON COLUMN cm_bltn_tag.upd_date   IS '수정일';
 
 CREATE INDEX idx_cm_bltn_tag_blog ON cm_bltn_tag (blog_id);
 

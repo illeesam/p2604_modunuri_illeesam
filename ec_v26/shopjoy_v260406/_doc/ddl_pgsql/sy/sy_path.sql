@@ -38,5 +38,5 @@ COMMENT ON COLUMN sy_path.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_path.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_path.upd_date       IS '수정일';
 
-CREATE INDEX idx_sy_path_biz    ON sy_path (biz_code);
+CREATE INDEX idx_sy_path_biz    ON sy_path (biz_cd);
 CREATE INDEX idx_sy_path_parent ON sy_path (parent_path_id);

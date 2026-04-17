@@ -26,6 +26,6 @@ COMMENT ON COLUMN mb_like.reg_date     IS '등록일';
 COMMENT ON COLUMN mb_like.upd_by       IS '수정자';
 COMMENT ON COLUMN mb_like.upd_date     IS '수정일';
 
-CREATE UNIQUE INDEX idx_mb_like_unique ON mb_like (member_id, target_type, target_id);
+CREATE UNIQUE INDEX idx_mb_like_unique ON mb_like (member_id, target_type_cd, target_id);
 CREATE INDEX idx_mb_like_member        ON mb_like (member_id);
-CREATE INDEX idx_mb_like_target        ON mb_like (target_type, target_id);
+CREATE INDEX idx_mb_like_target        ON mb_like (target_type_cd, target_id);

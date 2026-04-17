@@ -17,17 +17,17 @@ CREATE TABLE pd_review_attach (
 );
 
 COMMENT ON TABLE pd_review_attach IS '리뷰 이미지/동영상';
-COMMENT ON COLUMN pd_review_attach.review_media_idmedia_id     IS '미디어ID';
-COMMENT ON COLUMN pd_review_attach.review_media_idsite_id      IS '사이트ID';
-COMMENT ON COLUMN pd_review_attach.review_media_idreview_id    IS '리뷰ID (pd_review.)';
-COMMENT ON COLUMN pd_review_attach.review_media_idattach_id    IS '첨부파일ID (sy_attach.attach_id) — url·파일명 여기서 조회';
-COMMENT ON COLUMN pd_review_attach.review_media_idmedia_type_cd IS '미디어유형 (코드: MEDIA_TYPE)';
-COMMENT ON COLUMN pd_review_attach.review_media_idthumb_url    IS '동영상 썸네일URL (이미지는 sy_attach.url 사용)';
-COMMENT ON COLUMN pd_review_attach.review_media_idsort_ord     IS '정렬순서';
-COMMENT ON COLUMN pd_review_attach.review_media_idreg_by       IS '등록자';
-COMMENT ON COLUMN pd_review_attach.review_media_idreg_date     IS '등록일';
-COMMENT ON COLUMN pd_review_attach.review_media_idupd_by       IS '수정자';
-COMMENT ON COLUMN pd_review_attach.review_media_idupd_date     IS '수정일';
+COMMENT ON COLUMN pd_review_attach.review_attach_id     IS '미디어ID';
+COMMENT ON COLUMN pd_review_attach.site_id      IS '사이트ID';
+COMMENT ON COLUMN pd_review_attach.review_id    IS '리뷰ID (pd_review.)';
+COMMENT ON COLUMN pd_review_attach.attach_id    IS '첨부파일ID (sy_attach.attach_id) — url·파일명 여기서 조회';
+COMMENT ON COLUMN pd_review_attach.media_type_cd IS '미디어유형 (코드: MEDIA_TYPE)';
+COMMENT ON COLUMN pd_review_attach.thumb_url    IS '동영상 썸네일URL (이미지는 sy_attach.url 사용)';
+COMMENT ON COLUMN pd_review_attach.sort_ord     IS '정렬순서';
+COMMENT ON COLUMN pd_review_attach.reg_by       IS '등록자';
+COMMENT ON COLUMN pd_review_attach.reg_date     IS '등록일';
+COMMENT ON COLUMN pd_review_attach.upd_by       IS '수정자';
+COMMENT ON COLUMN pd_review_attach.upd_date     IS '수정일';
 
 CREATE INDEX idx_pd_review_media_review ON pd_review_attach (review_id);
 CREATE INDEX idx_pd_review_media_attach ON pd_review_attach (attach_id);

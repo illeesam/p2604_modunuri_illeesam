@@ -13,10 +13,10 @@ CREATE TABLE cm_bltn_good (
 );
 
 COMMENT ON TABLE cm_bltn_good IS '블로그 좋아요';
-COMMENT ON COLUMN cm_bltn_good.blog_like_idlike_id IS '좋아요ID';
-COMMENT ON COLUMN cm_bltn_good.blog_like_idblog_id IS '블로그ID (cm_bltn.)';
-COMMENT ON COLUMN cm_bltn_good.blog_like_iduser_id IS '사용자ID (sy_member.user_id)';
-COMMENT ON COLUMN cm_bltn_good.blog_like_idreg_date IS '등록일';
+COMMENT ON COLUMN cm_bltn_good.like_id IS '좋아요ID';
+COMMENT ON COLUMN cm_bltn_good.blog_id IS '블로그ID (cm_bltn.)';
+COMMENT ON COLUMN cm_bltn_good.user_id IS '사용자ID (sy_member.user_id)';
+COMMENT ON COLUMN cm_bltn_good.reg_date IS '등록일';
 
 CREATE INDEX idx_cm_bltn_good_blog ON cm_bltn_good (blog_id);
 CREATE INDEX idx_cm_bltn_good_user ON cm_bltn_good (user_id);

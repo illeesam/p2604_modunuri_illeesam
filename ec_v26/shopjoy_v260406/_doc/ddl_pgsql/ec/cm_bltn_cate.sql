@@ -18,13 +18,13 @@ CREATE TABLE cm_bltn_cate (
 );
 
 COMMENT ON TABLE cm_bltn_cate IS '블로그 카테고리';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_idblog_cate_id IS '블로그카테고리ID';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_idsite_id      IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_idblog_cate_nm IS '카테고리명';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_idparent_blog_cate_id IS '상위 카테고리ID (NULL이면 최상위)';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_idsort_ord     IS '정렬순서';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_iduse_yn       IS '사용여부 Y/N';
+COMMENT ON COLUMN cm_bltn_cate.blog_cate_id IS '블로그카테고리ID';
+COMMENT ON COLUMN cm_bltn_cate.site_id      IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN cm_bltn_cate.blog_cate_nm IS '카테고리명';
+COMMENT ON COLUMN cm_bltn_cate.parent_blog_cate_id IS '상위 카테고리ID (NULL이면 최상위)';
+COMMENT ON COLUMN cm_bltn_cate.sort_ord     IS '정렬순서';
+COMMENT ON COLUMN cm_bltn_cate.use_yn       IS '사용여부 Y/N';
 COMMENT ON COLUMN cm_bltn_cate.reg_by       IS '등록자 (sy_user.user_id, mb_mem.member_id)';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_idreg_date     IS '등록일';
+COMMENT ON COLUMN cm_bltn_cate.reg_date     IS '등록일';
 COMMENT ON COLUMN cm_bltn_cate.upd_by       IS '수정자 (sy_user.user_id, mb_mem.member_id)';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_idupd_date     IS '수정일';
+COMMENT ON COLUMN cm_bltn_cate.upd_date     IS '수정일';

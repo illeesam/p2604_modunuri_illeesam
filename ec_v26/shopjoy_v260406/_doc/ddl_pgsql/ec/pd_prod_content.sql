@@ -2,7 +2,7 @@
 CREATE TABLE pd_prod_content (
     prod_content_id VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,              -- FK: pd_prod.prod_idprod_id
+    prod_id         VARCHAR(16)     NOT NULL,              -- FK: pd_prod.prod_id
     content_type_cd VARCHAR(50)     NOT NULL,              -- 코드: PROD_CONTENT_TYPE (상세설명, 사용설명, 배송정보, AS정보, 반품정책 등)
     content_html    TEXT,                                   -- HTML 에디터 컨텐츠
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
@@ -27,7 +27,7 @@ COMMENT ON COLUMN pd_prod_content.reg_date     IS '등록일';
 COMMENT ON COLUMN pd_prod_content.upd_by       IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN pd_prod_content.upd_date     IS '수정일';
 
-CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type);
+CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type_cd);
 
 -- 컨텐츠 예시:
 -- content_type='상세설명', content_html='<h2>제품 특징</h2><p>고급 천연 면...</p>'
