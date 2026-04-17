@@ -22,11 +22,17 @@ window.EcDispUiDtl = {
 
     const isNew = computed(() => !props.editId);
 
+    /* ── 기본 기간: 오늘 ~ +10년 ── */
+    const _today = new Date();
+    const _pad = n => String(n).padStart(2, '0');
+    const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
+    const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
+
     const form = reactive({
       codeId: null, codeGrp: 'DISP_UI',
       codeValue: '', codeLabel: '',
       uiType: 'FRONT',
-      remark: '', sortOrd: 1, useYn: 'Y', regDate: '', displayPath: '', pathId: null,
+      remark: '', sortOrd: 1, useYn: 'Y', useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE, regDate: '', displayPath: '', pathId: null,
     });
 
     const errors = reactive({});
@@ -43,7 +49,7 @@ window.EcDispUiDtl = {
             codeId: u.codeId, codeGrp: u.codeGrp,
             codeValue: u.codeValue || '', codeLabel: u.codeLabel || '',
             uiType: u.uiType || 'FRONT',
-            remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y', displayPath: u.displayPath || '', pathId: u.pathId == null ? null : u.pathId,
+            remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y', useStartDate: u.useStartDate || '', useEndDate: u.useEndDate || '', displayPath: u.displayPath || '', pathId: u.pathId == null ? null : u.pathId,
             regDate: u.regDate || '',
           });
         }
@@ -191,6 +197,26 @@ window.EcDispUiDtl = {
       activeArea.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
+    /* ── UI-영역 전시 환경 멀티체크 토글 ── */
+    const uiDispEnvOptions = [
+      { code: 'PROD', label: 'PROD' },
+      { code: 'DEV', label: 'DEV' },
+      { code: 'TEST', label: 'TEST' },
+    ];
+    const hasUiDispEnv = (code) => {
+      if (!activeArea.value) return false;
+      if (!activeArea.value.uiDispEnv) activeArea.value.uiDispEnv = '^PROD^';
+      return activeArea.value.uiDispEnv.includes('^' + code + '^');
+    };
+    const toggleUiDispEnv = (code) => {
+      if (!activeArea.value) return;
+      if (!activeArea.value.uiDispEnv) activeArea.value.uiDispEnv = '^PROD^';
+      const envList = activeArea.value.uiDispEnv.split('^').filter(e => e && e !== 'NONE');
+      const i = envList.indexOf(code);
+      if (i >= 0) envList.splice(i, 1); else envList.push(code);
+      activeArea.value.uiDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+    };
+
     /* 미리보기 액션 */
     const openUiPreview = () => {
       if (!form.codeValue) return props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error');
@@ -250,6 +276,7 @@ window.EcDispUiDtl = {
       pickOpen, pickKw, pickSel, availableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
       openUiPreview, openAreaPreview,
       visibilityOptions, hasAreaVisibility, toggleAreaVisibility,
+      uiDispEnvOptions, hasUiDispEnv, toggleUiDispEnv,
     };
   },
   template: /* html */`
@@ -276,6 +303,17 @@ window.EcDispUiDtl = {
       <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
       <button class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
     </div>
+  </div>
+
+  <!-- 안내 배너 -->
+  <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin:12px 20px;font-size:11px;color:#444;line-height:1.6;">
+    <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+      <span>ℹ️ 여부 및 기간 관리 안내</span>
+    </div>
+    <ul style="margin:0;padding-left:18px;">
+      <li>배치로 매시 55분에 <b>전시여부, 사용여부</b> 정보가 자동 반영됩니다</li>
+      <li>전시관리정보 수정 후 저장하면 <b>전시여부, 사용여부</b> 정보가 즉시 반영됩니다</li>
+    </ul>
   </div>
 
   <!-- 본문 -->
@@ -375,6 +413,17 @@ window.EcDispUiDtl = {
             <input class="form-control" v-model="form.remark" placeholder="UI 설명" />
           </div>
         </div>
+        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📅 사용 기간</div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group" style="grid-column:1 / -1;">
+            <label class="form-label">사용기간</label>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" />
+              <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
+              <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" />
+            </div>
+          </div>
+        </div>
       </div>
       <div v-else-if="activeArea">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
@@ -394,6 +443,57 @@ window.EcDispUiDtl = {
           <span><b style="color:#888;">포함 패널:</b> {{ panelsOfArea(activeArea.codeValue).length }}개</span>
           <span v-if="activeArea.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ activeArea.remark }}</span>
         </div>
+
+        <!-- UI-영역 관계 전시 관리 -->
+        <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+          📺 UI-영역 전시 관리
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:6px 10px;background:#f0f0f0;border-radius:6px;">
+            <span>전시여부:</span>
+            <input type="checkbox" v-model="activeArea.uiDispYn" :true-value="'Y'" :false-value="'N'" style="accent-color:#e8587a;" />
+            <span>{{ activeArea.uiDispYn === 'Y' ? '전시' : '숨김' }}</span>
+          </label>
+          <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+          📅 UI-영역 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 영역 기간 사용)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+          <input type="date" class="form-control" v-model="activeArea.uiDispStartDate" style="width:150px;margin:0;" placeholder="시작일" />
+          <input type="time" class="form-control" v-model="activeArea.uiDispStartTime" style="width:110px;margin:0;" placeholder="시작시간" />
+          <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
+          <input type="date" class="form-control" v-model="activeArea.uiDispEndDate" style="width:150px;margin:0;" placeholder="종료일" />
+          <input type="time" class="form-control" v-model="activeArea.uiDispEndTime" style="width:110px;margin:0;" placeholder="종료시간" />
+        </div>
+        <div v-if="activeArea.uiDispStartDate || activeArea.uiDispEndDate"
+          style="font-size:11px;color:#666;background:#f0f4ff;border:1px solid #d0daf5;border-radius:6px;padding:6px 12px;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;">
+          <span>{{ activeArea.uiDispStartDate || '?' }} {{ activeArea.uiDispStartTime || '00:00' }}</span>
+          <span style="color:#aaa;">~</span>
+          <span>{{ activeArea.uiDispEndDate || '?' }} {{ activeArea.uiDispEndTime || '23:59' }}</span>
+        </div>
+
+        <!-- § 전시 환경 -->
+        <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+          🌍 전시 환경
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+          <label v-for="opt in uiDispEnvOptions" :key="opt.code"
+            :style="{
+              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
+              border:'1px solid '+(hasUiDispEnv(opt.code)?'#7c3aed':'#ddd'),
+              background:hasUiDispEnv(opt.code)?'#f3e8ff':'#fafafa',
+              color:hasUiDispEnv(opt.code)?'#7c3aed':'#666',
+              fontSize:'12px',fontWeight:hasUiDispEnv(opt.code)?700:500,
+              cursor: 'pointer', opacity: 1,
+            }">
+            <input type="checkbox" :checked="hasUiDispEnv(opt.code)"
+              @change="toggleUiDispEnv(opt.code)"
+              style="accent-color:#7c3aed;" />
+            {{ opt.label }}
+          </label>
+        </div>
+
         <!-- 공개 대상 -->
         <div style="margin-top:16px;">
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">

@@ -16,6 +16,12 @@ CREATE TABLE dp_panel_item (
     item_sort_ord           INTEGER         DEFAULT 0,              -- 항목정렬순서
     widget_config_json      TEXT,                                   -- 위젯별 설정 (JSON - 위젯 특정 설정)
     visibility_targets      VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
+    disp_yn                 CHAR(1)         DEFAULT 'Y',            -- 전시여부 Y/N
+    disp_start_date         DATE,                                   -- 전시시작일
+    disp_start_time         TIME,                                   -- 전시시작시간
+    disp_end_date           DATE,                                   -- 전시종료일
+    disp_end_time           TIME,                                   -- 전시종료시간
+    disp_env                VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
     use_yn                  CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
     reg_by                  VARCHAR(16),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -39,6 +45,12 @@ COMMENT ON COLUMN dp_panel_item.content_type_cd       IS '콘텐츠유형 (WIDGE
 COMMENT ON COLUMN dp_panel_item.item_sort_ord         IS '항목정렬순서';
 COMMENT ON COLUMN dp_panel_item.widget_config_json    IS '위젯설정 (JSON - 위젯별 특정 설정 또는 직접 생성 콘텐츠)';
 COMMENT ON COLUMN dp_panel_item.visibility_targets    IS '공개대상 (코드: VISIBILITY_TARGET, ^CODE^CODE^ 형식)';
+COMMENT ON COLUMN dp_panel_item.disp_yn               IS '전시여부 (Y/N) - 배치로 자동 관리';
+COMMENT ON COLUMN dp_panel_item.disp_start_date       IS '전시시작일';
+COMMENT ON COLUMN dp_panel_item.disp_start_time       IS '전시시작시간';
+COMMENT ON COLUMN dp_panel_item.disp_end_date         IS '전시종료일';
+COMMENT ON COLUMN dp_panel_item.disp_end_time         IS '전시종료시간';
+COMMENT ON COLUMN dp_panel_item.disp_env             IS '전시 환경 (^PROD^DEV^TEST^ 형식)';
 COMMENT ON COLUMN dp_panel_item.use_yn                IS '사용여부 (Y/N)';
 COMMENT ON COLUMN dp_panel_item.reg_by                IS '등록자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN dp_panel_item.reg_date              IS '등록일';
@@ -48,3 +60,6 @@ COMMENT ON COLUMN dp_panel_item.upd_date              IS '수정일';
 CREATE INDEX idx_dp_panel_item_panel ON dp_panel_item (panel_id);
 CREATE INDEX idx_dp_panel_item_widget_lib ON dp_panel_item (widget_lib_id);
 CREATE INDEX idx_dp_panel_item_ord ON dp_panel_item (panel_id, item_sort_ord);
+CREATE INDEX idx_dp_panel_item_disp_yn ON dp_panel_item (disp_yn);
+CREATE INDEX idx_dp_panel_item_disp_date ON dp_panel_item (disp_start_date, disp_end_date);
+CREATE INDEX idx_dp_panel_item_disp_env ON dp_panel_item (disp_env);

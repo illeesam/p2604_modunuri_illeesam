@@ -27,12 +27,18 @@ window.EcDispAreaDtl = {
 
     const isNew = computed(() => !props.editId);
 
+    /* ── 기본 기간: 오늘 ~ +10년 ── */
+    const _today = new Date();
+    const _pad = n => String(n).padStart(2, '0');
+    const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
+    const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
+
     const form = reactive({
       codeId: null, codeGrp: 'DISP_AREA',
       codeValue: '', codeLabel: '', areaType: '',
       layoutType: 'grid', gridCols: 1,
       titleYn: 'N', title: '',
-      remark: '', sortOrd: 1, useYn: 'Y', regDate: '', displayPath: '', pathId: null,
+      remark: '', sortOrd: 1, useYn: 'Y', useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE, regDate: '', displayPath: '', pathId: null,
     });
 
     const errors = reactive({});
@@ -51,7 +57,7 @@ window.EcDispAreaDtl = {
             codeValue: a.codeValue || '', codeLabel: a.codeLabel || '',
             areaType: a.areaType || '', layoutType: a.layoutType || 'grid',
             gridCols: a.gridCols || 1, titleYn: a.titleYn || 'N', title: a.title || '',
-            remark: a.remark || '', sortOrd: a.sortOrd || 0, useYn: a.useYn || 'Y',
+            remark: a.remark || '', sortOrd: a.sortOrd || 0, useYn: a.useYn || 'Y', useStartDate: a.useStartDate || '', useEndDate: a.useEndDate || '',
             regDate: a.regDate || '', displayPath: a.displayPath || '', pathId: a.pathId == null ? null : a.pathId,
           });
         }
@@ -271,6 +277,26 @@ window.EcDispAreaDtl = {
       activePanel.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
+    /* ── 영역-패널 전시 환경 멀티체크 토글 ── */
+    const areaDispEnvOptions = [
+      { code: 'PROD', label: 'PROD' },
+      { code: 'DEV', label: 'DEV' },
+      { code: 'TEST', label: 'TEST' },
+    ];
+    const hasAreaDispEnv = (code) => {
+      if (!activePanel.value) return false;
+      if (!activePanel.value.areaDispEnv) activePanel.value.areaDispEnv = '^PROD^';
+      return activePanel.value.areaDispEnv.includes('^' + code + '^');
+    };
+    const toggleAreaDispEnv = (code) => {
+      if (!activePanel.value) return;
+      if (!activePanel.value.areaDispEnv) activePanel.value.areaDispEnv = '^PROD^';
+      const envList = activePanel.value.areaDispEnv.split('^').filter(e => e && e !== 'NONE');
+      const i = envList.indexOf(code);
+      if (i >= 0) envList.splice(i, 1); else envList.push(code);
+      activePanel.value.areaDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+    };
+
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, isNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
@@ -280,6 +306,7 @@ window.EcDispAreaDtl = {
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       openPanelPreview, openWidgetPreview, addPanelShortcut, wLabel,
       visibilityOptions, hasPanelVisibility, togglePanelVisibility,
+      areaDispEnvOptions, hasAreaDispEnv, toggleAreaDispEnv,
     };
   },
   template: /* html */`
@@ -309,6 +336,17 @@ window.EcDispAreaDtl = {
     </div>
   </div>
 
+  <!-- 안내 배너 -->
+  <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin:12px 20px;font-size:11px;color:#444;line-height:1.6;">
+    <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+      <span>ℹ️ 여부 및 기간 관리 안내</span>
+    </div>
+    <ul style="margin:0;padding-left:18px;">
+      <li>배치로 매시 55분에 <b>전시여부, 사용여부</b> 정보가 자동 반영됩니다</li>
+      <li>전시관리정보 수정 후 저장하면 <b>전시여부, 사용여부</b> 정보가 즉시 반영됩니다</li>
+    </ul>
+  </div>
+
   <!-- ── 본문: 좌측 탭사이드 + 중앙 폼 + 우측 미리보기 ── -->
   <div style="display:flex;min-height:500px;">
 
@@ -324,8 +362,7 @@ window.EcDispAreaDtl = {
           color: activeTab==='base' ? '#e8587a' : '#555',
           border: '1px solid '+(activeTab==='base' ? '#e8587a' : 'transparent'),
         }">
-        <span>📋 영역 <b>기본정보</b></span>
-        <span v-if="activeTab==='base'" style="font-size:10px;">👁</span>
+        <span>📋 <b>영역기본정보</b></span>
       </div>
       <!-- 패널 리스트 -->
       <div v-for="(p, i) in relatedPanels" :key="p.dispId"
@@ -391,6 +428,17 @@ window.EcDispAreaDtl = {
             <select class="form-control" v-model="form.areaType">
               <option v-for="o in AREA_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
+          </div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📅 사용 기간</div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group" style="grid-column:1 / -1;">
+            <label class="form-label">사용기간</label>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" />
+              <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
+              <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" />
+            </div>
           </div>
         </div>
         <div class="form-row" style="margin-bottom:8px;">
@@ -470,13 +518,64 @@ window.EcDispAreaDtl = {
           <span><b style="color:#888;">순서:</b> {{ activePanel.sortOrder ?? '-' }}</span>
           <span><b style="color:#888;">노출조건:</b> {{ activePanel.condition || '항상 표시' }}</span>
           <span v-if="activePanel.authRequired"><b style="color:#888;">인증:</b> 필요</span>
-          <span><b style="color:#888;">전시기간:</b>
+          <span><b style="color:#888;">패널기본전시기간:</b>
             <template v-if="activePanel.dispStartDate || activePanel.dispEndDate">
               {{ activePanel.dispStartDate || '∞' }} ~ {{ activePanel.dispEndDate || '∞' }}
             </template>
             <span v-else style="color:#ccc;">없음</span>
           </span>
         </div>
+
+        <!-- 영역-패널 관계 전시 관리 -->
+        <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+          📺 영역-패널 전시 관리
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:6px 10px;background:#f0f0f0;border-radius:6px;">
+            <span>전시여부:</span>
+            <input type="checkbox" v-model="activePanel.areaDispYn" :true-value="'Y'" :false-value="'N'" style="accent-color:#e8587a;" />
+            <span>{{ activePanel.areaDispYn === 'Y' ? '전시' : '숨김' }}</span>
+          </label>
+          <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+          📅 영역-패널 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+          <input type="date" class="form-control" v-model="activePanel.areaDispStartDate" style="width:150px;margin:0;" placeholder="시작일" />
+          <input type="time" class="form-control" v-model="activePanel.areaDispStartTime" style="width:110px;margin:0;" placeholder="시작시간" />
+          <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
+          <input type="date" class="form-control" v-model="activePanel.areaDispEndDate" style="width:150px;margin:0;" placeholder="종료일" />
+          <input type="time" class="form-control" v-model="activePanel.areaDispEndTime" style="width:110px;margin:0;" placeholder="종료시간" />
+        </div>
+        <div v-if="activePanel.areaDispStartDate || activePanel.areaDispEndDate"
+          style="font-size:11px;color:#666;background:#f0f4ff;border:1px solid #d0daf5;border-radius:6px;padding:6px 12px;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;">
+          <span>{{ activePanel.areaDispStartDate || '?' }} {{ activePanel.areaDispStartTime || '00:00' }}</span>
+          <span style="color:#aaa;">~</span>
+          <span>{{ activePanel.areaDispEndDate || '?' }} {{ activePanel.areaDispEndTime || '23:59' }}</span>
+        </div>
+
+        <!-- § 전시 환경 -->
+        <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+          🌍 전시 환경
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+          <label v-for="opt in areaDispEnvOptions" :key="opt.code"
+            :style="{
+              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
+              border:'1px solid '+(hasAreaDispEnv(opt.code)?'#7c3aed':'#ddd'),
+              background:hasAreaDispEnv(opt.code)?'#f3e8ff':'#fafafa',
+              color:hasAreaDispEnv(opt.code)?'#7c3aed':'#666',
+              fontSize:'12px',fontWeight:hasAreaDispEnv(opt.code)?700:500,
+              cursor: 'pointer', opacity: 1,
+            }">
+            <input type="checkbox" :checked="hasAreaDispEnv(opt.code)"
+              @change="toggleAreaDispEnv(opt.code)"
+              style="accent-color:#7c3aed;" />
+            {{ opt.label }}
+          </label>
+        </div>
+
         <!-- 공개 대상 -->
         <div style="margin-bottom:16px;">
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">

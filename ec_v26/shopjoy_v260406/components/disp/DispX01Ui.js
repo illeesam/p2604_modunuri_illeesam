@@ -50,13 +50,27 @@ window.DispX01Ui = {
     /* ── 패널 필터 ── */
     const panelFilter = (p) => {
       const pm = props.params;
+      // ✓ 전시여부 체크 (UI-Area 매핑)
+      if (p.dispYn !== 'Y') return false;
+      // ✓ 사용여부 체크 (UI 마스터)
+      if (p.useYn !== 'Y') return false;
       if (pm.status && p.status !== pm.status) return false;
+      // ✓ 사용기간 체크 (UI 마스터)
+      if (pm.date) {
+        const t  = pm.time || '00:00';
+        const dt = `${pm.date} ${t}`;
+        if (p.useStartDate && dt < `${p.useStartDate} 00:00`) return false;
+        if (p.useEndDate   && dt > `${p.useEndDate}   23:59`) return false;
+      }
+      // ✓ 전시기간 체크 (UI-Area 매핑)
       if (pm.date) {
         const t  = pm.time || '00:00';
         const dt = `${pm.date} ${t}`;
         if (p.dispStartDate && dt < `${p.dispStartDate} ${p.dispStartTime || '00:00'}`) return false;
         if (p.dispEndDate   && dt > `${p.dispEndDate}   ${p.dispEndTime   || '23:59'}`) return false;
       }
+      // ✓ 전시환경 체크 (UI-Area 매핑)
+      if (p.dispEnv && pm.dispEnv && !p.dispEnv.includes('^' + pm.dispEnv + '^')) return false;
       if (pm.condition && (p.condition || '항상 표시') !== pm.condition) return false;
       if (pm.authRequired === 'Y' && !p.authRequired) return false;
       if (pm.authRequired === 'N' &&  p.authRequired) return false;

@@ -52,19 +52,18 @@ window.EcDispPanelDtl = {
       { value: 'grid',      label: '그리드' },
       { value: 'dashboard', label: '대시보드' },
     ];
-    /* ── 기본 전시기간: 오늘 00:00 ~ +3년 12/31 23:59 ── */
+    /* ── 기본 기간: 오늘 ~ +10년 ── */
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
-    const DEFAULT_END_DATE   = `${_today.getFullYear()+3}-12-31`;
+    const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
 
     const form = reactive({
       dispId: null, dispCode: '', area: 'HOME_BANNER', name: '', status: '활성',
       layoutType: 'grid', gridCols: 1,
       titleYn: 'N', title: '',
       htmlDesc: '',
-      dispStartDate: DEFAULT_START_DATE, dispStartTime: '00:00',
-      dispEndDate:   DEFAULT_END_DATE,   dispEndTime:   '23:59',
+      useStartDate: '', useEndDate: '',
       /* 패널 레벨 노출조건 (레거시 유지) */
       condition: '항상 표시', authRequired: false, authGrade: '',
       displayPath: '', pathId: null,
@@ -106,6 +105,14 @@ window.EcDispPanelDtl = {
       embedCode: '',
       /* 공개대상 (기본 전체공개) */
       visibilityTargets: '^PUBLIC^',
+      /* 위젯 사용 여부 및 기간 */
+      useYn: 'Y',
+      useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE,
+      /* 위젯별 전시기간 (미설정 시 패널 기간 사용) */
+      dispYn: 'Y',
+      dispStartDate: DEFAULT_START_DATE, dispStartTime: '00:00', dispEndDate: DEFAULT_END_DATE, dispEndTime: '23:59',
+      /* 위젯 전시 환경 */
+      dispEnv: '^DEV^',
       ...overrides,
     });
 
@@ -418,10 +425,6 @@ window.EcDispPanelDtl = {
           form.name          = d.name          || '';
           form.status        = d.status        || '활성';
           form.htmlDesc      = d.htmlDesc      || '';
-          form.dispStartDate = d.dispStartDate || '';
-          form.dispStartTime = d.dispStartTime || '00:00';
-          form.dispEndDate   = d.dispEndDate   || '';
-          form.dispEndTime   = d.dispEndTime   || '23:59';
           form.condition     = d.condition     || '항상 표시';
           form.authRequired  = d.authRequired  || false;
           form.authGrade     = d.authGrade     || '';
@@ -603,6 +606,25 @@ window.EcDispPanelDtl = {
       activeRow.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
+    /* ── 전시 환경 멀티체크 토글 (PLAN/DEV/TEST/PROD) ── */
+    const dispEnvOptions = [
+      { code: 'PLAN', label: '준비/계획' },
+      { code: 'DEV', label: 'DEV' },
+      { code: 'TEST', label: 'TEST' },
+      { code: 'PROD', label: 'PROD' },
+    ];
+    const hasDispEnv = (code) => {
+      if (!activeRow.value) return false;
+      return activeRow.value.dispEnv.includes('^' + code + '^');
+    };
+    const toggleDispEnv = (code) => {
+      if (!activeRow.value) return;
+      const envList = activeRow.value.dispEnv.split('^').filter(e => e && e !== 'NONE');
+      const i = envList.indexOf(code);
+      if (i >= 0) envList.splice(i, 1); else envList.push(code);
+      activeRow.value.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+    };
+
     /* ── 전시항목 복사 팝업 ── */
     const rowCopyOpen = ref(false);
     const onRowCopy = (pickedRows) => {
@@ -643,6 +665,7 @@ window.EcDispPanelDtl = {
       libPickOpen, libPickMode, openLibPick, onLibPicked,
       rowCopyOpen, onRowCopy,
       visibilityOptions, hasVisibility, toggleVisibility,
+      dispEnvOptions, hasDispEnv, toggleDispEnv,
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
       MAX_WIDGETS, addWidget, removeWidget,
@@ -689,7 +712,20 @@ window.EcDispPanelDtl = {
   <div class="card">
 
     <!-- ═══════════════════ 탭 모드 ═══════════════════ -->
-    <div v-if="!viewAll" style="display:flex;gap:0;min-height:400px;">
+    <div v-if="!viewAll" style="display:flex;gap:0;flex-direction:column;min-height:400px;">
+
+      <!-- 안내 배너 -->
+      <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border-bottom:1px solid #90caf9;padding:12px 14px;font-size:11px;color:#444;line-height:1.6;">
+        <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+          <span>ℹ️ 여부 및 기간 관리 안내</span>
+        </div>
+        <ul style="margin:0;padding-left:18px;">
+          <li>배치로 매시 55분에 <b>전시여부, 사용여부</b> 정보가 자동 반영됩니다</li>
+          <li>전시관리정보 수정 후 저장하면 <b>전시여부, 사용여부</b> 정보가 즉시 반영됩니다</li>
+        </ul>
+      </div>
+
+      <div style="display:flex;gap:0;flex:1;overflow:hidden;">
 
       <!-- 좌측 탭 메뉴 (UI 스타일) -->
       <div style="width:160px;min-width:160px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
@@ -835,22 +871,18 @@ window.EcDispPanelDtl = {
             </div>
           </div>
 
-          <!-- 전시 기간 -->
+          <!-- 사용 기간 -->
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            📅 전시 기간
+            📅 사용 기간
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-            <input type="date" class="form-control" v-model="form.dispStartDate" style="width:150px;margin:0;" :readonly="viewMode" />
-            <input type="time" class="form-control" v-model="form.dispStartTime" style="width:110px;margin:0;" :readonly="viewMode" />
+            <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" :readonly="viewMode" />
             <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
-            <input type="date" class="form-control" v-model="form.dispEndDate" style="width:150px;margin:0;" :readonly="viewMode" />
-            <input type="time" class="form-control" v-model="form.dispEndTime" style="width:110px;margin:0;" :readonly="viewMode" />
+            <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" :readonly="viewMode" />
           </div>
-          <div v-if="form.dispStartDate || form.dispEndDate"
+          <div v-if="form.useStartDate || form.useEndDate"
             style="font-size:12px;color:#555;background:#f8faff;border:1px solid #e0e8f8;border-radius:6px;padding:6px 12px;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;">
-            <span>{{ form.dispStartDate || '?' }} {{ form.dispStartTime }}</span>
-            <span style="color:#aaa;">~</span>
-            <span>{{ form.dispEndDate || '?' }} {{ form.dispEndTime }}</span>
+            <span>{{ form.useStartDate || '?' }} ~ {{ form.useEndDate || '?' }}</span>
           </div>
 
           <!-- HTML 설명 (Quill) -->
@@ -933,6 +965,58 @@ window.EcDispPanelDtl = {
               <input class="form-control" type="number" v-model.number="activeRow.sortOrder" min="1" :readonly="viewMode" />
             </div>
           </div>
+
+          <!-- § 위젯별 전시여부 및 전시기간 -->
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            📺 위젯 전시 관리
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:6px 10px;background:#f0f0f0;border-radius:6px;">
+              <span>전시여부:</span>
+              <input type="checkbox" v-model="activeRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="viewMode" style="accent-color:#e8587a;" />
+              <span>{{ activeRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
+            </label>
+            <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            📅 위젯별 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+            <input type="date" class="form-control" v-model="activeRow.dispStartDate" style="width:150px;margin:0;" :readonly="viewMode" placeholder="시작일" />
+            <input type="time" class="form-control" v-model="activeRow.dispStartTime" style="width:110px;margin:0;" :readonly="viewMode" placeholder="시작시간" />
+            <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
+            <input type="date" class="form-control" v-model="activeRow.dispEndDate" style="width:150px;margin:0;" :readonly="viewMode" placeholder="종료일" />
+            <input type="time" class="form-control" v-model="activeRow.dispEndTime" style="width:110px;margin:0;" :readonly="viewMode" placeholder="종료시간" />
+          </div>
+          <div v-if="activeRow.dispStartDate || activeRow.dispEndDate"
+            style="font-size:11px;color:#666;background:#f0f4ff;border:1px solid #d0daf5;border-radius:6px;padding:6px 12px;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;">
+            <span>{{ activeRow.dispStartDate || '?' }} {{ activeRow.dispStartTime || '00:00' }}</span>
+            <span style="color:#aaa;">~</span>
+            <span>{{ activeRow.dispEndDate || '?' }} {{ activeRow.dispEndTime || '23:59' }}</span>
+          </div>
+
+          <!-- § 전시 환경 -->
+          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
+            🌍 전시 환경
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <label v-for="opt in dispEnvOptions" :key="opt.code"
+              :style="{
+                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
+                border:'1px solid '+(hasDispEnv(opt.code)?'#7c3aed':'#ddd'),
+                background:hasDispEnv(opt.code)?'#f3e8ff':'#fafafa',
+                color:hasDispEnv(opt.code)?'#7c3aed':'#666',
+                fontSize:'12px',fontWeight:hasDispEnv(opt.code)?700:500,
+                cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+              }">
+              <input type="checkbox" :checked="hasDispEnv(opt.code)"
+                :disabled="viewMode"
+                @change="toggleDispEnv(opt.code)"
+                style="accent-color:#7c3aed;" />
+              {{ opt.label }}
+            </label>
+          </div>
+
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
             <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
             <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
@@ -1233,6 +1317,7 @@ window.EcDispPanelDtl = {
 
       </div><!-- /우측 콘텐츠 -->
     </div><!-- /탭 모드 flex -->
+    </div><!-- /내부 flex -->
 
     <!-- ═══════════════════ 펼치기(아코디언) 모드 ═══════════════════ -->
     <div v-else>
@@ -1328,20 +1413,6 @@ window.EcDispPanelDtl = {
               <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
               <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
-            </div>
-            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📅 전시 기간</div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-              <input type="date" class="form-control" v-model="form.dispStartDate" style="width:150px;margin:0;" :readonly="viewMode" />
-              <input type="time" class="form-control" v-model="form.dispStartTime" style="width:110px;margin:0;" :readonly="viewMode" />
-              <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
-              <input type="date" class="form-control" v-model="form.dispEndDate" style="width:150px;margin:0;" :readonly="viewMode" />
-              <input type="time" class="form-control" v-model="form.dispEndTime" style="width:110px;margin:0;" :readonly="viewMode" />
-            </div>
-            <div v-if="form.dispStartDate || form.dispEndDate"
-              style="font-size:12px;color:#555;background:#f8faff;border:1px solid #e0e8f8;border-radius:6px;padding:6px 12px;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;">
-              <span>{{ form.dispStartDate || '?' }} {{ form.dispStartTime }}</span>
-              <span style="color:#aaa;">~</span>
-              <span>{{ form.dispEndDate || '?' }} {{ form.dispEndTime }}</span>
             </div>
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📝 HTML 설명</div>
             <div v-if="viewMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;margin-bottom:16px;">
@@ -1564,14 +1635,6 @@ window.EcDispPanelDtl = {
         </div>
         <!-- 패널명 -->
         <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">{{ form.name || '(패널명 없음)' }}</div>
-        <!-- 전시 기간 -->
-        <div v-if="form.dispStartDate || form.dispEndDate"
-          style="font-size:12px;color:#555;background:#f8faff;border:1px solid #e0e8f8;border-radius:8px;padding:10px 14px;margin-bottom:16px;">
-          <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">📅 전시 기간</div>
-          <span>{{ form.dispStartDate || '∞' }} {{ form.dispStartTime }}</span>
-          <span style="color:#aaa;margin:0 8px;">~</span>
-          <span>{{ form.dispEndDate || '∞' }} {{ form.dispEndTime }}</span>
-        </div>
         <!-- 위젯 구성 -->
         <div style="border-top:1px solid #f0f0f0;padding-top:14px;">
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;">📐 위젯 구성</div>

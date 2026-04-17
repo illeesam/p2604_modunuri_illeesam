@@ -10,6 +10,9 @@ CREATE TABLE dp_panel (
     panel_type_cd               VARCHAR(30),                            -- 코드: DISP_TYPE
     disp_path                   VARCHAR(200),                           -- 점(.) 구분 표시경로
     visibility_targets          VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
+    use_yn                      CHAR(1)         DEFAULT 'Y',            -- 사용여부 (Y/N)
+    use_start_date              DATE,                                   -- 사용시작일
+    use_end_date                DATE,                                   -- 사용종료일
     disp_panel_status_cd        VARCHAR(20)     DEFAULT 'ACTIVE',      -- 코드: DISP_STATUS
     disp_panel_status_cd_before VARCHAR(20),                            -- 변경 전 패널상태
     content_json                TEXT,                                   -- 패널의 콘텐츠 데이터 (JSON)
@@ -29,6 +32,9 @@ COMMENT ON COLUMN dp_panel.panel_nm                    IS '패널명';
 COMMENT ON COLUMN dp_panel.panel_type_cd               IS '표시유형 (코드: DISP_TYPE)';
 COMMENT ON COLUMN dp_panel.disp_path                   IS '점(.) 구분 표시경로';
 COMMENT ON COLUMN dp_panel.visibility_targets          IS '공개대상 (코드: VISIBILITY_TARGET, ^CODE^CODE^ 형식)';
+COMMENT ON COLUMN dp_panel.use_yn                      IS '사용여부 (Y/N)';
+COMMENT ON COLUMN dp_panel.use_start_date              IS '사용시작일';
+COMMENT ON COLUMN dp_panel.use_end_date                IS '사용종료일';
 COMMENT ON COLUMN dp_panel.disp_panel_status_cd        IS '상태 (코드: DISP_STATUS)';
 COMMENT ON COLUMN dp_panel.disp_panel_status_cd_before IS '변경 전 패널상태 (코드: DISP_STATUS)';
 COMMENT ON COLUMN dp_panel.content_json                IS '패널콘텐츠 (JSON - 위젯 목록 및 설정)';
@@ -40,3 +46,4 @@ COMMENT ON COLUMN dp_panel.upd_date                    IS '수정일';
 CREATE INDEX idx_dp_panel_area ON dp_panel (area_id);
 CREATE INDEX idx_dp_panel_site ON dp_panel (site_id);
 CREATE INDEX idx_dp_panel_status ON dp_panel (disp_panel_status_cd);
+CREATE INDEX idx_dp_panel_use ON dp_panel (use_yn, use_start_date, use_end_date);

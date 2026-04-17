@@ -17,6 +17,7 @@ CREATE TABLE dp_widget (
     preview_img_url      VARCHAR(500),                          -- 미리보기 이미지
     sort_ord             INTEGER         DEFAULT 0,
     use_yn               CHAR(1)         DEFAULT 'Y',
+    disp_env             VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
     reg_by               VARCHAR(16),
     reg_date             TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by               VARCHAR(16),
@@ -41,6 +42,7 @@ COMMENT ON COLUMN dp_widget.widget_config_json   IS '위젯추가설정 (JSON)';
 COMMENT ON COLUMN dp_widget.preview_img_url      IS '미리보기이미지URL';
 COMMENT ON COLUMN dp_widget.sort_ord             IS '정렬순서';
 COMMENT ON COLUMN dp_widget.use_yn               IS '사용여부 (Y/N)';
+COMMENT ON COLUMN dp_widget.disp_env             IS '전시 환경 (^PROD^DEV^TEST^ 형식)';
 COMMENT ON COLUMN dp_widget.reg_by               IS '등록자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN dp_widget.reg_date             IS '등록일';
 COMMENT ON COLUMN dp_widget.upd_by               IS '수정자 (sy_user.user_id, mb_mem.member_id)';
@@ -49,3 +51,4 @@ COMMENT ON COLUMN dp_widget.upd_date             IS '수정일';
 CREATE INDEX idx_dp_widget_lib ON dp_widget (widget_lib_id);
 CREATE INDEX idx_dp_widget_site ON dp_widget (site_id);
 CREATE INDEX idx_dp_widget_type ON dp_widget (widget_type_cd);
+CREATE INDEX idx_dp_widget_disp_env ON dp_widget (disp_env);

@@ -188,11 +188,12 @@ window.EcDispWidgetPreview = {
     const filterCondition = ref('');
     const filterAuthReq   = ref('');
     const filterAuthGrade = ref('');
+    const filterDispEnv   = ref('PROD');
     const searchKw        = ref('');
 
     const resetFilter = () => {
       previewDate.value = today; previewTime.value = nowTime;
-      filterType.value = ''; filterStatus.value = '활성';
+      filterType.value = ''; filterStatus.value = '활성'; filterDispEnv.value = 'PROD';
       filterCondition.value = ''; filterAuthReq.value = ''; filterAuthGrade.value = '';
       searchKw.value = '';
     };
@@ -202,6 +203,7 @@ window.EcDispWidgetPreview = {
       return (props.dispDataset.widgetLibs || []).filter(lib => {
         if (filterType.value   && lib.widgetType !== filterType.value) return false;
         if (filterStatus.value && lib.status     !== filterStatus.value) return false;
+        if (filterDispEnv.value && lib.dispEnv && !lib.dispEnv.includes('^' + filterDispEnv.value + '^')) return false;
         if (kw && !lib.name.toLowerCase().includes(kw) &&
             !(lib.tags||'').toLowerCase().includes(kw) &&
             !(lib.desc||'').toLowerCase().includes(kw)) return false;
@@ -493,7 +495,7 @@ window.EcDispWidgetPreview = {
       WIDGET_TYPES, CONDITION_OPTS, AUTH_GRADE_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
       previewDate, previewTime,
-      filterType, filterStatus, filterCondition, filterAuthReq, filterAuthGrade, searchKw,
+      filterType, filterStatus, filterCondition, filterAuthReq, filterAuthGrade, filterDispEnv, searchKw,
       resetFilter, filteredLibs,
       selectedLibId, onTreeSelect,
       tree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
@@ -537,6 +539,12 @@ window.EcDispWidgetPreview = {
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="filterStatus" class="form-control" style="width:76px;margin:0;font-size:12px;">
           <option value="">전체</option><option value="활성">활성</option><option value="비활성">비활성</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <span style="font-size:12px;font-weight:600;color:#555;">환경</span>
+        <select v-model="filterDispEnv" class="form-control" style="width:76px;margin:0;font-size:12px;">
+          <option value="">전체</option><option value="PLAN">준비/계획</option><option value="DEV">DEV</option><option value="TEST">TEST</option><option value="PROD">PROD</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">

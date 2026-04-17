@@ -47,6 +47,7 @@ window.EcDispWidgetDtl = {
     /* ── 폼 초기값 ── */
     const makeForm = () => ({
       libId: null, libCode: '', name: '', widgetType: 'image_banner', desc: '', tags: '', status: '활성',
+      dispEnv: '^DEV^',
       titleYn: 'N', title: '',
       pathId: null,
       regDate: new Date().toISOString().slice(0, 10),
@@ -465,6 +466,23 @@ window.EcDispWidgetDtl = {
       }
     };
 
+    /* ── 위젯 전시 환경 멀티체크 토글 ── */
+    const dispEnvOptions = [
+      { code: 'PLAN', label: '준비/계획' },
+      { code: 'DEV', label: 'DEV' },
+      { code: 'TEST', label: 'TEST' },
+      { code: 'PROD', label: 'PROD' },
+    ];
+    const hasDispEnv = (code) => {
+      return form.dispEnv.includes('^' + code + '^');
+    };
+    const toggleDispEnv = (code) => {
+      const envList = form.dispEnv.split('^').filter(e => e && e !== 'NONE');
+      const i = envList.indexOf(code);
+      if (i >= 0) envList.splice(i, 1); else envList.push(code);
+      form.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+    };
+
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       libPickOpen, libPickMode, openLibPick, onLibPicked,
@@ -475,6 +493,7 @@ window.EcDispWidgetDtl = {
       previewWidget, sampleJson, jsonCopied, copyJson, save, remove,
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       htmlContentEl, htmlSourceMode, toggleHtmlSource,
+      dispEnvOptions, hasDispEnv, toggleDispEnv,
     };
   },
   template: /* html */`
@@ -571,6 +590,27 @@ window.EcDispWidgetDtl = {
             <label class="form-label">태그 <span style="font-size:10px;color:#aaa;">(쉼표 구분)</span></label>
             <input v-model="form.tags" class="form-control" placeholder="봄,배너,시즌" style="margin:0;" />
           </div>
+        </div>
+      </div>
+
+      <!-- 전시 환경 -->
+      <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;">🌍 전시 환경</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <label v-for="opt in dispEnvOptions" :key="opt.code"
+            :style="{
+              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
+              border:'1px solid '+(hasDispEnv(opt.code)?'#7c3aed':'#ddd'),
+              background:hasDispEnv(opt.code)?'#f3e8ff':'#fafafa',
+              color:hasDispEnv(opt.code)?'#7c3aed':'#666',
+              fontSize:'12px',fontWeight:hasDispEnv(opt.code)?700:500,
+              cursor: 'pointer', opacity: 1,
+            }">
+            <input type="checkbox" :checked="hasDispEnv(opt.code)"
+              @change="toggleDispEnv(opt.code)"
+              style="accent-color:#7c3aed;" />
+            {{ opt.label }}
+          </label>
         </div>
       </div>
 

@@ -14,11 +14,50 @@ window.DispX04Widget = {
     /* 노출 여부 판단 */
     const visible = computed(() => {
       const w = props.widgetItem;
-      if (!w || w.status !== '활성') return false;
+      const pm = props.params;
+
+      if (!w) return false;
+
+      // 상태 체크
+      if (w.status !== '활성') return false;
+
+      // ━━━ 위젯 라이브러리 참조 (dp_widget_lib) ━━━
+      // 라이브러리는 마스터 템플릿이므로 useYn만 확인
+      if (w.widgetLibRefYn === 'Y') {
+        // ✓ 사용여부 체크 (widget lib 마스터)
+        if (w.useYn !== 'Y') return false;
+      }
+      // ━━━ 직접 생성 (dp_widget + dp_panel_item) ━━━
+      else {
+        // ✓ 사용여부 체크 (widget 마스터)
+        if (w.useYn !== 'Y') return false;
+        // ✓ 전시여부 체크 (panel item 레벨)
+        if (w.dispYn !== 'Y') return false;
+
+        // ✓ 사용기간 체크 (widget 마스터)
+        if (pm.date) {
+          const t  = pm.time || '00:00';
+          const dt = `${pm.date} ${t}`;
+          if (w.useStartDate && dt < `${w.useStartDate} 00:00`) return false;
+          if (w.useEndDate   && dt > `${w.useEndDate}   23:59`) return false;
+        }
+
+        // ✓ 전시기간 체크 (panel item 레벨)
+        if (pm.date) {
+          const t  = pm.time || '00:00';
+          const dt = `${pm.date} ${t}`;
+          if (w.dispStartDate && dt < `${w.dispStartDate} ${w.dispStartTime || '00:00'}`) return false;
+          if (w.dispEndDate   && dt > `${w.dispEndDate}   ${w.dispEndTime   || '23:59'}`) return false;
+        }
+
+        // ✓ 전시환경 체크 (panel item 레벨)
+        if (w.dispEnv && pm.dispEnv && !w.dispEnv.includes('^' + pm.dispEnv + '^')) return false;
+      }
+
       const cond = w.condition;
       if (cond === '항상 표시') return true;
-      const isLoggedIn = props.params?.isLoggedIn || false;
-      const userGrade = props.params?.userGrade || '';
+      const isLoggedIn = pm?.isLoggedIn || false;
+      const userGrade = pm?.userGrade || '';
       if (cond === '로그인 필요')  return isLoggedIn;
       if (cond === '비로그인')     return !isLoggedIn;
       if (cond === '로그인+VIP')   return isLoggedIn && userGrade === 'VIP';

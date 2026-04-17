@@ -11,7 +11,9 @@ CREATE TABLE dp_ui (
     device_type_cd  VARCHAR(30),                            -- MOBILE/PC/TABLET 등
     ui_path         VARCHAR(200),                           -- 경로 (예: /index, /event/2026-spring)
     sort_ord        INTEGER         DEFAULT 0,
-    use_yn          CHAR(1)         DEFAULT 'Y',
+    use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 (Y/N)
+    use_start_date  DATE,                                   -- 사용시작일
+    use_end_date    DATE,                                   -- 사용종료일
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -30,6 +32,8 @@ COMMENT ON COLUMN dp_ui.device_type_cd IS '디바이스유형 (코드: DEVICE_TY
 COMMENT ON COLUMN dp_ui.ui_path        IS '페이지경로';
 COMMENT ON COLUMN dp_ui.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN dp_ui.use_yn         IS '사용여부 (Y/N)';
+COMMENT ON COLUMN dp_ui.use_start_date IS '사용시작일';
+COMMENT ON COLUMN dp_ui.use_end_date   IS '사용종료일';
 COMMENT ON COLUMN dp_ui.reg_by         IS '등록자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN dp_ui.reg_date       IS '등록일';
 COMMENT ON COLUMN dp_ui.upd_by         IS '수정자 (sy_user.user_id, mb_mem.member_id)';
@@ -37,3 +41,4 @@ COMMENT ON COLUMN dp_ui.upd_date       IS '수정일';
 
 CREATE INDEX idx_dp_ui_site ON dp_ui (site_id);
 CREATE INDEX idx_dp_ui_device ON dp_ui (device_type_cd);
+CREATE INDEX idx_dp_ui_use ON dp_ui (use_yn, use_start_date, use_end_date);
