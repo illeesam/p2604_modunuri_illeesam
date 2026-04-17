@@ -14,6 +14,7 @@ window.PmDiscntMng = {
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
+    const viewMode = ref('list'); // 'list' | 'card'
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
 
@@ -88,7 +89,7 @@ window.PmDiscntMng = {
       [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntType'},{label:'할인값',key:'discntVal'},{label:'상태',key:'discntStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '할인목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -108,12 +109,18 @@ window.PmDiscntMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>할인목록 <span class="list-count">{{ total }}건</span></span>
-      <div style="display:flex;gap:6px;">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
+          <button @click="viewMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
+            :style="viewMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 리스트</button>
+          <button @click="viewMode='card'" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+            :style="viewMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 카드</button>
+        </div>
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="admin-table" v-if="viewMode==='list'">
       <thead><tr><th>ID</th><th>할인명</th><th>유형</th><th>할인값</th><th>적용대상</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
@@ -134,6 +141,34 @@ window.PmDiscntMng = {
         </tr>
       </tbody>
     </table>
+
+    <!-- 카드 뷰 -->
+    <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
+      <div v-if="pageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-for="d in pageList" :key="d.discntId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+        :style="selectedId===d.discntId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
+        @click="loadDetail(d.discntId)">
+        <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
+          <div style="font-size:12px;color:#999;margin-bottom:6px;">할인 #{{ d.discntId }}</div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="loadDetail(d.discntId)" :style="selectedId===d.discntId?{color:'#e8587a'}:{}">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="badge" :class="typeBadge(d.discntType)" style="font-size:11px;">{{ d.discntType }}</span>
+            <span class="badge" :class="statusBadge(d.discntStatus)" style="font-size:11px;">{{ d.discntStatus }}</span>
+          </div>
+          <div style="font-size:12px;color:#666;line-height:1.5;">
+            <div>🎯 {{ d.discntType === '정률' ? (d.discntVal + '%') : (d.discntVal||0).toLocaleString() + '원' }}</div>
+            <div>📅 {{ d.startDate }} ~ {{ d.endDate }}</div>
+            <div style="color:#999;margin-top:4px;">{{ d.applyTarget || '전체상품' }}</div>
+          </div>
+        </div>
+        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
+          <button class="btn btn-blue btn-sm" @click="loadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">수정</button>
+          <button class="btn btn-danger btn-sm" @click="doDelete(d)" style="font-size:11px;padding:4px 12px;">삭제</button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ d.discntId }}</span>
+        </div>
+      </div>
+    </div>
+
     <div class="pagination">
       <div></div>
       <div class="pager">

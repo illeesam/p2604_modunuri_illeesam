@@ -14,6 +14,7 @@ window.PmCacheDtl = {
 
     const form = reactive({
       cacheId: null, userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
+      vendorId: '', chargeStaff: '',
     });
     const errors = reactive({});
 
@@ -86,7 +87,18 @@ window.PmCacheDtl = {
 
     const typeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
-    return { isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge, viewMode2, showTab };
+    const showVendorModal = ref(false);
+    const selectedVendorNm = computed(() => {
+      if (!form.vendorId) return '소속업체 선택';
+      const v = props.adminData.vendors.find(x => x.vendorId === form.vendorId);
+      return v ? v.vendorNm : '소속업체 선택';
+    });
+    const selectVendor = (vendorId, vendorNm) => {
+      form.vendorId = vendorId;
+      showVendorModal.value = false;
+    };
+
+    return { isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge, viewMode2, showTab, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -152,6 +164,48 @@ window.PmCacheDtl = {
         <input class="form-control" v-model="form.desc" placeholder="내용 입력" :readonly="viewMode" :class="errors.desc ? 'is-invalid' : ''" />
         <span v-if="errors.desc" class="field-error">{{ errors.desc }}</span>
       </div>
+      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+        <div class="form-group">
+          <label class="form-label">판매업체</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
+              <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+              <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
+            </div>
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">판매담당자</label>
+          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="viewMode" />
+        </div>
+      </div>
+
+      <!-- 판매업체 선택 모달 -->
+      <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
+        <div class="modal-box" style="width:400px;">
+          <div class="modal-header">
+            <span class="modal-title">판매업체 선택</span>
+            <span class="modal-close" @click="showVendorModal=false">×</span>
+          </div>
+          <div style="padding:0;max-height:400px;overflow-y:auto;">
+            <div v-for="v in (adminData.vendors || [])" :key="v.vendorId"
+              style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
+              :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
+              @click="selectVendor(v.vendorId, v.vendorNm)">
+              <span style="font-weight:500;">{{ v.vendorNm }}</span>
+              <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
+            </div>
+            <div v-if="!adminData.vendors || adminData.vendors.length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+              판매업체가 없습니다.
+            </div>
+          </div>
+          <div style="padding:12px 16px;border-top:1px solid #f0f0f0;text-align:right;">
+            <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
+          </div>
+        </div>
+      </div>
+
       <div class="form-actions">
         <template v-if="viewMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>

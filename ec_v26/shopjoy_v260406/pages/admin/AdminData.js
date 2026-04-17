@@ -106,6 +106,76 @@
       { cacheId: 12, userId: 8, userNm: '윤성준', date: '2026-01-25 15:44', type: '충전', amount: 10000, desc: '연말 이벤트 적립', balance: 22000 },
     ],
 
+    discntList: [
+      { discntId: 1, discntNm: '정률 10% 할인', discntType: '정률', discntVal: 10, discntStatus: '활성', startDate: '2026-04-01', endDate: '2026-06-30', minOrderAmt: 30000, remark: '4월~6월 정기 할인' },
+      { discntId: 2, discntNm: '5,000원 정액 할인', discntType: '정액', discntVal: 5000, discntStatus: '활성', startDate: '2026-04-10', endDate: '2026-05-31', minOrderAmt: 50000, remark: '봄 시즌 특가' },
+      { discntId: 3, discntNm: '장바구니 10% 할인', discntType: '장바구니', discntVal: 10, discntStatus: '활성', startDate: '2026-03-15', endDate: '2026-12-31', minOrderAmt: 0, remark: '연중 장바구니 할인' },
+      { discntId: 4, discntNm: '선착순 15% 할인', discntType: '정률', discntVal: 15, discntStatus: '비활성', startDate: '2026-05-01', endDate: '2026-05-15', minOrderAmt: 80000, remark: '5월 플래시 세일' },
+      { discntId: 5, discntNm: '회원가입 3,000원 쿠폰', discntType: '정액', discntVal: 3000, discntStatus: '활성', startDate: '2026-01-01', endDate: '2026-12-31', minOrderAmt: 20000, remark: '신규가입 감사' },
+    ],
+
+    saveList: [
+      { saveId: 1, saveNm: '구매 적립금 - 기본', saveType: '구매적립', saveVal: 1, saveUnit: '%', saveStatus: '활성', startDate: '2026-01-01', endDate: '2026-12-31', expireDay: 365, minOrderAmt: 0, remark: '전체 상품 기본 적립' },
+      { saveId: 2, saveNm: '회원가입 축하 마일리지', saveType: '회원가입', saveVal: 5000, saveUnit: '원', saveStatus: '활성', startDate: '2026-01-01', endDate: '2026-12-31', expireDay: 730, minOrderAmt: 0, remark: '신규 가입자 대상' },
+      { saveId: 3, saveNm: '리뷰 작성 적립금', saveType: '리뷰적립', saveVal: 1000, saveUnit: '원', saveStatus: '활성', startDate: '2026-01-01', endDate: '2026-12-31', expireDay: 365, minOrderAmt: 0, remark: '상품 리뷰 작성 시' },
+      { saveId: 4, saveNm: '출석 체크 마일리지', saveType: '출석체크', saveVal: 500, saveUnit: '원', saveStatus: '활성', startDate: '2026-03-01', endDate: '2026-12-31', expireDay: 180, minOrderAmt: 0, remark: '일일 출석 이벤트' },
+      { saveId: 5, saveNm: '특정 카테고리 3% 추가 적립', saveType: '구매적립', saveVal: 3, saveUnit: '%', saveStatus: '비활성', startDate: '2026-05-01', endDate: '2026-05-31', expireDay: 365, minOrderAmt: 0, remark: '5월 패션 카테고리' },
+    ],
+
+    giftList: [
+      { giftId: 1, giftNm: '500원대 선물세트', giftType: '구매조건', condVal: 50000, giftStatus: '활성', stock: 100, startDate: '2026-01-01', endDate: '2026-12-31', remark: '5만원 구매 이상' },
+      { giftId: 2, giftNm: '1,000원대 에코백', giftType: '금액조건', condVal: 100000, giftStatus: '활성', stock: 200, startDate: '2026-02-01', endDate: '2026-12-31', remark: '10만원 구매 이상' },
+      { giftId: 3, giftNm: '샘플 세트 - 향수', giftType: '수량조건', condVal: 3, giftStatus: '활성', stock: 150, startDate: '2026-03-01', endDate: '2026-12-31', remark: '상품 3개 이상 구매' },
+      { giftId: 4, giftNm: '스타벅스 기프트카드 5천원', giftType: '구매조건', condVal: 200000, giftStatus: '활성', stock: 50, startDate: '2026-04-01', endDate: '2026-12-31', remark: '20만원 구매 이상' },
+      { giftId: 5, giftNm: '무조건 선물 - 쇼핑백', giftType: '무조건', condVal: 0, giftStatus: '비활성', stock: 300, startDate: '2026-05-01', endDate: '2026-05-31', remark: '5월 프로모션' },
+    ],
+
+    voucherList: [
+      { voucherId: 1, voucherNm: 'ShopJoy 5,000원 상품권', voucherAmt: 5000, salePrice: 5000, issueQty: 1000, soldQty: 450, voucherStatus: '활성', startDate: '2026-01-01', endDate: '2026-12-31', remark: '기본 소액권',
+        issuedList: [
+          { issueNo: 'V1-001', memberId: 1, memberNm: '홍길동', issueDate: '2026-04-05', issuePrice: 5000, expiryDate: '2026-12-31', status: '정상' },
+          { issueNo: 'V1-002', memberId: 2, memberNm: '이영희', issueDate: '2026-04-03', issuePrice: 5000, expiryDate: '2026-12-31', status: '사용완료' },
+          { issueNo: 'V1-003', memberId: 3, memberNm: '박민준', issueDate: '2026-04-01', issuePrice: 5000, expiryDate: '2026-12-31', status: '정상' },
+          { issueNo: 'V1-004', memberId: 4, memberNm: '김수현', issueDate: '2026-03-30', issuePrice: 5000, expiryDate: '2026-12-31', status: '만료됨' },
+          { issueNo: 'V1-005', memberId: 5, memberNm: '최지우', issueDate: '2026-03-25', issuePrice: 5000, expiryDate: '2026-12-31', status: '정상' },
+        ],
+        usedList: [
+          { usageNo: 'U1-001', issueNo: 'V1-002', memberId: 2, memberNm: '이영희', orderId: 'ORD-2026-025', useAmount: 5000, useDate: '2026-04-04', description: '상품 구매' },
+          { usageNo: 'U1-002', issueNo: 'V1-003', memberId: 3, memberNm: '박민준', orderId: 'ORD-2026-023', useAmount: 2500, useDate: '2026-04-02', description: '부분 사용' },
+        ]
+      },
+      { voucherId: 2, voucherNm: 'ShopJoy 10,000원 상품권', voucherAmt: 10000, salePrice: 9900, issueQty: 500, soldQty: 280, voucherStatus: '활성', startDate: '2026-01-01', endDate: '2026-12-31', remark: '중가 상품권',
+        issuedList: [
+          { issueNo: 'V2-001', memberId: 1, memberNm: '홍길동', issueDate: '2026-04-05', issuePrice: 9900, expiryDate: '2026-12-31', status: '정상' },
+          { issueNo: 'V2-002', memberId: 6, memberNm: '정민호', issueDate: '2026-04-02', issuePrice: 9900, expiryDate: '2026-12-31', status: '정상' },
+          { issueNo: 'V2-003', memberId: 8, memberNm: '윤성준', issueDate: '2026-03-28', issuePrice: 9900, expiryDate: '2026-12-31', status: '사용완료' },
+        ],
+        usedList: [
+          { usageNo: 'U2-001', issueNo: 'V2-003', memberId: 8, memberNm: '윤성준', orderId: 'ORD-2026-022', useAmount: 10000, useDate: '2026-03-29', description: '전액 사용' },
+        ]
+      },
+      { voucherId: 3, voucherNm: 'ShopJoy 50,000원 상품권', voucherAmt: 50000, salePrice: 49500, issueQty: 200, soldQty: 85, voucherStatus: '활성', startDate: '2026-02-01', endDate: '2026-12-31', remark: '고액권',
+        issuedList: [
+          { issueNo: 'V3-001', memberId: 1, memberNm: '홍길동', issueDate: '2026-04-05', issuePrice: 49500, expiryDate: '2026-12-31', status: '정상' },
+          { issueNo: 'V3-002', memberId: 8, memberNm: '윤성준', issueDate: '2026-03-15', issuePrice: 49500, expiryDate: '2026-12-31', status: '사용완료' },
+        ],
+        usedList: [
+          { usageNo: 'U3-001', issueNo: 'V3-002', memberId: 8, memberNm: '윤성준', orderId: 'ORD-2026-015', useAmount: 50000, useDate: '2026-02-23', description: '전액 사용' },
+        ]
+      },
+      { voucherId: 4, voucherNm: 'ShopJoy 100,000원 상품권', voucherAmt: 100000, salePrice: 98000, issueQty: 100, soldQty: 32, voucherStatus: '활성', startDate: '2026-03-01', endDate: '2026-12-31', remark: 'VIP용 고액권',
+        issuedList: [
+          { issueNo: 'V4-001', memberId: 1, memberNm: '홍길동', issueDate: '2026-04-05', issuePrice: 98000, expiryDate: '2026-12-31', status: '정상' },
+          { issueNo: 'V4-002', memberId: 8, memberNm: '윤성준', issueDate: '2026-03-20', issuePrice: 98000, expiryDate: '2026-12-31', status: '정상' },
+        ],
+        usedList: []
+      },
+      { voucherId: 5, voucherNm: 'ShopJoy 봄시즌 한정 상품권', voucherAmt: 15000, salePrice: 14000, issueQty: 300, soldQty: 0, voucherStatus: '비활성', startDate: '2026-05-01', endDate: '2026-05-31', remark: '5월 한정 판매',
+        issuedList: [],
+        usedList: []
+      },
+    ],
+
     widgetLibs: (function(){
       const D = (o) => Object.assign({ clickAction:'none', clickTarget:'', imageUrl:'', altText:'', linkUrl:'', productIds:'', chartTitle:'', chartLabels:'', chartValues:'', textContent:'', bgColor:'#ffffff', textColor:'#222222', infoTitle:'', infoBody:'', popupWidth:600, popupHeight:400, fileUrl:'', fileLabel:'', couponCode:'', couponDesc:'', htmlContent:'', eventId:'', cacheDesc:'', cacheAmount:0, embedCode:'', fileListJson:'[]', condSite:'', condUser:'', condCategory:'', condBrand:'', condSort:'newest', condLimit:8, status:'활성', usedPaths:[], titleYn:'N', title:'', textareaContent:'', markdownContent:'',
            codeValue:'', codeFormat:'CODE128', codeWidth:2, codeHeight:60,

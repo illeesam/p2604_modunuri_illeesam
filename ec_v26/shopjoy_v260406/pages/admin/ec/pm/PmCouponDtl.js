@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 쿠폰관리 상세/등록 (다중탭: 기본정보/발급대상/지급방법/사용방법/발급목록/사용목록) */
+/* ShopJoy Admin - 쿠폰관리 상세/등록 (다중탭: 기본정보/미리보기/상세정보/발급목록/사용목록) */
 window._pmCouponDtlState = window._pmCouponDtlState || { tab: 'info', viewMode: 'tab' };
 window.PmCouponDtl = {
   name: 'PmCouponDtl',
@@ -24,6 +24,7 @@ window.PmCouponDtl = {
       issueMethods: 'auto', issueCondition: 'all', issueGrades: [],
       useScope: 'all', useExclude: '', useRemark: '',
       memo: '',
+      vendorId: '', chargeStaff: '',
     });
     const errors = reactive({});
 
@@ -63,6 +64,17 @@ window.PmCouponDtl = {
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
+    const showVendorModal = ref(false);
+    const selectedVendorNm = computed(() => {
+      if (!form.vendorId) return '소속업체 선택';
+      const v = props.adminData.vendors.find(x => x.vendorId === form.vendorId);
+      return v ? v.vendorNm : '소속업체 선택';
+    });
+    const selectVendor = (vendorId, vendorNm) => {
+      form.vendorId = vendorId;
+      showVendorModal.value = false;
+    };
+
     /* 발급목록 */
     const issuedList = computed(() => {
       if (!props.adminData.coupons) return [];
@@ -76,6 +88,76 @@ window.PmCouponDtl = {
       const c = props.adminData.coupons.find(x => x.couponId === props.editId);
       return c ? (c.usedList || []) : [];
     });
+
+    /* 미리보기 형태 */
+    const previewTab = ref('barcode');
+    const barcodeContainer = ref(null);
+    const qrcodeContainer = ref(null);
+    const onPreviewTabChange = (pt) => {
+      previewTab.value = pt;
+      Vue.nextTick(() => {
+        if (pt === 'barcode' && barcodeContainer.value && typeof JsBarcode !== 'undefined') {
+          try {
+            barcodeContainer.value.innerHTML = '';
+            JsBarcode(barcodeContainer.value, form.couponCode || 'SAMPLE', {
+              format: 'CODE128',
+              width: 2,
+              height: 60,
+              displayValue: true,
+            });
+          } catch(e) {}
+        }
+        if (pt === 'qrcode' && qrcodeContainer.value && typeof QRCode !== 'undefined') {
+          qrcodeContainer.value.innerHTML = '';
+          try {
+            new QRCode(qrcodeContainer.value, {
+              text: form.couponCode ? `https://shopjoy.com/coupon/${form.couponCode}` : 'https://shopjoy.com/coupon/sample',
+              width: 150,
+              height: 150,
+              colorDark: '#222222',
+              colorLight: '#ffffff',
+            });
+          } catch(e) {}
+        }
+      });
+    };
+
+    const renderBarcode = () => {
+      if (barcodeContainer.value && typeof JsBarcode !== 'undefined') {
+        try {
+          barcodeContainer.value.innerHTML = '';
+          JsBarcode(barcodeContainer.value, form.couponCode || 'SAMPLE', {
+            format: 'CODE128',
+            width: 2,
+            height: 60,
+            displayValue: true,
+          });
+        } catch(e) {}
+      }
+    };
+    const renderQRCode = () => {
+      if (qrcodeContainer.value && typeof QRCode !== 'undefined') {
+        try {
+          qrcodeContainer.value.innerHTML = '';
+          new QRCode(qrcodeContainer.value, {
+            text: form.couponCode ? `https://shopjoy.com/coupon/${form.couponCode}` : 'https://shopjoy.com/coupon/sample',
+            width: 150,
+            height: 150,
+            colorDark: '#222222',
+            colorLight: '#ffffff',
+          });
+        } catch(e) {}
+      }
+    };
+    const onTabChange = (newTab) => {
+      tab.value = newTab;
+      if (newTab === 'preview') {
+        Vue.nextTick(() => {
+          renderBarcode();
+          renderQRCode();
+        });
+      }
+    };
 
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -117,9 +199,10 @@ window.PmCouponDtl = {
     };
 
     return {
-      isNew, tab, form, errors, showTab, viewMode2, save, memoEl,
+      isNew, tab, form, errors, showTab, viewMode2, save, memoEl, onTabChange,
       COUPON_TYPES, ISSUE_TARGETS, DISCOUNT_TYPES,
-      issuedList, usedList,
+      issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
+      showVendorModal, selectedVendorNm, selectVendor,
     };
   },
   template: /* html */`
@@ -127,17 +210,18 @@ window.PmCouponDtl = {
   <div class="page-title">{{ isNew ? '쿠폰 등록' : '쿠폰 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.couponId }}</span></div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
-      <button class="tab-btn" :class="{active:tab==='issue'}" :disabled="viewMode2!=='tab'" @click="tab='issue'">🎁 발급대상</button>
-      <button class="tab-btn" :class="{active:tab==='issueMeth'}" :disabled="viewMode2!=='tab'" @click="tab='issueMeth'">📤 지급방법/조건</button>
-      <button class="tab-btn" :class="{active:tab==='useMethod'}" :disabled="viewMode2!=='tab'" @click="tab='useMethod'">🔍 사용방법</button>
-      <button class="tab-btn" :class="{active:tab==='issued'}" :disabled="viewMode2!=='tab'" @click="tab='issued'">📊 발급목록</button>
-      <button class="tab-btn" :class="{active:tab==='used'}" :disabled="viewMode2!=='tab'" @click="tab='used'">✅ 사용목록</button>
+      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
+      <button class="tab-btn" :class="{active:tab==='detail'}" :disabled="viewMode2!=='tab'" @click="onTabChange('detail')">📋 상세정보</button>
+      <button class="tab-btn" :class="{active:tab==='issued'}" :disabled="viewMode2!=='tab'" @click="onTabChange('issued')">📊 발급목록</button>
+      <button class="tab-btn" :class="{active:tab==='used'}" :disabled="viewMode2!=='tab'" @click="onTabChange('used')">✅ 사용목록</button>
+      <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="viewMode2!=='tab'" @click="onTabChange('preview')">👁 미리보기</button>
     </div>
     <div class="tab-view-modes">
       <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭">📑</button>
       <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열">1▭</button>
       <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열">2▭</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열">3▭</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
@@ -221,82 +305,234 @@ window.PmCouponDtl = {
         <label class="form-label">메모</label>
         <div ref="memoEl" style="min-height:120px;"></div>
       </div>
-    </div>
+      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+        <div class="form-group">
+          <label class="form-label">판매업체</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
+              <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+              <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
+            </div>
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">판매담당자</label>
+          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" />
+        </div>
+      </div>
 
-    <!-- 발급대상 -->
-    <div class="card" v-show="showTab('issue')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎁 발급대상</div>
-      <div class="form-group">
-        <label class="form-label">발급 대상 종류</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <label v-for="t in ISSUE_TARGETS" :key="t" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.issueTo===t?'#e3f2fd':'#fff';">
-            <input type="radio" :value="t" v-model="form.issueTo" />
-            {{ t }}
-          </label>
+      <!-- 판매업체 선택 모달 -->
+      <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
+        <div class="modal-box" style="width:400px;">
+          <div class="modal-header">
+            <span class="modal-title">판매업체 선택</span>
+            <span class="modal-close" @click="showVendorModal=false">×</span>
+          </div>
+          <div style="padding:0;max-height:400px;overflow-y:auto;">
+            <div v-for="v in (adminData.vendors || [])" :key="v.vendorId"
+              style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
+              :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
+              @click="selectVendor(v.vendorId, v.vendorNm)">
+              <span style="font-weight:500;">{{ v.vendorNm }}</span>
+              <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
+            </div>
+            <div v-if="!adminData.vendors || adminData.vendors.length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+              판매업체가 없습니다.
+            </div>
+          </div>
+          <div style="padding:12px 16px;border-top:1px solid #f0f0f0;text-align:right;">
+            <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
+          </div>
         </div>
-      </div>
-      <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
-        <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">선택된 대상: <span style="color:#e8587a;">{{ form.issueTo }}</span></div>
-        <div style="font-size:13px;color:#888;">
-          <template v-if="form.issueTo==='상품'">
-            선택한 상품에만 쿠폰을 발급합니다. 상품 추가 버튼으로 대상 상품을 선택하세요.
-          </template>
-          <template v-else-if="form.issueTo==='판매업체'">
-            선택한 판매업체의 상품에만 적용되는 쿠폰입니다.
-          </template>
-          <template v-else-if="form.issueTo==='브랜드'">
-            선택한 브랜드의 상품에만 적용되는 쿠폰입니다.
-          </template>
-          <template v-else-if="form.issueTo==='카테고리'">
-            선택한 카테고리의 상품에만 적용되는 쿠폰입니다.
-          </template>
-        </div>
-      </div>
-    </div>
-
-    <!-- 지급방법/조건 -->
-    <div class="card" v-show="showTab('issueMeth')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📤 지급방법/조건</div>
-      <div class="form-group">
-        <label class="form-label">지급 방법</label>
-        <select class="form-control" v-model="form.issueMethods">
-          <option value="auto">자동 발급</option><option value="manual">수동 발급</option><option value="event">이벤트 발급</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">지급 조건</label>
-        <select class="form-control" v-model="form.issueCondition">
-          <option value="all">전체 회원</option><option value="newMember">신규 회원</option><option value="subscribe">구독자</option><option value="purchase">구매 고객</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">적용 회원 등급</label>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="g" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;cursor:pointer;">
-            <input type="checkbox" :value="g" v-model="form.issueGrades" />
-            {{ g }}
-          </label>
-        </div>
-        <span v-if="form.issueGrades.length===0" style="font-size:12px;color:#aaa;">선택하지 않으면 전체 등급에 적용</span>
       </div>
     </div>
 
-    <!-- 사용방법 -->
-    <div class="card" v-show="showTab('useMethod')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🔍 사용방법</div>
-      <div class="form-group">
-        <label class="form-label">사용 범위</label>
-        <select class="form-control" v-model="form.useScope">
-          <option value="all">모든 상품</option><option value="category">카테고리 제한</option><option value="product">특정 상품만</option><option value="exclude">제외 상품</option>
-        </select>
+    <!-- 미리보기 -->
+    <div class="card" v-show="showTab('preview')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
+        <!-- 좌측 컬럼 -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- 바코드 -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(to right, #fff 0%, rgba(232,88,122,0.02) 100%);">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:80px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:8px;">ShopJoy</div>
+            <div style="position:absolute;top:-20px;right:-20px;font-size:60px;opacity:0.04;transform:rotate(-15deg);pointer-events:none;">🎟️</div>
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">📊 바코드</div>
+            <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
+              <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
+              <div style="font-size:9px;">🏷️ {{ form.couponCode || 'SAMPLE' }}</div>
+              <div style="font-weight:600;color:#e8587a;margin:4px 0;">{{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
+              <div style="font-size:9px;color:#999;">📅 {{ form.startDate }} ~ {{ form.endDate }}</div>
+              <div style="font-size:9px;color:#999;">💳 최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+            </div>
+            <div ref="barcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:1px solid #ddd;border-radius:4px;width:100%;position:relative;z-index:1;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:45px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
+            </div>
+          </div>
+          <!-- SNS전송형태 -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:6px;z-index:0;">ShopJoy</div>
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">💬 SNS전송형태 (카톡)</div>
+            <div style="background:#fff;padding:12px;border:1px solid #e0e0e0;border-radius:6px;text-align:left;font-size:10px;line-height:1.6;color:#333;width:100%;position:relative;z-index:1;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
+              <div style="font-weight:600;margin-bottom:6px;">🎁 {{ form.couponNm }}</div>
+              <div style="color:#666;margin:3px 0;">쿠폰번호: {{ form.couponCode || 'SAMPLE' }}</div>
+              <div style="color:#666;margin:3px 0;">할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
+              <div style="color:#666;margin:3px 0;">유효기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
+              <div style="color:#666;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+              <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
+            </div>
+          </div>
+          <!-- 이메일 내용 -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">📧 이메일 내용</div>
+            <div style="background:linear-gradient(180deg, #f9f9f9 0%, #fafbfc 100%);padding:12px;border:1px solid #e8e8e8;border-radius:6px;text-align:left;font-size:9px;line-height:1.6;color:#333;width:100%;position:relative;overflow:hidden;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.07;pointer-events:none;white-space:nowrap;letter-spacing:6px;">ShopJoy</div>
+              <div style="position:absolute;top:-10px;right:-10px;font-size:50px;opacity:0.03;transform:rotate(20deg);">📧</div>
+              <div style="background:linear-gradient(135deg, #e8587a 0%, #ff7a9a 100%);color:#fff;padding:8px;border-radius:4px;margin:-12px -12px 8px -12px;text-align:center;position:relative;z-index:1;">
+                <div style="font-weight:600;font-size:10px;">🛍️ ShopJoy 쿠폰 알림</div>
+              </div>
+              <div style="position:relative;z-index:1;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
+                <div style="font-weight:600;margin-bottom:8px;">제목: {{ form.couponNm }}</div>
+                <div style="color:#666;margin:4px 0;">보낸 사람: ShopJoy (noreply@shopjoy.com)</div>
+                <div style="color:#666;margin:6px 0;">안녕하세요, 송지선 회원님!</div>
+                <div style="color:#666;margin:6px 0;">ShopJoy에서 특별한 쿠폰을 준비했습니다.</div>
+                <div style="background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;margin:8px 0;">
+                  <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">🎁 {{ form.couponNm }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰번호: {{ form.couponCode || 'SAMPLE' }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">유효기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰타입: {{ form.couponType }}</div>
+                </div>
+                <div style="color:#666;margin:6px 0;">지금 바로 ShopJoy에서 확인하세요!</div>
+                <div style="color:#999;font-size:8px;margin-top:8px;text-align:center;padding-top:8px;border-top:1px solid #e8e8e8;">© 2026 ShopJoy | 문의: 010-1234-5678 | demo@mail.com</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 우측 컬럼 -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- QR코드 -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(135deg, #fff 0%, rgba(232,88,122,0.01) 100%);">
+            <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">📱</div>
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">📱 QR코드</div>
+            <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
+              <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
+              <div style="font-family:monospace;font-size:9px;background:#f5f5f5;padding:4px;border-radius:3px;margin:4px 0;">{{ form.couponCode || '---' }}</div>
+              <div style="font-size:9px;">🏷️ {{ form.couponType }}</div>
+              <div style="font-size:9px;color:#999;">⏱️ {{ form.useLimit }}</div>
+            </div>
+            <div ref="qrcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;position:relative;z-index:1;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
+            </div>
+          </div>
+          <!-- 종이형태 -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">🎟 종이형태</div>
+            <div style="width:100%;aspect-ratio:2/1.2;background:linear-gradient(135deg, #fff8f9 0%, #fff0f4 100%);border:2px solid #e8587a;border-radius:8px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 8px rgba(232,88,122,0.1);position:relative;overflow:hidden;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:35px;font-weight:900;color:#e8587a;opacity:0.06;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
+              <div style="position:absolute;top:6px;right:6px;font-size:8px;color:#e8587a;opacity:0.3;font-weight:700;letter-spacing:2px;">COUPON</div>
+              <div>
+                <div style="font-size:9px;color:#999;">🛍️ ShopJoy</div>
+                <div style="font-size:11px;font-weight:700;color:#e8587a;margin:2px 0;">{{ form.couponNm }}</div>
+              </div>
+              <div style="text-align:center;background:rgba(255,255,255,0.5);padding:4px;border-radius:4px;">
+                <div style="font-size:13px;color:#333;font-weight:700;">{{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}</div>
+                <div style="font-size:8px;color:#666;">{{ form.startDate }} ~ {{ form.endDate }}</div>
+                <div style="font-size:7px;color:#999;margin-top:2px;">쿠폰번호: {{ form.couponCode || 'SAMPLE' }}</div>
+              </div>
+              <div style="display:flex;gap:6px;font-size:7px;color:#999;">
+                <div style="flex:1;height:20px;background:#fff;border:1px solid #ddd;border-radius:2px;display:flex;align-items:center;justify-content:center;">바코드</div>
+                <div style="flex:1;height:20px;background:#fff;border:1px solid #ddd;border-radius:2px;display:flex;align-items:center;justify-content:center;">일련번호</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">제외 상품/카테고리</label>
-        <textarea class="form-control" v-model="form.useExclude" rows="3" placeholder="쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)" style="font-size:12px;"></textarea>
+    </div>
+
+    <!-- 상세정보 -->
+    <div class="card" v-show="showTab('detail')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
+
+      <!-- 발급대상 -->
+      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🎁 발급대상</h3>
+        <div class="form-group">
+          <label class="form-label">발급 대상 종류</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label v-for="t in ISSUE_TARGETS" :key="t" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.issueTo===t?'#e3f2fd':'#fff';">
+              <input type="radio" :value="t" v-model="form.issueTo" />
+              {{ t }}
+            </label>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+          <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">선택된 대상: <span style="color:#e8587a;">{{ form.issueTo }}</span></div>
+          <div style="font-size:13px;color:#888;">
+            <template v-if="form.issueTo==='상품'">
+              선택한 상품에만 쿠폰을 발급합니다. 상품 추가 버튼으로 대상 상품을 선택하세요.
+            </template>
+            <template v-else-if="form.issueTo==='판매업체'">
+              선택한 판매업체의 상품에만 적용되는 쿠폰입니다.
+            </template>
+            <template v-else-if="form.issueTo==='브랜드'">
+              선택한 브랜드의 상품에만 적용되는 쿠폰입니다.
+            </template>
+            <template v-else-if="form.issueTo==='카테고리'">
+              선택한 카테고리의 상품에만 적용되는 쿠폰입니다.
+            </template>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">사용 제약사항</label>
-        <textarea class="form-control" v-model="form.useRemark" rows="3" placeholder="예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등" style="font-size:12px;"></textarea>
+
+      <!-- 지급방법/조건 -->
+      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
+        <div class="form-group">
+          <label class="form-label">지급 방법</label>
+          <select class="form-control" v-model="form.issueMethods">
+            <option value="auto">자동 발급</option><option value="manual">수동 발급</option><option value="event">이벤트 발급</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">지급 조건</label>
+          <select class="form-control" v-model="form.issueCondition">
+            <option value="all">전체 회원</option><option value="newMember">신규 회원</option><option value="subscribe">구독자</option><option value="purchase">구매 고객</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">적용 회원 등급</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="g" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;cursor:pointer;">
+              <input type="checkbox" :value="g" v-model="form.issueGrades" />
+              {{ g }}
+            </label>
+          </div>
+          <span v-if="form.issueGrades.length===0" style="font-size:12px;color:#aaa;">선택하지 않으면 전체 등급에 적용</span>
+        </div>
+      </div>
+
+      <!-- 사용방법 -->
+      <div>
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🔍 사용방법</h3>
+        <div class="form-group">
+          <label class="form-label">사용 범위</label>
+          <select class="form-control" v-model="form.useScope">
+            <option value="all">모든 상품</option><option value="category">카테고리 제한</option><option value="product">특정 상품만</option><option value="exclude">제외 상품</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">제외 상품/카테고리</label>
+          <textarea class="form-control" v-model="form.useExclude" rows="3" placeholder="쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)" style="font-size:12px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">사용 제약사항</label>
+          <textarea class="form-control" v-model="form.useRemark" rows="3" placeholder="예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등" style="font-size:12px;"></textarea>
+        </div>
       </div>
     </div>
 

@@ -33,6 +33,7 @@
       { id: 'pmDiscntMng',  label: '할인관리' },
       { id: 'pmSaveMng',    label: '마일리지관리' },
       { id: 'pmGiftMng',    label: '사은품관리' },
+      { id: 'pmVoucherMng', label: '상품권관리' },
       { group: '이벤트' },
       { id: 'pmEventMng',   label: '이벤트관리' },
       { id: 'pmPlanMng',    label: '기획전관리' },
@@ -161,6 +162,7 @@
         'pmEventMng':'pm-event-mng', 'pmEventDtl':'pm-event-dtl',
         'pmPlanMng':'pm-plan-mng', 'pmPlanDtl':'pm-plan-dtl',
         'pmDiscntMng':'pm-discnt-mng', 'pmSaveMng':'pm-save-mng', 'pmGiftMng':'pm-gift-mng',
+        'pmVoucherMng':'pm-voucher-mng', 'pmVoucherDtl':'pm-voucher-dtl',
         'mbCustInfoMng':'mb-cust-info-mng',
         'syContactMng':'sy-contact-mng', 'syContactDtl':'sy-contact-dtl',
         'cmChattMng':'cm-chatt-mng', 'cmChattDtl':'cm-chatt-dtl',
@@ -924,6 +926,7 @@
         <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pm-save-mng    v-else-if="page==='pmSaveMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pm-gift-mng    v-else-if="page==='pmGiftMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pm-voucher-mng v-else-if="page==='pmVoucherMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pm-cache-dtl   v-else-if="page==='pmCacheDtl'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <dp-disp-area-preview  v-else-if="page==='dpDispAreaPreview'"  :navigate="navigate" :disp-dataset="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -1375,6 +1378,8 @@
   .component('PmSaveDtl',      window.PmSaveDtl)
   .component('PmGiftMng',      window.PmGiftMng)
   .component('PmGiftDtl',      window.PmGiftDtl)
+  .component('PmVoucherMng',   window.PmVoucherMng)
+  .component('PmVoucherDtl',   window.PmVoucherDtl)
   .component('CmNoticeMng',    window.CmNoticeMng)
   .component('CmNoticeDtl',    window.CmNoticeDtl)
   /* ── pages/admin/ec/ — 채팅/고객 ── */

@@ -22,6 +22,7 @@ window.PmSaveDtl = {
       saveStatus: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
       expireDay: 365, minOrderAmt: 0, remark: '',
       visibilityTargets: '^PUBLIC^',
+      vendorId: '', chargeStaff: '',
     });
     const errors = reactive({});
 
@@ -44,6 +45,17 @@ window.PmSaveDtl = {
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
       form.visibilityTargets = window.visibilityUtil.serialize(list);
+    };
+
+    const showVendorModal = ref(false);
+    const selectedVendorNm = computed(() => {
+      if (!form.vendorId) return '소속업체 선택';
+      const v = props.adminData.vendors.find(x => x.vendorId === form.vendorId);
+      return v ? v.vendorNm : '소속업체 선택';
+    });
+    const selectVendor = (vendorId, vendorNm) => {
+      form.vendorId = vendorId;
+      showVendorModal.value = false;
     };
 
     const save = async () => {
@@ -83,7 +95,7 @@ window.PmSaveDtl = {
       });
     };
 
-    return { isNew, tab, form, errors, showTab, viewMode2, save, visibilityOptions, hasVisibility, toggleVisibility };
+    return { isNew, tab, form, errors, showTab, viewMode2, save, visibilityOptions, hasVisibility, toggleVisibility, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -98,6 +110,8 @@ window.PmSaveDtl = {
       <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭">📑</button>
       <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열">1▭</button>
       <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열">2▭</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열">3▭</button>
+      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
@@ -160,6 +174,47 @@ window.PmSaveDtl = {
       <div class="form-group">
         <label class="form-label">비고</label>
         <textarea class="form-control" v-model="form.remark" rows="2" placeholder="비고 입력"></textarea>
+      </div>
+      <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+        <div class="form-group">
+          <label class="form-label">판매업체</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
+              <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+              <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
+            </div>
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">판매담당자</label>
+          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="viewMode" />
+        </div>
+      </div>
+
+      <!-- 판매업체 선택 모달 -->
+      <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
+        <div class="modal-box" style="width:400px;">
+          <div class="modal-header">
+            <span class="modal-title">판매업체 선택</span>
+            <span class="modal-close" @click="showVendorModal=false">×</span>
+          </div>
+          <div style="padding:0;max-height:400px;overflow-y:auto;">
+            <div v-for="v in (adminData.vendors || [])" :key="v.vendorId"
+              style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
+              :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
+              @click="selectVendor(v.vendorId, v.vendorNm)">
+              <span style="font-weight:500;">{{ v.vendorNm }}</span>
+              <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
+            </div>
+            <div v-if="!adminData.vendors || adminData.vendors.length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+              판매업체가 없습니다.
+            </div>
+          </div>
+          <div style="padding:12px 16px;border-top:1px solid #f0f0f0;text-align:right;">
+            <button class="btn btn-secondary btn-sm" @click="showVendorModal=false">닫기</button>
+          </div>
+        </div>
       </div>
       <div class="form-actions">
         <button class="btn btn-primary" @click="save">저장</button>
