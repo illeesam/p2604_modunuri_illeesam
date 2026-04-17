@@ -32,6 +32,17 @@ window.PmPlanDtl = {
       { value: '종료', label: '종료' },
     ];
 
+    const VISIBILITY_OPTIONS = [
+      { value: 'PUBLIC',    label: '전체공개' },
+      { value: 'MEMBER',    label: '회원공개' },
+      { value: 'VERIFIED',  label: '인증회원' },
+      { value: 'PREMIUM',   label: '우수회원↑' },
+      { value: 'VIP',       label: 'VIP 전용' },
+      { value: 'INVITED',   label: '초대회원' },
+      { value: 'STAFF',     label: '직원' },
+      { value: 'EXECUTIVE', label: '임직원' },
+    ];
+
     const form = reactive({
       planNm: '', category: '패션', theme: '', status: '활성',
       startDate: DEFAULT_START, endDate: DEFAULT_END,
@@ -124,6 +135,17 @@ window.PmPlanDtl = {
       if (idx !== -1) form.productIds.splice(idx, 1);
     };
 
+    const hasVisibility = (code) => {
+      return (form.visibilityTargets || '').includes('^' + code + '^');
+    };
+    const toggleVisibility = (code) => {
+      const targets = (form.visibilityTargets || '').split('^').filter(Boolean);
+      const idx = targets.indexOf(code);
+      if (idx === -1) targets.push(code);
+      else targets.splice(idx, 1);
+      form.visibilityTargets = '^' + targets.join('^') + '^';
+    };
+
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -165,7 +187,7 @@ window.PmPlanDtl = {
     return {
       isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch,
       filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, save,
-      CATEGORIES, STATUS_OPTIONS, viewMode2, showTab,
+      CATEGORIES, STATUS_OPTIONS, VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,
     };
   },
   template: /* html */`
@@ -233,12 +255,12 @@ window.PmPlanDtl = {
         </div>
         <div class="form-group">
           <label class="form-label">공개대상</label>
-          <select class="form-control" v-model="form.visibilityTargets">
-            <option value="^PUBLIC^">전체공개</option>
-            <option value="^MEMBER^">회원공개</option>
-            <option value="^VERIFIED^">인증회원</option>
-            <option value="^VIP^">VIP전용</option>
-          </select>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px 0;">
+            <label v-for="opt in VISIBILITY_OPTIONS" :key="opt.value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+              <input type="checkbox" :checked="hasVisibility(opt.value)" @change="toggleVisibility(opt.value)" />
+              <span>{{ opt.label }}</span>
+            </label>
+          </div>
         </div>
       </div>
       <div class="form-row">
