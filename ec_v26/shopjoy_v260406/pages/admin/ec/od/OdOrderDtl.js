@@ -220,7 +220,7 @@ window.OdOrderDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.orderId }}</span></div>
 
   <!-- 탭 -->
   <div v-if="!isNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">

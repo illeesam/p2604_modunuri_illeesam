@@ -6,6 +6,7 @@ window.MbMemberDtl = {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
+      userId: null,
       email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성',
       joinDate: '', lastLogin: '', orderCount: 0, totalPurchase: 0, memo: '',
     });
@@ -77,7 +78,7 @@ window.MbMemberDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '회원 등록' : (viewMode ? '회원 상세' : '회원 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '회원 등록' : (viewMode ? '회원 상세' : '회원 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.userId }}</span></div>
   <div class="card">
     <!-- 기본정보 폼 -->
     <div class="form-row">

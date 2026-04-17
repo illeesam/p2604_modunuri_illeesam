@@ -13,6 +13,7 @@ window.PdProdDtl = {
     const showTab = (id) => viewMode2.value !== 'tab' || topTab.value === id;
 
     const form = reactive({
+      productId: null,
       prodNm: '', category: '상의', price: 0, stock: 0,
       brand: 'ShopJoy', status: '판매중', regDate: '', description: '',
       opt1s: '', opt2s: '',
@@ -207,7 +208,7 @@ window.PdProdDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '상품 등록' : (viewMode ? '상품 상세' : '상품 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '상품 등록' : (viewMode ? '상품 상세' : '상품 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.productId }}</span></div>
 
     <!-- 상단 탭 -->
     <div class="tab-bar-row">
