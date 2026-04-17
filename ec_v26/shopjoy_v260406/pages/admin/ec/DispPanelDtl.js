@@ -67,6 +67,11 @@ window.EcDispPanelDtl = {
       /* 패널 레벨 노출조건 (레거시 유지) */
       condition: '항상 표시', authRequired: false, authGrade: '',
       displayPath: '', pathId: null,
+      /* 패널 레벨 전시 설정 */
+      panelDispYn: 'Y',
+      panelDispStartDate: '', panelDispEndDate: '',
+      panelDispEnv: '^PROD^',
+      panelVisibilityTargets: '^PUBLIC^',
     });
 
     /* ── 행별 독립 데이터 팩토리 ── */
@@ -432,6 +437,11 @@ window.EcDispPanelDtl = {
           form.gridCols      = d.gridCols      || 1;
           form.titleYn       = d.titleYn       || 'N';
           form.title         = d.title         || '';
+          form.panelDispYn           = d.panelDispYn           || 'Y';
+          form.panelDispStartDate    = d.panelDispStartDate    || '';
+          form.panelDispEndDate      = d.panelDispEndDate      || '';
+          form.panelDispEnv          = d.panelDispEnv          || '^PROD^';
+          form.panelVisibilityTargets= d.panelVisibilityTargets|| '^PUBLIC^';
           if (d.rows && d.rows.length) {
             rows.splice(0, rows.length, ...d.rows.map((r, i) => makeRowData({ sortOrder: i+1, ...r })));
             d.rows.forEach((_, i) => expandedSections.add('tab'+(i+1)));
@@ -625,6 +635,24 @@ window.EcDispPanelDtl = {
       activeRow.value.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
+    /* ── 패널 레벨 전시환경/공개대상 토글 ── */
+    const hasPanelDispEnv = (code) => form.panelDispEnv.includes('^' + code + '^');
+    const togglePanelDispEnv = (code) => {
+      const envList = form.panelDispEnv.split('^').filter(e => e && e !== 'NONE');
+      const i = envList.indexOf(code);
+      if (i >= 0) envList.splice(i, 1); else envList.push(code);
+      form.panelDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+    };
+    const hasPanelVisibility = (code) => window.visibilityUtil.has(form.panelVisibilityTargets, code);
+    const togglePanelVisibility = (code) => {
+      const list = window.visibilityUtil.parse(form.panelVisibilityTargets);
+      const i = list.indexOf(code);
+      if (i >= 0) list.splice(i, 1); else list.push(code);
+      if (code === 'PUBLIC' && i < 0) { form.panelVisibilityTargets = '^PUBLIC^'; return; }
+      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      form.panelVisibilityTargets = window.visibilityUtil.serialize(filtered);
+    };
+
     /* ── 전시항목 복사 팝업 ── */
     const rowCopyOpen = ref(false);
     const onRowCopy = (pickedRows) => {
@@ -666,6 +694,7 @@ window.EcDispPanelDtl = {
       rowCopyOpen, onRowCopy,
       visibilityOptions, hasVisibility, toggleVisibility,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
+      hasPanelDispEnv, togglePanelDispEnv, hasPanelVisibility, togglePanelVisibility,
       previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
       MAX_WIDGETS, addWidget, removeWidget,
@@ -773,128 +802,133 @@ window.EcDispPanelDtl = {
 
         <!-- ── 기본정보 ── -->
         <div v-show="tab==='info'">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">패널코드 <span v-if="!viewMode" class="req">*</span></label>
-              <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="viewMode" style="font-family:monospace;" />
+
+          <!-- ■ 설정 -->
+          <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
+              설정
             </div>
-            <div class="form-group">
-              <label class="form-label">패널명 <span v-if="!viewMode" class="req">*</span></label>
-              <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FRONT.모바일메인)</span></label>
-              <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
-            <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
-            <button type="button" @click="openPathPick('form')" title="표시경로 선택"
-              :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
-              @mouseover="$event.currentTarget.style.background='#eef2ff'"
-              @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-          </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">포함된 화면영역
-                <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(전시영역관리에서 편집)</span>
-              </label>
-              <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-                <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
-                  <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
-                  &nbsp;{{ currentAreaLabel }}
-                </span>
-                <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
+            <div class="form-row" style="margin-bottom:8px;">
+              <div class="form-group">
+                <label class="form-label">패널코드 <span v-if="!viewMode" class="req">*</span></label>
+                <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="viewMode" style="font-family:monospace;" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">패널명 <span v-if="!viewMode" class="req">*</span></label>
+                <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">상태</label>
+                <select class="form-control" v-model="form.status" :disabled="viewMode">
+                  <option>활성</option><option>비활성</option>
+                </select>
               </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">상태</label>
-            <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
-              <option>활성</option><option>비활성</option>
-            </select>
-          </div>
-
-          <!-- 타이틀 설정 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            🏷 타이틀 설정
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-              <input type="radio" v-model="form.titleYn" value="Y" :disabled="viewMode" /> 표시
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-              <input type="radio" v-model="form.titleYn" value="N" :disabled="viewMode" /> 미표시
-            </label>
-          </div>
-          <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
-            <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
-              style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
-          </div>
-
-          <!-- 위젯 레이아웃 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            🔲 위젯 레이아웃
-          </div>
-          <div class="form-row" style="align-items:flex-end;">
-            <div class="form-group" style="flex:0 0 auto;">
-              <label class="form-label">표시방식</label>
-              <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
-                <button v-for="o in LAYOUT_TYPE_OPTS" :key="o.value"
-                  @click="!viewMode && (form.layoutType = o.value)"
-                  type="button"
-                  style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                  :style="[o.value==='grid'?'border-left:none;':'', form.layoutType===o.value ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
-                  {{ o.value==='grid' ? '🔲 ' : '🧩 ' }}{{ o.label }}
-                </button>
+            <div class="form-row" style="margin-bottom:8px;">
+              <div class="form-group" style="grid-column:1 / -1;">
+                <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FRONT.모바일메인)</span></label>
+                <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+                  <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+                  <button type="button" @click="openPathPick('form')" title="표시경로 선택"
+                    :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
+                    @mouseover="$event.currentTarget.style.background='#eef2ff'"
+                    @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+                </div>
               </div>
             </div>
-            <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
-              <label class="form-label">열수 <span style="font-size:10px;color:#aaa;">(위젯 배치 열 개수)</span></label>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-                  <button v-for="n in [1,2,3,4]" :key="n" type="button"
-                    @click="!viewMode && (form.gridCols = n)"
-                    style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                    :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
-                    {{ n }}
+            <div class="form-row" style="margin-bottom:8px;">
+              <div class="form-group" style="grid-column:1 / -1;">
+                <label class="form-label">포함된 화면영역 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(전시영역관리에서 편집)</span></label>
+                <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+                  <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
+                    <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
+                    &nbsp;{{ currentAreaLabel }}
+                  </span>
+                  <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🔲 위젯 레이아웃</div>
+            <div class="form-row" style="align-items:flex-end;margin-bottom:8px;">
+              <div class="form-group" style="flex:0 0 auto;">
+                <label class="form-label">표시방식</label>
+                <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
+                  <button v-for="o in LAYOUT_TYPE_OPTS" :key="o.value"
+                    @click="!viewMode && (form.layoutType = o.value)"
+                    type="button"
+                    style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                    :style="[o.value==='grid'?'border-left:none;':'', form.layoutType===o.value ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
+                    {{ o.value==='grid' ? '🔲 ' : '🧩 ' }}{{ o.label }}
                   </button>
                 </div>
-                <input type="number" v-model.number="form.gridCols" min="1" max="32"
-                  :readonly="viewMode"
-                  style="width:64px;font-size:13px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
-                <span style="font-size:12px;color:#aaa;">열</span>
+              </div>
+              <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
+                <label class="form-label">열수 <span style="font-size:10px;color:#aaa;">(위젯 배치 열 개수)</span></label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
+                    <button v-for="n in [1,2,3,4]" :key="n" type="button"
+                      @click="!viewMode && (form.gridCols = n)"
+                      style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                      :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
+                      {{ n }}
+                    </button>
+                  </div>
+                  <input type="number" v-model.number="form.gridCols" min="1" max="32"
+                    :readonly="viewMode"
+                    style="width:64px;font-size:13px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
+                  <span style="font-size:12px;color:#aaa;">열</span>
+                </div>
+              </div>
+              <div class="form-group" style="flex:0 0 auto;" v-else>
+                <label class="form-label">배치</label>
+                <span style="font-size:12px;color:#6b7280;padding:6px 0;display:block;">자유 배치 (열수 없음)</span>
               </div>
             </div>
-            <div class="form-group" style="flex:0 0 auto;" v-else>
-              <label class="form-label">배치</label>
-              <span style="font-size:12px;color:#6b7280;padding:6px 0;display:block;">자유 배치 (열수 없음)</span>
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📅 사용기간</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" :readonly="viewMode" />
+              <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
+              <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" :readonly="viewMode" />
             </div>
-          </div>
+          </div><!-- /설정 -->
 
-          <!-- 사용 기간 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            📅 사용 기간
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-            <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" :readonly="viewMode" />
-            <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
-            <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" :readonly="viewMode" />
-          </div>
-          <div v-if="form.useStartDate || form.useEndDate"
-            style="font-size:12px;color:#555;background:#f8faff;border:1px solid #e0e8f8;border-radius:6px;padding:6px 12px;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;">
-            <span>{{ form.useStartDate || '?' }} ~ {{ form.useEndDate || '?' }}</span>
-          </div>
+          <!-- ■ 제목 -->
+          <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
+            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+              <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
+              제목
+              <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
+                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+                  <input type="radio" v-model="form.titleYn" value="Y" :disabled="viewMode" /> 표시
+                </label>
+                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+                  <input type="radio" v-model="form.titleYn" value="N" :disabled="viewMode" /> 미표시
+                </label>
+              </span>
+            </div>
+            <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+              <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
+              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+                style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
+            </div>
+          </div><!-- /제목 -->
 
-          <!-- HTML 설명 (Quill) -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            📝 HTML 설명
-          </div>
-          <div v-if="viewMode"
-            style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;margin-bottom:16px;">
-            <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
-            <span v-else style="color:#bbb;">내용 없음</span>
-          </div>
-          <div v-else ref="htmlDescEl" style="margin-bottom:16px;"></div>
+          <!-- ■ 내용 (HTML 설명) -->
+          <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
+            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+              <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;"></span>
+              내용
+            </div>
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📝 패널코멘트</div>
+            <div v-if="viewMode"
+              style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
+              <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
+              <span v-else style="color:#bbb;">내용 없음</span>
+            </div>
+            <div v-else ref="htmlDescEl"></div>
+          </div><!-- /내용 -->
 
           <div class="form-actions">
             <template v-if="viewMode">
