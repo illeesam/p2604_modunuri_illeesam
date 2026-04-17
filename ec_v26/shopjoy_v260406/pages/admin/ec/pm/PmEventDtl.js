@@ -329,7 +329,19 @@ window.PmEventDtl = {
         <div v-else style="padding:12px;background:#f0f0f0;border-radius:6px;font-size:12px;color:#888;margin-bottom:16px;">
           🔒 내용 3~5는 로그인 후 확인 가능합니다.
         </div>
-        <button class="btn btn-primary" @click="onEventConfirm">이벤트 확인</button>
+        <div v-if="selectedProducts.length > 0" style="margin-top:20px;padding-top:20px;border-top:1px solid #e0e0e0;">
+          <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:12px;">🎯 대상 상품 ({{ selectedProducts.length }}개)</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
+            <div v-for="p in selectedProducts" :key="p.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
+              <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">📦</div>
+              <div style="padding:8px;font-size:11px;">
+                <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.prodNm }}</div>
+                <div style="color:#e8587a;font-weight:700;">{{ (p.price||0).toLocaleString() }}원</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" @click="onEventConfirm" style="margin-top:16px;">이벤트 확인</button>
       </div>
     </div>
   </div>
