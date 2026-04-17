@@ -910,328 +910,327 @@ window.EcDispPanelDtl = {
         <!-- ── 1~5행 콘텐츠 ── -->
         <div v-if="activeRow">
 
-          <!-- § 위젯 설정 -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            <span style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;">📐 위젯 설정</span>
-            <span v-if="!viewMode" style="display:flex;gap:6px;">
-              <button @click="!isNew && openLibPick('copy')" :disabled="isNew"
-                :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
-                :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:6px;cursor:pointer;font-weight:600;'">📋 전시위젯Lib 내용복사</button>
-              <button @click="!isNew && openLibPick('ref')" :disabled="isNew"
-                :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
-                :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #ce93d8;background:#f3e5f5;color:#6a1b9a;border-radius:6px;cursor:pointer;font-weight:600;'">🔗 전시위젯Lib 참조</button>
-            </span>
-          </div>
-
-          <!-- 🔗 참조 정보 -->
-          <div v-if="activeRow.refLibId"
-            style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
-              <button v-if="!viewMode" @click="activeRow.refLibId=null; activeRow.refLibCode=''; activeRow.refLibName=''"
-                style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">참조 해제</button>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
-              <span><b style="color:#888;">참조구분:</b>
-                <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">위젯Lib</span>
+          <!-- ■ 섹션 1: 설정 -->
+          <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
+              설정
+              <span v-if="!viewMode" style="margin-left:auto;display:flex;gap:6px;">
+                <button @click="!isNew && openLibPick('copy')" :disabled="isNew"
+                  :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
+                  :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:6px;cursor:pointer;font-weight:600;'">📋 위젯Lib내용복사</button>
+                <button @click="!isNew && openLibPick('ref')" :disabled="isNew"
+                  :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
+                  :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #ce93d8;background:#f3e5f5;color:#6a1b9a;border-radius:6px;cursor:pointer;font-weight:600;'">🔗 위젯Lib참조</button>
               </span>
-              <span v-if="activeRow.refLibCode"><b style="color:#888;">참조항목Code:</b>
-                <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">{{ activeRow.refLibCode }}</code>
+            </div>
+
+            <!-- 🔗 참조 정보 -->
+            <div v-if="activeRow.refLibId"
+              style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
+                <button v-if="!viewMode" @click="activeRow.refLibId=null; activeRow.refLibCode=''; activeRow.refLibName=''"
+                  style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">참조 해제</button>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
+                <span><b style="color:#888;">참조구분:</b>
+                  <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">위젯Lib</span>
+                </span>
+                <span v-if="activeRow.refLibCode"><b style="color:#888;">참조항목Code:</b>
+                  <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">{{ activeRow.refLibCode }}</code>
+                </span>
+                <span><b style="color:#888;">참조항목ID:</b>
+                  <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">#{{ String(activeRow.refLibId).padStart(4,'0') }}</code>
+                </span>
+                <span v-if="activeRow.refLibName"><b style="color:#888;">참조명:</b> {{ activeRow.refLibName }}</span>
+              </div>
+              <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
+                <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
+                <disp-x04-widget
+                  :params="{ }"
+                  :disp-dataset="dispDataset"
+                  :disp-opt="{ showBadges: true }"
+                  :widget-item="(dispDataset.widgetLibs||[]).find(l => l.libId===activeRow.refLibId) || {}" />
+              </div>
+            </div>
+
+            <!-- 노출순서 + 전시여부 -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <label style="font-size:12px;font-weight:600;color:#555;white-space:nowrap;">노출 순서</label>
+                <input class="form-control" type="number" v-model.number="activeRow.sortOrder" min="1" :readonly="viewMode"
+                  style="width:80px;margin:0;" />
+              </div>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;cursor:pointer;">
+                <span>전시여부</span>
+                <input type="checkbox" v-model="activeRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="viewMode" style="accent-color:#e8587a;" />
+                <span>{{ activeRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
+              </label>
+              <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
+            </div>
+
+            <!-- 전시기간 -->
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
+              📅 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr auto 1fr;align-items:center;gap:6px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+              <span style="font-size:11px;color:#888;white-space:nowrap;">시작</span>
+              <div style="display:flex;gap:6px;">
+                <input type="date" class="form-control" v-model="activeRow.dispStartDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
+                <input type="time" class="form-control" v-model="activeRow.dispStartTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
+              </div>
+              <span style="font-size:11px;color:#888;white-space:nowrap;padding:0 2px;">종료</span>
+              <div style="display:flex;gap:6px;">
+                <input type="date" class="form-control" v-model="activeRow.dispEndDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
+                <input type="time" class="form-control" v-model="activeRow.dispEndTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
+              </div>
+            </div>
+
+            <!-- 전시환경 -->
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+              <label v-for="opt in dispEnvOptions" :key="opt.code"
+                :style="{
+                  display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
+                  border:'1px solid '+(hasDispEnv(opt.code)?'#7c3aed':'#ddd'),
+                  background:hasDispEnv(opt.code)?'#f3e8ff':'#fafafa',
+                  color:hasDispEnv(opt.code)?'#7c3aed':'#666',
+                  fontSize:'12px',fontWeight:hasDispEnv(opt.code)?700:500,
+                  cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+                }">
+                <input type="checkbox" :checked="hasDispEnv(opt.code)"
+                  :disabled="viewMode"
+                  @change="toggleDispEnv(opt.code)"
+                  style="accent-color:#7c3aed;" />
+                {{ opt.label }}
+              </label>
+            </div>
+
+            <!-- 공개대상 -->
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+              <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+                :style="{
+                  display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
+                  border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+                  background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+                  color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
+                  fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
+                  cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+                }">
+                <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
+                  :disabled="viewMode"
+                  @change="toggleVisibility(opt.codeValue)"
+                  style="accent-color:#1565c0;" />
+                {{ opt.codeLabel }}
+              </label>
+            </div>
+            <div v-if="!activeRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:4px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
+          </div><!-- /설정 영역 -->
+
+          <!-- ■ 섹션 2: 제목 -->
+          <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
+            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+              <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
+              제목
+              <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
+                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+                  <input type="radio" v-model="activeRow.titleYn" value="Y" :disabled="viewMode" /> 표시
+                </label>
+                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+                  <input type="radio" v-model="activeRow.titleYn" value="N" :disabled="viewMode" /> 미표시
+                </label>
               </span>
-              <span><b style="color:#888;">참조항목ID:</b>
-                <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">#{{ String(activeRow.refLibId).padStart(4,'0') }}</code>
+            </div>
+            <div v-if="activeRow.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+              <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
+              <input v-model="activeRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+                style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
+            </div>
+          </div><!-- /제목 영역 -->
+
+          <!-- ■ 섹션 3: 내용 -->
+          <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
+            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;"></span>
+              내용
+              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;">
+                <span style="font-size:11px;font-weight:600;color:#888;">위젯유형</span>
+                <select class="form-control" v-model="activeRow.widgetType" :disabled="viewMode"
+                  style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:130px;">
+                  <option v-for="w in WIDGET_TYPES" :key="w.value" :value="w.value">{{ w.label }}</option>
+                </select>
               </span>
-              <span v-if="activeRow.refLibName"><b style="color:#888;">참조명:</b> {{ activeRow.refLibName }}</span>
             </div>
-            <!-- 참조된 컴포넌트 내용 -->
-            <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
-              <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
-              <disp-x04-widget
-                :params="{ }"
-                :disp-dataset="dispDataset"
-                :disp-opt="{ showBadges: true }"
-                :widget-item="(dispDataset.widgetLibs||[]).find(l => l.libId===activeRow.refLibId) || {}" />
+
+            <!-- HTML 에디터 (Quill) -->
+            <div v-if="isHtmlEditor" style="margin-bottom:20px;">
+              <div v-if="viewMode"
+                style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
+                <span v-if="activeRow.htmlContent" v-html="activeRow.htmlContent"></span>
+                <span v-else style="color:#bbb;">내용 없음</span>
+              </div>
+              <template v-else>
+                <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
+                  <button @click="toggleHtmlSource"
+                    :style="htmlSourceMode ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#f5f5f5;color:#555;border-color:#d0d0d0;'"
+                    style="font-size:11px;padding:3px 10px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
+                    {{ htmlSourceMode ? '&#x2713; 디자인' : '&lt;/&gt; HTML' }}
+                  </button>
+                </div>
+                <div v-show="!htmlSourceMode" ref="htmlContentEl"></div>
+                <textarea v-if="htmlSourceMode" v-model="activeRow.htmlContent"
+                  style="width:100%;min-height:180px;padding:10px 12px;border:1px solid #d0d0d0;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;"></textarea>
+              </template>
             </div>
-          </div>
-          <div class="form-row" style="margin-bottom:16px;">
-            <div class="form-group">
-              <label class="form-label">위젯 유형</label>
-              <select class="form-control" v-model="activeRow.widgetType" :disabled="viewMode">
-                <option v-for="w in WIDGET_TYPES" :key="w.value" :value="w.value">{{ w.label }}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">노출 순서</label>
-              <input class="form-control" type="number" v-model.number="activeRow.sortOrder" min="1" :readonly="viewMode" />
-            </div>
-          </div>
 
-          <!-- § 위젯별 전시여부 및 전시기간 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            📺 위젯 전시 관리
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:6px 10px;background:#f0f0f0;border-radius:6px;">
-              <span>전시여부:</span>
-              <input type="checkbox" v-model="activeRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="viewMode" style="accent-color:#e8587a;" />
-              <span>{{ activeRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
-            </label>
-            <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
-          </div>
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            📅 위젯별 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
-            <input type="date" class="form-control" v-model="activeRow.dispStartDate" style="width:150px;margin:0;" :readonly="viewMode" placeholder="시작일" />
-            <input type="time" class="form-control" v-model="activeRow.dispStartTime" style="width:110px;margin:0;" :readonly="viewMode" placeholder="시작시간" />
-            <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
-            <input type="date" class="form-control" v-model="activeRow.dispEndDate" style="width:150px;margin:0;" :readonly="viewMode" placeholder="종료일" />
-            <input type="time" class="form-control" v-model="activeRow.dispEndTime" style="width:110px;margin:0;" :readonly="viewMode" placeholder="종료시간" />
-          </div>
-          <div v-if="activeRow.dispStartDate || activeRow.dispEndDate"
-            style="font-size:11px;color:#666;background:#f0f4ff;border:1px solid #d0daf5;border-radius:6px;padding:6px 12px;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;">
-            <span>{{ activeRow.dispStartDate || '?' }} {{ activeRow.dispStartTime || '00:00' }}</span>
-            <span style="color:#aaa;">~</span>
-            <span>{{ activeRow.dispEndDate || '?' }} {{ activeRow.dispEndTime || '23:59' }}</span>
-          </div>
-
-          <!-- § 전시 환경 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:12px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            🌍 전시 환경
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-            <label v-for="opt in dispEnvOptions" :key="opt.code"
-              :style="{
-                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
-                border:'1px solid '+(hasDispEnv(opt.code)?'#7c3aed':'#ddd'),
-                background:hasDispEnv(opt.code)?'#f3e8ff':'#fafafa',
-                color:hasDispEnv(opt.code)?'#7c3aed':'#666',
-                fontSize:'12px',fontWeight:hasDispEnv(opt.code)?700:500,
-                cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
-              }">
-              <input type="checkbox" :checked="hasDispEnv(opt.code)"
-                :disabled="viewMode"
-                @change="toggleDispEnv(opt.code)"
-                style="accent-color:#7c3aed;" />
-              {{ opt.label }}
-            </label>
-          </div>
-
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-              <input type="radio" v-model="activeRow.titleYn" value="Y" :disabled="viewMode" /> 표시
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-              <input type="radio" v-model="activeRow.titleYn" value="N" :disabled="viewMode" /> 미표시
-            </label>
-          </div>
-          <div v-if="activeRow.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
-            <input v-model="activeRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
-              style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
-          </div>
-
-          <!-- § 공개 대상 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            🔒 공개 대상 (하나라도 해당하면 노출)
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
-              :style="{
-                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
-                border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
-                background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
-                color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
-                fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
-                cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
-              }">
-              <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
-                :disabled="viewMode"
-                @change="toggleVisibility(opt.codeValue)"
-                style="accent-color:#1565c0;" />
-              {{ opt.codeLabel }}
-            </label>
-          </div>
-          <div v-if="!activeRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:12px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
-
-          <!-- § 표현 설정 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            🎨 표현 설정
-          </div>
-
-          <!-- HTML 에디터 (Quill) -->
-          <div v-if="isHtmlEditor" style="margin-bottom:20px;">
-            <div v-if="viewMode"
-              style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
-              <span v-if="activeRow.htmlContent" v-html="activeRow.htmlContent"></span>
-              <span v-else style="color:#bbb;">내용 없음</span>
-            </div>
-            <template v-else>
-              <!-- 소스 토글 버튼 -->
-              <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
-                <button @click="toggleHtmlSource"
-                  :style="htmlSourceMode ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#f5f5f5;color:#555;border-color:#d0d0d0;'"
-                  style="font-size:11px;padding:3px 10px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
-                  {{ htmlSourceMode ? '&#x2713; 디자인' : '&lt;/&gt; HTML' }}
+            <!-- 파일목록 -->
+            <div v-else-if="isFileList" style="margin-bottom:20px;">
+              <div v-if="viewMode">
+                <div v-if="fileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
+                <div v-for="(f, i) in fileListItems" :key="i"
+                  style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
+                  <span style="font-size:16px;">📎</span>
+                  <a v-if="f.url" :href="f.url" target="_blank"
+                    style="font-size:13px;color:#2563eb;text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    {{ f.name || f.url }}
+                  </a>
+                  <span v-else style="font-size:13px;color:#555;flex:1;">{{ f.name }}</span>
+                </div>
+              </div>
+              <div v-else>
+                <table class="admin-table" style="margin-bottom:8px;">
+                  <thead>
+                    <tr>
+                      <th style="width:36px;text-align:center;">#</th>
+                      <th style="width:200px;">파일명</th>
+                      <th>URL / 경로</th>
+                      <th style="width:36px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="fileListItems.length===0">
+                      <td colspan="4" style="text-align:center;color:#bbb;padding:16px;font-size:13px;">
+                        첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요.
+                      </td>
+                    </tr>
+                    <tr v-for="(f, i) in fileListItems" :key="i">
+                      <td style="text-align:center;color:#aaa;font-size:12px;">{{ i+1 }}</td>
+                      <td style="padding:4px 6px;">
+                        <input class="form-control" :value="f.name"
+                          @input="updateFileItem(i,'name',$event.target.value)"
+                          placeholder="파일명.pdf" style="margin:0;" />
+                      </td>
+                      <td style="padding:4px 6px;">
+                        <input class="form-control" :value="f.url"
+                          @input="updateFileItem(i,'url',$event.target.value)"
+                          placeholder="https://... 또는 /files/sample.pdf" style="margin:0;" />
+                      </td>
+                      <td style="text-align:center;padding:4px;">
+                        <button @click="removeFileItem(i)"
+                          style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <button @click="addFileItem"
+                  style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;cursor:pointer;color:#555;">
+                  + 파일 추가
                 </button>
               </div>
-              <!-- WYSIWYG -->
-              <div v-show="!htmlSourceMode" ref="htmlContentEl"></div>
-              <!-- 소스 모드 -->
-              <textarea v-if="htmlSourceMode" v-model="activeRow.htmlContent"
-                style="width:100%;min-height:180px;padding:10px 12px;border:1px solid #d0d0d0;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;"></textarea>
-            </template>
-          </div>
-
-          <!-- 파일목록 -->
-          <div v-else-if="isFileList" style="margin-bottom:20px;">
-            <!-- 보기 모드 -->
-            <div v-if="viewMode">
-              <div v-if="fileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
-              <div v-for="(f, i) in fileListItems" :key="i"
-                style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
-                <span style="font-size:16px;">📎</span>
-                <a v-if="f.url" :href="f.url" target="_blank"
-                  style="font-size:13px;color:#2563eb;text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                  {{ f.name || f.url }}
-                </a>
-                <span v-else style="font-size:13px;color:#555;flex:1;">{{ f.name }}</span>
-              </div>
             </div>
-            <!-- 편집 모드 -->
-            <div v-else>
-              <table class="admin-table" style="margin-bottom:8px;">
-                <thead>
-                  <tr>
-                    <th style="width:36px;text-align:center;">#</th>
-                    <th style="width:200px;">파일명</th>
-                    <th>URL / 경로</th>
-                    <th style="width:36px;"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="fileListItems.length===0">
-                    <td colspan="4" style="text-align:center;color:#bbb;padding:16px;font-size:13px;">
-                      첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요.
-                    </td>
-                  </tr>
-                  <tr v-for="(f, i) in fileListItems" :key="i">
-                    <td style="text-align:center;color:#aaa;font-size:12px;">{{ i+1 }}</td>
-                    <td style="padding:4px 6px;">
-                      <input class="form-control" :value="f.name"
-                        @input="updateFileItem(i,'name',$event.target.value)"
-                        placeholder="파일명.pdf" style="margin:0;" />
-                    </td>
-                    <td style="padding:4px 6px;">
-                      <input class="form-control" :value="f.url"
-                        @input="updateFileItem(i,'url',$event.target.value)"
-                        placeholder="https://... 또는 /files/sample.pdf" style="margin:0;" />
-                    </td>
-                    <td style="text-align:center;padding:4px;">
-                      <button @click="removeFileItem(i)"
-                        style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <button @click="addFileItem"
-                style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;cursor:pointer;color:#555;">
-                + 파일 추가
-              </button>
+
+            <!-- 일반 표현 설정 테이블 (조건상품 포함) -->
+            <div v-else-if="displayRows.length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">
+              위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.
             </div>
-          </div>
-
-          <!-- 일반 표현 설정 테이블 (조건상품 포함) -->
-          <div v-else-if="displayRows.length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">
-            위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.
-          </div>
-          <table v-else class="admin-table" style="margin-bottom:20px;">
-            <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
-            <tbody>
-              <tr v-for="row in displayRows" :key="row.key">
-                <td style="font-weight:500;color:#555;vertical-align:middle;">{{ row.label }}</td>
-                <td style="padding:6px 8px;">
-                  <input v-if="row.type==='input'" class="form-control" v-model="activeRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="viewMode" />
-                  <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="activeRow[row.key]" style="margin:0;max-width:200px;" :readonly="viewMode" />
-                  <select v-else-if="row.type==='select'" class="form-control" v-model="activeRow[row.key]" style="margin:0;max-width:200px;" :disabled="viewMode">
-                    <option v-for="o in row.options" :key="o.v" :value="o.v">{{ o.l }}</option>
-                  </select>
-                  <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="activeRow[row.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
-                  <textarea v-else-if="row.type==='code'" class="form-control" v-model="activeRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
-                  <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
-                    <input type="color" v-model="activeRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
-                    <input class="form-control" v-model="activeRow[row.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
-                    <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:activeRow[row.key]}"></span>
-                  </div>
-                  <textarea v-else-if="row.type==='code'" class="form-control" v-model="activeRow[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="viewMode"></textarea>
-                  <div v-else-if="row.type==='event'">
-                    <div style="display:flex;gap:8px;align-items:center;">
-                      <input class="form-control" v-model="activeRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
-                      <span v-if="activeRow.eventId" class="ref-link" @click="showRefModal('event', Number(activeRow.eventId))">보기</span>
+            <table v-else class="admin-table" style="margin-bottom:20px;">
+              <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
+              <tbody>
+                <tr v-for="row in displayRows" :key="row.key">
+                  <td style="font-weight:500;color:#555;vertical-align:middle;">{{ row.label }}</td>
+                  <td style="padding:6px 8px;">
+                    <input v-if="row.type==='input'" class="form-control" v-model="activeRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="viewMode" />
+                    <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="activeRow[row.key]" style="margin:0;max-width:200px;" :readonly="viewMode" />
+                    <select v-else-if="row.type==='select'" class="form-control" v-model="activeRow[row.key]" style="margin:0;max-width:200px;" :disabled="viewMode">
+                      <option v-for="o in row.options" :key="o.v" :value="o.v">{{ o.l }}</option>
+                    </select>
+                    <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="activeRow[row.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="activeRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
+                    <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
+                      <input type="color" v-model="activeRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
+                      <input class="form-control" v-model="activeRow[row.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
+                      <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:activeRow[row.key]}"></span>
                     </div>
-                    <div v-if="relatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
-                      <b>{{ relatedEvent.title }}</b>
-                      <span class="badge badge-green">{{ relatedEvent.status }}</span>
-                      <span style="color:#888;">{{ relatedEvent.startDate }} ~ {{ relatedEvent.endDate }}</span>
+                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="activeRow[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="viewMode"></textarea>
+                    <div v-else-if="row.type==='event'">
+                      <div style="display:flex;gap:8px;align-items:center;">
+                        <input class="form-control" v-model="activeRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
+                        <span v-if="activeRow.eventId" class="ref-link" @click="showRefModal('event', Number(activeRow.eventId))">보기</span>
+                      </div>
+                      <div v-if="relatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                        <b>{{ relatedEvent.title }}</b>
+                        <span class="badge badge-green">{{ relatedEvent.status }}</span>
+                        <span style="color:#888;">{{ relatedEvent.startDate }} ~ {{ relatedEvent.endDate }}</span>
+                      </div>
+                      <div v-else-if="activeRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
                     </div>
-                    <div v-else-if="activeRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="isText && activeRow.textContent">
-                <td style="font-weight:500;color:#555;">미리보기</td>
-                <td style="padding:6px 8px;"><div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:activeRow.bgColor,color:activeRow.textColor}">{{ activeRow.textContent }}</div></td>
-              </tr>
-              <tr v-if="isImage && activeRow.imageUrl">
-                <td style="font-weight:500;color:#555;">이미지 미리보기</td>
-                <td style="padding:6px 8px;"><img :src="activeRow.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" /></td>
-              </tr>
-              <tr v-if="isProduct && activeRow.productIds">
-                <td style="font-weight:500;color:#555;">상품 링크</td>
-                <td style="padding:6px 8px;">
-                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                    <span v-for="pid in activeRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
-                      class="ref-link" @click="showRefModal('product', Number(pid))"
-                      style="padding:2px 10px;background:#e6f4ff;border-radius:12px;font-size:12px;cursor:pointer;">상품 #{{ pid }}</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                </tr>
+                <tr v-if="isText && activeRow.textContent">
+                  <td style="font-weight:500;color:#555;">미리보기</td>
+                  <td style="padding:6px 8px;"><div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:activeRow.bgColor,color:activeRow.textColor}">{{ activeRow.textContent }}</div></td>
+                </tr>
+                <tr v-if="isImage && activeRow.imageUrl">
+                  <td style="font-weight:500;color:#555;">이미지 미리보기</td>
+                  <td style="padding:6px 8px;"><img :src="activeRow.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" /></td>
+                </tr>
+                <tr v-if="isProduct && activeRow.productIds">
+                  <td style="font-weight:500;color:#555;">상품 링크</td>
+                  <td style="padding:6px 8px;">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                      <span v-for="pid in activeRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
+                        class="ref-link" @click="showRefModal('product', Number(pid))"
+                        style="padding:2px 10px;background:#e6f4ff;border-radius:12px;font-size:12px;cursor:pointer;">상품 #{{ pid }}</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-          <!-- § 클릭 동작 -->
-          <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
-            👆 클릭 동작
-          </div>
-          <table class="admin-table" style="margin-bottom:20px;">
-            <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
-            <tbody>
-              <tr>
-                <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
-                <td style="padding:6px 8px;">
-                  <select class="form-control" v-model="activeRow.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
-                    <option value="none">없음</option>
-                    <option value="navigate">페이지 이동</option>
-                    <option value="event">이벤트 호출</option>
-                    <option value="modal">모달 오픈</option>
-                    <option value="url">외부 URL</option>
-                  </select>
-                </td>
-              </tr>
-              <tr v-if="activeRow.clickAction !== 'none'">
-                <td style="font-weight:500;color:#555;vertical-align:middle;">대상</td>
-                <td style="padding:6px 8px;">
-                  <input class="form-control" v-model="activeRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="viewMode" />
-                  <div style="margin-top:6px;font-size:12px;color:#888;">
-                    <span v-if="activeRow.clickAction==='navigate'">💡 <code>/home</code>, <code>/products</code>, <code>/detail?pid=1</code> 형식</span>
-                    <span v-if="activeRow.clickAction==='event'">💡 <code>showCoupon</code>, <code>openEvent</code> 등 이벤트명</span>
-                    <span v-if="activeRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <!-- 클릭동작 -->
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
+            <table class="admin-table" style="margin-bottom:8px;">
+              <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
+                  <td style="padding:6px 8px;">
+                    <select class="form-control" v-model="activeRow.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
+                      <option value="none">없음</option>
+                      <option value="navigate">페이지 이동</option>
+                      <option value="event">이벤트 호출</option>
+                      <option value="modal">모달 오픈</option>
+                      <option value="url">외부 URL</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr v-if="activeRow.clickAction !== 'none'">
+                  <td style="font-weight:500;color:#555;vertical-align:middle;">대상</td>
+                  <td style="padding:6px 8px;">
+                    <input class="form-control" v-model="activeRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="viewMode" />
+                    <div style="margin-top:6px;font-size:12px;color:#888;">
+                      <span v-if="activeRow.clickAction==='navigate'">💡 <code>/home</code>, <code>/products</code>, <code>/detail?pid=1</code> 형식</span>
+                      <span v-if="activeRow.clickAction==='event'">💡 <code>showCoupon</code>, <code>openEvent</code> 등 이벤트명</span>
+                      <span v-if="activeRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div><!-- /내용 영역 -->
 
           <div class="form-actions">
             <template v-if="viewMode">
