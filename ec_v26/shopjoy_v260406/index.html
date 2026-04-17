@@ -54,7 +54,6 @@
       } catch(e) { window.ADMIN_SITE_NO = ''; }
     })();
     document.write('<link rel="stylesheet" href="assets/css/frontGlobalStyle' + window.FRONT_SITE_NO + '.css">');
-    document.write('<link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">');
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
       if ((e.key === 'modu-front-site_no' || e.key === 'modu-admin-site_no') && e.newValue !== e.oldValue) {
