@@ -13,7 +13,7 @@ window.PmCacheDtl = {
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({
-      userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
+      cacheId: null, userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
     });
     const errors = reactive({});
 
@@ -90,7 +90,7 @@ window.PmCacheDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '캐쉬 등록' : (viewMode ? '캐쉬 상세' : '캐쉬 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '캐쉬 등록' : (viewMode ? '캐쉬 상세' : '캐쉬 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.cacheId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>

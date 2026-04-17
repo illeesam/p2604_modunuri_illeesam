@@ -121,7 +121,10 @@ window.PdProdDtl = {
     onMounted(async () => {
       if (!isNew.value) {
         const p = props.adminData.getProduct(props.editId);
-        if (p) Object.assign(form, { ...p });
+        if (p) {
+          Object.assign(form, { ...p });
+          if (!form.productId) form.productId = props.editId;
+        }
         // 기존 이미지 로드
         if (p && p.images && p.images.length) {
           images.value = p.images.map(img => ({ ...img, id: imgIdSeq++ }));
@@ -208,7 +211,7 @@ window.PdProdDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '상품 등록' : (viewMode ? '상품 상세' : '상품 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.productId }}</span></div>
+  <div class="page-title">{{ isNew ? '상품 등록' : (viewMode ? '상품 상세' : '상품 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.productId }}</span></div>
 
     <!-- 상단 탭 -->
     <div class="tab-bar-row">

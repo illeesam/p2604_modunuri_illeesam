@@ -8,7 +8,7 @@ window.SyTemplateDtl = {
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
-      templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
+      templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
     });
     const errors = reactive({});
 
@@ -110,7 +110,7 @@ window.SyTemplateDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '템플릿 등록' : (viewMode ? '템플릿 상세' : '템플릿 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '템플릿 등록' : (viewMode ? '템플릿 상세' : '템플릿 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.templateId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

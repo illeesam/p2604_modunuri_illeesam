@@ -7,7 +7,7 @@ window.SyBbmDtl = {
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const form = reactive({
-      bbmCode: '', bbmNm: '', bbmType: '일반',
+      bbmId: null, bbmCode: '', bbmNm: '', bbmType: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
       contentType: 'textarea', scopeType: '공개',
       sortOrd: 1, useYn: 'Y', remark: '',
@@ -62,7 +62,7 @@ window.SyBbmDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '게시판 등록' : (viewMode ? '게시판 상세' : '게시판 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '게시판 등록' : (viewMode ? '게시판 상세' : '게시판 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

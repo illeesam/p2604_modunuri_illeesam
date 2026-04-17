@@ -14,7 +14,7 @@ window.SyContactDtl = {
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({
-      userId: '', userNm: '', date: '', categoryCd: '배송 문의',
+      inquiryId: null, userId: '', userNm: '', date: '', categoryCd: '배송 문의',
       title: '', content: '', statusCd: '요청', answer: '',
     });
     const errors = reactive({});
@@ -124,7 +124,7 @@ window.SyContactDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '문의 등록' : (viewMode ? '문의 상세' : '문의 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '문의 등록' : (viewMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.inquiryId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

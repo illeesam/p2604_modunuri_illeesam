@@ -8,7 +8,7 @@ window.SyVendorDtl = {
     const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const form = reactive({
-      vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
+      vendorId: null, vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
       zipcode: '', address: '', addressDetail: '',
       contractDate: '', statusCd: '활성', memo: '',
     });
@@ -96,7 +96,7 @@ window.SyVendorDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '업체 등록' : (viewMode ? '업체 상세' : '업체 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '업체 등록' : (viewMode ? '업체 상세' : '업체 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

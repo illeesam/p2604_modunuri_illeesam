@@ -35,6 +35,7 @@ window.OdOrderDtl = {
         const o = props.adminData.getOrder(props.editId);
         if (o) {
           Object.assign(form, { ...o });
+          if (!form.orderId) form.orderId = props.editId;
           if (o.status) form.statusCd = o.status;
           if (o.payMethod) form.payMethodCd = o.payMethod;
           if (o.payStatus) form.payStatusCd = o.payStatus;
@@ -220,7 +221,7 @@ window.OdOrderDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.orderId }}</span></div>
+  <div class="page-title">{{ isNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.orderId }}</span></div>
 
   <!-- 탭 -->
   <div v-if="!isNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">

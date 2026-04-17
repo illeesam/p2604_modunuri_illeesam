@@ -6,7 +6,7 @@ window.PdCategoryDtl = {
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
-      parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
+      categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
     });
     const errors = reactive({});
 
@@ -75,7 +75,7 @@ window.PdCategoryDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '카테고리 등록' : '카테고리 수정' }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '카테고리 등록' : '카테고리 수정' }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.categoryId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

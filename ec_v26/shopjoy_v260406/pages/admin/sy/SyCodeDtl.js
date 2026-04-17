@@ -7,7 +7,7 @@ window.SyCodeDtl = {
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const form = reactive({
-      codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
+      codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
     });
     const errors = reactive({});
 
@@ -60,7 +60,7 @@ window.SyCodeDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '공통코드 등록' : '공통코드 수정' }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '공통코드 등록' : '공통코드 수정' }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.codeId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

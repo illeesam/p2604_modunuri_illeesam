@@ -6,7 +6,7 @@ window.CmNoticeDtl = {
     const { reactive, computed, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
-      title: '', noticeType: '일반', isFixed: false,
+      noticeId: null, title: '', noticeType: '일반', isFixed: false,
       startDate: '', endDate: '', statusCd: '게시', contentHtml: '',
       attachGrpId: null,
     });
@@ -70,7 +70,7 @@ window.CmNoticeDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '공지사항 등록' : (viewMode ? '공지사항 상세' : '공지사항 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '공지사항 등록' : (viewMode ? '공지사항 상세' : '공지사항 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.noticeId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group" style="flex:2">

@@ -31,6 +31,7 @@ window.OdDlivDtl = {
         const d = props.adminData.deliveries.find(x => x.dlivId === props.editId);
         if (d) {
           Object.assign(form, { ...d });
+          if (!form.dlivId) form.dlivId = props.editId;
           if (d.status) form.statusCd = d.status;
           if (d.courier) form.courierCd = d.courier;
         }
@@ -166,7 +167,7 @@ window.OdDlivDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '배송 등록' : (viewMode ? '배송 상세' : '배송 수정') }}</div>
+  <div class="page-title">{{ isNew ? '배송 등록' : (viewMode ? '배송 상세' : '배송 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.dlivId }}</span></div>
 
   <!-- 탭 -->
   <div v-if="!isNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">

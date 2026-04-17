@@ -12,7 +12,7 @@ window.SyBbsDtl = {
 
     /* ── 폼 ── */
     const form = reactive({
-      bbmId: null, title: '', authorNm: '', statusCd: '게시',
+      bbsId: null, bbmId: null, title: '', authorNm: '', statusCd: '게시',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
     const errors = reactive({});
@@ -128,7 +128,7 @@ window.SyBbsDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '게시글 등록' : (viewMode ? '게시글 상세' : '게시글 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '게시글 등록' : (viewMode ? '게시글 상세' : '게시글 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.bbsId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

@@ -32,7 +32,10 @@ window.OdClaimDtl = {
     onMounted(() => {
       if (!isNew.value) {
         const c = props.adminData.getClaim(props.editId);
-        if (c) Object.assign(form, { ...c });
+        if (c) {
+          Object.assign(form, { ...c });
+          if (!form.claimId) form.claimId = props.editId;
+        }
       }
     });
 
@@ -167,7 +170,7 @@ window.OdClaimDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '클레임 등록' : (viewMode ? '클레임 상세' : '클레임 수정') }}</div>
+  <div class="page-title">{{ isNew ? '클레임 등록' : (viewMode ? '클레임 상세' : '클레임 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.claimId }}</span></div>
 
   <!-- 탭 -->
   <div v-if="!isNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">

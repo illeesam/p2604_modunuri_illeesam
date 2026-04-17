@@ -7,7 +7,7 @@ window.SyBatchDtl = {
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const form = reactive({
-      batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
+      batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
     });
     const errors = reactive({});
 
@@ -70,7 +70,7 @@ window.SyBatchDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '배치 등록' : (viewMode ? '배치 상세' : '배치 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '배치 등록' : (viewMode ? '배치 상세' : '배치 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.batchId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

@@ -8,7 +8,7 @@ window.SyUserDtl = {
     const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const form = reactive({
-      loginId: '', name: '', email: '', phone: '',
+      adminUserId: null, loginId: '', name: '', email: '', phone: '',
       role: '운영자', dept: '', deptId: null,
       zipcode: '', address: '', addressDetail: '',
       statusCd: '활성', password: '',
@@ -114,7 +114,7 @@ window.SyUserDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '사용자 등록' : (viewMode ? '사용자 상세' : '사용자 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '사용자 등록' : (viewMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.adminUserId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

@@ -9,7 +9,7 @@ window.SySiteDtl = {
     const SITE_TYPES = ['이커머스', '숙박공유', '전문가연결', 'IT매칭', '부동산', '교육', '중고거래', '영화예매', '음식배달', '가격비교', '시각화', '홈페이지', '기타'];
 
     const form = reactive({
-      siteCode: '', siteType: '홈페이지', siteNm: '', domain: '',
+      siteId: null, siteCode: '', siteType: '홈페이지', siteNm: '', domain: '',
       logoUrl: '', favicon: '', description: '',
       email: '', phone: '',
       zipcode: '', address: '', addressDetail: '',
@@ -88,7 +88,7 @@ window.SySiteDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '사이트 등록' : (viewMode ? '사이트 상세' : '사이트 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '사이트 등록' : (viewMode ? '사이트 상세' : '사이트 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

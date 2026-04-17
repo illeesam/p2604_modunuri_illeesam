@@ -94,7 +94,7 @@ window.PmGiftDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '판촉사은품 등록' : '판촉사은품 수정' }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '판촉사은품 등록' : '판촉사은품 수정' }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.giftId }}</span></div>
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>

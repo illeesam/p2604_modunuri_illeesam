@@ -7,7 +7,7 @@ window.SyAlarmDtl = {
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const form = reactive({
-      title: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
+      alarmId: null, title: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
       message: '', sendDate: '', statusCd: '임시',
     });
     const errors = reactive({});
@@ -60,7 +60,7 @@ window.SyAlarmDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '알림 등록' : (viewMode ? '알림 상세' : '알림 수정') }}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '알림 등록' : (viewMode ? '알림 상세' : '알림 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.alarmId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
