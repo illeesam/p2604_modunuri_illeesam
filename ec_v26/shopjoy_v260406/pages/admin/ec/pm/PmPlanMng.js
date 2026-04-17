@@ -152,9 +152,10 @@ window.PmPlanMng = {
           <td style="font-size:11px;color:#666;">{{ p.startDate }} ~ {{ p.endDate }}</td>
           <td>{{ p.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
-          <td><div class="actions">
+          <td><div class="actions" style="display:flex;gap:6px;align-items:center;">
             <button class="btn btn-blue btn-sm" @click="loadDetail(p.planId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(p)">삭제</button>
+            <span style="font-size:11px;color:#999;margin-left:auto;">#{{ p.planId }}</span>
           </div></td>
         </tr>
       </tbody>
@@ -182,9 +183,10 @@ window.PmPlanMng = {
             <div style="color:#999;">📅 등록 {{ p.regDate }}</div>
           </div>
         </div>
-        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;">
+        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="loadDetail(p.planId)" style="font-size:11px;padding:4px 12px;">수정</button>
           <button class="btn btn-danger btn-sm" @click="doDelete(p)" style="font-size:11px;padding:4px 12px;">삭제</button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ p.planId }}</span>
         </div>
       </div>
     </div>

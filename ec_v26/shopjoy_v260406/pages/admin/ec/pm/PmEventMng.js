@@ -136,9 +136,10 @@ window.PmEventMng = {
           <td><span class="badge" :class="statusBadge(e.status)">{{ e.status }}</span></td>
           <td>{{ e.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
-          <td><div class="actions">
+          <td><div class="actions" style="display:flex;gap:6px;align-items:center;">
             <button class="btn btn-blue btn-sm" @click="loadDetail(e.eventId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(e)">삭제</button>
+            <span style="font-size:11px;color:#999;margin-left:auto;">#{{ e.eventId }}</span>
           </div></td>
         </tr>
       </tbody>
@@ -165,9 +166,10 @@ window.PmEventMng = {
             <div style="color:#999;margin-top:4px;">등록 {{ e.regDate }}</div>
           </div>
         </div>
-        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;">
+        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="loadDetail(e.eventId)" style="font-size:11px;padding:4px 12px;">수정</button>
           <button class="btn btn-danger btn-sm" @click="doDelete(e)" style="font-size:11px;padding:4px 12px;">삭제</button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ e.eventId }}</span>
         </div>
       </div>
     </div>
