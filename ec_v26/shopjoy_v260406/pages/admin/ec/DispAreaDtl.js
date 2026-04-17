@@ -500,16 +500,39 @@ window.EcDispAreaDtl = {
               </select>
             </div>
           </div>
-          <div class="form-row" style="margin-bottom:8px;">
-            <div class="form-group">
+          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🔲 위젯 레이아웃</div>
+          <div class="form-row" style="align-items:flex-end;margin-bottom:8px;">
+            <div class="form-group" style="flex:0 0 auto;">
               <label class="form-label">표시방식</label>
-              <select class="form-control" v-model="form.layoutType">
-                <option v-for="o in LAYOUT_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
-              </select>
+              <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
+                <button v-for="o in LAYOUT_TYPE_OPTS" :key="o.value"
+                  @click="form.layoutType = o.value"
+                  type="button"
+                  style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                  :style="[o.value==='grid'?'border-left:none;':'', form.layoutType===o.value ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
+                  {{ o.value==='grid' ? '🔲 ' : '🧩 ' }}{{ o.label }}
+                </button>
+              </div>
             </div>
-            <div class="form-group" v-if="form.layoutType==='grid'">
-              <label class="form-label">열수</label>
-              <input class="form-control" type="number" v-model.number="form.gridCols" min="1" max="32" />
+            <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
+              <label class="form-label">열수 <span style="font-size:10px;color:#aaa;">(위젯 배치 열 개수)</span></label>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
+                  <button v-for="n in [1,2,3,4]" :key="n" type="button"
+                    @click="form.gridCols = n"
+                    style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                    :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
+                    {{ n }}
+                  </button>
+                </div>
+                <input type="number" v-model.number="form.gridCols" min="1" max="32"
+                  style="width:64px;font-size:13px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
+                <span style="font-size:12px;color:#aaa;">열</span>
+              </div>
+            </div>
+            <div class="form-group" style="flex:0 0 auto;" v-else>
+              <label class="form-label">배치</label>
+              <span style="font-size:12px;color:#6b7280;padding:6px 0;display:block;">자유 배치 (열수 없음)</span>
             </div>
             <div class="form-group">
               <label class="form-label">정렬 순서</label>

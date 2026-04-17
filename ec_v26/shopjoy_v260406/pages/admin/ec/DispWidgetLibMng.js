@@ -221,7 +221,7 @@ window.EcDispWidgetLibMng = {
 <div>
   <div class="page-title">
     전시위젯Lib
-    <span style="font-size:13px;font-weight:400;color:#888;">위젯 유형별 리소스 등록·재활용</span>
+    <span style="font-size:13px;font-weight:400;color:#888;">위젯Lib 단독으로 전시되지 않으며 패널item, 위젯에 자료를 제공 및 참조되어 표시됩니다.</span>
   </div>
 
   <!-- 검색 필터 -->

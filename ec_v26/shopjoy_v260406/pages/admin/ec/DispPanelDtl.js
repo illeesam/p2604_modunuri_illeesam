@@ -1090,10 +1090,10 @@ window.EcDispPanelDtl = {
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;"></span>
               내용
-              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;">
-                <span style="font-size:11px;font-weight:600;color:#888;">위젯유형</span>
+              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
+                <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
                 <select class="form-control" v-model="activeRow.widgetType" :disabled="viewMode"
-                  style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:130px;">
+                  style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
                   <option v-for="w in WIDGET_TYPES" :key="w.value" :value="w.value">{{ w.label }}</option>
                 </select>
               </span>

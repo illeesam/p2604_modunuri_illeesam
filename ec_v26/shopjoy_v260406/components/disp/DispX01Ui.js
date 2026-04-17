@@ -71,10 +71,10 @@ window.DispX01Ui = {
       }
       // ✓ 전시환경 체크 (UI-Area 매핑)
       if (p.dispEnv && pm.dispEnv && !p.dispEnv.includes('^' + pm.dispEnv + '^')) return false;
-      if (pm.condition && (p.condition || '항상 표시') !== pm.condition) return false;
-      if (pm.authRequired === 'Y' && !p.authRequired) return false;
-      if (pm.authRequired === 'N' &&  p.authRequired) return false;
-      if (pm.authGrade && p.authGrade !== pm.authGrade) return false;
+      if (pm.visibilityTargets) {
+        const code = pm.visibilityTargets.replace(/\^/g, '').trim();
+        if (code && !window.visibilityUtil.has(p.visibilityTargets, code)) return false;
+      }
       return true;
     };
 
@@ -149,9 +149,8 @@ window.DispX01Ui = {
       /* 헤더 3줄 */
       lines.push({ type:'header', sub:'entities',
         text:`<!-- 전시개체 : 전시영역s: ${allAreas.join(', ')||'-'}, 전시패널s: -, 전시위젯s: -, 위젯Libs: - -->` });
-      const _auth = pm.authRequired === 'Y' ? '필요' : pm.authRequired === 'N' ? '불필요' : '전체';
       lines.push({ type:'header', sub:'disp',
-        text:`<!-- disp조건 : 전시일시: ${pm.date||'-'} ${pm.time||''}  |  상태: ${pm.status||'전체'}  |  노출조건: ${pm.condition||'전체'}  |  인증필요: ${_auth}  |  등급제한: ${pm.authGrade ? pm.authGrade+' 이상' : '전체'} -->` });
+        text:`<!-- disp조건 : 전시일시: ${pm.date||'-'} ${pm.time||''}  |  상태: ${pm.status||'전체'}  |  공개대상: ${pm.visibilityTargets||'전체'} -->` });
       lines.push({ type:'header', sub:'cond',
         text:`<!-- cond조건 : 조회기간: -,  카테고리: -,  주문: - -->` });
       lines.push({ type:'blank' });

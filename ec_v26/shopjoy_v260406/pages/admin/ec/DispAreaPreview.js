@@ -175,8 +175,17 @@ window.EcDispAreaPreview = {
       'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
       'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
-    const CONDITION_OPTS  = ['항상 표시','로그인 필요','로그인+VIP','로그인+우수','비로그인 전용'];
-    const AUTH_GRADE_OPTS = ['일반','우수','VIP'];
+    const VISIBILITY_OPTS = [
+      { value: '', label: '전체' },
+      { value: 'PUBLIC',    label: '전체공개' },
+      { value: 'MEMBER',    label: '회원공개' },
+      { value: 'VERIFIED',  label: '인증회원' },
+      { value: 'PREMIUM',   label: '우수회원↑' },
+      { value: 'VIP',       label: 'VIP전용' },
+      { value: 'INVITED',   label: '초대회원' },
+      { value: 'STAFF',     label: '직원' },
+      { value: 'EXECUTIVE', label: '임직원' },
+    ];
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
     const wTypeLabel = (v) => WIDGET_TYPES.find(t => t.value === v)?.label || v;
 
@@ -185,25 +194,35 @@ window.EcDispAreaPreview = {
     const previewTime     = ref(nowTime);
     const filterType      = ref('');
     const filterStatus    = ref('활성');
-    const filterCondition = ref('');
-    const filterAuthReq   = ref('');
-    const filterAuthGrade = ref('');
+    const filterVisibility = ref('');
     const filterDispEnv   = ref('PROD');
     const searchKw        = ref('');
+
+    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
+
+    const doSearch = () => {
+      Object.assign(applied, {
+        type:       filterType.value,
+        status:     filterStatus.value,
+        dispEnv:    filterDispEnv.value,
+        kw:         searchKw.value.trim().toLowerCase(),
+        visibility: filterVisibility.value,
+      });
+    };
 
     const resetFilter = () => {
       previewDate.value = today; previewTime.value = nowTime;
       filterType.value = ''; filterStatus.value = '활성'; filterDispEnv.value = 'PROD';
-      filterCondition.value = ''; filterAuthReq.value = ''; filterAuthGrade.value = '';
-      searchKw.value = '';
+      filterVisibility.value = ''; searchKw.value = '';
+      Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
     };
 
     const filteredLibs = computed(() => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = applied.kw;
       return (props.dispDataset.widgetLibs || []).filter(lib => {
-        if (filterType.value   && lib.widgetType !== filterType.value) return false;
-        if (filterStatus.value && lib.status     !== filterStatus.value) return false;
-        if (filterDispEnv.value && lib.dispEnv && !lib.dispEnv.includes('^' + filterDispEnv.value + '^')) return false;
+        if (applied.type   && lib.widgetType !== applied.type) return false;
+        if (applied.status && lib.status     !== applied.status) return false;
+        if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
         if (kw && !lib.name.toLowerCase().includes(kw) &&
             !(lib.tags||'').toLowerCase().includes(kw) &&
             !(lib.desc||'').toLowerCase().includes(kw)) return false;
@@ -492,10 +511,11 @@ window.EcDispAreaPreview = {
 
     return {
       siteNm, today,
-      WIDGET_TYPES, CONDITION_OPTS, AUTH_GRADE_OPTS, VIEWPORT,
+      WIDGET_TYPES, VISIBILITY_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
       previewDate, previewTime,
-      filterType, filterStatus, filterCondition, filterAuthReq, filterAuthGrade, filterDispEnv, searchKw,
+      filterType, filterStatus, filterVisibility, filterDispEnv, searchKw,
+      applied, doSearch,
       resetFilter, filteredLibs,
       selectedLibId, onTreeSelect,
       tree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
@@ -548,23 +568,9 @@ window.EcDispAreaPreview = {
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">노출조건</span>
-        <select v-model="filterCondition" class="form-control" style="width:105px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option v-for="c in CONDITION_OPTS" :key="c" :value="c">{{ c }}</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">인증필요</span>
-        <select v-model="filterAuthReq" class="form-control" style="width:70px;margin:0;font-size:12px;">
-          <option value="">전체</option><option value="Y">필요</option><option value="N">불필요</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
-        <select v-model="filterAuthGrade" class="form-control" style="width:72px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }}↑</option>
+        <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
+        <select v-model="filterVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
+          <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
@@ -576,7 +582,10 @@ window.EcDispAreaPreview = {
       </div>
       <input v-model="searchKw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
       <span style="font-size:12px;color:#888;">총 <b>{{ filteredLibs.length }}</b>건</span>
-      <button @click="resetFilter" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#666;">초기화</button>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+        <button @click="doSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
+        <button @click="resetFilter" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
+      </div>
     </div>
   </div>
 
@@ -812,7 +821,7 @@ window.EcDispAreaPreview = {
                   </div>
                   <!-- 위젯미리보기 -->
                   <disp-x02-area v-if="slot.areaCode"
-                    :params="{ date: previewDate, time: previewTime, status: filterStatus, condition: filterCondition, authRequired: filterAuthReq, authGrade: filterAuthGrade }"
+                    :params="{ date: previewDate, time: previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
                     :disp-dataset="dispDataset"
                     :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
                     :area-item="{
@@ -883,7 +892,7 @@ window.EcDispAreaPreview = {
             <!-- 위젯미리보기 -->
             <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
               <disp-x02-area v-if="item.lib.areaCode"
-                :params="{ date: previewDate, time: previewTime, status: filterStatus, condition: filterCondition, authRequired: filterAuthReq, authGrade: filterAuthGrade }"
+                :params="{ date: previewDate, time: previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
                 :disp-dataset="dispDataset"
                 :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
                 :area-item="{

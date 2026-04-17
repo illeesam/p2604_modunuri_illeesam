@@ -331,6 +331,8 @@ window.EcDispWidgetLibDtl = {
       name: form.name || '미리보기',
       area: 'PREVIEW',
       status: '활성',
+      useYn: 'Y',
+      dispYn: 'Y',
       condition: '항상 표시',
       authRequired: false,
       authGrade: '',
@@ -495,68 +497,44 @@ window.EcDispWidgetLibDtl = {
     <!-- 왼쪽: 폼 -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
 
-      <!-- 기본 정보 -->
-      <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">기본 정보</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="form-group" style="margin:0;">
+      <!-- ■ 설정 -->
+      <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
+          설정
+        </div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group">
             <label class="form-label">Lib코드 <span style="color:#e8587a;">*</span></label>
             <input v-model="form.libCode" class="form-control" :class="{'is-invalid':errors.libCode}" placeholder="DL_YYMMDD_HHMMSS" style="margin:0;font-family:monospace;" />
             <div v-if="errors.libCode" class="field-error">{{ errors.libCode }}</div>
           </div>
-          <div class="form-group" style="margin:0;">
+          <div class="form-group">
             <label class="form-label">라이브러리명 <span style="color:#e8587a;">*</span></label>
             <input v-model="form.name" class="form-control" :class="{'is-invalid':errors.name}" placeholder="위젯 Lib 이름" style="margin:0;" />
             <div v-if="errors.name" class="field-error">{{ errors.name }}</div>
           </div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">위젯 유형 <span style="color:#e8587a;">*</span></label>
-            <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}" style="margin:0;">
-              <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
-            </select>
-            <div v-if="errors.widgetType" class="field-error">{{ errors.widgetType }}</div>
-          </div>
-          <div class="form-group" style="margin:0;">
+          <div class="form-group">
             <label class="form-label">상태</label>
             <select v-model="form.status" class="form-control" style="margin:0;">
               <option value="활성">활성</option>
               <option value="비활성">비활성</option>
             </select>
           </div>
-          <div class="form-group" style="margin:0;grid-column:1/-1;">
+        </div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">설명</label>
             <input v-model="form.desc" class="form-control" placeholder="위젯 용도·설명 메모" style="margin:0;" />
           </div>
-          <div class="form-group" style="margin:0;grid-column:1/-1;">
+        </div>
+        <div class="form-row" style="margin-bottom:12px;">
+          <div class="form-group" style="grid-column:1/-1;">
             <label class="form-label">태그 <span style="font-size:10px;color:#aaa;">(쉼표 구분)</span></label>
             <input v-model="form.tags" class="form-control" placeholder="봄,배너,시즌" style="margin:0;" />
           </div>
         </div>
-      </div>
-
-      <!-- 타이틀 -->
-      <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">타이틀</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-            <input type="radio" v-model="form.titleYn" value="Y" /> 표시
-          </label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-            <input type="radio" v-model="form.titleYn" value="N" /> 미표시
-          </label>
-        </div>
-        <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
-          <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
-          <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
-        </div>
-      </div>
-
-      <!-- 표시경로 -->
-      <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;">
-          표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로 (예: FRONT.모바일메인)</span>
-        </div>
+        <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로 (예: FRONT.모바일메인)</span></div>
         <div v-for="(_id, pi) in (form.usedPathIds || [])" :key="pi"
           style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
           <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:_id!=null?'#374151':'#9ca3af',fontWeight:_id!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
@@ -568,33 +546,64 @@ window.EcDispWidgetLibDtl = {
             style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0;">✕</button>
         </div>
         <button @click="(form.usedPathIds = form.usedPathIds || []).push(null); openPathPick(form.usedPathIds.length-1);"
-          style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;cursor:pointer;font-size:12px;margin-top:2px;">+ 경로 추가</button>
-      </div>
+          style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;cursor:pointer;font-size:12px;">+ 경로 추가</button>
+      </div><!-- /설정 -->
 
-      <!-- 클릭 액션 (html_editor·file_list·embed 제외) -->
-      <div v-if="!isHtmlEditor && !isFileList && !isEmbed"
-        style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">클릭 액션</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">클릭 동작</label>
-            <select v-model="form.clickAction" class="form-control" style="margin:0;">
-              <option value="none">없음</option>
-              <option value="navigate">페이지 이동</option>
-              <option value="event">이벤트 실행</option>
-              <option value="modal">모달 열기</option>
+      <!-- ■ 제목 -->
+      <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
+          제목
+          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+              <input type="radio" v-model="form.titleYn" value="Y" /> 표시
+            </label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+              <input type="radio" v-model="form.titleYn" value="N" /> 미표시
+            </label>
+          </span>
+        </div>
+        <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+          <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
+          <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
+        </div>
+      </div><!-- /제목 -->
+
+      <!-- ■ 내용 -->
+      <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;"></span>
+          내용
+          <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
+            <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
+              style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
+              <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
             </select>
-          </div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">클릭 대상</label>
-            <input v-model="form.clickTarget" class="form-control" placeholder="/products 또는 이벤트명" style="margin:0;" />
+          </span>
+        </div>
+        <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
+
+        <!-- 클릭동작 -->
+        <div v-if="!isHtmlEditor && !isFileList && !isEmbed" style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">👆 클릭동작</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">클릭 동작</label>
+              <select v-model="form.clickAction" class="form-control" style="margin:0;">
+                <option value="none">없음</option>
+                <option value="navigate">페이지 이동</option>
+                <option value="event">이벤트 실행</option>
+                <option value="modal">모달 열기</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">클릭 대상</label>
+              <input v-model="form.clickTarget" class="form-control" placeholder="/products 또는 이벤트명" style="margin:0;" />
+            </div>
           </div>
         </div>
-      </div>
-
-      <!-- 위젯 유형별 동적 입력 -->
-      <div style="background:#f8f8f8;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;">위젯 내용</div>
 
         <!-- 공통 동적 행 -->
         <div v-if="displayRows.length" style="display:flex;flex-direction:column;gap:10px;">
@@ -613,7 +622,6 @@ window.EcDispWidgetLibDtl = {
 
         <!-- HTML 에디터 -->
         <div v-else-if="isHtmlEditor" class="form-group" style="margin:0;">
-          <label class="form-label">HTML 내용</label>
           <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
             <button @click="toggleHtmlSource"
               :style="htmlSourceMode ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#f5f5f5;color:#555;border-color:#d0d0d0;'"
@@ -644,7 +652,8 @@ window.EcDispWidgetLibDtl = {
         <div v-else style="font-size:12px;color:#aaa;text-align:center;padding:10px;">
           위젯 유형을 선택하면 입력 필드가 표시됩니다.
         </div>
-      </div>
+      </div><!-- /내용 -->
+
     </div>
 
     <!-- 스플리터 -->
