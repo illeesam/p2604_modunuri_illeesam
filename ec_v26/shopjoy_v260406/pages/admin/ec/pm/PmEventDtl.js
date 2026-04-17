@@ -163,7 +163,7 @@ window.PmEventDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}</div>
+  <div class="page-title">{{ isNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:12px;">#{{ form.eventId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="viewMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
