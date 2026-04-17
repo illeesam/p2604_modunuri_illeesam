@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 기획전관리 상세/등록 (Quill HTML Editor) */
+/* ShopJoy Admin - 기획전관리 상세/등록 (Quill HTML Editor + 배너이미지) */
 window._ecPlanDtlState = window._ecPlanDtlState || { tab: 'info', viewMode: 'tab' };
 window.PmPlanDtl = {
   name: 'PmPlanDtl',
@@ -36,7 +36,7 @@ window.PmPlanDtl = {
       planNm: '', category: '패션', theme: '', status: '활성',
       startDate: DEFAULT_START, endDate: DEFAULT_END,
       productIds: [], visibilityTargets: '^PUBLIC^',
-      desc: '', content1: '', content2: '', content3: '',
+      desc: '', bannerImage: '', content1: '', content2: '', content3: '',
     });
     const errors = reactive({});
 
@@ -45,7 +45,7 @@ window.PmPlanDtl = {
       category: yup.string().required('카테고리를 선택해주세요.'),
     });
 
-    /* Quill 인스턴스 3개 */
+    /* Quill 인스턴스 4개 (배너+콘텐츠3) */
     const quillers = {};
     const activeContentTab = ref(1);
 
@@ -81,7 +81,9 @@ window.PmPlanDtl = {
 
     const onTabChange = (newTab) => {
       tab.value = newTab;
-      if (newTab === 'content') {
+      if (newTab === 'banner') {
+        setTimeout(() => { initQuill('quill-banner', 'bannerImage'); }, 50);
+      } else if (newTab === 'content') {
         setTimeout(() => {
           for (let i = 1; i <= 3; i++) initQuill('quill-content' + i, 'content' + i);
           syncToQuill();
@@ -171,6 +173,7 @@ window.PmPlanDtl = {
   <div class="page-title">{{ isNew ? '기획전 등록' : '기획전 상세' }}</div>
     <div class="tab-bar-row">
       <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="viewMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
         <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
         <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="onTabChange('content')">📝 내용입력</button>
         <button class="tab-btn" :class="{active:tab==='products'}" :disabled="viewMode2!=='tab'" @click="onTabChange('products')">
@@ -187,9 +190,25 @@ window.PmPlanDtl = {
     </div>
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
+    <!-- 배너이미지 -->
+    <div class="card" v-show="showTab('banner')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:#888;margin-bottom:6px;">💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.</div>
+        <div id="quill-banner" style="min-height:300px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
+      </div>
+    </div>
+
     <!-- 기본정보 -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <!-- 배너 미리보기 -->
+      <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #e0e0e0;" v-html="form.bannerImage"></div>
+
       <div class="form-group">
         <label class="form-label">기획전명 <span class="req">*</span></label>
         <input class="form-control" v-model="form.planNm" placeholder="기획전명을 입력하세요" :class="errors.planNm ? 'is-invalid' : ''" />
@@ -252,7 +271,9 @@ window.PmPlanDtl = {
         <div style="display:flex;gap:2px;margin-bottom:12px;">
           <button v-for="i in 3" :key="i" @click="activeContentTab=i"
             class="tab-btn" :class="{active:activeContentTab===i}"
-            style="font-size:12px;padding:6px 14px;">컨텐츠 {{ i }}</button>
+            style="font-size:12px;padding:6px 14px;">
+            {{ i===1 ? '🎯 주요내용' : (i===2 ? '✨ 특징' : '🎁 혜택') }}
+          </button>
         </div>
       </div>
 
@@ -302,6 +323,9 @@ window.PmPlanDtl = {
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:6px;padding:20px;">
+        <!-- 배너 미리보기 -->
+        <div v-if="form.bannerImage" style="margin-bottom:20px;padding:16px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>
+
         <div style="background:#fff;border-radius:6px;padding:20px;border:1px solid #e0e0e0;">
           <div style="font-size:18px;font-weight:700;color:#222;margin-bottom:12px;">{{ form.planNm }}</div>
           <div style="display:flex;gap:8px;margin-bottom:12px;">
@@ -317,15 +341,24 @@ window.PmPlanDtl = {
           <!-- 컨텐츠 미리보기 -->
           <template v-if="form.content1 || form.content2 || form.content3">
             <div style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
-              <div v-if="form.content1" style="margin-bottom:16px;" v-html="form.content1"></div>
-              <div v-if="form.content2" style="margin-bottom:16px;" v-html="form.content2"></div>
-              <div v-if="form.content3" v-html="form.content3"></div>
+              <div v-if="form.content1" style="margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">🎯 주요내용</div>
+                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="form.content1"></div>
+              </div>
+              <div v-if="form.content2" style="margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">✨ 특징</div>
+                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="form.content2"></div>
+              </div>
+              <div v-if="form.content3">
+                <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">🎁 혜택</div>
+                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="form.content3"></div>
+              </div>
             </div>
           </template>
 
           <!-- 대상상품 미리보기 -->
           <div v-if="selectedProducts.length > 0" style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
-            <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🎯 대상상품 ({{ selectedProducts.length }}개)</div>
+            <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🛍 대상상품 ({{ selectedProducts.length }}개)</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
               <div v-for="p in selectedProducts" :key="p.productId" style="text-align:center;padding:10px;background:#f9f9f9;border-radius:6px;">
                 <div style="font-size:32px;margin-bottom:4px;">📦</div>

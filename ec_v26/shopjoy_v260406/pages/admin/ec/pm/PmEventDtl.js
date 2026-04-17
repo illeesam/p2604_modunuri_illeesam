@@ -20,7 +20,7 @@ window.PmEventDtl = {
     const form = reactive({
       title: '', status: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END,
       authRequired: false, targetProducts: [], visibilityTargets: '^PUBLIC^',
-      content1: '', content2: '', content3: '', content4: '', content5: '',
+      bannerImage: '', content1: '', content2: '', content3: '', content4: '', content5: '',
     });
     const errors = reactive({});
 
@@ -64,7 +64,9 @@ window.PmEventDtl = {
 
     const onTabChange = (newTab) => {
       tab.value = newTab;
-      if (newTab === 'content') {
+      if (newTab === 'banner') {
+        setTimeout(() => { initQuill('quill-banner', 'bannerImage'); }, 50);
+      } else if (newTab === 'content') {
         setTimeout(() => {
           for (let i = 1; i <= 5; i++) initQuill('quill-content' + i, 'content' + i);
           syncToQuill();
@@ -164,6 +166,7 @@ window.PmEventDtl = {
   <div class="page-title">{{ isNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}</div>
     <div class="tab-bar-row">
       <div class="tab-nav">
+        <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="viewMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
         <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
         <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="onTabChange('content')">📝 이벤트 내용</button>
         <button class="tab-btn" :class="{active:tab==='products'}" :disabled="viewMode2!=='tab'" @click="onTabChange('products')">
@@ -181,9 +184,31 @@ window.PmEventDtl = {
     </div>
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
+    <!-- 배너이미지 -->
+    <div class="card" v-show="showTab('banner')" style="margin:0;">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:#888;margin-bottom:6px;">💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.</div>
+        <div id="quill-banner" style="min-height:300px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
+      </div>
+      <div class="form-actions">
+        <template v-if="viewMode">
+          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
+          <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
+        </template>
+      </div>
+    </div>
+
     <!-- 기본정보 -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <!-- 배너 미리보기 -->
+      <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #e0e0e0;" v-html="form.bannerImage"></div>
+
       <div class="form-group">
         <label class="form-label">이벤트 제목 <span v-if="!viewMode" class="req">*</span></label>
         <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
@@ -317,6 +342,9 @@ window.PmEventDtl = {
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
+        <!-- 배너 미리보기 -->
+        <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>
+
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.title || '이벤트 제목' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
         <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content1 || '<p style=color:#aaa>이벤트 내용 1이 여기에 표시됩니다.</p>'"></div>
