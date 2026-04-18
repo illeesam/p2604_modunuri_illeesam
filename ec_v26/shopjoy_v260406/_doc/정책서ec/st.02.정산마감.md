@@ -36,6 +36,21 @@
 수수료(commission_amt)       = 정산기준 수수료율 × 정산대상금액
 ```
 
+**od_pay 입출금 구조와 정산 집계 기준**
+
+`od_pay` 한 레코드에 입금·출금이 공존하며 명시적 입출금 구분 컬럼이 없다.
+정산 집계 시 아래 기준으로 방향을 구분한다.
+
+| 집계 대상 | od_pay 컬럼 | 조건 | 정산 반영 |
+|---|---|---|---|
+| 입금 (판매 수취) | `pay_amt` | `pay_status_cd = COMPLT` | `total_order_amt` (+) |
+| 출금 (환불 지급) | `refund_amt` | `refund_status_cd = COMPLT` | `total_return_amt` (-) |
+| 교환 추가결제 | 신규 `od_pay` 레코드 | `pay_status_cd = COMPLT` | `total_order_amt` (+) |
+
+- `BANK_TRANSFER` 입금: 관리자 수동 확인 후 COMPLT → 수동 확인 시점이 집계 기준일
+- `VBANK` 입금: `vbank_deposit_date` 기록 시점이 집계 기준일. 부족입금 주의 (pg_response 파싱 검증 필요)
+- `TOSS·KAKAO·NAVER·MOBILE`: PG 승인 시점 기준 자동 집계
+
 ### 3. 타월(他月) 주문 환불 처리 원칙
 - **기준**: 환불은 **환불 확정 시점의 귀속 월**에 반영 (발생주의 원칙)
 - **예시**: 1월 주문 → 3월 환불 확정 → **3월 정산에서 차감**
@@ -150,3 +165,4 @@
 ## 변경이력
 - 2026-04-16: 초기 작성
 - 2026-04-18: 타월 주문 환불 처리 원칙 추가, 정산액 계산식 개정, 주요 필드 DDL 기준으로 재정비 (total_return_amt/total_claim_cnt 추가)
+- 2026-04-18: od_pay 입출금 구조 및 수단별 집계 기준 추가 (2항)

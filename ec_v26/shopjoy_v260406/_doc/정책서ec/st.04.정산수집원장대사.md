@@ -82,7 +82,32 @@ PENDING → COLLECTED → SETTLED
 - `diff_amt > 0`: 기대금액(계산값)이 실제보다 큼 (과소 수취)
 - `diff_amt < 0`: 실제금액이 기대보다 큼 (과다 수취)
 
-### 8. 대사 자동화
+### 8. od_pay 입출금 구분 및 PAY 대사 처리
+
+`od_pay`에는 명시적인 입출금 구분 컬럼(`pay_div_cd` 등)이 없다.
+한 레코드 안에서 입금(고객 → 시스템)과 출금(시스템 → 고객)이 공존하는 구조.
+
+| 방향 | 컬럼 | 상태 코드 | 대사 방향 |
+|---|---|---|---|
+| **입금** (고객 결제) | `pay_amt` + `pay_status_cd` | PENDING → COMPLT | `expected_amt`에 (+) 반영 |
+| **출금** (환불) | `refund_amt` + `refund_status_cd` | PENDING → COMPLT | `expected_amt`에 (-) 반영 |
+
+**PAY 대사 기준값 계산**
+```
+expected_amt(PAY) = Σ pay_amt(COMPLT) - Σ refund_amt(refund_status_cd=COMPLT)
+```
+- 교환 추가결제: 신규 `od_pay` 레코드로 생성 → 별도 (+) 입금으로 집계
+- 부분환불: `pay_status_cd = PARTIAL_REFUND` → `refund_amt` 누적값 사용
+- 전액환불: `pay_status_cd = REFUNDED` → `refund_amt = pay_amt`
+
+**주의: 수단별 대사 구분**
+- `BANK_TRANSFER`: 관리자 수동 확인 → 입금 시점 불명확. PG 정산내역 아닌 은행 입금내역으로 대사
+- `VBANK`: `vbank_deposit_date` 기준 자동 대사. `vbank_deposit_amt` 컬럼 없어 `pg_response` JSON 파싱 필요
+- `TOSS·KAKAO·NAVER·MOBILE`: PG 정산내역(`pg_transaction_id` 기준)으로 자동 대사
+
+---
+
+### 9. 대사 자동화
 - 월 정산 마감 후 배치 실행으로 전체 대사 자동 수행
 - `MISMATCH` 건 발생 시 정산 담당자 알림 발송
 - `MISMATCH` 미해소 건은 정산 지급(`PAID`) 처리 차단
@@ -144,3 +169,4 @@ PENDING → COLLECTED → SETTLED
 ## 변경이력
 - 2026-04-18: 초기 작성
 - 2026-04-18: 타월 주문 환불 수집원장 처리 정책 추가 (5-1항 신설), 음수 원장 귀속 원칙 및 마이너스 정산 대응 정의
+- 2026-04-18: od_pay 입출금 구분 및 PAY 대사 처리 기준 추가 (8항 신설)
