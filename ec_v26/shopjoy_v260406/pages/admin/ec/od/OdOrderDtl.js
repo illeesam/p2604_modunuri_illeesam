@@ -133,6 +133,13 @@ window.OdOrderDtl = {
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
+    /* 판매업체 */
+    const relatedVendor = computed(() => {
+      const o = (props.adminData.orders || []).find(x => x.orderId === props.editId);
+      if (!o || !o.vendorId) return null;
+      return (props.adminData.vendors || []).find(v => v.vendorId === o.vendorId) || null;
+    });
+
     /* 배송 정보 (이 주문의 택배사 등) */
     const relatedDelivery = computed(() =>
       (props.adminData.deliveries || []).find(d => d.orderId === props.editId)
@@ -217,7 +224,7 @@ window.OdOrderDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },
     ]);
-    return { isNew, form, errors, save, ORDER_STEPS, currentStepIdx, isCanceled, memoEl, activeTab, orderItems, fmt, relatedClaim, relatedDelivery, CLAIM_FLOWS, CLAIM_TYPE_COLOR, tabs, editHistList, paymentList, statusHistList, openTracking, PAY_STATUS_OPTIONS, payStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, allExpanded, toggleExpandAll };
+    return { isNew, form, errors, save, ORDER_STEPS, currentStepIdx, isCanceled, memoEl, activeTab, orderItems, fmt, relatedClaim, relatedDelivery, relatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, tabs, editHistList, paymentList, statusHistList, openTracking, PAY_STATUS_OPTIONS, payStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, allExpanded, toggleExpandAll };
   },
   template: /* html */`
 <div>
@@ -387,6 +394,15 @@ window.OdOrderDtl = {
     <div class="form-group">
       <label class="form-label">상품</label>
       <input class="form-control" v-model="form.prodNm" placeholder="상품명" :readonly="viewMode" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">판매업체</label>
+      <div v-if="relatedVendor" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:#222;">{{ relatedVendor.vendorNm }}</span>
+        <span style="font-size:11px;color:#888;">| {{ relatedVendor.ceo }} | {{ relatedVendor.phone }}</span>
+        <span class="ref-link" @click="showRefModal('vendor', relatedVendor.vendorId)">보기</span>
+      </div>
+      <div v-else style="font-size:12px;color:#bbb;">-</div>
     </div>
     <div class="form-row">
       <div class="form-group">

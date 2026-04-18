@@ -103,6 +103,10 @@ window.OdOrderMng = {
     const claimByOrder = (orderId) =>
       (props.adminData.claims || []).find(c => c.orderId === orderId);
     const claimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
+    const getItemCount = (o) => {
+      const m = (o.prodNm || '').match(/외\s*(\d+)/);
+      return m ? parseInt(m[1]) + 1 : 1;
+    };
 
     /* 일괄선택 */
     const checked = ref(new Set());
@@ -218,7 +222,7 @@ window.OdOrderMng = {
       });
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, payStatusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, claimByOrder, claimTypeColor, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
+    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, payStatusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, claimByOrder, claimTypeColor, getItemCount, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -262,7 +266,10 @@ window.OdOrderMng = {
           <td><span class="title-link" @click="loadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userNm }}</span></td>
           <td>{{ o.orderDate }}</td>
-          <td>{{ o.prodNm }}</td>
+          <td>
+            {{ o.prodNm }}
+            <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#e5e7eb;color:#555;font-weight:700;margin-left:4px;vertical-align:middle;">{{ getItemCount(o) }}개</span>
+          </td>
           <td>{{ o.totalPrice.toLocaleString() }}원</td>
           <td>
             <span :style="{
