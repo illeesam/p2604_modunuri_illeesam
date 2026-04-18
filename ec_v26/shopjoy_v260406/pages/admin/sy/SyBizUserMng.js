@@ -13,7 +13,8 @@ window.SyBizUserMng = {
     const selectNode = (id) => { selectedPath.value = id; };
     /* sy_role 데이터의 모든 권한 트리 노출 (루트 권한별 그룹 포함) + 역할구분 뱃지 */
     const ROOT_BADGE_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
-                              SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
+                              SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'],
+                              CS_ROOT:['콜센터업체','#0891b2'], SITE_OP_ROOT:['사이트운영업체','#7c3aed'], PROG_ROOT:['유지보수업체','#dc2626'] };
     const tree = computed(() => {
       const roles = ad.roles || [];
       const rolesById = Object.fromEntries(roles.map(r => [r.roleId, r]));
@@ -27,7 +28,7 @@ window.SyBizUserMng = {
         .map(r => ({ pathId: r.roleCode, path: r.roleCode, name: r.roleNm, pathLabel: r.roleNm,
                      _raw: r, _badge: badgeOf(r), children: childrenOf(r.roleId), count: 0 }));
       let kids = childrenOf(null);
-      const CAT_ROOT_MAP = { SALES: 'SITE_MGR_ROOT', DELIVERY: 'DLIV_ROOT', SITE: 'SITE_GROUP', ADMIN: 'SUPER_ADMIN' };
+      const CAT_ROOT_MAP = { SALES: 'SITE_MGR_ROOT', DELIVERY: 'DLIV_ROOT', CS: 'CS_ROOT', SITE: 'SITE_OP_ROOT', PROG: 'PROG_ROOT', ADMIN: 'SUPER_ADMIN' };
       if (treeRoleCat.value && CAT_ROOT_MAP[treeRoleCat.value]) {
         const wantRoot = CAT_ROOT_MAP[treeRoleCat.value];
         kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
@@ -49,7 +50,7 @@ window.SyBizUserMng = {
       ['STAFF',      '일반'],
     ];
     const STATUS = [['ACTIVE','활성'],['LEFT','퇴직'],['SUSPENDED','중지']];
-    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
+    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
 
     const bizMap = computed(() => Object.fromEntries((ad.bizs || []).map(b => [b.bizId, b])));
     const bizNm = (bizId) => (bizMap.value[bizId] || {}).bizNm || '#'+bizId;
@@ -84,7 +85,9 @@ window.SyBizUserMng = {
         const vt = b.vendorTypeCd;
         const matchCat = want === 'SALES' ? vt === 'SALES'
                        : want === 'DELIVERY' ? vt === 'DELIVERY'
-                       : want === 'SITE' ? (vt === 'PARTNER' || vt === 'INTERNAL') : true;
+                       : want === 'CS' ? vt === 'CS'
+                       : want === 'SITE' ? (vt === 'SITE' || vt === 'PARTNER' || vt === 'INTERNAL')
+                       : want === 'PROG' ? vt === 'PROG' : true;
         if (!matchCat) return false;
       }
       return true;
@@ -98,6 +101,9 @@ window.SyBizUserMng = {
       applied.bizId = b.bizId;
       treeRoleCat.value = b.vendorTypeCd === 'SALES' ? 'SALES'
                         : b.vendorTypeCd === 'DELIVERY' ? 'DELIVERY'
+                        : b.vendorTypeCd === 'CS' ? 'CS'
+                        : b.vendorTypeCd === 'SITE' ? 'SITE'
+                        : b.vendorTypeCd === 'PROG' ? 'PROG'
                         : (b.vendorTypeCd === 'PARTNER' || b.vendorTypeCd === 'INTERNAL') ? 'SITE' : '';
       if (typeof pager !== 'undefined' && pager) pager.page = 1;
     };
@@ -123,13 +129,15 @@ window.SyBizUserMng = {
       applied.bizId = b.bizId;
       pager.page = 1;
     };
+    const VENDOR_ROLE_LABEL = { SALES:'판매업체역할', DELIVERY:'배송업체역할', CS:'콜센터업체역할', SITE:'사이트운영역할', PROG:'유지보수역할', PARTNER:'사이트역할', INTERNAL:'사이트역할' };
+    const VENDOR_ROLE_COLOR = { SALES:'#16a34a', DELIVERY:'#f59e0b', CS:'#0891b2', SITE:'#7c3aed', PROG:'#dc2626', PARTNER:'#2563eb', INTERNAL:'#2563eb' };
     const searchRoleCatLabel = computed(() => {
       const vt = searchBizId.value != null ? bizVendorType(searchBizId.value) : '';
-      return vt === 'SALES' ? '판매업체역할' : vt === 'DELIVERY' ? '배송업체역할' : (vt === 'PARTNER' || vt === 'INTERNAL') ? '사이트역할' : '';
+      return VENDOR_ROLE_LABEL[vt] || '';
     });
     const searchRoleCatColor = computed(() => {
       const vt = searchBizId.value != null ? bizVendorType(searchBizId.value) : '';
-      return vt === 'SALES' ? '#16a34a' : vt === 'DELIVERY' ? '#f59e0b' : (vt === 'PARTNER' || vt === 'INTERNAL') ? '#2563eb' : '#9ca3af';
+      return VENDOR_ROLE_COLOR[vt] || '#9ca3af';
     });
 
     /* selectedPath(권한코드) 하위 descendants roleCode Set */
@@ -153,7 +161,9 @@ window.SyBizUserMng = {
         const vt = bizVendorType(u.bizId);
         const matchCat = treeRoleCat.value === 'SALES' ? vt === 'SALES'
                        : treeRoleCat.value === 'DELIVERY' ? vt === 'DELIVERY'
-                       : treeRoleCat.value === 'SITE' ? (vt === 'PARTNER' || vt === 'INTERNAL') : true;
+                       : treeRoleCat.value === 'CS' ? vt === 'CS'
+                       : treeRoleCat.value === 'SITE' ? (vt === 'SITE' || vt === 'PARTNER' || vt === 'INTERNAL')
+                       : treeRoleCat.value === 'PROG' ? vt === 'PROG' : true;
         if (!matchCat) return false;
       }
       return true;

@@ -53,8 +53,9 @@ window.OdOrderMng = {
     });
 
     const statusBadge = s => ({
-      '주문완료': 'badge-blue', '결제완료': 'badge-orange', '배송준비중': 'badge-orange',
-      '배송중': 'badge-blue', '배송완료': 'badge-green', '완료': 'badge-gray', '취소됨': 'badge-red'
+      '입금대기': 'badge-orange', '결제완료': 'badge-blue', '상품준비중': 'badge-orange',
+      '배송중': 'badge-blue', '배송완료': 'badge-green', '구매확정': 'badge-gray',
+      '취소': 'badge-red', '자동취소': 'badge-red',
     }[s] || 'badge-gray');
     const payStatusBadge = s => ({
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
@@ -123,8 +124,8 @@ window.OdOrderMng = {
       else pageList.value.forEach(o => s.add(o.orderId));
       checked.value = s;
     };
-    const ORDER_STATUS_OPTIONS = ['주문완료','결제완료','배송준비중','배송중','배송완료','완료','취소됨'];
-    const PAY_METHOD_OPTIONS = ['카드결제','계좌이체','캐쉬','기타'];
+    const ORDER_STATUS_OPTIONS = ['입금대기','결제완료','상품준비중','배송중','배송완료','구매확정','취소','자동취소'];
+    const PAY_METHOD_OPTIONS = ['무통장입금','가상계좌','토스페이먼츠','카카오페이','네이버페이','핸드폰결제','적립금결제','0원결제'];
     const APPROVAL_ACTIONS = ['승인','반려','보류'];
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
@@ -232,8 +233,8 @@ window.OdOrderMng = {
       <input v-model="searchKw" placeholder="주문ID / 회원명 / 상품명 검색" />
       <select v-model="searchStatus">
         <option value="">상태 전체</option>
-        <option>주문완료</option><option>결제완료</option><option>배송준비중</option>
-        <option>배송중</option><option>배송완료</option><option>완료</option><option>취소됨</option>
+        <option>입금대기</option><option>결제완료</option><option>상품준비중</option>
+        <option>배송중</option><option>배송완료</option><option>구매확정</option><option>취소</option><option>자동취소</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
@@ -279,8 +280,8 @@ window.OdOrderMng = {
             }">{{ o.payMethod || '-' }}</span>
           </td>
           <td>
-            <span class="badge" :class="payStatusBadge(o.payStatus || (o.status==='취소됨'?'환불완료':o.status==='주문완료'?'미결제':'결제완료'))">
-              {{ o.payStatus || (o.status==='취소됨'?'환불완료':o.status==='주문완료'?'미결제':'결제완료') }}
+            <span class="badge" :class="payStatusBadge(o.payStatus || (o.status==='취소'||o.status==='자동취소'?'환불완료':o.status==='입금대기'?'미결제':'결제완료'))">
+              {{ o.payStatus || (o.status==='취소'||o.status==='자동취소'?'환불완료':o.status==='입금대기'?'미결제':'결제완료') }}
             </span>
           </td>
           <td><span class="badge" :class="statusBadge(o.status)">{{ o.status }}</span></td>

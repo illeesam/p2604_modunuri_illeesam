@@ -24,7 +24,7 @@ window.SyBizMng = {
     const kw = ref('');
     const statusFlt = ref('');
     const vendorTypeFlt = ref('');
-    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
+    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const STATUS = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
     const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
 
@@ -49,9 +49,9 @@ window.SyBizMng = {
 
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
     const vendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
-    const vendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
+    const vendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
     /* 업체유형 → 역할구분 매핑 */
-    const ROLE_CAT_BY_VENDOR = { SALES:['판매업체역할','#16a34a'], DELIVERY:['배송업체역할','#f59e0b'], PARTNER:['사이트역할','#2563eb'], INTERNAL:['사이트역할','#2563eb'] };
+    const ROLE_CAT_BY_VENDOR = { SALES:['판매업체역할','#16a34a'], DELIVERY:['배송업체역할','#f59e0b'], CS:['콜센터업체역할','#0891b2'], SITE:['사이트운영역할','#7c3aed'], PROG:['유지보수역할','#dc2626'], PARTNER:['사이트역할','#2563eb'], INTERNAL:['사이트역할','#2563eb'] };
     const roleCatLabel = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[0];
     const roleCatColor = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[1];
     const statusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');

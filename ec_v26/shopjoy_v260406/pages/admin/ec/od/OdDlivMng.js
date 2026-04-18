@@ -58,7 +58,8 @@ window.OdDlivMng = {
     });
 
     const statusBadge = s => ({
-      '배송준비': 'badge-orange', '배송중': 'badge-blue', '배송완료': 'badge-green', '반송': 'badge-red'
+      '준비중': 'badge-orange', '출고완료': 'badge-blue', '배송중': 'badge-blue',
+      '배송완료': 'badge-green', '배송실패': 'badge-red',
     }[s] || 'badge-gray');
 
     const onSearch = () => {
@@ -111,7 +112,7 @@ window.OdDlivMng = {
       else pageList.value.forEach(d => s.add(d.dlivId));
       checked.value = s;
     };
-    const DLIV_STATUS_OPTIONS = ['배송준비','배송중','배송완료','반송'];
+    const DLIV_STATUS_OPTIONS = ['준비중','출고완료','배송중','배송완료','배송실패'];
     const COURIER_OPTIONS = ['CJ대한통운','롯데택배','한진택배','우체국택배','로젠택배'];
     const APPROVAL_ACTIONS = ['승인','반려','보류'];
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
@@ -261,7 +262,7 @@ window.OdDlivMng = {
     <div class="search-bar">
       <input v-model="searchKw" placeholder="배송ID / 주문ID / 회원명 / 수령인 검색" />
       <select v-model="searchStatus">
-        <option value="">상태 전체</option><option>배송준비</option><option>배송중</option><option>배송완료</option><option>반송</option>
+        <option value="">상태 전체</option><option>준비중</option><option>출고완료</option><option>배송중</option><option>배송완료</option><option>배송실패</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">

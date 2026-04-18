@@ -27,7 +27,7 @@ window.OdOrderHist = {
       if (!relatedDliv.value) return [];
       const o = props.adminData.orders.find(x => x.orderId === props.orderId);
       return [
-        { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '배송준비중', location: '물류센터', memo: '상품 포장 완료' },
+        { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '상품준비중', location: '물류센터', memo: '상품 포장 완료' },
         { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courierCd || '-', memo: '출고 완료' },
       ].filter(h => h.date !== '-');
     });

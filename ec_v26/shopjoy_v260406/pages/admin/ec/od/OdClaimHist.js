@@ -18,13 +18,16 @@ window.OdClaimHist = {
     /* 처리 정보 로컬 폼 */
     const processForm = reactive({ refundAmount: 0, refundMethodCd: '계좌환불', memo: '' });
 
-    /* 클레임 유형별 단계 */
+    /* 클레임 유형별 단계 — parentCodeValues 기반 동적 파생 */
     const claimType = ref('취소');
-    const CLAIM_STEPS = computed(() => ({
-      '취소': ['취소요청', '취소처리중', '취소완료'],
-      '반품': ['반품요청', '수거예정', '수거중', '수거완료', '환불처리중', '환불완료'],
-      '교환': ['교환요청', '수거예정', '수거중', '수거완료', '상품준비중', '발송중', '발송완료', '교환완료'],
-    }[claimType.value] || []));
+    const _claimStatusCodes = (props.adminData.codes || [])
+      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
+      .sort((a, b) => a.sortOrd - b.sortOrd);
+    const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
+    const CLAIM_STEPS = computed(() => _claimStatusCodes
+      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[claimType.value] || claimType.value) + '^'))
+      .map(c => c.codeLabel)
+      .filter(l => !['거부','철회'].includes(l)));
     const claimStatus = ref('');
     const statusOptions = computed(() => CLAIM_STEPS.value);
 

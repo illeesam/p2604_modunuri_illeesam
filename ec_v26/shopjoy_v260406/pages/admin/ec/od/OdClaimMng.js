@@ -56,10 +56,9 @@ window.OdClaimMng = {
 
     const typeBadge = t => ({ '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' }[t] || 'badge-gray');
     const statusBadge = s => ({
-      '취소요청': 'badge-orange', '취소처리중': 'badge-orange', '취소완료': 'badge-gray',
-      '반품요청': 'badge-orange', '수거예정': 'badge-blue', '수거중': 'badge-blue', '수거완료': 'badge-purple',
-      '환불처리중': 'badge-orange', '환불완료': 'badge-green',
-      '교환요청': 'badge-orange', '상품준비중': 'badge-orange', '발송중': 'badge-blue', '발송완료': 'badge-green', '교환완료': 'badge-green',
+      '신청': 'badge-orange', '승인': 'badge-blue', '수거중': 'badge-blue',
+      '처리중': 'badge-purple', '환불대기': 'badge-orange',
+      '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
     }[s] || 'badge-gray');
     const onSearch = () => {
       Object.assign(applied, {
@@ -113,11 +112,13 @@ window.OdClaimMng = {
       else pageList.value.forEach(c => s.add(c.claimId));
       checked.value = s;
     };
-    const CLAIM_STATUS_BY_TYPE = {
-      '취소': ['취소요청','취소처리중','취소완료'],
-      '반품': ['반품요청','수거예정','수거중','수거완료','환불처리중','환불완료'],
-      '교환': ['교환요청','수거예정','수거중','수거완료','상품준비중','발송중','발송완료','교환완료'],
-    };
+    const claimStatusCodes = (props.adminData.codes || [])
+      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
+      .sort((a, b) => a.sortOrd - b.sortOrd);
+    const claimStatusForType = type => claimStatusCodes
+      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + type + '^'))
+      .map(c => c.codeLabel);
+    const CLAIM_STATUS_BY_TYPE = { '취소': claimStatusForType('CANCEL'), '반품': claimStatusForType('RETURN'), '교환': claimStatusForType('EXCHANGE') };
     const CLAIM_TYPE_OPTIONS = ['취소','반품','교환'];
     const APPROVAL_ACTIONS = ['승인','반려','보류'];
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
@@ -280,9 +281,8 @@ window.OdClaimMng = {
       <select v-model="searchType"><option value="">유형 전체</option><option>취소</option><option>반품</option><option>교환</option></select>
       <select v-model="searchStatus">
         <option value="">상태 전체</option>
-        <option>취소요청</option><option>취소처리중</option><option>취소완료</option>
-        <option>반품요청</option><option>수거예정</option><option>수거완료</option><option>환불처리중</option><option>환불완료</option>
-        <option>교환요청</option><option>발송완료</option><option>교환완료</option>
+        <option>신청</option><option>승인</option><option>수거중</option>
+        <option>처리중</option><option>환불대기</option><option>완료</option><option>거부</option><option>철회</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">

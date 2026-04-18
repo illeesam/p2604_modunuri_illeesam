@@ -14,7 +14,7 @@ window.OdDlivDtl = {
 
     const form = reactive({
       dlivId: '', orderId: '', userId: '', userNm: '', receiver: '',
-      address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '배송준비', regDate: '', memo: '',
+      address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '준비중', regDate: '', memo: '',
     });
     const errors = reactive({});
 
@@ -132,7 +132,7 @@ window.OdDlivDtl = {
       if (!url) { props.showToast && props.showToast('운송장 정보가 없습니다.', 'error'); return; }
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
-    const DLIV_STEPS = ['배송준비', '배송중', '배송완료'];
+    const DLIV_STEPS = ['준비중', '출고완료', '배송중', '배송완료'];
     const currentStepIdx = computed(() => {
       const i = DLIV_STEPS.indexOf(form.statusCd);
       return i;
@@ -146,9 +146,10 @@ window.OdDlivDtl = {
       if (!form.dlivId) return [];
       const d = String(form.regDate || '').slice(0,10) || '-';
       const rows = [
-        { date: d+' 09:00', user:'시스템', from:'-',           to:'배송준비', memo:'배송 등록' },
+        { date: d+' 09:00', user:'시스템', from:'-',     to:'준비중',   memo:'배송 등록' },
       ];
-      if (form.statusCd === '배송중' || form.statusCd === '배송완료') rows.push({ date:d+' 11:30', user:'admin', from:'배송준비', to:'배송중', memo:(form.courierCd||'-')+' 출고' });
+      if (['출고완료','배송중','배송완료'].includes(form.statusCd)) rows.push({ date:d+' 10:00', user:'admin', from:'준비중', to:'출고완료', memo:(form.courierCd||'-')+' 출고' });
+      if (['배송중','배송완료'].includes(form.statusCd)) rows.push({ date:d+' 11:30', user:'시스템', from:'출고완료', to:'배송중', memo:'배송 중' });
       if (form.statusCd === '배송완료') rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' });
       return rows;
     });
@@ -298,7 +299,7 @@ window.OdDlivDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-            <option>배송준비</option><option>배송중</option><option>배송완료</option><option>반송</option>
+            <option>준비중</option><option>출고완료</option><option>배송중</option><option>배송완료</option><option>배송실패</option>
           </select>
         </div>
       </div>

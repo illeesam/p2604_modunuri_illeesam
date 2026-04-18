@@ -7,11 +7,11 @@ window.OdOrderDtl = {
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
 
-    const ORDER_STEPS = ['주문완료', '결제완료', '배송준비중', '배송중', '배송완료', '완료'];
+    const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
 
     const form = reactive({
       orderId: '', userId: '', userNm: '', orderDate: '', prodNm: '',
-      totalPrice: 0, payMethodCd: '계좌이체', statusCd: '주문완료',
+      totalPrice: 0, payMethodCd: '무통장입금', statusCd: '입금대기',
       payStatusCd: '결제완료', payDate: '', apprNo: '', payIssuer: '',
       memo: '',
     });
@@ -39,12 +39,12 @@ window.OdOrderDtl = {
           if (o.status) form.statusCd = o.status;
           if (o.payMethod) form.payMethodCd = o.payMethod;
           if (o.payStatus) form.payStatusCd = o.payStatus;
-          else if (['취소됨'].includes(o.status)) form.payStatusCd = '환불완료';
-          else if (['주문완료'].includes(o.status)) form.payStatusCd = '미결제';
+          else if (['취소','자동취소'].includes(o.status)) form.payStatusCd = '환불완료';
+          else if (['입금대기'].includes(o.status)) form.payStatusCd = '미결제';
           else form.payStatusCd = '결제완료';
           if (!form.payDate) form.payDate = o.orderDate || '';
           if (!form.apprNo)   form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01';
-          if (!form.payIssuer) form.payIssuer = ({'카드결제':'신한카드','계좌이체':'국민은행','캐쉬':'현금','혼합결제':'카드+포인트'}[form.payMethodCd] || '-');
+          if (!form.payIssuer) form.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[form.payMethodCd] || '-');
         }
       }
       await nextTick();
@@ -148,11 +148,15 @@ window.OdOrderDtl = {
     const relatedClaim = computed(() =>
       (props.adminData.claims || []).find(c => c.orderId === props.editId)
     );
-    const CLAIM_FLOWS = {
-      '취소': ['취소요청', '취소처리중', '취소완료'],
-      '반품': ['반품요청', '수거예정', '수거중', '수거완료', '환불처리중', '환불완료'],
-      '교환': ['교환요청', '수거예정', '수거중', '수거완료', '상품준비중', '발송중', '발송완료', '교환완료'],
-    };
+    const _claimStatusCodes = (props.adminData.codes || [])
+      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
+      .sort((a, b) => a.sortOrd - b.sortOrd);
+    const _TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
+    const _claimFlow = type => _claimStatusCodes
+      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (_TYPE_CD[type] || type) + '^'))
+      .map(c => c.codeLabel)
+      .filter(l => !['거부','철회'].includes(l));
+    const CLAIM_FLOWS = { '취소': _claimFlow('취소'), '반품': _claimFlow('반품'), '교환': _claimFlow('교환') };
     const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#FFBB00', '교환': '#3b82f6' };
 
     const trackingUrl = (courier, no) => {
@@ -180,10 +184,10 @@ window.OdOrderDtl = {
       if (!form.orderId) return [];
       const d = String(form.orderDate || '').slice(0,10) || '-';
       const rows = [
-        { date: d+' 09:00', user:'시스템', from:'-', to:'주문완료', memo:'주문 접수' },
-        { date: d+' 10:15', user:'admin', from:'주문완료', to:'결제완료', memo:'결제 승인' },
+        { date: d+' 09:00', user:'시스템', from:'-', to:'입금대기', memo:'주문 접수' },
+        { date: d+' 10:15', user:'admin', from:'입금대기', to:'결제완료', memo:'결제 승인' },
       ];
-      if (form.status && !['주문완료','결제완료'].includes(form.status)) {
+      if (form.status && !['입금대기','결제완료'].includes(form.status)) {
         rows.push({ date: d+' 14:30', user:'admin', from:'결제완료', to: form.status, memo:'상태 변경' });
       }
       return rows;
@@ -343,13 +347,13 @@ window.OdOrderDtl = {
               color: relatedClaim.status===step ? CLAIM_TYPE_COLOR[relatedClaim.type] : (CLAIM_FLOWS[relatedClaim.type].indexOf(relatedClaim.status) > idx ? '#444' : '#bbb'),
               whiteSpace:'nowrap',
             }">{{ step }}</div>
-            <span v-if="step==='수거완료' && relatedClaim.trackingNo"
+            <span v-if="step==='수거중' && relatedClaim.trackingNo"
               @click="openTracking(relatedClaim.courier, relatedClaim.trackingNo)"
               title="수거 배송조회"
               style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
               {{ (relatedClaim.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
             </span>
-            <span v-if="step==='발송완료' && relatedClaim.exchangeTrackingNo"
+            <span v-if="step==='완료' && relatedClaim.exchangeTrackingNo"
               @click="openTracking(relatedClaim.exchangeCourier, relatedClaim.exchangeTrackingNo)"
               title="발송 배송조회"
               style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
@@ -432,8 +436,8 @@ window.OdOrderDtl = {
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>주문완료</option><option>결제완료</option><option>배송준비중</option>
-          <option>배송중</option><option>배송완료</option><option>완료</option><option>취소됨</option>
+          <option>입금대기</option><option>결제완료</option><option>상품준비중</option>
+          <option>배송중</option><option>배송완료</option><option>구매확정</option><option>취소</option><option>자동취소</option>
         </select>
       </div>
     </div>

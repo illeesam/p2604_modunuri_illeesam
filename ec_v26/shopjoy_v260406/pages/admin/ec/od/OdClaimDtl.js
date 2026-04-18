@@ -9,7 +9,7 @@ window.OdClaimDtl = {
 
     const form = reactive({
       claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
-      type: '취소', statusCd: '취소요청', reasonCd: '', reasonDetail: '',
+      type: '취소', statusCd: '신청', reasonCd: '', reasonDetail: '',
       refundAmount: 0, refundMethodCd: '계좌환불', requestDate: '', memo: '',
     });
     const errors = reactive({});
@@ -19,12 +19,15 @@ window.OdClaimDtl = {
       orderId: yup.string().required('주문ID를 입력해주세요.'),
     });
 
-    /* CLAIM_STEPS: 유형별 진행 단계 */
-    const CLAIM_STEPS = computed(() => ({
-      '취소': ['취소요청', '취소처리중', '취소완료'],
-      '반품': ['반품요청', '수거예정', '수거중', '수거완료', '환불처리중', '환불완료'],
-      '교환': ['교환요청', '수거예정', '수거중', '수거완료', '상품준비중', '발송중', '발송완료', '교환완료'],
-    }[form.type] || []));
+    /* CLAIM_STEPS: parentCodeValues 기반 동적 파생 */
+    const _claimStatusCodes = (props.adminData.codes || [])
+      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
+      .sort((a, b) => a.sortOrd - b.sortOrd);
+    const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
+    const CLAIM_STEPS = computed(() => _claimStatusCodes
+      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[form.type] || form.type) + '^'))
+      .map(c => c.codeLabel)
+      .filter(l => !['거부','철회'].includes(l)));
 
     const currentStepIdx = computed(() => CLAIM_STEPS.value.indexOf(form.statusCd));
     const statusOptions   = computed(() => CLAIM_STEPS.value);
@@ -243,13 +246,13 @@ window.OdClaimDtl = {
               color: idx === currentStepIdx ? (CLAIM_TYPE_COLOR[form.type]||'#9ca3af') : (idx < currentStepIdx ? '#444' : '#bbb'),
               whiteSpace:'nowrap', textAlign:'center',
             }">{{ step }}</div>
-            <span v-if="step==='수거완료' && form.trackingNo"
+            <span v-if="step==='수거중' && form.trackingNo"
               @click="openTracking(form.courier, form.trackingNo)"
               title="수거 배송조회"
               style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
               {{ (form.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
             </span>
-            <span v-if="step==='발송완료' && form.exchangeTrackingNo"
+            <span v-if="step==='완료' && form.exchangeTrackingNo"
               @click="openTracking(form.exchangeCourier, form.exchangeTrackingNo)"
               title="발송 배송조회"
               style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
