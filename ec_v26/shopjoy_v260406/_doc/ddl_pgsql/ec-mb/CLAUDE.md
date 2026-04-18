@@ -4,6 +4,10 @@
 - `mb_mem.sql` — 회원 마스터 (PK: member_id)
 - `mb_mem_addr.sql` — 회원 배송지
 - `mb_like.sql` — 찜 목록 (FK: member_id + prod_id)
+- `mb_mem_grade.sql` — 회원등급 (grade_cd, save_rate, min_purchase_amt)
+- `mb_mem_group.sql` — 회원그룹 + mb_mem_group_map (회원-그룹 매핑)
+- `mb_dvc_token.sql` — 앱 디바이스 토큰 (PK: device_token + site_id) *(log 예외)*
+- `mb_sns_mem.sql` — SNS 연동 (sns_channel_cd: KAKAO/NAVER/GOOGLE/APPLE)
 - `mb_mem_login_hist.sql` — 로그인 이력
 - `mb_mem_login_log.sql` — 로그인 로그 *(log 예외)*
 - `mb_mem_token_log.sql` — 토큰 로그 *(log 예외)*
@@ -25,3 +29,4 @@
 
 ## 관련 정책서
 - `_doc/정책서ec/mb.01.회원.md`
+- `_doc/정책서ec/mb.02.회원등급그룹.md`

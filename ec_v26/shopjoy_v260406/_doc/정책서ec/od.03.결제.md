@@ -8,6 +8,7 @@
 
 ## 관련 테이블
 - `od_pay` — 결제 기본 정보 (PK: pay_id)
+- `od_pay_mtd` — 마이페이지 등록 결제수단 (회원별 카드/계좌 토큰 저장)
 - `od_pay_status_hist` — 결제 상태 이력
 - `od_pay_chg_hist` — 결제 변경 이력
 

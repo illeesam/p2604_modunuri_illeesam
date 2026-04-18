@@ -13,6 +13,9 @@
 - `pd_review.sql` — 구매 리뷰 (FK: order_item_id, 1건당 1리뷰)
 - `pd_review_attach.sql` — 리뷰 첨부파일
 - `pd_review_comment.sql` — 리뷰 댓글
+- `pd_prod_qna.sql` — 상품문의 (FK: prod_id + member_id, 답변: answ_yn/answ_date/answ_user_id)
+- `pd_dliv_tmplt.sql` — 배송템플릿 (FK: vendor_id, 배송비/반품비/교환비/반품지 포함)
+- `pd_restock_noti.sql` — 재입고알림 신청 (FK: prod_id + sku_id + member_id)
 - `pd_prod_status_hist.sql` — 상품 상태 이력
 - `pd_prod_chg_hist.sql` — 상품 변경 이력
 - `pd_prod_content_chg_hist.sql` — 상품 내용 변경 이력

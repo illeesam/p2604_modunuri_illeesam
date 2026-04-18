@@ -14,6 +14,12 @@ CREATE TABLE pm_gift (
     end_date            TIMESTAMP,
     gift_status_cd      VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: GIFT_STATUS (ACTIVE/INACTIVE)
     gift_status_cd_before VARCHAR(20),
+    mem_grade_cd        VARCHAR(20),                            -- 적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)
+    min_order_amt       BIGINT          DEFAULT 0,              -- 최소주문금액 (사은품 지급 조건)
+    min_order_qty       INTEGER,                                -- 최소주문수량 (NULL=제한없음)
+    -- 부담금 설정
+    self_cdiv_rate      DECIMAL(5,2)    DEFAULT 100,            -- 자사(사이트) 분담율 (%)
+    seller_cdiv_rate    DECIMAL(5,2)    DEFAULT 0,              -- 판매자(업체) 분담율 (%)
     use_yn              CHAR(1)         DEFAULT 'Y',
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -34,6 +40,11 @@ COMMENT ON COLUMN pm_gift.start_date        IS '시작일시';
 COMMENT ON COLUMN pm_gift.end_date          IS '종료일시';
 COMMENT ON COLUMN pm_gift.gift_status_cd    IS '상태 (코드: GIFT_STATUS)';
 COMMENT ON COLUMN pm_gift.gift_status_cd_before IS '변경 전 상태';
+COMMENT ON COLUMN pm_gift.mem_grade_cd      IS '적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)';
+COMMENT ON COLUMN pm_gift.min_order_amt     IS '최소주문금액 — 사은품 지급 기준 금액';
+COMMENT ON COLUMN pm_gift.min_order_qty     IS '최소주문수량 (NULL=제한없음)';
+COMMENT ON COLUMN pm_gift.self_cdiv_rate    IS '자사(사이트) 분담율 (%) — 기본 100%';
+COMMENT ON COLUMN pm_gift.seller_cdiv_rate  IS '판매자(업체) 분담율 (%) — 기본 0%';
 COMMENT ON COLUMN pm_gift.use_yn            IS '사용여부 Y/N';
 COMMENT ON COLUMN pm_gift.reg_by            IS '등록자';
 COMMENT ON COLUMN pm_gift.reg_date          IS '등록일';
@@ -42,3 +53,4 @@ COMMENT ON COLUMN pm_gift.upd_date          IS '수정일';
 
 CREATE INDEX idx_pm_gift_site   ON pm_gift (site_id);
 CREATE INDEX idx_pm_gift_status ON pm_gift (gift_status_cd);
+CREATE INDEX idx_pm_gift_grade  ON pm_gift (mem_grade_cd);

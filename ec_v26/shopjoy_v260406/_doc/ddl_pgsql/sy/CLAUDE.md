@@ -14,6 +14,10 @@
 - `sy_code_grp.sql` — 코드 그룹
 - `sy_code.sql` — 공통 코드 (code_remark)
 
+### 다국어
+- `sy_i18n.sql` — 다국어 키 마스터 (i18n_key, i18n_scope_cd)
+- `sy_i18n_msg.sql` — 언어별 번역 메시지 (lang_cd, i18n_msg)
+
 ### 브랜드/업체
 - `sy_brand.sql` — 브랜드 (brand_remark)
 - `sy_vendor.sql` — 업체 마스터
@@ -46,13 +50,14 @@
 - `sy_batch_hist.sql` — 배치 실행 이력
 - `sy_batch_log.sql` — 배치 로그 *(log 예외)*
 
-### 알람/게시판/문의
+### 알람/게시판/문의/VOC
 - `sy_alarm.sql` — 알람 발송 마스터
 - `sy_alarm_send_hist.sql` — 알람 발송 이력
 - `sy_bbm.sql` — BBM(메모/공지) (bbm_remark)
 - `sy_bbs.sql` — 게시판 마스터
 - `sy_contact.sql` — 1:1 문의
 - `sy_notice.sql` — 공지사항
+- `sy_voc.sql` — 고객의소리 VOC 분류 (voc_master_cd + voc_detail_cd)
 
 ### 로그
 - `sy_api_log.sql` — API 호출 로그 *(log 예외)*
@@ -85,6 +90,7 @@
 | `syMenuMng` | 시스템 > 메뉴관리 | sy_menu, sy_role_menu |
 | `syRoleMng` | 시스템 > 역할관리 | sy_role, sy_user_role, sy_role_menu |
 | `syUserLoginHist` | 시스템 > 사용자로그인이력 | sy_user_login_hist, sy_user_login_log |
+| `syI18nMng` | 시스템 > 다국어관리 | sy_i18n, sy_i18n_msg |
 
 ## 관련 정책서
 - `_doc/정책서sy/sy.01.플랫폼.md`

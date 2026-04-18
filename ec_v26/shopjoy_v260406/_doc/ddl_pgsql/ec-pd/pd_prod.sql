@@ -1,5 +1,5 @@
 -- ============================================================
--- ec_prod : 상품
+-- pd_prod : 상품
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE pd_prod (
@@ -12,6 +12,8 @@ CREATE TABLE pd_prod (
     prod_code       VARCHAR(50),
     list_price      BIGINT          DEFAULT 0,
     sale_price      BIGINT          DEFAULT 0,
+    purchase_price  BIGINT,                                 -- 매입가(원가) — 내부 관리용
+    margin_rate     DECIMAL(5,2),                           -- 마진율 (%) — 내부 관리용
     prod_stock      INTEGER         DEFAULT 0,
     prod_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: PRODUCT_STATUS
     prod_status_cd_before VARCHAR(20),                       -- 변경 전 상품상태
@@ -23,6 +25,27 @@ CREATE TABLE pd_prod (
     is_best         CHAR(1)         DEFAULT 'N',
     view_count      INTEGER         DEFAULT 0,
     sale_count      INTEGER         DEFAULT 0,
+    -- 판매기간
+    sale_start_date TIMESTAMP,                              -- 판매기간 시작 (NULL=즉시)
+    sale_end_date   TIMESTAMP,                              -- 판매기간 종료 (NULL=무기한)
+    -- 구매 제한
+    min_buy_qty     INTEGER         DEFAULT 1,              -- 최소구매수량
+    max_buy_qty     INTEGER,                                -- 최대구매수량 (NULL=무제한)
+    day_max_buy_qty INTEGER,                                -- 1일 최대구매수량 (NULL=무제한)
+    id_max_buy_qty  INTEGER,                                -- ID당 최대구매수량 (NULL=무제한)
+    -- 성인/배송
+    adlt_yn         CHAR(1)         DEFAULT 'N',            -- 성인상품 여부 Y/N
+    same_day_dliv_yn CHAR(1)        DEFAULT 'N',            -- 당일배송여부 Y/N
+    sold_out_yn     CHAR(1)         DEFAULT 'N',            -- 품절여부 Y/N
+    dliv_tmplt_id   VARCHAR(16),                            -- 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+    -- 혜택 적용 여부
+    coupon_use_yn   CHAR(1)         DEFAULT 'Y',            -- 쿠폰 사용 가능 여부 Y/N
+    save_use_yn     CHAR(1)         DEFAULT 'Y',            -- 적립금 사용 가능 여부 Y/N
+    discnt_use_yn   CHAR(1)         DEFAULT 'Y',            -- 할인 적용 가능 여부 Y/N
+    -- 홍보문구
+    advrt_stmt      VARCHAR(500),                           -- 홍보문구
+    advrt_start_date TIMESTAMP,                             -- 홍보문구 시작일시
+    advrt_end_date  TIMESTAMP,                              -- 홍보문구 종료일시
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -40,6 +63,8 @@ COMMENT ON COLUMN pd_prod.prod_nm       IS '상품명';
 COMMENT ON COLUMN pd_prod.prod_code     IS '상품코드(SKU)';
 COMMENT ON COLUMN pd_prod.list_price    IS '정가';
 COMMENT ON COLUMN pd_prod.sale_price    IS '판매가';
+COMMENT ON COLUMN pd_prod.purchase_price IS '매입가(원가) — 내부 관리용';
+COMMENT ON COLUMN pd_prod.margin_rate   IS '마진율 (%) — 내부 관리용';
 COMMENT ON COLUMN pd_prod.prod_stock    IS '재고수량';
 COMMENT ON COLUMN pd_prod.prod_status_cd IS '상태 (코드: PRODUCT_STATUS)';
 COMMENT ON COLUMN pd_prod.prod_status_cd_before IS '변경 전 상품상태 (코드: PRODUCT_STATUS)';
@@ -51,7 +76,23 @@ COMMENT ON COLUMN pd_prod.is_new        IS '신상품여부 Y/N';
 COMMENT ON COLUMN pd_prod.is_best       IS '베스트여부 Y/N';
 COMMENT ON COLUMN pd_prod.view_count    IS '조회수';
 COMMENT ON COLUMN pd_prod.sale_count    IS '판매수';
-COMMENT ON COLUMN pd_prod.reg_by        IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod.sale_start_date IS '판매기간 시작 (NULL=즉시)';
+COMMENT ON COLUMN pd_prod.sale_end_date IS '판매기간 종료 (NULL=무기한)';
+COMMENT ON COLUMN pd_prod.min_buy_qty   IS '최소구매수량 (기본 1)';
+COMMENT ON COLUMN pd_prod.max_buy_qty   IS '최대구매수량 (NULL=무제한)';
+COMMENT ON COLUMN pd_prod.day_max_buy_qty IS '1일 최대구매수량 (NULL=무제한)';
+COMMENT ON COLUMN pd_prod.id_max_buy_qty IS 'ID당 최대구매수량 (NULL=무제한)';
+COMMENT ON COLUMN pd_prod.adlt_yn       IS '성인상품 여부 Y/N';
+COMMENT ON COLUMN pd_prod.same_day_dliv_yn IS '당일배송여부 Y/N';
+COMMENT ON COLUMN pd_prod.sold_out_yn   IS '품절여부 Y/N';
+COMMENT ON COLUMN pd_prod.dliv_tmplt_id IS '배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)';
+COMMENT ON COLUMN pd_prod.coupon_use_yn IS '쿠폰 사용 가능 여부 Y/N';
+COMMENT ON COLUMN pd_prod.save_use_yn   IS '적립금 사용 가능 여부 Y/N';
+COMMENT ON COLUMN pd_prod.discnt_use_yn IS '할인 적용 가능 여부 Y/N';
+COMMENT ON COLUMN pd_prod.advrt_stmt    IS '홍보문구 (500자 이내)';
+COMMENT ON COLUMN pd_prod.advrt_start_date IS '홍보문구 시작일시';
+COMMENT ON COLUMN pd_prod.advrt_end_date IS '홍보문구 종료일시';
+COMMENT ON COLUMN pd_prod.reg_by        IS '등록자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN pd_prod.reg_date      IS '등록일';
-COMMENT ON COLUMN pd_prod.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN pd_prod.upd_date      IS '수정일';

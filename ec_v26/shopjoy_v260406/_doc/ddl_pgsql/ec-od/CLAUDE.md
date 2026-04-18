@@ -14,6 +14,7 @@
 
 ### 결제
 - `od_pay.sql` — 결제 마스터 (PK: pay_id, FK: order_id)
+- `od_pay_mtd.sql` — 마이페이지 등록 결제수단 (FK: member_id, pay_key_no: 게이트웨이 토큰)
 - `od_pay_status_hist.sql` — 결제 상태 이력
 - `od_pay_chg_hist.sql` — 결제 변경 이력
 

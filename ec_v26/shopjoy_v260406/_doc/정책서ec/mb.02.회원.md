@@ -69,10 +69,32 @@
 | total_purchase_amt | 누적구매액 | BIGINT, 기본값 0 |
 | cache_balance_amt | 캐시잔액 | BIGINT, 기본값 0 |
 
+### 6. SNS 연동 (mb_sns_mem)
+- 지원 채널: KAKAO / NAVER / GOOGLE / APPLE (코드: SNS_CHANNEL)
+- 1 회원 = 동일 채널 1개만 연동 가능 (UNIQUE: member_id + sns_channel_cd)
+- sns_user_id: SNS 플랫폼 제공 사용자 고유 ID
+
+### 7. 앱 디바이스 토큰 (mb_dvc_token)
+- 앱 푸시 알림을 위한 기기 토큰 저장
+- PK: device_token + site_id (기기 변경 시 갱신)
+- os_type: ANDROID / IOS
+- benefit_noti_yn: 혜택 알림 수신 여부 (마케팅 동의 연동)
+
+### 8. 회원 그룹 (mb_mem_group / mb_mem_group_map)
+- 관리자가 임의로 만드는 그룹 (프로모션 타겟, VIP 클럽 등)
+- 1 회원이 복수 그룹 소속 가능
+- mb_mem_group_map: 회원-그룹 다대다 매핑
+
 ## 관련 테이블
 - mb_mem: 회원 기본 정보
+- mb_mem_grade: 회원등급 정의 (grade_cd, save_rate, min_purchase_amt)
+- mb_mem_group: 회원그룹
+- mb_mem_group_map: 회원-그룹 매핑
+- mb_sns_mem: SNS 연동 정보
+- mb_dvc_token: 앱 디바이스 토큰
 - mb_mem_login_log: 로그인 이력
 - mb_mem_token_log: 토큰/세션 관리
 
 ## 변경이력
+- 2026-04-18: SNS연동, 디바이스토큰, 회원그룹, 회원등급 테이블 추가
 - 2026-04-16: 초기 작성
