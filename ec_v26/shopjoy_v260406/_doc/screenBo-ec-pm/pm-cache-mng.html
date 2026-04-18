@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>적립금(캐시) 관리 — PM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.form-label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select,.form-control{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.search-actions,.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.form-actions{padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-purple{background:#f3e5f5;color:#6a1b9a}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:transparent}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:#fff3e0;border-radius:8px;padding:14px 16px;border:1px solid #ffe0b2}
+.stat-label{font-size:11px;color:#e65100;margin-bottom:4px}
+.stat-value{font-size:20px;font-weight:700;color:#bf360c}
+.stat-sub{font-size:11px;color:#e65100;margin-top:2px}
+.amount-pos{color:#1565c0;font-weight:600}
+.amount-neg{color:#c62828;font-weight:600}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back-Office &gt; EC &gt; 프로모션 관리 &gt; <span>적립금(캐시) 관리</span></div>
+  <h1>💰 적립금(캐시) 관리</h1>
+</div>
+<div class="container">
+
+  <!-- 통계 요약 -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">당월 총 적립</div>
+      <div class="stat-value">+2,840,000원</div>
+      <div class="stat-sub">충전 + 관리자 지급 합계</div>
+    </div>
+    <div class="stat-card" style="background:#e3f2fd;border-color:#bbdefb">
+      <div class="stat-label" style="color:#1565c0">당월 총 사용</div>
+      <div class="stat-value" style="color:#0d47a1">-1,230,500원</div>
+      <div class="stat-sub" style="color:#1565c0">주문 차감 합계</div>
+    </div>
+    <div class="stat-card" style="background:#fce4ec;border-color:#f8bbd0">
+      <div class="stat-label" style="color:#c2185b">소멸 예정 (30일 이내)</div>
+      <div class="stat-value" style="color:#880e4f">420,000원</div>
+      <div class="stat-sub" style="color:#c2185b">만료일 도래 예정</div>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="card">
+    <div class="section-title">검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_cache" data-col="member_nm"
+          data-tbl-cmt="적립금(캐시)" data-col-cmt="회원명">회원명</label>
+        <input type="text" placeholder="회원명 입력">
+      </div>
+      <div class="field">
+        <label>회원이메일</label>
+        <input type="text" placeholder="이메일 입력">
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_cache" data-col="cache_type_cd"
+          data-tbl-cmt="적립금(캐시)" data-col-cmt="유형"
+          data-code-grp="CACHE_TYPE"
+          data-codes="CHARGE:충전|USE:사용|REFUND:환불|EXPIRE:소멸|ADJ:관리자조정">유형</label>
+        <select>
+          <option value="">전체</option>
+          <option>CHARGE — 충전</option>
+          <option>USE — 사용</option>
+          <option>REFUND — 환불</option>
+          <option>EXPIRE — 소멸</option>
+          <option>ADJ — 관리자조정</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_cache" data-col="cache_date"
+          data-tbl-cmt="적립금(캐시)" data-col-cmt="처리일시">처리기간 시작</label>
+        <input type="date">
+      </div>
+      <div class="field">
+        <label>처리기간 종료</label>
+        <input type="date">
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">🔍 검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div><span class="list-title">적립금 이력</span><span class="list-count">총 1,284건</span></div>
+      <button class="btn btn-primary btn-sm">+ 관리자 직접 지급</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span class="has-tip" data-table="pm_cache" data-col="cache_id" data-tbl-cmt="적립금(캐시)" data-col-cmt="적립금ID">이력ID</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="member_nm" data-tbl-cmt="적립금(캐시)" data-col-cmt="회원명">회원명</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="cache_type_cd" data-tbl-cmt="적립금(캐시)" data-col-cmt="유형" data-code-grp="CACHE_TYPE" data-codes="CHARGE:충전|USE:사용|REFUND:환불|EXPIRE:소멸|ADJ:관리자조정">유형</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="cache_amt" data-tbl-cmt="적립금(캐시)" data-col-cmt="금액(양수:적립/충전, 음수:차감/사용)">금액</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="balance_amt" data-tbl-cmt="적립금(캐시)" data-col-cmt="처리후 잔액">잔액</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="ref_id" data-tbl-cmt="적립금(캐시)" data-col-cmt="참조ID (주문ID 등)">참조ID</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="cache_desc" data-tbl-cmt="적립금(캐시)" data-col-cmt="내역 설명">내역설명</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="expire_date" data-tbl-cmt="적립금(캐시)" data-col-cmt="소멸예정일">소멸예정일</span></th>
+            <th><span class="has-tip" data-table="pm_cache" data-col="cache_date" data-tbl-cmt="적립금(캐시)" data-col-cmt="처리일시">처리일시</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CACHE240001</td>
+            <td>김민지</td>
+            <td><span class="badge badge-green">충전</span></td>
+            <td class="amount-pos">+50,000</td>
+            <td>75,000</td>
+            <td>—</td>
+            <td>관리자 지급 — 이벤트 보상</td>
+            <td>2024-12-31</td>
+            <td>2024-06-01 10:22</td>
+          </tr>
+          <tr>
+            <td>CACHE240002</td>
+            <td>이준호</td>
+            <td><span class="badge badge-blue">사용</span></td>
+            <td class="amount-neg">-15,000</td>
+            <td>32,000</td>
+            <td>ORD240523</td>
+            <td>주문 차감</td>
+            <td>—</td>
+            <td>2024-06-01 09:45</td>
+          </tr>
+          <tr>
+            <td>CACHE240003</td>
+            <td>박서연</td>
+            <td><span class="badge badge-orange">환불</span></td>
+            <td class="amount-pos">+8,000</td>
+            <td>58,000</td>
+            <td>CLM240112</td>
+            <td>클레임 환불 복원</td>
+            <td>2024-12-31</td>
+            <td>2024-05-30 14:10</td>
+          </tr>
+          <tr>
+            <td>CACHE240004</td>
+            <td>최동욱</td>
+            <td><span class="badge badge-gray">소멸</span></td>
+            <td class="amount-neg">-5,000</td>
+            <td>0</td>
+            <td>—</td>
+            <td>유효기간 만료 소멸</td>
+            <td>2024-05-31</td>
+            <td>2024-06-01 00:05</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pager">«</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">3</button>
+      <button class="pager">»</button>
+    </div>
+  </div>
+
+  <!-- 관리자 직접 지급 폼 -->
+  <div class="card">
+    <div class="section-title">관리자 직접 지급</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_cache" data-col="member_id"
+          data-tbl-cmt="적립금(캐시)" data-col-cmt="회원ID">회원</label>
+        <input class="form-control" type="text" placeholder="회원명 또는 이메일 검색">
+        <span class="form-hint">검색 후 선택</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_cache" data-col="cache_amt"
+          data-tbl-cmt="적립금(캐시)" data-col-cmt="금액 (양수:지급, 음수:차감)">금액 (원)</label>
+        <input class="form-control" type="number" placeholder="양수:지급 / 음수:차감">
+      </div>
+      <div class="form-group full">
+        <label class="form-label req has-tip"
+          data-table="pm_cache" data-col="cache_desc"
+          data-tbl-cmt="적립금(캐시)" data-col-cmt="내역 설명">내역설명</label>
+        <textarea class="form-control" placeholder="지급 사유 입력"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_cache" data-col="expire_date"
+          data-tbl-cmt="적립금(캐시)" data-col-cmt="소멸예정일">소멸예정일</label>
+        <input class="form-control" type="date">
+        <span class="form-hint">미입력 시 기본 1년 후</span>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">지급 처리</button>
+    </div>
+    <div class="ddl-ref">
+      <strong>DDL 참조</strong>: <code>pm_cache</code> — cache_id, member_id, member_nm, cache_type_cd, cache_amt, balance_amt, ref_id, cache_desc, cache_date, expire_date
+    </div>
+  </div>
+
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

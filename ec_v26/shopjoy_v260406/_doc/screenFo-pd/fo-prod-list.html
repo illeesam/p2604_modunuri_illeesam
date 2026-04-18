@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>상품 목록 | PD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+/* 검색바 */
+.search-bar{padding:12px 16px;background:#fff;border-bottom:1px solid #f3f4f6;display:flex;gap:8px}
+.search-bar input{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:9px 12px;font-size:14px;outline:none}
+.search-bar input:focus{border-color:#f9a8d4}
+.search-bar button{padding:9px 16px;border-radius:8px;background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff;border:none;cursor:pointer;font-weight:600}
+/* 카테고리 탭 */
+.cat-scroll{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;background:#fff;border-bottom:1px solid #f3f4f6}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;cursor:pointer;white-space:nowrap}
+.cat-btn.active{background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff;border-color:transparent}
+/* 필터바 */
+.filter-bar{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;background:#f9fafb;border-bottom:1px solid #f3f4f6}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{flex-shrink:0;padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;white-space:nowrap}
+.filter-chip.active{border-color:#f9a8d4;background:#fff0f6;color:#be185d;font-weight:600}
+/* 상품 그리드 */
+.prod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px 16px}
+.prod-card{border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);position:relative}
+.prod-img{width:100%;height:160px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative}
+.prod-badge-area{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap}
+.prod-badge{padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700}
+.prod-badge-new{background:#dbeafe;color:#1e40af}
+.prod-badge-best{background:#fef3c7;color:#92400e}
+.prod-badge-soldout{background:#f3f4f6;color:#6b7280}
+.prod-like-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.prod-info{padding:10px 12px}
+.prod-brand{font-size:11px;color:#9ca3af;margin-bottom:3px}
+.prod-nm{font-size:13px;font-weight:600;margin-bottom:6px;line-height:1.4}
+.prod-price-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.prod-list-price{font-size:11px;color:#aaa;text-decoration:line-through}
+.prod-sale-price{font-size:15px;font-weight:700;color:#be185d}
+.prod-discount-rate{font-size:11px;font-weight:700;color:#ec4899}
+.prod-review-row{display:flex;align-items:center;gap:4px;margin-top:5px}
+.star-text{color:#f59e0b;font-size:12px}
+.review-cnt{font-size:11px;color:#9ca3af}
+.soldout-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;border-radius:12px 12px 0 0}
+.soldout-label{background:#fff;color:#555;font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px}
+/* 정렬/개수 바 */
+.sort-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#fff;border-bottom:1px solid #f3f4f6;font-size:13px}
+.sort-bar select{border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:13px;outline:none}
+.count-text{color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>🛒 상품 목록</h1>
+  <a href="index.html" style="font-size:11px;color:#be185d;text-decoration:none">← 상품</a>
+</div>
+<div class="breadcrumb">홈 &gt; <span>상품 목록</span></div>
+
+<!-- 검색바 -->
+<div class="search-bar">
+  <input type="text" placeholder="상품명, 브랜드 검색..." class="has-tip"
+    data-table="pd_prod" data-col="prod_nm"
+    data-tbl-cmt="상품 마스터" data-col-cmt="상품명 (키워드 검색 대상)">
+  <button>검색</button>
+</div>
+
+<!-- 대분류 카테고리 탭 -->
+<div class="cat-scroll">
+  <button class="cat-btn active has-tip"
+    data-table="pd_category" data-col="cate_nm"
+    data-tbl-cmt="카테고리" data-col-cmt="카테고리명 (대분류)">
+    전체
+  </button>
+  <button class="cat-btn">여성의류</button>
+  <button class="cat-btn">남성의류</button>
+  <button class="cat-btn">가방·지갑</button>
+  <button class="cat-btn">신발</button>
+  <button class="cat-btn">액세서리</button>
+  <button class="cat-btn">라이프</button>
+</div>
+
+<!-- 중분류 탭 (여성의류 선택 시) -->
+<div class="cat-scroll" style="background:#f9fafb">
+  <button class="cat-btn active" style="font-size:11px">상의</button>
+  <button class="cat-btn" style="font-size:11px">하의</button>
+  <button class="cat-btn" style="font-size:11px">원피스</button>
+  <button class="cat-btn" style="font-size:11px">자켓/코트</button>
+  <button class="cat-btn" style="font-size:11px">니트/가디건</button>
+</div>
+
+<!-- 필터 칩 -->
+<div class="filter-bar">
+  <button class="filter-chip active has-tip"
+    data-table="pd_prod" data-col="prod_status_cd"
+    data-tbl-cmt="상품 마스터" data-col-cmt="상품 상태"
+    data-code-grp="PROD_STATUS"
+    data-codes="ACTIVE:판매중|INACTIVE:판매중지|SOLDOUT:품절|COMING:출시예정">
+    판매중
+  </button>
+  <button class="filter-chip has-tip"
+    data-table="pd_prod" data-col="is_new"
+    data-tbl-cmt="상품 마스터" data-col-cmt="신상품 여부 (Y/N)">
+    NEW
+  </button>
+  <button class="filter-chip has-tip"
+    data-table="pd_prod" data-col="is_best"
+    data-tbl-cmt="상품 마스터" data-col-cmt="베스트 상품 여부 (Y/N)">
+    BEST
+  </button>
+  <button class="filter-chip">당일배송</button>
+  <button class="filter-chip">가격대 설정</button>
+  <button class="filter-chip has-tip"
+    data-table="sy_brand" data-col="brand_nm"
+    data-tbl-cmt="브랜드" data-col-cmt="브랜드명 필터">
+    브랜드
+  </button>
+</div>
+
+<!-- 정렬/개수 -->
+<div class="sort-bar">
+  <span class="count-text has-tip"
+    data-table="pd_prod" data-col="view_count"
+    data-tbl-cmt="상품 마스터" data-col-cmt="조회수 (정렬 기준 중 하나)">
+    총 128개 상품
+  </span>
+  <select class="has-tip"
+    data-table="pd_prod" data-col="sale_price"
+    data-tbl-cmt="상품 마스터" data-col-cmt="판매가 (정렬 기준)">
+    <option value="newest">최신순</option>
+    <option value="popular">인기순</option>
+    <option value="low_price">낮은 가격순</option>
+    <option value="high_price">높은 가격순</option>
+    <option value="review">리뷰 많은순</option>
+  </select>
+</div>
+
+<!-- 상품 그리드 -->
+<div class="prod-grid">
+
+  <!-- 상품 1: NEW + BEST -->
+  <div class="prod-card">
+    <div class="prod-img">
+      👕
+      <div class="prod-badge-area">
+        <span class="prod-badge prod-badge-new has-tip"
+          data-table="pd_prod" data-col="is_new"
+          data-tbl-cmt="상품 마스터" data-col-cmt="신상품 여부 (Y/N)">
+          NEW
+        </span>
+        <span class="prod-badge prod-badge-best has-tip"
+          data-table="pd_prod" data-col="is_best"
+          data-tbl-cmt="상품 마스터" data-col-cmt="베스트 상품 여부 (Y/N)">
+          BEST
+        </span>
+      </div>
+      <button class="prod-like-btn" title="찜하기">🤍</button>
+    </div>
+    <div class="prod-info">
+      <div class="prod-brand has-tip"
+        data-table="sy_brand" data-col="brand_nm"
+        data-tbl-cmt="브랜드" data-col-cmt="브랜드명">
+        쇼핑조이
+      </div>
+      <div class="prod-nm has-tip"
+        data-table="pd_prod" data-col="prod_nm"
+        data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+        오가닉 코튼 티셔츠
+      </div>
+      <div class="prod-price-row">
+        <span class="prod-list-price has-tip"
+          data-table="pd_prod" data-col="list_price"
+          data-tbl-cmt="상품 마스터" data-col-cmt="정가 (소비자가)">
+          60,000원
+        </span>
+        <span class="prod-discount-rate">25%</span>
+      </div>
+      <div class="prod-price-row">
+        <span class="prod-sale-price has-tip"
+          data-table="pd_prod" data-col="sale_price"
+          data-tbl-cmt="상품 마스터" data-col-cmt="판매가 (실제 결제가)">
+          45,000원
+        </span>
+      </div>
+      <div class="prod-review-row">
+        <span class="star-text">★★★★★</span>
+        <span class="review-cnt has-tip"
+          data-table="pd_review" data-col="rating"
+          data-tbl-cmt="상품 리뷰" data-col-cmt="별점 (1~5)">
+          (128)
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상품 2 -->
+  <div class="prod-card">
+    <div class="prod-img">
+      👖
+      <button class="prod-like-btn">❤️</button>
+    </div>
+    <div class="prod-info">
+      <div class="prod-brand">쇼핑조이</div>
+      <div class="prod-nm has-tip"
+        data-table="pd_prod" data-col="prod_nm"
+        data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+        린넨 와이드 팬츠
+      </div>
+      <div class="prod-price-row">
+        <span class="prod-sale-price">69,000원</span>
+      </div>
+      <div class="prod-review-row">
+        <span class="star-text">★★★★☆</span>
+        <span class="review-cnt">(56)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상품 3: 품절 -->
+  <div class="prod-card">
+    <div class="prod-img">
+      👗
+      <div class="soldout-overlay">
+        <span class="soldout-label has-tip"
+          data-table="pd_prod" data-col="sold_out_yn"
+          data-tbl-cmt="상품 마스터" data-col-cmt="품절 여부 (Y/N)">
+          품절
+        </span>
+      </div>
+      <div class="prod-badge-area">
+        <span class="prod-badge prod-badge-soldout">SOLD OUT</span>
+      </div>
+    </div>
+    <div class="prod-info">
+      <div class="prod-brand">쇼핑조이</div>
+      <div class="prod-nm">플리츠 미디 스커트</div>
+      <div class="prod-price-row">
+        <span class="prod-sale-price" style="color:#9ca3af">55,000원</span>
+      </div>
+      <div class="prod-review-row">
+        <span class="star-text">★★★★★</span>
+        <span class="review-cnt">(204)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상품 4 -->
+  <div class="prod-card">
+    <div class="prod-img">
+      🧥
+      <div class="prod-badge-area">
+        <span class="prod-badge prod-badge-new">NEW</span>
+      </div>
+      <button class="prod-like-btn">🤍</button>
+    </div>
+    <div class="prod-info">
+      <div class="prod-brand">쇼핑조이</div>
+      <div class="prod-nm has-tip"
+        data-table="pd_prod" data-col="prod_nm"
+        data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+        오버핏 리넨 자켓
+      </div>
+      <div class="prod-price-row">
+        <span class="prod-list-price">138,000원</span>
+        <span class="prod-discount-rate">20%</span>
+      </div>
+      <div class="prod-price-row">
+        <span class="prod-sale-price">110,000원</span>
+      </div>
+      <div class="prod-review-row">
+        <span class="star-text">★★★★☆</span>
+        <span class="review-cnt">(34)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상품 5 -->
+  <div class="prod-card">
+    <div class="prod-img">
+      👜
+      <div class="prod-badge-area">
+        <span class="prod-badge prod-badge-best">BEST</span>
+      </div>
+      <button class="prod-like-btn">🤍</button>
+    </div>
+    <div class="prod-info">
+      <div class="prod-brand">쇼핑조이</div>
+      <div class="prod-nm">시그니처 에코백</div>
+      <div class="prod-price-row">
+        <span class="prod-sale-price">35,000원</span>
+      </div>
+      <div class="prod-review-row">
+        <span class="star-text">★★★★★</span>
+        <span class="review-cnt">(312)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상품 6 -->
+  <div class="prod-card">
+    <div class="prod-img">
+      👟
+      <button class="prod-like-btn">🤍</button>
+    </div>
+    <div class="prod-info">
+      <div class="prod-brand">쇼핑조이</div>
+      <div class="prod-nm">캔버스 스니커즈</div>
+      <div class="prod-price-row">
+        <span class="prod-list-price">79,000원</span>
+        <span class="prod-discount-rate">10%</span>
+      </div>
+      <div class="prod-price-row">
+        <span class="prod-sale-price">71,000원</span>
+      </div>
+      <div class="prod-review-row">
+        <span class="star-text">★★★★☆</span>
+        <span class="review-cnt">(88)</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 페이지네이션 -->
+<div style="display:flex;justify-content:center;gap:6px;padding:20px 16px">
+  <button style="width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:14px">‹</button>
+  <button style="width:32px;height:32px;border-radius:8px;border:none;background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff;cursor:pointer;font-size:14px;font-weight:700">1</button>
+  <button style="width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:14px">2</button>
+  <button style="width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:14px">3</button>
+  <button style="width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:14px">›</button>
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

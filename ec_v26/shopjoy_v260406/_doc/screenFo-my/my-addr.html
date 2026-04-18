@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>배송지 관리 | MY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3;display:flex;justify-content:space-between;align-items:center}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:5px;font-weight:500}
+.field input,.field select{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:14px;outline:none}
+.field input:focus,.field select:focus{border-color:#f9a8d4}
+.btn{display:inline-block;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;margin:2px}
+.btn-primary{background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff}
+.btn-secondary{background:#f3f4f6;color:#555;border:1px solid #e5e7eb}
+.btn-full{width:100%;margin-top:6px;padding:14px;font-size:15px;border-radius:10px}
+.btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.addr-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:10px}
+.addr-card.default{border-color:#f9a8d4;background:#fff9fb}
+.addr-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.addr-nm{font-size:14px;font-weight:700}
+.addr-recv{font-size:14px;margin-bottom:2px}
+.addr-phone{font-size:13px;color:#9ca3af}
+.addr-text{font-size:13px;color:#555;margin-top:4px}
+.addr-actions{display:flex;gap:6px;margin-top:10px}
+.checkbox-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.checkbox-row input[type=checkbox]{width:18px;height:18px;accent-color:#ec4899}
+.checkbox-row label{font-size:14px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>📍 배송지 관리</h1>
+  <a href="index.html" style="font-size:11px;color:#be185d;text-decoration:none">← 마이페이지</a>
+</div>
+<div class="breadcrumb">마이페이지 &gt; <span>배송지 관리</span></div>
+
+<!-- 배송지 목록 -->
+<div class="section">
+  <div class="section-title">
+    <span>배송지 목록</span>
+    <span style="font-size:12px;color:#9ca3af">최대 10개 등록 가능</span>
+  </div>
+
+  <!-- 기본 배송지 -->
+  <div class="addr-card default">
+    <div class="addr-card-header">
+      <span class="addr-nm has-tip"
+        data-table="mb_mem_addr" data-col="addr_nm"
+        data-tbl-cmt="회원 배송지" data-col-cmt="배송지 별명 (집, 회사 등)">
+        집
+      </span>
+      <span class="badge badge-green has-tip"
+        data-table="mb_mem_addr" data-col="default_yn"
+        data-tbl-cmt="회원 배송지" data-col-cmt="기본 배송지 여부 (Y/N)">
+        기본 배송지
+      </span>
+    </div>
+    <div class="addr-recv has-tip"
+      data-table="mb_mem_addr" data-col="recv_nm"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령인 이름">
+      홍길동
+    </div>
+    <div class="addr-phone has-tip"
+      data-table="mb_mem_addr" data-col="recv_phone"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령인 연락처">
+      010-1234-5678
+    </div>
+    <div class="addr-text">
+      <span class="has-tip"
+        data-table="mb_mem_addr" data-col="recv_zip"
+        data-tbl-cmt="회원 배송지" data-col-cmt="수령지 우편번호">
+        [06234]
+      </span>
+      <span class="has-tip"
+        data-table="mb_mem_addr" data-col="recv_addr"
+        data-tbl-cmt="회원 배송지" data-col-cmt="수령지 기본주소">
+        서울시 강남구 테헤란로 123
+      </span>
+      <span class="has-tip"
+        data-table="mb_mem_addr" data-col="recv_addr_detail"
+        data-tbl-cmt="회원 배송지" data-col-cmt="수령지 상세주소">
+        101동 202호
+      </span>
+    </div>
+    <div class="addr-actions">
+      <button class="btn btn-secondary">수정</button>
+      <button class="btn btn-danger">삭제</button>
+    </div>
+  </div>
+
+  <!-- 일반 배송지 -->
+  <div class="addr-card">
+    <div class="addr-card-header">
+      <span class="addr-nm has-tip"
+        data-table="mb_mem_addr" data-col="addr_nm"
+        data-tbl-cmt="회원 배송지" data-col-cmt="배송지 별명">
+        회사
+      </span>
+      <span class="badge badge-gray">일반</span>
+    </div>
+    <div class="addr-recv has-tip"
+      data-table="mb_mem_addr" data-col="recv_nm"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령인 이름">
+      홍길동
+    </div>
+    <div class="addr-phone has-tip"
+      data-table="mb_mem_addr" data-col="recv_phone"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령인 연락처">
+      010-9876-5432
+    </div>
+    <div class="addr-text">
+      [04524] 서울시 중구 을지로 100, B동 501호
+    </div>
+    <div class="addr-actions">
+      <button class="btn btn-secondary">수정</button>
+      <button class="btn btn-secondary">기본 설정</button>
+      <button class="btn btn-danger">삭제</button>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-full" onclick="document.getElementById('addForm').style.display='block';this.style.display='none'">
+    + 새 배송지 추가
+  </button>
+</div>
+
+<!-- 배송지 등록/수정 폼 -->
+<div class="section" id="addForm" style="display:none">
+  <div class="section-title">새 배송지 등록</div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="mb_mem_addr" data-col="addr_nm"
+      data-tbl-cmt="회원 배송지" data-col-cmt="배송지 별명 (집, 회사, 기타 등)">
+      배송지 이름
+    </label>
+    <input type="text" placeholder="집, 회사, 부모님댁 등">
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="mb_mem_addr" data-col="recv_nm"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령인 이름 (필수)">
+      수령인 이름 *
+    </label>
+    <input type="text" placeholder="홍길동">
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="mb_mem_addr" data-col="recv_phone"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령인 연락처 (필수)">
+      연락처 *
+    </label>
+    <input type="tel" placeholder="010-0000-0000">
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="mb_mem_addr" data-col="recv_zip"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령지 우편번호 (카카오 주소검색)">
+      우편번호 *
+    </label>
+    <div style="display:flex;gap:8px">
+      <input type="text" placeholder="12345" style="width:120px" readonly>
+      <button class="btn btn-secondary" style="flex:1">🔍 우편번호 검색</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="mb_mem_addr" data-col="recv_addr"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령지 기본주소 (우편번호 검색 후 자동입력)">
+      기본 주소 *
+    </label>
+    <input type="text" placeholder="우편번호 검색 후 자동입력" readonly style="background:#f9fafb">
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="mb_mem_addr" data-col="recv_addr_detail"
+      data-tbl-cmt="회원 배송지" data-col-cmt="수령지 상세주소 (동/호수 등)">
+      상세 주소
+    </label>
+    <input type="text" placeholder="101동 202호, 3층 등">
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="mb_mem_addr" data-col="entrance_pwd"
+      data-tbl-cmt="회원 배송지" data-col-cmt="공동현관 비밀번호 (선택)">
+      공동현관 비밀번호
+    </label>
+    <input type="text" placeholder="#1234* 등">
+  </div>
+
+  <div class="checkbox-row" style="margin-bottom:16px">
+    <input type="checkbox" id="defaultAddr">
+    <label for="defaultAddr" class="has-tip"
+      data-table="mb_mem_addr" data-col="default_yn"
+      data-tbl-cmt="회원 배송지" data-col-cmt="기본 배송지로 설정 여부 (Y=기본, N=일반)">
+      기본 배송지로 설정
+    </label>
+  </div>
+
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-primary" style="flex:1;padding:14px">저장</button>
+    <button class="btn btn-secondary" style="flex:1;padding:14px"
+      onclick="document.getElementById('addForm').style.display='none';document.querySelector('.btn-full').style.display='block'">
+      취소
+    </button>
+  </div>
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

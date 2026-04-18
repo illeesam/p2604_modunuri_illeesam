@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>배송 관리 — OD 화면 명세</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none}
+.search-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600;color:#333}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-purple{background:#f3e5f5;color:#6a1b9a}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:#e91e63}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:12px;color:#888;font-weight:500}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-control{border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.tab-nav{display:flex;gap:4px;margin-bottom:14px}
+.tab-btn{padding:6px 14px;border-radius:20px;font-size:12px;border:1px solid #ddd;background:#fff;cursor:pointer;font-weight:500}
+.tab-btn.active{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff;border-color:transparent}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb"><a href="index.html">OD 화면 목록</a> &gt; <span>배송 관리</span></div>
+  <h1>🚚 배송 관리</h1>
+</div>
+<div class="container">
+
+  <!-- 검색 영역 -->
+  <div class="card">
+    <div class="section-title">🔍 검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip" data-table="sy_site" data-col="site_id" data-tbl-cmt="사이트" data-col-cmt="사이트ID">사이트</label>
+        <select class="form-control"><option>전체</option><option>ShopJoy 01</option><option>ShopJoy 02</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_dliv" data-col="dliv_status_cd" data-tbl-cmt="배송" data-col-cmt="배송상태" data-code-grp="DLIV_STATUS" data-codes="READY:출고준비|SHIPPED:출고완료|IN_TRANSIT:배송중|DELIVERED:배송완료|FAILED:배송실패">배송상태</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>READY — 출고준비</option>
+          <option>SHIPPED — 출고완료</option>
+          <option>IN_TRANSIT — 배송중</option>
+          <option>DELIVERED — 배송완료</option>
+          <option>FAILED — 배송실패</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_dliv" data-col="dliv_type_cd" data-tbl-cmt="배송" data-col-cmt="배송유형" data-code-grp="DLIV_TYPE" data-codes="NORMAL:정상배송|RETURN:반품수거|EXCHANGE:교환수거|EXCHANGE_OUT:교환발송">배송유형</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>NORMAL — 정상배송</option>
+          <option>RETURN — 반품수거</option>
+          <option>EXCHANGE — 교환수거</option>
+          <option>EXCHANGE_OUT — 교환발송</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_dliv" data-col="dliv_div_cd" data-tbl-cmt="배송" data-col-cmt="입출고구분" data-code-grp="DLIV_DIV" data-codes="OUTBOUND:출고|INBOUND:반입">입출고구분</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>OUTBOUND — 출고</option>
+          <option>INBOUND — 반입</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_dliv" data-col="outbound_courier_cd" data-tbl-cmt="배송" data-col-cmt="출고 택배사" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데|KYOUNGDONG:경동">택배사</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>CJ — CJ대한통운</option>
+          <option>LOGEN — 로젠</option>
+          <option>POST — 우체국</option>
+          <option>HANJIN — 한진</option>
+          <option>LOTTE — 롯데</option>
+          <option>KYOUNGDONG — 경동</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_dliv" data-col="order_id" data-tbl-cmt="배송" data-col-cmt="주문ID">주문번호</label>
+        <input class="form-control" type="text" placeholder="주문번호 입력">
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_dliv" data-col="outbound_tracking_no" data-tbl-cmt="배송" data-col-cmt="출고 송장번호">송장번호</label>
+        <input class="form-control" type="text" placeholder="송장번호 입력">
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_dliv" data-col="dliv_ship_date" data-tbl-cmt="배송" data-col-cmt="출고일시">출고기간</label>
+        <div style="display:flex;gap:4px">
+          <input type="date" class="form-control" value="2026-04-01">
+          <input type="date" class="form-control" value="2026-04-18">
+        </div>
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div>
+        <span class="list-title">배송 목록</span>
+        <span class="list-count">총 87건</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm">📝 변경작업 선택</button>
+        <button class="btn btn-secondary btn-sm">CSV 다운로드</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox"></th>
+            <th>No</th>
+            <th class="has-tip" data-table="od_dliv" data-col="dliv_id" data-tbl-cmt="배송" data-col-cmt="배송ID">배송ID</th>
+            <th class="has-tip" data-table="od_dliv" data-col="order_id" data-tbl-cmt="배송" data-col-cmt="주문ID">주문번호</th>
+            <th class="has-tip" data-table="od_order" data-col="member_nm" data-tbl-cmt="주문" data-col-cmt="주문자명">주문자</th>
+            <th class="has-tip" data-table="od_dliv" data-col="dliv_div_cd" data-tbl-cmt="배송" data-col-cmt="입출고구분" data-code-grp="DLIV_DIV" data-codes="OUTBOUND:출고|INBOUND:반입">배송구분</th>
+            <th class="has-tip" data-table="od_dliv" data-col="dliv_type_cd" data-tbl-cmt="배송" data-col-cmt="배송유형" data-code-grp="DLIV_TYPE" data-codes="NORMAL:정상배송|RETURN:반품수거|EXCHANGE:교환수거|EXCHANGE_OUT:교환발송">배송유형</th>
+            <th class="has-tip" data-table="od_dliv" data-col="outbound_courier_cd" data-tbl-cmt="배송" data-col-cmt="출고 택배사" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데|KYOUNGDONG:경동">택배사</th>
+            <th class="has-tip" data-table="od_dliv" data-col="outbound_tracking_no" data-tbl-cmt="배송" data-col-cmt="출고 송장번호">송장번호</th>
+            <th class="has-tip" data-table="od_dliv" data-col="dliv_status_cd" data-tbl-cmt="배송" data-col-cmt="배송상태" data-code-grp="DLIV_STATUS" data-codes="READY:출고준비|SHIPPED:출고완료|IN_TRANSIT:배송중|DELIVERED:배송완료|FAILED:배송실패">배송상태</th>
+            <th class="has-tip" data-table="od_dliv" data-col="shipping_fee" data-tbl-cmt="배송" data-col-cmt="배송료">배송료</th>
+            <th class="has-tip" data-table="od_dliv" data-col="dliv_ship_date" data-tbl-cmt="배송" data-col-cmt="출고일시">출고일</th>
+            <th class="has-tip" data-table="od_dliv" data-col="dliv_date" data-tbl-cmt="배송" data-col-cmt="배송완료일시">완료일</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>1</td>
+            <td><a class="title-link">DL2604180000001</a></td>
+            <td>2604180000001</td>
+            <td>김지수</td>
+            <td><span class="badge badge-blue">출고</span></td>
+            <td><span class="badge badge-green">정상배송</span></td>
+            <td>CJ대한통운</td>
+            <td>—</td>
+            <td><span class="badge badge-gray">출고준비</span></td>
+            <td>0</td>
+            <td>—</td>
+            <td>—</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">상세</button>
+              <button class="btn btn-primary btn-sm">송장입력</button>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>2</td>
+            <td><a class="title-link">DL2604170000002</a></td>
+            <td>2604170000002</td>
+            <td>이민준</td>
+            <td><span class="badge badge-blue">출고</span></td>
+            <td><span class="badge badge-green">정상배송</span></td>
+            <td>로젠</td>
+            <td>1234567890</td>
+            <td><span class="badge badge-orange">배송중</span></td>
+            <td>3,000</td>
+            <td>2026-04-17</td>
+            <td>—</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">상세</button>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>3</td>
+            <td><a class="title-link">DL2604160000003</a></td>
+            <td>2604160000003</td>
+            <td>박서연</td>
+            <td><span class="badge badge-blue">출고</span></td>
+            <td><span class="badge badge-green">정상배송</span></td>
+            <td>CJ대한통운</td>
+            <td>9876543210</td>
+            <td><span class="badge badge-green">배송완료</span></td>
+            <td>0</td>
+            <td>2026-04-16</td>
+            <td>2026-04-18</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">상세</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pager">«</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">3</button>
+      <button class="pager">»</button>
+    </div>
+  </div>
+
+  <!-- 일괄 작업 -->
+  <div class="card">
+    <div class="section-title">📝 일괄 변경작업</div>
+    <div class="tab-nav">
+      <button class="tab-btn active">택배정보 입력</button>
+      <button class="tab-btn">상태변경</button>
+    </div>
+    <div class="form-grid cols-3">
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="outbound_courier_cd" data-tbl-cmt="배송" data-col-cmt="출고 택배사" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데|KYOUNGDONG:경동">택배사</label>
+        <select class="form-control">
+          <option>선택</option>
+          <option>CJ — CJ대한통운</option>
+          <option>LOGEN — 로젠</option>
+          <option>POST — 우체국</option>
+          <option>HANJIN — 한진</option>
+          <option>LOTTE — 롯데</option>
+          <option>KYOUNGDONG — 경동</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="outbound_tracking_no" data-tbl-cmt="배송" data-col-cmt="출고 송장번호">송장번호</label>
+        <input class="form-control" placeholder="송장번호 입력">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_ship_date" data-tbl-cmt="배송" data-col-cmt="출고일시">출고일시</label>
+        <input class="form-control" type="datetime-local">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">일괄 적용</button>
+    </div>
+  </div>
+
+  <!-- 배송 상세 폼 -->
+  <div class="card">
+    <div class="section-title">📋 배송 상세 — DL2604170000002</div>
+    <div class="form-grid cols-3">
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_id" data-tbl-cmt="배송" data-col-cmt="배송ID">배송ID</label>
+        <input class="form-control" value="DL2604170000002" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="order_id" data-tbl-cmt="배송" data-col-cmt="주문ID">주문번호</label>
+        <input class="form-control" value="2604170000002" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="claim_id" data-tbl-cmt="배송" data-col-cmt="클레임ID (클레임 배송일 때만)">클레임ID</label>
+        <input class="form-control" value="—" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_div_cd" data-tbl-cmt="배송" data-col-cmt="입출고구분" data-code-grp="DLIV_DIV" data-codes="OUTBOUND:출고|INBOUND:반입">입출고구분</label>
+        <select class="form-control"><option>OUTBOUND — 출고</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_type_cd" data-tbl-cmt="배송" data-col-cmt="배송유형" data-code-grp="DLIV_TYPE" data-codes="NORMAL:정상배송|RETURN:반품수거|EXCHANGE:교환수거|EXCHANGE_OUT:교환발송">배송유형</label>
+        <select class="form-control"><option>NORMAL — 정상배송</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_pay_type_cd" data-tbl-cmt="배송" data-col-cmt="배송비결제방식" data-code-grp="DLIV_PAY_TYPE" data-codes="PREPAY:선결제|COD:착불">배송비결제방식</label>
+        <select class="form-control"><option>PREPAY — 선결제</option><option>COD — 착불</option></select>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="section-title" style="font-size:13px">📤 출고정보</div>
+      <div class="form-grid cols-3" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="outbound_courier_cd" data-tbl-cmt="배송" data-col-cmt="출고 택배사" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데|KYOUNGDONG:경동">출고 택배사</label>
+          <select class="form-control"><option>LOGEN — 로젠</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="outbound_tracking_no" data-tbl-cmt="배송" data-col-cmt="출고 송장번호">출고 송장번호</label>
+          <input class="form-control" value="1234567890">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_ship_date" data-tbl-cmt="배송" data-col-cmt="출고일시">출고일시</label>
+          <input class="form-control" type="datetime-local" value="2026-04-17T14:30">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="section-title" style="font-size:13px">📥 반입정보 (반품 시)</div>
+      <div class="form-grid cols-3" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="inbound_courier_cd" data-tbl-cmt="배송" data-col-cmt="반입 택배사" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데|KYOUNGDONG:경동">반입 택배사</label>
+          <select class="form-control"><option>— 해당없음 —</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="inbound_tracking_no" data-tbl-cmt="배송" data-col-cmt="반입 송장번호">반입 송장번호</label>
+          <input class="form-control" placeholder="반입 송장번호">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="section-title" style="font-size:13px">📍 수령지 정보</div>
+      <div class="form-grid cols-3" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="recv_nm" data-tbl-cmt="배송" data-col-cmt="수령자명">수령자명</label>
+          <input class="form-control" value="이민준">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="recv_phone" data-tbl-cmt="배송" data-col-cmt="수령자 연락처">연락처</label>
+          <input class="form-control" value="010-9876-5432">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="recv_zip" data-tbl-cmt="배송" data-col-cmt="수령지 우편번호">우편번호</label>
+          <input class="form-control" value="04799">
+        </div>
+        <div class="form-group full">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="recv_addr" data-tbl-cmt="배송" data-col-cmt="수령지 주소">주소</label>
+          <input class="form-control" value="서울특별시 성동구 왕십리로 50">
+        </div>
+        <div class="form-group full">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="recv_addr_detail" data-tbl-cmt="배송" data-col-cmt="수령지 상세주소">상세주소</label>
+          <input class="form-control" value="203호">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="section-title" style="font-size:13px">💰 배송료</div>
+      <div class="form-grid cols-3" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="shipping_fee" data-tbl-cmt="배송" data-col-cmt="배송료">배송료</label>
+          <input class="form-control" value="3000">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="shipping_fee_type_cd" data-tbl-cmt="배송" data-col-cmt="배송료 구분" data-code-grp="SHIPPING_FEE_TYPE" data-codes="OUTBOUND:출고|RETURN:반품|INBOUND:반입|EXCHANGE:교환">배송료 구분</label>
+          <select class="form-control"><option>OUTBOUND — 출고</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_dliv" data-col="parent_dliv_id" data-tbl-cmt="배송" data-col-cmt="부모 배송ID (교환 시 원본 배송 참조)">부모 배송ID</label>
+          <input class="form-control" placeholder="교환 시 원본 배송ID">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top:16px">
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_status_cd" data-tbl-cmt="배송" data-col-cmt="배송상태" data-code-grp="DLIV_STATUS" data-codes="READY:출고준비|SHIPPED:출고완료|IN_TRANSIT:배송중|DELIVERED:배송완료|FAILED:배송실패">배송상태</label>
+        <select class="form-control"><option>IN_TRANSIT — 배송중</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_date" data-tbl-cmt="배송" data-col-cmt="배송완료일시">배송완료일시</label>
+        <input class="form-control" type="datetime-local" placeholder="">
+      </div>
+      <div class="form-group full">
+        <label class="form-label has-tip" data-table="od_dliv" data-col="dliv_memo" data-tbl-cmt="배송" data-col-cmt="배송 메모">배송 메모</label>
+        <textarea class="form-control" placeholder="배송 관련 메모..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">저장</button>
+    </div>
+  </div>
+
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

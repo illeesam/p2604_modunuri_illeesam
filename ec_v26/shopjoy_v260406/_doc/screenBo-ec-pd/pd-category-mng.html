@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>카테고리 관리 — PD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.btn-xs{padding:3px 8px;font-size:11px;border-radius:4px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;color:#888;font-weight:500}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-control{border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;width:100%}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-pink{background:#fce4ec;color:#c2185b}
+/* 트리 스타일 */
+.two-col{display:grid;grid-template-columns:320px 1fr;gap:16px}
+.tree-wrap{border:1px solid #f0f0f0;border-radius:8px;overflow:hidden}
+.tree-header{background:#fce4ec;padding:10px 14px;font-size:12px;font-weight:700;color:#c2185b;display:flex;justify-content:space-between;align-items:center}
+.tree-body{padding:8px}
+.tree-node{cursor:pointer;border-radius:6px;padding:0}
+.tree-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;font-size:13px}
+.tree-row:hover{background:#fff9fb}
+.tree-row.selected{background:#fce4ec;color:#c2185b;font-weight:600}
+.tree-toggle{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#888;cursor:pointer;flex-shrink:0}
+.tree-icon{flex-shrink:0}
+.tree-nm{flex:1}
+.tree-badge{font-size:10px;padding:1px 6px;border-radius:10px;background:#f5f5f5;color:#aaa;flex-shrink:0}
+.tree-badge.active{background:#e8f5e9;color:#2e7d32}
+.tree-children{margin-left:20px}
+.tree-grandchildren{margin-left:18px}
+.level-1>.tree-row{font-weight:700;color:#333}
+.level-2>.tree-row{color:#555}
+.level-3>.tree-row{color:#777;font-size:12px}
+.info-box{background:#e3f2fd;border-radius:8px;padding:12px 16px;font-size:12px;color:#1565c0;border-left:3px solid #1976d2;line-height:1.8;margin-bottom:14px}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+.path-display{background:#f3e5f5;border-radius:6px;padding:8px 12px;font-size:12px;color:#6a1b9a;font-family:monospace;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back Office &gt; 상품관리 &gt; <span>카테고리 관리</span></div>
+  <h1>카테고리 관리</h1>
+</div>
+
+<div class="container">
+  <div class="info-box">
+    📂 <strong>3단계 계층 카테고리:</strong> 대카테고리(level=1) &gt; 중카테고리(level=2) &gt; 소카테고리(level=3)<br>
+    좌측 트리에서 카테고리를 선택하면 우측에 상세/등록 폼이 표시됩니다.<br>
+    disp_path는 "대분류.중분류.소분류" 형식으로 자동 계산됩니다.
+  </div>
+
+  <div class="two-col">
+    <!-- 트리 -->
+    <div>
+      <div class="tree-wrap">
+        <div class="tree-header">
+          <span>카테고리 트리</span>
+          <button class="btn btn-primary btn-xs">+ 대카테고리</button>
+        </div>
+        <div class="tree-body">
+
+          <!-- 의류 -->
+          <div class="tree-node level-1">
+            <div class="tree-row selected">
+              <span class="tree-toggle">▼</span>
+              <span class="tree-icon">📁</span>
+              <span class="tree-nm has-tip" data-table="pd_category" data-col="category_nm" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="카테고리명">의류</span>
+              <span class="tree-badge active">사용</span>
+            </div>
+            <div class="tree-children">
+              <div class="tree-node level-2">
+                <div class="tree-row">
+                  <span class="tree-toggle">▼</span>
+                  <span class="tree-icon">📂</span>
+                  <span class="tree-nm">상의</span>
+                  <span class="tree-badge active">사용</span>
+                </div>
+                <div class="tree-grandchildren">
+                  <div class="tree-node level-3">
+                    <div class="tree-row">
+                      <span class="tree-toggle" style="color:transparent">·</span>
+                      <span class="tree-icon">📄</span>
+                      <span class="tree-nm">티셔츠</span>
+                      <span class="tree-badge active">사용</span>
+                    </div>
+                  </div>
+                  <div class="tree-node level-3">
+                    <div class="tree-row">
+                      <span class="tree-toggle" style="color:transparent">·</span>
+                      <span class="tree-icon">📄</span>
+                      <span class="tree-nm">셔츠·블라우스</span>
+                      <span class="tree-badge active">사용</span>
+                    </div>
+                  </div>
+                  <div class="tree-node level-3">
+                    <div class="tree-row">
+                      <span class="tree-toggle" style="color:transparent">·</span>
+                      <span class="tree-icon">📄</span>
+                      <span class="tree-nm">니트·스웨터</span>
+                      <span class="tree-badge active">사용</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tree-node level-2">
+                <div class="tree-row">
+                  <span class="tree-toggle">▼</span>
+                  <span class="tree-icon">📂</span>
+                  <span class="tree-nm">하의</span>
+                  <span class="tree-badge active">사용</span>
+                </div>
+                <div class="tree-grandchildren">
+                  <div class="tree-node level-3">
+                    <div class="tree-row">
+                      <span class="tree-toggle" style="color:transparent">·</span>
+                      <span class="tree-icon">📄</span>
+                      <span class="tree-nm">팬츠</span>
+                      <span class="tree-badge active">사용</span>
+                    </div>
+                  </div>
+                  <div class="tree-node level-3">
+                    <div class="tree-row">
+                      <span class="tree-toggle" style="color:transparent">·</span>
+                      <span class="tree-icon">📄</span>
+                      <span class="tree-nm">스커트</span>
+                      <span class="tree-badge active">사용</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 액세서리 -->
+          <div class="tree-node level-1">
+            <div class="tree-row">
+              <span class="tree-toggle">▶</span>
+              <span class="tree-icon">📁</span>
+              <span class="tree-nm">액세서리</span>
+              <span class="tree-badge active">사용</span>
+            </div>
+          </div>
+
+          <!-- 생활용품 -->
+          <div class="tree-node level-1">
+            <div class="tree-row">
+              <span class="tree-toggle">▶</span>
+              <span class="tree-icon">📁</span>
+              <span class="tree-nm">생활용품</span>
+              <span class="tree-badge" style="background:#ffebee;color:#c62828">미사용</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 등록/수정 폼 -->
+    <div class="card" style="box-shadow:none;padding:0">
+      <div class="section-title">카테고리 상세 / 등록</div>
+
+      <div class="ddl-ref">
+        <strong>pd_category</strong> — 상품 카테고리 (3단계 계층)<br>
+        category_id · site_id · parent_id · category_nm · category_cd · category_level · sort_ord · use_yn · disp_path
+      </div>
+
+      <div class="form-grid cols-3">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_category" data-col="category_id" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="카테고리ID">카테고리ID</label>
+          <input type="text" class="form-control" value="CAT001" readonly style="background:#f9f9f9;color:#888">
+          <div class="form-hint">자동 생성 (YYMMDDhhmmss+rand4)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_category" data-col="category_level" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="계층레벨 (1=대/2=중/3=소)">계층레벨</label>
+          <select class="form-control">
+            <option>1 — 대카테고리</option>
+            <option selected>2 — 중카테고리</option>
+            <option>3 — 소카테고리</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_category" data-col="parent_id" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="상위 카테고리ID (NULL=최상위)">상위 카테고리</label>
+          <select class="form-control">
+            <option>없음 (최상위)</option>
+            <option selected>의류 (CAT001)</option>
+            <option>액세서리 (CAT002)</option>
+          </select>
+          <div class="form-hint">parent_id — NULL이면 최상위(대카테고리)</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label req has-tip" data-table="pd_category" data-col="category_nm" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="카테고리명">카테고리명</label>
+          <input type="text" class="form-control" value="상의">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_category" data-col="category_cd" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="카테고리코드">카테고리코드</label>
+          <input type="text" class="form-control" value="TOP">
+          <div class="form-hint">영문 대문자 권장 (예: TOP, PANTS, BAG)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_category" data-col="sort_ord" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="정렬순서">정렬순서</label>
+          <input type="number" class="form-control" value="1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_category" data-col="use_yn" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="사용여부 Y/N">사용여부</label>
+          <select class="form-control"><option>사용(Y)</option><option>미사용(N)</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_category" data-col="site_id" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="사이트ID">사이트</label>
+          <select class="form-control"><option>사이트 01</option><option>사이트 02</option></select>
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label has-tip" data-table="pd_category" data-col="disp_path" data-tbl-cmt="상품 카테고리 (3단계 계층)" data-col-cmt="표시경로 (예: 의류.여성.원피스)">표시경로 (disp_path)</label>
+          <input type="text" class="form-control" value="의류.상의" readonly style="background:#f9f9f9;color:#888">
+          <div class="path-display">📍 의류 &gt; 상의</div>
+          <div class="form-hint">parent_id 기반 자동 계산. 직접 수정 가능 (예: 의류.여성.원피스)</div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-danger btn-sm">🗑️ 삭제</button>
+        <button class="btn btn-secondary">취소</button>
+        <button class="btn btn-primary">💾 저장</button>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px dashed #eee;padding-top:14px">
+        <div style="font-size:12px;font-weight:600;color:#c2185b;margin-bottom:10px">하위 카테고리 목록 (현재 선택: 의류 &gt; 상의)</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#fce4ec">
+              <th style="padding:7px 10px;text-align:center;border-bottom:2px solid #f48fb1" class="has-tip" data-table="pd_category" data-col="category_nm" data-tbl-cmt="상품 카테고리" data-col-cmt="카테고리명">카테고리명</th>
+              <th style="padding:7px 10px;text-align:center;border-bottom:2px solid #f48fb1" class="has-tip" data-table="pd_category" data-col="category_cd" data-tbl-cmt="상품 카테고리" data-col-cmt="카테고리코드">코드</th>
+              <th style="padding:7px 10px;text-align:center;border-bottom:2px solid #f48fb1" class="has-tip" data-table="pd_category" data-col="sort_ord" data-tbl-cmt="상품 카테고리" data-col-cmt="정렬순서">순서</th>
+              <th style="padding:7px 10px;text-align:center;border-bottom:2px solid #f48fb1" class="has-tip" data-table="pd_category" data-col="use_yn" data-tbl-cmt="상품 카테고리" data-col-cmt="사용여부 Y/N">사용</th>
+              <th style="padding:7px 10px;text-align:center;border-bottom:2px solid #f48fb1">액션</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">티셔츠</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">TSHIRT</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">1</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center"><span class="badge badge-green">Y</span></td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center"><button class="btn btn-sm btn-secondary" style="font-size:11px;padding:3px 8px">수정</button></td></tr>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">셔츠·블라우스</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">SHIRTS</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">2</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center"><span class="badge badge-green">Y</span></td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center"><button class="btn btn-sm btn-secondary" style="font-size:11px;padding:3px 8px">수정</button></td></tr>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">니트·스웨터</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">KNIT</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center">3</td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center"><span class="badge badge-green">Y</span></td><td style="padding:6px 10px;border-bottom:1px solid #f5f5f5;text-align:center"><button class="btn btn-sm btn-secondary" style="font-size:11px;padding:3px 8px">수정</button></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;text-align:right">
+          <button class="btn btn-primary btn-sm">+ 소카테고리 추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

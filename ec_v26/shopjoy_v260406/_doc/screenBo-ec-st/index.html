@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>정산관리(ST) 화면 목록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#1565c0;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.screen-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:4px solid #42a5f5;text-decoration:none;color:#333;display:block;transition:box-shadow .2s,transform .2s}
+.screen-card:hover{box-shadow:0 4px 16px rgba(66,165,245,.3);transform:translateY(-2px)}
+.card-no{font-size:11px;color:#1565c0;font-weight:700;margin-bottom:6px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.card-desc{font-size:12px;color:#888;margin-bottom:10px}
+.card-tables{font-size:11px;color:#bbb;font-family:monospace}
+.card-arrow{font-size:18px;color:#42a5f5;margin-top:8px;text-align:right}
+.section-title{font-size:14px;font-weight:700;color:#1565c0;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #e3f2fd}
+.info-box{background:#e3f2fd;border-radius:8px;padding:14px 18px;font-size:13px;color:#0d47a1}
+.info-box ul{margin-left:18px;margin-top:6px}
+.info-box li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back-Office &gt; EC &gt; <span>정산 관리 (ST)</span></div>
+  <h1>💰 정산관리(ST) 화면 목록</h1>
+</div>
+<div class="container">
+  <div class="info-box">
+    <strong>정산 관리 (ST) 도메인</strong> — 업체별 월정산 집계·확정·마감·지급을 관리합니다.
+    <ul>
+      <li>각 카드를 클릭하면 해당 화면으로 이동합니다.</li>
+      <li>필드에 마우스를 올리면 테이블명·컬럼명·코드 정보를 툴팁으로 확인할 수 있습니다.</li>
+      <li>정산 흐름: 정산 집계 → 정산 마감 → 정산 지급</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="section-title">화면 목록</div>
+    <div class="card-grid">
+      <a class="screen-card" href="st-settle-mng.html">
+        <div class="card-no">ST-01</div>
+        <div class="card-title">정산 관리</div>
+        <div class="card-desc">업체별 월정산 집계·확정·마감</div>
+        <div class="card-tables">st_settle · st_settle_item</div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="screen-card" href="st-settle-close-mng.html">
+        <div class="card-no">ST-02</div>
+        <div class="card-title">정산 마감</div>
+        <div class="card-desc">월마감 처리·잠금·확정</div>
+        <div class="card-tables">st_settle_close</div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="screen-card" href="#">
+        <div class="card-no">ST-03</div>
+        <div class="card-title">정산 지급</div>
+        <div class="card-desc">지급 요청·확인·완료 처리</div>
+        <div class="card-tables">st_settle_pay</div>
+        <div class="card-arrow" style="color:#ccc">준비중</div>
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>상품 상세 | PD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+/* 이미지 슬라이더 */
+.img-slider{width:100%;height:340px;background:linear-gradient(135deg,#f3f4f6,#e5e7eb);display:flex;align-items:center;justify-content:center;font-size:80px;position:relative}
+.img-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+.img-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.5)}
+.img-dot.active{background:#ec4899;width:20px;border-radius:4px}
+.img-like-btn{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.9);border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+/* 상품 정보 */
+.prod-brand{font-size:12px;color:#9ca3af;margin-bottom:4px}
+.prod-nm{font-size:20px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.prod-price-area{margin-bottom:12px}
+.prod-list-price{font-size:14px;color:#aaa;text-decoration:line-through;margin-right:4px}
+.prod-discount-rate{font-size:15px;font-weight:700;color:#ec4899;margin-right:8px}
+.prod-sale-price{font-size:26px;font-weight:800;color:#be185d}
+.prod-stat{display:flex;gap:12px;font-size:12px;color:#9ca3af;margin-bottom:10px}
+.prod-stat span{display:flex;align-items:center;gap:4px}
+.advrt-banner{background:#fdf2f8;border:1px solid #fce7f3;border-radius:8px;padding:10px 12px;font-size:13px;color:#be185d;margin-bottom:12px}
+/* 옵션 선택 */
+.opt-section{background:#f9fafb;border-radius:12px;padding:16px;margin:16px 0}
+.opt-label{font-size:12px;font-weight:600;color:#555;margin-bottom:8px}
+.opt-select{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:14px;outline:none;background:#fff;margin-bottom:10px}
+.opt-select:focus{border-color:#f9a8d4}
+.sku-info{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:10px;font-size:13px}
+.sku-row{display:flex;justify-content:space-between;padding:4px 0}
+.qty-control{display:flex;align-items:center;gap:0;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;width:fit-content}
+.qty-btn{width:40px;height:40px;border:none;background:#f9fafb;cursor:pointer;font-size:18px;font-weight:600;color:#555}
+.qty-btn:hover{background:#fce7f3}
+.qty-val{width:50px;text-align:center;font-size:16px;font-weight:600;border:none;outline:none;background:#fff}
+/* 가격 요약 */
+.price-summary{background:#fff0f6;border-radius:10px;padding:14px;margin-top:12px}
+.price-summary-row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+.price-summary-row.total{font-size:18px;font-weight:800;color:#be185d;border-top:1px solid #fce7f3;margin-top:6px;padding-top:10px}
+/* 배송 정보 */
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:#9ca3af;font-size:13px;flex-shrink:0;margin-right:10px}
+.info-value{text-align:right}
+/* 구매 제한 */
+.limit-box{background:#fff9c4;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;margin-bottom:12px}
+/* 버튼 영역 */
+.buy-btn-area{display:flex;gap:8px;margin-top:16px}
+.btn-cart{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:700;background:#f3f4f6;color:#555;border:2px solid #e5e7eb;cursor:pointer}
+.btn-buy{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:700;background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff;border:none;cursor:pointer}
+/* 탭 */
+.detail-tab-bar{display:flex;border-bottom:2px solid #f3f4f6;background:#fff;position:sticky;top:56px}
+.detail-tab{flex:1;text-align:center;padding:12px 0;font-size:13px;color:#9ca3af;font-weight:500;cursor:pointer;border-bottom:3px solid transparent}
+.detail-tab.active{color:#be185d;border-bottom-color:#be185d;font-weight:700}
+.review-mini{padding:12px 0;border-bottom:1px solid #f3f4f6}
+.review-mini:last-child{border-bottom:none}
+.review-header{display:flex;justify-content:space-between;margin-bottom:6px}
+.review-author{font-size:13px;font-weight:600}
+.review-date{font-size:12px;color:#9ca3af}
+.review-content{font-size:13px;color:#555;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>🔍 상품 상세</h1>
+  <a href="fo-prod-list.html" style="font-size:11px;color:#be185d;text-decoration:none">← 목록</a>
+</div>
+<div class="breadcrumb">여성의류 &gt; 상의 &gt; <span>오가닉 코튼 티셔츠</span></div>
+
+<!-- 이미지 슬라이더 -->
+<div class="img-slider">
+  👕
+  <div class="img-dots">
+    <div class="img-dot active"></div>
+    <div class="img-dot"></div>
+    <div class="img-dot"></div>
+    <div class="img-dot"></div>
+  </div>
+  <button class="img-like-btn has-tip"
+    data-table="mb_like" data-col="prod_id"
+    data-tbl-cmt="찜 목록" data-col-cmt="찜한 상품 ID">
+    🤍
+  </button>
+</div>
+
+<!-- 상품 기본 정보 -->
+<div class="section">
+  <div class="prod-brand has-tip"
+    data-table="sy_brand" data-col="brand_nm"
+    data-tbl-cmt="브랜드" data-col-cmt="브랜드명">
+    쇼핑조이
+  </div>
+  <div class="prod-nm has-tip"
+    data-table="pd_prod" data-col="prod_nm"
+    data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+    오가닉 코튼 티셔츠
+  </div>
+
+  <div class="prod-price-area">
+    <span class="prod-list-price has-tip"
+      data-table="pd_prod" data-col="list_price"
+      data-tbl-cmt="상품 마스터" data-col-cmt="정가 (소비자가)">
+      60,000원
+    </span>
+    <span class="prod-discount-rate">25%</span>
+    <div>
+      <span class="prod-sale-price has-tip"
+        data-table="pd_prod" data-col="sale_price"
+        data-tbl-cmt="상품 마스터" data-col-cmt="판매가 (실결제가)">
+        45,000원
+      </span>
+    </div>
+  </div>
+
+  <div class="prod-stat">
+    <span>👁️ <span class="has-tip"
+      data-table="pd_prod" data-col="view_count"
+      data-tbl-cmt="상품 마스터" data-col-cmt="조회수">
+      1,284
+    </span></span>
+    <span>🛒 <span class="has-tip"
+      data-table="pd_prod" data-col="sale_count"
+      data-tbl-cmt="상품 마스터" data-col-cmt="판매수">
+      428
+    </span></span>
+    <span>⭐ <span class="has-tip"
+      data-table="pd_review" data-col="rating"
+      data-tbl-cmt="상품 리뷰" data-col-cmt="별점 (1~5)">
+      4.8
+    </span> (128)</span>
+  </div>
+
+  <!-- 홍보문구 (유효기간 내) -->
+  <div class="advrt-banner has-tip"
+    data-table="pd_prod" data-col="advrt_stmt"
+    data-tbl-cmt="상품 마스터" data-col-cmt="홍보 문구 (advrt_stmt_from ~ advrt_stmt_to 기간에 표시)">
+    🌿 봄 한정! 유기농 100% 코튼 소재로 피부에 부드럽게
+  </div>
+</div>
+
+<!-- 옵션 선택 -->
+<div class="section" style="padding-top:0;margin-top:0">
+  <div class="opt-section">
+    <div class="opt-label has-tip"
+      data-table="pd_prod_opt" data-col="opt_nm"
+      data-tbl-cmt="상품 옵션 그룹" data-col-cmt="옵션명 (색상, 사이즈 등)">
+      색상 선택 (필수)
+    </div>
+    <select class="opt-select has-tip"
+      data-table="pd_prod_opt" data-col="opt_seq"
+      data-tbl-cmt="상품 옵션 그룹" data-col-cmt="옵션 순서 (1번 옵션=색상)">
+      <option value="">색상을 선택하세요</option>
+      <option value="BLACK">블랙</option>
+      <option value="WHITE">화이트</option>
+      <option value="NAVY">네이비</option>
+    </select>
+
+    <div class="opt-label has-tip"
+      data-table="pd_prod_opt" data-col="opt_nm"
+      data-tbl-cmt="상품 옵션 그룹" data-col-cmt="2번 옵션명 (사이즈)">
+      사이즈 선택 (필수)
+    </div>
+    <select class="opt-select has-tip"
+      data-table="pd_prod_opt" data-col="opt_seq"
+      data-tbl-cmt="상품 옵션 그룹" data-col-cmt="옵션 순서 (2번 옵션=사이즈)">
+      <option value="">사이즈를 선택하세요</option>
+      <option value="S">S</option>
+      <option value="M" selected>M</option>
+      <option value="L">L</option>
+      <option value="XL">XL</option>
+    </select>
+
+    <!-- 선택된 SKU 정보 -->
+    <div class="sku-info">
+      <div class="sku-row">
+        <span class="has-tip"
+          data-table="pd_prod_opt_sku" data-col="sku_code"
+          data-tbl-cmt="상품 SKU" data-col-cmt="SKU 코드 (옵션 조합 식별자)">
+          SKU: PD0001-BLACK-M
+        </span>
+        <span class="has-tip"
+          data-table="pd_prod_opt_sku" data-col="prod_opt_stock"
+          data-tbl-cmt="상품 SKU" data-col-cmt="해당 SKU 재고수량">
+          재고: 23개
+        </span>
+      </div>
+      <div class="sku-row">
+        <span>옵션 추가금액</span>
+        <span class="has-tip"
+          data-table="pd_prod_opt_sku" data-col="add_price"
+          data-tbl-cmt="상품 SKU" data-col-cmt="옵션 추가금액 (0 또는 양수)">
+          +0원
+        </span>
+      </div>
+    </div>
+
+    <!-- 수량 조절 -->
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="has-tip" style="font-size:13px;font-weight:600"
+        data-table="od_cart" data-col="qty"
+        data-tbl-cmt="장바구니" data-col-cmt="담을 수량">
+        수량
+      </span>
+      <div class="qty-control">
+        <button class="qty-btn">−</button>
+        <input class="qty-val" value="1" readonly>
+        <button class="qty-btn">+</button>
+      </div>
+    </div>
+
+    <!-- 구매 제한 안내 -->
+    <div class="limit-box" style="margin-top:10px">
+      <span class="has-tip"
+        data-table="pd_prod" data-col="min_buy_qty"
+        data-tbl-cmt="상품 마스터" data-col-cmt="최소 구매 수량">
+        최소 1개
+      </span>
+      ~
+      <span class="has-tip"
+        data-table="pd_prod" data-col="max_buy_qty"
+        data-tbl-cmt="상품 마스터" data-col-cmt="최대 구매 수량 (1회 주문 기준)">
+        최대 10개
+      </span>
+      까지 구매 가능합니다.
+    </div>
+
+    <!-- 가격 요약 -->
+    <div class="price-summary">
+      <div class="price-summary-row">
+        <span>기본가</span>
+        <span class="has-tip"
+          data-table="pd_prod" data-col="sale_price"
+          data-tbl-cmt="상품 마스터" data-col-cmt="상품 판매가">
+          45,000원
+        </span>
+      </div>
+      <div class="price-summary-row">
+        <span>옵션 추가</span>
+        <span class="has-tip"
+          data-table="pd_prod_opt_sku" data-col="add_price"
+          data-tbl-cmt="상품 SKU" data-col-cmt="옵션 추가금액">
+          +0원
+        </span>
+      </div>
+      <div class="price-summary-row total">
+        <span>합계</span>
+        <span>45,000원</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 구매 버튼 -->
+  <div class="buy-btn-area">
+    <button class="btn-cart" onclick="location.href='../screenFo-od/fo-cart.html'">
+      🛒 장바구니
+    </button>
+    <button class="btn-buy" onclick="location.href='../screenFo-od/fo-order.html'">
+      바로구매
+    </button>
+  </div>
+</div>
+
+<!-- 배송 정보 -->
+<div class="section">
+  <div class="section-title">배송 정보</div>
+  <div class="info-row">
+    <span class="info-label">배송 방법</span>
+    <span class="info-value has-tip"
+      data-table="pd_dliv_tmpl" data-col="dliv_method_cd"
+      data-tbl-cmt="배송 템플릿" data-col-cmt="배송 방법"
+      data-code-grp="DLIV_METHOD"
+      data-codes="COURIER:택배|QUICK:퀵배송|DIRECT:직접배송|STORE:매장수령">
+      택배
+    </span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">배송비</span>
+    <span class="info-value has-tip"
+      data-table="pd_dliv_tmpl" data-col="dliv_cost"
+      data-tbl-cmt="배송 템플릿" data-col-cmt="기본 배송비">
+      3,000원
+      <span class="has-tip" style="font-size:12px;color:#16a34a"
+        data-table="pd_dliv_tmpl" data-col="free_dliv_min_amt"
+        data-tbl-cmt="배송 템플릿" data-col-cmt="무료배송 기준 금액">
+        (50,000원 이상 무료)
+      </span>
+    </span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">도서산간</span>
+    <span class="info-value has-tip"
+      data-table="pd_dliv_tmpl" data-col="island_extra_cost"
+      data-tbl-cmt="배송 템플릿" data-col-cmt="도서산간 추가 배송비">
+      추가 3,000원
+    </span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">배송 예상</span>
+    <span class="info-value">주문 후 1~3일 (영업일 기준)</span>
+  </div>
+</div>
+
+<!-- 상세 탭 -->
+<div class="detail-tab-bar">
+  <div class="detail-tab active">상품상세</div>
+  <div class="detail-tab">리뷰 (128)</div>
+  <div class="detail-tab">Q&amp;A</div>
+</div>
+
+<!-- 상품 상세 콘텐츠 -->
+<div class="section">
+  <div style="text-align:center;color:#9ca3af;padding:20px;border:2px dashed #f3f4f6;border-radius:10px;font-size:14px">
+    <div class="has-tip"
+      data-table="pd_prod" data-col="content_html"
+      data-tbl-cmt="상품 마스터" data-col-cmt="상품 상세 HTML 컨텐츠 (에디터로 작성)">
+      🖼️ 상품 상세 이미지 및 HTML 컨텐츠 영역<br>
+      <span style="font-size:12px">(pd_prod.content_html)</span>
+    </div>
+  </div>
+</div>
+
+<!-- 리뷰 미리보기 (탭 전환 시 표시) -->
+<div class="section" style="display:none" id="reviewTab">
+  <div class="section-title">구매 리뷰</div>
+  <div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff9fb;border-radius:10px;margin-bottom:14px">
+    <div style="font-size:40px;font-weight:800;color:#be185d">4.8</div>
+    <div>
+      <div style="color:#f59e0b;font-size:20px">★★★★★</div>
+      <div style="font-size:12px;color:#9ca3af">128개 리뷰</div>
+    </div>
+  </div>
+  <div class="review-mini">
+    <div class="review-header">
+      <span class="review-author">홍*동</span>
+      <span class="review-date has-tip"
+        data-table="pd_review" data-col="review_date"
+        data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 작성일">
+        2026-04-10
+      </span>
+    </div>
+    <div style="color:#f59e0b;font-size:13px;margin-bottom:5px">★★★★★</div>
+    <div class="review-content has-tip"
+      data-table="pd_review" data-col="review_content"
+      data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 본문 텍스트">
+      소재가 정말 부드럽고 착용감이 좋아요. 사이즈도 딱 맞고 세탁 후에도 형태 유지가 잘 됩니다.
+    </div>
+  </div>
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

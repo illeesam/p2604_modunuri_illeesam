@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>쿠폰함 | MY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-orange{background:#fed7aa;color:#9a3412}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-red{background:#fee2e2;color:#991b1b}
+.tab-bar{display:flex;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:56px}
+.tab-item{flex:1;text-align:center;padding:12px 0;font-size:13px;color:#9ca3af;font-weight:500;cursor:pointer;border-bottom:2px solid transparent}
+.tab-item.active{color:#be185d;border-bottom-color:#be185d;font-weight:700}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.coupon-card{border:2px dashed #f9a8d4;border-radius:12px;padding:16px;margin-bottom:12px;background:#fff;position:relative;overflow:hidden}
+.coupon-card.used{border-color:#e5e7eb;background:#f9fafb;opacity:.7}
+.coupon-card.expired{border-color:#e5e7eb;background:#f9fafb;opacity:.6}
+.coupon-deco{position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f9a8d4,#ec4899)}
+.coupon-deco.used{background:#9ca3af}
+.coupon-deco.expired{background:#9ca3af}
+.coupon-body{padding-left:8px}
+.coupon-nm{font-size:15px;font-weight:700;margin-bottom:6px}
+.coupon-discount{font-size:22px;font-weight:800;color:#be185d;margin-bottom:8px}
+.coupon-discount.used{color:#9ca3af}
+.coupon-meta{font-size:12px;color:#9ca3af;line-height:1.8}
+.coupon-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dashed #fce7f3}
+.coupon-summary-box{background:#fff0f6;border-radius:10px;padding:16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.coupon-summary-count{font-size:24px;font-weight:800;color:#be185d}
+.coupon-summary-label{font-size:13px;color:#888}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>🎟️ 쿠폰함</h1>
+  <a href="index.html" style="font-size:11px;color:#be185d;text-decoration:none">← 마이페이지</a>
+</div>
+<div class="breadcrumb">마이페이지 &gt; <span>쿠폰함</span></div>
+
+<div class="tab-bar">
+  <div class="tab-item active">사용가능 <span style="color:#be185d">(3)</span></div>
+  <div class="tab-item">사용완료</div>
+  <div class="tab-item">만료</div>
+</div>
+
+<div class="section">
+  <div class="coupon-summary-box">
+    <div>
+      <div class="coupon-summary-label">사용 가능한 쿠폰</div>
+      <div class="coupon-summary-count has-tip"
+        data-table="pm_coupon_issue" data-col="issue_id"
+        data-tbl-cmt="쿠폰 발급 이력" data-col-cmt="발급된 쿠폰 인스턴스 ID">
+        3장
+      </div>
+    </div>
+    <div style="font-size:30px">🎟️</div>
+  </div>
+
+  <!-- 쿠폰 1: 정률 할인 -->
+  <div class="coupon-card">
+    <div class="coupon-deco"></div>
+    <div class="coupon-body">
+      <div class="coupon-nm has-tip"
+        data-table="pm_coupon" data-col="coupon_nm"
+        data-tbl-cmt="쿠폰 마스터" data-col-cmt="쿠폰명">
+        신규 회원 웰컴 쿠폰
+      </div>
+      <div class="coupon-discount has-tip"
+        data-table="pm_coupon" data-col="discount_rate"
+        data-tbl-cmt="쿠폰 마스터" data-col-cmt="정률 할인율 (%)">
+        10% 할인
+      </div>
+      <div class="coupon-meta">
+        <div>쿠폰 유형: <span class="has-tip"
+          data-table="pm_coupon" data-col="coupon_type_cd"
+          data-tbl-cmt="쿠폰 마스터" data-col-cmt="쿠폰 유형"
+          data-code-grp="COUPON_TYPE"
+          data-codes="RATE:정률할인|FIXED:정액할인">
+          정률할인 (RATE)
+        </span></div>
+        <div>최소 주문금액: <span class="has-tip"
+          data-table="pm_coupon" data-col="min_order_amt"
+          data-tbl-cmt="쿠폰 마스터" data-col-cmt="쿠폰 사용 최소 주문금액">
+          30,000원 이상
+        </span></div>
+        <div>최대 할인금액: <span class="has-tip"
+          data-table="pm_coupon" data-col="max_discount_amt"
+          data-tbl-cmt="쿠폰 마스터" data-col-cmt="정률 쿠폰의 최대 할인금액 한도">
+          5,000원 한도
+        </span></div>
+        <div>유효기간: <span class="has-tip"
+          data-table="pm_coupon_issue" data-col="valid_from"
+          data-tbl-cmt="쿠폰 발급 이력" data-col-cmt="쿠폰 유효 시작일">
+          2026-04-01
+        </span> ~ <span class="has-tip"
+          data-table="pm_coupon_issue" data-col="valid_to"
+          data-tbl-cmt="쿠폰 발급 이력" data-col-cmt="쿠폰 유효 만료일">
+          2026-04-30
+        </span></div>
+      </div>
+      <div class="coupon-footer">
+        <span class="badge badge-green has-tip"
+          data-table="pm_coupon_issue" data-col="use_yn"
+          data-tbl-cmt="쿠폰 발급 이력" data-col-cmt="쿠폰 사용 여부 (Y/N)">
+          사용가능
+        </span>
+        <span style="font-size:12px;color:#f59e0b;font-weight:600">D-12 만료예정</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 쿠폰 2: 정액 할인 -->
+  <div class="coupon-card">
+    <div class="coupon-deco"></div>
+    <div class="coupon-body">
+      <div class="coupon-nm has-tip"
+        data-table="pm_coupon" data-col="coupon_nm"
+        data-tbl-cmt="쿠폰 마스터" data-col-cmt="쿠폰명">
+        봄 시즌 특별 할인 쿠폰
+      </div>
+      <div class="coupon-discount has-tip"
+        data-table="pm_coupon" data-col="discount_amt"
+        data-tbl-cmt="쿠폰 마스터" data-col-cmt="정액 할인금액 (원)">
+        3,000원 할인
+      </div>
+      <div class="coupon-meta">
+        <div>쿠폰 유형: <span class="has-tip"
+          data-table="pm_coupon" data-col="coupon_type_cd"
+          data-tbl-cmt="쿠폰 마스터" data-col-cmt="쿠폰 유형"
+          data-code-grp="COUPON_TYPE"
+          data-codes="RATE:정률할인|FIXED:정액할인">
+          정액할인 (FIXED)
+        </span></div>
+        <div>최소 주문금액: <span class="has-tip"
+          data-table="pm_coupon" data-col="min_order_amt"
+          data-tbl-cmt="쿠폰 마스터" data-col-cmt="최소 주문금액">
+          20,000원 이상
+        </span></div>
+        <div>유효기간: 2026-04-18 ~ 2026-05-18</div>
+      </div>
+      <div class="coupon-footer">
+        <span class="badge badge-green">사용가능</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 쿠폰 3: 배송비 할인 -->
+  <div class="coupon-card">
+    <div class="coupon-deco"></div>
+    <div class="coupon-body">
+      <div class="coupon-nm has-tip"
+        data-table="pm_coupon" data-col="coupon_nm"
+        data-tbl-cmt="쿠폰 마스터" data-col-cmt="쿠폰명">
+        무료배송 쿠폰
+      </div>
+      <div class="coupon-discount" style="font-size:18px">배송비 무료</div>
+      <div class="coupon-meta">
+        <div>최소 주문금액: 10,000원 이상</div>
+        <div>유효기간: 2026-04-18 ~ 2026-06-30</div>
+      </div>
+      <div class="coupon-footer">
+        <span class="badge badge-green">사용가능</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

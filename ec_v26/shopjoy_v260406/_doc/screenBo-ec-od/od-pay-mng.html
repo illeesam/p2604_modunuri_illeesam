@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>결제 내역 — OD 화면 명세</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none}
+.search-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600;color:#333}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-purple{background:#f3e5f5;color:#6a1b9a}
+.badge-teal{background:#e0f2f1;color:#00695c}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:#e91e63}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:12px;color:#888;font-weight:500}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-control{border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.summary-box{background:#f8f9fa;border-radius:8px;padding:14px;border-left:3px solid #f48fb1;text-align:center}
+.summary-label{font-size:11px;color:#888;margin-bottom:4px}
+.summary-value{font-size:16px;font-weight:700;color:#c2185b}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb"><a href="index.html">OD 화면 목록</a> &gt; <span>결제 내역</span></div>
+  <h1>💳 결제 내역</h1>
+</div>
+<div class="container">
+
+  <!-- 검색 영역 -->
+  <div class="card">
+    <div class="section-title">🔍 검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip" data-table="od_pay" data-col="pay_method_cd" data-tbl-cmt="결제" data-col-cmt="결제수단" data-code-grp="PAY_METHOD" data-codes="BANK_TRANSFER:무통장입금|VBANK:가상계좌|TOSS:토스|KAKAO:카카오|NAVER:네이버|MOBILE:핸드폰">결제수단</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>BANK_TRANSFER — 무통장입금</option>
+          <option>VBANK — 가상계좌</option>
+          <option>TOSS — 토스</option>
+          <option>KAKAO — 카카오</option>
+          <option>NAVER — 네이버</option>
+          <option>MOBILE — 핸드폰</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_pay" data-col="pay_status_cd" data-tbl-cmt="결제" data-col-cmt="결제상태" data-code-grp="PAY_STATUS" data-codes="PENDING:대기|COMPLT:완료|FAILED:실패|CANCELLED:취소|REFUNDED:환불완료">결제상태</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>PENDING — 대기</option>
+          <option>COMPLT — 완료</option>
+          <option>FAILED — 실패</option>
+          <option>CANCELLED — 취소</option>
+          <option>REFUNDED — 환불완료</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_pay" data-col="pay_dir_cd" data-tbl-cmt="결제" data-col-cmt="입금/환불 방향" data-code-grp="PAY_DIR" data-codes="DEPOSIT:입금|REFUND:환불">입금/환불구분</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>DEPOSIT — 입금</option>
+          <option>REFUND — 환불</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_pay" data-col="pay_div_cd" data-tbl-cmt="결제" data-col-cmt="주문/클레임 구분" data-code-grp="PAY_DIV" data-codes="ORDER:주문결제|CLAIM:클레임결제">주문/클레임</label>
+        <select class="form-control">
+          <option>전체</option>
+          <option>ORDER — 주문결제</option>
+          <option>CLAIM — 클레임결제</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_pay" data-col="order_id" data-tbl-cmt="결제" data-col-cmt="주문ID">주문번호</label>
+        <input class="form-control" type="text" placeholder="주문번호 입력">
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="od_pay" data-col="pay_date" data-tbl-cmt="결제" data-col-cmt="결제일시">결제기간</label>
+        <div style="display:flex;gap:4px">
+          <input type="date" class="form-control" value="2026-04-01">
+          <input type="date" class="form-control" value="2026-04-18">
+        </div>
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">검색</button>
+    </div>
+  </div>
+
+  <!-- 요약 지표 -->
+  <div class="summary-grid">
+    <div class="summary-box">
+      <div class="summary-label">총 결제건수</div>
+      <div class="summary-value">312건</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-label">총 결제금액</div>
+      <div class="summary-value">24,680,000원</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-label">총 환불금액</div>
+      <div class="summary-value" style="color:#c62828">1,320,000원</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-label">순 결제금액</div>
+      <div class="summary-value" style="color:#2e7d32">23,360,000원</div>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div>
+        <span class="list-title">결제 목록</span>
+        <span class="list-count">총 312건</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm">CSV 다운로드</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th class="has-tip" data-table="od_pay" data-col="pay_id" data-tbl-cmt="결제" data-col-cmt="결제ID">결제ID</th>
+            <th class="has-tip" data-table="od_pay" data-col="order_id" data-tbl-cmt="결제" data-col-cmt="주문ID">주문번호</th>
+            <th class="has-tip" data-table="od_pay" data-col="pay_div_cd" data-tbl-cmt="결제" data-col-cmt="주문/클레임 구분" data-code-grp="PAY_DIV" data-codes="ORDER:주문결제|CLAIM:클레임결제">결제구분</th>
+            <th class="has-tip" data-table="od_pay" data-col="pay_dir_cd" data-tbl-cmt="결제" data-col-cmt="입금/환불 방향" data-code-grp="PAY_DIR" data-codes="DEPOSIT:입금|REFUND:환불">입출금</th>
+            <th class="has-tip" data-table="od_pay" data-col="pay_method_cd" data-tbl-cmt="결제" data-col-cmt="결제수단" data-code-grp="PAY_METHOD" data-codes="BANK_TRANSFER:무통장입금|VBANK:가상계좌|TOSS:토스|KAKAO:카카오|NAVER:네이버|MOBILE:핸드폰">결제수단</th>
+            <th class="has-tip" data-table="od_pay" data-col="pay_amt" data-tbl-cmt="결제" data-col-cmt="결제 금액">결제금액</th>
+            <th class="has-tip" data-table="od_pay" data-col="pay_status_cd" data-tbl-cmt="결제" data-col-cmt="결제상태" data-code-grp="PAY_STATUS" data-codes="PENDING:대기|COMPLT:완료|FAILED:실패|CANCELLED:취소|REFUNDED:환불완료">결제상태</th>
+            <th class="has-tip" data-table="od_pay" data-col="pg_transaction_id" data-tbl-cmt="결제" data-col-cmt="PG 거래ID">PG거래ID</th>
+            <th class="has-tip" data-table="od_pay" data-col="pay_date" data-tbl-cmt="결제" data-col-cmt="결제일시">결제일시</th>
+            <th class="has-tip" data-table="od_pay" data-col="refund_amt" data-tbl-cmt="결제" data-col-cmt="환불 금액">환불금액</th>
+            <th class="has-tip" data-table="od_pay" data-col="refund_status_cd" data-tbl-cmt="결제" data-col-cmt="환불 상태" data-code-grp="REFUND_STATUS" data-codes="PENDING:환불대기|COMPLT:환불완료|FAILED:환불실패">환불상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><a class="title-link">PAY2604180000001</a></td>
+            <td>2604180000001</td>
+            <td><span class="badge badge-blue">주문결제</span></td>
+            <td><span class="badge badge-green">입금</span></td>
+            <td><span class="badge badge-orange">카카오</span></td>
+            <td>78,000</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>KAKAO_TXN_20260418_001</td>
+            <td>2026-04-18 10:23:11</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><a class="title-link">PAY2604170000002</a></td>
+            <td>2604170000002</td>
+            <td><span class="badge badge-blue">주문결제</span></td>
+            <td><span class="badge badge-green">입금</span></td>
+            <td><span class="badge badge-gray">무통장</span></td>
+            <td>54,000</td>
+            <td><span class="badge badge-orange">대기</span></td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><a class="title-link">PAY2604160000003</a></td>
+            <td>2604160000003</td>
+            <td><span class="badge badge-blue">주문결제</span></td>
+            <td><span class="badge badge-green">입금</span></td>
+            <td><span class="badge badge-teal">토스</span></td>
+            <td>35,000</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>TOSS_TXN_20260416_003</td>
+            <td>2026-04-16 16:45:22</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><a class="title-link">PAY2604170000004</a></td>
+            <td>2604170000002</td>
+            <td><span class="badge badge-red">클레임결제</span></td>
+            <td><span class="badge badge-red">환불</span></td>
+            <td><span class="badge badge-gray">무통장</span></td>
+            <td>54,000</td>
+            <td><span class="badge badge-orange">환불대기</span></td>
+            <td>—</td>
+            <td>2026-04-17 11:30:00</td>
+            <td>54,000</td>
+            <td><span class="badge badge-orange">환불대기</span></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><a class="title-link">PAY2604150000005</a></td>
+            <td>2604150000005</td>
+            <td><span class="badge badge-blue">주문결제</span></td>
+            <td><span class="badge badge-green">입금</span></td>
+            <td><span class="badge badge-purple">네이버</span></td>
+            <td>120,000</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>NAVER_TXN_20260415_005</td>
+            <td>2026-04-15 14:10:35</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pager">«</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">3</button>
+      <button class="pager">...</button>
+      <button class="pager">32</button>
+      <button class="pager">»</button>
+    </div>
+  </div>
+
+  <!-- 결제 상세 -->
+  <div class="card">
+    <div class="section-title">📋 결제 상세 — PAY2604180000001</div>
+    <div class="form-grid cols-3">
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pay_id" data-tbl-cmt="결제" data-col-cmt="결제ID">결제ID</label>
+        <input class="form-control" value="PAY2604180000001" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="order_id" data-tbl-cmt="결제" data-col-cmt="주문ID">주문번호</label>
+        <input class="form-control" value="2604180000001" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="claim_id" data-tbl-cmt="결제" data-col-cmt="클레임ID (클레임 추가결제 시)">클레임ID</label>
+        <input class="form-control" value="—" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pay_div_cd" data-tbl-cmt="결제" data-col-cmt="주문/클레임 구분" data-code-grp="PAY_DIV" data-codes="ORDER:주문결제|CLAIM:클레임결제">결제구분</label>
+        <select class="form-control"><option>ORDER — 주문결제</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pay_dir_cd" data-tbl-cmt="결제" data-col-cmt="입금/환불 방향" data-code-grp="PAY_DIR" data-codes="DEPOSIT:입금|REFUND:환불">입출금구분</label>
+        <select class="form-control"><option>DEPOSIT — 입금</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pay_method_cd" data-tbl-cmt="결제" data-col-cmt="결제수단" data-code-grp="PAY_METHOD" data-codes="BANK_TRANSFER:무통장입금|VBANK:가상계좌|TOSS:토스|KAKAO:카카오|NAVER:네이버|MOBILE:핸드폰">결제수단</label>
+        <select class="form-control"><option>KAKAO — 카카오</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pay_amt" data-tbl-cmt="결제" data-col-cmt="결제 금액">결제금액</label>
+        <input class="form-control" value="78000" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pay_status_cd" data-tbl-cmt="결제" data-col-cmt="결제상태" data-code-grp="PAY_STATUS" data-codes="PENDING:대기|COMPLT:완료|FAILED:실패|CANCELLED:취소|REFUNDED:환불완료">결제상태</label>
+        <select class="form-control"><option>COMPLT — 완료</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pay_date" data-tbl-cmt="결제" data-col-cmt="결제일시">결제일시</label>
+        <input class="form-control" value="2026-04-18 10:23:11" readonly>
+      </div>
+      <div class="form-group full">
+        <label class="form-label has-tip" data-table="od_pay" data-col="pg_transaction_id" data-tbl-cmt="결제" data-col-cmt="PG 거래ID">PG 거래ID</label>
+        <input class="form-control" value="KAKAO_TXN_20260418_001" readonly>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="section-title" style="font-size:13px">💳 가상계좌 정보 (해당시)</div>
+      <div class="form-grid cols-3" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="vbank_account" data-tbl-cmt="결제" data-col-cmt="가상계좌번호">가상계좌번호</label>
+          <input class="form-control" value="—" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="bank_code" data-tbl-cmt="결제" data-col-cmt="은행코드" data-code-grp="BANK_CODE" data-codes="004:KB국민|011:NH농협|020:우리|090:카카오뱅크|089:케이뱅크">은행코드</label>
+          <input class="form-control" value="—" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="holder_nm" data-tbl-cmt="결제" data-col-cmt="예금주명">예금주명</label>
+          <input class="form-control" value="—" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="due_date" data-tbl-cmt="결제" data-col-cmt="입금기한">입금기한</label>
+          <input class="form-control" value="—" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="card_no" data-tbl-cmt="결제" data-col-cmt="카드번호 (마스킹)">카드번호</label>
+          <input class="form-control" value="—" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="installment_month" data-tbl-cmt="결제" data-col-cmt="할부 개월수 (0=일시불)">할부개월</label>
+          <input class="form-control" value="0 (일시불)" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="section-title" style="font-size:13px">🔄 환불 정보</div>
+      <div class="form-grid cols-3" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="refund_amt" data-tbl-cmt="결제" data-col-cmt="환불 금액">환불금액</label>
+          <input class="form-control" value="—">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="od_pay" data-col="refund_status_cd" data-tbl-cmt="결제" data-col-cmt="환불 상태" data-code-grp="REFUND_STATUS" data-codes="PENDING:환불대기|COMPLT:환불완료|FAILED:환불실패">환불상태</label>
+          <select class="form-control"><option>— 미환불 —</option><option>PENDING — 환불대기</option><option>COMPLT — 환불완료</option><option>FAILED — 환불실패</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

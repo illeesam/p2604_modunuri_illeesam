@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원관리(MB) 화면 목록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.sub-desc{font-size:12px;color:#999;margin-top:4px}
+.container{padding:28px 24px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.screen-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 6px rgba(0,0,0,.09);border-top:4px solid #f48fb1;text-decoration:none;color:#333;display:block;transition:transform .15s,box-shadow .15s}
+.screen-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.13)}
+.card-no{font-size:11px;color:#f48fb1;font-weight:700;margin-bottom:6px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.card-desc{font-size:12px;color:#888;line-height:1.6;margin-bottom:10px}
+.card-table{font-size:11px;background:#fce4ec;color:#c2185b;padding:3px 8px;border-radius:20px;display:inline-block;font-weight:600}
+.card-na{opacity:.45;border-top-color:#ddd}
+.card-na .card-table{background:#f5f5f5;color:#aaa}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">화면명세 &gt; EC &gt; <span>회원관리 (MB)</span></div>
+  <h1>👤 회원관리(MB) 화면 목록</h1>
+  <div class="sub-desc">DDL 기준 화면 구조 — mb_mem · mb_mem_addr · mb_mem_grade · mb_mem_group</div>
+</div>
+<div class="container">
+  <div class="card-grid">
+    <a class="screen-card" href="mb-mem-mng.html">
+      <div class="card-no">01</div>
+      <div class="card-title">회원 관리</div>
+      <div class="card-desc">회원 목록·검색·상세·등록·수정·상태변경</div>
+      <span class="card-table">mb_mem</span>
+    </a>
+    <a class="screen-card" href="mb-mem-grade-mng.html">
+      <div class="card-no">02</div>
+      <div class="card-title">회원등급 관리</div>
+      <div class="card-desc">등급 기준·혜택·적립율 관리</div>
+      <span class="card-table">mb_mem_grade</span>
+    </a>
+    <a class="screen-card" href="mb-mem-addr-mng.html">
+      <div class="card-no">03</div>
+      <div class="card-title">배송지 관리</div>
+      <div class="card-desc">회원별 배송지 목록·기본배송지 설정</div>
+      <span class="card-table">mb_mem_addr</span>
+    </a>
+    <a class="screen-card card-na" href="#">
+      <div class="card-no">04</div>
+      <div class="card-title">SNS 연동 관리</div>
+      <div class="card-desc">소셜 로그인 연동 계정 관리</div>
+      <span class="card-table">mb_sns_mem</span>
+    </a>
+  </div>
+</div>
+</body>
+</html>

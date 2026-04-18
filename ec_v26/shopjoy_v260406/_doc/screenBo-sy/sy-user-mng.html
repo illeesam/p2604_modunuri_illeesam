@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>사용자 관리 — SY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+.search-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-orange{background:#fff3e0;color:#e65100}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:transparent}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;color:#888;font-weight:500}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-control{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">관리자 &gt; 시스템관리 &gt; <span>사용자 관리</span></div>
+  <h1>👤 사용자 관리</h1>
+</div>
+<div class="container">
+
+  <!-- 검색 -->
+  <div class="card">
+    <div class="section-title">🔍 검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip" data-table="sy_user" data-col="site_id" data-tbl-cmt="관리자 사용자" data-col-cmt="사이트ID">사이트</label>
+        <select><option>전체</option><option>ShopJoy 쇼핑몰</option><option>관리자 포털</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="sy_user" data-col="user_status_cd" data-tbl-cmt="관리자 사용자" data-col-cmt="상태" data-code-grp="USER_STATUS" data-codes="ACTIVE:활성|INACTIVE:비활성|LOCKED:잠금">상태</label>
+        <select><option>전체</option><option>활성</option><option>비활성</option><option>잠금</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="sy_user" data-col="dept_id" data-tbl-cmt="관리자 사용자" data-col-cmt="부서ID (sy_dept.dept_id)">부서</label>
+        <select><option>전체</option><option>개발팀</option><option>운영팀</option><option>CS팀</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="sy_user" data-col="role_id" data-tbl-cmt="관리자 사용자" data-col-cmt="역할ID (sy_role.role_id)">역할</label>
+        <select><option>전체</option><option>시스템관리자</option><option>운영자</option><option>CS담당자</option></select>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label class="has-tip" data-table="sy_user" data-col="user_nm / login_id / user_email" data-tbl-cmt="관리자 사용자" data-col-cmt="이름/아이디/이메일 통합검색">이름 / 아이디 / 이메일</label>
+        <input type="text" placeholder="검색어 입력">
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">🔍 검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div><span class="list-title">사용자 목록</span><span class="list-count">총 3건</span></div>
+      <button class="btn btn-primary btn-sm">+ 신규 등록</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="has-tip" data-table="sy_user" data-col="user_id" data-tbl-cmt="관리자 사용자" data-col-cmt="사용자ID (YYMMDDhhmmss+rand4)">사용자ID</th>
+            <th class="has-tip" data-table="sy_user" data-col="login_id" data-tbl-cmt="관리자 사용자" data-col-cmt="로그인 아이디 (UNIQUE)">로그인ID</th>
+            <th class="has-tip" data-table="sy_user" data-col="user_nm" data-tbl-cmt="관리자 사용자" data-col-cmt="사용자명">이름</th>
+            <th class="has-tip" data-table="sy_user" data-col="user_email" data-tbl-cmt="관리자 사용자" data-col-cmt="이메일">이메일</th>
+            <th class="has-tip" data-table="sy_user" data-col="user_phone" data-tbl-cmt="관리자 사용자" data-col-cmt="연락처">연락처</th>
+            <th class="has-tip" data-table="sy_user" data-col="dept_id" data-tbl-cmt="관리자 사용자" data-col-cmt="부서ID (sy_dept.dept_id)">부서</th>
+            <th class="has-tip" data-table="sy_user" data-col="role_id" data-tbl-cmt="관리자 사용자" data-col-cmt="역할ID (sy_role.role_id)">역할</th>
+            <th class="has-tip" data-table="sy_user" data-col="user_status_cd" data-tbl-cmt="관리자 사용자" data-col-cmt="상태" data-code-grp="USER_STATUS" data-codes="ACTIVE:활성|INACTIVE:비활성|LOCKED:잠금">상태</th>
+            <th class="has-tip" data-table="sy_user" data-col="last_login" data-tbl-cmt="관리자 사용자" data-col-cmt="최근 로그인">최근 로그인</th>
+            <th class="has-tip" data-table="sy_user" data-col="login_fail_cnt" data-tbl-cmt="관리자 사용자" data-col-cmt="로그인 실패 횟수">실패횟수</th>
+            <th>등록일</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><small>2604180001abc1</small></td>
+            <td>admin</td>
+            <td>김관리</td>
+            <td>admin@shopjoy.kr</td>
+            <td>010-1234-5678</td>
+            <td>개발팀</td>
+            <td>시스템관리자</td>
+            <td><span class="badge badge-green">활성</span></td>
+            <td>2026-04-18 09:12</td>
+            <td>0</td>
+            <td>2026-01-01</td>
+            <td class="actions"><button class="btn btn-secondary btn-sm">수정</button><button class="btn btn-danger btn-sm">삭제</button></td>
+          </tr>
+          <tr>
+            <td><small>2604180002def2</small></td>
+            <td>operator01</td>
+            <td>이운영</td>
+            <td>operator@shopjoy.kr</td>
+            <td>010-2345-6789</td>
+            <td>운영팀</td>
+            <td>운영자</td>
+            <td><span class="badge badge-green">활성</span></td>
+            <td>2026-04-17 14:30</td>
+            <td>0</td>
+            <td>2026-02-01</td>
+            <td class="actions"><button class="btn btn-secondary btn-sm">수정</button><button class="btn btn-danger btn-sm">삭제</button></td>
+          </tr>
+          <tr>
+            <td><small>2604180003ghi3</small></td>
+            <td>cs_agent01</td>
+            <td>박CS</td>
+            <td>cs@shopjoy.kr</td>
+            <td>010-3456-7890</td>
+            <td>CS팀</td>
+            <td>CS담당자</td>
+            <td><span class="badge badge-orange">잠금</span></td>
+            <td>2026-04-10 11:00</td>
+            <td>5</td>
+            <td>2026-03-01</td>
+            <td class="actions"><button class="btn btn-secondary btn-sm">수정</button><button class="btn btn-danger btn-sm">삭제</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">3</button>
+    </div>
+  </div>
+
+  <!-- 등록/수정 폼 -->
+  <div class="card">
+    <div class="section-title">✏️ 사용자 등록 / 수정</div>
+    <div class="ddl-ref">테이블: <strong>sy_user</strong> — 관리자 사용자</div>
+    <div class="form-grid cols-3">
+      <div class="form-group">
+        <label class="form-label req has-tip" data-table="sy_user" data-col="user_nm" data-tbl-cmt="관리자 사용자" data-col-cmt="사용자명">사용자명</label>
+        <input type="text" class="form-control" placeholder="홍길동">
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip" data-table="sy_user" data-col="login_id" data-tbl-cmt="관리자 사용자" data-col-cmt="로그인 아이디 (UNIQUE)">로그인 아이디</label>
+        <input type="text" class="form-control" placeholder="영문+숫자">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="sy_user" data-col="user_password" data-tbl-cmt="관리자 사용자" data-col-cmt="비밀번호 (bcrypt)">비밀번호</label>
+        <input type="password" class="form-control" placeholder="신규 등록 시 필수">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="sy_user" data-col="user_email" data-tbl-cmt="관리자 사용자" data-col-cmt="이메일">이메일</label>
+        <input type="email" class="form-control" placeholder="example@shopjoy.kr">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="sy_user" data-col="user_phone" data-tbl-cmt="관리자 사용자" data-col-cmt="연락처">연락처</label>
+        <input type="text" class="form-control" placeholder="010-0000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="sy_user" data-col="dept_id" data-tbl-cmt="관리자 사용자" data-col-cmt="부서ID (sy_dept.dept_id)">부서</label>
+        <select class="form-control"><option>-- 선택 --</option><option>개발팀</option><option>운영팀</option><option>CS팀</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="sy_user" data-col="role_id" data-tbl-cmt="관리자 사용자" data-col-cmt="역할ID (sy_role.role_id)">역할</label>
+        <select class="form-control"><option>-- 선택 --</option><option>시스템관리자</option><option>운영자</option><option>CS담당자</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="sy_user" data-col="user_status_cd" data-tbl-cmt="관리자 사용자" data-col-cmt="상태" data-code-grp="USER_STATUS" data-codes="ACTIVE:활성|INACTIVE:비활성|LOCKED:잠금">상태</label>
+        <select class="form-control"><option value="ACTIVE">활성</option><option value="INACTIVE">비활성</option><option value="LOCKED">잠금</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="sy_user" data-col="auth_method_cd" data-tbl-cmt="관리자 사용자" data-col-cmt="인증방식" data-code-grp="AUTH_METHOD" data-codes="MAIN:기본|SMS:SMS인증|OTP:OTP|AUTHENTICATOR:인증앱">인증방식</label>
+        <select class="form-control"><option value="MAIN">기본</option><option value="SMS">SMS인증</option><option value="OTP">OTP</option><option value="AUTHENTICATOR">인증앱</option></select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label has-tip" data-table="sy_user" data-col="user_memo" data-tbl-cmt="관리자 사용자" data-col-cmt="메모">메모</label>
+        <textarea class="form-control" placeholder="관리자 메모"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">💾 저장</button>
+    </div>
+  </div>
+
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

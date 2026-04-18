@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>클레임(취소/반품/교환) | MY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:14px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#f9a8d4}
+.field textarea{resize:vertical;min-height:80px}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;margin:2px}
+.btn-primary{background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff}
+.btn-secondary{background:#f3f4f6;color:#555;border:1px solid #e5e7eb}
+.btn-full{width:100%;margin-top:6px;padding:14px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-orange{background:#fed7aa;color:#9a3412}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-purple{background:#ede9fe;color:#5b21b6}
+.tab-bar{display:flex;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:56px}
+.tab-item{flex:1;text-align:center;padding:12px 0;font-size:13px;color:#9ca3af;font-weight:500;cursor:pointer;border-bottom:2px solid transparent}
+.tab-item.active{color:#be185d;border-bottom-color:#be185d;font-weight:700}
+.claim-card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:12px}
+.claim-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.claim-no{font-size:12px;color:#9ca3af}
+.info-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
+.info-label{color:#9ca3af;font-size:13px}
+.info-value{font-weight:500}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.section-divider{height:8px;background:#f9fafb;margin:0}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>↩️ 취소/반품/교환</h1>
+  <a href="index.html" style="font-size:11px;color:#be185d;text-decoration:none">← 마이페이지</a>
+</div>
+<div class="breadcrumb">마이페이지 &gt; <span>취소/반품/교환</span></div>
+
+<div class="tab-bar">
+  <div class="tab-item active">전체</div>
+  <div class="tab-item">취소</div>
+  <div class="tab-item">반품</div>
+  <div class="tab-item">교환</div>
+</div>
+
+<!-- 클레임 목록 -->
+<div class="section">
+  <div class="section-title">클레임 내역</div>
+
+  <!-- 클레임 카드 1: 반품 -->
+  <div class="claim-card">
+    <div class="claim-card-header">
+      <div>
+        <div class="claim-no has-tip"
+          data-table="od_claim" data-col="claim_id"
+          data-tbl-cmt="클레임 마스터" data-col-cmt="클레임ID (YYMMDDhhmmss+rand4)">
+          클레임: 2604170001234
+        </div>
+        <div class="claim-no" style="margin-top:3px">
+          원주문: <span class="has-tip"
+            data-table="od_claim" data-col="order_id"
+            data-tbl-cmt="클레임 마스터" data-col-cmt="원주문 참조 ID">
+            2604160000003
+          </span>
+        </div>
+      </div>
+      <span class="badge badge-orange has-tip"
+        data-table="od_claim" data-col="claim_status_cd"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="클레임 처리 상태"
+        data-code-grp="CLAIM_STATUS"
+        data-codes="REQUESTED:신청접수|APPROVED:승인|REJECTED:반려|IN_PICKUP:수거중|PICKED_UP:수거완료|INSPECTING:검수중|REFUNDING:환불처리중|REFUNDED:환불완료|RESHIPPING:재발송중|COMPLETED:완료">
+        수거중
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">클레임 유형</span>
+      <span class="info-value has-tip"
+        data-table="od_claim" data-col="claim_type_cd"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="클레임 유형"
+        data-code-grp="CLAIM_TYPE"
+        data-codes="CANCEL:취소|RETURN:반품|EXCHANGE:교환">
+        반품
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">신청 사유</span>
+      <span class="info-value has-tip"
+        data-table="od_claim" data-col="reason_cd"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="사유 코드"
+        data-code-grp="CLAIM_REASON"
+        data-codes="CHANGE_MIND:단순변심|WRONG_ORDER:오주문|DEFECT:상품불량|WRONG_ITEM:오배송|SIZE_ISSUE:사이즈불만">
+        단순변심
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">수거 택배사</span>
+      <span class="info-value has-tip"
+        data-table="od_claim" data-col="return_courier_cd"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="반품 수거 택배사"
+        data-code-grp="COURIER_CD"
+        data-codes="CJ:CJ대한통운|LOTTE:롯데택배|HANJIN:한진택배|POST:우체국">
+        CJ대한통운
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">수거 송장번호</span>
+      <span class="info-value has-tip"
+        data-table="od_claim" data-col="return_tracking_no"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="반품 수거 송장번호">
+        987654321098
+      </span>
+    </div>
+    <div class="info-row" style="border-bottom:none">
+      <span class="info-label">환불예정금액</span>
+      <span class="info-value" style="color:#be185d;font-weight:700">
+        <span class="has-tip"
+          data-table="od_claim" data-col="refund_amt"
+          data-tbl-cmt="클레임 마스터" data-col-cmt="환불 금액 (배송비 차감 후)">
+          66,000원
+        </span>
+      </span>
+    </div>
+  </div>
+
+  <!-- 클레임 카드 2: 취소완료 -->
+  <div class="claim-card">
+    <div class="claim-card-header">
+      <div>
+        <div class="claim-no has-tip"
+          data-table="od_claim" data-col="claim_id"
+          data-tbl-cmt="클레임 마스터" data-col-cmt="클레임ID">
+          클레임: 2604100000567
+        </div>
+        <div class="claim-no" style="margin-top:3px">
+          원주문: <span class="has-tip"
+            data-table="od_claim" data-col="order_id"
+            data-tbl-cmt="클레임 마스터" data-col-cmt="원주문 참조 ID">
+            2604090000002
+          </span>
+        </div>
+      </div>
+      <span class="badge badge-gray has-tip"
+        data-table="od_claim" data-col="claim_status_cd"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="클레임 처리 상태"
+        data-code-grp="CLAIM_STATUS"
+        data-codes="REQUESTED:신청접수|APPROVED:승인|REJECTED:반려|REFUNDED:환불완료|COMPLETED:완료">
+        취소완료
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">클레임 유형</span>
+      <span class="info-value has-tip"
+        data-table="od_claim" data-col="claim_type_cd"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="클레임 유형"
+        data-code-grp="CLAIM_TYPE"
+        data-codes="CANCEL:취소|RETURN:반품|EXCHANGE:교환">
+        취소
+      </span>
+    </div>
+    <div class="info-row" style="border-bottom:none">
+      <span class="info-label">환불완료금액</span>
+      <span class="info-value" style="color:#065f46;font-weight:700">
+        <span class="has-tip"
+          data-table="od_claim" data-col="refund_amt"
+          data-tbl-cmt="클레임 마스터" data-col-cmt="환불 금액">
+          93,000원 환불완료
+        </span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- 클레임 신청 폼 -->
+<div class="section">
+  <div class="section-title">클레임 신청</div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="od_claim" data-col="claim_type_cd"
+      data-tbl-cmt="클레임 마스터" data-col-cmt="클레임 유형 선택"
+      data-code-grp="CLAIM_TYPE"
+      data-codes="CANCEL:취소|RETURN:반품|EXCHANGE:교환">
+      클레임 유형 *
+    </label>
+    <select>
+      <option value="">선택하세요</option>
+      <option value="CANCEL">취소</option>
+      <option value="RETURN">반품</option>
+      <option value="EXCHANGE">교환</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="od_claim" data-col="order_id"
+      data-tbl-cmt="클레임 마스터" data-col-cmt="클레임 대상 주문 ID">
+      대상 주문 선택 *
+    </label>
+    <select>
+      <option value="">주문을 선택하세요</option>
+      <option value="2604180000001">2026-04-18 | 오가닉 코튼 티셔츠 | 93,000원</option>
+      <option value="2604160000003">2026-04-16 | 린넨 와이드 팬츠 | 72,000원</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="od_claim" data-col="reason_cd"
+      data-tbl-cmt="클레임 마스터" data-col-cmt="클레임 사유 코드"
+      data-code-grp="CLAIM_REASON"
+      data-codes="CHANGE_MIND:단순변심|WRONG_ORDER:오주문|DEFECT:상품불량|WRONG_ITEM:오배송|SIZE_ISSUE:사이즈불만">
+      사유 선택 *
+    </label>
+    <select>
+      <option value="">사유를 선택하세요</option>
+      <option value="CHANGE_MIND">단순변심</option>
+      <option value="WRONG_ORDER">오주문</option>
+      <option value="DEFECT">상품불량</option>
+      <option value="WRONG_ITEM">오배송</option>
+      <option value="SIZE_ISSUE">사이즈불만</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="has-tip"
+      data-table="od_claim" data-col="reason_detail"
+      data-tbl-cmt="클레임 마스터" data-col-cmt="상세 사유 텍스트">
+      상세 사유
+    </label>
+    <textarea placeholder="상세 사유를 입력해주세요 (선택)"></textarea>
+  </div>
+
+  <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:#555">수거지 정보</div>
+    <div class="field">
+      <label class="has-tip"
+        data-table="od_claim" data-col="collect_nm"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="수거 요청자 이름">
+        수거 요청자명 *
+      </label>
+      <input type="text" placeholder="홍길동">
+    </div>
+    <div class="field">
+      <label class="has-tip"
+        data-table="od_claim" data-col="collect_phone"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="수거 요청자 연락처">
+        연락처 *
+      </label>
+      <input type="tel" placeholder="010-0000-0000">
+    </div>
+    <div class="field">
+      <label class="has-tip"
+        data-table="od_claim" data-col="collect_zip"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="수거지 우편번호">
+        우편번호 *
+      </label>
+      <div style="display:flex;gap:8px">
+        <input type="text" placeholder="12345" style="width:120px">
+        <button class="btn btn-secondary" style="flex:1">우편번호 검색</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="has-tip"
+        data-table="od_claim" data-col="collect_addr"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="수거지 기본주소">
+        기본 주소 *
+      </label>
+      <input type="text" placeholder="서울시 강남구 테헤란로 123">
+    </div>
+    <div class="field">
+      <label class="has-tip"
+        data-table="od_claim" data-col="collect_addr_detail"
+        data-tbl-cmt="클레임 마스터" data-col-cmt="수거지 상세주소">
+        상세 주소
+      </label>
+      <input type="text" placeholder="101동 202호">
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-full">클레임 신청하기</button>
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

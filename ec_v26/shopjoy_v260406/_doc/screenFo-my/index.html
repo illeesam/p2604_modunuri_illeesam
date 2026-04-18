@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>👤 마이페이지(MY) 화면 목록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3}
+.index-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.index-card{background:#fff;border:1px solid #fce7f3;border-radius:12px;padding:16px;text-decoration:none;color:#333;display:block;transition:box-shadow .2s}
+.index-card:hover{box-shadow:0 4px 16px rgba(190,24,93,.12);border-color:#f9a8d4}
+.index-card-no{font-size:11px;color:#f9a8d4;font-weight:700;margin-bottom:6px}
+.index-card-title{font-size:15px;font-weight:700;color:#be185d;margin-bottom:6px}
+.index-card-desc{font-size:12px;color:#888;margin-bottom:6px}
+.index-card-tbl{font-size:11px;color:#aaa;font-family:monospace}
+.page-desc{padding:16px 20px;background:#fff7f9;border-bottom:1px solid #fce7f3;font-size:13px;color:#666;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>👤 마이페이지(MY) 화면 목록</h1>
+  <span style="font-size:11px;color:#aaa">screenFo-my/</span>
+</div>
+<div class="breadcrumb">Front Office &gt; <span>마이페이지</span></div>
+<div class="page-desc">
+  사용자 페이스(Front Office) 마이페이지 화면 명세입니다.<br>
+  각 필드에 마우스를 올리면 테이블명·컬럼명·코멘트·코드 툴팁이 표시됩니다.
+</div>
+
+<div class="index-grid">
+  <a class="index-card" href="my-order.html">
+    <div class="index-card-no">01</div>
+    <div class="index-card-title">📦 내 주문내역</div>
+    <div class="index-card-desc">주문 조회·상세·배송추적</div>
+    <div class="index-card-tbl">od_order · od_order_item · od_dliv</div>
+  </a>
+  <a class="index-card" href="my-claim.html">
+    <div class="index-card-no">02</div>
+    <div class="index-card-title">↩️ 취소/반품/교환</div>
+    <div class="index-card-desc">클레임 신청·현황 조회</div>
+    <div class="index-card-tbl">od_claim · od_claim_item</div>
+  </a>
+  <a class="index-card" href="my-coupon.html">
+    <div class="index-card-no">03</div>
+    <div class="index-card-title">🎟️ 쿠폰함</div>
+    <div class="index-card-desc">보유 쿠폰 목록·사용이력</div>
+    <div class="index-card-tbl">pm_coupon_issue</div>
+  </a>
+  <a class="index-card" href="my-cache.html">
+    <div class="index-card-no">04</div>
+    <div class="index-card-title">💰 적립금</div>
+    <div class="index-card-desc">적립금 잔액·이력 조회</div>
+    <div class="index-card-tbl">pm_cache</div>
+  </a>
+  <a class="index-card" href="my-addr.html">
+    <div class="index-card-no">05</div>
+    <div class="index-card-title">📍 배송지 관리</div>
+    <div class="index-card-desc">배송지 등록·수정·기본설정</div>
+    <div class="index-card-tbl">mb_mem_addr</div>
+  </a>
+  <a class="index-card" href="my-profile.html">
+    <div class="index-card-no">06</div>
+    <div class="index-card-title">👤 회원정보 수정</div>
+    <div class="index-card-desc">비밀번호·연락처·등급확인</div>
+    <div class="index-card-tbl">mb_mem</div>
+  </a>
+</div>
+
+<div style="padding:20px;text-align:center;font-size:11px;color:#aaa">
+  shopjoy v26 · Front Office 화면 명세 · 2026-04-18
+</div>
+</body>
+</html>

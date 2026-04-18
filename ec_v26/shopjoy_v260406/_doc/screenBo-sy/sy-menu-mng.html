@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>메뉴 관리 — SY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.layout-row{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;color:#888;font-weight:500}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-control{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+/* 트리 */
+.tree-wrap{max-height:520px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:8px;padding:8px}
+.tree-item{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12px}
+.tree-item:hover{background:#fce4ec}
+.tree-item.selected{background:#fce4ec;font-weight:600;color:#c2185b}
+.tree-item.level1{font-size:13px;font-weight:600;color:#555}
+.tree-item.level2{padding-left:20px}
+.tree-item.level3{padding-left:38px;color:#888}
+.tree-icon{font-size:10px;color:#f06292;min-width:12px}
+.tree-badge{font-size:10px;color:#aaa;margin-left:4px;font-family:monospace}
+.tree-actions{margin-left:auto;display:flex;gap:4px;opacity:0}
+.tree-item:hover .tree-actions{opacity:1}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">관리자 &gt; 시스템관리 &gt; <span>메뉴 관리</span></div>
+  <h1>📋 메뉴 관리</h1>
+</div>
+<div class="container">
+  <div class="layout-row">
+
+    <!-- 메뉴 트리 -->
+    <div class="card">
+      <div class="list-toolbar">
+        <span class="list-title has-tip" data-table="sy_menu" data-col="parent_id" data-tbl-cmt="관리자 메뉴" data-col-cmt="상위메뉴ID — 1단계(그룹) > 2단계(메뉴) > 3단계(하위메뉴) 계층">메뉴 트리</span>
+        <button class="btn btn-primary btn-sm">+ 메뉴추가</button>
+      </div>
+      <div class="tree-wrap">
+        <!-- 1단계: 그룹 -->
+        <div class="tree-item level1 selected">
+          <span class="tree-icon">▼</span>
+          <span class="has-tip" data-table="sy_menu" data-col="menu_nm" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴명">회원관리</span>
+          <span class="tree-badge has-tip" data-table="sy_menu" data-col="menu_cd" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴코드">MEMBER</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">─</span>
+          <span class="has-tip" data-table="sy_menu" data-col="menu_nm" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴명">회원 목록</span>
+          <span class="tree-badge has-tip" data-table="sy_menu" data-col="menu_cd" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴코드">MEMBER_LIST</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">─</span>
+          <span class="has-tip" data-table="sy_menu" data-col="menu_nm" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴명">탈퇴회원 관리</span>
+          <span class="tree-badge has-tip" data-table="sy_menu" data-col="menu_cd" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴코드">MEMBER_WDRW</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <!-- 1단계: 그룹 -->
+        <div class="tree-item level1">
+          <span class="tree-icon">▼</span>
+          <span class="has-tip" data-table="sy_menu" data-col="menu_nm" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴명">상품관리</span>
+          <span class="tree-badge">PROD</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">─</span>
+          <span>상품 목록</span>
+          <span class="tree-badge">PROD_LIST</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">▼</span>
+          <span>카테고리 관리</span>
+          <span class="tree-badge">CATEGORY</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level3">
+          <span class="tree-icon">─</span>
+          <span>대분류</span>
+          <span class="tree-badge">CAT_L</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level3">
+          <span class="tree-icon">─</span>
+          <span>중분류</span>
+          <span class="tree-badge">CAT_M</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <!-- 1단계 -->
+        <div class="tree-item level1">
+          <span class="tree-icon">▼</span>
+          <span>주문관리</span>
+          <span class="tree-badge">ORDER</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">─</span>
+          <span>주문 목록</span>
+          <span class="tree-badge">ORDER_LIST</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">─</span>
+          <span>클레임 관리</span>
+          <span class="tree-badge">CLAIM</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <!-- 1단계 -->
+        <div class="tree-item level1">
+          <span class="tree-icon">▼</span>
+          <span>시스템관리</span>
+          <span class="tree-badge">SYSTEM</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">─</span>
+          <span>사용자 관리</span>
+          <span class="tree-badge">SY_USER</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+        <div class="tree-item level2">
+          <span class="tree-icon">─</span>
+          <span>메뉴 관리</span>
+          <span class="tree-badge">SY_MENU</span>
+          <div class="tree-actions"><button class="btn btn-secondary btn-xs">수정</button><button class="btn btn-danger btn-xs">삭제</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상세 폼 -->
+    <div class="card">
+      <div class="section-title">✏️ 메뉴 등록 / 수정</div>
+      <div class="ddl-ref">테이블: <strong>sy_menu</strong> — 관리자 메뉴</div>
+      <div class="form-grid cols-3">
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label req has-tip" data-table="sy_menu" data-col="menu_nm" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴명">메뉴명</label>
+          <input type="text" class="form-control" value="회원관리">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="menu_cd" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴코드">메뉴코드</label>
+          <input type="text" class="form-control" value="MEMBER">
+        </div>
+        <div class="form-group full">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="menu_url" data-tbl-cmt="관리자 메뉴" data-col-cmt="메뉴URL">메뉴URL</label>
+          <input type="text" class="form-control" placeholder="/admin/member/list">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="menu_icon" data-tbl-cmt="관리자 메뉴" data-col-cmt="아이콘">아이콘</label>
+          <input type="text" class="form-control" placeholder="👤 또는 icon-class-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="parent_id" data-tbl-cmt="관리자 메뉴" data-col-cmt="상위메뉴ID">상위메뉴</label>
+          <select class="form-control"><option value="">-- 최상위 --</option><option>회원관리</option><option>상품관리</option><option>주문관리</option><option>시스템관리</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="menu_level" data-tbl-cmt="관리자 메뉴" data-col-cmt="계층레벨">계층레벨</label>
+          <input type="number" class="form-control" value="1" min="1" max="3">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="sort_ord" data-tbl-cmt="관리자 메뉴" data-col-cmt="정렬순서">정렬순서</label>
+          <input type="number" class="form-control" value="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="use_yn" data-tbl-cmt="관리자 메뉴" data-col-cmt="사용여부">사용여부</label>
+          <select class="form-control"><option value="Y">사용</option><option value="N">미사용</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="disp_yn" data-tbl-cmt="관리자 메뉴" data-col-cmt="표시여부">표시여부</label>
+          <select class="form-control"><option value="Y">표시</option><option value="N">숨김</option></select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="menu_remark" data-tbl-cmt="관리자 메뉴" data-col-cmt="비고">비고</label>
+          <textarea class="form-control" placeholder="메뉴 메모"></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label has-tip" data-table="sy_menu" data-col="disp_path" data-tbl-cmt="관리자 메뉴" data-col-cmt="표시경로">표시경로</label>
+          <input type="text" class="form-control" value="회원관리" readonly style="background:#f8f9fa;color:#888">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary">취소</button>
+        <button class="btn btn-primary">💾 저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

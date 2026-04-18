@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚙️ 시스템관리(SY) 화면 목록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.sub{font-size:12px;color:#aaa;margin-top:4px}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(233,30,99,.12)}
+.card-no{font-size:11px;color:#f06292;font-weight:700;background:#fce4ec;display:inline-block;padding:2px 8px;border-radius:20px;width:fit-content}
+.card-title{font-size:16px;font-weight:700;color:#1a1a2e}
+.card-desc{font-size:12px;color:#888}
+.card-tbl{font-size:11px;color:#1976d2;background:#e3f2fd;padding:3px 8px;border-radius:4px;width:fit-content;font-family:monospace}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">관리자 &gt; <span>시스템관리(SY)</span></div>
+  <h1>⚙️ 시스템관리(SY) 화면 목록</h1>
+  <div class="sub">DDL 기준 화면 구조 — sy_user · sy_vendor · sy_site · sy_dept · sy_role · sy_menu · sy_code</div>
+</div>
+<div class="container">
+  <div class="grid">
+    <a class="card" href="sy-site-mng.html">
+      <div class="card-no">01</div>
+      <div class="card-title">🌐 사이트 관리</div>
+      <div class="card-desc">멀티사이트 설정·도메인·사업자정보</div>
+      <div class="card-tbl">sy_site</div>
+    </a>
+    <a class="card" href="sy-user-mng.html">
+      <div class="card-no">02</div>
+      <div class="card-title">👤 사용자 관리</div>
+      <div class="card-desc">관리자 계정·역할·부서</div>
+      <div class="card-tbl">sy_user</div>
+    </a>
+    <a class="card" href="sy-dept-mng.html">
+      <div class="card-no">03</div>
+      <div class="card-title">🏢 부서 관리</div>
+      <div class="card-desc">조직 계층구조 관리</div>
+      <div class="card-tbl">sy_dept</div>
+    </a>
+    <a class="card" href="sy-role-mng.html">
+      <div class="card-no">04</div>
+      <div class="card-title">🔐 역할/권한 관리</div>
+      <div class="card-desc">RBAC 역할·메뉴권한 설정</div>
+      <div class="card-tbl">sy_role · sy_role_menu</div>
+    </a>
+    <a class="card" href="sy-menu-mng.html">
+      <div class="card-no">05</div>
+      <div class="card-title">📋 메뉴 관리</div>
+      <div class="card-desc">관리자 시스템 메뉴 구성</div>
+      <div class="card-tbl">sy_menu</div>
+    </a>
+    <a class="card" href="sy-code-mng.html">
+      <div class="card-no">06</div>
+      <div class="card-title">🔖 공통코드 관리</div>
+      <div class="card-desc">시스템 공통코드 표준화</div>
+      <div class="card-tbl">sy_code · sy_code_grp</div>
+    </a>
+    <a class="card" href="sy-vendor-mng.html">
+      <div class="card-no">07</div>
+      <div class="card-title">🏭 업체 관리</div>
+      <div class="card-desc">판매/배송업체 계약·정보 관리</div>
+      <div class="card-tbl">sy_vendor</div>
+    </a>
+  </div>
+</div>
+</body>
+</html>
