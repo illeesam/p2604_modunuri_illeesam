@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>전시 위젯 관리</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+  .page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+  .page-header-left .breadcrumb{font-size:12px;color:#999}
+  .page-header-left .breadcrumb span{color:#f06292;font-weight:600}
+  h1{font-size:18px;font-weight:700;color:#222}
+  .container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+  .search-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11px;color:#888;font-weight:500}
+  .field input,.field select{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none}
+  .field input:focus,.field select:focus{border-color:#f06292}
+  .search-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+  .btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+  .btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+  .btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+  .btn-preview{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+  .btn-lib{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}
+  .list-toolbar{display:flex;align-items:center;justify-content:space-between}
+  .list-title{font-size:14px;font-weight:600;color:#333}
+  .list-count{font-size:12px;color:#f06292;margin-left:6px}
+  .toolbar-actions{display:flex;gap:8px}
+  .table-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+  tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+  tbody tr:hover{background:#fff9fb}
+  .title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+  .title-link:hover{text-decoration:underline}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-green{background:#e8f5e9;color:#2e7d32}
+  .badge-gray{background:#f5f5f5;color:#757575}
+  .badge-blue{background:#e3f2fd;color:#1565c0}
+  .badge-orange{background:#fff3e0;color:#e65100}
+  .badge-purple{background:#f3e5f5;color:#6a1b9a}
+  .badge-pink{background:#fce4ec;color:#c2185b}
+  .actions{display:flex;gap:4px;justify-content:center}
+  .pagination{display:flex;justify-content:center;align-items:center;gap:4px;padding:12px}
+  .pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .pager.active{background:#e91e63;color:#fff;border-color:#e91e63}
+
+  /* 탭 */
+  .tab-nav{display:flex;gap:4px;margin-bottom:0;background:#fff;border-radius:10px 10px 0 0;padding:12px 16px 0;border-bottom:1px solid #fce4ec}
+  .tab-btn{padding:8px 16px;border-radius:8px 8px 0 0;font-size:13px;border:none;background:transparent;cursor:pointer;color:#888;font-weight:500}
+  .tab-btn.active{background:linear-gradient(135deg,#fce4ec,#f8bbd0);color:#c2185b;font-weight:700}
+
+  /* 폼 */
+  .form-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .form-card-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #fce4ec;display:flex;align-items:center;justify-content:space-between}
+  .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .form-row-full{grid-column:1/-1}
+  .form-group{display:flex;flex-direction:column;gap:4px}
+  .form-label{font-size:12px;color:#888;font-weight:500}
+  .form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+  .form-control{border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;width:100%}
+  .form-control:focus{border-color:#f06292}
+  .form-hint{font-size:11px;color:#aaa;margin-top:2px}
+  textarea.form-control{resize:vertical;min-height:100px;font-family:monospace}
+  .form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0}
+  .hierarchy-info{background:#fff9fb;border:1px solid #fce4ec;border-radius:8px;padding:12px 16px;font-size:12px;color:#888;margin-bottom:14px}
+  .hierarchy-info strong{color:#e91e63}
+  .ddl-ref{background:#f8f9fa;border-radius:8px;padding:10px 14px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+  .ddl-ref strong{color:#c2185b}
+
+  /* 위젯 타입 그리드 */
+  .type-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+  .type-chip{border:1.5px solid #ddd;border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:11px;background:#fff;transition:all .15s}
+  .type-chip:hover{border-color:#f48fb1;background:#fff9fb}
+  .type-chip.selected{border-color:#e91e63;background:#fce4ec;color:#c2185b;font-weight:600}
+  .type-chip-icon{font-size:18px;margin-bottom:3px}
+
+  /* 라이브러리 참조 토글 */
+  .lib-ref-box{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:12px 14px;font-size:13px;display:flex;align-items:center;gap:10px}
+  .lib-ref-box input[type=checkbox]{width:16px;height:16px;cursor:pointer}
+
+  /* JSON 설정 미리보기 */
+  .json-preview{background:#1e1e1e;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;color:#d4d4d4;overflow:auto;max-height:200px;margin-top:8px}
+  .json-preview .key{color:#9cdcfe}
+  .json-preview .str{color:#ce9178}
+  .json-preview .num{color:#b5cea8}
+  .json-preview .bool{color:#569cd6}
+
+  /* 분리선 */
+  .section-sep{border:none;border-top:1px dashed #eee;margin:16px 0}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="breadcrumb">전시관리 &gt; <span>전시위젯관리</span></div>
+    <h1>전시 위젯 관리</h1>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-lib btn-sm">📚 위젯 라이브러리 관리 →</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 검색 -->
+  <div class="search-card">
+    <div class="search-grid">
+      <div class="field">
+        <label>위젯 유형 (widget_type_cd)</label>
+        <select>
+          <option>전체</option>
+          <optgroup label="배너/이미지">
+            <option>image_banner</option>
+            <option>event_banner</option>
+            <option>cache_banner</option>
+          </optgroup>
+          <optgroup label="상품">
+            <option>product_slider</option>
+            <option>product</option>
+            <option>cond_product</option>
+          </optgroup>
+          <optgroup label="차트">
+            <option>chart_bar</option>
+            <option>chart_line</option>
+            <option>chart_pie</option>
+          </optgroup>
+          <optgroup label="기타">
+            <option>text_banner</option>
+            <option>info_card</option>
+            <option>popup</option>
+            <option>coupon</option>
+            <option>html_editor</option>
+            <option>countdown</option>
+            <option>barcode</option>
+            <option>widget_embed</option>
+            <option>file</option>
+            <option>file_list</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>전시환경 (disp_env)</label>
+        <select>
+          <option>전체</option>
+          <option>^PROD^</option>
+          <option>^DEV^</option>
+          <option>^TEST^</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>라이브러리 참조 (widget_lib_ref_yn)</label>
+        <select>
+          <option>전체</option>
+          <option>Y — 라이브러리 참조</option>
+          <option>N — 직접 콘텐츠</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>위젯명 검색</label>
+        <input type="text" placeholder="위젯명 또는 설명 검색">
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">검색</button>
+    </div>
+  </div>
+
+  <!-- 툴바 -->
+  <div class="list-toolbar">
+    <div>
+      <span class="list-title">위젯 목록</span>
+      <span class="list-count">총 37건</span>
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn btn-secondary btn-sm">CSV 내보내기</button>
+      <button class="btn btn-primary btn-sm">+ 위젯 등록</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox"></th>
+          <th>No</th>
+          <th>위젯명 (widget_nm)</th>
+          <th>유형 (widget_type_cd)</th>
+          <th>라이브러리 참조</th>
+          <th>타이틀 표시</th>
+          <th>전시환경 (disp_env)</th>
+          <th>사용여부</th>
+          <th>미리보기</th>
+          <th>등록일</th>
+          <th>액션</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="checkbox"></td>
+          <td>1</td>
+          <td><a class="title-link">봄 이벤트 메인 배너</a></td>
+          <td><span class="badge badge-pink">image_banner</span></td>
+          <td><span class="badge badge-gray">N — 직접</span></td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td>^PROD^</td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td><button class="btn btn-preview btn-sm">미리보기</button></td>
+          <td>2026-01-01</td>
+          <td class="actions">
+            <button class="btn btn-secondary btn-sm">수정</button>
+            <button class="btn btn-danger btn-sm">삭제</button>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"></td>
+          <td>2</td>
+          <td><a class="title-link">추천 상품 슬라이더</a></td>
+          <td><span class="badge badge-blue">product_slider</span></td>
+          <td><span class="badge badge-blue">Y — Lib 참조</span></td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td>^PROD^</td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td><button class="btn btn-preview btn-sm">미리보기</button></td>
+          <td>2026-01-01</td>
+          <td class="actions">
+            <button class="btn btn-secondary btn-sm">수정</button>
+            <button class="btn btn-danger btn-sm">삭제</button>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"></td>
+          <td>3</td>
+          <td><a class="title-link">VIP D-day 카운트다운</a></td>
+          <td><span class="badge badge-orange">countdown</span></td>
+          <td><span class="badge badge-gray">N — 직접</span></td>
+          <td><span class="badge badge-gray">N</span></td>
+          <td>^PROD^DEV^</td>
+          <td><span class="badge badge-gray">N</span></td>
+          <td><button class="btn btn-preview btn-sm">미리보기</button></td>
+          <td>2026-03-01</td>
+          <td class="actions">
+            <button class="btn btn-secondary btn-sm">수정</button>
+            <button class="btn btn-danger btn-sm">삭제</button>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"></td>
+          <td>4</td>
+          <td><a class="title-link">판매통계 바 차트</a></td>
+          <td><span class="badge badge-purple">chart_bar</span></td>
+          <td><span class="badge badge-gray">N — 직접</span></td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td>^DEV^TEST^</td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td><button class="btn btn-preview btn-sm">미리보기</button></td>
+          <td>2026-02-20</td>
+          <td class="actions">
+            <button class="btn btn-secondary btn-sm">수정</button>
+            <button class="btn btn-danger btn-sm">삭제</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button class="pager">◀</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">3</button>
+      <button class="pager">▶</button>
+    </div>
+  </div>
+
+  <!-- 등록/수정 폼 -->
+  <div class="form-card">
+    <div class="form-card-title">
+      위젯 등록 / 수정
+      <button class="btn btn-preview btn-sm">🔍 미리보기</button>
+    </div>
+
+    <div class="hierarchy-info">
+      계층: dp_panel_item → <strong>dp_widget</strong> (위젯 인스턴스) ←→ <strong>dp_widget_lib</strong> (재사용 라이브러리)<br>
+      widget_lib_ref_yn=Y 이면 dp_widget_lib 데이터 참조 / N 이면 widget_config_json 직접 입력
+    </div>
+
+    <!-- 위젯 유형 선택 -->
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label req">위젯 유형 (widget_type_cd)</label>
+      <div class="type-grid">
+        <div class="type-chip selected">
+          <div class="type-chip-icon">🖼</div>
+          image_banner
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">🛍</div>
+          product_slider
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">📦</div>
+          product
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">🔍</div>
+          cond_product
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">📊</div>
+          chart_bar
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">📈</div>
+          chart_line
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">🥧</div>
+          chart_pie
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">📝</div>
+          text_banner
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">ℹ</div>
+          info_card
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">💬</div>
+          popup
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">🎟</div>
+          coupon
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">🎉</div>
+          event_banner
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">⏱</div>
+          countdown
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">📐</div>
+          html_editor
+        </div>
+        <div class="type-chip">
+          <div class="type-chip-icon">📎</div>
+          file_list
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-sep">
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label req">위젯명 (widget_nm)</label>
+        <input class="form-control" value="봄 이벤트 메인 배너">
+        <span class="form-hint">사이트 내 유일 — UNIQUE(site_id, widget_nm)</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">사이트 (site_id)</label>
+        <select class="form-control">
+          <option>사이트01</option>
+          <option>사이트02</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">위젯 타이틀 (widget_title)</label>
+        <input class="form-control" value="2026 봄 이벤트">
+      </div>
+      <div class="form-group">
+        <label class="form-label">타이틀 표시여부 (title_show_yn)</label>
+        <select class="form-control">
+          <option>Y — 표시</option>
+          <option>N — 숨김</option>
+        </select>
+      </div>
+      <div class="form-group form-row-full">
+        <label class="form-label">위젯 설명 (widget_desc)</label>
+        <textarea class="form-control" style="min-height:56px">봄 시즌 이벤트 메인 배너. 전폭 이미지 슬라이더 3장 구성.</textarea>
+      </div>
+    </div>
+
+    <!-- 라이브러리 참조 -->
+    <hr class="section-sep">
+    <div class="lib-ref-box" style="margin-bottom:12px">
+      <input type="checkbox" id="libRef">
+      <label for="libRef" style="cursor:pointer"><strong>위젯 라이브러리 참조 (widget_lib_ref_yn = Y)</strong> — 체크 시 dp_widget_lib 데이터 우선 사용, 직접 설정 무시</label>
+      <select class="btn btn-secondary btn-sm" style="margin-left:auto" disabled>
+        <option>라이브러리 선택...</option>
+        <option>LIB001 — 표준 이미지 배너</option>
+        <option>LIB002 — 상품 슬라이더 템플릿</option>
+      </select>
+    </div>
+
+    <!-- 위젯 설정 JSON -->
+    <div class="form-group">
+      <label class="form-label">위젯 설정 (widget_config_json)</label>
+      <textarea class="form-control" style="min-height:56px;font-family:monospace;font-size:12px">{"images":[{"url":"/api/images/spring-banner-1.jpg","link":"/event/spring","alt":"봄 이벤트"}],"autoplay":true,"interval":4000}</textarea>
+      <span class="form-hint">위젯 유형별 JSON 스키마. widget_lib_ref_yn=Y 시 라이브러리 config_schema 우선 적용.</span>
+    </div>
+    <div class="json-preview">
+      {<br>
+      &nbsp;&nbsp;<span class="key">"images"</span>: [{ <span class="key">"url"</span>: <span class="str">"/api/images/spring-banner-1.jpg"</span>, <span class="key">"link"</span>: <span class="str">"/event/spring"</span> }],<br>
+      &nbsp;&nbsp;<span class="key">"autoplay"</span>: <span class="bool">true</span>,<br>
+      &nbsp;&nbsp;<span class="key">"interval"</span>: <span class="num">4000</span><br>
+      }
+    </div>
+
+    <hr class="section-sep">
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">전시환경 (disp_env)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" checked> PROD</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox"> DEV</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox"> TEST</label>
+        </div>
+        <span class="form-hint">인코딩: ^PROD^DEV^TEST^ 캐럿 구분</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">사용여부 (use_yn)</label>
+        <select class="form-control">
+          <option>Y — 사용</option>
+          <option>N — 미사용</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">미리보기 이미지 URL (preview_img_url)</label>
+        <input class="form-control" placeholder="썸네일 이미지 경로">
+      </div>
+      <div class="form-group">
+        <label class="form-label">정렬순서 (sort_ord)</label>
+        <input class="form-control" type="number" value="0">
+      </div>
+    </div>
+
+    <div class="ddl-ref">
+      <strong>관련 DDL:</strong> dp_widget (widget_id PK · site_id+widget_nm UNIQUE · widget_lib_id FK) · dp_widget_lib (widget_lib_id PK · widget_code UNIQUE)<br>
+      <strong>위젯 19종:</strong> image_banner · product_slider · product · cond_product · chart_bar/line/pie · text_banner · info_card · popup · file · file_list · coupon · html_editor · event_banner · cache_banner · widget_embed · barcode · countdown<br>
+      <strong>핵심 컬럼:</strong> widget_lib_ref_yn(Y=Lib참조/N=직접) · widget_config_json(JSON설정) · disp_env(^PROD^캐럿) · template_html(lib) · config_schema(lib)
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">저장</button>
+    </div>
+  </div>
+
+  <!-- 위젯 라이브러리 섹션 -->
+  <div class="form-card">
+    <div class="form-card-title">
+      위젯 라이브러리 (dp_widget_lib) — 재사용 템플릿
+      <button class="btn btn-primary btn-sm">+ 라이브러리 등록</button>
+    </div>
+    <div class="hierarchy-info">
+      dp_widget_lib: 여러 dp_widget 인스턴스가 공유하는 <strong>재사용 가능한 위젯 정의</strong>. template_html + config_schema 포함. is_system=Y 시 시스템 기본 제공.
+    </div>
+    <div class="table-card" style="margin-top:12px">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>위젯코드 (widget_code)</th>
+            <th>라이브러리명 (widget_nm)</th>
+            <th>유형 (widget_type_cd)</th>
+            <th>표시경로 (disp_path)</th>
+            <th>시스템 기본</th>
+            <th>사용여부</th>
+            <th>참조위젯수</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>STD_IMAGE_BANNER</td>
+            <td><a class="title-link">표준 이미지 배너</a></td>
+            <td><span class="badge badge-pink">image_banner</span></td>
+            <td>GLOBAL</td>
+            <td><span class="badge badge-orange">Y — 시스템</span></td>
+            <td><span class="badge badge-green">Y</span></td>
+            <td>12개</td>
+            <td class="actions">
+              <button class="btn btn-preview btn-sm">미리보기</button>
+              <button class="btn btn-secondary btn-sm">수정</button>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>STD_PROD_SLIDER</td>
+            <td><a class="title-link">표준 상품 슬라이더</a></td>
+            <td><span class="badge badge-blue">product_slider</span></td>
+            <td>GLOBAL</td>
+            <td><span class="badge badge-orange">Y — 시스템</span></td>
+            <td><span class="badge badge-green">Y</span></td>
+            <td>8개</td>
+            <td class="actions">
+              <button class="btn btn-preview btn-sm">미리보기</button>
+              <button class="btn btn-secondary btn-sm">수정</button>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>CUSTOM_VIP_BANNER</td>
+            <td><a class="title-link">VIP 전용 배너 커스텀</a></td>
+            <td><span class="badge badge-purple">event_banner</span></td>
+            <td>FRONT.VIP존</td>
+            <td><span class="badge badge-gray">N</span></td>
+            <td><span class="badge badge-green">Y</span></td>
+            <td>3개</td>
+            <td class="actions">
+              <button class="btn btn-preview btn-sm">미리보기</button>
+              <button class="btn btn-secondary btn-sm">수정</button>
+              <button class="btn btn-danger btn-sm">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ddl-ref" style="margin-top:12px">
+      <strong>dp_widget_lib 주요 컬럼:</strong> widget_code UNIQUE · widget_type_cd · template_html(HTML템플릿) · config_schema(JSON스키마) · is_system(Y=시스템기본) · disp_path(콤마구분 다중경로) · thumbnail_url
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

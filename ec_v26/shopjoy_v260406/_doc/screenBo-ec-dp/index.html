@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>전시(DP) 화면 목록</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; padding: 32px; }
+  h1 { font-size: 22px; color: #333; margin-bottom: 8px; }
+  .sub { color: #888; font-size: 13px; margin-bottom: 32px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.08); text-decoration: none; color: inherit; display: block; transition: box-shadow .2s; }
+  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+  .card-num { font-size: 11px; color: #aaa; margin-bottom: 8px; }
+  .card-title { font-size: 16px; font-weight: 600; color: #222; margin-bottom: 6px; }
+  .card-desc { font-size: 13px; color: #666; line-height: 1.6; }
+  .card-table { font-size: 11px; color: #f06292; margin-top: 10px; font-weight: 500; }
+  .hierarchy { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.08); margin-bottom: 24px; }
+  .hierarchy h2 { font-size: 14px; color: #888; margin: 0 0 16px; }
+  .tree { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+  .tree-node { display: flex; align-items: center; }
+  .node { background: #fce4ec; border: 1.5px solid #f48fb1; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; color: #c2185b; }
+  .arrow { color: #bbb; font-size: 18px; padding: 0 10px; }
+</style>
+</head>
+<body>
+<h1>📺 전시(DP) 화면 목록</h1>
+<p class="sub">DDL 기준 화면 구조 — dp_ui · dp_area · dp_panel · dp_widget</p>
+
+<div class="hierarchy">
+  <h2>계층 구조</h2>
+  <div class="tree">
+    <div class="tree-node"><div class="node">dp_ui<br><small style="font-weight:400;color:#e91e63">UI</small></div></div>
+    <div class="arrow">→</div>
+    <div class="tree-node"><div class="node">dp_area<br><small style="font-weight:400;color:#e91e63">영역</small></div></div>
+    <div class="arrow">→</div>
+    <div class="tree-node"><div class="node">dp_panel<br><small style="font-weight:400;color:#e91e63">패널</small></div></div>
+    <div class="arrow">→</div>
+    <div class="tree-node"><div class="node">dp_panel_item<br><small style="font-weight:400;color:#e91e63">배치</small></div></div>
+    <div class="arrow">→</div>
+    <div class="tree-node"><div class="node">dp_widget<br><small style="font-weight:400;color:#e91e63">위젯</small></div></div>
+    <div class="arrow">→</div>
+    <div class="tree-node"><div class="node">dp_widget_lib<br><small style="font-weight:400;color:#e91e63">라이브러리</small></div></div>
+  </div>
+</div>
+
+<div class="grid">
+  <a class="card" href="dp-ui-mng.html">
+    <div class="card-num">01</div>
+    <div class="card-title">전시 UI 관리</div>
+    <div class="card-desc">최상위 화면 정의<br>디바이스 타입·경로·사용기간 관리</div>
+    <div class="card-table">dp_ui · dp_ui_area</div>
+  </a>
+  <a class="card" href="dp-area-mng.html">
+    <div class="card-num">02</div>
+    <div class="card-title">전시 영역 관리</div>
+    <div class="card-desc">UI 하위 영역 정의<br>영역코드·유형·패널 배치순서</div>
+    <div class="card-table">dp_area · dp_area_panel</div>
+  </a>
+  <a class="card" href="dp-panel-mng.html">
+    <div class="card-num">03</div>
+    <div class="card-title">전시 패널 관리</div>
+    <div class="card-desc">콘텐츠 블록 단위<br>공개대상·상태·사용기간·위젯 배치</div>
+    <div class="card-table">dp_panel · dp_panel_item</div>
+  </a>
+  <a class="card" href="dp-widget-mng.html">
+    <div class="card-num">04</div>
+    <div class="card-title">전시 위젯 관리</div>
+    <div class="card-desc">위젯 인스턴스<br>19가지 타입별 속성·라이브러리 참조</div>
+    <div class="card-table">dp_widget · dp_widget_lib</div>
+  </a>
+</div>
+</body>
+</html>
