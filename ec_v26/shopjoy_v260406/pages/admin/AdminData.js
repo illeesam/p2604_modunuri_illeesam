@@ -2095,6 +2095,122 @@
       { sendId: 17, userId: 1, sendDate: '2025-11-10 09:00', channelCd: '이메일', title: '연말 특별 이벤트 안내',    statusCd: '발송완료' },
     ],
 
+    /* ── 회원등급 ── */
+    memGrades: [
+      { gradeId: 'G001', siteId: 1, gradeCd: 'BASIC',  gradeNm: '일반',   gradeRank: 1, minPurchaseAmt: 0,       saveRate: 1.00, useYn: 'Y', regDate: '2026-01-01' },
+      { gradeId: 'G002', siteId: 1, gradeCd: 'SILVER', gradeNm: '실버',   gradeRank: 2, minPurchaseAmt: 100000,  saveRate: 2.00, useYn: 'Y', regDate: '2026-01-01' },
+      { gradeId: 'G003', siteId: 1, gradeCd: 'GOLD',   gradeNm: '골드',   gradeRank: 3, minPurchaseAmt: 500000,  saveRate: 3.00, useYn: 'Y', regDate: '2026-01-01' },
+      { gradeId: 'G004', siteId: 1, gradeCd: 'VIP',    gradeNm: 'VIP',    gradeRank: 4, minPurchaseAmt: 1000000, saveRate: 5.00, useYn: 'Y', regDate: '2026-01-01' },
+      { gradeId: 'G005', siteId: 1, gradeCd: 'VVIP',   gradeNm: 'VVIP',   gradeRank: 5, minPurchaseAmt: 3000000, saveRate: 7.00, useYn: 'N', regDate: '2026-02-01' },
+    ],
+
+    /* ── 회원그룹 ── */
+    memGroups: [
+      { groupId: 'GRP001', siteId: 1, groupNm: '우수고객',   groupMemo: '구매실적 우수 고객',     memberCnt: 12, useYn: 'Y', regDate: '2026-01-05' },
+      { groupId: 'GRP002', siteId: 1, groupNm: 'VIP초청',    groupMemo: 'VIP 이벤트 초청 대상자', memberCnt: 5,  useYn: 'Y', regDate: '2026-01-10' },
+      { groupId: 'GRP003', siteId: 1, groupNm: '휴면예정',   groupMemo: '90일 미접속 예정',       memberCnt: 30, useYn: 'Y', regDate: '2026-02-01' },
+      { groupId: 'GRP004', siteId: 1, groupNm: '블랙리스트', groupMemo: '결제분쟁 이력 고객',     memberCnt: 2,  useYn: 'N', regDate: '2026-03-01' },
+    ],
+
+    /* ── 배송템플릿 ── */
+    dlivTmplts: [
+      { dlivTmpltId: 'DT001', siteId: 1, vendorId: 1, dlivTmpltNm: '기본 배송 템플릿',     dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'CJ',   dlivCost: 3000, freeDlivMinAmt: 50000, islandExtraCost: 5000, returnCost: 3000, exchangeCost: 6000, returnCourierCd: 'CJ',   baseDlivYn: 'Y', useYn: 'Y', regDate: '2026-01-01' },
+      { dlivTmpltId: 'DT002', siteId: 1, vendorId: 1, dlivTmpltNm: '무료 배송 템플릿',     dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'CJ',   dlivCost: 0,    freeDlivMinAmt: 0,     islandExtraCost: 5000, returnCost: 3000, exchangeCost: 6000, returnCourierCd: 'CJ',   baseDlivYn: 'N', useYn: 'Y', regDate: '2026-01-05' },
+      { dlivTmpltId: 'DT003', siteId: 1, vendorId: 2, dlivTmpltNm: '직접배송 템플릿',      dlivMethodCd: 'DIRECT',  dlivPayTypeCd: 'PREPAY', dlivCourierCd: '',     dlivCost: 5000, freeDlivMinAmt: 30000, islandExtraCost: 0,    returnCost: 5000, exchangeCost: 10000, returnCourierCd: '',     baseDlivYn: 'N', useYn: 'Y', regDate: '2026-02-01' },
+      { dlivTmpltId: 'DT004', siteId: 1, vendorId: 1, dlivTmpltNm: '당일배송 템플릿',      dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'LOGEN',dlivCost: 5000, freeDlivMinAmt: 100000,islandExtraCost: 5000, returnCost: 5000, exchangeCost: 10000, returnCourierCd: 'LOGEN',baseDlivYn: 'N', useYn: 'Y', regDate: '2026-02-10' },
+    ],
+
+    /* ── 묶음상품 구성품 ── */
+    bundles: [
+      { bundleItemId: 'B001', siteId: 1, bundleProdId: 3, componentProdId: 1, componentQty: 1, priceRate: 60.00, sortOrd: 1, useYn: 'Y' },
+      { bundleItemId: 'B002', siteId: 1, bundleProdId: 3, componentProdId: 2, componentQty: 2, priceRate: 40.00, sortOrd: 2, useYn: 'Y' },
+      { bundleItemId: 'B003', siteId: 1, bundleProdId: 4, componentProdId: 2, componentQty: 1, priceRate: 50.00, sortOrd: 1, useYn: 'Y' },
+      { bundleItemId: 'B004', siteId: 1, bundleProdId: 4, componentProdId: 5, componentQty: 1, priceRate: 50.00, sortOrd: 2, useYn: 'Y' },
+    ],
+
+    /* ── 세트상품 구성품 ── */
+    setItems: [
+      { setItemId: 'SI001', siteId: 1, setProdId: 5, componentProdId: 1, itemNm: '머그컵',   itemQty: 2, itemDesc: '세라믹 머그컵 2개', sortOrd: 1, useYn: 'Y' },
+      { setItemId: 'SI002', siteId: 1, setProdId: 5, componentProdId: 2, itemNm: '접시',     itemQty: 2, itemDesc: '프리미엄 접시 2개', sortOrd: 2, useYn: 'Y' },
+      { setItemId: 'SI003', siteId: 1, setProdId: 5, componentProdId: null,itemNm: '포장박스',itemQty: 1, itemDesc: '선물용 포장박스',  sortOrd: 3, useYn: 'Y' },
+    ],
+
+    /* ── 상품리뷰 ── */
+    reviews: [
+      { reviewId: 'RV001', siteId: 1, prodId: 1, memberId: 1, reviewTitle: '정말 품질이 좋네요',   reviewContent: '배송도 빠르고 품질도 최고!',     rating: 5.0, helpfulCnt: 12, unhelpfulCnt: 0, reviewStatusCd: 'ACTIVE',  reviewDate: '2026-03-15 10:00' },
+      { reviewId: 'RV002', siteId: 1, prodId: 1, memberId: 2, reviewTitle: '가성비 최고',           reviewContent: '이 가격에 이 품질이라니 대박',     rating: 4.5, helpfulCnt: 8,  unhelpfulCnt: 1, reviewStatusCd: 'ACTIVE',  reviewDate: '2026-03-20 14:00' },
+      { reviewId: 'RV003', siteId: 1, prodId: 2, memberId: 3, reviewTitle: '조금 아쉬워요',         reviewContent: '색상이 사진과 조금 달라요',         rating: 3.0, helpfulCnt: 3,  unhelpfulCnt: 2, reviewStatusCd: 'ACTIVE',  reviewDate: '2026-03-25 09:00' },
+      { reviewId: 'RV004', siteId: 1, prodId: 2, memberId: 4, reviewTitle: '광고성 후기 의심',       reviewContent: '이상한 내용의 리뷰입니다',          rating: 5.0, helpfulCnt: 0,  unhelpfulCnt: 15,reviewStatusCd: 'HIDDEN',  reviewDate: '2026-04-01 08:00' },
+      { reviewId: 'RV005', siteId: 1, prodId: 3, memberId: 1, reviewTitle: '두번째 구매입니다',      reviewContent: '역시 믿고 사는 브랜드',             rating: 5.0, helpfulCnt: 20, unhelpfulCnt: 0, reviewStatusCd: 'ACTIVE',  reviewDate: '2026-04-05 11:00' },
+      { reviewId: 'RV006', siteId: 1, prodId: 4, memberId: 6, reviewTitle: '불량품 받았어요',        reviewContent: '파손된 상태로 배송됨. 교환요청함',  rating: 1.0, helpfulCnt: 5,  unhelpfulCnt: 0, reviewStatusCd: 'ACTIVE',  reviewDate: '2026-04-08 16:00' },
+    ],
+
+    /* ── 상품Q&A ── */
+    prodQnas: [
+      { qnaId: 'Q001', siteId: 1, prodId: 1, memberId: 1, qnaTypeCd: 'SIZE',    qnaTitle: '사이즈 문의',    qnaContent: 'M사이즈면 키 170에 맞을까요?',       scrtYn: 'N', answYn: 'Y', answContent: '네, 170~175cm에 적합합니다.',         answDate: '2026-03-12 10:00', regDate: '2026-03-11 15:00' },
+      { qnaId: 'Q002', siteId: 1, prodId: 1, memberId: 2, qnaTypeCd: 'DLIV',    qnaTitle: '배송 문의',      qnaContent: '제주도 배송 가능한가요?',             scrtYn: 'N', answYn: 'Y', answContent: '제주도는 추가 배송비 3,000원 발생합니다.',answDate: '2026-03-18 09:00', regDate: '2026-03-17 14:00' },
+      { qnaId: 'Q003', siteId: 1, prodId: 2, memberId: 3, qnaTypeCd: 'QUALITY', qnaTitle: '소재 문의',      qnaContent: '면 함유량이 얼마나 되나요?',          scrtYn: 'N', answYn: 'N', answContent: '',                                   answDate: null,               regDate: '2026-04-01 10:00' },
+      { qnaId: 'Q004', siteId: 1, prodId: 2, memberId: 4, qnaTypeCd: 'ETC',     qnaTitle: '교환 문의',      qnaContent: '색상 교환 가능한지 확인 부탁드려요', scrtYn: 'Y', answYn: 'N', answContent: '',                                   answDate: null,               regDate: '2026-04-05 11:00' },
+      { qnaId: 'Q005', siteId: 1, prodId: 3, memberId: 1, qnaTypeCd: 'SIZE',    qnaTitle: '사이즈 차트 문의',qnaContent: '상세 사이즈 표 공유해주실 수 있나요?',scrtYn: 'N', answYn: 'Y', answContent: '사이즈 표는 상품 상세 하단에 있습니다.',answDate: '2026-04-07 14:00', regDate: '2026-04-06 10:00' },
+    ],
+
+    /* ── 재입고알림 ── */
+    restockNotis: [
+      { restockNotiId: 'RN001', siteId: 1, prodId: 1, skuId: 'SKU001', memberId: 2, notiYn: 'N', notiDate: null,               regDate: '2026-03-20 10:00' },
+      { restockNotiId: 'RN002', siteId: 1, prodId: 1, skuId: 'SKU002', memberId: 3, notiYn: 'N', notiDate: null,               regDate: '2026-03-22 11:00' },
+      { restockNotiId: 'RN003', siteId: 1, prodId: 2, skuId: 'SKU003', memberId: 4, notiYn: 'Y', notiDate: '2026-04-01 09:00', regDate: '2026-03-25 14:00' },
+      { restockNotiId: 'RN004', siteId: 1, prodId: 2, skuId: 'SKU003', memberId: 1, notiYn: 'Y', notiDate: '2026-04-01 09:00', regDate: '2026-03-26 09:00' },
+      { restockNotiId: 'RN005', siteId: 1, prodId: 3, skuId: 'SKU005', memberId: 6, notiYn: 'N', notiDate: null,               regDate: '2026-04-05 10:00' },
+    ],
+
+    /* ── 태그 ── */
+    tags: [
+      { tagId: 'T001', siteId: 1, tagNm: '베스트셀러',  tagDesc: '판매량 상위 상품',    useCount: 45, sortOrd: 1,  useYn: 'Y', regDate: '2026-01-01' },
+      { tagId: 'T002', siteId: 1, tagNm: '신상품',      tagDesc: '최근 1개월 출시',     useCount: 23, sortOrd: 2,  useYn: 'Y', regDate: '2026-01-01' },
+      { tagId: 'T003', siteId: 1, tagNm: '할인',        tagDesc: '할인 진행 중 상품',   useCount: 18, sortOrd: 3,  useYn: 'Y', regDate: '2026-01-01' },
+      { tagId: 'T004', siteId: 1, tagNm: '품절임박',    tagDesc: '재고 10개 미만',       useCount: 7,  sortOrd: 4,  useYn: 'Y', regDate: '2026-02-01' },
+      { tagId: 'T005', siteId: 1, tagNm: '친환경',      tagDesc: '친환경 소재 사용',    useCount: 12, sortOrd: 5,  useYn: 'Y', regDate: '2026-02-01' },
+      { tagId: 'T006', siteId: 1, tagNm: '한정판',      tagDesc: '수량 한정 판매',      useCount: 3,  sortOrd: 6,  useYn: 'N', regDate: '2026-03-01' },
+    ],
+
+    /* ── 다국어 키 ── */
+    i18nKeys: [
+      { i18nId: 'I001', siteId: null, i18nKey: 'common.bt.save',     i18nDesc: '저장 버튼',    i18nScopeCd: 'COMMON', i18nCategory: 'common', sortOrd: 1, useYn: 'Y' },
+      { i18nId: 'I002', siteId: null, i18nKey: 'common.bt.cancel',   i18nDesc: '취소 버튼',    i18nScopeCd: 'COMMON', i18nCategory: 'common', sortOrd: 2, useYn: 'Y' },
+      { i18nId: 'I003', siteId: null, i18nKey: 'common.bt.delete',   i18nDesc: '삭제 버튼',    i18nScopeCd: 'COMMON', i18nCategory: 'common', sortOrd: 3, useYn: 'Y' },
+      { i18nId: 'I004', siteId: null, i18nKey: 'error.NOT_FOUND',    i18nDesc: '404 오류',     i18nScopeCd: 'COMMON', i18nCategory: 'error',  sortOrd: 1, useYn: 'Y' },
+      { i18nId: 'I005', siteId: null, i18nKey: 'error.FORBIDDEN',    i18nDesc: '403 오류',     i18nScopeCd: 'COMMON', i18nCategory: 'error',  sortOrd: 2, useYn: 'Y' },
+      { i18nId: 'I006', siteId: null, i18nKey: 'fo.cart.add',        i18nDesc: '장바구니 추가',i18nScopeCd: 'FO',     i18nCategory: 'fo',     sortOrd: 1, useYn: 'Y' },
+      { i18nId: 'I007', siteId: null, i18nKey: 'fo.order.complete',  i18nDesc: '주문 완료',    i18nScopeCd: 'FO',     i18nCategory: 'fo',     sortOrd: 2, useYn: 'Y' },
+      { i18nId: 'I008', siteId: null, i18nKey: 'bo.admin.dashboard', i18nDesc: '관리자 대시보드',i18nScopeCd:'BO',    i18nCategory: 'bo',     sortOrd: 1, useYn: 'Y' },
+    ],
+    i18nMsgs: [
+      { i18nMsgId: 'IM001', i18nId: 'I001', langCd: 'ko', i18nMsg: '저장' },
+      { i18nMsgId: 'IM002', i18nId: 'I001', langCd: 'en', i18nMsg: 'Save' },
+      { i18nMsgId: 'IM003', i18nId: 'I001', langCd: 'ja', i18nMsg: '保存' },
+      { i18nMsgId: 'IM004', i18nId: 'I002', langCd: 'ko', i18nMsg: '취소' },
+      { i18nMsgId: 'IM005', i18nId: 'I002', langCd: 'en', i18nMsg: 'Cancel' },
+      { i18nMsgId: 'IM006', i18nId: 'I002', langCd: 'ja', i18nMsg: 'キャンセル' },
+      { i18nMsgId: 'IM007', i18nId: 'I003', langCd: 'ko', i18nMsg: '삭제' },
+      { i18nMsgId: 'IM008', i18nId: 'I003', langCd: 'en', i18nMsg: 'Delete' },
+      { i18nMsgId: 'IM009', i18nId: 'I004', langCd: 'ko', i18nMsg: '페이지를 찾을 수 없습니다.' },
+      { i18nMsgId: 'IM010', i18nId: 'I004', langCd: 'en', i18nMsg: 'Page not found.' },
+      { i18nMsgId: 'IM011', i18nId: 'I005', langCd: 'ko', i18nMsg: '접근 권한이 없습니다.' },
+      { i18nMsgId: 'IM012', i18nId: 'I005', langCd: 'en', i18nMsg: 'Access denied.' },
+      { i18nMsgId: 'IM013', i18nId: 'I006', langCd: 'ko', i18nMsg: '장바구니에 담겼습니다.' },
+      { i18nMsgId: 'IM014', i18nId: 'I006', langCd: 'en', i18nMsg: 'Added to cart.' },
+    ],
+
+    /* ── 블로그(게시판) ── */
+    bltnPosts: [
+      { blogId: 'BL001', siteId: 1, blogCateId: null, blogTitle: '봄 신상품 컬렉션 출시 안내',     blogSummary: '2026 봄 시즌 신상품이 출시되었습니다.',  blogAuthor: '마케팅팀', viewCount: 245, useYn: 'Y', isNotice: 'Y', regDate: '2026-03-01 09:00' },
+      { blogId: 'BL002', siteId: 1, blogCateId: null, blogTitle: '리뷰 작성 시 500포인트 지급',     blogSummary: '리뷰 이벤트를 진행합니다.',              blogAuthor: '이벤트팀', viewCount: 189, useYn: 'Y', isNotice: 'N', regDate: '2026-03-10 10:00' },
+      { blogId: 'BL003', siteId: 1, blogCateId: null, blogTitle: '쇼핑몰 이용 가이드',              blogSummary: '처음 이용하시는 분들을 위한 가이드.',     blogAuthor: '고객센터', viewCount: 412, useYn: 'Y', isNotice: 'Y', regDate: '2026-01-15 09:00' },
+      { blogId: 'BL004', siteId: 1, blogCateId: null, blogTitle: '4월 신규 입고 상품 소개',         blogSummary: '이번 달 새로 들어온 상품들을 소개합니다.', blogAuthor: '상품팀',   viewCount: 98,  useYn: 'Y', isNotice: 'N', regDate: '2026-04-01 10:00' },
+      { blogId: 'BL005', siteId: 1, blogCateId: null, blogTitle: '시스템 점검 안내 (4/20 02:00~04:00)', blogSummary: '정기 서버 점검 안내입니다.',           blogAuthor: '운영팀',   viewCount: 320, useYn: 'Y', isNotice: 'Y', regDate: '2026-04-15 09:00' },
+      { blogId: 'BL006', siteId: 1, blogCateId: null, blogTitle: '임시 비공개 포스트',               blogSummary: '작성 중인 포스트입니다.',                blogAuthor: '마케팅팀', viewCount: 0,   useYn: 'N', isNotice: 'N', regDate: '2026-04-17 15:00' },
+    ],
+
     /* ── 유틸 ── */
     getMember(userId) { return this.members.find(m => m.userId === userId) || null; },
     getProduct(productId) { return this.products.find(p => p.productId === productId) || null; },

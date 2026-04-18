@@ -127,10 +127,32 @@ admin.html
 
 **Dtl 탭 뷰모드** (Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt + 상응하는 Hist): 📑 탭 / 1열 / 2열 / 3열 / 4열. 각 상태는 `window._ec{X}DtlState`에 영속화. 3/4열 모드는 `.admin-wrap { max-width:none }` 자동 적용.
 
-**새 컴포넌트 추가 시 필수 3단계**:
+**새 컴포넌트 추가 시 필수 4단계**:
 1. `admin.html`에 `<script>` 태그 추가
 2. `AdminApp.js`의 `PAGE_COMP_MAP`에 `pageId → kebab-case` 추가
 3. `app.component('ClassName', window.ClassName)` 등록
+4. AdminApp.js 템플릿 `v-else-if` 체인에 렌더 항목 추가 (`PAGE_COMP_MAP`만으로는 렌더 안 됨)
+
+**관리자 페이지 템플릿 루트 구조 표준**:
+- AdminApp.js가 이미 `<div class="admin-wrap">` 로 콘텐츠를 감싸므로, 각 Mng 컴포넌트의 **template 루트는 반드시 `<div>` (class 없음)**으로 작성
+- `<div class="admin-wrap">` 를 컴포넌트 루트로 사용하면 이중 래핑되어 **화면 폭이 좁아지고 padding이 중첩**됨
+- `<div class="page-title">화면명</div>` 은 루트 `<div>` 바로 아래 첫 자식으로 배치
+
+```js
+// ✅ 올바른 패턴
+template: `
+<div>
+  <div class="page-title">회원등급관리</div>
+  <div class="card">...</div>
+</div>`
+
+// ❌ 잘못된 패턴 (이중 admin-wrap → 폭 좁아짐)
+template: `
+  <div class="admin-wrap">
+    <div class="page-title">회원등급관리</div>
+    ...
+  </div>`
+```
 
 ### 3) `disp-front-ui.html` / `disp-admin-ui.html` — 전시 UI 미리보기
 

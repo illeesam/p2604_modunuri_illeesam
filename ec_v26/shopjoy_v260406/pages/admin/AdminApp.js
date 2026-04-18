@@ -24,8 +24,27 @@
   });
 
   const LEFT_MENUS = {
-    member:    [{ id: 'mbMemberMng',   label: '회원관리' }],
-    product:   [{ id: 'pdCategoryMng', label: '카테고리관리' }, { id: 'pdProdMng', label: '상품관리' }],
+    member:    [
+      { group: '회원' },
+      { id: 'mbMemberMng',    label: '회원관리' },
+      { group: '등급·그룹' },
+      { id: 'mbMemGradeMng',  label: '회원등급관리' },
+      { id: 'mbMemGroupMng',  label: '회원그룹관리' },
+    ],
+    product:   [
+      { group: '상품' },
+      { id: 'pdCategoryMng',    label: '카테고리관리' },
+      { id: 'pdProdMng',        label: '상품관리' },
+      { group: '특수상품' },
+      { id: 'pdDlivTmpltMng',   label: '배송템플릿관리' },
+      { id: 'pdBundleMng',      label: '묶음상품관리' },
+      { id: 'pdSetMng',         label: '세트상품관리' },
+      { group: '상품정보관리' },
+      { id: 'pdReviewMng',      label: '상품리뷰관리' },
+      { id: 'pdQnaMng',         label: '상품Q&A관리' },
+      { id: 'pdRestockNotiMng', label: '재입고알림' },
+      { id: 'pdTagMng',         label: '태그관리' },
+    ],
     order:     [{ id: 'odOrderMng',    label: '주문관리' }, { id: 'odClaimMng', label: '클레임관리' }, { id: 'odDlivMng', label: '배송관리' }],
     promotion: [
       { group: '판촉' },
@@ -58,7 +77,15 @@
       { id: 'dpDispUiSimul',          label: '전시UI시뮬레이션' },
       { id: 'dpDispRelationMng',      label: '전시관계도' },
     ],
-    customer:  [{ id: 'mbCustInfoMng', label: '고객종합정보' }, { id: 'syContactMng',  label: '문의관리' }, { id: 'cmChattMng', label: '채팅관리' }],
+    customer:  [
+      { group: '고객' },
+      { id: 'mbCustInfoMng', label: '고객종합정보' },
+      { group: '고객센터' },
+      { id: 'syContactMng',  label: '문의관리' },
+      { id: 'cmChattMng',    label: '채팅관리' },
+      { group: '커뮤니티' },
+      { id: 'cmBltnMng',     label: '게시판관리' },
+    ],
     settle:    [
       { group: '기준정보' },
       { id: 'stConfigMng',              label: '정산기준관리' },
@@ -71,33 +98,14 @@
       { id: 'stSettlePayMng',           label: '정산지급관리' },
       { group: '정산현황' },
       { id: 'stStatusMng',              label: '정산현황' },
-      { id: 'stSiteStatusMng',          label: '사이트별현황' },
-      { id: 'stVendorStatusMng',        label: '업체별현황' },
-      { id: 'stVendorTypeStatusMng',    label: '업체구분별현황' },
-      { id: 'stOrderStatusMng',         label: '주문별현황' },
-      { id: 'stOrderItemStatusMng',     label: '주문상품별현황' },
-      { id: 'stClaimStatusMng',         label: '클레임별현황' },
-      { id: 'stClaimItemStatusMng',     label: '클레임상품별현황' },
-      { id: 'stProdStatusMng',          label: '상품별현황' },
-      { id: 'stMdStatusMng',            label: 'MD별현황' },
-      { id: 'stPromoStatusMng',         label: '프로모션별현황' },
-      { id: 'stCouponStatusMng',        label: '쿠폰별현황' },
-      { id: 'stDiscntStatusMng',        label: '할인별현황' },
-      { id: 'stVoucherStatusMng',       label: '상품권별현황' },
-      { id: 'stCacheStatusMng',         label: '캐쉬별현황' },
-      { id: 'stGiftStatusMng',          label: '사은품별현황' },
-      { id: 'stMileageStatusMng',       label: '마일리지별현황' },
-      { id: 'stPayMethodStatusMng',     label: '결제수단별현황' },
-      { id: 'stDailyMng',               label: '일별정산현황' },
-      { id: 'stMonthlyMng',             label: '월별정산현황' },
       { group: '대사관리' },
       { id: 'stReconOrderMng',          label: '주문-정산 대사' },
       { id: 'stReconPayMng',            label: '결제-정산 대사' },
       { id: 'stReconClaimMng',          label: '클레임-정산 대사' },
       { id: 'stReconVendorMng',         label: '업체-정산 대사' },
       { group: 'ERP 연동' },
-      { id: 'stErpVoucherCreateMng',    label: 'ERP 전표생성' },
-      { id: 'stErpVoucherMng',          label: 'ERP 전표조회' },
+      { id: 'stErpGenMng',              label: 'ERP 전표생성' },
+      { id: 'stErpViewMng',             label: 'ERP 전표조회' },
       { id: 'stErpReconMng',            label: 'ERP 전표대사' },
     ],
     system:    [
@@ -118,6 +126,7 @@
       { id: 'syAlarmMng',    label: '알림관리' },
       { id: 'syPropMng',     label: '프로퍼티관리' },
       { id: 'syPathMng',     label: '표시경로' },
+      { id: 'syI18nMng',     label: '다국어관리' },
       { group: '조직' },
       { id: 'syUserMng',     label: '사용자관리' },
       { id: 'syDeptMng',     label: '부서관리' },
@@ -185,7 +194,11 @@
       };
       const PAGE_COMP_MAP = {
         'dashboard':'dashboard-admin-ec'+(window.ADMIN_SITE_NO||'01'), 'mbMemberMng':'mb-member-mng', 'mbMemberDtl':'mb-member-dtl',
+        'mbMemGradeMng':'mb-mem-grade-mng', 'mbMemGroupMng':'mb-mem-group-mng',
         'pdProdMng':'pd-prod-mng', 'pdProdDtl':'pd-prod-dtl',
+        'pdDlivTmpltMng':'pd-dliv-tmplt-mng', 'pdBundleMng':'pd-bundle-mng', 'pdSetMng':'pd-set-mng',
+        'pdReviewMng':'pd-review-mng', 'pdQnaMng':'pd-qna-mng',
+        'pdRestockNotiMng':'pd-restock-noti-mng', 'pdTagMng':'pd-tag-mng',
         'odOrderMng':'od-order-mng', 'odOrderDtl':'od-order-dtl',
         'odClaimMng':'od-claim-mng', 'odClaimDtl':'od-claim-dtl',
         'odDlivMng':'od-dliv-mng', 'odDlivDtl':'od-dliv-dtl',
@@ -201,6 +214,13 @@
         'dpDispPanelDtl':'dp-disp-panel-dtl',
         'dpDispWidgetLibMng':'dp-disp-widget-lib-mng', 'dpDispWidgetLibDtl':'dp-disp-widget-lib-dtl',
         'dpDispWidgetLibPreview':'dp-disp-widget-lib-preview',
+        'stConfigMng':'st-config-mng', 'stRawMng':'st-raw-mng',
+        'stSettleAdjMng':'st-settle-adj-mng', 'stSettleEtcAdjMng':'st-settle-etc-adj-mng',
+        'stSettleCloseMng':'st-settle-close-mng', 'stSettlePayMng':'st-settle-pay-mng',
+        'stStatusMng':'st-status-mng',
+        'stReconOrderMng':'st-recon-order-mng', 'stReconPayMng':'st-recon-pay-mng',
+        'stReconClaimMng':'st-recon-claim-mng', 'stReconVendorMng':'st-recon-vendor-mng',
+        'stErpGenMng':'st-erp-gen-mng', 'stErpViewMng':'st-erp-view-mng', 'stErpReconMng':'st-erp-recon-mng',
         'pmEventMng':'pm-event-mng', 'pmEventDtl':'pm-event-dtl',
         'pmPlanMng':'pm-plan-mng', 'pmPlanDtl':'pm-plan-dtl',
         'pmDiscntMng':'pm-discnt-mng', 'pmSaveMng':'pm-save-mng', 'pmGiftMng':'pm-gift-mng',
@@ -217,8 +237,9 @@
         'syUserMng':'sy-user-mng', 'syUserDtl':'sy-user-dtl',
         'syBatchMng':'sy-batch-mng', 'syBatchDtl':'sy-batch-dtl',
         'syDeptMng':'sy-dept-mng', 'syMenuMng':'sy-menu-mng', 'syRoleMng':'sy-role-mng',
-        'cmNoticeMng':'cm-notice-mng', 'syAlarmMng':'sy-alarm-mng', 'syPropMng':'sy-prop-mng', 'syPathMng':'sy-path-mng',
+        'cmNoticeMng':'cm-notice-mng', 'syAlarmMng':'sy-alarm-mng', 'syPropMng':'sy-prop-mng', 'syPathMng':'sy-path-mng', 'syI18nMng':'sy-i18n-mng',
         'syBbmMng':'sy-bbm-mng', 'syBbsMng':'sy-bbs-mng',
+        'cmBltnMng':'cm-bltn-mng',
       };
 
       const addTab = (mngId) => {
@@ -1020,6 +1041,35 @@
         <sy-path-mng    v-else-if="page==='syPathMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbm-mng     v-else-if="page==='syBbmMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-bbs-mng     v-else-if="page==='syBbsMng'"     :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <sy-i18n-mng    v-else-if="page==='syI18nMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <!-- ── 회원 추가 ── -->
+        <mb-mem-grade-mng  v-else-if="page==='mbMemGradeMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <mb-mem-group-mng  v-else-if="page==='mbMemGroupMng'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <!-- ── 상품 추가 ── -->
+        <pd-dliv-tmplt-mng   v-else-if="page==='pdDlivTmpltMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pd-bundle-mng       v-else-if="page==='pdBundleMng'"       :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pd-set-mng          v-else-if="page==='pdSetMng'"          :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pd-review-mng       v-else-if="page==='pdReviewMng'"       :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pd-qna-mng          v-else-if="page==='pdQnaMng'"          :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pd-restock-noti-mng v-else-if="page==='pdRestockNotiMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <pd-tag-mng          v-else-if="page==='pdTagMng'"          :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <!-- ── 고객센터 추가 ── -->
+        <cm-bltn-mng    v-else-if="page==='cmBltnMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <!-- ── 정산 ── -->
+        <st-config-mng       v-else-if="page==='stConfigMng'"       :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-raw-mng          v-else-if="page==='stRawMng'"          :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-settle-adj-mng   v-else-if="page==='stSettleAdjMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-settle-etc-adj-mng v-else-if="page==='stSettleEtcAdjMng'" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-settle-close-mng v-else-if="page==='stSettleCloseMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-settle-pay-mng   v-else-if="page==='stSettlePayMng'"    :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-status-mng       v-else-if="page==='stStatusMng'"       :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-recon-order-mng  v-else-if="page==='stReconOrderMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-recon-pay-mng    v-else-if="page==='stReconPayMng'"     :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-recon-claim-mng  v-else-if="page==='stReconClaimMng'"   :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-recon-vendor-mng v-else-if="page==='stReconVendorMng'"  :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-erp-gen-mng      v-else-if="page==='stErpGenMng'"       :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-erp-view-mng     v-else-if="page==='stErpViewMng'"      :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <st-erp-recon-mng    v-else-if="page==='stErpReconMng'"     :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <admin-error-401 v-else-if="page==='error401'" :navigate="navigate" />
         <admin-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
         <admin-error-404 v-else :navigate="navigate" :page-id="page" />
@@ -1367,10 +1417,19 @@
   .component('MbMemberMng',    window.MbMemberMng)
   .component('MbMemberDtl',    window.MbMemberDtl)
   .component('MbMemberHist',   window.MbMemberHist)
+  .component('MbMemGradeMng',  window.MbMemGradeMng)
+  .component('MbMemGroupMng',  window.MbMemGroupMng)
   /* ── pages/admin/ec/ — 상품 ── */
   .component('PdProdMng',      window.PdProdMng)
   .component('PdProdDtl',      window.PdProdDtl)
   .component('PdProdHist',     window.PdProdHist)
+  .component('PdDlivTmpltMng', window.PdDlivTmpltMng)
+  .component('PdBundleMng',    window.PdBundleMng)
+  .component('PdSetMng',       window.PdSetMng)
+  .component('PdReviewMng',    window.PdReviewMng)
+  .component('PdQnaMng',       window.PdQnaMng)
+  .component('PdRestockNotiMng', window.PdRestockNotiMng)
+  .component('PdTagMng',       window.PdTagMng)
   /* ── pages/admin/ec/ — 주문 ── */
   .component('OdOrderMng',     window.OdOrderMng)
   .component('OdOrderDtl',     window.OdOrderDtl)
@@ -1422,6 +1481,21 @@
   .component('PmGiftDtl',      window.PmGiftDtl)
   .component('PmVoucherMng',   window.PmVoucherMng)
   .component('PmVoucherDtl',   window.PmVoucherDtl)
+  /* ── pages/admin/ec/st/ — 정산관리 ── */
+  .component('StConfigMng',       window.StConfigMng)
+  .component('StRawMng',          window.StRawMng)
+  .component('StSettleAdjMng',    window.StSettleAdjMng)
+  .component('StSettleEtcAdjMng', window.StSettleEtcAdjMng)
+  .component('StSettleCloseMng',  window.StSettleCloseMng)
+  .component('StSettlePayMng',    window.StSettlePayMng)
+  .component('StStatusMng',       window.StStatusMng)
+  .component('StReconOrderMng',   window.StReconOrderMng)
+  .component('StReconPayMng',     window.StReconPayMng)
+  .component('StReconClaimMng',   window.StReconClaimMng)
+  .component('StReconVendorMng',  window.StReconVendorMng)
+  .component('StErpGenMng',       window.StErpGenMng)
+  .component('StErpViewMng',      window.StErpViewMng)
+  .component('StErpReconMng',     window.StErpReconMng)
   .component('CmNoticeMng',    window.CmNoticeMng)
   .component('CmNoticeDtl',    window.CmNoticeDtl)
   /* ── pages/admin/ec/ — 채팅/고객 ── */
@@ -1461,6 +1535,7 @@
   .component('SyAlarmMng',     window.SyAlarmMng)
   .component('SyPropMng',      window.SyPropMng)
   .component('SyPathMng',      window.SyPathMng)
+  .component('SyI18nMng',      window.SyI18nMng)
   .component('PathTreeNode',   window.PathTreeNode)
   .component('PathParentSelector', window.PathParentSelector)
   .component('PathPickModal',  window.PathPickModal)
@@ -1475,6 +1550,7 @@
   .component('SyBbsDtl',       window.SyBbsDtl)
   .component('SyContactMng',   window.SyContactMng)
   .component('SyContactDtl',   window.SyContactDtl)
+  .component('CmBltnMng',      window.CmBltnMng)
   /* ── components/modals/ — 선택 모달 ── */
   .component('AdminUserSelectModal', window.AdminUserSelectModal)
   .component('BbmSelectModal',       window.BbmSelectModal)
