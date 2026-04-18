@@ -240,7 +240,7 @@ od_order 단위로 생성되는 결제 레코드 상태. 교환 가격차 추가
 
 ---
 
-#### 배송 — `od_dliv`
+#### 배송 — `od_dliv` · `od_dliv_item`
 
 ### 1-J. 배송 상태 — `od_dliv.dliv_status_cd`
 출고(OUTBOUND)·반품·교환 수거(INBOUND) 배송 모두 이 코드를 공통으로 사용한다.
@@ -269,6 +269,17 @@ od_order 단위로 생성되는 결제 레코드 상태. 교환 가격차 추가
 - `shipping_fee` / `shipping_fee_type_cd` — 배송료 · 배송료 구분 (OUTBOUND·RETURN·INBOUND·EXCHANGE)
 - `parent_dliv_id` — 부모 배송ID (교환 시 원본 배송 참조)
 - `appr_status_cd` / `appr_amt` / `appr_target_cd` / `appr_req_user_id` / `appr_aprv_user_id` — 결재처리·추가결재요청 관련 (관리자 일괄작업)
+
+**주요 컬럼 — `od_dliv_item`** (배송에 포함된 주문상품 명세. 1 od_dliv → N od_dliv_item)
+- `dliv_item_id` — 배송항목ID (YYMMDDhhmmss+rand4)
+- `dliv_id` — 배송ID (od_dliv 참조)
+- `order_item_id` — 주문상품ID (od_order_item 참조)
+- `prod_id` / `opt_id_1` / `opt_id_2` — 상품ID · 옵션1·2 값ID
+- `unit_price` — 단가 (주문시점 스냅샷)
+- `dliv_qty` — 출고수량 (부분출고 시 order_qty보다 적을 수 있음 — 핵심 컬럼)
+- `dliv_item_status_cd` / `dliv_item_status_cd_before` — 항목별 배송상태 (DLIV_STATUS 코드 공유)
+
+> `site_id`·`dliv_type_cd`(OUT/IN)는 `od_dliv` JOIN으로 획득 가능한 중복 컬럼이므로 생략.
 
 ### 1-K. 입출고 구분 — `od_dliv.dliv_div_cd`
 배송 레코드가 출고(발송) 방향인지 입고(수거·반입) 방향인지를 구분.
