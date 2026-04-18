@@ -4,7 +4,6 @@
 -- ============================================================
 CREATE TABLE dp_panel (
     panel_id                    VARCHAR(16)     NOT NULL,
-    area_id                     VARCHAR(16)     NOT NULL,              -- FK: dp_area.area_id
     site_id                     VARCHAR(16),                            -- sy_site.site_id
     panel_nm                    VARCHAR(100)    NOT NULL,
     panel_type_cd               VARCHAR(30),                            -- 코드: DISP_TYPE
@@ -26,7 +25,6 @@ CREATE TABLE dp_panel (
 
 COMMENT ON TABLE dp_panel IS '디스플레이 패널';
 COMMENT ON COLUMN dp_panel.panel_id                    IS '패널ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN dp_panel.area_id                     IS '영역ID (dp_area.area_id)';
 COMMENT ON COLUMN dp_panel.site_id                     IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN dp_panel.panel_nm                    IS '패널명';
 COMMENT ON COLUMN dp_panel.panel_type_cd               IS '표시유형 (코드: DISP_TYPE)';
@@ -43,7 +41,6 @@ COMMENT ON COLUMN dp_panel.reg_date                    IS '등록일';
 COMMENT ON COLUMN dp_panel.upd_by                      IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN dp_panel.upd_date                    IS '수정일';
 
-CREATE INDEX idx_dp_panel_area ON dp_panel (area_id);
 CREATE INDEX idx_dp_panel_site ON dp_panel (site_id);
 CREATE INDEX idx_dp_panel_status ON dp_panel (disp_panel_status_cd);
 CREATE INDEX idx_dp_panel_use ON dp_panel (use_yn, use_start_date, use_end_date);
