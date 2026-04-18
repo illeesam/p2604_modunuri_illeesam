@@ -14,7 +14,7 @@ CREATE TABLE od_order_item (
     item_cancel_amt BIGINT          DEFAULT 0,              -- 취소금액 (클레임으로 인한 누적 취소액)
     complet_qty     INTEGER         DEFAULT 0,              -- 판매완료수량
     item_completed_amt BIGINT       DEFAULT 0,              -- 완료금액 (item_order_amt - item_cancel_amt)
-    order_item_status_cd VARCHAR(20)     DEFAULT 'NORMAL',       -- 코드: ORDER_ITEM_STATUS
+    order_item_status_cd VARCHAR(20)     DEFAULT 'ORDERED',      -- 코드: ORDER_ITEM_STATUS
     order_item_status_cd_before VARCHAR(20),                 -- 변경 전 상품상태
     -- ── 부분배송 시 배송정보 ──
     outbound_shipping_fee BIGINT       DEFAULT 0,           -- 해당 항목의 배송료
@@ -43,7 +43,7 @@ COMMENT ON COLUMN od_order_item.cancel_qty    IS '취소수량';
 COMMENT ON COLUMN od_order_item.item_cancel_amt IS '취소금액 (클레임으로 인한 누적 취소액)';
 COMMENT ON COLUMN od_order_item.complet_qty   IS '판매완료수량';
 COMMENT ON COLUMN od_order_item.item_completed_amt IS '완료금액 (item_order_amt - item_cancel_amt)';
-COMMENT ON COLUMN od_order_item.order_item_status_cd IS '품목상태 (코드: ORDER_ITEM_STATUS)';
+COMMENT ON COLUMN od_order_item.order_item_status_cd IS '품목 주문 상태 (코드: ORDER_ITEM_STATUS — 주문흐름 전용: ORDERED/PAID/PREPARING/SHIPPING/DELIVERED/CONFIRMED/CANCELLED. 클레임 상태는 od_claim_item.claim_item_status_cd 가 별도 관리)';
 COMMENT ON COLUMN od_order_item.order_item_status_cd_before IS '변경 전 품목상태 (코드: ORDER_ITEM_STATUS)';
 COMMENT ON COLUMN od_order_item.outbound_shipping_fee IS '해당 항목의 배송료 (부분배송 시)';
 COMMENT ON COLUMN od_order_item.dliv_courier_cd IS '해당 항목의 배송 택배사 (코드: COURIER)';

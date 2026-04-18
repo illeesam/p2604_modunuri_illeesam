@@ -21,6 +21,10 @@
 | `od.04.클레임취소.md` | 주문 취소 및 환불 |
 | `od.05.클레임반품.md` | 반품 수거, 입고, 환불 |
 | `od.06.클레임교환.md` | 교환 배송, 왕복배송료 |
+| `od.11.클레임-부분반품.md` | order_item 수량 기반 부분반품, 쿠폰·적립금 안분, 배송비 재계산 |
+| `od.12.클레임-부분환불.md` | 환불 수단 우선순위(현금성 우선), 쿠폰 재발급, 적립금 복원 유효기간 |
+| `od.13.클레임-부분교환.md` | order_item 수량 기반 부분교환, 가격차 처리, 배송비 부담 |
+| `od.14.클레임-추가결제.md` | 배송비·가격차 추가결제 요청 프로세스, appr_* 필드, 신규 od_pay 생성 |
 | `pm.01.프로포션쿠폰.md` | 쿠폰 발행, 사용, 할인 적용 |
 | `pm.02.프로포션캐시.md` | 충전금 충전, 사용, 환불, 유효기간 |
 | `pm.03.프로포션적립금.md` | 구매 적립금, 자동 소멸 |
@@ -40,7 +44,38 @@
 | `st.03.정산수집원장대사.md` | 수집원장, 대사, 타월 환불 처리 |
 | `st.04.정산ERP전표.md` | ERP 전표 생성, 복식부기, 전송, 대사 |
 
+## 도메인별 관리자 화면 경로 요약
+| 도메인 | pageId | 라벨 |
+|---|---|---|
+| mb | `mbMemberMng` | 회원관리 > 회원관리 |
+| mb | `mbCustInfoMng` | 고객센터 > 고객종합정보 |
+| pd | `pdCategoryMng` | 상품관리 > 카테고리관리 |
+| pd | `pdProdMng` | 상품관리 > 상품관리 |
+| od | `odOrderMng` | 주문관리 > 주문관리 |
+| od | `odClaimMng` | 주문관리 > 클레임관리 |
+| od | `odDlivMng` | 주문관리 > 배송관리 |
+| pm | `pmCouponMng` | 프로모션 > 쿠폰관리 |
+| pm | `pmCacheMng` | 프로모션 > 캐쉬관리 |
+| pm | `pmSaveMng` | 프로모션 > 마일리지관리 |
+| pm | `pmDiscntMng` | 프로모션 > 할인관리 |
+| pm | `pmGiftMng` | 프로모션 > 사은품관리 |
+| pm | `pmVoucherMng` | 프로모션 > 상품권관리 |
+| pm | `pmEventMng` | 프로모션 > 이벤트관리 |
+| pm | `pmPlanMng` | 프로모션 > 기획전관리 |
+| dp | `dpDispUiMng` | 전시관리 > 전시UI관리 |
+| dp | `dpDispAreaMng` | 전시관리 > 전시영역관리 |
+| dp | `dpDispPanelMng` | 전시관리 > 전시패널관리 |
+| dp | `dpDispWidgetMng` | 전시관리 > 전시위젯관리 |
+| dp | `dpDispWidgetLibMng` | 전시관리 > 전시위젯Lib |
+| dp | `dpDispUiSimul` | 전시관리 > 전시UI시뮬레이션 |
+| st | `stConfigMng` | 정산 > 정산기준관리 |
+| st | `stRawMng` | 정산 > 정산수집원장 |
+| st | `stSettleCloseMng` | 정산 > 정산마감 |
+| st | `stSettlePayMng` | 정산 > 정산지급관리 |
+| st | `stErpVoucherMng` | 정산 > ERP 전표조회 |
+
 ## 수정 규칙
 - DDL 변경 시 관련 정책서 **반드시** 함께 수정
 - 새 테이블/기능 추가 시 정책서도 신규 생성
 - 관련 정책서가 여러 개면 모두 수정
+- 각 정책서 파일 내 "관련 화면" 섹션도 함께 업데이트

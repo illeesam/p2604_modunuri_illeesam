@@ -22,7 +22,32 @@
 | `sy.09.프로그램설계정책.md` | 프론트/어드민 컴포넌트 설계 기준 |
 | `sy.10.ddl단어사전규칙.md` | DDL 컬럼명 표준, 도메인 프리픽스, 코드 그룹 목록 |
 
+## 관리자 화면 경로 요약
+| pageId | 라벨 |
+|---|---|
+| `sySiteMng` | 시스템 > 사이트관리 |
+| `syCodeMng` | 시스템 > 공통코드관리 |
+| `syBrandMng` | 시스템 > 브랜드관리 |
+| `syBizMng` | 시스템 > 업체 |
+| `syBizUserMng` | 시스템 > 업체사용자 |
+| `syUserMng` | 시스템 > 사용자관리 |
+| `syDeptMng` | 시스템 > 부서관리 |
+| `syRoleMng` | 시스템 > 역할관리 |
+| `syMenuMng` | 시스템 > 메뉴관리 |
+| `syAttachMng` | 시스템 > 첨부관리 |
+| `syTemplateMng` | 시스템 > 템플릿관리 |
+| `syBatchMng` | 시스템 > 배치스케줄관리 |
+| `syAlarmMng` | 시스템 > 알림관리 |
+| `syPropMng` | 시스템 > 프로퍼티관리 |
+| `syPathMng` | 시스템 > 표시경로 |
+| `cmNoticeMng` | 시스템 > 공지사항관리 |
+| `syBbmMng` | 시스템 > 게시판관리 |
+| `syBbsMng` | 시스템 > 게시글관리 |
+| `syContactMng` | 고객센터 > 문의관리 |
+| `syUserLoginHist` | 시스템 > 사용자로그인이력 |
+
 ## 수정 규칙
 - sy 도메인 DDL/메뉴/권한/코드 변경 시 관련 정책서 **반드시** 함께 수정
 - 새 공통 코드 그룹 추가 시 `sy.06.공통코드.md` + `sy.10.ddl단어사전규칙.md` 함께 수정
 - 새 도메인 테이블 추가 시 `sy.10.ddl단어사전규칙.md` 단어사전에 추가
+- 각 정책서 파일 내 "관련 화면" 섹션도 함께 업데이트
