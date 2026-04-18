@@ -42,6 +42,9 @@ CREATE TABLE od_order_item (
     -- ── 예약판매 ──
     reserve_sale_yn         CHAR(1)     DEFAULT 'N',
     reserve_dliv_schd_date  TIMESTAMP,                      -- 예약판매 발송 예정일시
+    -- ── 묶음상품 ──
+    bundle_group_id     VARCHAR(36),                        -- 묶음 그룹 키 (동일 묶음 구성품 묶음, UUID)
+    bundle_price_rate   DECIMAL(5,2),                       -- 묶음 가격 안분율 (%) — pd_prod_bundle.price_rate 스냅샷
     -- ── 사은품 ──
     gift_id             VARCHAR(16),                        -- 발급 사은품ID (pm_gift.gift_id)
     -- ── 부분배송 시 배송정보 ──
@@ -92,6 +95,8 @@ COMMENT ON COLUMN od_order_item.settle_yn        IS '정산처리여부 Y/N';
 COMMENT ON COLUMN od_order_item.settle_date      IS '정산처리일시';
 COMMENT ON COLUMN od_order_item.reserve_sale_yn       IS '예약판매여부 Y/N';
 COMMENT ON COLUMN od_order_item.reserve_dliv_schd_date IS '예약판매 발송 예정일시';
+COMMENT ON COLUMN od_order_item.bundle_group_id  IS '묶음 그룹키 (동일 묶음 구성품 식별, UUID, 일반상품=NULL)';
+COMMENT ON COLUMN od_order_item.bundle_price_rate IS '묶음 가격 안분율 (%) — 부분클레임 환불 계산 기준';
 COMMENT ON COLUMN od_order_item.gift_id          IS '발급 사은품ID (pm_gift.gift_id)';
 COMMENT ON COLUMN od_order_item.outbound_shipping_fee IS '해당 항목의 배송료 (부분배송 시)';
 COMMENT ON COLUMN od_order_item.dliv_courier_cd  IS '해당 항목의 배송 택배사 (코드: COURIER)';
@@ -107,3 +112,4 @@ CREATE INDEX idx_od_order_item_prod     ON od_order_item (prod_id);
 CREATE INDEX idx_od_order_item_status   ON od_order_item (order_item_status_cd);
 CREATE INDEX idx_od_order_item_confirm  ON od_order_item (buy_confirm_yn, buy_confirm_schd_date);
 CREATE INDEX idx_od_order_item_settle   ON od_order_item (settle_yn);
+CREATE INDEX idx_od_order_item_bundle   ON od_order_item (bundle_group_id) WHERE bundle_group_id IS NOT NULL;
