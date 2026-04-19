@@ -27,20 +27,20 @@
 - `od_claim.sql` — 클레임 마스터 (PK: claim_id, FK: order_id)
 - `od_claim_item.sql` — 클레임 상품 (PK: claim_item_id) **★ 정산 기본 수집 단위**
 
-### hist/ (상태이력·변경이력·로그)
-- `hist/od_order_status_hist.sql` — 주문 상태 이력 (order_status_cd_before → order_status_cd)
-- `hist/od_order_item_status_hist.sql` — 주문상품 상태 이력 (order_item_status_cd_before → order_item_status_cd)
-- `hist/od_order_chg_hist.sql` — 주문 변경 이력
-- `hist/od_order_item_chg_hist.sql` — 주문상품 변경 이력
-- `hist/od_pay_status_hist.sql` — 결제 상태 이력 (pay_status_cd_before → pay_status_cd)
-- `hist/od_pay_chg_hist.sql` — 결제 변경 이력
-- `hist/od_dliv_status_hist.sql` — 배송 상태 이력 (dliv_status_cd_before → dliv_status_cd)
-- `hist/od_dliv_chg_hist.sql` — 배송 변경 이력
-- `hist/od_dliv_item_chg_hist.sql` — 배송상품 변경 이력
-- `hist/od_claim_status_hist.sql` — 클레임 상태 이력 (claim_status_cd_before → claim_status_cd)
-- `hist/od_claim_item_status_hist.sql` — 클레임상품 상태 이력 (claim_item_status_cd_before → claim_item_status_cd)
-- `hist/od_claim_chg_hist.sql` — 클레임 변경 이력
-- `hist/od_claim_item_chg_hist.sql` — 클레임상품 변경 이력
+### 이력·로그 (odh_*)
+- `odh_order_status_hist.sql` — 주문 상태 이력 (order_status_cd_before → order_status_cd)
+- `odh_order_item_status_hist.sql` — 주문상품 상태 이력 (order_item_status_cd_before → order_item_status_cd)
+- `odh_order_chg_hist.sql` — 주문 변경 이력
+- `odh_order_item_chg_hist.sql` — 주문상품 변경 이력
+- `odh_pay_status_hist.sql` — 결제 상태 이력 (pay_status_cd_before → pay_status_cd)
+- `odh_pay_chg_hist.sql` — 결제 변경 이력
+- `odh_dliv_status_hist.sql` — 배송 상태 이력 (dliv_status_cd_before → dliv_status_cd)
+- `odh_dliv_chg_hist.sql` — 배송 변경 이력
+- `odh_dliv_item_chg_hist.sql` — 배송상품 변경 이력
+- `odh_claim_status_hist.sql` — 클레임 상태 이력 (claim_status_cd_before → claim_status_cd)
+- `odh_claim_item_status_hist.sql` — 클레임상품 상태 이력 (claim_item_status_cd_before → claim_item_status_cd)
+- `odh_claim_chg_hist.sql` — 클레임 변경 이력
+- `odh_claim_item_chg_hist.sql` — 클레임상품 변경 이력
 
 ## 상태 코드
 
