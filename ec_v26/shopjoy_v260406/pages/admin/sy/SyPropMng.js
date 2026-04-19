@@ -27,10 +27,10 @@ window.SyPropMng = {
     const TYPES    = ['STRING','NUMBER','BOOLEAN','JSON'];
 
     /* ── 데이터 (작업 상태 포함) ── */
-    const rows = ref([]);
+    const rows = reactive([]);
     const _newId = ref(-1);
     const reload = () => {
-      rows.value = (ad.props || []).map(p => ({ ...p, _status: '' }));
+      rows.splice(0, rows.length, ...(ad.props || []).map(p => ({ ...p, _status: '' })));
     };
     reload();
 
@@ -38,8 +38,8 @@ window.SyPropMng = {
     const siteId = computed(() => window.adminCommonFilter?.siteId || null);
     const filteredBySite = computed(() => {
       const sid = siteId.value;
-      if (!sid) return rows.value;
-      return rows.value.filter(r => r.siteId == sid || r.siteId == null);
+      if (!sid) return rows;
+      return rows.filter(r => r.siteId == sid || r.siteId == null);
     });
 
     /* ── 트리 구성 (disp_path 점 분리) ── */
@@ -111,18 +111,18 @@ window.SyPropMng = {
         remark: '',
         _status: 'I',
       });
-      rows.value.push(newRow);
+      rows.push(newRow);
     };
     const delRow = (row) => {
       if (row._status === 'I') {
-        rows.value = rows.value.filter(r => r.propId !== row.propId);
+        const idx = rows.findIndex(r => r.propId === row.propId); if (idx !== -1) rows.splice(idx, 1);
       } else {
         row._status = row._status === 'D' ? '' : 'D';
       }
     };
     const cancelRow = (row) => {
       if (row._status === 'I') {
-        rows.value = rows.value.filter(r => r.propId !== row.propId);
+        const idx = rows.findIndex(r => r.propId === row.propId); if (idx !== -1) rows.splice(idx, 1);
       } else {
         // 원본으로 복원 (간단 구현: reload 권장)
         const orig = (ad.props || []).find(p => p.propId === row.propId);
@@ -130,7 +130,7 @@ window.SyPropMng = {
       }
     };
     const dirtyRows = computed(() =>
-      rows.value.filter(r => r._status === 'I' || r._status === 'U' || r._status === 'D')
+      rows.filter(r => r._status === 'I' || r._status === 'U' || r._status === 'D')
     );
 
     const save = async () => {

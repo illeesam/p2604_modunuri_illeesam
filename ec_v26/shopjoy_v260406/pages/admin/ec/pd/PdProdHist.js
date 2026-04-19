@@ -11,26 +11,26 @@ window.PdProdHist = {
     Vue.watch(viewMode2, v => { window._ecProdHistState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
-    const stockHistory  = ref([]);
-    const statusHistory = ref([]);
-    const changeHistory = ref([]);
-    const priceHistory  = ref([]);
+    const stockHistory  = reactive([]);
+    const statusHistory = reactive([]);
+    const changeHistory = reactive([]);
+    const priceHistory  = reactive([]);
 
     onMounted(() => {
       const p = props.adminData.getProduct(props.prodId);
       if (p) {
-        stockHistory.value = [
+        stockHistory.splice(0, stockHistory.length,
           { date: p.regDate || '2026-01-01', type: '입고', qty: p.stock, balance: p.stock, memo: '초기 입고' },
-        ];
-        statusHistory.value = [
+        );
+        statusHistory.splice(0, statusHistory.length,
           { date: p.regDate || '2026-01-01', before: '-', after: p.status, admin: '관리자' },
-        ];
-        changeHistory.value = [
+        );
+        changeHistory.splice(0, changeHistory.length,
           { date: p.regDate || '2026-01-01', field: '등록', before: '-', after: p.prodNm, admin: '관리자' },
-        ];
-        priceHistory.value = [
+        );
+        priceHistory.splice(0, priceHistory.length,
           { date: p.regDate || '2026-01-01', field: '판매가', before: '-', after: String(p.price), admin: '관리자' },
-        ];
+        );
       }
     });
 

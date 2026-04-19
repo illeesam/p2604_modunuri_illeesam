@@ -14,25 +14,25 @@ window.Order = {
     const resultData = ref(null);
 
     /* ── 쿠폰 로드 ── */
-    const allCoupons  = ref([]);
+    const allCoupons  = reactive([]);
     const loadCoupons = async () => {
       try {
         const res = await window.frontApi.get('my/coupons.json');
-        allCoupons.value = (res.data || []).filter(c => !c.used);
-      } catch (e) { allCoupons.value = []; }
+        allCoupons.splice(0, allCoupons.length, ...(res.data || []).filter(c => !c.used));
+      } catch (e) { allCoupons.length = 0; }
     };
 
     /* 상품쿠폰: rate / amount 타입만 */
     const productCoupons = item => {
       const price = parsePrice(item.product.price) * item.qty;
-      return allCoupons.value.filter(c =>
+      return allCoupons.filter(c =>
         (c.discountType === 'rate' || c.discountType === 'amount') &&
         price >= (c.minOrder || 0)
       );
     };
     /* 배송비쿠폰: shipping 타입만 */
     const shippingCoupons = computed(() =>
-      allCoupons.value.filter(c => c.discountType === 'shipping')
+      allCoupons.filter(c => c.discountType === 'shipping')
     );
 
     const discountLabel = c => {
@@ -51,18 +51,16 @@ window.Order = {
 
     /* ── 상품 쿠폰 팝업 ── */
     const couponPopup     = reactive({ show: false, targetIdx: null });
-    const selectedCoupons = ref({});
+    const selectedCoupons = reactive({});
 
     const openCouponPopup  = idx => { couponPopup.targetIdx = idx; couponPopup.show = true; };
     const closeCouponPopup = () => { couponPopup.show = false; };
     const applyCoupon      = c => {
-      selectedCoupons.value = { ...selectedCoupons.value, [couponPopup.targetIdx]: c };
+      selectedCoupons[couponPopup.targetIdx] = c;
       couponPopup.show = false;
     };
     const removeCoupon     = idx => {
-      const copy = { ...selectedCoupons.value };
-      delete copy[idx];
-      selectedCoupons.value = copy;
+      delete selectedCoupons[idx];
     };
 
     /* ── 배송비 쿠폰 팝업 ── */
@@ -95,7 +93,7 @@ window.Order = {
     );
     const totalCouponDiscount = computed(() =>
       orderItems.value.reduce((s, item, idx) =>
-        s + calcCouponDiscount(selectedCoupons.value[idx], item), 0)
+        s + calcCouponDiscount(selectedCoupons[idx], item), 0)
     );
     /* 배송비: 기본 0원, 배송비 쿠폰은 표시용 */
     const shippingFee = computed(() => 0);
@@ -160,8 +158,8 @@ window.Order = {
             image:       i.product.image,
             color: i.color.name, size: i.size, qty: i.qty,
             price:    parsePrice(i.product.price) * i.qty,
-            coupon:   selectedCoupons.value[idx]?.name || null,
-            discount: calcCouponDiscount(selectedCoupons.value[idx], i),
+            coupon:   selectedCoupons[idx]?.name || null,
+            discount: calcCouponDiscount(selectedCoupons[idx], i),
           })),
           shippingCoupon:     selectedShipCoupon.value?.name || null,
           cartTotal:          cartTotal.value,

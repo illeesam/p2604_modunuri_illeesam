@@ -17,10 +17,10 @@ window.SyPathMng = {
     const bizLabel = (cd) => (BIZ_OPTIONS.value.find(b => b.codeValue === cd) || {}).codeLabel || cd;
 
     /* ── 데이터 로드 ── */
-    const rows = ref([]);
+    const rows = reactive([]);
     let _newId = -1;
     const reload = () => {
-      rows.value = (ad.paths || []).map(p => ({ ...p, _status: '' }));
+      rows.splice(0, rows.length, ...(ad.paths || []).map(p => ({ ...p, _status: '' })));
     };
     reload();
 
@@ -29,7 +29,7 @@ window.SyPathMng = {
     const selectedPathId = ref(null);
 
     const tree = computed(() => {
-      const list = rows.value.filter(r => r._status !== 'D' && r.bizCd === selectedBiz.value);
+      const list = rows.filter(r => r._status !== 'D' && r.bizCd === selectedBiz.value);
       const byParent = {};
       list.forEach(r => {
         const pk = r.parentPathId == null ? 'null' : r.parentPathId;
@@ -54,7 +54,7 @@ window.SyPathMng = {
 
     /* ── 그리드 (검색 + biz + 트리 선택 적용) ── */
     const gridRows = computed(() => {
-      let arr = rows.value.filter(r => r._status !== 'D');
+      let arr = rows.filter(r => r._status !== 'D');
       arr = arr.filter(r => r.bizCd === selectedBiz.value);
       const k = kw.value.trim().toLowerCase();
       if (k) arr = arr.filter(r => (r.pathLabel||'').toLowerCase().includes(k) || (r.remark||'').toLowerCase().includes(k));
@@ -65,7 +65,7 @@ window.SyPathMng = {
         let added = true;
         while (added) {
           added = false;
-          rows.value.forEach(r => {
+          rows.forEach(r => {
             if (descendants.has(r.parentPathId) && !descendants.has(r.pathId)) {
               descendants.add(r.pathId); added = true;
             }
@@ -94,7 +94,7 @@ window.SyPathMng = {
       if (row._status === '') row._status = 'U';
     };
     const addRow = () => {
-      rows.value.push(reactive({
+      rows.push(reactive({
         pathId: _newId--,
         bizCd: selectedBiz.value,
         parentPathId: selectedPathId.value,
@@ -107,17 +107,17 @@ window.SyPathMng = {
     };
     const delRow = (row) => {
       if (row._status === 'I') {
-        rows.value = rows.value.filter(r => r.pathId !== row.pathId);
+        const idx = rows.findIndex(r => r.pathId === row.pathId); if (idx !== -1) rows.splice(idx, 1);
       } else {
         row._status = row._status === 'D' ? '' : 'D';
       }
     };
     const cancelRow = (row) => {
-      if (row._status === 'I') { rows.value = rows.value.filter(r => r.pathId !== row.pathId); return; }
+      if (row._status === 'I') { const idx = rows.findIndex(r => r.pathId === row.pathId); if (idx !== -1) rows.splice(idx, 1); return; }
       const orig = (ad.paths || []).find(p => p.pathId === row.pathId);
       if (orig) Object.assign(row, orig, { _status: '' });
     };
-    const dirtyRows = computed(() => rows.value.filter(r => r._status));
+    const dirtyRows = computed(() => rows.filter(r => r._status));
     const save = async () => {
       if (!dirtyRows.value.length) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await props.showConfirm('저장', `${dirtyRows.value.length}건 저장하시겠습니까?`);
@@ -146,7 +146,7 @@ window.SyPathMng = {
     };
 
     /* 부모 경로 선택 옵션 (같은 biz_cd, 자기 자신 제외) */
-    const parentOptions = (row) => rows.value
+    const parentOptions = (row) => rows
       .filter(r => r._status !== 'D' && r.bizCd === row.bizCd && r.pathId !== row.pathId)
       .map(r => ({ value: r.pathId, label: r.pathLabel }));
 
@@ -159,7 +159,7 @@ window.SyPathMng = {
       /* 3레벨까지 자동 펼치기 */
       const biz = row.bizCd;
       const exclude = row.pathId;
-      const list = rows.value.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
+      const list = rows.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
       const expanded = new Set([null]);
 
       /* 깊이 계산 및 3레벨까지 펼치기 */
@@ -184,7 +184,7 @@ window.SyPathMng = {
     const parentTree = computed(() => {
       const biz = parentModalState.bizCd;
       const exclude = parentModalState.targetRow?.pathId;
-      const list = rows.value.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
+      const list = rows.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
       const byParent = {};
       list.forEach(r => {
         const pk = r.parentPathId == null ? 'null' : r.parentPathId;
@@ -202,7 +202,7 @@ window.SyPathMng = {
     };
     const getParentLabel = (pathId) => {
       if (pathId == null) return '(루트)';
-      const r = rows.value.find(x => x.pathId === pathId);
+      const r = rows.find(x => x.pathId === pathId);
       return r ? r.pathLabel : '';
     };
 

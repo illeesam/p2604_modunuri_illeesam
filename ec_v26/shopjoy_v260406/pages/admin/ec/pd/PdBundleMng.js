@@ -24,12 +24,12 @@ window.PdBundleMng = {
     const newErrors = reactive({});
 
     /* ── 카테고리 N개 (pd_category_prod) — 신규/편집 공통 ── */
-    const dtlCategories  = ref([]);  // [{ categoryId, categoryNm, depth }]
+    const dtlCategories  = reactive([]);  // [{ categoryId, categoryNm, depth }]
     const catPickerOpen   = ref(false);
     const catPickerSearch = ref('');
     const catPickerList   = computed(() => {
       const q    = catPickerSearch.value.trim().toLowerCase();
-      const used = new Set(dtlCategories.value.map(c => String(c.categoryId)));
+      const used = new Set(dtlCategories.map(c => String(c.categoryId)));
       return (props.adminData.categories || []).filter(c =>
         !used.has(String(c.categoryId)) && (!q || (c.categoryNm || '').toLowerCase().includes(q))
       );
@@ -44,20 +44,20 @@ window.PdBundleMng = {
       if (catDragIdx.value === null || catDragIdx.value === catDragoverIdx.value) {
         catDragIdx.value = catDragoverIdx.value = null; return;
       }
-      const arr = [...dtlCategories.value];
+      const arr = [...dtlCategories];
       const [moved] = arr.splice(catDragIdx.value, 1);
       arr.splice(catDragoverIdx.value, 0, moved);
-      dtlCategories.value = arr;
+      dtlCategories.splice(0, dtlCategories.length, ...arr);
       catDragIdx.value = catDragoverIdx.value = null;
     };
 
     const addCategory = cat => {
       const id = cat.categoryId;
-      if (dtlCategories.value.some(c => String(c.categoryId) === String(id))) return;
-      dtlCategories.value.push({ categoryId: id, categoryNm: cat.categoryNm || String(id), depth: cat.depth || 1 });
+      if (dtlCategories.some(c => String(c.categoryId) === String(id))) return;
+      dtlCategories.push({ categoryId: id, categoryNm: cat.categoryNm || String(id), depth: cat.depth || 1 });
       catPickerOpen.value = false; catPickerSearch.value = '';
     };
-    const removeCategory = idx => dtlCategories.value.splice(idx, 1);
+    const removeCategory = idx => dtlCategories.splice(idx, 1);
 
     const getCategoryNm = id => {
       const c = (props.adminData.categories || []).find(c => c.categoryId == id);
@@ -69,7 +69,7 @@ window.PdBundleMng = {
     };
 
     /* ── 구성품 목록 (신규/편집 공통) ── */
-    const dtlItems = ref([]);
+    const dtlItems = reactive([]);
     let _seq = 1;
 
     /* ── 구성품 추가 피커 ── */
@@ -131,8 +131,8 @@ window.PdBundleMng = {
       editBundleId.value = null;
       Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, prodStatusCd: 'DRAFT' });
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
-      dtlCategories.value = [];
-      dtlItems.value = [];
+      dtlCategories.length = 0;
+      dtlItems.length = 0;
     };
 
     /* ── 편집 열기 ── */
@@ -142,28 +142,29 @@ window.PdBundleMng = {
       const src = (props.adminData.bundles || [])
         .filter(b => b.bundleProdId === bundleProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      dtlItems.value = src.map((b, i) => ({
+      dtlItems.splice(0, dtlItems.length, ...src.map((b, i) => ({
         _id: _seq++, bundleItemId: b.bundleItemId,
         bundleProdId: b.bundleProdId, itemProdId: b.itemProdId,
         itemSkuId: b.itemSkuId || null, itemQty: b.itemQty || 1,
         priceRate: b.priceRate || 0, sortOrd: b.sortOrd || i + 1, useYn: b.useYn || 'Y',
-      }));
+      })));
       // 카테고리 로드
       const pid = String(bundleProdId);
-      dtlCategories.value = (props.adminData.categoryProds || [])
+      const _cats = (props.adminData.categoryProds || [])
         .filter(cp => String(cp.prodId) === pid)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(cp => ({ categoryId: cp.categoryId, categoryNm: getCategoryNm(cp.categoryId), depth: getCategoryDepth(cp.categoryId) }));
+      dtlCategories.splice(0, dtlCategories.length, ..._cats);
     };
 
-    const closeDtl = () => { dtlMode.value = null; editBundleId.value = null; dtlItems.value = []; };
+    const closeDtl = () => { dtlMode.value = null; editBundleId.value = null; dtlItems.length = 0; };
 
     /* ── 편집 모드에서 표시할 묶음상품명 ── */
     const dtlProdNm = computed(() => dtlMode.value === 'new' ? (newForm.prodNm || '(신규 묶음상품)') : getProdNm(editBundleId.value));
     const dtlBundleId = computed(() => dtlMode.value === 'edit' ? editBundleId.value : null);
 
     /* ── 안분율 ── */
-    const dtlRateSum  = computed(() => dtlItems.value.reduce((s, b) => s + (parseFloat(b.priceRate) || 0), 0));
+    const dtlRateSum  = computed(() => dtlItems.reduce((s, b) => s + (parseFloat(b.priceRate) || 0), 0));
     const dtlRateOk   = computed(() => Math.abs(dtlRateSum.value - 100) < 0.01);
     const dtlRateDiff = computed(() => parseFloat((100 - dtlRateSum.value).toFixed(2)));
 
@@ -171,7 +172,7 @@ window.PdBundleMng = {
     const currentBundleId = computed(() => dtlMode.value === 'edit' ? editBundleId.value : -1);
     const pickerList = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
-      const used = dtlItems.value.map(d => d.itemProdId);
+      const used = dtlItems.map(d => d.itemProdId);
       return (props.adminData.products || []).filter(p => {
         if (p.productId === currentBundleId.value) return false;
         if (used.includes(p.productId)) return false;
@@ -181,8 +182,8 @@ window.PdBundleMng = {
     });
 
     const addItem = prod => {
-      const maxSort = dtlItems.value.length ? Math.max(...dtlItems.value.map(d => d.sortOrd)) : 0;
-      dtlItems.value.push({
+      const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
+      dtlItems.push({
         _id: _seq++, bundleItemId: null,
         bundleProdId: editBundleId.value,
         itemProdId: prod.productId, itemSkuId: null,
@@ -190,7 +191,7 @@ window.PdBundleMng = {
       });
       pickerOpen.value = false; pickerSearch.value = '';
     };
-    const removeItem = idx => dtlItems.value.splice(idx, 1);
+    const removeItem = idx => dtlItems.splice(idx, 1);
 
     /* ── 드래그 ── */
     const onDragStart = idx => { dragIdx.value = idx; };
@@ -199,11 +200,11 @@ window.PdBundleMng = {
       if (dragIdx.value === null || dragIdx.value === dragoverIdx.value) {
         dragIdx.value = dragoverIdx.value = null; return;
       }
-      const arr = [...dtlItems.value];
+      const arr = [...dtlItems];
       const [moved] = arr.splice(dragIdx.value, 1);
       arr.splice(dragoverIdx.value, 0, moved);
       arr.forEach((item, i) => { item.sortOrd = i + 1; });
-      dtlItems.value = arr;
+      dtlItems.splice(0, dtlItems.length, ...arr);
       dragIdx.value = dragoverIdx.value = null;
     };
 
@@ -250,7 +251,7 @@ window.PdBundleMng = {
       const others = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
       props.adminData.bundles = [
         ...others,
-        ...dtlItems.value.map((d, i) => ({
+        ...dtlItems.map((d, i) => ({
           bundleItemId: d.bundleItemId || `B_${bundleProdId}_${i + 1}`,
           siteId: '1', bundleProdId,
           itemProdId: d.itemProdId, itemSkuId: d.itemSkuId || null,
@@ -261,12 +262,12 @@ window.PdBundleMng = {
       /* categoryProds 동기화 */
       if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
       props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(bundleProdId));
-      dtlCategories.value.forEach((cat, i) => {
+      dtlCategories.forEach((cat, i) => {
         props.adminData.categoryProds.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
       });
       if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
       try {
-        const res = await (isNew ? window.adminApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems.value }) : window.adminApi.put(`bundle/${bundleProdId}/items`, { items: dtlItems.value }));
+        const res = await (isNew ? window.adminApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.adminApi.put(`bundle/${bundleProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {

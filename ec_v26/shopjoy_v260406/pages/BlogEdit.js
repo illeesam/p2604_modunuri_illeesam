@@ -45,11 +45,11 @@ window.BlogEdit = {
     const cancel = () => props.navigate('blog');
 
     /* 이미지 첨부 (목업) */
-    const images = ref([]);
+    const images = reactive([]);
     const addImage = () => {
-      images.value.push({ id: Date.now(), name: 'image_' + (images.value.length + 1) + '.jpg', size: '1.2 MB' });
+      images.push({ id: Date.now(), name: 'image_' + (images.length + 1) + '.jpg', size: '1.2 MB' });
     };
-    const removeImage = (id) => { images.value = images.value.filter(img => img.id !== id); };
+    const removeImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
     return { isEdit, form, categories, images, save, cancel, addImage, removeImage };
   },

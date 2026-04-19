@@ -131,19 +131,19 @@ window.PdCategoryProdMng = {
     const selectNode = id => { selectedCatId.value = (selectedCatId.value === id) ? null : id; };
 
     /* ── 전체 편집 목록 (선택 카테고리 + 하위 모두) ── */
-    const allRows = ref([]);
+    const allRows = reactive([]);
     let _seq = 1;
 
     const getProd   = id => (props.adminData.products || []).find(p => p.productId === id);
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '') : ''; };
 
     const loadAllRows = () => {
-      if (!selectedCatId.value) { allRows.value = []; return; }
+      if (!selectedCatId.value) { allRows.length = 0; return; }
       const ids = allDescendantIds(selectedCatId.value);
       const links = (props.adminData.categoryProds || [])
         .filter(cp => ids.includes(cp.categoryId))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      allRows.value = links.map((cp, i) => ({
+      allRows.splice(0, allRows.length, ...links.map((cp, i) => ({
         _id:                _seq++,
         categoryProdId:     cp.categoryProdId,
         categoryId:         cp.categoryId,
@@ -155,13 +155,13 @@ window.PdCategoryProdMng = {
         dispStartDate:      cp.dispStartDate || defaultDispStartDate(),
         dispEndDate:        cp.dispEndDate || defaultDispEndDate(),
         _isNew:             false,
-      }));
+      })));
     };
 
     watch(selectedCatId, loadAllRows);
 
     /* 현재 탭 행 */
-    const tabRows = computed(() => allRows.value.filter(r => r.categoryProdTypeCd === activeTypeCd.value));
+    const tabRows = computed(() => allRows.filter(r => r.categoryProdTypeCd === activeTypeCd.value));
 
     /* 검색 필터 */
     const filteredRows = computed(() => {
@@ -182,13 +182,13 @@ window.PdCategoryProdMng = {
       const [moved] = tabArr.splice(dragIdx.value, 1);
       tabArr.splice(dragoverIdx.value, 0, moved);
       tabArr.forEach((r, i) => { r.sortOrd = i + 1; });
-      const others = allRows.value.filter(r => r.categoryProdTypeCd !== activeTypeCd.value);
-      allRows.value = [...others, ...tabArr];
+      const others = allRows.filter(r => r.categoryProdTypeCd !== activeTypeCd.value);
+      allRows.splice(0, allRows.length, ...others, ...tabArr);
       dragIdx.value = dragoverIdx.value = null;
     };
 
     /* ── 삭제 ── */
-    const removeRow = row => { allRows.value = allRows.value.filter(r => r._id !== row._id); };
+    const removeRow = row => { const idx = allRows.findIndex(r => r._id === row._id); if (idx !== -1) allRows.splice(idx, 1); };
 
     /* ── 상품 추가 피커 ── */
     const pickerOpen   = ref(false);
@@ -206,7 +206,7 @@ window.PdCategoryProdMng = {
     const addProd = prod => {
       const targetCatId = selectedCatId.value;
       const maxSort = tabRows.value.length ? Math.max(...tabRows.value.map(r => r.sortOrd)) : 0;
-      allRows.value.push({
+      allRows.push({
         _id: _seq++, categoryProdId: null,
         categoryId:         targetCatId,
         prodId:             prod.productId,

@@ -12,7 +12,7 @@ window.OdClaimHist = {
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
     /* 클레임 항목 */
-    const claimItems = ref([]);
+    const claimItems = reactive([]);
     let itemIdSeq = 1;
 
     /* 처리 정보 로컬 폼 */
@@ -44,22 +44,20 @@ window.OdClaimHist = {
           refundMethodCd: c.refundMethodCd || '계좌환불',
           memo: c.memo || '',
         });
-        claimItems.value = [
-          {
+        claimItems.splice(0, claimItems.length, {
             _id: itemIdSeq++,
             bfProdNm: c.prodNm || '-', bfOptionNm: '-',
             bfQty: 1, bfPrice: 0, bfStatus: '결제완료',
             chgProdNm: '', chgOptionNm: '',
             afStatus: c.statusCd, afMemo: '', afAdmin: '', afDate: '',
-          },
-        ];
+          });
         relatedOrder.value = props.adminData.getOrder(c.orderId);
         relatedDliv.value  = props.adminData.deliveries.find(d => d.orderId === c.orderId) || null;
       }
     });
 
     const addClaimItem = () => {
-      claimItems.value.push({
+      claimItems.push({
         _id: itemIdSeq++,
         bfProdNm: '', bfOptionNm: '', bfQty: 1, bfPrice: 0, bfStatus: '결제완료',
         chgProdNm: '', chgOptionNm: '',
@@ -67,8 +65,8 @@ window.OdClaimHist = {
       });
     };
     const removeClaimItem = (id) => {
-      const idx = claimItems.value.findIndex(r => r._id === id);
-      if (idx !== -1) claimItems.value.splice(idx, 1);
+      const idx = claimItems.findIndex(r => r._id === id);
+      if (idx !== -1) claimItems.splice(idx, 1);
     };
 
     const saveProcess = () => {

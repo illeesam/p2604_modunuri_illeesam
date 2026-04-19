@@ -27,30 +27,30 @@ window.Prod01List = {
     };
 
     /* ── 상품 데이터 ── */
-    const allProducts = ref([]);
+    const allProducts = reactive([]);
     const loading = ref(true);
 
     const loadProducts = async () => {
       loading.value = true;
       try {
         const res = await window.frontApi.get('products/list.json');
-        allProducts.value = res.data.map(p => assignImage({
+        allProducts.splice(0, allProducts.length, ...res.data.map(p => assignImage({
           ...p,
           priceNum: p.price,
           price: p.price.toLocaleString() + '원',
-        }));
+        })));
         /* app.js products 도 갱신해 Detail/Cart 에서 동일 객체 참조 가능하게 */
         try {
           if (window.SITE_CONFIG && Array.isArray(window.SITE_CONFIG.products)) {
-            window.SITE_CONFIG.products.splice(0, window.SITE_CONFIG.products.length, ...allProducts.value);
+            window.SITE_CONFIG.products.splice(0, window.SITE_CONFIG.products.length, ...allProducts);
           }
         } catch (e) {}
       } catch (e) {
         /* 폴백: config 상품 사용 */
-        allProducts.value = (props.config && props.config.products || []).map(p => assignImage({
+        allProducts.splice(0, allProducts.length, ...(props.config && props.config.products || []).map(p => assignImage({
           ...p,
           priceNum: parseInt(String(p.price).replace(/[^0-9]/g, ''), 10) || 0,
-        }));
+        })));
       } finally {
         loading.value = false;
       }
@@ -68,13 +68,13 @@ window.Prod01List = {
     /* ── 필터 옵션 (로드된 상품 기반) ── */
     const allColors = computed(() => {
       const map = new Map();
-      allProducts.value.forEach(p => (p.opt1s || []).forEach(c => { if (!map.has(c.name)) map.set(c.name, c); }));
+      allProducts.forEach(p => (p.opt1s || []).forEach(c => { if (!map.has(c.name)) map.set(c.name, c); }));
       return [...map.values()];
     });
     const sizeOrder = ['FREE','XS','S','M','L','XL','XXL','XXXL'];
     const allSizes = computed(() => {
       const seen = new Set();
-      allProducts.value.forEach(p => (p.opt2s || []).forEach(s => seen.add(s)));
+      allProducts.forEach(p => (p.opt2s || []).forEach(s => seen.add(s)));
       return [...seen].sort((a, b) => {
         const ai = sizeOrder.indexOf(a); const bi = sizeOrder.indexOf(b);
         if (ai < 0 && bi < 0) return a.localeCompare(b);
@@ -110,7 +110,7 @@ window.Prod01List = {
 
     /* ── 필터링 ── */
     const filteredProducts = computed(() => {
-      let list = allProducts.value;
+      let list = allProducts;
       const q = searchText.value.trim().toLowerCase();
       if (q) list = list.filter(p => (p.prodNm || '').toLowerCase().includes(q) ||
                                      (p.tags || []).some(t => t.includes(q)));

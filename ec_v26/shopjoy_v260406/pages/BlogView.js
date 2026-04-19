@@ -46,12 +46,12 @@ window.BlogView = {
 
     /* 댓글 */
     const commentText   = ref('');
-    const localComments = ref([]);
-    const allComments   = computed(() => [...(post.value.comments || []), ...localComments.value]);
+    const localComments = reactive([]);
+    const allComments   = computed(() => [...(post.value.comments || []), ...localComments]);
     const addComment    = () => {
       const t = commentText.value.trim();
       if (!t) return;
-      localComments.value.push({ id: Date.now(), author: '홍길동', date: new Date().toISOString().slice(0,10).replace(/-/g,'.'), text: t });
+      localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOString().slice(0,10).replace(/-/g,'.'), text: t });
       commentText.value = '';
     };
 

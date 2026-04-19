@@ -154,15 +154,15 @@ window.MyOrder = {
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const { computed: _c } = Vue;
-    const flowStatusFilter = ref([]);
+    const flowStatusFilter = reactive([]);
     const toggleFlowStatus = (status) => {
-      const idx = flowStatusFilter.value.indexOf(status);
-      if (idx === -1) flowStatusFilter.value.push(status);
-      else flowStatusFilter.value.splice(idx, 1);
+      const idx = flowStatusFilter.indexOf(status);
+      if (idx === -1) flowStatusFilter.push(status);
+      else flowStatusFilter.splice(idx, 1);
     };
     const dateFilteredOrders = _c(() => orders.value
       .filter(o => inRange(o.orderDate))
-      .filter(o => !flowStatusFilter.value.length || flowStatusFilter.value.includes(o.status))
+      .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
     onMounted(async () => {

@@ -77,7 +77,7 @@ window.OdClaimDtl = {
     const viewMode2 = ref(window._odClaimDtlState.viewMode || 'tab');
     Vue.watch(viewMode2, v => { window._odClaimDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || activeTab.value === id;
-    const claimItems = ref([]);
+    const claimItems = reactive([]);
     const sampleClaimItems = () => {
       const base = form.prodNm || '클레임상품';
       const amount = Number(form.refundAmount || 0) || 30000;
@@ -98,10 +98,10 @@ window.OdClaimDtl = {
       try {
         const res = await window.adminApi.get('my/claims.json');
         const c = (res.data || []).find(x => x.claimId === props.editId);
-        if (c && c.items && c.items.length) claimItems.value = c.items;
-        else if (c && c.prodNm) claimItems.value = [{ prodNm: c.prodNm, qty: 1, price: c.refundAmount || 0 }];
-        else claimItems.value = sampleClaimItems();
-      } catch (_) { claimItems.value = sampleClaimItems(); }
+        if (c && c.items && c.items.length) claimItems.splice(0, claimItems.length, ...c.items);
+        else if (c && c.prodNm) claimItems.splice(0, claimItems.length, { prodNm: c.prodNm, qty: 1, price: c.refundAmount || 0 });
+        else claimItems.splice(0, claimItems.length, ...sampleClaimItems());
+      } catch (_) { claimItems.splice(0, claimItems.length, ...sampleClaimItems()); }
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
@@ -110,10 +110,10 @@ window.OdClaimDtl = {
     const expandedItems = ref(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems.value); if (s.has(i)) s.delete(i); else s.add(i); expandedItems.value = s; };
     const isExpanded = (i) => expandedItems.value.has(i);
-    const allExpanded = computed(() => claimItems.value.length > 0 && claimItems.value.every((_,i) => expandedItems.value.has(i)));
+    const allExpanded = computed(() => claimItems.length > 0 && claimItems.every((_,i) => expandedItems.value.has(i)));
     const toggleExpandAll = () => {
       if (allExpanded.value) expandedItems.value = new Set();
-      else expandedItems.value = new Set(claimItems.value.map((_,i) => i));
+      else expandedItems.value = new Set(claimItems.map((_,i) => i));
     };
     Vue.watch(claimItems, (list) => { expandedItems.value = new Set(list.map((_,i) => i)); });
     const getExchangedItem = (it) => {
@@ -162,7 +162,7 @@ window.OdClaimDtl = {
     ] : []);
     const tabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },
-      { id:'items',    label:'클레임항목',    icon:'↩', count: claimItems.value.length },
+      { id:'items',    label:'클레임항목',    icon:'↩', count: claimItems.length },
       { id:'payment',  label:'결제정보',      icon:'💳', count: paymentList.value.length },
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },

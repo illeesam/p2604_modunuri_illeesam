@@ -41,8 +41,8 @@ window.PdProdDtl = {
     // ── 옵션 설정
     const useOpt = ref(true);
     let _optSeq = 1, _itemSeq = 100;
-    const optGroups = ref([]); // [{_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}]
-    const skus = ref([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
+    const optGroups = reactive([]); // [{_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}]
+    const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
     // ── 옵션 공통코드 (adminData.codes 기반 — OPT_TYPE 2레벨 트리)
     const prodOptCategoryTypeCd = ref(''); // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
     const optTypeLevel1Codes = computed(() =>
@@ -57,25 +57,25 @@ window.PdProdDtl = {
     const optInputTypeCodes = computed(() => (props.adminData.codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
     const getOptValCodes    = (typeCd) => (props.adminData.codes||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
 
-    const clearOpt = () => { optGroups.value = []; skus.value = []; prodOptCategoryTypeCd.value = ''; };
+    const clearOpt = () => { optGroups.length = 0; skus.length = 0; prodOptCategoryTypeCd.value = ''; };
 
     const onCategoryChange = () => {
-      optGroups.value = [];
-      skus.value = [];
+      optGroups.length = 0;
+      skus.length = 0;
       optTypeCodes.value.slice(0, 2).forEach((tc, i) => {
-        optGroups.value.push({ _id: _optSeq++, grpNm: '', typeCd: tc.codeValue, inputTypeCd: 'SELECT', level: i + 1, items: [] });
+        optGroups.push({ _id: _optSeq++, grpNm: '', typeCd: tc.codeValue, inputTypeCd: 'SELECT', level: i + 1, items: [] });
       });
     };
 
     const addOptGroup = () => {
       if (!prodOptCategoryTypeCd.value) { props.showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
-      if (optGroups.value.length >= 2) { props.showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
-      const defaultTypeCd = optTypeCodes.value[optGroups.value.length]?.codeValue || '';
-      optGroups.value.push({ _id: _optSeq++, grpNm: '', typeCd: defaultTypeCd, inputTypeCd: 'SELECT', level: optGroups.value.length + 1, items: [] });
+      if (optGroups.length >= 2) { props.showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
+      const defaultTypeCd = optTypeCodes.value[optGroups.length]?.codeValue || '';
+      optGroups.push({ _id: _optSeq++, grpNm: '', typeCd: defaultTypeCd, inputTypeCd: 'SELECT', level: optGroups.length + 1, items: [] });
     };
     const removeOptGroup = (idx) => {
-      optGroups.value.splice(idx, 1);
-      optGroups.value.forEach((g, i) => { g.level = i + 1; });
+      optGroups.splice(idx, 1);
+      optGroups.forEach((g, i) => { g.level = i + 1; });
       generateSkus();
     };
     const addOptItem = (grp) => {
@@ -100,11 +100,11 @@ window.PdProdDtl = {
     };
 
     const generateSkus = () => {
-      if (optGroups.value.length === 0) { skus.value = []; return; }
-      const g1 = optGroups.value[0]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
-      const g2 = optGroups.value[1]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
+      if (optGroups.length === 0) { skus.length = 0; return; }
+      const g1 = optGroups[0]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
+      const g2 = optGroups[1]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
       const existMap = {};
-      skus.value.forEach(s => { existMap[s._optKey] = s; });
+      skus.forEach(s => { existMap[s._optKey] = s; });
       const newSkus = [];
       if (g2.length === 0) {
         g1.forEach(i1 => {
@@ -121,20 +121,20 @@ window.PdProdDtl = {
             : { _id: 'sku_' + key, _optKey: key, _nm1: i1.nm, _nm2: i2.nm, skuCode: '', addPrice: 0, stock: 0, useYn: 'Y', statusCd: 'ON_SALE', saleCnt: 0 });
         }));
       }
-      skus.value = newSkus;
+      skus.splice(0, skus.length, ...newSkus);
     };
-    const totalStock = computed(() => skus.value.filter(s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
+    const totalStock = computed(() => skus.filter(s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
     // ── SKU 필터 (1단/2단/재고)
     const skuFilter1     = ref('');
     const skuFilter2     = ref('');
     const skuFilterStock = ref(''); // '' | 'in' | 'out'
-    const skuFilter1Options = computed(() => [...new Set(skus.value.map(s => s._nm1).filter(Boolean))]);
+    const skuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
     const skuFilter2Options = computed(() => {
-      const base = skuFilter1.value ? skus.value.filter(s => s._nm1 === skuFilter1.value) : skus.value;
+      const base = skuFilter1.value ? skus.filter(s => s._nm1 === skuFilter1.value) : skus;
       return [...new Set(base.map(s => s._nm2).filter(Boolean))];
     });
-    const skusFiltered = computed(() => skus.value.filter(s => {
+    const skusFiltered = computed(() => skus.filter(s => {
       if (skuFilter1.value     && s._nm1 !== skuFilter1.value) return false;
       if (skuFilter2.value     && s._nm2 !== skuFilter2.value) return false;
       if (skuFilterStock.value === 'in'  && (s.stock || 0) <= 0) return false;
@@ -143,23 +143,23 @@ window.PdProdDtl = {
     }));
 
     // ── 이미지
-    const images = ref([]);
+    const images = reactive([]);
     let imgIdSeq = 1;
     const fileInputRef = ref(null);
     const triggerFileInput = () => fileInputRef.value?.click();
-    const addImageByUrl = () => images.value.push({ id: imgIdSeq++, previewUrl: '', isMain: images.value.length === 0, optItemId1: '', optItemId2: '' });
+    const addImageByUrl = () => images.push({ id: imgIdSeq++, previewUrl: '', isMain: images.length === 0, optItemId1: '', optItemId2: '' });
     const onFileChange = (e) => {
       Array.from(e.target.files).forEach(file => {
         const reader = new FileReader();
-        reader.onload = ev => images.value.push({ id: imgIdSeq++, previewUrl: ev.target.result, isMain: images.value.length === 0, optItemId1: '', optItemId2: '' });
+        reader.onload = ev => images.push({ id: imgIdSeq++, previewUrl: ev.target.result, isMain: images.length === 0, optItemId1: '', optItemId2: '' });
         reader.readAsDataURL(file);
       });
       e.target.value = '';
     };
-    const setMain = (id) => images.value.forEach(img => { img.isMain = img.id === id; });
+    const setMain = (id) => images.forEach(img => { img.isMain = img.id === id; });
     const removeImage = (id) => {
-      const idx = images.value.findIndex(img => img.id === id);
-      if (idx !== -1) { const wasMain = images.value[idx].isMain; images.value.splice(idx, 1); if (wasMain && images.value.length) images.value[0].isMain = true; }
+      const idx = images.findIndex(img => img.id === id);
+      if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) images[0].isMain = true; }
     };
 
     // ── 이미지 드래그 정렬
@@ -169,25 +169,25 @@ window.PdProdDtl = {
     const onImgDragOver  = (idx) => { dragoverImgIdx.value = idx; };
     const onImgDrop = () => {
       if (dragImgIdx.value === null || dragImgIdx.value === dragoverImgIdx.value) { dragImgIdx.value = null; dragoverImgIdx.value = null; return; }
-      const items = [...images.value];
+      const items = [...images];
       const [moved] = items.splice(dragImgIdx.value, 1);
       items.splice(dragoverImgIdx.value, 0, moved);
-      images.value = items;
+      images.splice(0, images.length, ...items);
       dragImgIdx.value = null;
       dragoverImgIdx.value = null;
     };
 
     // ── 상품설명 블록 (contentBlocks)
-    const contentBlocks = ref([]);
+    const contentBlocks = reactive([]);
     let _blockSeq = 1;
     const _blockQuills = {};
     const addContentBlock = (type) => {
-      contentBlocks.value.push({ _id: _blockSeq++, type, content: '', fileName: '' });
+      contentBlocks.push({ _id: _blockSeq++, type, content: '', fileName: '' });
       if (type === 'html') {
         nextTick(() => {
-          const el = document.getElementById('quill-block-' + (contentBlocks.value.at(-1)._id));
-          if (el && !_blockQuills[contentBlocks.value.at(-1)._id]) {
-            const block = contentBlocks.value.at(-1);
+          const el = document.getElementById('quill-block-' + (contentBlocks.at(-1)._id));
+          if (el && !_blockQuills[contentBlocks.at(-1)._id]) {
+            const block = contentBlocks.at(-1);
             const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.',
               modules: { toolbar: [[{ header: [1,2,3,false] }], ['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','image','clean']] } });
             _blockQuills[block._id] = q;
@@ -197,9 +197,9 @@ window.PdProdDtl = {
       }
     };
     const removeContentBlock = (idx) => {
-      const block = contentBlocks.value[idx];
+      const block = contentBlocks[idx];
       delete _blockQuills[block._id];
-      contentBlocks.value.splice(idx, 1);
+      contentBlocks.splice(idx, 1);
     };
     const onBlockFileChange = (block, e) => {
       const file = e.target.files[0]; if (!file) return;
@@ -213,10 +213,10 @@ window.PdProdDtl = {
     const onBlockDragOver  = (idx) => { dragoverBlockIdx.value = idx; };
     const onBlockDrop = () => {
       if (dragBlockIdx.value === null || dragBlockIdx.value === dragoverBlockIdx.value) { dragBlockIdx.value = null; dragoverBlockIdx.value = null; return; }
-      const items = [...contentBlocks.value];
+      const items = [...contentBlocks];
       const [moved] = items.splice(dragBlockIdx.value, 1);
       items.splice(dragoverBlockIdx.value, 0, moved);
-      contentBlocks.value = items;
+      contentBlocks.splice(0, contentBlocks.length, ...items);
       dragBlockIdx.value = null; dragoverBlockIdx.value = null;
     };
     // ── 스플릿 패널 + 미리보기
@@ -239,8 +239,8 @@ window.PdProdDtl = {
 
     // ── 연관상품 / 코드상품
     let _relSeq = 1;
-    const relProds  = ref([]);  // [{ _id, productId, prodNm, category, price, stock, status }]
-    const codeProds = ref([]);  // 동일 구조
+    const relProds  = reactive([]);  // [{ _id, productId, prodNm, category, price, stock, status }]
+    const codeProds = reactive([]);  // 동일 구조
 
     // 상품 추가 피커 모달
     const prodPickerOpen   = ref(''); // '' | 'rel' | 'code'
@@ -248,7 +248,7 @@ window.PdProdDtl = {
     const prodPickerList   = computed(() => {
       const q    = prodPickerSearch.value.trim().toLowerCase();
       const all  = props.adminData.products || [];
-      const used = (prodPickerOpen.value === 'rel' ? relProds : codeProds).value.map(r => r.productId);
+      const used = (prodPickerOpen.value === 'rel' ? relProds : codeProds).map(r => r.productId);
       return all.filter(p => {
         if (used.includes(p.productId)) return false;
         if (!q) return true;
@@ -258,12 +258,12 @@ window.PdProdDtl = {
     const openProdPicker = (type) => { prodPickerSearch.value = ''; prodPickerOpen.value = type; };
     const selectProdItem = (p) => {
       const row = { _id: _relSeq++, productId: p.productId, prodNm: p.prodNm, category: p.category||'', price: p.price||0, stock: p.stock||0, status: p.status||'' };
-      if (prodPickerOpen.value === 'rel') relProds.value.push(row);
-      else                                codeProds.value.push(row);
+      if (prodPickerOpen.value === 'rel') relProds.push(row);
+      else                                codeProds.push(row);
       prodPickerOpen.value = '';
     };
-    const removeRelProd  = (idx) => relProds.value.splice(idx, 1);
-    const removeCodeProd = (idx) => codeProds.value.splice(idx, 1);
+    const removeRelProd  = (idx) => relProds.splice(idx, 1);
+    const removeCodeProd = (idx) => codeProds.splice(idx, 1);
 
     // 드래그 정렬 — 연관상품
     const dragRelIdx = ref(null); const dragoverRelIdx = ref(null);
@@ -271,8 +271,8 @@ window.PdProdDtl = {
     const onRelDragOver  = (idx) => { dragoverRelIdx.value = idx; };
     const onRelDrop = () => {
       if (dragRelIdx.value === null || dragRelIdx.value === dragoverRelIdx.value) { dragRelIdx.value = null; dragoverRelIdx.value = null; return; }
-      const items = [...relProds.value]; const [m] = items.splice(dragRelIdx.value, 1); items.splice(dragoverRelIdx.value, 0, m);
-      relProds.value = items; dragRelIdx.value = null; dragoverRelIdx.value = null;
+      const items = [...relProds]; const [m] = items.splice(dragRelIdx.value, 1); items.splice(dragoverRelIdx.value, 0, m);
+      relProds.splice(0, relProds.length, ...items); dragRelIdx.value = null; dragoverRelIdx.value = null;
     };
     // 드래그 정렬 — 코드상품
     const dragCodeIdx = ref(null); const dragoverCodeIdx = ref(null);
@@ -280,19 +280,19 @@ window.PdProdDtl = {
     const onCodeDragOver  = (idx) => { dragoverCodeIdx.value = idx; };
     const onCodeDrop = () => {
       if (dragCodeIdx.value === null || dragCodeIdx.value === dragoverCodeIdx.value) { dragCodeIdx.value = null; dragoverCodeIdx.value = null; return; }
-      const items = [...codeProds.value]; const [m] = items.splice(dragCodeIdx.value, 1); items.splice(dragoverCodeIdx.value, 0, m);
-      codeProds.value = items; dragCodeIdx.value = null; dragoverCodeIdx.value = null;
+      const items = [...codeProds]; const [m] = items.splice(dragCodeIdx.value, 1); items.splice(dragoverCodeIdx.value, 0, m);
+      codeProds.splice(0, codeProds.length, ...items); dragCodeIdx.value = null; dragoverCodeIdx.value = null;
     };
 
     // ── 카테고리 N개 목록 (pd_category_prod)
-    const prodCategories = ref([]); // [{ categoryId, categoryNm, depth }]
+    const prodCategories = reactive([]); // [{ categoryId, categoryNm, depth }]
     const catPickerOpen   = ref(false);
     const catPickerSearch = ref('');
     const catDragIdx      = ref(null);
     const catDragoverIdx  = ref(null);
     const catPickerList = computed(() => {
       const q = catPickerSearch.value.trim().toLowerCase();
-      const already = new Set(prodCategories.value.map(c => String(c.categoryId)));
+      const already = new Set(prodCategories.map(c => String(c.categoryId)));
       return (props.adminData.categories||[])
         .filter(c => {
           if (already.has(String(c.categoryId||c.id))) return false;
@@ -311,30 +311,30 @@ window.PdProdDtl = {
     };
     const addCategory = (cat) => {
       const id = cat.categoryId||cat.id;
-      if (prodCategories.value.some(c => String(c.categoryId) === String(id))) return;
-      prodCategories.value.push({ categoryId: id, categoryNm: cat.categoryNm||cat.nm||String(id), depth: cat.depth||cat.level||1 });
+      if (prodCategories.some(c => String(c.categoryId) === String(id))) return;
+      prodCategories.push({ categoryId: id, categoryNm: cat.categoryNm||cat.nm||String(id), depth: cat.depth||cat.level||1 });
       catPickerOpen.value = false; catPickerSearch.value = '';
     };
-    const removeCategory = (idx) => { prodCategories.value.splice(idx, 1); };
+    const removeCategory = (idx) => { prodCategories.splice(idx, 1); };
     const onCatDragStart = (idx) => { catDragIdx.value = idx; };
     const onCatDragOver  = (idx) => { catDragoverIdx.value = idx; };
     const onCatDrop = () => {
       if (catDragIdx.value === null || catDragIdx.value === catDragoverIdx.value) { catDragIdx.value = null; catDragoverIdx.value = null; return; }
-      const items = [...prodCategories.value]; const [m] = items.splice(catDragIdx.value, 1); items.splice(catDragoverIdx.value, 0, m);
-      prodCategories.value = items; catDragIdx.value = null; catDragoverIdx.value = null;
+      const items = [...prodCategories]; const [m] = items.splice(catDragIdx.value, 1); items.splice(catDragoverIdx.value, 0, m);
+      prodCategories.splice(0, prodCategories.length, ...items); catDragIdx.value = null; catDragoverIdx.value = null;
     };
 
     // ── 판매계획
-    const salePlans = ref([]);
+    const salePlans = reactive([]);
     let planIdSeq = 1;
-    const planVisible = computed(() => salePlans.value.filter(r => r._row_status !== 'D'));
+    const planVisible = computed(() => salePlans.filter(r => r._row_status !== 'D'));
     const planAllChecked = computed({
       get: () => planVisible.value.length > 0 && planVisible.value.every(r => r._checked),
       set: v => planVisible.value.forEach(r => { r._checked = v; }),
     });
-    const addPlanRow = () => salePlans.value.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
+    const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
     const onPlanChange = row => { if (row._row_status === 'N') row._row_status = 'U'; };
-    const deletePlanChecked = () => { for (let i = salePlans.value.length - 1; i >= 0; i--) { const r = salePlans.value[i]; if (!r._checked) continue; if (r._row_status === 'I') salePlans.value.splice(i, 1); else r._row_status = 'D'; } };
+    const deletePlanChecked = () => { for (let i = salePlans.length - 1; i >= 0; i--) { const r = salePlans[i]; if (!r._checked) continue; if (r._row_status === 'I') salePlans.splice(i, 1); else r._row_status = 'D'; } };
     const planRowStyle = s => ({ I: 'background:#f6ffed;', U: 'background:#fffbe6;', D: 'background:#fff1f0;opacity:0.6;' }[s] || '');
 
     // ── mounted
@@ -397,41 +397,41 @@ window.PdProdDtl = {
           form.isNew_         = p.isNew_ || 'N';
           form.isBest         = p.isBest || 'N';
           form.contentHtml    = p.contentHtml || p.description || '';
-          if (p.contentBlocks?.length) contentBlocks.value = p.contentBlocks.map(b => ({ ...b, _id: _blockSeq++ }));
-          else if (form.contentHtml) contentBlocks.value = [{ _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '' }];
-          if (p.images?.length) images.value = p.images.map(img => ({ ...img, id: imgIdSeq++ }));
-          else if (p.mainImage) images.value = [{ id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' }];
+          if (p.contentBlocks?.length) contentBlocks.splice(0, contentBlocks.length, ...p.contentBlocks.map(b => ({ ...b, _id: _blockSeq++ })));
+          else if (form.contentHtml) contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '' });
+          if (p.images?.length) images.splice(0, images.length, ...p.images.map(img => ({ ...img, id: imgIdSeq++ })));
+          else if (p.mainImage) images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' });
           if (p.optGroups?.length) {
             useOpt.value = true;
-            optGroups.value = p.optGroups.map(g => ({ ...g, _id: _optSeq++, items: g.items.map(i => ({ ...i, _id: _itemSeq++ })) }));
-            skus.value = p.skus || [];
+            optGroups.splice(0, optGroups.length, ...p.optGroups.map(g => ({ ...g, _id: _optSeq++, items: g.items.map(i => ({ ...i, _id: _itemSeq++ })) })));
+            skus.splice(0, skus.length, ...(p.skus || []));
           }
-          if (p.salePlans?.length) salePlans.value = p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false }));
+          if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
           if (p.relProds?.length) {
-            relProds.value = p.relProds.map(r => ({ ...r, _id: _relSeq++ }));
+            relProds.splice(0, relProds.length, ...p.relProds.map(r => ({ ...r, _id: _relSeq++ })));
           } else if (p.relatedProductIds) {
-            relProds.value = p.relatedProductIds.split(',').map(s => s.trim()).filter(Boolean).map(id => {
+            relProds.splice(0, relProds.length, ...p.relatedProductIds.split(',').map(s => s.trim()).filter(Boolean).map(id => {
               const found = (props.adminData.products||[]).find(x => String(x.productId) === String(id));
               return found ? { _id: _relSeq++, productId: found.productId, prodNm: found.prodNm, category: found.category||'', price: found.price||0, stock: found.stock||0, status: found.status||'' }
                            : { _id: _relSeq++, productId: Number(id), prodNm: '(ID:'+id+')', category: '', price: 0, stock: 0, status: '' };
-            });
+            }));
           }
-          if (p.codeProds?.length) codeProds.value = p.codeProds.map(r => ({ ...r, _id: _relSeq++ }));
+          if (p.codeProds?.length) codeProds.splice(0, codeProds.length, ...p.codeProds.map(r => ({ ...r, _id: _relSeq++ })));
           // 카테고리 N개 로드 (pd_category_prod)
           const pid = String(p.productId || p.prodId);
           const linked = (props.adminData.categoryProds||[])
             .filter(cp => String(cp.prodId) === pid)
             .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
-          prodCategories.value = linked.map(cp => ({
+          prodCategories.splice(0, prodCategories.length, ...linked.map(cp => ({
             categoryId: cp.categoryId,
             categoryNm: getCategoryNm(cp.categoryId),
             depth: getCategoryDepth(cp.categoryId),
-          }));
+          })));
         }
       }
       await nextTick();
       // HTML 블록 Quill 마운트
-      contentBlocks.value.filter(b => b.type === 'html').forEach(block => {
+      contentBlocks.filter(b => b.type === 'html').forEach(block => {
         const el = document.getElementById('quill-block-' + block._id);
         if (el && !_blockQuills[block._id]) {
           const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.',
@@ -462,8 +462,8 @@ window.PdProdDtl = {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const imgData = images.value.map(({ id, ...rest }) => rest);
-      const mainImg = images.value.find(img => img.isMain);
+      const imgData = images.map(({ id, ...rest }) => rest);
+      const mainImg = images.find(img => img.isMain);
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       let savedProdId;
@@ -478,11 +478,11 @@ window.PdProdDtl = {
       // categoryProds 동기화
       if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
       props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(savedProdId));
-      prodCategories.value.forEach((cat, i) => {
+      prodCategories.forEach((cat, i) => {
         props.adminData.categoryProds.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
       try {
-        const res = await (isNew.value ? window.adminApi.post(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks.value, optGroups: optGroups.value, skus: skus.value, relProds: relProds.value, codeProds: codeProds.value, salePlans: salePlans.value }) : window.adminApi.put(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks.value, optGroups: optGroups.value, skus: skus.value, relProds: relProds.value, codeProds: codeProds.value, salePlans: salePlans.value }));
+        const res = await (isNew.value ? window.adminApi.post(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.adminApi.put(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng');

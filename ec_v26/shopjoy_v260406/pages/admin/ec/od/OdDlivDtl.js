@@ -85,7 +85,7 @@ window.OdDlivDtl = {
       }
     };
 
-    const dlivItems = ref([]);
+    const dlivItems = reactive([]);
     const sampleDlivItems = () => {
       const rel = props.adminData.orders.find(x => x.orderId === form.orderId);
       const base = rel ? rel.prodNm : (form.receiver || '배송상품');
@@ -110,9 +110,9 @@ window.OdDlivDtl = {
         const res = await window.adminApi.get('my/orders.json');
         const oid = props.editId && props.adminData.deliveries.find(d=>d.dlivId===props.editId)?.orderId;
         const o = (res.data || []).find(x => x.orderId === oid);
-        if (o && o.items && o.items.length) dlivItems.value = o.items;
-        else dlivItems.value = sampleDlivItems();
-      } catch (_) { dlivItems.value = sampleDlivItems(); }
+        if (o && o.items && o.items.length) dlivItems.splice(0, dlivItems.length, ...o.items);
+        else dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
+      } catch (_) { dlivItems.splice(0, dlivItems.length, ...sampleDlivItems()); }
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
@@ -157,7 +157,7 @@ window.OdDlivDtl = {
     ] : []);
     const tabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },
-      { id:'items',    label:'배송항목',      icon:'📦', count: dlivItems.value.length },
+      { id:'items',    label:'배송항목',      icon:'📦', count: dlivItems.length },
       { id:'payment',  label:'결제정보',      icon:'💳', count: paymentList.value.length },
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },

@@ -101,7 +101,7 @@ window.OdOrderDtl = {
     const activeTab = ref(window._odOrderDtlState.activeTab || 'info');
     Vue.watch(activeTab, v => { window._odOrderDtlState.activeTab = v; });
     /* 주문 항목 (frontoffice orders.json 데이터에서 로드) */
-    const orderItems = ref([]);
+    const orderItems = reactive([]);
     const sampleOrderItems = () => {
       const base = form.prodNm || '주문상품';
       const total = Number(form.totalPrice || 0);
@@ -125,9 +125,9 @@ window.OdOrderDtl = {
       try {
         const res = await window.adminApi.get('my/orders.json');
         const o = (res.data || []).find(x => x.orderId === props.editId);
-        if (o && o.items && o.items.length) orderItems.value = o.items;
-        else orderItems.value = sampleOrderItems();
-      } catch (_) { orderItems.value = sampleOrderItems(); }
+        if (o && o.items && o.items.length) orderItems.splice(0, orderItems.length, ...o.items);
+        else orderItems.splice(0, orderItems.length, ...sampleOrderItems());
+      } catch (_) { orderItems.splice(0, orderItems.length, ...sampleOrderItems()); }
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
@@ -196,10 +196,10 @@ window.OdOrderDtl = {
     const expandedItems = ref(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems.value); if (s.has(i)) s.delete(i); else s.add(i); expandedItems.value = s; };
     const isExpanded = (i) => expandedItems.value.has(i);
-    const allExpanded = computed(() => orderItems.value.length > 0 && orderItems.value.every((_,i) => expandedItems.value.has(i)));
+    const allExpanded = computed(() => orderItems.length > 0 && orderItems.every((_,i) => expandedItems.value.has(i)));
     const toggleExpandAll = () => {
       if (allExpanded.value) expandedItems.value = new Set();
-      else expandedItems.value = new Set(orderItems.value.map((_,i) => i));
+      else expandedItems.value = new Set(orderItems.map((_,i) => i));
     };
     Vue.watch(orderItems, (list) => { expandedItems.value = new Set(list.map((_,i) => i)); });
     const getExchangedItem = (it) => {
@@ -221,7 +221,7 @@ window.OdOrderDtl = {
     ] : []);
     const tabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },
-      { id:'items',    label:'주문항목',      icon:'📦', count: orderItems.value.length },
+      { id:'items',    label:'주문항목',      icon:'📦', count: orderItems.length },
       { id:'payment',  label:'결제정보',      icon:'💳', count: paymentList.value.length },
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },

@@ -11,13 +11,13 @@ window.OdOrderHist = {
     
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
-    const orderItems = ref([]);
+    const orderItems = reactive([]);
     onMounted(() => {
       const o = props.adminData.orders.find(x => x.orderId === props.orderId);
       if (o) {
-        orderItems.value = [
+        orderItems.splice(0, orderItems.length,
           { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
-        ];
+        );
       }
     });
 
