@@ -17,9 +17,9 @@ COMMENT ON COLUMN pd_prod_opt_grp.site_id     IS '사이트ID (sy_site.site_id)'
 COMMENT ON COLUMN pd_prod_opt_grp.prod_id     IS '상품ID';
 COMMENT ON COLUMN pd_prod_opt_grp.opt_grp_nm  IS '옵션그룹명 (예: 색상+사이즈 조합)';
 COMMENT ON COLUMN pd_prod_opt_grp.sort_ord    IS '정렬순서';
-COMMENT ON COLUMN pd_prod_opt_grp.reg_by      IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_opt_grp.reg_by      IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_opt_grp.reg_date    IS '등록일';
-COMMENT ON COLUMN pd_prod_opt_grp.upd_by      IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_opt_grp.upd_by      IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_opt_grp.upd_date    IS '수정일';
 
 -- 상품 옵션 값 (예: 블랙, M)

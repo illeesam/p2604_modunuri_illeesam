@@ -7,7 +7,7 @@
 CREATE TABLE pm_save_issue (
     save_issue_id       VARCHAR(16)     NOT NULL,
     site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_mem.member_id
+    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
     save_issue_type_cd  VARCHAR(20)     NOT NULL,               -- 코드: SAVE_ISSUE_TYPE (ORDER:구매적립/EVENT:이벤트/REVIEW:리뷰/REFERRAL:추천/ADMIN:관리자)
     save_amt            BIGINT          NOT NULL,               -- 지급 적립금액
     save_rate           NUMERIC(5,2),                           -- 적립률 (%, 구매적립 시)
@@ -31,7 +31,7 @@ CREATE TABLE pm_save_issue (
 COMMENT ON TABLE  pm_save_issue IS '적립금 지급 이력 (구매적립/이벤트/리뷰/관리자 등)';
 COMMENT ON COLUMN pm_save_issue.save_issue_id       IS '적립지급ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN pm_save_issue.site_id             IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN pm_save_issue.member_id           IS '회원ID (mb_mem.member_id)';
+COMMENT ON COLUMN pm_save_issue.member_id           IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN pm_save_issue.save_issue_type_cd  IS '지급유형 (코드: SAVE_ISSUE_TYPE — ORDER/EVENT/REVIEW/REFERRAL/ADMIN)';
 COMMENT ON COLUMN pm_save_issue.save_amt            IS '지급 적립금액';
 COMMENT ON COLUMN pm_save_issue.save_rate           IS '적립률 (%, 구매적립 시)';
@@ -59,5 +59,5 @@ CREATE INDEX idx_pm_save_issue_expire  ON pm_save_issue (expire_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_save_issue.save_issue_type_cd (지급유형) : SAVE_ISSUE_TYPE(SAVE_ISSUE_TYPE) { 코드값 미정의 }
--- [CODES] pm_save_issue.issue_status_cd (지급상태) : SAVE_ISSUE_STATUS(SAVE_ISSUE_STATUS) { 코드값 미정의 }
+-- [CODES] pm_save_issue.save_issue_type_cd (지급유형) : SAVE_ISSUE_TYPE: JOIN/ORDER_COMPLT/REVIEW_TEXT/REVIEW_PHOTO/REVIEW_VIDEO/EVENT/BIRTHDAY/REFERRAL/ADMIN_GRANT/ADMIN_REVOKE/ORDER_CANCEL/EXPIRE/CLAIM_SHIP
+-- [CODES] pm_save_issue.issue_status_cd (지급상태) : SAVE_ISSUE_STATUS: SCHEDULED/COMPLETED/CANCELLED/EXPIRED

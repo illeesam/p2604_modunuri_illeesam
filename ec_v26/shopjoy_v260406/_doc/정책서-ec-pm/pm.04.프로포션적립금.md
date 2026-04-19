@@ -68,7 +68,7 @@
 ## 주요 필드
 | 필드 | 설명 | 규칙 |
 |------|------|------|
-| member_id | 회원ID | FK mb_mem |
+| member_id | 회원ID | FK mb_member |
 | accumulation_balance | 적립금잔액 | INTEGER 기본값 0 |
 | accumulation_points | 누적적립금 | INTEGER |
 | used_points | 사용적립금 | INTEGER |
@@ -99,7 +99,7 @@
 | `pm_save` | 적립금 통합 원장 (모든 입출 이력) |
 | `pm_save_issue` | 적립금 지급 이력 (발생 건별 상태 추적) |
 | `pm_save_usage` | 적립금 사용 이력 (주문 시 사용 건별) |
-| `mb_mem` | 회원 마스터 (적립금 잔액 요약 저장) |
+| `mb_member` | 회원 마스터 (적립금 잔액 요약 저장) |
 
 ## 제약사항
 - 환금 불가능 (캐시로만 전환, 10% 수수료)

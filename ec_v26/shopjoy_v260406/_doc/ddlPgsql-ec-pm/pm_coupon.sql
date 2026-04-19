@@ -72,9 +72,9 @@ COMMENT ON COLUMN pm_coupon.dvc_pc_yn           IS 'PC 채널 적용여부 Y/N';
 COMMENT ON COLUMN pm_coupon.dvc_mweb_yn         IS '모바일WEB 적용여부 Y/N';
 COMMENT ON COLUMN pm_coupon.dvc_mapp_yn         IS '모바일APP 적용여부 Y/N';
 COMMENT ON COLUMN pm_coupon.memo                IS '메모';
-COMMENT ON COLUMN pm_coupon.reg_by              IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_coupon.reg_by              IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_coupon.reg_date            IS '등록일';
-COMMENT ON COLUMN pm_coupon.upd_by              IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_coupon.upd_by              IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_coupon.upd_date            IS '수정일';
 
 CREATE INDEX idx_pm_coupon_code   ON pm_coupon (coupon_cd);
@@ -87,4 +87,4 @@ CREATE INDEX idx_pm_coupon_grade  ON pm_coupon (mem_grade_cd);
 -- ============================================================
 -- [CODES] pm_coupon.coupon_type_cd (쿠폰유형) : 쿠폰유형 { RATE:정률 할인, FIXED:정액 할인 }
 -- [CODES] pm_coupon.coupon_status_cd (상태) : 쿠폰상태 { ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료 }
--- [CODES] pm_coupon.target_type_cd (적용대상) : COUPON_TARGET(COUPON_TARGET) { 코드값 미정의 }
+-- [CODES] pm_coupon.target_type_cd (적용대상) : PROMO_TARGET_TYPE: ALL/PRODUCT/CATEGORY/VENDOR/BRAND/MEMBER_GRADE

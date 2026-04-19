@@ -26,9 +26,9 @@ COMMENT ON COLUMN pm_event_benefit.condition_desc   IS '조건 설명';
 COMMENT ON COLUMN pm_event_benefit.benefit_value    IS '혜택 값';
 COMMENT ON COLUMN pm_event_benefit.coupon_id        IS '연결 쿠폰ID';
 COMMENT ON COLUMN pm_event_benefit.sort_ord         IS '정렬순서';
-COMMENT ON COLUMN pm_event_benefit.reg_by           IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_event_benefit.reg_by           IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_event_benefit.reg_date         IS '등록일';
-COMMENT ON COLUMN pm_event_benefit.upd_by           IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_event_benefit.upd_by           IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_event_benefit.upd_date         IS '수정일';
 
 CREATE INDEX idx_pm_event_benefit_event ON pm_event_benefit (event_id);
@@ -36,4 +36,4 @@ CREATE INDEX idx_pm_event_benefit_event ON pm_event_benefit (event_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_event_benefit.benefit_type_cd (혜택유형) : BENEFIT_TYPE(BENEFIT_TYPE) { 코드값 미정의 }
+-- [CODES] pm_event_benefit.benefit_type_cd (혜택유형) : BENEFIT_TYPE: COUPON/SAVE/CACHE/GIFT/DISCOUNT

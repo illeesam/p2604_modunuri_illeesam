@@ -37,7 +37,7 @@
 | WITHDRAW_WAIT | 탈퇴대기 | 탈퇴 신청 처리 중 |
 | WITHDRAWN | 탈퇴 | 탈퇴 완료 |
 | FORCED_WITHDRAWN | 강제탈퇴 | 관리자 강제 탈퇴 |
-> 적용: `mb_mem.member_status_cd`
+> 적용: `mb_member.member_status_cd`
 
 #### MEMBER_GRADE — 회원등급
 | code_value | label |
@@ -46,14 +46,14 @@
 | SILVER | 실버 |
 | GOLD | 골드 |
 | VIP | VIP |
-> 적용: `mb_mem.grade_cd`, `od_order.order_grade_cd`, `pm_coupon.mem_grade_cd`, `pm_discnt.mem_grade_cd`, `pm_gift.mem_grade_cd`
+> 적용: `mb_member.grade_cd`, `od_order.order_grade_cd`, `pm_coupon.mem_grade_cd`, `pm_discnt.mem_grade_cd`, `pm_gift.mem_grade_cd`
 
 #### GENDER — 성별
 | code_value | label |
 |---|---|
 | M | 남성 |
 | F | 여성 |
-> 적용: `mb_mem.gender_cd`
+> 적용: `mb_member.gender_cd`
 
 #### SNS_CHANNEL — SNS 연동 채널
 | code_value | label |
@@ -62,7 +62,7 @@
 | NAVER | 네이버 |
 | GOOGLE | 구글 |
 | APPLE | 애플 |
-> 적용: `mb_mem_sns.sns_channel_cd`
+> 적용: `mb_member_sns.sns_channel_cd`
 
 #### MEMBER_WITHDRAW_REASON — 탈퇴사유
 | code_value | label |
@@ -74,15 +74,16 @@
 | LOW_USE | 이용빈도 낮음 |
 | UX | 이용 불편 |
 | OTHER | 기타 |
-> 적용: `mb_mem_withdraw.reason_cd`
+> 적용: `mb_member_withdraw.reason_cd`
 
-#### AUTH_METHOD — 본인인증방법
+#### AUTH_METHOD — 로그인인증방법
 | code_value | label |
 |---|---|
-| MOBILE | 휴대폰 인증 |
-| IPIN | 아이핀 |
-| KAKAO | 카카오 인증 |
-> 적용: `mb_mem.auth_method_cd`
+| EMAIL | 이메일·비밀번호 |
+| GOOGLE | 구글 소셜 로그인 |
+| KAKAO | 카카오 소셜 로그인 |
+| NAVER | 네이버 소셜 로그인 |
+> 적용: `mb_member.auth_method_cd`
 
 #### LOGIN_RESULT — 로그인결과
 | code_value | label |
@@ -92,7 +93,16 @@
 | FAIL_LOCKED | 계정 잠금 |
 | FAIL_DORMANT | 휴면 계정 |
 | FAIL_WITHDRAWN | 탈퇴 계정 |
-> 적용: `mb_mem_login_log.result_cd`, `sy_user_login_log.result_cd`
+> 적용: `mb_member_login_log.result_cd`, `sy_user_login_log.result_cd`, `mbh_member_login_log.result_cd`, `syh_user_login_log.result_cd`
+
+#### TOKEN_ACTION — 토큰액션유형
+| code_value | label |
+|---|---|
+| ISSUE | 발급 |
+| REFRESH | 갱신 |
+| EXPIRE | 만료 |
+| REVOKE | 강제폐기 |
+> 적용: `mbh_member_token_log.action_cd`, `syh_user_token_log.action_cd`
 
 ---
 
@@ -290,6 +300,14 @@
 | EXCHANGE_EXTRA | 교환차액 | 교환상품 가격차 추가결제 |
 > 적용: `od_pay.pay_occur_type_cd`
 
+#### PAY_CHG_TYPE — 결제변경유형
+| code_value | label |
+|---|---|
+| STATUS | 상태변경 |
+| METHOD | 수단변경 |
+| AMOUNT | 금액변경 |
+> 적용: `odh_pay_chg_hist.chg_type_cd`
+
 #### REFUND_METHOD — 환불수단
 | code_value | label |
 |---|---|
@@ -297,6 +315,23 @@
 | BANK | 계좌이체 |
 | CACHE | 캐시(충전금) 환급 |
 > 적용: `od_claim.refund_method_cd`
+
+#### REFUND_TYPE — 환불유형
+| code_value | label | 설명 |
+|---|---|---|
+| CANCEL | 취소환불 | 주문 취소에 의한 환불 |
+| RETURN | 반품환불 | 반품 완료 후 환불 |
+| PARTIAL | 부분환불 | 부분취소·부분반품 환불 |
+| EXTRA | 추가결제환불 | 추가결제 취소 환불 |
+> 적용: `od_refund.refund_type_cd`
+
+#### FAULT_TYPE — 귀책사유
+| code_value | label |
+|---|---|
+| CUST | 구매자 귀책 |
+| VENDOR | 판매자 귀책 |
+| PLATFORM | 플랫폼 귀책 |
+> 적용: `od_refund.fault_type_cd`, `od_claim.fault_type_cd`
 
 #### REFUND_STATUS — 환불상태
 | code_value | label |
@@ -858,7 +893,14 @@
 | BONUS | 보너스 |
 | ERROR_FIX | 오류수정 |
 | OTHER | 기타 |
-> 적용: `st_settle_adj.adj_type_cd`
+> 적용: `st_settle_adj.adj_type_cd`, `st_settle_etc_adj.etc_adj_type_cd`
+
+#### ADJ_DIR — 조정방향
+| code_value | label |
+|---|---|
+| ADD | 가산 |
+| SUB | 차감 |
+> 적용: `st_settle_etc_adj.etc_adj_dir_cd`
 
 #### RAW_STATUS — 수집원장상태
 | code_value | label |
@@ -922,27 +964,29 @@
 > 적용: `sy_site.site_status_cd`
 
 #### SITE_TYPE — 사이트유형
-| code_value | label |
-|---|---|
-| B2C | 일반 쇼핑몰 |
-| B2B | 기업간 거래 |
-| MOBILE | 모바일 전용 |
+| code_value | label | 설명 |
+|---|---|---|
+| EC | 이커머스 | 사용자 쇼핑 사이트 |
+| ADMIN | 관리자 | 관리자 운영 사이트 |
+| API | API | API 전용 사이트 (서버간 통신) |
 > 적용: `sy_site.site_type_cd`
 
 #### USER_STATUS — 관리자상태
-| code_value | label |
-|---|---|
-| ACTIVE | 활성 |
-| INACTIVE | 비활성 |
-| LOCKED | 잠금 |
+| code_value | label | 설명 |
+|---|---|---|
+| ACTIVE | 활성 | 정상 로그인·업무 가능 |
+| DORMANT | 휴면 | 90일 이상 미접속. 비밀번호 재설정 필요 |
+| SUSPENDED | 정지 | 정책 위반으로 관리자 정지 |
+| DELETED | 삭제 | 퇴직·계정 삭제. 이력 보존, 로그인 불가 |
 > 적용: `sy_user.user_status_cd`
 
 #### VENDOR_STATUS — 업체상태
-| code_value | label |
-|---|---|
-| ACTIVE | 정상 |
-| INACTIVE | 비활성 |
-| SUSPENDED | 정지 |
+| code_value | label | 설명 |
+|---|---|---|
+| PENDING | 대기 | 등록 심사 대기 |
+| APPROVED | 승인 | 심사 승인. 상품 등록·판매 가능 |
+| SUSPENDED | 정지 | 일시 정지. 상품 노출·주문 차단 |
+| CLOSED | 종료 | 계약 종료. 기존 주문 처리만 가능 |
 > 적용: `sy_vendor.vendor_status_cd`
 
 #### VENDOR_TYPE — 업체유형
@@ -952,14 +996,23 @@
 | AGENT | 에이전트 |
 | DIRECT | 직매입 |
 | CONSIGN | 위탁판매 |
-> 적용: `sy_vendor.vendor_type_cd`
+> 적용: `sy_vendor.vendor_type_cd`, `st_settle_raw.vendor_type_cd`
 
-#### VENDOR_CLASS — 업체분류
+#### BRAND_CONTRACT — 브랜드계약유형
 | code_value | label |
 |---|---|
-| PREMIUM | 프리미엄 |
-| STANDARD | 일반 |
-| TRIAL | 시험 |
+| EXCLUSIVE | 독점계약 |
+| NON_EXCLUSIVE | 비독점계약 |
+| CONSIGN | 위탁계약 |
+> 적용: `sy_vendor_brand.contract_cd`
+
+#### VENDOR_CLASS — 업체분류 (사업자유형)
+| code_value | label |
+|---|---|
+| INDIVIDUAL | 개인사업자 |
+| CORPORATION | 법인사업자 |
+| TAX_EXEMPT | 면세사업자 |
+| SIMPLIFIED | 간이과세자 |
 > 적용: `sy_vendor.vendor_class_cd`
 
 #### VENDOR_CONTENT_TYPE — 업체콘텐츠유형
@@ -977,6 +1030,23 @@
 | ACTIVE | 게시중 |
 | INACTIVE | 비게시 |
 > 적용: `sy_vendor_content.vendor_content_status_cd`
+
+#### VENDOR_USER_STATUS — 업체직원상태
+| code_value | label |
+|---|---|
+| ACTIVE | 재직 |
+| LEFT | 퇴직 |
+| SUSPENDED | 정지 |
+> 적용: `sy_vendor_user.vendor_user_status_cd`
+
+#### POSITION — 업체직원직위
+| code_value | label |
+|---|---|
+| CEO | 대표 |
+| DIRECTOR | 이사 |
+| MANAGER | 팀장 |
+| EMPLOYEE | 담당자 |
+> 적용: `sy_vendor_user.position_cd`
 
 #### ALARM_TYPE — 알림유형
 | code_value | label |
@@ -1004,6 +1074,15 @@
 | ADMIN | 관리자 |
 | ALL | 전체 |
 > 적용: `sy_alarm.alarm_target_type_cd`
+
+#### ALARM_STATUS — 알림발송상태
+| code_value | label | 설명 |
+|---|---|---|
+| PENDING | 대기 | 발송 예정. 발송 시각 미도달 |
+| SENT | 발송됨 | 발송 완료 |
+| FAILED | 실패 | 발송 실패. fail_count 누적 |
+| CANCELLED | 취소 | 관리자 수동 취소 |
+> 적용: `sy_alarm.alarm_status_cd`
 
 #### TEMPLATE_TYPE — 템플릿유형
 | code_value | label |
@@ -1047,6 +1126,16 @@
 | CLOSED | 종료 |
 > 적용: `sy_contact.contact_status_cd`
 
+#### CONTACT_CATEGORY — 문의유형
+| code_value | label |
+|---|---|
+| ORDER | 주문 |
+| DLIV | 배송 |
+| PRODUCT | 상품 |
+| CLAIM | 클레임 |
+| OTHER | 기타 |
+> 적용: `sy_contact.category_cd`
+
 #### NOTICE_TYPE — 공지유형
 | code_value | label |
 |---|---|
@@ -1056,21 +1145,30 @@
 | SYSTEM | 시스템 |
 > 적용: `sy_notice.notice_type_cd`
 
-#### BBM_TYPE — BBM유형 (게시판/메모)
+#### BBM_TYPE — BBM유형 (팝업·공지)
 | code_value | label |
 |---|---|
-| MEMO | 메모 |
-| NOTICE | 게시공지 |
-| COMMENT | 댓글 |
+| NORMAL | 일반팝업 |
+| NOTICE | 공지팝업 |
+| EVENT | 이벤트팝업 |
+| COOKIE | 쿠키팝업 |
 > 적용: `sy_bbm.bbm_type_cd`
 
-#### BBM_SCOPE_TYPE — BBM 공개범위유형
+#### SCOPE_TYPE — 노출범위 (팝업·공지)
 | code_value | label |
 |---|---|
-| PUBLIC | 전체공개 |
-| INTERNAL | 내부공개 |
-| PRIVATE | 비공개 |
+| ALL | 전체 (비회원 포함) |
+| MEMBER | 회원 전용 |
+| ADMIN | 관리자 화면 전용 |
 > 적용: `sy_bbm.scope_type_cd`
+
+#### BBS_STATUS — 게시글상태
+| code_value | label |
+|---|---|
+| ACTIVE | 활성 |
+| HIDDEN | 숨김 |
+| DELETED | 삭제 |
+> 적용: `sy_bbs.bbs_status_cd`
 
 #### DEPT_TYPE — 부서유형
 | code_value | label |
@@ -1083,16 +1181,19 @@
 #### MENU_TYPE — 메뉴유형
 | code_value | label |
 |---|---|
-| GROUP | 그룹메뉴 (폴더) |
-| PAGE | 페이지 메뉴 |
+| PAGE | 페이지 메뉴 (컴포넌트 렌더) |
+| FOLDER | 폴더 (하위 메뉴 묶음) |
 | LINK | 외부링크 |
 > 적용: `sy_menu.menu_type_cd`
 
 #### ROLE_TYPE — 역할유형
-| code_value | label |
-|---|---|
-| SYSTEM | 시스템 기본역할 |
-| CUSTOM | 사용자 정의역할 |
+| code_value | label | 설명 |
+|---|---|---|
+| SUPER | 슈퍼관리자 | 전체 권한. 시스템 설정 포함 |
+| ADMIN | 관리자 | 일반 운영 권한 |
+| VENDOR | 업체담당자 | 담당 업체 상품·주문만 접근 |
+| CS | 고객센터 | 회원·주문·클레임 조회·처리 |
+| VIEWER | 조회자 | 읽기 전용 |
 > 적용: `sy_role.role_type_cd`
 
 #### PROP_TYPE — 속성유형
@@ -1110,7 +1211,7 @@
 | ACCESS | 액세스 토큰 |
 | REFRESH | 리프레시 토큰 |
 | TEMP | 임시 토큰 |
-> 적용: `sy_user_token_log.token_type_cd`, `mb_mem_token_log.token_type_cd`
+> 적용: `sy_user_token_log.token_type_cd`, `mb_member_token_log.token_type_cd`
 
 #### MEDIA_TYPE — 미디어유형
 | code_value | label |
@@ -1118,7 +1219,17 @@
 | IMAGE | 이미지 |
 | VIDEO | 동영상 |
 | DOCUMENT | 문서 |
-> 적용: `sy_attach.media_type_cd`
+> 적용: `sy_attach.media_type_cd`, `pd_review_attach.media_type_cd`
+
+#### MIME_TYPE — MIME유형 (첨부파일 카테고리)
+| code_value | label |
+|---|---|
+| IMAGE | 이미지 (image/*) |
+| VIDEO | 동영상 (video/*) |
+| DOCUMENT | 문서 (application/pdf 등) |
+| TEXT | 텍스트 (text/*) |
+| APPLICATION | 응용프로그램 (application/*) |
+> 적용: `sy_attach.mime_type_cd`
 
 #### VOC_MASTER — VOC 마스터 분류
 | code_value | label |
@@ -1189,6 +1300,9 @@
 - 코드그룹명은 DDL에서 대표 사용하는 컬럼명에서 `_cd` 제거 후 대문자화
 
 ## 변경이력
+- 2026-04-19: DDL 전수조사 기반 코드값 불일치 수정 및 신규 코드그룹 추가 (전체 116개 `_cd` 컬럼 완전 반영)
+  - **수정** (DDL 기준 재정의): AUTH_METHOD(소셜로그인 방법으로), SITE_TYPE(EC/ADMIN/API), USER_STATUS(DORMANT/DELETED 추가), VENDOR_STATUS(PENDING/APPROVED/CLOSED), VENDOR_CLASS(사업자유형으로), BBM_TYPE(팝업유형으로), SCOPE_TYPE(BBM_SCOPE_TYPE 개명+값 변경), MENU_TYPE(FOLDER로 통일), ROLE_TYPE(역할별 5종으로)
+  - **추가**: VENDOR_USER_STATUS, POSITION, ALARM_STATUS, CONTACT_CATEGORY, BBS_STATUS, REFUND_TYPE, FAULT_TYPE
 - 2026-04-18: 다국어(i18n) 코드 추가 — I18N_SCOPE, LANG_CODE (sy_i18n·sy_i18n_msg 신규 테이블 대응)
 - 2026-04-18: 전체 DDL `_cd` 컬럼 전수조사 반영 — 전시(DP) 전체 추가, 정산(ST) 추가, 결제구분/방향/발생유형 추가, 클레임항목상태·결재상태·사은품발급상태 추가, 각 코드그룹별 적용 테이블·컬럼 표시
 - 2026-04-18: ec2_code.txt 참고하여 전면 재작성

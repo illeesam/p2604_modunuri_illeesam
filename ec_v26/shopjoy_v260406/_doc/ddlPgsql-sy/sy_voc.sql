@@ -34,5 +34,5 @@ CREATE INDEX idx_sy_voc_master_cd  ON sy_voc (voc_master_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_voc.voc_master_cd (VOC마스터코드) : VOC_MASTER(VOC_MASTER) { 코드값 미정의 }
--- [CODES] sy_voc.voc_detail_cd (VOC세부코드) : VOC_DETAIL(VOC_DETAIL) { 코드값 미정의 }
+-- [CODES] sy_voc.voc_master_cd (VOC마스터코드) : VOC_MASTER: DELIVERY/PRODUCT/PAYMENT/CLAIM/SERVICE/ETC
+-- [CODES] sy_voc.voc_detail_cd (VOC세부코드) : VOC_DETAIL: DELIVERY_DELAY/DELIVERY_LOST/DELIVERY_DAMAGE/PRODUCT_DEFECT/PRODUCT_WRONG/PRODUCT_INFO/PAYMENT_FAIL/PAYMENT_REFUND/CLAIM_CANCEL/CLAIM_RETURN/CLAIM_EXCHANGE/SERVICE_MEMBER/ETC

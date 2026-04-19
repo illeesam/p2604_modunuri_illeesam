@@ -7,7 +7,7 @@ CREATE TABLE odh_claim_status_hist (
     claim_status_cd_before  VARCHAR(20),                            -- 변경 전 클레임상태 (코드: CLAIM_STATUS)
     claim_status_cd         VARCHAR(20),                            -- 변경 후 클레임상태 (코드: CLAIM_STATUS)
     status_reason           VARCHAR(300),                           -- 상태 변경 사유
-    chg_user_id             VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_mem.member_id)
+    chg_user_id             VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                    VARCHAR(300),
     reg_by                  VARCHAR(16),
@@ -26,12 +26,12 @@ COMMENT ON COLUMN odh_claim_status_hist.order_id               IS '주문ID (od_
 COMMENT ON COLUMN odh_claim_status_hist.claim_status_cd_before IS '변경 전 클레임상태 (코드: CLAIM_STATUS)';
 COMMENT ON COLUMN odh_claim_status_hist.claim_status_cd        IS '변경 후 클레임상태 (코드: CLAIM_STATUS)';
 COMMENT ON COLUMN odh_claim_status_hist.status_reason          IS '상태 변경 사유';
-COMMENT ON COLUMN odh_claim_status_hist.chg_user_id            IS '변경 담당자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN odh_claim_status_hist.chg_user_id            IS '변경 담당자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN odh_claim_status_hist.chg_date               IS '변경 일시';
 COMMENT ON COLUMN odh_claim_status_hist.memo                   IS '메모';
-COMMENT ON COLUMN odh_claim_status_hist.reg_by                 IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN odh_claim_status_hist.reg_by                 IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN odh_claim_status_hist.reg_date               IS '등록일';
-COMMENT ON COLUMN odh_claim_status_hist.upd_by                 IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN odh_claim_status_hist.upd_by                 IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN odh_claim_status_hist.upd_date               IS '수정일';
 
 CREATE INDEX idx_odh_claim_status_hist_claim ON odh_claim_status_hist (claim_id);

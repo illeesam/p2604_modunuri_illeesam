@@ -123,7 +123,7 @@
 ```
 - `pm_save_usage` 레코드 중 해당 order_id 건: 사용금액에서 복원_적립금액 차감
 - `pm_save` 원장에 `save_type_cd = CANCEL` 타입으로 복원 기록
-- `mb_mem.accumulation_balance` 잔액 업데이트
+- `mb_member.accumulation_balance` 잔액 업데이트
 
 ### 4-3. 적립금 복원 유효기간
 | 조건 | 복원 후 유효기간 |

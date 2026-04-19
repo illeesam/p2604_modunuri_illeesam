@@ -43,9 +43,9 @@ COMMENT ON COLUMN dp_widget.preview_img_url      IS '미리보기이미지URL';
 COMMENT ON COLUMN dp_widget.sort_ord             IS '정렬순서';
 COMMENT ON COLUMN dp_widget.use_yn               IS '사용여부 (Y/N)';
 COMMENT ON COLUMN dp_widget.disp_env             IS '전시 환경 (^PROD^DEV^TEST^ 형식)';
-COMMENT ON COLUMN dp_widget.reg_by               IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_widget.reg_by               IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_widget.reg_date             IS '등록일';
-COMMENT ON COLUMN dp_widget.upd_by               IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_widget.upd_by               IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_widget.upd_date             IS '수정일';
 
 CREATE INDEX idx_dp_widget_lib ON dp_widget (widget_lib_id);
@@ -56,4 +56,4 @@ CREATE INDEX idx_dp_widget_disp_env ON dp_widget (disp_env);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] dp_widget.widget_type_cd (위젯유형) : WIDGET_TYPE(WIDGET_TYPE) { 코드값 미정의 }
+-- [CODES] dp_widget.widget_type_cd (위젯유형) : WIDGET_TYPE: image_banner/product_slider/product/cond_product/chart_bar/chart_line/chart_pie/text_banner/info_card/popup/file/file_list/coupon/html_editor/event_banner/cache_banner/widget_embed/barcode/countdown/markdown/video_player/map_widget

@@ -35,9 +35,9 @@ COMMENT ON COLUMN dp_area.disp_path    IS '점(.) 구분 표시경로';
 COMMENT ON COLUMN dp_area.use_yn       IS '사용여부 (Y/N)';
 COMMENT ON COLUMN dp_area.use_start_date IS '사용시작일';
 COMMENT ON COLUMN dp_area.use_end_date   IS '사용종료일';
-COMMENT ON COLUMN dp_area.reg_by       IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_area.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_area.reg_date     IS '등록일';
-COMMENT ON COLUMN dp_area.upd_by       IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_area.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_area.upd_date     IS '수정일';
 
 CREATE INDEX idx_dp_area_ui ON dp_area (ui_id);
@@ -47,4 +47,4 @@ CREATE INDEX idx_dp_area_use ON dp_area (use_yn, use_start_date, use_end_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] dp_area.area_type_cd (영역유형) : DISP_AREA_TYPE(DISP_AREA_TYPE) { 코드값 미정의 }
+-- [CODES] dp_area.area_type_cd (영역유형) : DISP_AREA_TYPE: FULL/SIDEBAR/POPUP/INLINE

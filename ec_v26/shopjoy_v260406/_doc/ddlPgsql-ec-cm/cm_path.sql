@@ -33,9 +33,9 @@ COMMENT ON COLUMN cm_path.path_label     IS '경로 라벨 (한글 표시명)';
 COMMENT ON COLUMN cm_path.sort_ord       IS '동일 부모 내 정렬순서';
 COMMENT ON COLUMN cm_path.use_yn         IS '사용여부 Y/N';
 COMMENT ON COLUMN cm_path.path_remark    IS '비고';
-COMMENT ON COLUMN cm_path.reg_by         IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cm_path.reg_by         IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN cm_path.reg_date       IS '등록일';
-COMMENT ON COLUMN cm_path.upd_by         IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cm_path.upd_by         IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN cm_path.upd_date       IS '수정일';
 
 CREATE INDEX idx_sy_path_biz ON cm_path (biz_cd);

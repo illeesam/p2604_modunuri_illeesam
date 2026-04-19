@@ -47,9 +47,9 @@ COMMENT ON COLUMN od_refund_method.refund_date       IS '해당 수단 환불 �
 COMMENT ON COLUMN od_refund_method.pay_id            IS '원 결제 레코드ID (od_pay.pay_id)';
 COMMENT ON COLUMN od_refund_method.pg_refund_id      IS 'PG 환불 거래ID';
 COMMENT ON COLUMN od_refund_method.pg_response       IS 'PG 환불 응답 JSON';
-COMMENT ON COLUMN od_refund_method.reg_by            IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_refund_method.reg_by            IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_refund_method.reg_date          IS '등록일시';
-COMMENT ON COLUMN od_refund_method.upd_by            IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_refund_method.upd_by            IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_refund_method.upd_date          IS '수정일시';
 
 CREATE INDEX idx_od_refund_method_refund  ON od_refund_method (refund_id);
@@ -62,4 +62,4 @@ CREATE INDEX idx_od_refund_method_prio    ON od_refund_method (refund_id, refund
 -- 코드값 참조
 -- ============================================================
 -- [CODES] od_refund_method.pay_method_cd (결제수단코드) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
--- [CODES] od_refund_method.refund_status_cd (수단별 환불상태) : REFUND_STATUS(REFUND_STATUS) { 코드값 미정의 }
+-- [CODES] od_refund_method.refund_status_cd (수단별 환불상태) : REFUND_STATUS: PENDING/COMPLT/FAILED

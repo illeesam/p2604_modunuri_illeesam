@@ -3,7 +3,7 @@ CREATE TABLE cm_bltn_reply (
     site_id         VARCHAR(16),
     blog_id         VARCHAR(16)     NOT NULL,              -- cm_bltn.
     parent_comment_id VARCHAR(16),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
-    writer_id       VARCHAR(16),                            -- 작성자ID (mb_mem.member_id)
+    writer_id       VARCHAR(16),                            -- 작성자ID (mb_member.member_id)
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     blog_comment_content TEXT            NOT NULL,
     comment_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)
@@ -36,4 +36,4 @@ CREATE INDEX idx_cm_bltn_reply_parent ON cm_bltn_reply (parent_comment_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] cm_bltn_reply.comment_status_cd (상태) : COMMENT_STATUS(COMMENT_STATUS) { 코드값 미정의 }
+-- [CODES] cm_bltn_reply.comment_status_cd (상태) : BBS_STATUS: ACTIVE/HIDDEN/DELETED

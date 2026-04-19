@@ -6,7 +6,7 @@
 CREATE TABLE od_cart (
     cart_id         VARCHAR(16)     NOT NULL,
     site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16),                           -- mb_mem.member_id (비회원 NULL)
+    member_id       VARCHAR(16),                           -- mb_member.member_id (비회원 NULL)
     session_key     VARCHAR(100),                          -- 비회원 세션키
     prod_id         VARCHAR(16)     NOT NULL,              -- pd_prod.prod_id
     sku_id          VARCHAR(16),                           -- pd_prod_opt_sku.
@@ -40,9 +40,9 @@ COMMENT ON COLUMN od_cart.unit_price   IS '단가 (담을 시점 가격)';
 COMMENT ON COLUMN od_cart.order_qty    IS '수량';
 COMMENT ON COLUMN od_cart.item_price   IS '소계 (단가 × 수량)';
 COMMENT ON COLUMN od_cart.is_checked   IS '주문선택여부 Y/N';
-COMMENT ON COLUMN od_cart.reg_by       IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_cart.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_cart.reg_date     IS '등록일';
-COMMENT ON COLUMN od_cart.upd_by       IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_cart.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_cart.upd_date     IS '수정일';
 
 CREATE INDEX idx_od_cart_member  ON od_cart (member_id);

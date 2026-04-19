@@ -35,9 +35,9 @@ COMMENT ON COLUMN pd_prod_img.cdn_thumb_url IS 'CDN 썸네일 URL (목록/검색
 COMMENT ON COLUMN pd_prod_img.img_alt_text IS '이미지 대체텍스트 (alt 속성, SEO/접근성)';
 COMMENT ON COLUMN pd_prod_img.sort_ord    IS '정렬순서';
 COMMENT ON COLUMN pd_prod_img.is_thumb    IS '대표이미지여부 Y/N';
-COMMENT ON COLUMN pd_prod_img.reg_by      IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_img.reg_by      IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_img.reg_date    IS '등록일';
-COMMENT ON COLUMN pd_prod_img.upd_by      IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_img.upd_by      IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_img.upd_date    IS '수정일';
 
 CREATE INDEX idx_pd_prod_img_opt ON pd_prod_img (prod_id, opt_id_1, opt_id_2);

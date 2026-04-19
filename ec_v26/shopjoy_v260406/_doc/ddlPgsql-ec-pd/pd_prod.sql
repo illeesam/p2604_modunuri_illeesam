@@ -94,14 +94,14 @@ COMMENT ON COLUMN pd_prod.discnt_use_yn IS '할인 적용 가능 여부 Y/N';
 COMMENT ON COLUMN pd_prod.advrt_stmt    IS '홍보문구 (500자 이내)';
 COMMENT ON COLUMN pd_prod.advrt_start_date IS '홍보문구 시작일시';
 COMMENT ON COLUMN pd_prod.advrt_end_date IS '홍보문구 종료일시';
-COMMENT ON COLUMN pd_prod.reg_by        IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod.reg_by        IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod.reg_date      IS '등록일';
-COMMENT ON COLUMN pd_prod.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod.upd_by        IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod.upd_date      IS '수정일';
 
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_prod.prod_type_cd (상품유형) : PRODUCT_TYPE(PRODUCT_TYPE) { 코드값 미정의 }
+-- [CODES] pd_prod.prod_type_cd (상품유형) : PRODUCT_TYPE: SINGLE/GROUP/SET
 -- [CODES] pd_prod.prod_status_cd (상태) : 상품상태 { ON_SALE:판매중, PREPARING:준비중, SOLD_OUT:품절, SUSPENDED:판매중지 }
 -- [CODES] pd_prod.size_info_cd (사이즈) : 상품사이즈 { FREE:FREE, XS:XS, S:S, M:M, L:L, XL:XL, XXL:XXL }

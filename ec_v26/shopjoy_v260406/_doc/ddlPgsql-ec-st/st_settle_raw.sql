@@ -145,7 +145,7 @@ CREATE INDEX idx_st_settle_raw_pay      ON st_settle_raw (pay_method_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_settle_raw.raw_type_cd (수집유형) : RAW_TYPE(RAW_TYPE) { 코드값 미정의 }
--- [CODES] st_settle_raw.raw_status_cd (수집상태) : RAW_STATUS(RAW_STATUS) { 코드값 미정의 }
--- [CODES] st_settle_raw.vendor_type_cd (업체구분) : VENDOR_TYPE(VENDOR_TYPE) { 코드값 미정의 }
--- [CODES] st_settle_raw.pay_method_cd (결제수단) : PAY_METHOD_CD(PAY_METHOD_CD) { 코드값 미정의 }
+-- [CODES] st_settle_raw.raw_type_cd (수집유형) : RAW_TYPE: ORDER/CLAIM/ADJ
+-- [CODES] st_settle_raw.raw_status_cd (수집상태) : RAW_STATUS: COLLECTED/EXCLUDED/SETTLED
+-- [CODES] st_settle_raw.vendor_type_cd (업체구분) : VENDOR_TYPE: BRAND/AGENT/DIRECT/CONSIGN
+-- [CODES] st_settle_raw.pay_method_cd (결제수단) : PAY_METHOD: BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/SAVE/ZERO

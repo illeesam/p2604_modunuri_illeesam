@@ -27,7 +27,7 @@ COMMENT ON TABLE pm_voucher_issue IS '상품권 발급 및 사용 이력';
 COMMENT ON COLUMN pm_voucher_issue.voucher_issue_id IS '상품권발급ID';
 COMMENT ON COLUMN pm_voucher_issue.voucher_id       IS '상품권ID (pm_voucher.voucher_id)';
 COMMENT ON COLUMN pm_voucher_issue.site_id          IS '사이트ID';
-COMMENT ON COLUMN pm_voucher_issue.member_id        IS '회원ID (mb_mem.member_id)';
+COMMENT ON COLUMN pm_voucher_issue.member_id        IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN pm_voucher_issue.voucher_code     IS '발급 고유코드';
 COMMENT ON COLUMN pm_voucher_issue.issue_date       IS '발급일시';
 COMMENT ON COLUMN pm_voucher_issue.expire_date      IS '만료일시';
@@ -49,4 +49,4 @@ CREATE INDEX idx_pm_voucher_issue_expire  ON pm_voucher_issue (expire_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_voucher_issue.voucher_issue_status_cd (상태) : VOUCHER_ISSUE_STATUS(VOUCHER_ISSUE_STATUS) { 코드값 미정의 }
+-- [CODES] pm_voucher_issue.voucher_issue_status_cd (상태) : SAVE_ISSUE_STATUS: SCHEDULED/COMPLETED/CANCELLED/EXPIRED

@@ -22,9 +22,9 @@ COMMENT ON COLUMN pd_prod_content.content_type_cd IS '컨텐츠유형 (코드: P
 COMMENT ON COLUMN pd_prod_content.content_html IS 'HTML 에디터 컨텐츠';
 COMMENT ON COLUMN pd_prod_content.sort_ord     IS '정렬순서';
 COMMENT ON COLUMN pd_prod_content.use_yn       IS '사용여부 Y/N';
-COMMENT ON COLUMN pd_prod_content.reg_by       IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_content.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_content.reg_date     IS '등록일';
-COMMENT ON COLUMN pd_prod_content.upd_by       IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_content.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_content.upd_date     IS '수정일';
 
 CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type_cd);
@@ -38,4 +38,4 @@ CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type_
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_prod_content.content_type_cd (컨텐츠유형) : PROD_CONTENT_TYPE(PROD_CONTENT_TYPE) { 코드값 미정의 }
+-- [CODES] pd_prod_content.content_type_cd (컨텐츠유형) : PROD_CONTENT_TYPE: DETAIL/NOTICE/GUIDE/SIZE_GUIDE

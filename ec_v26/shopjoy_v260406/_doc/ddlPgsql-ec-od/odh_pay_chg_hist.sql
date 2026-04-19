@@ -18,7 +18,7 @@ CREATE TABLE odh_pay_chg_hist (
     pg_response         TEXT,                                   -- PG 응답 데이터 (JSON)
     refund_amt          BIGINT,                                 -- 환불 금액 (환불 시만)
     refund_pg_tid       VARCHAR(100),                           -- 환불 거래 ID (환불 시만)
-    chg_user_id         VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_mem.member_id)
+    chg_user_id         VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                VARCHAR(300),
     reg_by              VARCHAR(16),
@@ -41,12 +41,12 @@ COMMENT ON COLUMN odh_pay_chg_hist.chg_reason          IS '변경 사유 (예: P
 COMMENT ON COLUMN odh_pay_chg_hist.pg_response         IS 'PG 응답 데이터 (JSON)';
 COMMENT ON COLUMN odh_pay_chg_hist.refund_amt          IS '환불 금액 (환불 시만)';
 COMMENT ON COLUMN odh_pay_chg_hist.refund_pg_tid       IS '환불 거래ID (환불 시 PG로부터 받은 ID)';
-COMMENT ON COLUMN odh_pay_chg_hist.chg_user_id         IS '변경 담당자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN odh_pay_chg_hist.chg_user_id         IS '변경 담당자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN odh_pay_chg_hist.chg_date            IS '변경 일시';
 COMMENT ON COLUMN odh_pay_chg_hist.memo                IS '메모';
-COMMENT ON COLUMN odh_pay_chg_hist.reg_by              IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN odh_pay_chg_hist.reg_by              IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN odh_pay_chg_hist.reg_date            IS '등록일';
-COMMENT ON COLUMN odh_pay_chg_hist.upd_by              IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN odh_pay_chg_hist.upd_by              IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN odh_pay_chg_hist.upd_date            IS '수정일';
 
 CREATE INDEX idx_odh_pay_chg_hist_pay        ON odh_pay_chg_hist (pay_id);
@@ -57,4 +57,4 @@ CREATE INDEX idx_odh_pay_chg_hist_date       ON odh_pay_chg_hist (chg_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] odh_pay_chg_hist.chg_type_cd (변경유형) : PAYMENT_CHG_TYPE(PAYMENT_CHG_TYPE) { 코드값 미정의 }
+-- [CODES] odh_pay_chg_hist.chg_type_cd (변경유형) : PAY_CHG_TYPE: STATUS/METHOD/AMOUNT

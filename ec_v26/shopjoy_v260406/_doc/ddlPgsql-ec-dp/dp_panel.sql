@@ -36,9 +36,9 @@ COMMENT ON COLUMN dp_panel.use_end_date                IS '사용종료일';
 COMMENT ON COLUMN dp_panel.disp_panel_status_cd        IS '상태 (코드: DISP_STATUS)';
 COMMENT ON COLUMN dp_panel.disp_panel_status_cd_before IS '변경 전 패널상태 (코드: DISP_STATUS)';
 COMMENT ON COLUMN dp_panel.content_json                IS '패널콘텐츠 (JSON - 위젯 목록 및 설정)';
-COMMENT ON COLUMN dp_panel.reg_by                      IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_panel.reg_by                      IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_panel.reg_date                    IS '등록일';
-COMMENT ON COLUMN dp_panel.upd_by                      IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_panel.upd_by                      IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_panel.upd_date                    IS '수정일';
 
 CREATE INDEX idx_dp_panel_site ON dp_panel (site_id);

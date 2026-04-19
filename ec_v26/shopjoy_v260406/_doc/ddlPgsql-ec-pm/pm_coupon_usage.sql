@@ -8,7 +8,7 @@ CREATE TABLE pm_coupon_usage (
     coupon_id           VARCHAR(16)     NOT NULL,               -- pm_coupon.coupon_id
     coupon_code         VARCHAR(50),                            -- 쿠폰코드 스냅샷
     coupon_nm           VARCHAR(100),                           -- 쿠폰명 스냅샷
-    member_id           VARCHAR(16),                            -- mb_mem.member_id
+    member_id           VARCHAR(16),                            -- mb_member.member_id
     order_id            VARCHAR(16),                            -- od_order.order_id
     order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 쿠폰 적용 시)
     prod_id             VARCHAR(16),                            -- pd_prod.prod_id (쿠폰 적용 상품)
@@ -30,7 +30,7 @@ COMMENT ON COLUMN pm_coupon_usage.site_id          IS '사이트ID (sy_site.site
 COMMENT ON COLUMN pm_coupon_usage.coupon_id        IS '쿠폰ID (pm_coupon.coupon_id)';
 COMMENT ON COLUMN pm_coupon_usage.coupon_code      IS '쿠폰코드 스냅샷';
 COMMENT ON COLUMN pm_coupon_usage.coupon_nm        IS '쿠폰명 스냅샷';
-COMMENT ON COLUMN pm_coupon_usage.member_id        IS '회원ID (mb_mem.member_id)';
+COMMENT ON COLUMN pm_coupon_usage.member_id        IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN pm_coupon_usage.order_id         IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN pm_coupon_usage.order_item_id    IS '주문상품ID (od_order_item.order_item_id, 상품별 쿠폰 적용 시)';
 COMMENT ON COLUMN pm_coupon_usage.prod_id          IS '상품ID (pd_prod.prod_id, 쿠폰 적용 상품)';

@@ -25,9 +25,9 @@ COMMENT ON COLUMN pd_prod_opt_sku.sku_code     IS '자체 SKU 코드';
 COMMENT ON COLUMN pd_prod_opt_sku.add_price    IS '옵션 추가금액 (기본가 대비)';
 COMMENT ON COLUMN pd_prod_opt_sku.prod_opt_stock IS '해당 옵션 조합 재고수량';
 COMMENT ON COLUMN pd_prod_opt_sku.use_yn       IS '사용여부 Y/N';
-COMMENT ON COLUMN pd_prod_opt_sku.reg_by       IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_opt_sku.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_opt_sku.reg_date     IS '등록일';
-COMMENT ON COLUMN pd_prod_opt_sku.upd_by       IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_opt_sku.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_opt_sku.upd_date     IS '수정일';
 
 -- 관련 이력 테이블:

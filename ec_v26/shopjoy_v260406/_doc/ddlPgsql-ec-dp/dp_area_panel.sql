@@ -38,9 +38,9 @@ COMMENT ON COLUMN dp_area_panel.disp_end_date      IS '전시종료일';
 COMMENT ON COLUMN dp_area_panel.disp_end_time      IS '전시종료시간';
 COMMENT ON COLUMN dp_area_panel.disp_env           IS '전시 환경 (^PROD^DEV^TEST^ 형식)';
 COMMENT ON COLUMN dp_area_panel.use_yn             IS '사용여부 (Y/N)';
-COMMENT ON COLUMN dp_area_panel.reg_by           IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_area_panel.reg_by           IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_area_panel.reg_date         IS '등록일';
-COMMENT ON COLUMN dp_area_panel.upd_by           IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_area_panel.upd_by           IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_area_panel.upd_date         IS '수정일';
 
 CREATE INDEX idx_dp_area_panel_area ON dp_area_panel (area_id);

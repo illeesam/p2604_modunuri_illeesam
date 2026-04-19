@@ -26,7 +26,7 @@ COMMENT ON COLUMN cm_chatt_msg.ref_type  IS '참조유형 (ORDER/PRODUCT/CLAIM)'
 COMMENT ON COLUMN cm_chatt_msg.ref_id    IS '참조ID';
 COMMENT ON COLUMN cm_chatt_msg.send_date IS '발송일시';
 COMMENT ON COLUMN cm_chatt_msg.read_yn   IS '읽음여부 Y/N';
-COMMENT ON COLUMN cm_chatt_msg.reg_by    IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cm_chatt_msg.reg_by    IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN cm_chatt_msg.reg_date  IS '등록일';
-COMMENT ON COLUMN cm_chatt_msg.upd_by    IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cm_chatt_msg.upd_by    IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN cm_chatt_msg.upd_date  IS '수정일';

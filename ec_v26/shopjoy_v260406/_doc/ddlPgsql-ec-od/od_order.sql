@@ -109,9 +109,9 @@ COMMENT ON COLUMN od_order.dliv_tracking_no      IS '최근 출고 송장번호'
 COMMENT ON COLUMN od_order.dliv_status_cd        IS '배송상태 최신 (코드: DLIV_STATUS)';
 COMMENT ON COLUMN od_order.dliv_status_cd_before IS '변경 전 배송상태 (코드: DLIV_STATUS)';
 COMMENT ON COLUMN od_order.dliv_ship_date        IS '최근 출고일시';
-COMMENT ON COLUMN od_order.reg_by                IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_order.reg_by                IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_order.reg_date              IS '등록일';
-COMMENT ON COLUMN od_order.upd_by               IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_order.upd_by               IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_order.upd_date              IS '수정일';
 COMMENT ON COLUMN od_order.appr_status_cd        IS '결재상태 (코드: APPROVAL_STATUS)';
 COMMENT ON COLUMN od_order.appr_status_cd_before IS '변경 전 결재상태 (코드: APPROVAL_STATUS)';
@@ -133,11 +133,11 @@ CREATE INDEX idx_od_order_channel  ON od_order (access_channel_cd);
 -- 코드값 참조
 -- ============================================================
 -- [CODES] od_order.order_grade_cd (주문 시점 회원등급) : 회원등급 { VIP:VIP, GOLD:우수, NORMAL:일반 }
--- [CODES] od_order.access_channel_cd (주문유입경로) : ACCESS_CHANNEL(ACCESS_CHANNEL) { 코드값 미정의 }
+-- [CODES] od_order.access_channel_cd (주문유입경로) : ACCESS_CHANNEL: WEB_PC/WEB_MOBILE/APP_IOS/APP_ANDROID
 -- [CODES] od_order.pay_method_cd (결제수단) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
 -- [CODES] od_order.order_status_cd (주문상태) : 주문상태 { PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소, AUTO_CANCELLED:자동취소 }
--- [CODES] od_order.refund_bank_cd (환불 은행코드) : BANK_CODE(BANK_CODE) { 코드값 미정의 }
+-- [CODES] od_order.refund_bank_cd (환불 은행코드) : BANK_CODE: 국민/신한/우리/하나/농협/기업/부산/대구/경남/광주/전북/제주/수협/씨티/우체국/새마을/카카오/케이/산업/하나
 -- [CODES] od_order.dliv_courier_cd (최근 출고 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
 -- [CODES] od_order.dliv_status_cd (배송상태 최신) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
--- [CODES] od_order.appr_status_cd (결재상태) : APPROVAL_STATUS(APPROVAL_STATUS) { 코드값 미정의 }
--- [CODES] od_order.appr_target_cd (결재대상 구분) : APPROVAL_TARGET(APPROVAL_TARGET) { 코드값 미정의 }
+-- [CODES] od_order.appr_status_cd (결재상태) : APPROVAL_STATUS: REQ/APPROVED/REJECTED/DONE
+-- [CODES] od_order.appr_target_cd (결재대상 구분) : APPROVAL_TARGET: ORDER/PROD/DLIV/EXTRA

@@ -170,7 +170,7 @@
 |--------|--------|------|
 | sy_ | 시스템 (공통/관리) | sy_site, sy_user, sy_code |
 | cm_ | 커뮤니티 공통 | cm_bltn, cm_chatt_msg, cm_push_log |
-| mb_ | 회원 | mb_mem, mb_like, mb_mem_addr |
+| mb_ | 회원 | mb_member, mb_like, mb_member_addr |
 | od_ | 주문 | od_order, od_dliv, od_claim, od_pay |
 | pd_ | 상품 | pd_prod, pd_category, pd_review |
 | pm_ | 프로모션 | pm_coupon, pm_cache, pm_event |

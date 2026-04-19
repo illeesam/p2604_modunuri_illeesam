@@ -61,9 +61,9 @@ COMMENT ON COLUMN od_refund.refund_complt_date  IS '환불 완료일시';
 COMMENT ON COLUMN od_refund.fault_type_cd       IS '귀책유형코드 (코드: CLAIM_FAULT — CUST/VENDOR/PLATFORM)';
 COMMENT ON COLUMN od_refund.refund_reason       IS '환불 사유';
 COMMENT ON COLUMN od_refund.memo                IS '관리 메모';
-COMMENT ON COLUMN od_refund.reg_by              IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_refund.reg_by              IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_refund.reg_date            IS '등록일시';
-COMMENT ON COLUMN od_refund.upd_by              IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_refund.upd_by              IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_refund.upd_date            IS '수정일시';
 
 CREATE INDEX idx_od_refund_order     ON od_refund (order_id);
@@ -74,6 +74,6 @@ CREATE INDEX idx_od_refund_req_date  ON od_refund (refund_req_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] od_refund.refund_type_cd (환불유형코드) : REFUND_TYPE(REFUND_TYPE) { 코드값 미정의 }
--- [CODES] od_refund.refund_status_cd (환불상태) : REFUND_STATUS(REFUND_STATUS) { 코드값 미정의 }
--- [CODES] od_refund.fault_type_cd (귀책유형코드) : CLAIM_FAULT(CLAIM_FAULT) { 코드값 미정의 }
+-- [CODES] od_refund.refund_type_cd (환불유형코드) : REFUND_TYPE: CANCEL/RETURN/PARTIAL/EXTRA
+-- [CODES] od_refund.refund_status_cd (환불상태) : REFUND_STATUS: PENDING/COMPLT/FAILED
+-- [CODES] od_refund.fault_type_cd (귀책유형코드) : FAULT_TYPE: CUST/VENDOR/PLATFORM

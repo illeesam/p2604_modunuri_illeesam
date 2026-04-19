@@ -8,11 +8,11 @@
 | `mb.02.회원.md` | 고객 회원 관리, 상태, SNS연동, 디바이스토큰, 회원그룹 |
 
 ## 관련 테이블 (ec-mb/)
-- `mb_mem` — 회원 마스터
-- `mb_mem_sns` — SNS 연동
-- `mb_mem_withdraw` — 탈퇴 이력
-- `mb_mem_token_log` — 토큰 로그
-- `mb_mem_login_log` — 로그인 로그
+- `mb_member` — 회원 마스터
+- `mb_member_sns` — SNS 연동
+- `mb_member_withdraw` — 탈퇴 이력
+- `mb_member_token_log` — 토큰 로그
+- `mb_member_login_log` — 로그인 로그
 - `mb_like` — 찜 목록
 
 ## 관리자 화면

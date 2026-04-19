@@ -64,5 +64,5 @@ CREATE INDEX idx_sy_vendor_user_status ON sy_vendor_user (vendor_user_status_cd)
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_vendor_user.position_cd (직위/직책) : POSITION(POSITION) { 코드값 미정의 }
--- [CODES] sy_vendor_user.vendor_user_status_cd (상태) : VENDOR_MEMBER_STATUS(VENDOR_MEMBER_STATUS) { 코드값 미정의 }
+-- [CODES] sy_vendor_user.position_cd (직위/직책) : POSITION: CEO/DIRECTOR/MANAGER/EMPLOYEE
+-- [CODES] sy_vendor_user.vendor_user_status_cd (상태) : VENDOR_USER_STATUS: ACTIVE/LEFT/SUSPENDED

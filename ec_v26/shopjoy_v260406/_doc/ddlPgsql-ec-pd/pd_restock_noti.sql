@@ -4,7 +4,7 @@ CREATE TABLE pd_restock_noti (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
     sku_id          VARCHAR(16),                            -- pd_prod_opt_sku.sku_id
-    member_id       VARCHAR(16)     NOT NULL,               -- mb_mem.member_id
+    member_id       VARCHAR(16)     NOT NULL,               -- mb_member.member_id
     noti_yn         VARCHAR(1)      DEFAULT 'N',            -- 알림 발송 여부
     noti_date       TIMESTAMP,                              -- 알림 발송 일시
     reg_by          VARCHAR(16),
@@ -20,7 +20,7 @@ COMMENT ON COLUMN pd_restock_noti.restock_noti_id IS '재입고알림ID (YYMMDDh
 COMMENT ON COLUMN pd_restock_noti.site_id         IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pd_restock_noti.prod_id         IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN pd_restock_noti.sku_id          IS 'SKUID (pd_prod_opt_sku.sku_id)';
-COMMENT ON COLUMN pd_restock_noti.member_id       IS '회원ID (mb_mem.member_id)';
+COMMENT ON COLUMN pd_restock_noti.member_id       IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN pd_restock_noti.noti_yn         IS '알림발송여부 Y/N';
 COMMENT ON COLUMN pd_restock_noti.noti_date       IS '알림발송일시';
 COMMENT ON COLUMN pd_restock_noti.reg_by          IS '등록자ID';

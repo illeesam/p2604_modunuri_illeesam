@@ -46,5 +46,5 @@ CREATE INDEX idx_pm_voucher_status ON pm_voucher (voucher_status_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_voucher.voucher_type_cd (유형) : VOUCHER_TYPE(VOUCHER_TYPE) { 코드값 미정의 }
--- [CODES] pm_voucher.voucher_status_cd (상태) : VOUCHER_STATUS(VOUCHER_STATUS) { 코드값 미정의 }
+-- [CODES] pm_voucher.voucher_type_cd (유형) : GIFT_TYPE: PRODUCT/SAMPLE/ETC
+-- [CODES] pm_voucher.voucher_status_cd (상태) : GIFT_STATUS: ACTIVE/INACTIVE

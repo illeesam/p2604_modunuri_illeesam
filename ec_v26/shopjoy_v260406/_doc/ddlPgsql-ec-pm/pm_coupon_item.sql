@@ -32,4 +32,4 @@ CREATE INDEX idx_pm_coupon_item_target ON pm_coupon_item (target_type_cd, target
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_coupon_item.target_type_cd (대상유형) : COUPON_ITEM_TARGET(COUPON_ITEM_TARGET) { 코드값 미정의 }
+-- [CODES] pm_coupon_item.target_type_cd (대상유형) : PROMO_TARGET_TYPE: ALL/PRODUCT/CATEGORY/VENDOR/BRAND/MEMBER_GRADE

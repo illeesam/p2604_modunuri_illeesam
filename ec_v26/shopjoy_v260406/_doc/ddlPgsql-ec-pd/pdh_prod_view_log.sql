@@ -36,9 +36,9 @@ COMMENT ON COLUMN pdh_prod_view_log.ip         IS 'IP주소';
 COMMENT ON COLUMN pdh_prod_view_log.device     IS 'User-Agent';
 COMMENT ON COLUMN pdh_prod_view_log.referrer   IS '유입경로 URL';
 COMMENT ON COLUMN pdh_prod_view_log.view_date  IS '조회일시';
-COMMENT ON COLUMN pdh_prod_view_log.reg_by     IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pdh_prod_view_log.reg_by     IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pdh_prod_view_log.reg_date   IS '등록일';
-COMMENT ON COLUMN pdh_prod_view_log.upd_by     IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pdh_prod_view_log.upd_by     IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pdh_prod_view_log.upd_date   IS '수정일';
 
 CREATE INDEX idx_ec_pvl_member ON pdh_prod_view_log (member_id);

@@ -62,4 +62,4 @@ CREATE INDEX idx_st_settle_status ON st_settle (settle_status_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_settle.settle_status_cd (상태) : SETTLE_STATUS(SETTLE_STATUS) { 코드값 미정의 }
+-- [CODES] st_settle.settle_status_cd (상태) : SETTLE_STATUS: OPEN/CLOSED/CANCELLED

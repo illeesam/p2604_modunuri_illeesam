@@ -98,9 +98,9 @@ COMMENT ON COLUMN od_pay.failure_reason      IS '결제 실패 사유';
 COMMENT ON COLUMN od_pay.failure_code        IS '결제 실패 코드 (PG 오류코드)';
 COMMENT ON COLUMN od_pay.failure_date        IS '결제 실패일시';
 COMMENT ON COLUMN od_pay.memo                IS '메모';
-COMMENT ON COLUMN od_pay.reg_by              IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_pay.reg_by              IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_pay.reg_date            IS '등록일';
-COMMENT ON COLUMN od_pay.upd_by              IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_pay.upd_by              IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_pay.upd_date            IS '수정일';
 
 CREATE INDEX idx_od_pay_order         ON od_pay (order_id);
@@ -115,11 +115,11 @@ CREATE INDEX idx_od_pay_div           ON od_pay (pay_div_cd, pay_dir_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] od_pay.pay_div_cd (주문/클레임 구분) : PAY_DIV(PAY_DIV) { 코드값 미정의 }
--- [CODES] od_pay.pay_dir_cd (입금/환불 방향) : PAY_DIR(PAY_DIR) { 코드값 미정의 }
--- [CODES] od_pay.pay_occur_type_cd (결제발생유형) : PAY_OCCUR_TYPE(PAY_OCCUR_TYPE) { 코드값 미정의 }
+-- [CODES] od_pay.pay_div_cd (주문/클레임 구분) : PAY_DIV: ORDER/CLAIM
+-- [CODES] od_pay.pay_dir_cd (입금/환불 방향) : PAY_DIR: DEPOSIT/REFUND
+-- [CODES] od_pay.pay_occur_type_cd (결제발생유형) : PAY_OCCUR_TYPE: ORDER/CLAIM_EXTRA/EXCHANGE_EXTRA
 -- [CODES] od_pay.pay_method_cd (결제수단) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
--- [CODES] od_pay.pay_channel_cd (결제채널) : PAY_CHANNEL(PAY_CHANNEL) { 코드값 미정의 }
--- [CODES] od_pay.pay_status_cd (결제상태) : PAY_STATUS(PAY_STATUS) { 코드값 미정의 }
--- [CODES] od_pay.card_type_cd (카드 타입) : CARD_TYPE(CARD_TYPE) { 코드값 미정의 }
--- [CODES] od_pay.refund_status_cd (환불 상태) : REFUND_STATUS(REFUND_STATUS) { 코드값 미정의 }
+-- [CODES] od_pay.pay_channel_cd (결제채널) : PAY_CHANNEL: CARD/ACCOUNT/KAKAO/NAVER
+-- [CODES] od_pay.pay_status_cd (결제상태) : PAY_STATUS: PENDING/COMPLT/FAILED/CANCELLED/PARTIAL_REFUND/REFUNDED
+-- [CODES] od_pay.card_type_cd (카드 타입) : CARD_TYPE: CREDIT/DEBIT/CHECK
+-- [CODES] od_pay.refund_status_cd (환불 상태) : REFUND_STATUS: PENDING/COMPLT/FAILED

@@ -37,4 +37,4 @@ CREATE INDEX idx_sy_i18n_site     ON sy_i18n (site_id) WHERE site_id IS NOT NULL
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_i18n.i18n_scope_cd (적용범위) : I(I) { 코드값 미정의 }
+-- [CODES] sy_i18n.i18n_scope_cd (적용범위) : I18N_SCOPE: FO/BO/COMMON

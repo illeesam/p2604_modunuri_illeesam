@@ -35,9 +35,9 @@ COMMENT ON COLUMN pm_cache.cache_desc    IS '내역 설명';
 COMMENT ON COLUMN pm_cache.proc_user_id       IS '처리자 (관리자 직접 부여시)';
 COMMENT ON COLUMN pm_cache.cache_date    IS '처리일시';
 COMMENT ON COLUMN pm_cache.expire_date   IS '소멸예정일';
-COMMENT ON COLUMN pm_cache.reg_by        IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_cache.reg_by        IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_cache.reg_date      IS '등록일';
-COMMENT ON COLUMN pm_cache.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_cache.upd_by        IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_cache.upd_date      IS '수정일';
 
 -- ============================================================

@@ -66,5 +66,5 @@ CREATE INDEX idx_st_erp_voucher_no      ON st_erp_voucher (erp_voucher_no);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_erp_voucher.erp_voucher_type_cd (전표유형) : ERP_VOUCHER_TYPE(ERP_VOUCHER_TYPE) { 코드값 미정의 }
--- [CODES] st_erp_voucher.erp_voucher_status_cd (전표상태) : ERP_VOUCHER_STATUS(ERP_VOUCHER_STATUS) { 코드값 미정의 }
+-- [CODES] st_erp_voucher.erp_voucher_type_cd (전표유형) : ERP_VOUCHER_TYPE: SALE/CANCEL/SETTLE/ADJ
+-- [CODES] st_erp_voucher.erp_voucher_status_cd (전표상태) : ERP_VOUCHER_STATUS: DRAFT/SENT/FAILED/CONFIRMED

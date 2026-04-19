@@ -57,5 +57,5 @@ CREATE INDEX idx_pd_dliv_tmplt_site   ON pd_dliv_tmplt (site_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_dliv_tmplt.dliv_method_cd (배송방법코드) : DLIV_METHOD(DLIV_METHOD) { 코드값 미정의 }
--- [CODES] pd_dliv_tmplt.dliv_pay_type_cd (배송비결제유형 PREPAY:선결제/COD:착불) : DLIV_PAY_TYPE(DLIV_PAY_TYPE) { 코드값 미정의 }
+-- [CODES] pd_dliv_tmplt.dliv_method_cd (배송방법코드) : DLIV_METHOD: COURIER/DIRECT/PICKUP/SAME_DAY
+-- [CODES] pd_dliv_tmplt.dliv_pay_type_cd (배송비결제유형 PREPAY:선결제/COD:착불) : DLIV_PAY_TYPE: PREPAY/COD

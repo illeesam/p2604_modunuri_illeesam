@@ -31,9 +31,9 @@ COMMENT ON COLUMN pd_category.category_status_cd IS '상태 (코드: USE_YN)';
 COMMENT ON COLUMN pd_category.category_status_cd_before IS '변경 전 카테고리상태 (코드: USE_YN)';
 COMMENT ON COLUMN pd_category.img_url       IS '이미지URL';
 COMMENT ON COLUMN pd_category.category_desc IS '설명';
-COMMENT ON COLUMN pd_category.reg_by        IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_category.reg_by        IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_category.reg_date      IS '등록일';
-COMMENT ON COLUMN pd_category.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pd_category.upd_by        IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_category.upd_date      IS '수정일';
 
 -- ============================================================

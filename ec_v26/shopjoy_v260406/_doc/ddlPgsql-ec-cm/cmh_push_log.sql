@@ -38,9 +38,9 @@ COMMENT ON COLUMN cmh_push_log.fail_reason  IS '실패 사유';
 COMMENT ON COLUMN cmh_push_log.send_date    IS '발송일시';
 COMMENT ON COLUMN cmh_push_log.ref_type_cd  IS '연관유형코드 (ORDER/CLAIM/EVENT 등)';
 COMMENT ON COLUMN cmh_push_log.ref_id       IS '연관ID';
-COMMENT ON COLUMN cmh_push_log.reg_by       IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cmh_push_log.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN cmh_push_log.reg_date     IS '등록일';
-COMMENT ON COLUMN cmh_push_log.upd_by       IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN cmh_push_log.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN cmh_push_log.upd_date     IS '수정일';
 
 CREATE INDEX idx_sy_push_log_member ON cmh_push_log (member_id);
@@ -50,5 +50,5 @@ CREATE INDEX idx_sy_push_log_channel ON cmh_push_log (channel_cd, result_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] cmh_push_log.channel_cd (발송채널) : PUSH_CHANNEL(PUSH_CHANNEL) { 코드값 미정의 }
--- [CODES] cmh_push_log.result_cd (발송결과) : PUSH_RESULT(PUSH_RESULT) { 코드값 미정의 }
+-- [CODES] cmh_push_log.channel_cd (발송채널) : ALARM_CHANNEL: EMAIL/SMS/PUSH/KAKAO
+-- [CODES] cmh_push_log.result_cd (발송결과) : SEND_RESULT: SUCCESS/FAILED/PENDING

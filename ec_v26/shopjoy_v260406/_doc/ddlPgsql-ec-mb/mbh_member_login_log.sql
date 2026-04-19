@@ -3,10 +3,10 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- 보안 주의: access_token / refresh_token 은 SHA-256 해시값 저장 권장
 -- ============================================================
-CREATE TABLE mbh_mem_login_log (
+CREATE TABLE mbh_member_login_log (
     log_id              VARCHAR(16)     NOT NULL,
     site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16),                           -- mb_mem.member_id (실패 시 NULL 가능)
+    member_id           VARCHAR(16),                           -- mb_member.member_id (실패 시 NULL 가능)
     login_id            VARCHAR(100),                          -- 입력한 로그인ID (이메일)
     login_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     result_cd           VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: LOGIN_RESULT (SUCCESS/FAIL_PWD/FAIL_LOCKED/FAIL_NOT_FOUND)
@@ -28,33 +28,33 @@ CREATE TABLE mbh_mem_login_log (
     PRIMARY KEY (log_id)
 );
 
-COMMENT ON TABLE mbh_mem_login_log IS '회원 로그인 로그';
-COMMENT ON COLUMN mbh_mem_login_log.log_id            IS '로그ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN mbh_mem_login_log.site_id           IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN mbh_mem_login_log.member_id         IS '회원ID (로그인 실패 시 NULL)';
-COMMENT ON COLUMN mbh_mem_login_log.login_id          IS '입력한 로그인ID (이메일)';
-COMMENT ON COLUMN mbh_mem_login_log.login_date        IS '로그인 시도일시';
-COMMENT ON COLUMN mbh_mem_login_log.result_cd         IS '결과 (코드: LOGIN_RESULT)';
-COMMENT ON COLUMN mbh_mem_login_log.fail_cnt          IS '해당 시점 연속 실패 횟수';
-COMMENT ON COLUMN mbh_mem_login_log.ip                IS 'IP주소';
-COMMENT ON COLUMN mbh_mem_login_log.device            IS 'User-Agent 전문';
-COMMENT ON COLUMN mbh_mem_login_log.os                IS 'OS 정보';
-COMMENT ON COLUMN mbh_mem_login_log.browser           IS '브라우저 정보';
-COMMENT ON COLUMN mbh_mem_login_log.country           IS '국가코드 (GeoIP)';
-COMMENT ON COLUMN mbh_mem_login_log.access_token      IS '액세스 토큰 (SHA-256 해시값 저장 권장, 로그인 실패 시 NULL)';
-COMMENT ON COLUMN mbh_mem_login_log.access_token_exp  IS '액세스 토큰 만료일시';
-COMMENT ON COLUMN mbh_mem_login_log.refresh_token     IS '리프레시 토큰 (SHA-256 해시값 저장 권장)';
-COMMENT ON COLUMN mbh_mem_login_log.refresh_token_exp IS '리프레시 토큰 만료일시';
-COMMENT ON COLUMN mbh_mem_login_log.reg_by            IS '등록자 (sy_user.user_id, mb_mem.member_id)';
-COMMENT ON COLUMN mbh_mem_login_log.reg_date          IS '등록일';
-COMMENT ON COLUMN mbh_mem_login_log.upd_by            IS '수정자 (sy_user.user_id, mb_mem.member_id)';
-COMMENT ON COLUMN mbh_mem_login_log.upd_date          IS '수정일';
+COMMENT ON TABLE mbh_member_login_log IS '회원 로그인 로그';
+COMMENT ON COLUMN mbh_member_login_log.log_id            IS '로그ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN mbh_member_login_log.site_id           IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN mbh_member_login_log.member_id         IS '회원ID (로그인 실패 시 NULL)';
+COMMENT ON COLUMN mbh_member_login_log.login_id          IS '입력한 로그인ID (이메일)';
+COMMENT ON COLUMN mbh_member_login_log.login_date        IS '로그인 시도일시';
+COMMENT ON COLUMN mbh_member_login_log.result_cd         IS '결과 (코드: LOGIN_RESULT)';
+COMMENT ON COLUMN mbh_member_login_log.fail_cnt          IS '해당 시점 연속 실패 횟수';
+COMMENT ON COLUMN mbh_member_login_log.ip                IS 'IP주소';
+COMMENT ON COLUMN mbh_member_login_log.device            IS 'User-Agent 전문';
+COMMENT ON COLUMN mbh_member_login_log.os                IS 'OS 정보';
+COMMENT ON COLUMN mbh_member_login_log.browser           IS '브라우저 정보';
+COMMENT ON COLUMN mbh_member_login_log.country           IS '국가코드 (GeoIP)';
+COMMENT ON COLUMN mbh_member_login_log.access_token      IS '액세스 토큰 (SHA-256 해시값 저장 권장, 로그인 실패 시 NULL)';
+COMMENT ON COLUMN mbh_member_login_log.access_token_exp  IS '액세스 토큰 만료일시';
+COMMENT ON COLUMN mbh_member_login_log.refresh_token     IS '리프레시 토큰 (SHA-256 해시값 저장 권장)';
+COMMENT ON COLUMN mbh_member_login_log.refresh_token_exp IS '리프레시 토큰 만료일시';
+COMMENT ON COLUMN mbh_member_login_log.reg_by            IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN mbh_member_login_log.reg_date          IS '등록일';
+COMMENT ON COLUMN mbh_member_login_log.upd_by            IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN mbh_member_login_log.upd_date          IS '수정일';
 
-CREATE INDEX idx_mbh_mem_login_log_member ON mbh_mem_login_log (member_id);
-CREATE INDEX idx_mbh_mem_login_log_date   ON mbh_mem_login_log (login_date);
-CREATE INDEX idx_mbh_mem_login_log_ip     ON mbh_mem_login_log (ip);
+CREATE INDEX idx_mbh_member_login_log_member ON mbh_member_login_log (member_id);
+CREATE INDEX idx_mbh_member_login_log_date   ON mbh_member_login_log (login_date);
+CREATE INDEX idx_mbh_member_login_log_ip     ON mbh_member_login_log (ip);
 
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] mbh_mem_login_log.result_cd (결과) : LOGIN_RESULT(LOGIN_RESULT) { 코드값 미정의 }
+-- [CODES] mbh_member_login_log.result_cd (결과) : LOGIN_RESULT: SUCCESS/FAIL_PW/FAIL_LOCKED/FAIL_DORMANT/FAIL_WITHDRAWN

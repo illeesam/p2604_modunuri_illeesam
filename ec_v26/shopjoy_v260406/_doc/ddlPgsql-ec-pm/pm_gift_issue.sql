@@ -6,7 +6,7 @@ CREATE TABLE pm_gift_issue (
     gift_issue_id       VARCHAR(16)     NOT NULL,
     gift_id             VARCHAR(16)     NOT NULL,               -- pm_gift.gift_id
     site_id             VARCHAR(16),
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_mem.member_id
+    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
     order_id            VARCHAR(16),                            -- 발급 기준 주문 (od_order.order_id)
     issue_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     gift_issue_status_cd VARCHAR(20)    DEFAULT 'ISSUED',       -- 코드: GIFT_ISSUE_STATUS (ISSUED:발급/DELIVERED:배송완료/CANCELLED:취소)
@@ -41,4 +41,4 @@ CREATE INDEX idx_pm_gift_issue_order  ON pm_gift_issue (order_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_gift_issue.gift_issue_status_cd (상태) : GIFT_ISSUE_STATUS(GIFT_ISSUE_STATUS) { 코드값 미정의 }
+-- [CODES] pm_gift_issue.gift_issue_status_cd (상태) : GIFT_ISSUE_STATUS: ISSUED/DELIVERED/CANCELLED

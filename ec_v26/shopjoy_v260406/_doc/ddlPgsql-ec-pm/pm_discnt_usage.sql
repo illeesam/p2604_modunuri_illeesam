@@ -8,7 +8,7 @@ CREATE TABLE pm_discnt_usage (
     site_id             VARCHAR(16),                            -- sy_site.site_id
     discnt_id           VARCHAR(16)     NOT NULL,               -- pm_discnt.discnt_id
     discnt_nm           VARCHAR(100),                           -- 할인명 스냅샷
-    member_id           VARCHAR(16),                            -- mb_mem.member_id
+    member_id           VARCHAR(16),                            -- mb_member.member_id
     order_id            VARCHAR(16),                            -- od_order.order_id
     order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 할인 적용 시)
     prod_id             VARCHAR(16),                            -- pd_prod.prod_id (할인 적용 상품)
@@ -27,7 +27,7 @@ COMMENT ON COLUMN pm_discnt_usage.discnt_usage_id  IS '할인사용ID (YYMMDDhhm
 COMMENT ON COLUMN pm_discnt_usage.site_id          IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pm_discnt_usage.discnt_id        IS '할인ID (pm_discnt.discnt_id)';
 COMMENT ON COLUMN pm_discnt_usage.discnt_nm        IS '할인명 스냅샷';
-COMMENT ON COLUMN pm_discnt_usage.member_id        IS '회원ID (mb_mem.member_id)';
+COMMENT ON COLUMN pm_discnt_usage.member_id        IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN pm_discnt_usage.order_id         IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN pm_discnt_usage.order_item_id    IS '주문상품ID (od_order_item.order_item_id, 상품별 할인 적용 시)';
 COMMENT ON COLUMN pm_discnt_usage.prod_id          IS '상품ID (pd_prod.prod_id, 할인 적용 상품)';

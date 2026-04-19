@@ -35,9 +35,9 @@ COMMENT ON COLUMN od_dliv_item.unit_price    IS '단가 (주문시점 스냅샷)
 COMMENT ON COLUMN od_dliv_item.dliv_qty      IS '출고수량 (부분출고 시 주문수량보다 적을 수 있음)';
 COMMENT ON COLUMN od_dliv_item.dliv_item_status_cd IS '항목 배송상태 (코드: DLIV_STATUS)';
 COMMENT ON COLUMN od_dliv_item.dliv_item_status_cd_before IS '변경 전 배송상태 (코드: DLIV_STATUS)';
-COMMENT ON COLUMN od_dliv_item.reg_by        IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_dliv_item.reg_by        IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_dliv_item.reg_date      IS '등록일';
-COMMENT ON COLUMN od_dliv_item.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_dliv_item.upd_by        IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_dliv_item.upd_date      IS '수정일';
 
 -- ============================================================

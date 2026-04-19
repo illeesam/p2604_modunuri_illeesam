@@ -34,4 +34,4 @@ CREATE INDEX idx_st_settle_close_date   ON st_settle_close (close_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_settle_close.close_status_cd (마감상태) : SETTLE_CLOSE_STATUS(SETTLE_CLOSE_STATUS) { 코드값 미정의 }
+-- [CODES] st_settle_close.close_status_cd (마감상태) : SETTLE_CLOSE_STATUS: DRAFT/CONFIRMED/PAID

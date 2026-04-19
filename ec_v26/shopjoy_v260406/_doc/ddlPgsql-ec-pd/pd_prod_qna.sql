@@ -4,7 +4,7 @@ CREATE TABLE pd_prod_qna (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
     sku_id          VARCHAR(16),                            -- pd_prod_opt_sku.sku_id (특정 SKU 문의 시)
-    member_id       VARCHAR(16),                            -- mb_mem.member_id
+    member_id       VARCHAR(16),                            -- mb_member.member_id
     order_id        VARCHAR(16),                            -- od_order.order_id (주문 관련 문의 시)
     qna_type_cd     VARCHAR(20),                            -- 코드: PROD_QNA_TYPE (SIZE/QUALITY/DLIV/ETC)
     qna_title       VARCHAR(200)    NOT NULL,
@@ -28,7 +28,7 @@ COMMENT ON COLUMN pd_prod_qna.qna_id       IS '문의ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN pd_prod_qna.site_id      IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pd_prod_qna.prod_id      IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN pd_prod_qna.sku_id       IS 'SKUID (pd_prod_opt_sku.sku_id)';
-COMMENT ON COLUMN pd_prod_qna.member_id    IS '회원ID (mb_mem.member_id)';
+COMMENT ON COLUMN pd_prod_qna.member_id    IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_qna.order_id     IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN pd_prod_qna.qna_type_cd  IS '문의유형코드 (코드: PROD_QNA_TYPE)';
 COMMENT ON COLUMN pd_prod_qna.qna_title    IS '문의제목';
@@ -53,4 +53,4 @@ CREATE INDEX idx_pd_prod_qna_site   ON pd_prod_qna (site_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_prod_qna.qna_type_cd (문의유형코드) : PROD_QNA_TYPE(PROD_QNA_TYPE) { 코드값 미정의 }
+-- [CODES] pd_prod_qna.qna_type_cd (문의유형코드) : PROD_QNA_TYPE: SIZE/QUALITY/DLIV/ETC

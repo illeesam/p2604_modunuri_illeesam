@@ -34,9 +34,9 @@ COMMENT ON COLUMN dp_ui.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN dp_ui.use_yn         IS '사용여부 (Y/N)';
 COMMENT ON COLUMN dp_ui.use_start_date IS '사용시작일';
 COMMENT ON COLUMN dp_ui.use_end_date   IS '사용종료일';
-COMMENT ON COLUMN dp_ui.reg_by         IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_ui.reg_by         IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_ui.reg_date       IS '등록일';
-COMMENT ON COLUMN dp_ui.upd_by         IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN dp_ui.upd_by         IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN dp_ui.upd_date       IS '수정일';
 
 CREATE INDEX idx_dp_ui_site ON dp_ui (site_id);
@@ -46,4 +46,4 @@ CREATE INDEX idx_dp_ui_use ON dp_ui (use_yn, use_start_date, use_end_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] dp_ui.device_type_cd (디바이스유형) : DEVICE_TYPE(DEVICE_TYPE) { 코드값 미정의 }
+-- [CODES] dp_ui.device_type_cd (디바이스유형) : DEVICE_TYPE: PC/MOBILE/APP/ALL

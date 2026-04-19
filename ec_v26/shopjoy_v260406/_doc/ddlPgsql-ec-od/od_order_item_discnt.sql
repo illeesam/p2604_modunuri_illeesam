@@ -38,7 +38,7 @@ COMMENT ON COLUMN od_order_item_discnt.discnt_rate      IS '할인율 (% — 비
 COMMENT ON COLUMN od_order_item_discnt.unit_discnt_amt  IS '1개당 할인금액';
 COMMENT ON COLUMN od_order_item_discnt.total_discnt_amt IS '전체 할인금액 (unit_discnt_amt × order_qty)';
 COMMENT ON COLUMN od_order_item_discnt.order_qty        IS '주문수량 스냅샷';
-COMMENT ON COLUMN od_order_item_discnt.reg_by           IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN od_order_item_discnt.reg_by           IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN od_order_item_discnt.reg_date         IS '등록일시';
 
 CREATE INDEX idx_od_item_discnt_order      ON od_order_item_discnt (order_id);
@@ -49,4 +49,4 @@ CREATE INDEX idx_od_item_discnt_coupon     ON od_order_item_discnt (coupon_id) W
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] od_order_item_discnt.discnt_type_cd (할인유형코드) : ORDER_ITEM_DISCNT_TYPE(ORDER_ITEM_DISCNT_TYPE) { 코드값 미정의 }
+-- [CODES] od_order_item_discnt.discnt_type_cd (할인유형코드) : ORDER_DISCNT_TYPE: SALE_PRICE/PAY_DISCNT/COUPON/PROMOTION/SHIP_DISCNT/PRODUCT_DISCNT/CLAIM_SHIP

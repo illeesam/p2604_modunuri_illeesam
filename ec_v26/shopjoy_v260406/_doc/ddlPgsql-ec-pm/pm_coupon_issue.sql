@@ -24,9 +24,9 @@ COMMENT ON COLUMN pm_coupon_issue.issue_date IS '발급일시';
 COMMENT ON COLUMN pm_coupon_issue.use_yn     IS '사용여부 Y/N';
 COMMENT ON COLUMN pm_coupon_issue.use_date   IS '사용일시';
 COMMENT ON COLUMN pm_coupon_issue.order_id   IS '사용주문ID';
-COMMENT ON COLUMN pm_coupon_issue.reg_by     IS '등록자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_coupon_issue.reg_by     IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_coupon_issue.reg_date   IS '등록일';
-COMMENT ON COLUMN pm_coupon_issue.upd_by     IS '수정자 (sy_user.user_id, mb_mem.member_id)';
+COMMENT ON COLUMN pm_coupon_issue.upd_by     IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pm_coupon_issue.upd_date   IS '수정일';
 
 -- 쿠폰 사용 이력
