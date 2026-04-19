@@ -172,7 +172,11 @@
 ---
 
 ## 관련 테이블
-- `od_pay` — 결제 및 환불 정보 (refund_amt, refund_status_cd)
+- `od_pay(결제)` — 결제 마스터 (refund_amt 누적, pay_status_cd: PARTIAL_REFUND/REFUNDED 전환)
+- `od_refund(환불)` — 환불 건별 마스터 (total_refund_amt, refund_prod_amt, refund_coupon_amt, refund_ship_amt)
+- `od_refund_method(환불수단 내역)` — 수단별 환불금액 행 (refund_priority: 1=카드, 2=캐쉬, 3=적립금)
+- `od_order_discnt(주문할인·차감 내역)` — 주문쿠폰 안분 기준 / 적립금·캐쉬 복원 상태 추적 (restore_yn, restore_amt)
+- `od_order_item_discnt(주문상품할인 내역)` — 상품쿠폰 안분 계산 원본
 - `pm_coupon_issue` — 쿠폰 재발급 처리
 - `pm_coupon_usage` — 쿠폰 사용 이력
 - `pm_save` — 적립금 원장
@@ -180,11 +184,12 @@
 - `pm_save_issue` — 적립금 지급 이력
 
 ## 관련 정책서
-- [od.11.클레임-부분반품.md] — 부분반품 처리 및 환불금액 계산 근거
-- [od.13.클레임-부분교환.md] — 교환 시 환불 처리
-- [od.14.클레임-추가결제.md] — 배송비·추가금액 별도 결제
+- [od.12.클레임-부분반품.md] — 부분반품 처리 및 환불금액 계산 근거
+- [od.14.클레임-부분교환.md] — 교환 시 환불 처리
+- [od.15.클레임-추가결제.md] — 배송비·추가금액 별도 결제
 - [pm.01.프로포션쿠폰.md] — 쿠폰 마스터 정책
 - [pm.03.프로포션적립금.md] — 적립금 마스터 정책
 
 ## 변경이력
 - 2026-04-18: 초기 작성
+- 2026-04-19: 관련 테이블 od_refund / od_refund_method / od_order_discnt / od_order_item_discnt 추가. 테이블명(코멘트) 형식 통일

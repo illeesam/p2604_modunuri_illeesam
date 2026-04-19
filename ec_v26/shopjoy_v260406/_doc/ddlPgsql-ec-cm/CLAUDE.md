@@ -15,7 +15,7 @@
 - `cm_chatt_msg.sql` — 채팅 메시지 (PK: chatt_msg_id, FK: chatt_room_id)
 
 ### 로그/경로
-- `cm_push_log.sql` — 푸시 발송 로그 *(log 예외)*
+- `hist/cm_push_log.sql` — 푸시 발송 로그 *(log 예외)*
 - `cm_path.sql` — 경로 마스터 (path_remark)
 
 ## 컬럼명 주의

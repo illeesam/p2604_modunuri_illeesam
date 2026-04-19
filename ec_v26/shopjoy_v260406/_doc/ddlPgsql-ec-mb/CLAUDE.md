@@ -8,9 +8,9 @@
 - `mb_mem_group.sql` — 회원그룹 + mb_mem_group_map (회원-그룹 매핑)
 - `mb_dvc_token.sql` — 앱 디바이스 토큰 (PK: device_token + site_id) *(log 예외)*
 - `mb_sns_mem.sql` — SNS 연동 (sns_channel_cd: KAKAO/NAVER/GOOGLE/APPLE)
-- `mb_mem_login_hist.sql` — 로그인 이력
-- `mb_mem_login_log.sql` — 로그인 로그 *(log 예외)*
-- `mb_mem_token_log.sql` — 토큰 로그 *(log 예외)*
+- `hist/mb_mem_login_hist.sql` — 로그인 이력
+- `hist/mb_mem_login_log.sql` — 로그인 로그 *(log 예외)*
+- `hist/mb_mem_token_log.sql` — 토큰 로그 *(log 예외)*
 
 ## 상태 코드
 - `member_status_cd`: ACTIVE / DORMANT / SUSPENDED / WITHDRAWN

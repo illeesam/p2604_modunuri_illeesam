@@ -9,7 +9,7 @@ CREATE TABLE od_pay_status_hist (
     pay_id                VARCHAR(16)     NOT NULL,           -- od_pay.
     order_id              VARCHAR(16)     NOT NULL,           -- od_order.
     pay_status_cd_before  VARCHAR(20),                        -- 변경 전 결제상태 (코드: PAY_STATUS)
-    pay_status_cd_after   VARCHAR(20),                        -- 변경 후 결제상태 (코드: PAY_STATUS)
+    pay_status_cd         VARCHAR(20),                        -- 변경 후 결제상태 (코드: PAY_STATUS)
     status_reason         VARCHAR(300),                       -- 상태 변경 사유
     chg_user_id           VARCHAR(16),                        -- 변경 담당자 (sy_user.user_id, mb_mem.member_id)
     chg_date              TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -28,7 +28,7 @@ COMMENT ON COLUMN od_pay_status_hist.site_id               IS '사이트ID (sy_s
 COMMENT ON COLUMN od_pay_status_hist.pay_id                IS '결제ID (od_pay.)';
 COMMENT ON COLUMN od_pay_status_hist.order_id              IS '주문ID (od_order.)';
 COMMENT ON COLUMN od_pay_status_hist.pay_status_cd_before  IS '변경 전 결제상태 (코드: PAY_STATUS)';
-COMMENT ON COLUMN od_pay_status_hist.pay_status_cd_after   IS '변경 후 결제상태 (코드: PAY_STATUS)';
+COMMENT ON COLUMN od_pay_status_hist.pay_status_cd         IS '변경 후 결제상태 (코드: PAY_STATUS)';
 COMMENT ON COLUMN od_pay_status_hist.status_reason         IS '상태 변경 사유';
 COMMENT ON COLUMN od_pay_status_hist.chg_user_id           IS '변경 담당자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN od_pay_status_hist.chg_date              IS '변경 일시';

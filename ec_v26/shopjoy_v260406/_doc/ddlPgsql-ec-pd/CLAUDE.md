@@ -18,11 +18,11 @@
 - `pd_prod_bundle.sql` — 묶음상품 구성품 (FK: bundle_prod_id + component_prod_id, price_rate 안분율)
 - `pd_prod_set_item.sql` — 세트상품 구성 목록 (FK: set_prod_id, 표시용)
 - `pd_restock_noti.sql` — 재입고알림 신청 (FK: prod_id + sku_id + member_id)
-- `pd_prod_status_hist.sql` — 상품 상태 이력
-- `pd_prod_chg_hist.sql` — 상품 변경 이력
-- `pd_prod_content_chg_hist.sql` — 상품 내용 변경 이력
-- `pd_prod_opt_sku_chg_hist.sql` — SKU 변경 이력
-- `pd_prod_view_log.sql` — 상품 조회 로그 *(log 예외)*
+- `hist/pd_prod_status_hist.sql` — 상품 상태 이력
+- `hist/pd_prod_chg_hist.sql` — 상품 변경 이력
+- `hist/pd_prod_content_chg_hist.sql` — 상품 내용 변경 이력
+- `hist/pd_prod_opt_sku_chg_hist.sql` — SKU 변경 이력
+- `hist/pd_prod_view_log.sql` — 상품 조회 로그 *(log 예외)*
 
 ## 상태 코드
 - `prod_status_cd`: DRAFT / ACTIVE / INACTIVE / DELETED

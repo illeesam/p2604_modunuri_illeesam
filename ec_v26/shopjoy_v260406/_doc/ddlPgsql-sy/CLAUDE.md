@@ -31,9 +31,9 @@
 - `sy_role.sql` — 역할 (role_remark)
 - `sy_user_role.sql` — 사용자-역할 연결
 - `sy_role_menu.sql` — 역할-메뉴 권한
-- `sy_user_login_hist.sql` — 로그인 이력
-- `sy_user_login_log.sql` — 로그인 로그 *(log 예외)*
-- `sy_user_token_log.sql` — 토큰 로그 *(log 예외)*
+- `hist/sy_user_login_hist.sql` — 로그인 이력
+- `hist/sy_user_login_log.sql` — 로그인 로그 *(log 예외)*
+- `hist/sy_user_token_log.sql` — 토큰 로그 *(log 예외)*
 
 ### 메뉴/경로
 - `sy_menu.sql` — 메뉴 (menu_remark)
@@ -47,12 +47,12 @@
 
 ### 배치
 - `sy_batch.sql` — 배치 마스터
-- `sy_batch_hist.sql` — 배치 실행 이력
-- `sy_batch_log.sql` — 배치 로그 *(log 예외)*
+- `hist/sy_batch_hist.sql` — 배치 실행 이력
+- `hist/sy_batch_log.sql` — 배치 로그 *(log 예외)*
 
 ### 알람/게시판/문의/VOC
 - `sy_alarm.sql` — 알람 발송 마스터
-- `sy_alarm_send_hist.sql` — 알람 발송 이력
+- `hist/sy_alarm_send_hist.sql` — 알람 발송 이력
 - `sy_bbm.sql` — BBM(메모/공지) (bbm_remark)
 - `sy_bbs.sql` — 게시판 마스터
 - `sy_contact.sql` — 1:1 문의
@@ -60,9 +60,9 @@
 - `sy_voc.sql` — 고객의소리 VOC 분류 (voc_master_cd + voc_detail_cd)
 
 ### 로그
-- `sy_api_log.sql` — API 호출 로그 *(log 예외)*
-- `sy_send_email_log.sql` — 이메일 발송 로그 *(log 예외)*
-- `sy_send_msg_log.sql` — SMS 발송 로그 *(log 예외)*
+- `hist/sy_api_log.sql` — API 호출 로그 *(log 예외)*
+- `hist/sy_send_email_log.sql` — 이메일 발송 로그 *(log 예외)*
+- `hist/sy_send_msg_log.sql` — SMS 발송 로그 *(log 예외)*
 
 ## log 테이블 예외 규칙
 `*_log` 테이블은 단일 단어 컬럼 허용: `log`, `token`, `ip`, `device`, `msg`, `status` 등

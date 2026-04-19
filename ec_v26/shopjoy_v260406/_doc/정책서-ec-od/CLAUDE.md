@@ -19,11 +19,15 @@
 | `od.16.묶음세트사은품-클레임.md` | 묶음 부분클레임·세트 전체단위·사은품 조건파괴 처리 |
 
 ## 관련 테이블 (ec-od/)
-- `od_order` — 주문 마스터
-- `od_order_item` — 주문상품 (bundle_group_id, bundle_price_rate)
-- `od_pay` — 결제
-- `od_dliv`, `od_dliv_item` — 배송 (vendor_id 단위 분리)
-- `od_claim`, `od_claim_item` — 클레임
+- `od_order(주문)` — 주문 마스터
+- `od_order_item(주문상품)` — 주문상품 (bundle_group_id, bundle_price_rate)
+- `od_order_item_discnt(주문상품할인 내역)` — 즉시할인·상품쿠폰 (ITEM_DISCNT/ITEM_COUPON)
+- `od_order_discnt(주문할인·차감 내역)` — 주문쿠폰·적립금차감·캐쉬차감 (restore_yn으로 복원 추적)
+- `od_pay(결제)` — 결제 마스터
+- `od_refund(환불)` — 환불 건별 마스터 (클레임 1건 = 1행)
+- `od_refund_method(환불수단 내역)` — 수단별 환불금액 (refund_priority: 1=카드, 2=캐쉬, 3=적립금)
+- `od_dliv(배송)`, `od_dliv_item(배송상품)` — 배송 (vendor_id 단위 분리)
+- `od_claim(클레임)`, `od_claim_item(클레임상품)` — 클레임
 
 ## 관리자 화면
 | pageId | 라벨 |
