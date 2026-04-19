@@ -1,34 +1,38 @@
 -- 코드 항목
 CREATE TABLE sy_code (
-    code_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    code_grp        VARCHAR(50)     NOT NULL,
-    code_value      VARCHAR(50)     NOT NULL,               -- 실제 저장 값
-    code_label      VARCHAR(100)    NOT NULL,               -- 화면 표시 라벨
-    sort_ord        INTEGER         DEFAULT 0,
-    use_yn          CHAR(1)         DEFAULT 'Y',
-    code_remark     VARCHAR(300),
-    reg_by          VARCHAR(16),
-    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
-    upd_date        TIMESTAMP,
+    code_id             VARCHAR(16)     NOT NULL,
+    site_id             VARCHAR(16),                            -- sy_site.site_id
+    code_grp            VARCHAR(50)     NOT NULL,
+    code_value          VARCHAR(50)     NOT NULL,               -- 실제 저장 값
+    code_label          VARCHAR(100)    NOT NULL,               -- 화면 표시 라벨
+    sort_ord            INTEGER         DEFAULT 0,
+    use_yn              CHAR(1)         DEFAULT 'Y',
+    parent_code_value   VARCHAR(50),                            -- 부모 코드값 (트리 구조 시 상위 code_value, null이면 루트)
+    child_code_values   VARCHAR(500),                           -- 허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식)
+    code_remark         VARCHAR(300),
+    reg_by              VARCHAR(16),
+    reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by              VARCHAR(16),
+    upd_date            TIMESTAMP,
     PRIMARY KEY (code_id),
     UNIQUE (code_grp, code_value)
 );
 
 COMMENT ON TABLE  sy_code                IS '공통코드';
-COMMENT ON COLUMN sy_code.code_id        IS '코드ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN sy_code.site_id        IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN sy_code.code_grp       IS '코드그룹 (sy_code_grp.code_grp)';
-COMMENT ON COLUMN sy_code.code_value     IS '코드값 (저장값)';
-COMMENT ON COLUMN sy_code.code_label     IS '코드라벨 (표시명)';
-COMMENT ON COLUMN sy_code.sort_ord       IS '정렬순서';
-COMMENT ON COLUMN sy_code.use_yn         IS '사용여부 Y/N';
-COMMENT ON COLUMN sy_code.code_remark    IS '비고';
-COMMENT ON COLUMN sy_code.reg_by         IS '등록자 (sy_user.user_id, ec_member.member_id)';
-COMMENT ON COLUMN sy_code.reg_date       IS '등록일';
-COMMENT ON COLUMN sy_code.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
-COMMENT ON COLUMN sy_code.upd_date       IS '수정일';
+COMMENT ON COLUMN sy_code.code_id             IS '코드ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN sy_code.site_id             IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN sy_code.code_grp            IS '코드그룹 (sy_code_grp.code_grp)';
+COMMENT ON COLUMN sy_code.code_value          IS '코드값 (저장값)';
+COMMENT ON COLUMN sy_code.code_label          IS '코드라벨 (표시명)';
+COMMENT ON COLUMN sy_code.sort_ord            IS '정렬순서';
+COMMENT ON COLUMN sy_code.use_yn              IS '사용여부 Y/N';
+COMMENT ON COLUMN sy_code.parent_code_value   IS '부모 코드값 (트리 구조 시 상위 code_value, null이면 루트)';
+COMMENT ON COLUMN sy_code.child_code_values   IS '허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식 — 상태 전이 제약이나 하위 코드 목록)';
+COMMENT ON COLUMN sy_code.code_remark         IS '비고';
+COMMENT ON COLUMN sy_code.reg_by              IS '등록자 (sy_user.user_id, ec_member.member_id)';
+COMMENT ON COLUMN sy_code.reg_date            IS '등록일';
+COMMENT ON COLUMN sy_code.upd_by              IS '수정자 (sy_user.user_id, ec_member.member_id)';
+COMMENT ON COLUMN sy_code.upd_date            IS '수정일';
 
 -- ============================================================
 -- 코드 그룹 목록 (상세 코드값은 sy.08.공통코드.md 참조)
