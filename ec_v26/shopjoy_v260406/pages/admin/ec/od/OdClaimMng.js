@@ -82,21 +82,20 @@ window.OdClaimMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (c) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `claims/${c.claimId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${c.claimId}]를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.claims.findIndex(x => x.claimId === c.claimId);
-          if (idx !== -1) props.adminData.claims.splice(idx, 1);
-          if (selectedId.value === c.claimId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.claims.findIndex(x => x.claimId === c.claimId);
+      if (idx !== -1) props.adminData.claims.splice(idx, 1);
+      if (selectedId.value === c.claimId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`claims/${c.claimId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
@@ -199,74 +198,76 @@ window.OdClaimMng = {
         if (!changes.length) { props.showToast('변경할 상태를 선택하세요.', 'error'); return; }
         const totalCnt = changes.reduce((s,c)=>s+c.ids.length,0);
         const msg = changes.map(c => `[${c.type}] ${c.ids.length}건 → ${c.status}`).join('\n');
-        await window.adminApiCall({
-          method: 'put', path: 'claims/bulk-status',
-          data: { changes },
-          confirmTitle: '일괄 클레임상태 변경',
-          confirmMsg: `${msg}\n\n총 ${totalCnt}건을 변경하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${totalCnt}건 변경되었습니다.`,
-          onLocal: () => {
-            const allIds = new Set(changes.flatMap(c => c.ids.map(id => [id, c.status])));
-            changes.forEach(ch => {
-              props.adminData.claims.forEach(c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
-            });
-            checked.value = new Set();
-            bulkOpen.value = false;
-          },
+        const ok = await props.showConfirm('일괄 클레임상태 변경', `${msg}\n\n총 ${totalCnt}건을 변경하시겠습니까?`);
+        if (!ok) return;
+        changes.forEach(ch => {
+          props.adminData.claims.forEach(c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
         });
+        checked.value = new Set();
+        bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('claims/bulk-status', { changes });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${totalCnt}건 변경되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       } else if (bulkTab.value === 'type') {
         const val = bulkForm.type;
         if (!val) { props.showToast('변경할 클레임유형을 선택하세요.', 'error'); return; }
         const ids = Array.from(checked.value);
-        await window.adminApiCall({
-          method: 'put', path: 'claims/bulk-type',
-          data: { ids, type: val },
-          confirmTitle: '일괄 클레임유형 변경',
-          confirmMsg: `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${ids.length}건 변경되었습니다.`,
-          onLocal: () => {
-            props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) c.type = val; });
-            checked.value = new Set();
-            bulkOpen.value = false;
-          },
-        });
+        const ok = await props.showConfirm('일괄 클레임유형 변경', `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`);
+        if (!ok) return;
+        props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) c.type = val; });
+        checked.value = new Set();
+        bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('claims/bulk-type', { ids, type: val });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       } else if (bulkTab.value === 'approval') {
         if (!bulkForm.apprAction) { props.showToast('결재처리 구분을 선택하세요.', 'error'); return; }
         const ids = Array.from(checked.value);
-        await window.adminApiCall({
-          method: 'put', path: 'claims/bulk-approval',
-          data: { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment },
-          confirmTitle: '일괄 결재처리',
-          confirmMsg: `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${ids.length}건 처리되었습니다.`,
-          onLocal: () => {
-            props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
-            checked.value = new Set(); bulkOpen.value = false;
-          },
-        });
+        const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
+        if (!ok) return;
+        props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
+        checked.value = new Set(); bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('claims/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       } else if (bulkTab.value === 'approvalReq') {
         if (!bulkForm.apprToUserId) { props.showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
         const ids = Array.from(checked.value);
-        const payload = { ...bulkForm, tmplMsgRendered: buildTmplMsg.value };
-        await window.adminApiCall({
-          method: 'put', path: 'claims/bulk-approvalReq',
-          data: { ids, ...payload },
-          confirmTitle: '일괄 추가결재요청',
-          confirmMsg: `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${ids.length}건 요청되었습니다.`,
-          onLocal: () => {
-            props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) {
-              c.apprToUserId = bulkForm.apprToUserId; c.apprToNm = bulkForm.apprToNm;
-              c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
-              c.reqAmount = Number(bulkForm.reqAmount||0); c.reqReason = bulkForm.reqReason;
-            } });
-            checked.value = new Set(); bulkOpen.value = false;
-          },
-        });
+        const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
+        if (!ok) return;
+        props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) {
+          c.apprToUserId = bulkForm.apprToUserId; c.apprToNm = bulkForm.apprToNm;
+          c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
+          c.reqAmount = Number(bulkForm.reqAmount||0); c.reqReason = bulkForm.reqReason;
+        } });
+        checked.value = new Set(); bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('claims/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       }
     };
 

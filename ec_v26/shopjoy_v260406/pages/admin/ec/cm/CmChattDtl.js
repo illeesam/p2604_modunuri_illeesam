@@ -95,28 +95,25 @@ window.CmChattDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: 'post',
-        path: `chatts/${form.chatId}`,
-        data: { ...form },
-        confirmTitle: '등록',
-        confirmMsg: '등록하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '등록되었습니다.',
-        onLocal: () => {
-          const m = props.adminData.getMember(Number(form.userId));
-          props.adminData.chats.push({
-            chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
-            userId: Number(form.userId), userNm: m ? m.memberNm : form.userNm,
-            date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-            subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
-          });
-        },
-        navigate: props.navigate,
-        navigateTo: 'cmChattMng',
+      const ok = await props.showConfirm('등록', '등록하시겠습니까?');
+      if (!ok) return;
+      const m = props.adminData.getMember(Number(form.userId));
+      props.adminData.chats.push({
+        chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
+        userId: Number(form.userId), userNm: m ? m.memberNm : form.userNm,
+        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
       });
+      try {
+        const res = await window.adminApi.post(`chatts/${form.chatId}`, { ...form });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('등록되었습니다.', 'success');
+        if (props.navigate) props.navigate('cmChattMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const onUserChange = () => {

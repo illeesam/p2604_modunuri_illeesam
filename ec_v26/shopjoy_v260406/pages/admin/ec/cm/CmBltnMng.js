@@ -42,34 +42,54 @@ window.CmBltnMng = {
     const closeDetail = () => { selectedId.value = null; };
     const doSave = async () => {
       if (!form.blogTitle) { props.showToast('제목은 필수입니다.', 'error'); return; }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put', path: `cm/bltn/${form.blogId||''}`, data: { ...form },
-        confirmTitle: '저장', confirmMsg: '저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => {
-          const src = props.adminData.bltnPosts;
-          if (isNew.value) { form.blogId = 'BL' + String(Date.now()).slice(-6); form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...form }); selectedId.value = form.blogId; isNew.value = false; }
-          else { const si = src.findIndex(p => p.blogId === form.blogId); if (si !== -1) Object.assign(src[si], form); }
-        },
-      });
+      const isNewPost = isNew.value;
+      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      const src = props.adminData.bltnPosts;
+      if (isNewPost) { form.blogId = 'BL' + String(Date.now()).slice(-6); form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...form }); selectedId.value = form.blogId; isNew.value = false; }
+      else { const si = src.findIndex(p => p.blogId === form.blogId); if (si !== -1) Object.assign(src[si], form); }
+      try {
+        const res = await (isNewPost ? window.adminApi.post(`cm/bltn/${form.blogId}`, { ...form }) : window.adminApi.put(`cm/bltn/${form.blogId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const doDelete = async () => {
       if (!selectedRow.value) return;
-      await window.adminApiCall({
-        method: 'delete', path: `cm/bltn/${selectedRow.value.blogId}`,
-        confirmTitle: '삭제', confirmMsg: `[${selectedRow.value.blogTitle}]을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => { const si = props.adminData.bltnPosts.findIndex(p => p.blogId === selectedRow.value.blogId); if (si !== -1) props.adminData.bltnPosts.splice(si, 1); closeDetail(); },
-      });
+      const ok = await props.showConfirm('삭제', `[${selectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const si = props.adminData.bltnPosts.findIndex(p => p.blogId === selectedRow.value.blogId);
+      if (si !== -1) props.adminData.bltnPosts.splice(si, 1);
+      closeDetail();
+      try {
+        const res = await window.adminApi.delete(`cm/bltn/${selectedRow.value.blogId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const toggleUse = async (row) => {
       const newYn = row.useYn === 'Y' ? 'N' : 'Y';
-      await window.adminApiCall({
-        method: 'put', path: `cm/bltn/${row.blogId}/use`, data: { useYn: newYn },
-        confirmTitle: '공개설정', confirmMsg: `[${row.blogTitle}]을 ${newYn==='Y'?'공개':'비공개'} 처리하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => { row.useYn = newYn; if (form.blogId === row.blogId) form.useYn = newYn; },
-      });
+      const ok = await props.showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn==='Y'?'공개':'비공개'} 처리하시겠습니까?`);
+      if (!ok) return;
+      row.useYn = newYn;
+      if (form.blogId === row.blogId) form.useYn = newYn;
+      try {
+        const res = await window.adminApi.put(`cm/bltn/${row.blogId}/use`, { useYn: newYn });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('처리되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value, notice: searchNotice.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchUse.value = ''; searchNotice.value = ''; Object.assign(applied, { kw: '', use: '', notice: '' }); pager.page = 1; };

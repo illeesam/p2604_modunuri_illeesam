@@ -80,31 +80,28 @@ window.SyUserDtl = {
         return;
       }
       if (isNew.value && !form.password) { props.showToast('신규 등록 시 비밀번호는 필수입니다.', 'error'); return; }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `admin-users/${form.adminUserId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            const { password, ...rest } = form;
-            props.adminData.adminUsers.push({ ...rest, adminUserId: props.adminData.nextId(props.adminData.adminUsers, 'adminUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
-          } else {
-            const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === props.editId);
-            if (idx !== -1) {
-              const { password, ...rest } = form;
-              Object.assign(props.adminData.adminUsers[idx], rest);
-            }
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'syUserMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        const { password, ...rest } = form;
+        props.adminData.adminUsers.push({ ...rest, adminUserId: props.adminData.nextId(props.adminData.adminUsers, 'adminUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
+      } else {
+        const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === props.editId);
+        if (idx !== -1) {
+          const { password, ...rest } = form;
+          Object.assign(props.adminData.adminUsers[idx], rest);
+        }
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`admin-users/${form.adminUserId}`, { ...form }) : window.adminApi.put(`admin-users/${form.adminUserId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('syUserMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { isNew, form, errors, save, siteNm,

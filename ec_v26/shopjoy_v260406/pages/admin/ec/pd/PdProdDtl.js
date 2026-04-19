@@ -464,33 +464,33 @@ window.PdProdDtl = {
       catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const imgData = images.value.map(({ id, ...rest }) => rest);
       const mainImg = images.value.find(img => img.isMain);
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `products/${form.prodId}`,
-        data: { ...form, contentBlocks: contentBlocks.value, optGroups: optGroups.value, skus: skus.value, relProds: relProds.value, codeProds: codeProds.value, salePlans: salePlans.value },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          let savedProdId;
-          if (isNew.value) {
-            savedProdId = props.adminData.nextId(props.adminData.products, 'productId');
-            props.adminData.products.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
-          } else {
-            savedProdId = props.editId;
-            const idx = props.adminData.products.findIndex(x => x.productId == props.editId);
-            if (idx !== -1) Object.assign(props.adminData.products[idx], { ...form, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
-          }
-          // categoryProds 동기화
-          if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
-          props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(savedProdId));
-          prodCategories.value.forEach((cat, i) => {
-            props.adminData.categoryProds.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
-          });
-        },
-        navigate: props.navigate, navigateTo: 'pdProdMng',
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      let savedProdId;
+      if (isNew.value) {
+        savedProdId = props.adminData.nextId(props.adminData.products, 'productId');
+        props.adminData.products.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
+      } else {
+        savedProdId = props.editId;
+        const idx = props.adminData.products.findIndex(x => x.productId == props.editId);
+        if (idx !== -1) Object.assign(props.adminData.products[idx], { ...form, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
+      }
+      // categoryProds 동기화
+      if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
+      props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(savedProdId));
+      prodCategories.value.forEach((cat, i) => {
+        props.adminData.categoryProds.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks.value, optGroups: optGroups.value, skus: skus.value, relProds: relProds.value, codeProds: codeProds.value, salePlans: salePlans.value }) : window.adminApi.put(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks.value, optGroups: optGroups.value, skus: skus.value, relProds: relProds.value, codeProds: codeProds.value, salePlans: salePlans.value }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('pdProdMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return {

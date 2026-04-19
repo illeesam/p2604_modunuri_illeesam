@@ -167,33 +167,30 @@ window.PmPlanDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `plans${isNew.value ? '' : '/' + props.editId}`,
-        data: form,
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            const newId = Math.max(...(props.adminData.plans || []).map(p => p.planId), 0) + 1;
-            props.adminData.plans.push({
-              ...form, planId: newId,
-              productIds: [...form.productIds],
-              regDate: new Date().toISOString().slice(0, 10),
-              viewCount: 0, thumbUrl: '🎯',
-            });
-          } else {
-            const idx = props.adminData.plans.findIndex(x => x.planId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.plans[idx], { ...form, productIds: [...form.productIds] });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'pmPlanMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        const newId = Math.max(...(props.adminData.plans || []).map(p => p.planId), 0) + 1;
+        props.adminData.plans.push({
+          ...form, planId: newId,
+          productIds: [...form.productIds],
+          regDate: new Date().toISOString().slice(0, 10),
+          viewCount: 0, thumbUrl: '🎯',
+        });
+      } else {
+        const idx = props.adminData.plans.findIndex(x => x.planId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.plans[idx], { ...form, productIds: [...form.productIds] });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`plans`, form) : window.adminApi.put(`plans/${props.editId}`, form));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('pmPlanMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return {

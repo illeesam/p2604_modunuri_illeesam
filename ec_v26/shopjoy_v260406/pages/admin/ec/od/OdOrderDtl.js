@@ -77,27 +77,25 @@ window.OdOrderDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `orders/${form.orderId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
-          } else {
-            const idx = props.adminData.orders.findIndex(x => x.orderId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'odOrderMng',
-      });
+      const isNewOrder = isNew.value;
+      const ok = await props.showConfirm(isNewOrder ? '등록' : '저장', isNewOrder ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNewOrder) {
+        props.adminData.orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
+      } else {
+        const idx = props.adminData.orders.findIndex(x => x.orderId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
+      }
+      try {
+        const res = await (isNewOrder ? window.adminApi.post(`orders/${form.orderId}`, { ...form }) : window.adminApi.put(`orders/${form.orderId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('odOrderMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const activeTab = ref(window._odOrderDtlState.activeTab || 'info');

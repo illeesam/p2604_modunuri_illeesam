@@ -85,21 +85,20 @@ window.SyBbsMng = {
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const doDelete = async (b) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `bbs/${b.bbsId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${b.title}]을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.bbss.findIndex(x => x.bbsId === b.bbsId);
-          if (idx !== -1) props.adminData.bbss.splice(idx, 1);
-          if (selectedId.value === b.bbsId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.bbss.findIndex(x => x.bbsId === b.bbsId);
+      if (idx !== -1) props.adminData.bbss.splice(idx, 1);
+      if (selectedId.value === b.bbsId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`bbs/${b.bbsId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */

@@ -33,27 +33,24 @@ window.SyAlarmDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `alarms/${form.alarmId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.alarms.unshift({ ...form, alarmId: props.adminData.nextId(props.adminData.alarms, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
-          } else {
-            const idx = props.adminData.alarms.findIndex(x => x.alarmId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.alarms[idx], { ...form });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'syAlarmMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        props.adminData.alarms.unshift({ ...form, alarmId: props.adminData.nextId(props.adminData.alarms, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
+      } else {
+        const idx = props.adminData.alarms.findIndex(x => x.alarmId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.alarms[idx], { ...form });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`alarms/${form.alarmId}`, { ...form }) : window.adminApi.put(`alarms/${form.alarmId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('syAlarmMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { isNew, form, errors, save, siteNm };

@@ -47,13 +47,18 @@ window.StErpViewMng = {
     const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const doResend = async (r) => {
-      await window.adminApiCall({
-        method: 'post', path: `st/erp/resend/${r.slipId}`, data: {},
-        confirmTitle: '재전송', confirmMsg: '전표를 ERP로 재전송하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '재전송이 완료되었습니다.',
-        onLocal: () => { r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now(); },
-      });
+      const ok = await props.showConfirm('재전송', '전표를 ERP로 재전송하시겠습니까?');
+      if (!ok) return;
+      r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
+      try {
+        const res = await window.adminApi.post(`st/erp/resend/${r.slipId}`, {});
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('재전송이 완료되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const statusBadge = s => ({ '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');

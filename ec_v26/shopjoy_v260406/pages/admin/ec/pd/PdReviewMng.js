@@ -37,12 +37,17 @@ window.PdReviewMng = {
 
     const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
     const changeStatus = async (row, newStatus) => {
-      await window.adminApiCall({
-        method: 'put', path: `pd/reviews/${row.reviewId}/status`, data: { reviewStatusCd: newStatus },
-        confirmTitle: '상태변경', confirmMsg: `[${row.reviewTitle}] 상태를 [${STATUS_LABEL[newStatus]}]로 변경하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => { row.reviewStatusCd = newStatus; if (selectedRow.value) selectedRow.value.reviewStatusCd = newStatus; },
-      });
+      const ok = await props.showConfirm('상태변경', `[${row.reviewTitle}] 상태를 [${STATUS_LABEL[newStatus]}]로 변경하시겠습니까?`);
+      if (!ok) return;
+      row.reviewStatusCd = newStatus; if (selectedRow.value) selectedRow.value.reviewStatusCd = newStatus;
+      try {
+        const res = await window.adminApi.put(`pd/reviews/${row.reviewId}/status`, { reviewStatusCd: newStatus });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, status: searchStatus.value, rating: searchRating.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchStatus.value = ''; searchRating.value = ''; Object.assign(applied, { kw: '', status: '', rating: '' }); pager.page = 1; };

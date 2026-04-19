@@ -41,16 +41,19 @@ window.PdQnaMng = {
     const doAnswer = async () => {
       if (!selectedRow.value) return;
       if (!answForm.content.trim()) { props.showToast('답변 내용을 입력하세요.', 'error'); return; }
-      await window.adminApiCall({
-        method: 'put', path: `pd/qnas/${selectedRow.value.qnaId}/answer`, data: { answContent: answForm.content },
-        confirmTitle: '답변저장', confirmMsg: '답변을 저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => {
-          selectedRow.value.answContent = answForm.content;
-          selectedRow.value.answYn = 'Y';
-          selectedRow.value.answDate = new Date().toLocaleString('sv').replace('T', ' ');
-        },
-      });
+      const ok = await props.showConfirm('답변저장', '답변을 저장하시겠습니까?');
+      if (!ok) return;
+      selectedRow.value.answContent = answForm.content;
+      selectedRow.value.answYn = 'Y';
+      selectedRow.value.answDate = new Date().toLocaleString('sv').replace('T', ' ');
+      try {
+        const res = await window.adminApi.put(`pd/qnas/${selectedRow.value.qnaId}/answer`, { answContent: answForm.content });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, answ: searchAnsw.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchAnsw.value = ''; Object.assign(applied, { kw: '', answ: '' }); pager.page = 1; };

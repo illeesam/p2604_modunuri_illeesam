@@ -48,30 +48,28 @@ window.MbMemberDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `members/${form.userId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.members.push({
-              ...form, userId: props.adminData.nextId(props.adminData.members, 'userId'),
-              joinDate: form.joinDate || new Date().toISOString().slice(0, 10), orderCount: 0, totalPurchase: 0,
-            });
-          } else {
-            const idx = props.adminData.members.findIndex(x => x.userId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.members[idx], { ...form });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'mbMemberMng',
-      });
+      const isNewMember = isNew.value;
+      const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNewMember) {
+        props.adminData.members.push({
+          ...form, userId: props.adminData.nextId(props.adminData.members, 'userId'),
+          joinDate: form.joinDate || new Date().toISOString().slice(0, 10), orderCount: 0, totalPurchase: 0,
+        });
+      } else {
+        const idx = props.adminData.members.findIndex(x => x.userId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.members[idx], { ...form });
+      }
+      try {
+        const res = await (isNewMember ? window.adminApi.post(`members/${form.userId}`, { ...form }) : window.adminApi.put(`members/${form.userId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNewMember ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('mbMemberMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { isNew, form, errors, save, memoEl };

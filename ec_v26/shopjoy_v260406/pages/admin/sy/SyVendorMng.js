@@ -105,21 +105,20 @@ window.SyVendorMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (v) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `vendors/${v.vendorId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${v.vendorNm}] 업체를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.vendors.findIndex(x => x.vendorId === v.vendorId);
-          if (idx !== -1) props.adminData.vendors.splice(idx, 1);
-          if (selectedId.value === v.vendorId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${v.vendorNm}] 업체를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.vendors.findIndex(x => x.vendorId === v.vendorId);
+      if (idx !== -1) props.adminData.vendors.splice(idx, 1);
+      if (selectedId.value === v.vendorId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`vendors/${v.vendorId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');

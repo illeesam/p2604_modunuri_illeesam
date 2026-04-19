@@ -99,21 +99,20 @@ window.SyUserMng = {
 
     const doDelete = async (u) => {
       if (u.role === '슈퍼관리자') { props.showToast('슈퍼관리자는 삭제할 수 없습니다.', 'error'); return; }
-      await window.adminApiCall({
-        method: 'delete',
-        path: `admin-users/${u.adminUserId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${u.name}] 사용자를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === u.adminUserId);
-          if (idx !== -1) props.adminData.adminUsers.splice(idx, 1);
-          if (selectedId.value === u.adminUserId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${u.name}] 사용자를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === u.adminUserId);
+      if (idx !== -1) props.adminData.adminUsers.splice(idx, 1);
+      if (selectedId.value === u.adminUserId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`admin-users/${u.adminUserId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'adminUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');

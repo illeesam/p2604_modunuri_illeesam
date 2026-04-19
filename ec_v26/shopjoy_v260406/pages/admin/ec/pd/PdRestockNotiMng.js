@@ -35,13 +35,18 @@ window.PdRestockNotiMng = {
     const sendNoti = async () => {
       const targets = (props.adminData.restockNotis||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
       if (!targets.length) { props.showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
-      await window.adminApiCall({
-        method: 'post', path: 'pd/restock-notis/send', data: { ids: targets.map(r => r.restockNotiId) },
-        confirmTitle: '알림발송', confirmMsg: `선택한 ${targets.length}건에 재입고 알림을 발송하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: `${targets.length}건 알림이 발송되었습니다.`,
-        onLocal: () => { const now = new Date().toLocaleString('sv').replace('T', ' '); targets.forEach(r => { r.notiYn = 'Y'; r.notiDate = now; }); checkedIds.clear(); },
-      });
+      const ok = await props.showConfirm('알림발송', `선택한 ${targets.length}건에 재입고 알림을 발송하시겠습니까?`);
+      if (!ok) return;
+      const now = new Date().toLocaleString('sv').replace('T', ' '); targets.forEach(r => { r.notiYn = 'Y'; r.notiDate = now; }); checkedIds.clear();
+      try {
+        const res = await window.adminApi.post('pd/restock-notis/send', { ids: targets.map(r => r.restockNotiId) });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(`${targets.length}건 알림이 발송되었습니다.`, 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const onSearch = () => { Object.assign(applied, { prod: searchProd.value, noti: searchNoti.value }); pager.page = 1; };
     const onReset  = () => { searchProd.value = ''; searchNoti.value = ''; Object.assign(applied, { prod: '', noti: '' }); pager.page = 1; };

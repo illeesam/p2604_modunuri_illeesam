@@ -29,21 +29,23 @@ window.StErpGenMng = {
 
     const doGenerate = async () => {
       if (!previewRows.value.length) { props.showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
-      await window.adminApiCall({
-        method: 'post', path: 'st/erp/gen',
-        data: { targetMon: targetMon.value, slipType: slipType.value, rows: previewRows.value },
-        confirmTitle: 'ERP 전표생성', confirmMsg: `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: 'ERP 전표가 생성되었습니다.',
-        onLocal: () => {
-          genHistory.unshift({
-            genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
-            slipCnt: previewRows.value.length,
-            totalAmt: previewRows.value.reduce((s, r) => s + r.debitAmt, 0),
-            genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
-          });
-        },
+      const ok = await props.showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
+      if (!ok) return;
+      genHistory.unshift({
+        genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
+        slipCnt: previewRows.value.length,
+        totalAmt: previewRows.value.reduce((s, r) => s + r.debitAmt, 0),
+        genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
       });
+      try {
+        const res = await window.adminApi.post('st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: previewRows.value });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('ERP 전표가 생성되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const statusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');

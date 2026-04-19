@@ -227,73 +227,70 @@ window.PdBundleMng = {
         : null;
       const bundleProdId = isNew ? newProdId : editBundleId.value;
 
-      await window.adminApiCall({
-        method: isNew ? 'post' : 'put',
-        path: isNew ? 'bundle' : `bundle/${bundleProdId}/items`,
-        data: isNew ? { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems.value } : { items: dtlItems.value },
-        confirmTitle: isNew ? '등록' : '저장',
-        confirmMsg: isNew ? '묶음상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          /* 신규: products 목록에 BUNDLE 상품 추가 */
-          if (isNew) {
-            props.adminData.products.push({
-              productId: newProdId,
-              prodNm: newForm.prodNm,
-              category: newForm.categoryId || '-',
-              brandId: newForm.brandId,
-              vendorId: newForm.vendorId,
-              listPrice: newForm.listPrice,
-              salePrice: newForm.salePrice,
-              price: newForm.salePrice,
-              prodTypeCd: 'BUNDLE',
-              prodStatusCd: newForm.prodStatusCd,
-              status: newForm.prodStatusCd === 'ACTIVE' ? '판매중' : '준비중',
-              regDate: new Date().toISOString().slice(0, 10),
-            });
-          }
-          /* bundles 데이터 반영 */
-          const others = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
-          props.adminData.bundles = [
-            ...others,
-            ...dtlItems.value.map((d, i) => ({
-              bundleItemId: d.bundleItemId || `B_${bundleProdId}_${i + 1}`,
-              siteId: '1', bundleProdId,
-              itemProdId: d.itemProdId, itemSkuId: d.itemSkuId || null,
-              itemQty: d.itemQty, priceRate: parseFloat(d.priceRate) || 0,
-              sortOrd: d.sortOrd, useYn: d.useYn,
-            })),
-          ];
-          /* categoryProds 동기화 */
-          if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
-          props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(bundleProdId));
-          dtlCategories.value.forEach((cat, i) => {
-            props.adminData.categoryProds.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
-          });
-          if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
-        },
+      const ok = await props.showConfirm(isNew ? '등록' : '저장', isNew ? '묶음상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
+      if (!ok) return;
+      /* 신규: products 목록에 BUNDLE 상품 추가 */
+      if (isNew) {
+        props.adminData.products.push({
+          productId: newProdId,
+          prodNm: newForm.prodNm,
+          category: newForm.categoryId || '-',
+          brandId: newForm.brandId,
+          vendorId: newForm.vendorId,
+          listPrice: newForm.listPrice,
+          salePrice: newForm.salePrice,
+          price: newForm.salePrice,
+          prodTypeCd: 'BUNDLE',
+          prodStatusCd: newForm.prodStatusCd,
+          status: newForm.prodStatusCd === 'ACTIVE' ? '판매중' : '준비중',
+          regDate: new Date().toISOString().slice(0, 10),
+        });
+      }
+      /* bundles 데이터 반영 */
+      const others = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
+      props.adminData.bundles = [
+        ...others,
+        ...dtlItems.value.map((d, i) => ({
+          bundleItemId: d.bundleItemId || `B_${bundleProdId}_${i + 1}`,
+          siteId: '1', bundleProdId,
+          itemProdId: d.itemProdId, itemSkuId: d.itemSkuId || null,
+          itemQty: d.itemQty, priceRate: parseFloat(d.priceRate) || 0,
+          sortOrd: d.sortOrd, useYn: d.useYn,
+        })),
+      ];
+      /* categoryProds 동기화 */
+      if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
+      props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(bundleProdId));
+      dtlCategories.value.forEach((cat, i) => {
+        props.adminData.categoryProds.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
       });
+      if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
+      try {
+        const res = await (isNew ? window.adminApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems.value }) : window.adminApi.put(`bundle/${bundleProdId}/items`, { items: dtlItems.value }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     /* ── 삭제 ── */
     const deleteProd = async bundleProdId => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `bundle/${bundleProdId}`,
-        confirmTitle: '삭제',
-        confirmMsg: '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          props.adminData.bundles = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
-          if (editBundleId.value === bundleProdId) closeDtl();
-        },
-      });
+      const ok = await props.showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
+      if (!ok) return;
+      props.adminData.bundles = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
+      if (editBundleId.value === bundleProdId) closeDtl();
+      try {
+        const res = await window.adminApi.delete(`bundle/${bundleProdId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const descOpen = ref(false);

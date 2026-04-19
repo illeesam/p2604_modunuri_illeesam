@@ -34,29 +34,43 @@ window.MbMemGroupMng = {
     const deleteRow    = async (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
-      await window.adminApiCall({
-        method: 'delete', path: `mem/groups/${row.groupId}`,
-        confirmTitle: '삭제', confirmMsg: `[${row.groupNm}] 그룹을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => { const si = props.adminData.memGroups.findIndex(g => g.groupId === row.groupId); if (si !== -1) props.adminData.memGroups.splice(si, 1); gridRows.splice(idx, 1); },
-      });
+      const ok = await props.showConfirm('삭제', `[${row.groupNm}] 그룹을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const si = props.adminData.memGroups.findIndex(g => g.groupId === row.groupId);
+      if (si !== -1) props.adminData.memGroups.splice(si, 1);
+      gridRows.splice(idx, 1);
+      try {
+        const res = await window.adminApi.delete(`mem/groups/${row.groupId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const saveAll = async () => {
       const changed = gridRows.filter(r => r._row_status === 'N' || r._row_status === 'U');
       if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
       for (const row of changed) {
         if (!row.groupNm) { props.showToast('그룹명은 필수입니다.', 'error'); return; }
-        await window.adminApiCall({
-          method: row._row_status === 'N' ? 'post' : 'put', path: `mem/groups/${row.groupId}`, data: { ...row },
-          confirmTitle: '저장', confirmMsg: '저장하시겠습니까?',
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          onLocal: () => {
-            const src = props.adminData.memGroups;
-            if (row._row_status === 'N') src.push({ ...row });
-            else { const si = src.findIndex(g => g.groupId === row.groupId); if (si !== -1) Object.assign(src[si], row); }
-            row._row_status = null;
-          },
-        }); break;
+        const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+        if (!ok) return;
+        const isNewRow = row._row_status === 'N';
+        const src = props.adminData.memGroups;
+        if (isNewRow) src.push({ ...row });
+        else { const si = src.findIndex(g => g.groupId === row.groupId); if (si !== -1) Object.assign(src[si], row); }
+        row._row_status = null;
+        try {
+          const res = await (isNewRow ? window.adminApi.post(`mem/groups/${row.groupId}`, { ...row }) : window.adminApi.put(`mem/groups/${row.groupId}`, { ...row }));
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
+        break;
       }
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };

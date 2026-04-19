@@ -43,30 +43,44 @@ window.MbMemGradeMng = {
     const deleteRow    = async (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
-      await window.adminApiCall({
-        method: 'delete', path: `mem/grades/${row.gradeId}`,
-        confirmTitle: '삭제', confirmMsg: `[${row.gradeNm}] 등급을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => { const src = props.adminData.memGrades; const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) src.splice(si, 1); gridRows.splice(idx, 1); },
-      });
+      const ok = await props.showConfirm('삭제', `[${row.gradeNm}] 등급을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const src = props.adminData.memGrades;
+      const si = src.findIndex(g => g.gradeId === row.gradeId);
+      if (si !== -1) src.splice(si, 1);
+      gridRows.splice(idx, 1);
+      try {
+        const res = await window.adminApi.delete(`mem/grades/${row.gradeId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const saveAll = async () => {
       const changed = gridRows.filter(r => r._row_status === 'N' || r._row_status === 'U');
       if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
       for (const row of changed) {
         if (!row.gradeCd || !row.gradeNm) { props.showToast('등급코드와 등급명은 필수입니다.', 'error'); return; }
-        await window.adminApiCall({
-          method: row._row_status === 'N' ? 'post' : 'put', path: `mem/grades/${row.gradeId}`, data: { ...row },
-          confirmTitle: '저장', confirmMsg: '변경 내용을 저장하시겠습니까?',
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          onLocal: () => {
-            const src = props.adminData.memGrades;
-            if (row._row_status === 'N') { row.gradeId = 'G' + String(Date.now()).slice(-6); src.push({ ...row }); }
-            else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
-            row._row_status = null;
-          },
-        });
-        break; // adminApiCall handles confirm for first call; wrap in single confirm in real impl
+        const ok = await props.showConfirm('저장', '변경 내용을 저장하시겠습니까?');
+        if (!ok) return;
+        const isNewRow = row._row_status === 'N';
+        const src = props.adminData.memGrades;
+        if (isNewRow) { row.gradeId = 'G' + String(Date.now()).slice(-6); src.push({ ...row }); }
+        else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
+        row._row_status = null;
+        try {
+          const res = await (isNewRow ? window.adminApi.post(`mem/grades/${row.gradeId}`, { ...row }) : window.adminApi.put(`mem/grades/${row.gradeId}`, { ...row }));
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
+        break;
       }
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };

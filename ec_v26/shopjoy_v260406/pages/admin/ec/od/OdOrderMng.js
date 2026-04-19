@@ -81,21 +81,20 @@ window.OdOrderMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (o) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `orders/${o.orderId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${o.orderId}]를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.orders.findIndex(x => x.orderId === o.orderId);
-          if (idx !== -1) props.adminData.orders.splice(idx, 1);
-          if (selectedId.value === o.orderId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.orders.findIndex(x => x.orderId === o.orderId);
+      if (idx !== -1) props.adminData.orders.splice(idx, 1);
+      if (selectedId.value === o.orderId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`orders/${o.orderId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
@@ -201,26 +200,27 @@ window.OdOrderMng = {
       }[bulkTab.value];
       const val = bulkForm[cfg.field];
       if (!val) { props.showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
-      await window.adminApiCall({
-        method: 'put', path: cfg.path,
-        data: { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value },
-        confirmTitle: `일괄 ${cfg.label}`,
-        confirmMsg: `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: `${ids.length}건 처리되었습니다.`,
-        onLocal: () => {
-          if (bulkTab.value === 'status')    props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
-          if (bulkTab.value === 'payMethod') props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
-          if (bulkTab.value === 'approval')  props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
-          if (bulkTab.value === 'approvalReq') props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) {
-            o.apprToUserId = bulkForm.apprToUserId; o.apprToNm = bulkForm.apprToNm;
-            o.reqTarget = bulkForm.reqTarget; o.reqTargetNm = bulkForm.reqTargetNm;
-            o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;
-          } });
-          checked.value = new Set();
-          bulkOpen.value = false;
-        },
-      });
+      const ok = await props.showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
+      if (!ok) return;
+      if (bulkTab.value === 'status')    props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
+      if (bulkTab.value === 'payMethod') props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
+      if (bulkTab.value === 'approval')  props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
+      if (bulkTab.value === 'approvalReq') props.adminData.orders.forEach(o => { if (ids.includes(o.orderId)) {
+        o.apprToUserId = bulkForm.apprToUserId; o.apprToNm = bulkForm.apprToNm;
+        o.reqTarget = bulkForm.reqTarget; o.reqTargetNm = bulkForm.reqTargetNm;
+        o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;
+      } });
+      checked.value = new Set();
+      bulkOpen.value = false;
+      try {
+        const res = await window.adminApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, payStatusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, claimByOrder, claimTypeColor, getItemCount, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };

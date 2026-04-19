@@ -112,21 +112,20 @@ window.SySiteMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (s) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `sites/${s.siteId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.sites.findIndex(x => x.siteId === s.siteId);
-          if (idx !== -1) props.adminData.sites.splice(idx, 1);
-          if (selectedId.value === s.siteId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.sites.findIndex(x => x.siteId === s.siteId);
+      if (idx !== -1) props.adminData.sites.splice(idx, 1);
+      if (selectedId.value === s.siteId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`sites/${s.siteId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');

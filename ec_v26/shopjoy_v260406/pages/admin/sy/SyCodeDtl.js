@@ -33,27 +33,24 @@ window.SyCodeDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `codes/${form.codeId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.codes.push({ ...form, codeId: props.adminData.nextId(props.adminData.codes, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
-          } else {
-            const idx = props.adminData.codes.findIndex(x => x.codeId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'syCodeMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        props.adminData.codes.push({ ...form, codeId: props.adminData.nextId(props.adminData.codes, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
+      } else {
+        const idx = props.adminData.codes.findIndex(x => x.codeId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`codes/${form.codeId}`, { ...form }) : window.adminApi.put(`codes/${form.codeId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('syCodeMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { isNew, form, errors, save, siteNm };

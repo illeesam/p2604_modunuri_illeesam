@@ -168,34 +168,31 @@ window.PmCouponDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `coupons/${form.couponId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (!props.adminData.coupons) props.adminData.coupons = [];
-          if (isNew.value) {
-            props.adminData.coupons.push({
-              ...form,
-              couponId: Date.now(),
-              regDate: new Date().toISOString().slice(0, 10),
-              issuedList: [],
-              usedList: [],
-            });
-          } else {
-            const idx = props.adminData.coupons.findIndex(x => x.couponId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.coupons[idx], { ...form });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'pmCouponMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (!props.adminData.coupons) props.adminData.coupons = [];
+      if (isNew.value) {
+        props.adminData.coupons.push({
+          ...form,
+          couponId: Date.now(),
+          regDate: new Date().toISOString().slice(0, 10),
+          issuedList: [],
+          usedList: [],
+        });
+      } else {
+        const idx = props.adminData.coupons.findIndex(x => x.couponId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.coupons[idx], { ...form });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`coupons/${form.couponId}`, { ...form }) : window.adminApi.put(`coupons/${form.couponId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('pmCouponMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return {

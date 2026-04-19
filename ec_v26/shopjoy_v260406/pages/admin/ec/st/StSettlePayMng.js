@@ -54,13 +54,18 @@ window.StSettlePayMng = {
     }));
 
     const doPay = async (r) => {
-      await window.adminApiCall({
-        method: 'put', path: `st/pay/${r.payId}/pay`, data: { payAmt: r.settleAmt },
-        confirmTitle: '지급처리', confirmMsg: `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '지급처리가 완료되었습니다.',
-        onLocal: () => { r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10); },
-      });
+      const ok = await props.showConfirm('지급처리', `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`);
+      if (!ok) return;
+      r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
+      try {
+        const res = await window.adminApi.put(`st/pay/${r.payId}/pay`, { payAmt: r.settleAmt });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('지급처리가 완료되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const statusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');

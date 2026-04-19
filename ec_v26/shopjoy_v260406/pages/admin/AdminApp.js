@@ -139,7 +139,7 @@
       { id: 'syMemberLoginHist', label: '회원로그인이력' },
       { id: 'syUserLoginHist',   label: '사용자로그인이력' },
       { group: '개발도구' },
-      { id: 'syPostman',         label: 'API Tester' },
+      { id: 'syPostman',         label: 'postman' },
     ],
   };
 

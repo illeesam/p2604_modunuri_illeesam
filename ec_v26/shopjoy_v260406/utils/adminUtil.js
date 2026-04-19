@@ -131,54 +131,6 @@
     return site?.siteNm || 'ShopJoy';
   };
 
-  /* ── API 호출 공통 헬퍼 ── */
-  window.adminApiCall = async function(opts) {
-    const {
-      method = 'post', path, data,
-      confirmTitle, confirmMsg,
-      showConfirm, showToast, setApiRes,
-      successMsg = '처리되었습니다.',
-      onLocal,       /* 로컬 데이터 변경 콜백 (항상 실행) */
-      navigate, navigateTo,
-    } = opts;
-
-    /* 1. 확인 다이얼로그 */
-    if (confirmTitle && showConfirm) {
-      const ok = await showConfirm(confirmTitle, confirmMsg || '진행하시겠습니까?');
-      if (!ok) return false;
-    }
-
-    /* 2. 로컬 데이터 즉시 반영 (낙관적 업데이트) */
-    if (onLocal) onLocal();
-
-    /* 3. API 호출 */
-    try {
-      let res;
-      const api = window.adminApi;
-      if (method === 'get')    res = await api.get(path);
-      else if (method === 'post')   res = await api.post(path, data);
-      else if (method === 'put')    res = await api.put(path, data);
-      else if (method === 'patch')  res = await api.patch(path, data);
-      else if (method === 'delete') res = await api.delete(path);
-      const resData = { ok: true, status: res.status, data: res.data };
-      if (setApiRes) setApiRes(resData);
-      if (showToast) showToast(successMsg, 'success');
-    } catch (err) {
-      const errData = err.response
-        ? { ok: false, status: err.response.status, data: err.response.data, message: err.message }
-        : { ok: false, message: err.message };
-      if (setApiRes) setApiRes(errData);
-      const errMsg = (err.response && err.response.data && err.response.data.message)
-        || err.message || '오류가 발생했습니다.';
-      if (showToast) showToast(errMsg, 'error', 0); /* persistent */
-    }
-
-    /* 4. 화면 이동 */
-    if (navigate && navigateTo) navigate(navigateTo);
-
-    return true;
-  };
-
   /* ── CSV/엑셀 다운로드 ──
      columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
   ── */

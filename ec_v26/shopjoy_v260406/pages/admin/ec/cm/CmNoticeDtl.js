@@ -39,31 +39,29 @@ window.CmNoticeDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `notices/${form.noticeId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.notices.unshift({
-              ...form,
-              noticeId: props.adminData.nextId(props.adminData.notices, 'noticeId'),
-              regDate: new Date().toISOString().slice(0, 10),
-            });
-          } else {
-            const idx = props.adminData.notices.findIndex(x => x.noticeId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.notices[idx], form);
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'cmNoticeMng',
-      });
+      const isNewNotice = isNew.value;
+      const ok = await props.showConfirm(isNewNotice ? '등록' : '저장', isNewNotice ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNewNotice) {
+        props.adminData.notices.unshift({
+          ...form,
+          noticeId: props.adminData.nextId(props.adminData.notices, 'noticeId'),
+          regDate: new Date().toISOString().slice(0, 10),
+        });
+      } else {
+        const idx = props.adminData.notices.findIndex(x => x.noticeId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.notices[idx], form);
+      }
+      try {
+        const res = await (isNewNotice ? window.adminApi.post(`notices/${form.noticeId}`, { ...form }) : window.adminApi.put(`notices/${form.noticeId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('cmNoticeMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { isNew, form, errors, save };

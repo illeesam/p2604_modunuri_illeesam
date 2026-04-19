@@ -64,27 +64,25 @@ window.OdDlivDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `deliveries/${form.dlivId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.deliveries.push({ ...form });
-          } else {
-            const idx = props.adminData.deliveries.findIndex(x => x.dlivId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.deliveries[idx], { ...form });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'odDlivMng',
-      });
+      const isNewDliv = isNew.value;
+      const ok = await props.showConfirm(isNewDliv ? '등록' : '저장', isNewDliv ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNewDliv) {
+        props.adminData.deliveries.push({ ...form });
+      } else {
+        const idx = props.adminData.deliveries.findIndex(x => x.dlivId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.deliveries[idx], { ...form });
+      }
+      try {
+        const res = await (isNewDliv ? window.adminApi.post(`deliveries/${form.dlivId}`, { ...form }) : window.adminApi.put(`deliveries/${form.dlivId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('odDlivMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const dlivItems = ref([]);

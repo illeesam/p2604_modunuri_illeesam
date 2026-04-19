@@ -82,21 +82,20 @@ window.OdDlivMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (d) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `deliveries/${d.dlivId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${d.dlivId}]를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.deliveries.findIndex(x => x.dlivId === d.dlivId);
-          if (idx !== -1) props.adminData.deliveries.splice(idx, 1);
-          if (selectedId.value === d.dlivId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.deliveries.findIndex(x => x.dlivId === d.dlivId);
+      if (idx !== -1) props.adminData.deliveries.splice(idx, 1);
+      if (selectedId.value === d.dlivId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`deliveries/${d.dlivId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
@@ -187,69 +186,73 @@ window.OdDlivMng = {
       if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
       if (bulkTab.value === 'status') {
         if (!bulkForm.status) { props.showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
-        await window.adminApiCall({
-          method: 'put', path: 'deliveries/bulk-status',
-          data: { ids, status: bulkForm.status },
-          confirmTitle: '일괄 배송상태 변경',
-          confirmMsg: `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${ids.length}건 변경되었습니다.`,
-          onLocal: () => {
-            props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
-            checked.value = new Set(); bulkOpen.value = false;
-          },
-        });
+        const ok = await props.showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
+        if (!ok) return;
+        props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
+        checked.value = new Set(); bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('deliveries/bulk-status', { ids, status: bulkForm.status });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       } else if (bulkTab.value === 'courier') {
         if (!bulkForm.courier && !bulkForm.trackingNo) { props.showToast('택배사 또는 운송장번호를 입력하세요.', 'error'); return; }
-        await window.adminApiCall({
-          method: 'put', path: 'deliveries/bulk-courier',
-          data: { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo },
-          confirmTitle: '일괄 택배정보 변경',
-          confirmMsg: `선택한 ${ids.length}건의 택배정보를 변경하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${ids.length}건 변경되었습니다.`,
-          onLocal: () => {
-            props.adminData.deliveries.forEach(d => {
-              if (ids.includes(d.dlivId)) {
-                if (bulkForm.courier) d.courier = bulkForm.courier;
-                if (bulkForm.trackingNo) d.trackingNo = bulkForm.trackingNo;
-              }
-            });
-            checked.value = new Set(); bulkOpen.value = false;
-          },
+        const ok = await props.showConfirm('일괄 택배정보 변경', `선택한 ${ids.length}건의 택배정보를 변경하시겠습니까?`);
+        if (!ok) return;
+        props.adminData.deliveries.forEach(d => {
+          if (ids.includes(d.dlivId)) {
+            if (bulkForm.courier) d.courier = bulkForm.courier;
+            if (bulkForm.trackingNo) d.trackingNo = bulkForm.trackingNo;
+          }
         });
+        checked.value = new Set(); bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('deliveries/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       } else if (bulkTab.value === 'approval') {
         if (!bulkForm.apprAction) { props.showToast('결재처리 구분을 선택하세요.', 'error'); return; }
-        await window.adminApiCall({
-          method: 'put', path: 'deliveries/bulk-approval',
-          data: { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment },
-          confirmTitle: '일괄 결재처리',
-          confirmMsg: `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${ids.length}건 처리되었습니다.`,
-          onLocal: () => {
-            props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
-            checked.value = new Set(); bulkOpen.value = false;
-          },
-        });
+        const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
+        if (!ok) return;
+        props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
+        checked.value = new Set(); bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('deliveries/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       } else if (bulkTab.value === 'approvalReq') {
         if (!bulkForm.apprToUserId) { props.showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
-        await window.adminApiCall({
-          method: 'put', path: 'deliveries/bulk-approvalReq',
-          data: { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value },
-          confirmTitle: '일괄 추가결재요청',
-          confirmMsg: `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`,
-          showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-          successMsg: `${ids.length}건 요청되었습니다.`,
-          onLocal: () => {
-            props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) {
-              d.apprToUserId = bulkForm.apprToUserId; d.apprToNm = bulkForm.apprToNm;
-              d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
-              d.reqAmount = Number(bulkForm.reqAmount||0); d.reqReason = bulkForm.reqReason;
-            } });
-            checked.value = new Set(); bulkOpen.value = false;
-          },
-        });
+        const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
+        if (!ok) return;
+        props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) {
+          d.apprToUserId = bulkForm.apprToUserId; d.apprToNm = bulkForm.apprToNm;
+          d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
+          d.reqAmount = Number(bulkForm.reqAmount||0); d.reqReason = bulkForm.reqReason;
+        } });
+        checked.value = new Set(); bulkOpen.value = false;
+        try {
+          const res = await window.adminApi.put('deliveries/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
+        } catch (err) {
+          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+        }
       }
     };
 

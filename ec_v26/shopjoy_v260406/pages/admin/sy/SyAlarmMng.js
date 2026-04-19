@@ -84,21 +84,20 @@ window.SyAlarmMng = {
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const doDelete = async (a) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `alarms/${a.alarmId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${a.title}]을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.alarms.findIndex(x => x.alarmId === a.alarmId);
-          if (idx !== -1) props.adminData.alarms.splice(idx, 1);
-          if (selectedId.value === a.alarmId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${a.title}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.alarms.findIndex(x => x.alarmId === a.alarmId);
+      if (idx !== -1) props.adminData.alarms.splice(idx, 1);
+      if (selectedId.value === a.alarmId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`alarms/${a.alarmId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'내용',key:'content'},{label:'상태',key:'statusCd'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */

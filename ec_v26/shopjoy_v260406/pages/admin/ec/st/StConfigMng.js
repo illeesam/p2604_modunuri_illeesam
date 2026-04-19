@@ -42,29 +42,35 @@ window.StConfigMng = {
 
     const doSave = async () => {
       if (!validate()) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: isNew.value ? 'st/config' : `st/config/${form.configId}`,
-        data: { ...form },
-        confirmTitle: '저장', confirmMsg: '정산기준을 저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) { form.configId = Date.now(); configs.push({ ...form }); }
-          else { const idx = configs.findIndex(c => c.configId === form.configId); if (idx !== -1) Object.assign(configs[idx], { ...form }); }
-          closeForm();
-        },
-      });
+      const ok = await props.showConfirm('저장', '정산기준을 저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) { form.configId = Date.now(); configs.push({ ...form }); }
+      else { const idx = configs.findIndex(c => c.configId === form.configId); if (idx !== -1) Object.assign(configs[idx], { ...form }); }
+      closeForm();
+      try {
+        const res = await (isNew.value ? window.adminApi.post('st/config', { ...form }) : window.adminApi.put(`st/config/${form.configId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const doDelete = async (c) => {
-      await window.adminApiCall({
-        method: 'delete', path: `st/config/${c.configId}`,
-        confirmTitle: '삭제', confirmMsg: `[${c.vendorType}] 정산기준을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => { const idx = configs.findIndex(x => x.configId === c.configId); if (idx !== -1) configs.splice(idx, 1); if (selectedId.value === c.configId) closeForm(); },
-      });
+      const ok = await props.showConfirm('삭제', `[${c.vendorType}] 정산기준을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = configs.findIndex(x => x.configId === c.configId); if (idx !== -1) configs.splice(idx, 1); if (selectedId.value === c.configId) closeForm();
+      try {
+        const res = await window.adminApi.delete(`st/config/${c.configId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const cycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');

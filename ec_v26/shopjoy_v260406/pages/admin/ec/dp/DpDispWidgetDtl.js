@@ -403,50 +403,47 @@ window.DpDispWidgetDtl = {
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: isNew.value ? 'widget-libs' : `widget-libs/${form.libId}`,
-        data: { ...form },
-        confirmTitle: '저장',
-        confirmMsg: '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast:   props.showToast,
-        setApiRes:   props.setApiRes,
-        successMsg:  '저장되었습니다.',
-        onLocal: () => {
-          const list = props.dispDataset.widgetLibs || (props.dispDataset.widgetLibs = []);
-          if (isNew.value) {
-            const newId = Math.max(0, ...list.map(d => d.libId)) + 1;
-            form.libId = newId;
-            list.push({ ...form });
-          } else {
-            const idx = list.findIndex(d => d.libId == form.libId);
-            if (idx >= 0) Object.assign(list[idx], { ...form });
-          }
-        },
-        navigate:   props.navigate,
-        navigateTo: 'dpDispWidgetLibMng',
-      });
+      const isNewWidget = isNew.value;
+      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      const list = props.dispDataset.widgetLibs || (props.dispDataset.widgetLibs = []);
+      if (isNewWidget) {
+        const newId = Math.max(0, ...list.map(d => d.libId)) + 1;
+        form.libId = newId;
+        list.push({ ...form });
+      } else {
+        const idx = list.findIndex(d => d.libId == form.libId);
+        if (idx >= 0) Object.assign(list[idx], { ...form });
+      }
+      try {
+        const res = await (isNewWidget ? window.adminApi.post('widget-libs', { ...form }) : window.adminApi.put(`widget-libs/${form.libId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('dpDispWidgetLibMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     /* ── 삭제 ── */
     const remove = async () => {
       if (isNew.value) return;
-      await window.adminApiCall({
-        method: 'delete',
-        path: `widget-libs/${form.libId}`,
-        confirmTitle: '삭제',
-        confirmMsg: '이 위젯를 삭제하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast:   props.showToast,
-        setApiRes:   props.setApiRes,
-        successMsg:  '삭제되었습니다.',
-        onLocal: () => {
-          const list = props.dispDataset.widgetLibs || [];
-          const idx  = list.findIndex(d => d.libId == form.libId);
-          if (idx >= 0) list.splice(idx, 1);
-        },
-      });
+      const ok = await props.showConfirm('삭제', '이 위젯를 삭제하시겠습니까?');
+      if (!ok) return;
+      const list = props.dispDataset.widgetLibs || [];
+      const idx  = list.findIndex(d => d.libId == form.libId);
+      if (idx >= 0) list.splice(idx, 1);
+      try {
+        const res = await window.adminApi.delete(`widget-libs/${form.libId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
       props.navigate('dpDispWidgetLibMng');
     };
 

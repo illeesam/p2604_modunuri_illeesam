@@ -143,22 +143,21 @@ window.DpDispAreaMng = {
 
     /* ── 삭제 ── */
     const doDelete = async (a) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `disp-areas/${a.codeId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${a.codeLabel}] 영역을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const codes = props.dispDataset.codes;
-          const idx = codes.findIndex(x => x.codeId === a.codeId);
-          if (idx !== -1) codes.splice(idx, 1);
-          if (selectedId.value === a.codeId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${a.codeLabel}] 영역을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const codes = props.dispDataset.codes;
+      const idx = codes.findIndex(x => x.codeId === a.codeId);
+      if (idx !== -1) codes.splice(idx, 1);
+      if (selectedId.value === a.codeId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`disp-areas/${a.codeId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     /* ── 엑셀 ── */

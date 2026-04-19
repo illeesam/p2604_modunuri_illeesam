@@ -75,27 +75,24 @@ window.SyTemplateDtl = {
         try { JSON.parse(form.sampleParams); }
         catch { props.showToast('파라미터 샘플 JSON 형식이 올바르지 않습니다.', 'error'); return; }
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `templates/${form.templateId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.templates.push({ ...form, templateId: props.adminData.nextId(props.adminData.templates, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
-          } else {
-            const idx = props.adminData.templates.findIndex(x => x.templateId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.templates[idx], { ...form });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'syTemplateMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        props.adminData.templates.push({ ...form, templateId: props.adminData.nextId(props.adminData.templates, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
+      } else {
+        const idx = props.adminData.templates.findIndex(x => x.templateId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.templates[idx], { ...form });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`templates/${form.templateId}`, { ...form }) : window.adminApi.put(`templates/${form.templateId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('syTemplateMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const needSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));

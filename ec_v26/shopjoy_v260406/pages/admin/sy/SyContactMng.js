@@ -76,21 +76,20 @@ window.SyContactMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (c) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `contacts/${c.inquiryId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${c.title}]을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.contacts.findIndex(x => x.inquiryId === c.inquiryId);
-          if (idx !== -1) props.adminData.contacts.splice(idx, 1);
-          if (selectedId.value === c.inquiryId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${c.title}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.contacts.findIndex(x => x.inquiryId === c.inquiryId);
+      if (idx !== -1) props.adminData.contacts.splice(idx, 1);
+      if (selectedId.value === c.inquiryId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`contacts/${c.inquiryId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');

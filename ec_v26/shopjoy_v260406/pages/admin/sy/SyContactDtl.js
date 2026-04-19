@@ -86,27 +86,24 @@ window.SyContactDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `contacts/${form.inquiryId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.contacts.push({ ...form, inquiryId: props.adminData.nextId(props.adminData.contacts, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
-          } else {
-            const idx = props.adminData.contacts.findIndex(x => x.inquiryId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.contacts[idx], { ...form });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'syContactMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        props.adminData.contacts.push({ ...form, inquiryId: props.adminData.nextId(props.adminData.contacts, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
+      } else {
+        const idx = props.adminData.contacts.findIndex(x => x.inquiryId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.contacts[idx], { ...form });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`contacts/${form.inquiryId}`, { ...form }) : window.adminApi.put(`contacts/${form.inquiryId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('syContactMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const saveAnswer = () => {

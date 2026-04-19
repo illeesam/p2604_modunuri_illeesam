@@ -45,30 +45,27 @@ window.PdCategoryDtl = {
         return;
       }
       const parentId = form.parentId ? Number(form.parentId) : null;
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `categories/${form.categoryId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.categories.push({
-              ...form, parentId, categoryId: props.adminData.nextId(props.adminData.categories, 'categoryId'),
-              sortOrd: Number(form.sortOrd) || 1, depth: Number(form.depth) || 1,
-            });
-          } else {
-            const idx = props.adminData.categories.findIndex(x => x.categoryId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.categories[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'pdCategoryMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        props.adminData.categories.push({
+          ...form, parentId, categoryId: props.adminData.nextId(props.adminData.categories, 'categoryId'),
+          sortOrd: Number(form.sortOrd) || 1, depth: Number(form.depth) || 1,
+        });
+      } else {
+        const idx = props.adminData.categories.findIndex(x => x.categoryId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.categories[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`categories/${form.categoryId}`, { ...form }) : window.adminApi.put(`categories/${form.categoryId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('pdCategoryMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { isNew, form, errors, save, parentOptions, onParentChange };

@@ -75,21 +75,20 @@ window.PmCouponMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (c) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `coupons/${c.couponId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${c.name}]을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.coupons.findIndex(x => x.couponId === c.couponId);
-          if (idx !== -1) props.adminData.coupons.splice(idx, 1);
-          if (selectedId.value === c.couponId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${c.name}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.coupons.findIndex(x => x.couponId === c.couponId);
+      if (idx !== -1) props.adminData.coupons.splice(idx, 1);
+      if (selectedId.value === c.couponId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`coupons/${c.couponId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');

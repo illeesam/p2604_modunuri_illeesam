@@ -86,21 +86,20 @@ window.PmPlanMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (p) => {
-      await window.adminApiCall({
-        method: 'delete',
-        path: `plans/${p.planId}`,
-        confirmTitle: '삭제',
-        confirmMsg: `[${p.planNm}]을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = props.adminData.plans.findIndex(x => x.planId === p.planId);
-          if (idx !== -1) props.adminData.plans.splice(idx, 1);
-          if (selectedId.value === p.planId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${p.planNm}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = props.adminData.plans.findIndex(x => x.planId === p.planId);
+      if (idx !== -1) props.adminData.plans.splice(idx, 1);
+      if (selectedId.value === p.planId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`plans/${p.planId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');

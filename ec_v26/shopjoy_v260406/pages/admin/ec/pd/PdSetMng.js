@@ -216,71 +216,68 @@ window.PdSetMng = {
       const newProdId = isNew ? (Math.max(0, ...(props.adminData.products || []).map(p => p.productId)) + 1) : null;
       const setProdId = isNew ? newProdId : editSetId.value;
 
-      await window.adminApiCall({
-        method: isNew ? 'post' : 'put',
-        path:   isNew ? 'set' : `set/${setProdId}/items`,
-        data:   isNew ? { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems.value } : { items: dtlItems.value },
-        confirmTitle: isNew ? '등록' : '저장',
-        confirmMsg:   isNew ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?',
-        showConfirm:  props.showConfirm,
-        showToast:    props.showToast,
-        setApiRes:    props.setApiRes,
-        successMsg:   isNew ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew) {
-            props.adminData.products.push({
-              productId: newProdId, prodNm: newForm.prodNm,
-              brandId: newForm.brandId, vendorId: newForm.vendorId,
-              listPrice: newForm.listPrice, salePrice: newForm.salePrice,
-              price: newForm.salePrice, stock: newForm.stock,
-              prodTypeCd: 'SET', prodStatusCd: newForm.prodStatusCd,
-              status: newForm.prodStatusCd === 'ACTIVE' ? '판매중' : '준비중',
-              regDate: new Date().toISOString().slice(0, 10),
-            });
-          }
-          const others = (props.adminData.setItems || []).filter(s => s.setProdId !== setProdId);
-          props.adminData.setItems = [
-            ...others,
-            ...dtlItems.value.map((d, i) => ({
-              setItemId:       d.setItemId || `SI_${setProdId}_${i + 1}`,
-              siteId:          '1',
-              setProdId,
-              itemProdId:      d.itemProdId || null,
-              componentProdId: d.itemProdId || null,
-              itemSkuId:       d.itemSkuId || null,
-              itemNm:          d.itemNm,
-              itemQty:         d.itemQty,
-              itemDesc:        d.itemDesc,
-              sortOrd:         d.sortOrd,
-              useYn:           d.useYn,
-            })),
-          ];
-          if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
-          props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(setProdId));
-          dtlCategories.value.forEach((cat, i) => {
-            props.adminData.categoryProds.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
-          });
-          if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
-        },
+      const ok = await props.showConfirm(isNew ? '등록' : '저장', isNew ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew) {
+        props.adminData.products.push({
+          productId: newProdId, prodNm: newForm.prodNm,
+          brandId: newForm.brandId, vendorId: newForm.vendorId,
+          listPrice: newForm.listPrice, salePrice: newForm.salePrice,
+          price: newForm.salePrice, stock: newForm.stock,
+          prodTypeCd: 'SET', prodStatusCd: newForm.prodStatusCd,
+          status: newForm.prodStatusCd === 'ACTIVE' ? '판매중' : '준비중',
+          regDate: new Date().toISOString().slice(0, 10),
+        });
+      }
+      const others = (props.adminData.setItems || []).filter(s => s.setProdId !== setProdId);
+      props.adminData.setItems = [
+        ...others,
+        ...dtlItems.value.map((d, i) => ({
+          setItemId:       d.setItemId || `SI_${setProdId}_${i + 1}`,
+          siteId:          '1',
+          setProdId,
+          itemProdId:      d.itemProdId || null,
+          componentProdId: d.itemProdId || null,
+          itemSkuId:       d.itemSkuId || null,
+          itemNm:          d.itemNm,
+          itemQty:         d.itemQty,
+          itemDesc:        d.itemDesc,
+          sortOrd:         d.sortOrd,
+          useYn:           d.useYn,
+        })),
+      ];
+      if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
+      props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(setProdId));
+      dtlCategories.value.forEach((cat, i) => {
+        props.adminData.categoryProds.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
       });
+      if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
+      try {
+        const res = await (isNew ? window.adminApi.post('set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems.value }) : window.adminApi.put(`set/${setProdId}/items`, { items: dtlItems.value }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     /* ── 삭제 ── */
     const deleteProd = async setProdId => {
-      await window.adminApiCall({
-        method: 'delete',
-        path:   `set/${setProdId}`,
-        confirmTitle: '삭제',
-        confirmMsg:   '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.',
-        showConfirm:  props.showConfirm,
-        showToast:    props.showToast,
-        setApiRes:    props.setApiRes,
-        successMsg:   '삭제되었습니다.',
-        onLocal: () => {
-          props.adminData.setItems = (props.adminData.setItems || []).filter(s => s.setProdId !== setProdId);
-          if (editSetId.value === setProdId) closeDtl();
-        },
-      });
+      const ok = await props.showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
+      if (!ok) return;
+      props.adminData.setItems = (props.adminData.setItems || []).filter(s => s.setProdId !== setProdId);
+      if (editSetId.value === setProdId) closeDtl();
+      try {
+        const res = await window.adminApi.delete(`set/${setProdId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const descOpen = ref(false);

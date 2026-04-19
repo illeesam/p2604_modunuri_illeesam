@@ -486,30 +486,28 @@ window.DpDispPanelDtl = {
 
     const save = async () => {
       if (!form.name || !form.area || !form.dispCode) { props.showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `disps/${form.dispId}`,
-        data: { ...form, rows: rows.map(r => ({ ...r })) },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg:   isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast:   props.showToast,
-        setApiRes:   props.setApiRes,
-        successMsg:  isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(rows[0].sortOrder) };
-          if (isNew.value) {
-            payload.dispId  = props.dispDataset.nextId(props.dispDataset.displays, 'dispId');
-            payload.regDate = new Date().toISOString().slice(0, 10);
-            props.dispDataset.displays.push(payload);
-          } else {
-            const idx = props.dispDataset.displays.findIndex(x => x.dispId === props.editId);
-            if (idx !== -1) Object.assign(props.dispDataset.displays[idx], payload);
-          }
-        },
-        navigate:   props.navigate,
-        navigateTo: 'dpDispPanelMng',
-      });
+      const isNewPanel = isNew.value;
+      const ok = await props.showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(rows[0].sortOrder) };
+      if (isNewPanel) {
+        payload.dispId  = props.dispDataset.nextId(props.dispDataset.displays, 'dispId');
+        payload.regDate = new Date().toISOString().slice(0, 10);
+        props.dispDataset.displays.push(payload);
+      } else {
+        const idx = props.dispDataset.displays.findIndex(x => x.dispId === props.editId);
+        if (idx !== -1) Object.assign(props.dispDataset.displays[idx], payload);
+      }
+      try {
+        const res = await (isNewPanel ? window.adminApi.post(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.adminApi.put(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('dpDispPanelMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     /* ── 위젯미리보기 모달 ── */

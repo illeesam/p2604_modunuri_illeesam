@@ -118,18 +118,18 @@ window.PmVoucherDtl = {
       snsModal.value = { show: true, channel: ch };
     };
     const sendSns = async () => {
-      await window.adminApiCall({
-        method: 'post',
-        path: `vouchers/${form.voucherId}/send-sns`,
-        data: { channel: snsModal.value.channel, message: snsMsg.value },
-        confirmTitle: 'SNS전송',
-        confirmMsg: `${form.voucherNm}을 ${snsModal.value.channel}로 전송하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: 'SNS전송되었습니다.',
-        onLocal: () => { snsModal.value.show = false; },
-      });
+      const ok = await props.showConfirm('SNS전송', `${form.voucherNm}을 ${snsModal.value.channel}로 전송하시겠습니까?`);
+      if (!ok) return;
+      snsModal.value.show = false;
+      try {
+        const res = await window.adminApi.post(`vouchers/${form.voucherId}/send-sns`, { channel: snsModal.value.channel, message: snsMsg.value });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('SNS전송되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const save = async () => {
@@ -141,33 +141,30 @@ window.PmVoucherDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `vouchers/${form.voucherId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (!props.adminData.voucherList) props.adminData.voucherList = [];
-          if (isNew.value) {
-            props.adminData.voucherList.push({
-              ...form,
-              voucherId: Date.now(),
-              issuedList: [],
-              usedList: [],
-            });
-          } else {
-            const idx = props.adminData.voucherList.findIndex(x => x.voucherId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.voucherList[idx], { ...form });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'pmVoucherMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (!props.adminData.voucherList) props.adminData.voucherList = [];
+      if (isNew.value) {
+        props.adminData.voucherList.push({
+          ...form,
+          voucherId: Date.now(),
+          issuedList: [],
+          usedList: [],
+        });
+      } else {
+        const idx = props.adminData.voucherList.findIndex(x => x.voucherId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.voucherList[idx], { ...form });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`vouchers/${form.voucherId}`, { ...form }) : window.adminApi.put(`vouchers/${form.voucherId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('pmVoucherMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     return { isNew, form, errors, save, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, selectedVendorNm, selectVendor };

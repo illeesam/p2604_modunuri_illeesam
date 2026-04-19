@@ -226,40 +226,38 @@ window.PdCategoryProdMng = {
       if (!selectedCatId.value) { props.showToast('카테고리를 선택하세요.', 'error'); return; }
       const activeTab = TYPE_TABS.find(t => t.cd === activeTypeCd.value);
       const ids = allDescendantIds(selectedCatId.value);
-      await window.adminApiCall({
-        method: 'put',
-        path: `category/${selectedCatId.value}/prods/${activeTypeCd.value}`,
-        data: { prods: tabRows.value },
-        confirmTitle: '저장',
-        confirmMsg: `[${selectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`,
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: '저장되었습니다.',
-        onLocal: () => {
-          if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
-          const others = props.adminData.categoryProds.filter(
-            cp => !(ids.includes(cp.categoryId) && (cp.categoryProdTypeCd || 'NORMAL') === activeTypeCd.value)
-          );
-          let seq2 = 0;
-          props.adminData.categoryProds = [
-            ...others,
-            ...tabRows.value.map(r => ({
-              categoryProdId:     r.categoryProdId || `CP_${r.categoryId}_${activeTypeCd.value}_${seq2++}`,
-              siteId:             '1',
-              categoryId:         r.categoryId,
-              prodId:             r.prodId,
-              categoryProdTypeCd: r.categoryProdTypeCd,
-              sortOrd:            r.sortOrd,
-              emphasisCd:         r.emphasisCd,
-              dispYn:             r.dispYn,
-              dispStartDate:      r.dispStartDate,
-              dispEndDate:        r.dispEndDate,
-            })),
-          ];
-          loadAllRows();
-        },
-      });
+      const ok = await props.showConfirm('저장', `[${selectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`);
+      if (!ok) return;
+      if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
+      const others = props.adminData.categoryProds.filter(
+        cp => !(ids.includes(cp.categoryId) && (cp.categoryProdTypeCd || 'NORMAL') === activeTypeCd.value)
+      );
+      let seq2 = 0;
+      props.adminData.categoryProds = [
+        ...others,
+        ...tabRows.value.map(r => ({
+          categoryProdId:     r.categoryProdId || `CP_${r.categoryId}_${activeTypeCd.value}_${seq2++}`,
+          siteId:             '1',
+          categoryId:         r.categoryId,
+          prodId:             r.prodId,
+          categoryProdTypeCd: r.categoryProdTypeCd,
+          sortOrd:            r.sortOrd,
+          emphasisCd:         r.emphasisCd,
+          dispYn:             r.dispYn,
+          dispStartDate:      r.dispStartDate,
+          dispEndDate:        r.dispEndDate,
+        })),
+      ];
+      loadAllRows();
+      try {
+        const res = await window.adminApi.put(`category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: tabRows.value });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];

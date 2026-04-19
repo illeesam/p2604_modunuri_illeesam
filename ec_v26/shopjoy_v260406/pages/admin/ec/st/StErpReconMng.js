@@ -50,13 +50,18 @@ window.StErpReconMng = {
     }));
 
     const doFix = async (r) => {
-      await window.adminApiCall({
-        method: 'put', path: `st/erp/recon/${r.reconId}/fix`, data: {},
-        confirmTitle: '조정처리', confirmMsg: '해당 전표 대사 차이를 조정처리 하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '조정처리 되었습니다.',
-        onLocal: () => { r.erpAmt = r.sysAmt; r.diff = 0; r.diffStatus = '일치'; r.remark = '조정처리 완료'; },
-      });
+      const ok = await props.showConfirm('조정처리', '해당 전표 대사 차이를 조정처리 하시겠습니까?');
+      if (!ok) return;
+      r.erpAmt = r.sysAmt; r.diff = 0; r.diffStatus = '일치'; r.remark = '조정처리 완료';
+      try {
+        const res = await window.adminApi.put(`st/erp/recon/${r.reconId}/fix`, {});
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('조정처리 되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const diffBadge = s => ({ '일치':'badge-green', '차이':'badge-orange', '미반영':'badge-red' }[s] || 'badge-gray');

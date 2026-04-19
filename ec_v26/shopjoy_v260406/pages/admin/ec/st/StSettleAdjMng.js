@@ -73,39 +73,50 @@ window.StSettleAdjMng = {
       catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const v = vendors.value.find(x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: isNew.value ? 'st/adj' : `st/adj/${form.adjId}`,
-        data: { ...form },
-        confirmTitle: '저장', confirmMsg: '정산조정을 저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) { form.adjId = 'ADJ-' + Date.now(); adjList.unshift({ ...form }); }
-          else { const idx = adjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjList[idx], { ...form }); }
-          closeForm();
-        },
-      });
+      const ok = await props.showConfirm('저장', '정산조정을 저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) { form.adjId = 'ADJ-' + Date.now(); adjList.unshift({ ...form }); }
+      else { const idx = adjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjList[idx], { ...form }); }
+      closeForm();
+      try {
+        const res = await (isNew.value ? window.adminApi.post('st/adj', { ...form }) : window.adminApi.put(`st/adj/${form.adjId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const doDelete = async (r) => {
-      await window.adminApiCall({
-        method: 'delete', path: `st/adj/${r.adjId}`,
-        confirmTitle: '삭제', confirmMsg: `[${r.adjId}] 정산조정을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => { const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm(); },
-      });
+      const ok = await props.showConfirm('삭제', `[${r.adjId}] 정산조정을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm();
+      try {
+        const res = await window.adminApi.delete(`st/adj/${r.adjId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const doApprove = async (r) => {
-      await window.adminApiCall({
-        method: 'put', path: `st/adj/${r.adjId}/approve`, data: { aprvStatus: '승인' },
-        confirmTitle: '승인', confirmMsg: '정산조정을 승인하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '승인되었습니다.',
-        onLocal: () => { r.aprvStatus = '승인'; },
-      });
+      const ok = await props.showConfirm('승인', '정산조정을 승인하시겠습니까?');
+      if (!ok) return;
+      r.aprvStatus = '승인';
+      try {
+        const res = await window.adminApi.put(`st/adj/${r.adjId}/approve`, { aprvStatus: '승인' });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('승인되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const aprvBadge = s => ({ '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');

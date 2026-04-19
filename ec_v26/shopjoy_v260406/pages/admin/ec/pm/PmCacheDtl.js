@@ -51,33 +51,30 @@ window.PmCacheDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: `cache/${form.cacheId}`,
-        data: { ...form },
-        confirmTitle: isNew.value ? '등록' : '저장',
-        confirmMsg: isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?',
-        showConfirm: props.showConfirm,
-        showToast: props.showToast,
-        setApiRes: props.setApiRes,
-        successMsg: isNew.value ? '등록되었습니다.' : '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) {
-            props.adminData.cacheList.unshift({
-              ...form,
-              cacheId: props.adminData.nextId(props.adminData.cacheList, 'cacheId'),
-              amount: Number(form.amount), balance: Number(form.balance),
-              userId: Number(form.userId),
-              date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
-            });
-          } else {
-            const idx = props.adminData.cacheList.findIndex(x => x.cacheId === props.editId);
-            if (idx !== -1) Object.assign(props.adminData.cacheList[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
-          }
-        },
-        navigate: props.navigate,
-        navigateTo: 'pmCacheMng',
-      });
+      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) {
+        props.adminData.cacheList.unshift({
+          ...form,
+          cacheId: props.adminData.nextId(props.adminData.cacheList, 'cacheId'),
+          amount: Number(form.amount), balance: Number(form.balance),
+          userId: Number(form.userId),
+          date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
+        });
+      } else {
+        const idx = props.adminData.cacheList.findIndex(x => x.cacheId === props.editId);
+        if (idx !== -1) Object.assign(props.adminData.cacheList[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
+      }
+      try {
+        const res = await (isNew.value ? window.adminApi.post(`cache/${form.cacheId}`, { ...form }) : window.adminApi.put(`cache/${form.cacheId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('pmCacheMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const onUserIdChange = () => {

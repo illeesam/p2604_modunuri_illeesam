@@ -68,29 +68,35 @@ window.StSettleEtcAdjMng = {
       if (Object.keys(errors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const v = vendors.value.find(x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: isNew.value ? 'st/etc-adj' : `st/etc-adj/${form.adjId}`,
-        data: { ...form },
-        confirmTitle: '저장', confirmMsg: '기타조정을 저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '저장되었습니다.',
-        onLocal: () => {
-          if (isNew.value) { form.adjId = 'ETCADJ-' + String(etcAdjList.length + 1).padStart(3, '0'); etcAdjList.unshift({ ...form }); }
-          else { const idx = etcAdjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(etcAdjList[idx], { ...form }); }
-          closeForm();
-        },
-      });
+      const ok = await props.showConfirm('저장', '기타조정을 저장하시겠습니까?');
+      if (!ok) return;
+      if (isNew.value) { form.adjId = 'ETCADJ-' + String(etcAdjList.length + 1).padStart(3, '0'); etcAdjList.unshift({ ...form }); }
+      else { const idx = etcAdjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(etcAdjList[idx], { ...form }); }
+      closeForm();
+      try {
+        const res = await (isNew.value ? window.adminApi.post('st/etc-adj', { ...form }) : window.adminApi.put(`st/etc-adj/${form.adjId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const doDelete = async (r) => {
-      await window.adminApiCall({
-        method: 'delete', path: `st/etc-adj/${r.adjId}`,
-        confirmTitle: '삭제', confirmMsg: `[${r.adjId}]를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => { const idx = etcAdjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) etcAdjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm(); },
-      });
+      const ok = await props.showConfirm('삭제', `[${r.adjId}]를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = etcAdjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) etcAdjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm();
+      try {
+        const res = await window.adminApi.delete(`st/etc-adj/${r.adjId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const aprvBadge = s => ({ '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');

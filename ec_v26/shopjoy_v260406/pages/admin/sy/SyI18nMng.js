@@ -51,19 +51,23 @@ window.SyI18nMng = {
     };
     const saveMsgs = async () => {
       if (!selectedKey.value) return;
-      await window.adminApiCall({
-        method: 'put', path: `sy/i18n/${selectedKey.value.i18nId}/msgs`, data: { msgs: { ...msgForm } },
-        confirmTitle: '저장', confirmMsg: '번역 메시지를 저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => {
-          const src = props.adminData.i18nMsgs;
-          LANGS.forEach(lang => {
-            const existing = src.find(m => m.i18nId === selectedKey.value.i18nId && m.langCd === lang);
-            if (existing) existing.i18nMsg = msgForm[lang];
-            else if (msgForm[lang]) src.push({ i18nMsgId: 'IM' + Date.now() + lang, i18nId: selectedKey.value.i18nId, langCd: lang, i18nMsg: msgForm[lang] });
-          });
-        },
+      const ok = await props.showConfirm('저장', '번역 메시지를 저장하시겠습니까?');
+      if (!ok) return;
+      const src = props.adminData.i18nMsgs;
+      LANGS.forEach(lang => {
+        const existing = src.find(m => m.i18nId === selectedKey.value.i18nId && m.langCd === lang);
+        if (existing) existing.i18nMsg = msgForm[lang];
+        else if (msgForm[lang]) src.push({ i18nMsgId: 'IM' + Date.now() + lang, i18nId: selectedKey.value.i18nId, langCd: lang, i18nMsg: msgForm[lang] });
       });
+      try {
+        const res = await window.adminApi.put(`sy/i18n/${selectedKey.value.i18nId}/msgs`, { msgs: { ...msgForm } });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const getLangMsg = (i18nId, lang) => {
       const m = (props.adminData.i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);

@@ -248,26 +248,27 @@ window.DpDispUiDtl = {
         props.showToast && props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put',
-        path: isNew.value ? 'disp-uis' : `disp-uis/${form.codeId}`,
-        data: { ...form },
-        confirmTitle: '저장',
-        confirmMsg: isNew.value ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '저장되었습니다.',
-        onLocal: () => {
-          const codes = props.dispDataset.codes;
-          if (isNew.value) {
-            const nextId = window.adminData.nextId(codes, 'codeId');
-            codes.push({ ...form, codeId: nextId });
-          } else {
-            const idx = codes.findIndex(c => c.codeId === form.codeId);
-            if (idx !== -1) Object.assign(codes[idx], form);
-          }
-        },
-        navigate: props.navigate, navigateTo: 'dpDispUiMng',
-      });
+      const isNewUi = isNew.value;
+      const ok = await props.showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
+      if (!ok) return;
+      const codes = props.dispDataset.codes;
+      if (isNewUi) {
+        const nextId = window.adminData.nextId(codes, 'codeId');
+        codes.push({ ...form, codeId: nextId });
+      } else {
+        const idx = codes.findIndex(c => c.codeId === form.codeId);
+        if (idx !== -1) Object.assign(codes[idx], form);
+      }
+      try {
+        const res = await (isNewUi ? window.adminApi.post('disp-uis', { ...form }) : window.adminApi.put(`disp-uis/${form.codeId}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (props.navigate) props.navigate('dpDispUiMng');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const doCancel = () => { props.navigate('dpDispUiMng'); };
 

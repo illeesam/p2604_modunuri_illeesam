@@ -30,31 +30,38 @@ window.StSettleCloseMng = {
 
     const doClose = async () => {
       if (alreadyClosed.value) { props.showToast('이미 마감된 월입니다.', 'error'); return; }
-      await window.adminApiCall({
-        method: 'post', path: 'st/close',
-        data: { closeMon: thisMonth, sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value, comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value },
-        confirmTitle: '정산마감', confirmMsg: `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '정산마감이 완료되었습니다.',
-        onLocal: () => {
-          closeList.unshift({
-            closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
-            sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value,
-            comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value,
-            status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
-          });
-        },
+      const ok = await props.showConfirm('정산마감', `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`);
+      if (!ok) return;
+      closeList.unshift({
+        closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
+        sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value,
+        comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value,
+        status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
       });
+      try {
+        const res = await window.adminApi.post('st/close', { closeMon: thisMonth, sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value, comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('정산마감이 완료되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const doReopen = async (r) => {
-      await window.adminApiCall({
-        method: 'put', path: `st/close/${r.closeId}/reopen`, data: {},
-        confirmTitle: '마감취소', confirmMsg: `${r.closeMon} 정산마감을 취소하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '마감이 취소되었습니다.',
-        onLocal: () => { r.status = '마감취소'; },
-      });
+      const ok = await props.showConfirm('마감취소', `${r.closeMon} 정산마감을 취소하시겠습니까?`);
+      if (!ok) return;
+      r.status = '마감취소';
+      try {
+        const res = await window.adminApi.put(`st/close/${r.closeId}/reopen`, {});
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('마감이 취소되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const statusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');

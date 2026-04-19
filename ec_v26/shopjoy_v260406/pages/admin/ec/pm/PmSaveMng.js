@@ -72,17 +72,20 @@ window.PmSaveMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const doDelete = async (s) => {
-      await window.adminApiCall({
-        method: 'delete', path: `save/${s.saveId}`,
-        confirmTitle: '삭제', confirmMsg: `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        successMsg: '삭제되었습니다.',
-        onLocal: () => {
-          const idx = (props.adminData.saveList || []).findIndex(x => x.saveId === s.saveId);
-          if (idx !== -1) props.adminData.saveList.splice(idx, 1);
-          if (selectedId.value === s.saveId) selectedId.value = null;
-        },
-      });
+      const ok = await props.showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = (props.adminData.saveList || []).findIndex(x => x.saveId === s.saveId);
+      if (idx !== -1) props.adminData.saveList.splice(idx, 1);
+      if (selectedId.value === s.saveId) selectedId.value = null;
+      try {
+        const res = await window.adminApi.delete(`save/${s.saveId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value,

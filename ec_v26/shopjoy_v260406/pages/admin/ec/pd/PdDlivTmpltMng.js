@@ -50,25 +50,34 @@ window.PdDlivTmpltMng = {
     const closeDetail = () => { selectedId.value = null; };
     const doSave = async () => {
       if (!form.dlivTmpltNm) { props.showToast('템플릿명은 필수입니다.', 'error'); return; }
-      await window.adminApiCall({
-        method: isNew.value ? 'post' : 'put', path: `pd/dliv-tmplts/${form.dlivTmpltId||''}`, data: { ...form },
-        confirmTitle: '저장', confirmMsg: '저장하시겠습니까?',
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => {
-          const src = props.adminData.dlivTmplts;
-          if (isNew.value) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); selectedId.value = form.dlivTmpltId; isNew.value = false; }
-          else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
-        },
-      });
+      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      const isNewTmplt = isNew.value;
+      const src = props.adminData.dlivTmplts;
+      if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); selectedId.value = form.dlivTmpltId; isNew.value = false; }
+      else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
+      try {
+        const res = await (isNewTmplt ? window.adminApi.post(`pd/dliv-tmplts/${form.dlivTmpltId||''}`, { ...form }) : window.adminApi.put(`pd/dliv-tmplts/${form.dlivTmpltId||''}`, { ...form }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const doDelete = async () => {
       if (!selectedRow.value) return;
-      await window.adminApiCall({
-        method: 'delete', path: `pd/dliv-tmplts/${selectedRow.value.dlivTmpltId}`,
-        confirmTitle: '삭제', confirmMsg: `[${selectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`,
-        showConfirm: props.showConfirm, showToast: props.showToast, setApiRes: props.setApiRes,
-        onLocal: () => { const si = props.adminData.dlivTmplts.findIndex(t => t.dlivTmpltId === selectedRow.value.dlivTmpltId); if (si !== -1) props.adminData.dlivTmplts.splice(si, 1); closeDetail(); },
-      });
+      const ok = await props.showConfirm('삭제', `[${selectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const si = props.adminData.dlivTmplts.findIndex(t => t.dlivTmpltId === selectedRow.value.dlivTmpltId); if (si !== -1) props.adminData.dlivTmplts.splice(si, 1); closeDetail();
+      try {
+        const res = await window.adminApi.delete(`pd/dliv-tmplts/${selectedRow.value.dlivTmpltId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+      } catch (err) {
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, method: searchMethod.value, use: searchUse.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchMethod.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', method: '', use: '' }); pager.page = 1; };
