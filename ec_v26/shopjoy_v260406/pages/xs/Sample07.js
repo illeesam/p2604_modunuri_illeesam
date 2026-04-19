@@ -32,6 +32,51 @@ window.XsSample07 = {
       return null;
     };
 
+    /* ===== Auto CRUD 트리 생성 ===== */
+    const AUTO_CRUD_DOMAINS = [
+      { domain:'ec', sub:'cm', label:'EC CM', tables:['cm_bltn_cate','cm_bltn_file','cm_bltn_good','cm_bltn_reply','cm_bltn_tag','cm_bltn','cm_chatt_msg','cm_chatt_room','cm_path','cmh_push_log'] },
+      { domain:'ec', sub:'dp', label:'EC DP', tables:['dp_area_panel','dp_area','dp_panel_item','dp_panel','dp_ui_area','dp_ui','dp_widget_lib','dp_widget'] },
+      { domain:'ec', sub:'mb', label:'EC MB', tables:['mb_dvc_token','mb_like','mb_member_addr','mb_member_grade','mb_member_group','mb_member','mb_sns_member','mbh_member_login_hist','mbh_member_login_log','mbh_member_token_log'] },
+      { domain:'ec', sub:'od', label:'EC OD', tables:['od_cart','od_claim_item','od_claim','od_dliv_item','od_dliv','od_order_discnt','od_order_item_discnt','od_order_item','od_order','od_pay_method','od_pay','od_refund_method','od_refund','odh_claim_chg_hist','odh_claim_item_chg_hist','odh_claim_item_status_hist','odh_claim_status_hist','odh_dliv_chg_hist','odh_dliv_item_chg_hist','odh_dliv_status_hist','odh_order_chg_hist','odh_order_item_chg_hist','odh_order_item_status_hist','odh_order_status_hist','odh_pay_chg_hist','odh_pay_status_hist'] },
+      { domain:'ec', sub:'pd', label:'EC PD', tables:['pd_category_prod','pd_category','pd_dliv_tmplt','pd_prod_bundle_item','pd_prod_content','pd_prod_img','pd_prod_opt_item','pd_prod_opt','pd_prod_qna','pd_prod_rel','pd_prod_set_item','pd_prod_sku','pd_prod_tag','pd_prod','pd_restock_noti','pd_review_attach','pd_review_comment','pd_review','pd_tag','pdh_prod_chg_hist','pdh_prod_content_chg_hist','pdh_prod_sku_chg_hist','pdh_prod_sku_price_hist','pdh_prod_sku_stock_hist','pdh_prod_status_hist','pdh_prod_view_log'] },
+      { domain:'ec', sub:'pm', label:'EC PM', tables:['pm_cache','pm_coupon_issue','pm_coupon_item','pm_coupon_usage','pm_coupon','pm_discnt_item','pm_discnt_usage','pm_discnt','pm_event_benefit','pm_event_item','pm_event','pm_gift_cond','pm_gift_issue','pm_gift','pm_plan_item','pm_plan','pm_save_issue','pm_save_usage','pm_save','pm_voucher_issue','pm_voucher'] },
+      { domain:'ec', sub:'st', label:'EC ST', tables:['st_erp_voucher_line','st_erp_voucher','st_recon','st_settle_adj','st_settle_close','st_settle_config','st_settle_etc_adj','st_settle_item','st_settle_pay','st_settle_raw','st_settle'] },
+      { domain:'sy', sub:'sy', label:'SY',    tables:['sy_alarm','sy_attach_grp','sy_attach','sy_batch','sy_bbm','sy_bbs','sy_brand','sy_code_grp','sy_code','sy_contact','sy_dept','sy_i18n_msg','sy_i18n','sy_menu','sy_notice','sy_path','sy_prop','sy_role_menu','sy_role','sy_site','sy_template','sy_user_role','sy_user','sy_vendor_brand','sy_vendor_content','sy_vendor_user','sy_vendor','sy_voc','syh_alarm_send_hist','syh_api_log','syh_batch_hist','syh_batch_log','syh_send_email_log','syh_send_msg_log','syh_user_login_hist','syh_user_login_log','syh_user_token_log'] },
+    ];
+    const CRUD_OPS = [
+      { label:'단건',    urlFn: p => `select${p}`,              method:'POST'   },
+      { label:'목록',    urlFn: p => `select${p}List`,           method:'POST'   },
+      { label:'페이지',  urlFn: p => `select${p}Page`,           method:'POST'   },
+      { label:'건수',    urlFn: p => `select${p}Count`,          method:'POST'   },
+      { label:'등록',    urlFn: p => `insert${p}Insert`,         method:'POST'   },
+      { label:'수정',    urlFn: p => `update${p}Update`,         method:'PUT'    },
+      { label:'부분수정',urlFn: p => `update${p}UpdateOption`,   method:'PUT'    },
+      { label:'삭제',    urlFn: p => `delete${p}Delete`,         method:'DELETE' },
+      { label:'일괄삭제',urlFn: p => `delete${p}DeleteList`,     method:'DELETE' },
+    ];
+    const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
+    let _acSeq = 0;
+    const buildAutoCrudNodes = () => makeNode({
+      id: 'ac_root', appId: 'samples', label: 'adminAutoCrud', type: 'app', open: false,
+      children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
+        id: `ac_${domain}_${sub}`, label, type: 'folder', open: false,
+        children: tables.map(tbl => {
+          const pascal = toPascal(tbl);
+          return {
+            id: `ac_${tbl}`, label: tbl, type: 'folder', open: false,
+            children: CRUD_OPS.map(op => ({
+              id: `ac_${tbl}_${++_acSeq}`,
+              label: `${op.label} (${op.method})`,
+              type: 'req', method: op.method,
+              url: `/auto/${domain}/${sub}/${op.urlFn(pascal)}`,
+              desc: `${pascal} ${op.label}`,
+              params: [], body: '',
+            })),
+          };
+        }),
+      })),
+    });
+
     /* ===== App Filter ===== */
     const appFilter = reactive({ front: true, admin: true, samples: true });
     const APP_META  = {
@@ -449,6 +494,7 @@ window.XsSample07 = {
         const res = await window.frontApi.get('xs/sample07.json');
         (res.data || []).forEach(n => treeRoot.push(makeNode(n)));
         treeLoaded.value = true;
+        treeRoot.push(buildAutoCrudNodes());
       } catch {
         treeRoot.push(makeNode({ id:'err', label:'데이터 로딩 실패', type:'folder', open:false, appId:'front' }));
       }
