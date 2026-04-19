@@ -46,3 +46,9 @@ CREATE INDEX idx_syh_user_token_log_user      ON syh_user_token_log (user_id);
 CREATE INDEX idx_syh_user_token_log_action    ON syh_user_token_log (action_cd);
 CREATE INDEX idx_syh_user_token_log_login_log ON syh_user_token_log (login_log_id);
 CREATE INDEX idx_syh_user_token_log_date      ON syh_user_token_log (reg_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- syh_user_token_log.action_cd (토큰 액션) : TOKEN_ACTION(TOKEN_ACTION) { 코드값 미정의 }
+-- syh_user_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE(TOKEN_TYPE) { 코드값 미정의 }

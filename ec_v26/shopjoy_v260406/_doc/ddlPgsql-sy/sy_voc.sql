@@ -30,3 +30,9 @@ COMMENT ON COLUMN sy_voc.upd_date      IS '수정일시';
 
 CREATE INDEX idx_sy_voc_site       ON sy_voc (site_id);
 CREATE INDEX idx_sy_voc_master_cd  ON sy_voc (voc_master_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_voc.voc_master_cd (VOC마스터코드) : VOC_MASTER(VOC_MASTER) { 코드값 미정의 }
+-- sy_voc.voc_detail_cd (VOC세부코드) : VOC_DETAIL(VOC_DETAIL) { 코드값 미정의 }

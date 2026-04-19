@@ -46,3 +46,9 @@ COMMENT ON COLUMN cmh_push_log.upd_date     IS '수정일';
 CREATE INDEX idx_sy_push_log_member ON cmh_push_log (member_id);
 CREATE INDEX idx_sy_push_log_date ON cmh_push_log (send_date);
 CREATE INDEX idx_sy_push_log_channel ON cmh_push_log (channel_cd, result_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- cmh_push_log.channel_cd (발송채널) : PUSH_CHANNEL(PUSH_CHANNEL) { 코드값 미정의 }
+-- cmh_push_log.result_cd (발송결과) : PUSH_RESULT(PUSH_RESULT) { 코드값 미정의 }

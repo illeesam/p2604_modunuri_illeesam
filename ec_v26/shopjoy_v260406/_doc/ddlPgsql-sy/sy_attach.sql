@@ -40,3 +40,8 @@ COMMENT ON COLUMN sy_attach.reg_by           IS '등록자 (sy_user.user_id, ec_
 COMMENT ON COLUMN sy_attach.reg_date         IS '등록일';
 COMMENT ON COLUMN sy_attach.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_attach.upd_date         IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_attach.mime_type_cd (MIME 타입) : MIME_TYPE(MIME_TYPE) { 코드값 미정의 }

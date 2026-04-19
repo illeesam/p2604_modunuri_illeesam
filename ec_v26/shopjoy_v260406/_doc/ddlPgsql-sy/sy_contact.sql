@@ -41,3 +41,8 @@ COMMENT ON COLUMN sy_contact.reg_by         IS '등록자 (sy_user.user_id, ec_m
 COMMENT ON COLUMN sy_contact.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_contact.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_contact.upd_date       IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_contact.contact_status_cd (처리상태) : 문의상태 { RECEIVED:접수, IN_PROGRESS:처리중, DONE:완료, ON_HOLD:보류 }

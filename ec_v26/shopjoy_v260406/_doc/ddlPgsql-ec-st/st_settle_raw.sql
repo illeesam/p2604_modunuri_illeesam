@@ -141,3 +141,11 @@ CREATE INDEX idx_st_settle_raw_status   ON st_settle_raw (raw_status_cd);
 CREATE INDEX idx_st_settle_raw_promo    ON st_settle_raw (promo_id);
 CREATE INDEX idx_st_settle_raw_coupon   ON st_settle_raw (coupon_id);
 CREATE INDEX idx_st_settle_raw_pay      ON st_settle_raw (pay_method_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- st_settle_raw.raw_type_cd (수집유형) : RAW_TYPE(RAW_TYPE) { 코드값 미정의 }
+-- st_settle_raw.raw_status_cd (수집상태) : RAW_STATUS(RAW_STATUS) { 코드값 미정의 }
+-- st_settle_raw.vendor_type_cd (업체구분) : VENDOR_TYPE(VENDOR_TYPE) { 코드값 미정의 }
+-- st_settle_raw.pay_method_cd (결제수단) : PAY_METHOD_CD(PAY_METHOD_CD) { 코드값 미정의 }

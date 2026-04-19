@@ -57,3 +57,9 @@ CREATE INDEX idx_od_refund_method_order   ON od_refund_method (order_id);
 CREATE INDEX idx_od_refund_method_pay     ON od_refund_method (pay_id) WHERE pay_id IS NOT NULL;
 CREATE INDEX idx_od_refund_method_status  ON od_refund_method (refund_status_cd);
 CREATE INDEX idx_od_refund_method_prio    ON od_refund_method (refund_id, refund_priority);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- od_refund_method.pay_method_cd (결제수단코드) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
+-- od_refund_method.refund_status_cd (수단별 환불상태) : REFUND_STATUS(REFUND_STATUS) { 코드값 미정의 }

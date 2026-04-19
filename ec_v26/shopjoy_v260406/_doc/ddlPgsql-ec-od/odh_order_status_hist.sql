@@ -34,3 +34,8 @@ COMMENT ON COLUMN odh_order_status_hist.upd_date               IS '수정일';
 
 CREATE INDEX idx_odh_order_status_hist_order ON odh_order_status_hist (order_id);
 CREATE INDEX idx_odh_order_status_hist_date  ON odh_order_status_hist (chg_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- odh_order_status_hist.order_status_cd (변경 후 주문상태) : 주문상태 { PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소, AUTO_CANCELLED:자동취소 }

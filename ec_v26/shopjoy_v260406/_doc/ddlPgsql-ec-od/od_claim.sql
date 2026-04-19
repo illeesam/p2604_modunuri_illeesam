@@ -170,3 +170,18 @@ CREATE INDEX idx_od_claim_member   ON od_claim (member_id);
 CREATE INDEX idx_od_claim_type     ON od_claim (claim_type_cd);
 CREATE INDEX idx_od_claim_status   ON od_claim (claim_status_cd);
 CREATE INDEX idx_od_claim_date     ON od_claim (request_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- od_claim.claim_type_cd (클레임유형) : 클레임유형 { CANCEL:취소, RETURN:반품, EXCHANGE:교환 }
+-- od_claim.claim_status_cd (클레임상태) : 클레임상태 { REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회 }
+-- od_claim.reason_cd (사유코드) : CANCEL_REASON(CANCEL_REASON) { 코드값 미정의 }
+-- od_claim.refund_method_cd (환불수단) : 환불수단 { CARD_CANCEL:카드취소, BANK_REFUND:계좌환불, CACHE_REFUND:캐쉬환불 }
+-- od_claim.refund_bank_cd (환불 은행코드) : BANK_CODE(BANK_CODE) { 코드값 미정의 }
+-- od_claim.return_courier_cd (수거 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
+-- od_claim.return_status_cd (수거 상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
+-- od_claim.inbound_courier_cd (반입 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
+-- od_claim.exchange_courier_cd (교환상품 발송 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
+-- od_claim.appr_status_cd (결재상태) : APPROVAL_STATUS(APPROVAL_STATUS) { 코드값 미정의 }
+-- od_claim.appr_target_cd (결재대상 구분) : APPROVAL_TARGET(APPROVAL_TARGET) { 코드값 미정의 }

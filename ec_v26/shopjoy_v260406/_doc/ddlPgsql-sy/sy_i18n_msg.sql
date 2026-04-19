@@ -25,3 +25,8 @@ COMMENT ON COLUMN sy_i18n_msg.upd_date     IS '수정일';
 
 CREATE INDEX idx_sy_i18n_msg_i18n ON sy_i18n_msg (i18n_id);
 CREATE INDEX idx_sy_i18n_msg_lang ON sy_i18n_msg (lang_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_i18n_msg.lang_cd (언어코드) : LANG_CODE(LANG_CODE) { 코드값 미정의 }

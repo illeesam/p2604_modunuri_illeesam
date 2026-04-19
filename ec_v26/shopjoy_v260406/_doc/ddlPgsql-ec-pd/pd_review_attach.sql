@@ -33,3 +33,8 @@ CREATE INDEX idx_pd_review_media_review ON pd_review_attach (review_id);
 CREATE INDEX idx_pd_review_media_attach ON pd_review_attach (attach_id);
 
 -- 리뷰 댓글 (판매자 답변 포함)
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pd_review_attach.media_type_cd (미디어유형) : MEDIA_TYPE(MEDIA_TYPE) { 코드값 미정의 }

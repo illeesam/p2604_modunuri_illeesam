@@ -34,3 +34,8 @@ CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type_
 -- content_type='사용설명', content_html='<ol><li>물에 불려...</li></ol>'
 -- content_type='배송정보', content_html='<p>해외배송 불가, 제주도 배송료 +3,000원</p>'
 -- content_type='AS정보', content_html='<p>구매 후 30일 이내 교환/반품 가능</p>'
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pd_prod_content.content_type_cd (컨텐츠유형) : PROD_CONTENT_TYPE(PROD_CONTENT_TYPE) { 코드값 미정의 }

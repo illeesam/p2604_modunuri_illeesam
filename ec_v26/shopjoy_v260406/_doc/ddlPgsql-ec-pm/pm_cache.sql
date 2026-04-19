@@ -39,3 +39,8 @@ COMMENT ON COLUMN pm_cache.reg_by        IS '등록자 (sy_user.user_id, mb_mem.
 COMMENT ON COLUMN pm_cache.reg_date      IS '등록일';
 COMMENT ON COLUMN pm_cache.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN pm_cache.upd_date      IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_cache.cache_type_cd (유형) : 적립금유형 { EARN_BUY:구매 적립, EARN_ADMIN:관리자 지급, EARN_EVENT:이벤트 지급, USE_ORDER:주문 사용, REFUND:환불 복원, EXPIRE:소멸 }

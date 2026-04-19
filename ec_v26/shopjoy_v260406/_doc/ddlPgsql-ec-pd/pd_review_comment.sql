@@ -29,3 +29,8 @@ COMMENT ON COLUMN pd_review_comment.reg_by        IS '등록자';
 COMMENT ON COLUMN pd_review_comment.reg_date      IS '등록일';
 COMMENT ON COLUMN pd_review_comment.upd_by        IS '수정자';
 COMMENT ON COLUMN pd_review_comment.upd_date      IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pd_review_comment.writer_type_cd (작성자유형) : REVIEW_WRITER_TYPE(REVIEW_WRITER_TYPE) { 코드값 미정의 }

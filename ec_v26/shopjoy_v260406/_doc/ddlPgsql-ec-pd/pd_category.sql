@@ -35,3 +35,8 @@ COMMENT ON COLUMN pd_category.reg_by        IS '등록자 (sy_user.user_id, mb_m
 COMMENT ON COLUMN pd_category.reg_date      IS '등록일';
 COMMENT ON COLUMN pd_category.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN pd_category.upd_date      IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pd_category.category_status_cd (상태) : 사용여부 { Y:사용, N:미사용 }

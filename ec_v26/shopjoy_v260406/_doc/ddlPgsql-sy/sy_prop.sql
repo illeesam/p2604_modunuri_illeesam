@@ -36,3 +36,8 @@ COMMENT ON COLUMN sy_prop.prop_remark  IS '비고';
 
 CREATE INDEX idx_sy_disp_path  ON sy_prop (disp_path);
 CREATE INDEX idx_sy_prop_site  ON sy_prop (site_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_prop.prop_type_cd (값 타입) : PROP_TYPE(PROP_TYPE) { 코드값 미정의 }

@@ -25,3 +25,8 @@ COMMENT ON COLUMN pm_discnt_item.reg_date        IS '등록일';
 
 CREATE INDEX idx_pm_discnt_item_discnt ON pm_discnt_item (discnt_id);
 CREATE INDEX idx_pm_discnt_item_target ON pm_discnt_item (target_type_cd, target_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_discnt_item.target_type_cd (대상유형) : DISCNT_ITEM_TARGET(DISCNT_ITEM_TARGET) { 코드값 미정의 }

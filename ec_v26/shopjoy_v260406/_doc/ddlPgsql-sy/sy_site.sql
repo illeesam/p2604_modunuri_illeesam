@@ -50,3 +50,9 @@ COMMENT ON COLUMN sy_site.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_site.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_site.upd_date       IS '수정일';
 COMMENT ON COLUMN sy_site.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_site.site_type_cd (사이트유형) : SITE_TYPE(SITE_TYPE) { 코드값 미정의 }
+-- sy_site.site_status_cd (상태) : 사이트상태 { ACTIVE:활성, MAINTENANCE:점검중, INACTIVE:비활성 }

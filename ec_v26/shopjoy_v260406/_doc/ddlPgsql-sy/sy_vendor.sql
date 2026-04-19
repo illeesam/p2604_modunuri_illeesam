@@ -71,3 +71,9 @@ COMMENT ON COLUMN sy_vendor.upd_date       IS '수정일';
 
 CREATE INDEX idx_sy_vendor_site   ON sy_vendor (site_id);
 CREATE INDEX idx_sy_vendor_status ON sy_vendor (vendor_status_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_vendor.vendor_class_cd (판매/배송업체구분) : VENDOR_CLASS(VENDOR_CLASS) { 코드값 미정의 }
+-- sy_vendor.vendor_status_cd (상태) : 업체상태 { ACTIVE:활성, REVIEWING:심사중, BLOCKED:정지 }

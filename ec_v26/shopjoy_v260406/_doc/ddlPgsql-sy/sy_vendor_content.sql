@@ -59,3 +59,9 @@ CREATE INDEX idx_sy_vendor_content_vendor ON sy_vendor_content (vendor_id);
 CREATE INDEX idx_sy_vendor_content_type   ON sy_vendor_content (content_type_cd);
 CREATE INDEX idx_sy_vendor_content_status ON sy_vendor_content (vendor_content_status_cd);
 CREATE INDEX idx_sy_vendor_content_date   ON sy_vendor_content (start_date, end_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_vendor_content.content_type_cd (콘텐츠유형) : VENDOR_CONTENT_TYPE(VENDOR_CONTENT_TYPE) { 코드값 미정의 }
+-- sy_vendor_content.vendor_content_status_cd (상태) : VENDOR_CONTENT_STATUS(VENDOR_CONTENT_STATUS) { 코드값 미정의 }

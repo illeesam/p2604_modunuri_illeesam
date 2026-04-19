@@ -37,3 +37,8 @@ COMMENT ON COLUMN odh_claim_status_hist.upd_date               IS '수정일';
 CREATE INDEX idx_odh_claim_status_hist_claim ON odh_claim_status_hist (claim_id);
 CREATE INDEX idx_odh_claim_status_hist_order ON odh_claim_status_hist (order_id);
 CREATE INDEX idx_odh_claim_status_hist_date  ON odh_claim_status_hist (chg_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- odh_claim_status_hist.claim_status_cd (변경 후 클레임상태) : 클레임상태 { REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회 }

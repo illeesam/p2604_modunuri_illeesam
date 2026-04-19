@@ -48,3 +48,8 @@ COMMENT ON COLUMN st_settle_item.reg_date           IS '등록일';
 CREATE INDEX idx_st_settle_item_settle ON st_settle_item (settle_id);
 CREATE INDEX idx_st_settle_item_order  ON st_settle_item (order_id);
 CREATE INDEX idx_st_settle_item_vendor ON st_settle_item (vendor_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- st_settle_item.settle_item_type_cd (항목유형) : SETTLE_ITEM_TYPE(SETTLE_ITEM_TYPE) { 코드값 미정의 }

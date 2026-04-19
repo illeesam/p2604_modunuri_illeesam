@@ -39,3 +39,8 @@ COMMENT ON COLUMN od_dliv_item.reg_by        IS '등록자 (sy_user.user_id, mb_
 COMMENT ON COLUMN od_dliv_item.reg_date      IS '등록일';
 COMMENT ON COLUMN od_dliv_item.upd_by        IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN od_dliv_item.upd_date      IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- od_dliv_item.dliv_item_status_cd (항목 배송상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }

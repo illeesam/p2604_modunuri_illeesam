@@ -62,3 +62,9 @@ CREATE INDEX idx_syh_send_msg_log_template ON syh_send_msg_log (template_id);
 CREATE INDEX idx_syh_send_msg_log_channel  ON syh_send_msg_log (channel_cd, result_cd);
 CREATE INDEX idx_syh_send_msg_log_date     ON syh_send_msg_log (send_date);
 CREATE INDEX idx_syh_send_msg_log_ref      ON syh_send_msg_log (ref_type_cd, ref_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- syh_send_msg_log.channel_cd (발송채널) : MSG_CHANNEL(MSG_CHANNEL) { 코드값 미정의 }
+-- syh_send_msg_log.result_cd (발송결과) : SEND_RESULT(SEND_RESULT) { 코드값 미정의 }

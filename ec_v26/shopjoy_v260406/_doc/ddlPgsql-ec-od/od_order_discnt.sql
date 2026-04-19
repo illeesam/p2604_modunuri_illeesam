@@ -52,3 +52,8 @@ CREATE INDEX idx_od_order_discnt_order     ON od_order_discnt (order_id);
 CREATE INDEX idx_od_order_discnt_type      ON od_order_discnt (discnt_type_cd);
 CREATE INDEX idx_od_order_discnt_coupon    ON od_order_discnt (coupon_id) WHERE coupon_id IS NOT NULL;
 CREATE INDEX idx_od_order_discnt_restore   ON od_order_discnt (restore_yn);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- od_order_discnt.discnt_type_cd (할인유형코드) : ORDER_DISCNT_TYPE(ORDER_DISCNT_TYPE) { 코드값 미정의 }

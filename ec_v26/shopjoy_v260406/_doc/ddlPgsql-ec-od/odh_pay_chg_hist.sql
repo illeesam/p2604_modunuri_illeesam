@@ -53,3 +53,8 @@ CREATE INDEX idx_odh_pay_chg_hist_pay        ON odh_pay_chg_hist (pay_id);
 CREATE INDEX idx_odh_pay_chg_hist_order      ON odh_pay_chg_hist (order_id);
 CREATE INDEX idx_odh_pay_chg_hist_chg_type   ON odh_pay_chg_hist (chg_type_cd);
 CREATE INDEX idx_odh_pay_chg_hist_date       ON odh_pay_chg_hist (chg_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- odh_pay_chg_hist.chg_type_cd (변경유형) : PAYMENT_CHG_TYPE(PAYMENT_CHG_TYPE) { 코드값 미정의 }

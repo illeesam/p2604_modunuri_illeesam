@@ -46,3 +46,8 @@ COMMENT ON COLUMN sy_vendor_brand.upd_date        IS '수정일';
 CREATE INDEX idx_sy_vendor_brand_vendor ON sy_vendor_brand (vendor_id);
 CREATE INDEX idx_sy_vendor_brand_brand  ON sy_vendor_brand (brand_id);
 CREATE INDEX idx_sy_vendor_brand_use    ON sy_vendor_brand (use_yn);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_vendor_brand.contract_cd (계약유형) : VENDOR_BRAND_CONTRACT(VENDOR_BRAND_CONTRACT) { 코드값 미정의 }

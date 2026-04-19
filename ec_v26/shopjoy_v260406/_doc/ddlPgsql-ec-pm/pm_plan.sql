@@ -47,3 +47,9 @@ COMMENT ON COLUMN pm_plan.upd_date          IS '수정일';
 CREATE INDEX idx_pm_plan_site   ON pm_plan (site_id);
 CREATE INDEX idx_pm_plan_status ON pm_plan (plan_status_cd);
 CREATE INDEX idx_pm_plan_date   ON pm_plan (start_date, end_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_plan.plan_type_cd (유형) : PLAN_TYPE(PLAN_TYPE) { 코드값 미정의 }
+-- pm_plan.plan_status_cd (상태) : PLAN_STATUS(PLAN_STATUS) { 코드값 미정의 }

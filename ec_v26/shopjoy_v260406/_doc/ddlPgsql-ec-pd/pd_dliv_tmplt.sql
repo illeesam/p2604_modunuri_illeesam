@@ -53,3 +53,9 @@ COMMENT ON COLUMN pd_dliv_tmplt.upd_date          IS '수정일시';
 
 CREATE INDEX idx_pd_dliv_tmplt_vendor ON pd_dliv_tmplt (vendor_id);
 CREATE INDEX idx_pd_dliv_tmplt_site   ON pd_dliv_tmplt (site_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pd_dliv_tmplt.dliv_method_cd (배송방법코드) : DLIV_METHOD(DLIV_METHOD) { 코드값 미정의 }
+-- pd_dliv_tmplt.dliv_pay_type_cd (배송비결제유형 PREPAY:선결제/COD:착불) : DLIV_PAY_TYPE(DLIV_PAY_TYPE) { 코드값 미정의 }

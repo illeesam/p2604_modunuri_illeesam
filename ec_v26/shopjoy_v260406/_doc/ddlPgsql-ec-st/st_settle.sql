@@ -58,3 +58,8 @@ COMMENT ON COLUMN st_settle.upd_date            IS '수정일';
 CREATE INDEX idx_st_settle_vendor ON st_settle (site_id, vendor_id);
 CREATE INDEX idx_st_settle_ym     ON st_settle (settle_ym);
 CREATE INDEX idx_st_settle_status ON st_settle (settle_status_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- st_settle.settle_status_cd (상태) : SETTLE_STATUS(SETTLE_STATUS) { 코드값 미정의 }

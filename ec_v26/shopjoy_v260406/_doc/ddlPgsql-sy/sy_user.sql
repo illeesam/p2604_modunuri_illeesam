@@ -45,3 +45,9 @@ COMMENT ON COLUMN sy_user.upd_by           IS '수정자 (sy_user.user_id, ec_me
 COMMENT ON COLUMN sy_user.upd_date         IS '수정일';
 COMMENT ON COLUMN sy_user.auth_method_cd   IS '인증방식 (코드: AUTH_METHOD)';
 COMMENT ON COLUMN sy_user.last_login_date  IS '마지막 로그인 일시';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_user.user_status_cd (상태) : 사용자상태 { ACTIVE:활성, INACTIVE:비활성 }
+-- sy_user.auth_method_cd (인증방식) : AUTH_METHOD(AUTH_METHOD) { 코드값 미정의 }

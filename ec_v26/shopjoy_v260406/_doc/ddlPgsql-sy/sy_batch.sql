@@ -46,3 +46,9 @@ COMMENT ON COLUMN sy_batch.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_batch.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_batch.upd_date       IS '수정일';
 COMMENT ON COLUMN sy_batch.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_batch.batch_cycle_cd (주기유형) : 배치주기 { MANUAL:수동, HOURLY:시간별, DAILY:일간, WEEKLY:주간, MONTHLY:월간 }
+-- sy_batch.batch_status_cd (활성상태) : 배치상태 { PENDING:대기, RUNNING:실행중, DONE:완료, FAILED:실패 }

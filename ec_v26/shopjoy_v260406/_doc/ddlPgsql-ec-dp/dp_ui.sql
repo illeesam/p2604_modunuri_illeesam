@@ -42,3 +42,8 @@ COMMENT ON COLUMN dp_ui.upd_date       IS '수정일';
 CREATE INDEX idx_dp_ui_site ON dp_ui (site_id);
 CREATE INDEX idx_dp_ui_device ON dp_ui (device_type_cd);
 CREATE INDEX idx_dp_ui_use ON dp_ui (use_yn, use_start_date, use_end_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- dp_ui.device_type_cd (디바이스유형) : DEVICE_TYPE(DEVICE_TYPE) { 코드값 미정의 }

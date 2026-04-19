@@ -31,3 +31,8 @@ COMMENT ON COLUMN st_settle_adj.upd_by         IS '수정자';
 COMMENT ON COLUMN st_settle_adj.upd_date       IS '수정일';
 
 CREATE INDEX idx_st_settle_adj_settle ON st_settle_adj (settle_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- st_settle_adj.adj_type_cd (조정유형) : SETTLE_ADJ_TYPE(SETTLE_ADJ_TYPE) { 코드값 미정의 }

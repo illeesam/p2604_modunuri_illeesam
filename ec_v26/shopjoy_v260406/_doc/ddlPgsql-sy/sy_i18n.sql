@@ -33,3 +33,8 @@ COMMENT ON COLUMN sy_i18n.upd_date         IS '수정일';
 CREATE INDEX idx_sy_i18n_scope    ON sy_i18n (i18n_scope_cd, use_yn);
 CREATE INDEX idx_sy_i18n_category ON sy_i18n (i18n_category);
 CREATE INDEX idx_sy_i18n_site     ON sy_i18n (site_id) WHERE site_id IS NOT NULL;
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_i18n.i18n_scope_cd (적용범위) : I(I) { 코드값 미정의 }

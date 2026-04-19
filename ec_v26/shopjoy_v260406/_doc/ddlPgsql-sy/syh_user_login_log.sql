@@ -51,3 +51,8 @@ COMMENT ON COLUMN syh_user_login_log.upd_date          IS '수정일';
 CREATE INDEX idx_syh_user_login_log_user  ON syh_user_login_log (user_id);
 CREATE INDEX idx_syh_user_login_log_date  ON syh_user_login_log (login_date);
 CREATE INDEX idx_syh_user_login_log_ip    ON syh_user_login_log (ip);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- syh_user_login_log.result_cd (결과) : LOGIN_RESULT(LOGIN_RESULT) { 코드값 미정의 }

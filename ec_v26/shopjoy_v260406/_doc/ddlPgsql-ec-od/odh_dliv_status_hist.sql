@@ -37,3 +37,8 @@ COMMENT ON COLUMN odh_dliv_status_hist.upd_date             IS '수정일';
 CREATE INDEX idx_odh_dliv_status_hist_dliv  ON odh_dliv_status_hist (dliv_id);
 CREATE INDEX idx_odh_dliv_status_hist_order ON odh_dliv_status_hist (order_id);
 CREATE INDEX idx_odh_dliv_status_hist_date  ON odh_dliv_status_hist (chg_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- odh_dliv_status_hist.dliv_status_cd (변경 후 배송상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }

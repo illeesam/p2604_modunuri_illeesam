@@ -38,3 +38,8 @@ COMMENT ON COLUMN sy_menu.reg_by         IS '등록자 (sy_user.user_id, ec_memb
 COMMENT ON COLUMN sy_menu.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_menu.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_menu.upd_date       IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_menu.menu_type_cd (메뉴유형) : MENU_TYPE(MENU_TYPE) { 코드값 미정의 }

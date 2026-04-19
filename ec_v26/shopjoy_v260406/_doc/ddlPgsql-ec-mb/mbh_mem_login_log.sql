@@ -53,3 +53,8 @@ COMMENT ON COLUMN mbh_mem_login_log.upd_date          IS '수정일';
 CREATE INDEX idx_mbh_mem_login_log_member ON mbh_mem_login_log (member_id);
 CREATE INDEX idx_mbh_mem_login_log_date   ON mbh_mem_login_log (login_date);
 CREATE INDEX idx_mbh_mem_login_log_ip     ON mbh_mem_login_log (ip);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- mbh_mem_login_log.result_cd (결과) : LOGIN_RESULT(LOGIN_RESULT) { 코드값 미정의 }

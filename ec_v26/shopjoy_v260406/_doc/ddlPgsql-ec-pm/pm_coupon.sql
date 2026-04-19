@@ -81,3 +81,10 @@ CREATE INDEX idx_pm_coupon_code   ON pm_coupon (coupon_cd);
 CREATE INDEX idx_pm_coupon_type   ON pm_coupon (coupon_type_cd);
 CREATE INDEX idx_pm_coupon_status ON pm_coupon (coupon_status_cd);
 CREATE INDEX idx_pm_coupon_grade  ON pm_coupon (mem_grade_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_coupon.coupon_type_cd (쿠폰유형) : 쿠폰유형 { RATE:정률 할인, FIXED:정액 할인 }
+-- pm_coupon.coupon_status_cd (상태) : 쿠폰상태 { ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료 }
+-- pm_coupon.target_type_cd (적용대상) : COUPON_TARGET(COUPON_TARGET) { 코드값 미정의 }

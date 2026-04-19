@@ -36,3 +36,8 @@ COMMENT ON COLUMN sy_template.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_template.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_template.upd_date       IS '수정일';
 COMMENT ON COLUMN sy_template.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_template.template_type_cd (템플릿유형) : 템플릿유형 { EMAIL:이메일, SMS:SMS, KAKAO:알림톡, PUSH:푸시 }

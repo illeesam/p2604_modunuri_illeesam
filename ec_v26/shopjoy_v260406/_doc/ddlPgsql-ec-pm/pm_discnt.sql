@@ -64,3 +64,10 @@ CREATE INDEX idx_pm_discnt_site   ON pm_discnt (site_id);
 CREATE INDEX idx_pm_discnt_status ON pm_discnt (discnt_status_cd);
 CREATE INDEX idx_pm_discnt_date   ON pm_discnt (start_date, end_date);
 CREATE INDEX idx_pm_discnt_grade  ON pm_discnt (mem_grade_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_discnt.discnt_type_cd (할인유형) : DISCNT_TYPE(DISCNT_TYPE) { 코드값 미정의 }
+-- pm_discnt.discnt_target_cd (할인대상) : DISCNT_TARGET(DISCNT_TARGET) { 코드값 미정의 }
+-- pm_discnt.discnt_status_cd (상태) : DISCNT_STATUS(DISCNT_STATUS) { 코드값 미정의 }

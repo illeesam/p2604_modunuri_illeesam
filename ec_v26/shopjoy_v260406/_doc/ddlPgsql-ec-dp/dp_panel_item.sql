@@ -63,3 +63,8 @@ CREATE INDEX idx_dp_panel_item_ord ON dp_panel_item (panel_id, item_sort_ord);
 CREATE INDEX idx_dp_panel_item_disp_yn ON dp_panel_item (disp_yn);
 CREATE INDEX idx_dp_panel_item_disp_date ON dp_panel_item (disp_start_date, disp_end_date);
 CREATE INDEX idx_dp_panel_item_disp_env ON dp_panel_item (disp_env);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- dp_panel_item.widget_type_cd (위젯유형) : WIDGET_TYPE(WIDGET_TYPE) { 코드값 미정의 }

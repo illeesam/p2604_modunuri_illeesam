@@ -62,3 +62,9 @@ CREATE INDEX idx_st_erp_voucher_vendor  ON st_erp_voucher (site_id, vendor_id);
 CREATE INDEX idx_st_erp_voucher_ym      ON st_erp_voucher (settle_ym);
 CREATE INDEX idx_st_erp_voucher_status  ON st_erp_voucher (erp_voucher_status_cd);
 CREATE INDEX idx_st_erp_voucher_no      ON st_erp_voucher (erp_voucher_no);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- st_erp_voucher.erp_voucher_type_cd (전표유형) : ERP_VOUCHER_TYPE(ERP_VOUCHER_TYPE) { 코드값 미정의 }
+-- st_erp_voucher.erp_voucher_status_cd (전표상태) : ERP_VOUCHER_STATUS(ERP_VOUCHER_STATUS) { 코드값 미정의 }

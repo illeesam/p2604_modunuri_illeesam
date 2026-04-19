@@ -45,3 +45,8 @@ CREATE INDEX idx_pm_voucher_issue_voucher ON pm_voucher_issue (voucher_id);
 CREATE INDEX idx_pm_voucher_issue_member  ON pm_voucher_issue (member_id);
 CREATE INDEX idx_pm_voucher_issue_order   ON pm_voucher_issue (order_id);
 CREATE INDEX idx_pm_voucher_issue_expire  ON pm_voucher_issue (expire_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_voucher_issue.voucher_issue_status_cd (상태) : VOUCHER_ISSUE_STATUS(VOUCHER_ISSUE_STATUS) { 코드값 미정의 }

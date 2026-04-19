@@ -32,3 +32,8 @@ COMMENT ON COLUMN cm_bltn_reply.upd_date     IS '수정일';
 
 CREATE INDEX idx_cm_bltn_reply_blog   ON cm_bltn_reply (blog_id);
 CREATE INDEX idx_cm_bltn_reply_parent ON cm_bltn_reply (parent_comment_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- cm_bltn_reply.comment_status_cd (상태) : COMMENT_STATUS(COMMENT_STATUS) { 코드값 미정의 }

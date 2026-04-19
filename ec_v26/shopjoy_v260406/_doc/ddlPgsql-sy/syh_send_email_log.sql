@@ -57,3 +57,8 @@ CREATE INDEX idx_syh_send_email_log_user     ON syh_send_email_log (user_id);
 CREATE INDEX idx_syh_send_email_log_template ON syh_send_email_log (template_id);
 CREATE INDEX idx_syh_send_email_log_date     ON syh_send_email_log (send_date);
 CREATE INDEX idx_syh_send_email_log_ref      ON syh_send_email_log (ref_type_cd, ref_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- syh_send_email_log.result_cd (발송결과) : SEND_RESULT(SEND_RESULT) { 코드값 미정의 }

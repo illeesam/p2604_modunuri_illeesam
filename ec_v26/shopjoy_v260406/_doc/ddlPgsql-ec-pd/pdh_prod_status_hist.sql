@@ -33,3 +33,9 @@ COMMENT ON COLUMN pdh_prod_status_hist.upd_date            IS '수정일';
 
 CREATE INDEX idx_pdh_prod_status_hist_prod ON pdh_prod_status_hist (prod_id);
 CREATE INDEX idx_pdh_prod_status_hist_date ON pdh_prod_status_hist (proc_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pdh_prod_status_hist.before_status_cd (이전상태) : 상품상태 { ON_SALE:판매중, PREPARING:준비중, SOLD_OUT:품절, SUSPENDED:판매중지 }
+-- pdh_prod_status_hist.after_status_cd (변경상태) : 상품상태 { ON_SALE:판매중, PREPARING:준비중, SOLD_OUT:품절, SUSPENDED:판매중지 }

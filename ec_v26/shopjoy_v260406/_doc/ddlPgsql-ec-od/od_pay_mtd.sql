@@ -29,3 +29,8 @@ COMMENT ON COLUMN od_pay_mtd.upd_date      IS '수정일시';
 
 CREATE INDEX idx_od_pay_mtd_member ON od_pay_mtd (member_id);
 CREATE INDEX idx_od_pay_mtd_type   ON od_pay_mtd (mtd_type_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- od_pay_mtd.mtd_type_cd (결제수단유형코드) : PAY_MTD_TYPE(PAY_MTD_TYPE) { 코드값 미정의 }

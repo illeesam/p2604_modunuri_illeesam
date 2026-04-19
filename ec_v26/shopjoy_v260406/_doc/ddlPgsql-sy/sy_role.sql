@@ -38,3 +38,8 @@ COMMENT ON COLUMN sy_role.reg_date         IS '등록일';
 COMMENT ON COLUMN sy_role.upd_by           IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_role.upd_date         IS '수정일';
 COMMENT ON COLUMN sy_role.disp_path IS '점(.) 구분 표시경로 (트리 빌드용)';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_role.role_type_cd (역할유형) : ROLE_TYPE(ROLE_TYPE) { 코드값 미정의 }

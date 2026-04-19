@@ -42,3 +42,8 @@ COMMENT ON COLUMN dp_widget_lib.reg_date       IS '등록일';
 COMMENT ON COLUMN dp_widget_lib.upd_by         IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN dp_widget_lib.upd_date       IS '수정일';
 COMMENT ON COLUMN dp_widget_lib.disp_path IS '점(.) 구분 표시경로';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- dp_widget_lib.widget_type_cd (위젯유형) : WIDGET_TYPE(WIDGET_TYPE) { 코드값 미정의 }

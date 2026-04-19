@@ -55,3 +55,10 @@ COMMENT ON COLUMN pm_event.upd_date             IS '수정일';
 CREATE INDEX idx_pm_event_type ON pm_event (event_type_cd);
 CREATE INDEX idx_pm_event_status ON pm_event (event_status_cd);
 CREATE INDEX idx_pm_event_date ON pm_event (start_date, end_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_event.event_type_cd (이벤트유형) : 이벤트유형 { DISCOUNT:할인 이벤트, GIFT:증정 이벤트, CACHE:적립 이벤트, CURATED:기획전 }
+-- pm_event.event_status_cd (상태) : 이벤트상태 { PENDING:대기, ACTIVE:진행중, ENDED:종료 }
+-- pm_event.target_type_cd (대상유형) : EVENT_TARGET(EVENT_TARGET) { 코드값 미정의 }

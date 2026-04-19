@@ -44,3 +44,8 @@ CREATE INDEX idx_pd_review_prod ON pd_review (prod_id);
 CREATE INDEX idx_pd_review_member ON pd_review (member_id);
 CREATE INDEX idx_pd_review_status ON pd_review (review_status_cd);
 CREATE INDEX idx_pd_review_date ON pd_review (review_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pd_review.review_status_cd (상태) : REVIEW_STATUS(REVIEW_STATUS) { 코드값 미정의 }

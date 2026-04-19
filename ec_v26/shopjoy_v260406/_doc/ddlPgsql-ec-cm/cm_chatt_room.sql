@@ -47,3 +47,8 @@ COMMENT ON COLUMN cm_chatt_room.upd_date             IS '수정일';
 CREATE INDEX idx_od_chatt_member ON cm_chatt_room (member_id);
 CREATE INDEX idx_od_chatt_admin ON cm_chatt_room (admin_user_id);
 CREATE INDEX idx_od_chatt_status ON cm_chatt_room (chatt_status_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- cm_chatt_room.chatt_status_cd (상태) : 채팅상태 { WAITING:대기, ACTIVE:진행중, DONE:완료 }

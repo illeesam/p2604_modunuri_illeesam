@@ -27,3 +27,8 @@ COMMENT ON COLUMN pm_gift_cond.reg_by         IS '등록자';
 COMMENT ON COLUMN pm_gift_cond.reg_date       IS '등록일';
 
 CREATE INDEX idx_pm_gift_cond_gift ON pm_gift_cond (gift_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_gift_cond.cond_type_cd (조건유형) : GIFT_COND_TYPE(GIFT_COND_TYPE) { 코드값 미정의 }

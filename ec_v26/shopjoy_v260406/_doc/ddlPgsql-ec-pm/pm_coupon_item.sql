@@ -28,3 +28,8 @@ COMMENT ON COLUMN pm_coupon_item.reg_date        IS '등록일';
 
 CREATE INDEX idx_pm_coupon_item_coupon ON pm_coupon_item (coupon_id);
 CREATE INDEX idx_pm_coupon_item_target ON pm_coupon_item (target_type_cd, target_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_coupon_item.target_type_cd (대상유형) : COUPON_ITEM_TARGET(COUPON_ITEM_TARGET) { 코드값 미정의 }

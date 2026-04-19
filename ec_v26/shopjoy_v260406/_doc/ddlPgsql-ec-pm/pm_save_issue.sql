@@ -55,3 +55,9 @@ CREATE INDEX idx_pm_save_issue_order   ON pm_save_issue (order_id);
 CREATE INDEX idx_pm_save_issue_item    ON pm_save_issue (order_item_id);
 CREATE INDEX idx_pm_save_issue_status  ON pm_save_issue (issue_status_cd);
 CREATE INDEX idx_pm_save_issue_expire  ON pm_save_issue (expire_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_save_issue.save_issue_type_cd (지급유형) : SAVE_ISSUE_TYPE(SAVE_ISSUE_TYPE) { 코드값 미정의 }
+-- pm_save_issue.issue_status_cd (지급상태) : SAVE_ISSUE_STATUS(SAVE_ISSUE_STATUS) { 코드값 미정의 }

@@ -37,3 +37,8 @@ COMMENT ON COLUMN pm_gift_issue.upd_date            IS '수정일';
 CREATE INDEX idx_pm_gift_issue_gift   ON pm_gift_issue (gift_id);
 CREATE INDEX idx_pm_gift_issue_member ON pm_gift_issue (member_id);
 CREATE INDEX idx_pm_gift_issue_order  ON pm_gift_issue (order_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_gift_issue.gift_issue_status_cd (상태) : GIFT_ISSUE_STATUS(GIFT_ISSUE_STATUS) { 코드값 미정의 }

@@ -70,3 +70,10 @@ CREATE INDEX idx_od_refund_order     ON od_refund (order_id);
 CREATE INDEX idx_od_refund_claim     ON od_refund (claim_id) WHERE claim_id IS NOT NULL;
 CREATE INDEX idx_od_refund_status    ON od_refund (refund_status_cd);
 CREATE INDEX idx_od_refund_req_date  ON od_refund (refund_req_date);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- od_refund.refund_type_cd (환불유형코드) : REFUND_TYPE(REFUND_TYPE) { 코드값 미정의 }
+-- od_refund.refund_status_cd (환불상태) : REFUND_STATUS(REFUND_STATUS) { 코드값 미정의 }
+-- od_refund.fault_type_cd (귀책유형코드) : CLAIM_FAULT(CLAIM_FAULT) { 코드값 미정의 }

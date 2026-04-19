@@ -31,3 +31,8 @@ COMMENT ON COLUMN pm_event_item.reg_date        IS '등록일';
 
 CREATE INDEX idx_pm_event_item_event  ON pm_event_item (event_id);
 CREATE INDEX idx_pm_event_item_target ON pm_event_item (target_type_cd, target_id);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_event_item.target_type_cd (대상유형) : EVENT_ITEM_TARGET(EVENT_ITEM_TARGET) { 코드값 미정의 }

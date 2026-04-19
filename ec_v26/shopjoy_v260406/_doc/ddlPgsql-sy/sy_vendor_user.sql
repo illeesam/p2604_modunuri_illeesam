@@ -60,3 +60,9 @@ CREATE INDEX idx_sy_vendor_user_vendor ON sy_vendor_user (vendor_id);
 CREATE INDEX idx_sy_vendor_user_user   ON sy_vendor_user (user_id);
 CREATE INDEX idx_sy_vendor_user_role   ON sy_vendor_user (role_id);
 CREATE INDEX idx_sy_vendor_user_status ON sy_vendor_user (vendor_user_status_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_vendor_user.position_cd (직위/직책) : POSITION(POSITION) { 코드값 미정의 }
+-- sy_vendor_user.vendor_user_status_cd (상태) : VENDOR_MEMBER_STATUS(VENDOR_MEMBER_STATUS) { 코드값 미정의 }

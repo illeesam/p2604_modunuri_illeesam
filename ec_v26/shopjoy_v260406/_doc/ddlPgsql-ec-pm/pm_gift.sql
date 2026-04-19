@@ -54,3 +54,9 @@ COMMENT ON COLUMN pm_gift.upd_date          IS '수정일';
 CREATE INDEX idx_pm_gift_site   ON pm_gift (site_id);
 CREATE INDEX idx_pm_gift_status ON pm_gift (gift_status_cd);
 CREATE INDEX idx_pm_gift_grade  ON pm_gift (mem_grade_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- pm_gift.gift_type_cd (사은품유형) : GIFT_TYPE(GIFT_TYPE) { 코드값 미정의 }
+-- pm_gift.gift_status_cd (상태) : GIFT_STATUS(GIFT_STATUS) { 코드값 미정의 }

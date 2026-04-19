@@ -53,3 +53,9 @@ COMMENT ON COLUMN mb_mem.reg_by         IS '등록자 (sy_user.user_id, mb_mem.m
 COMMENT ON COLUMN mb_mem.reg_date       IS '등록일';
 COMMENT ON COLUMN mb_mem.upd_by         IS '수정자 (sy_user.user_id, mb_mem.member_id)';
 COMMENT ON COLUMN mb_mem.upd_date       IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- mb_mem.grade_cd (등급) : 회원등급 { VIP:VIP, GOLD:우수, NORMAL:일반 }
+-- mb_mem.member_status_cd (상태) : 회원상태 { ACTIVE:활성, BLOCKED:정지, WITHDRAWN:탈퇴 }

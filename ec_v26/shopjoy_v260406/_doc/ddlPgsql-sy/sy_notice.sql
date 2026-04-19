@@ -37,3 +37,8 @@ COMMENT ON COLUMN sy_notice.reg_by        IS '등록자 (sy_user.user_id, ec_mem
 COMMENT ON COLUMN sy_notice.reg_date      IS '등록일';
 COMMENT ON COLUMN sy_notice.upd_by        IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_notice.upd_date      IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_notice.notice_type_cd (공지유형) : 공지유형 { NORMAL:일반, URGENT:긴급 }

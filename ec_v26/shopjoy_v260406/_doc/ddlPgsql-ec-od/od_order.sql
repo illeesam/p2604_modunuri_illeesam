@@ -128,3 +128,16 @@ CREATE INDEX idx_od_order_member   ON od_order (member_id);
 CREATE INDEX idx_od_order_status   ON od_order (order_status_cd);
 CREATE INDEX idx_od_order_date     ON od_order (order_date);
 CREATE INDEX idx_od_order_channel  ON od_order (access_channel_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- od_order.order_grade_cd (주문 시점 회원등급) : 회원등급 { VIP:VIP, GOLD:우수, NORMAL:일반 }
+-- od_order.access_channel_cd (주문유입경로) : ACCESS_CHANNEL(ACCESS_CHANNEL) { 코드값 미정의 }
+-- od_order.pay_method_cd (결제수단) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
+-- od_order.order_status_cd (주문상태) : 주문상태 { PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소, AUTO_CANCELLED:자동취소 }
+-- od_order.refund_bank_cd (환불 은행코드) : BANK_CODE(BANK_CODE) { 코드값 미정의 }
+-- od_order.dliv_courier_cd (최근 출고 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
+-- od_order.dliv_status_cd (배송상태 최신) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
+-- od_order.appr_status_cd (결재상태) : APPROVAL_STATUS(APPROVAL_STATUS) { 코드값 미정의 }
+-- od_order.appr_target_cd (결재대상 구분) : APPROVAL_TARGET(APPROVAL_TARGET) { 코드값 미정의 }

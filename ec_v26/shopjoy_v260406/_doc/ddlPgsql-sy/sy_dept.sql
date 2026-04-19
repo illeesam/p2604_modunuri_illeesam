@@ -36,3 +36,8 @@ COMMENT ON COLUMN sy_dept.reg_by         IS '등록자 (sy_user.user_id, ec_memb
 COMMENT ON COLUMN sy_dept.reg_date       IS '등록일';
 COMMENT ON COLUMN sy_dept.upd_by         IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN sy_dept.upd_date       IS '수정일';
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- sy_dept.dept_type_cd (부서유형) : 부서유형 { HQ:본사, DEV:개발팀, DEV_BACKEND:백엔드, DEV_FRONTEND:프론트엔드, MKT:마케팅팀, LOGIS:물류팀 }

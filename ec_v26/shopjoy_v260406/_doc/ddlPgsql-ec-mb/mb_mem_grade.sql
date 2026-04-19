@@ -32,3 +32,8 @@ COMMENT ON COLUMN mb_mem_grade.upd_date         IS '수정일시';
 
 CREATE INDEX idx_mb_mem_grade_site ON mb_mem_grade (site_id);
 CREATE INDEX idx_mb_mem_grade_cd   ON mb_mem_grade (grade_cd);
+
+-- ============================================================
+-- 코드값 참조
+-- ============================================================
+-- mb_mem_grade.grade_cd (등급코드) : 회원등급 { VIP:VIP, GOLD:우수, NORMAL:일반 }
