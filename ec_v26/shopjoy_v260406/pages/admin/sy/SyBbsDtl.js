@@ -18,7 +18,7 @@ window.SyBbsDtl = {
     const errors = reactive({});
 
     const schema = yup.object({
-      bbmId: yup.mixed().required('게시판을 선택해주세요.').nullable(false),
+      bbmId: yup.number().required('게시판을 선택해주세요.').min(1, '게시판을 선택해주세요.'),
       title: yup.string().required('제목을 입력해주세요.'),
     });
 

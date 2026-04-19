@@ -132,20 +132,7 @@ window.SyBbsMng = {
 
 
 
-  <!-- 좌 트리 + 우 영역 -->
-  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
-      </div>
-    </div>
-    <div>
-<div class="card">
+  <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ total }}건</span></span>
       <div style="display:flex;gap:6px;">
@@ -155,19 +142,10 @@ window.SyBbsMng = {
     </div>
     <table class="admin-table">
       <thead><tr>
-          <th style="min-width:140px;">표시경로</th><th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
+          <th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="b in pageList" :key="b.bbsId" :style="selectedId===b.bbsId?'background:#fff8f9;':''">
-          <td>
-              <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: b.pathId != null ? '#374151' : '#9ca3af',fontWeight: b.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
-                <span style="flex:1;">{{ pathLabel(b.pathId) || '경로 선택...' }}</span>
-                <button type="button" @click="openPathPick(b)" title="표시경로 선택"
-                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}"
-                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
-                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
-              </div>
-            </td>
           <td>{{ b.bbsId }}</td>
           <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
           <td><span class="title-link" @click="loadDetail(b.bbsId)" :style="selectedId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="selectedId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -207,11 +185,6 @@ window.SyBbsMng = {
     </div>
     <sy-bbs-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
-</div></div>
-
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_bbs"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

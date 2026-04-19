@@ -10,9 +10,16 @@ window.SyBbmDtl = {
       bbmId: null, bbmCode: '', bbmNm: '', bbmType: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
       contentType: 'textarea', scopeType: '공개',
-      sortOrd: 1, useYn: 'Y', remark: '',
+      sortOrd: 1, useYn: 'Y', remark: '', pathId: null,
     });
     const errors = reactive({});
+
+    /* ── 표시경로 모달 ── */
+    const pathPickModal = reactive({ show: false });
+    const openPathPick = () => { pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; };
+    const onPathPicked = (pathId) => { form.pathId = pathId; pathPickModal.show = false; };
+    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const schema = yup.object({
       bbmCode: yup.string().required('게시판코드를 입력해주세요.'),
@@ -55,7 +62,7 @@ window.SyBbmDtl = {
       }
     };
 
-    return { isNew, form, errors, save, siteNm };
+    return { isNew, form, errors, save, siteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
 <div>
@@ -121,6 +128,18 @@ window.SyBbmDtl = {
       <div class="form-group"></div>
     </div>
     <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label class="form-label">표시경로</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:viewMode?'#f9fafb':'#fff',color:form.pathId!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
+            {{ pathLabel(form.pathId) || '경로 선택...' }}
+          </div>
+          <button v-if="!viewMode" type="button" class="btn btn-secondary btn-sm" @click="openPathPick">🔍 선택</button>
+          <button v-if="!viewMode && form.pathId != null" type="button" class="btn btn-sm" @click="form.pathId=null" style="color:#999;">✕</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
       <div class="form-group">
         <label class="form-label">정렬순서</label>
         <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" :readonly="viewMode" />
@@ -147,6 +166,11 @@ window.SyBbmDtl = {
       </template>
     </div>
   </div>
+
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
+    :value="form.pathId"
+    title="게시판 표시경로 선택"
+    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

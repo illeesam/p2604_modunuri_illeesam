@@ -108,7 +108,9 @@ window.SyBbmMng = {
       </div>
     </div>
   </div>
+
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
+    <!-- 좌: 표시경로 트리 -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -121,68 +123,79 @@ window.SyBbmMng = {
       </div>
     </div>
 
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시판목록 <span class="list-count">{{ total }}건</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    <!-- 우: 목록 + 상세 -->
+    <div>
+      <div class="card">
+        <div class="toolbar">
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시판목록 <span class="list-count">{{ total }}건</span></span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+            <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+          </div>
+        </div>
+        <table class="admin-table">
+          <thead><tr>
+            <th style="min-width:130px;">표시경로</th><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th>
+          </tr></thead>
+          <tbody>
+            <tr v-if="pageList.length===0"><td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="b in pageList" :key="b.bbmId" :style="selectedId===b.bbmId?'background:#fff8f9;':''">
+              <td>
+                <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:b.pathId!=null?'#374151':'#9ca3af',fontWeight:b.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+                  <span style="flex:1;">{{ pathLabel(b.pathId) || '경로 선택...' }}</span>
+                  <button type="button" @click.stop="openPathPick(b)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+                </div>
+              </td>
+              <td>{{ b.bbmId }}</td>
+              <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
+              <td><span class="title-link" @click="loadDetail(b.bbmId)" :style="selectedId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="selectedId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+              <td><span class="badge" :class="typeBadge(b.bbmType)">{{ b.bbmType }}</span></td>
+              <td><span class="badge" :class="commentBadge(b.allowComment)">{{ b.allowComment || '불가' }}</span></td>
+              <td><span class="badge" :class="attachBadge(b.allowAttach)">{{ b.allowAttach || '불가' }}</span></td>
+              <td><span class="badge" :class="contentBadge(b.contentType)">{{ b.contentType || '-' }}</span></td>
+              <td><span class="badge" :class="scopeBadge(b.scopeType)">{{ b.scopeType || '-' }}</span></td>
+              <td><span class="badge" :class="ynBadge(b.allowLike)">{{ b.allowLike==='Y'?'허용':'불가' }}</span></td>
+              <td style="text-align:center;">{{ bbsCount(b.bbmId) }}</td>
+              <td style="text-align:center;">{{ b.sortOrd }}</td>
+              <td><span class="badge" :class="ynBadge(b.useYn)">{{ b.useYn==='Y'?'사용':'미사용' }}</span></td>
+              <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+              <td>{{ b.regDate }}</td>
+              <td><div class="actions">
+                <button class="btn btn-blue btn-sm" @click="loadDetail(b.bbmId)">수정</button>
+                <button class="btn btn-danger btn-sm" @click="doDelete(b)">삭제</button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div></div>
+          <div class="pager">
+            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+          </div>
+          <div class="pager-right">
+            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            </select>
+          </div>
+        </div>
       </div>
-    </div>
-    <table class="admin-table">
-      <thead><tr><th style="min-width:140px;">표시경로</th><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="pageList.length===0"><td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="b in pageList" :key="b.bbmId" :style="selectedId===b.bbmId?'background:#fff8f9;':''">
-          <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:b.pathId!=null?'#374151':'#9ca3af',fontWeight:b.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(b.pathId) || '경로 선택...' }}</span><button type="button" @click.stop="openPathPick(b)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
-          <td>{{ b.bbmId }}</td>
-          <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
-          <td><span class="title-link" @click="loadDetail(b.bbmId)" :style="selectedId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="selectedId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="badge" :class="typeBadge(b.bbmType)">{{ b.bbmType }}</span></td>
-          <td><span class="badge" :class="commentBadge(b.allowComment)">{{ b.allowComment || '불가' }}</span></td>
-          <td><span class="badge" :class="attachBadge(b.allowAttach)">{{ b.allowAttach || '불가' }}</span></td>
-          <td><span class="badge" :class="contentBadge(b.contentType)">{{ b.contentType || '-' }}</span></td>
-          <td><span class="badge" :class="scopeBadge(b.scopeType)">{{ b.scopeType || '-' }}</span></td>
-          <td><span class="badge" :class="ynBadge(b.allowLike)">{{ b.allowLike==='Y'?'허용':'불가' }}</span></td>
-          <td style="text-align:center;">{{ bbsCount(b.bbmId) }}</td>
-          <td style="text-align:center;">{{ b.sortOrd }}</td>
-          <td><span class="badge" :class="ynBadge(b.useYn)">{{ b.useYn==='Y'?'사용':'미사용' }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
-          <td>{{ b.regDate }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(b.bbmId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(b)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
-      </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <div v-if="selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
-    </div>
-    <sy-bbm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
-  </div>
-  </div><!-- /grid 25/75 -->
 
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_bbm"
+      <div v-if="selectedId" style="margin-top:4px;">
+        <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+          <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+        </div>
+        <sy-bbm-dtl :key="detailKey" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" :view-mode="isViewMode" />
+      </div>
+    </div>
+  </div>
+
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    title="게시판관리 표시경로 선택"
+    title="게시판 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
 `
