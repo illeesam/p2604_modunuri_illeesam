@@ -47,6 +47,6 @@ COMMENT ON COLUMN sy_bbm.upd_date         IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_bbm.bbm_type_cd (게시판유형) : BBM_TYPE: NORMAL/NOTICE/EVENT/COOKIE
--- [CODES] sy_bbm.content_type_cd (내용유형) : CONTENT_TYPE: TEXT/HTML/IMAGE/VIDEO/MARKDOWN
--- [CODES] sy_bbm.scope_type_cd (접근범위) : SCOPE_TYPE: ALL/MEMBER/ADMIN
+-- [CODES] sy_bbm.bbm_type_cd (게시판유형) : BBM_TYPE { NORMAL:일반, NOTICE:공지, EVENT:이벤트, COOKIE:쿠키 }
+-- [CODES] sy_bbm.content_type_cd (내용유형) : CONTENT_TYPE { TEXT:텍스트, HTML:HTML, IMAGE:이미지, VIDEO:동영상, MARKDOWN:마크다운 }
+-- [CODES] sy_bbm.scope_type_cd (접근범위) : SCOPE_TYPE { ALL:전체, MEMBER:회원, ADMIN:관리자 }

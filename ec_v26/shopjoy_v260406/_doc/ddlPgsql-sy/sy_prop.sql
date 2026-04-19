@@ -40,4 +40,4 @@ CREATE INDEX idx_sy_prop_site  ON sy_prop (site_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_prop.prop_type_cd (값 타입) : PROP_TYPE: STRING/NUMBER/BOOLEAN/JSON
+-- [CODES] sy_prop.prop_type_cd (값 타입) : PROP_TYPE { STRING:문자열, NUMBER:숫자, BOOLEAN:불리언, JSON:JSON }

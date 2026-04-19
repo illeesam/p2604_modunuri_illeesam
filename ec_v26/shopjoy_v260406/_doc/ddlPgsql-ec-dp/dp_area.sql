@@ -47,4 +47,4 @@ CREATE INDEX idx_dp_area_use ON dp_area (use_yn, use_start_date, use_end_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] dp_area.area_type_cd (영역유형) : DISP_AREA_TYPE: FULL/SIDEBAR/POPUP/INLINE
+-- [CODES] dp_area.area_type_cd (영역유형) : DISP_AREA_TYPE { FULL:전체폭, SIDEBAR:사이드바, POPUP:팝업, INLINE:인라인 }

@@ -183,5 +183,5 @@ CREATE INDEX idx_od_claim_date     ON od_claim (request_date);
 -- [CODES] od_claim.return_status_cd (수거 상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
 -- [CODES] od_claim.inbound_courier_cd (반입 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
 -- [CODES] od_claim.exchange_courier_cd (교환상품 발송 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
--- [CODES] od_claim.appr_status_cd (결재상태) : APPROVAL_STATUS: REQ/APPROVED/REJECTED/DONE
--- [CODES] od_claim.appr_target_cd (결재대상 구분) : APPROVAL_TARGET: ORDER/PROD/DLIV/EXTRA
+-- [CODES] od_claim.appr_status_cd (결재상태) : APPROVAL_STATUS { REQ:요청, APPROVED:승인, REJECTED:반려, DONE:완료 }
+-- [CODES] od_claim.appr_target_cd (결재대상 구분) : APPROVAL_TARGET { ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결재 }

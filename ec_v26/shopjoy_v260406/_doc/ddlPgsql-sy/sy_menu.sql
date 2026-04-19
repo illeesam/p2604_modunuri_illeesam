@@ -42,4 +42,4 @@ COMMENT ON COLUMN sy_menu.upd_date       IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_menu.menu_type_cd (메뉴유형) : MENU_TYPE: PAGE/FOLDER/LINK
+-- [CODES] sy_menu.menu_type_cd (메뉴유형) : MENU_TYPE { PAGE:페이지, FOLDER:폴더, LINK:링크 }

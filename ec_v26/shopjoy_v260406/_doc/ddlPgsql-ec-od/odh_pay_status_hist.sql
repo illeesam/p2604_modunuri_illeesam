@@ -45,4 +45,4 @@ CREATE INDEX idx_odh_pay_status_hist_date  ON odh_pay_status_hist (chg_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] odh_pay_status_hist.pay_status_cd (변경 후 결제상태) : PAY_STATUS: PENDING/COMPLT/FAILED/CANCELLED/PARTIAL_REFUND/REFUNDED
+-- [CODES] odh_pay_status_hist.pay_status_cd (변경 후 결제상태) : PAY_STATUS { PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불 }

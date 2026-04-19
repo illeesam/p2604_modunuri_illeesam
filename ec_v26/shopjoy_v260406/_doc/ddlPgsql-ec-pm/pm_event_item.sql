@@ -35,4 +35,4 @@ CREATE INDEX idx_pm_event_item_target ON pm_event_item (target_type_cd, target_i
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_event_item.target_type_cd (대상유형) : PROMO_TARGET_TYPE: ALL/PRODUCT/CATEGORY/VENDOR/BRAND/MEMBER_GRADE
+-- [CODES] pm_event_item.target_type_cd (대상유형) : PROMO_TARGET_TYPE { ALL:전체, PRODUCT:상품, CATEGORY:카테고리, VENDOR:업체, BRAND:브랜드, MEMBER_GRADE:회원등급 }

@@ -108,11 +108,11 @@ CREATE INDEX idx_od_dliv_ship_date ON od_dliv (dliv_ship_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] od_dliv.dliv_div_cd (입출고구분) : DLIV_DIV: OUTBOUND/INBOUND
--- [CODES] od_dliv.dliv_type_cd (배송유형) : DLIV_TYPE: NORMAL/RETURN/EXCHANGE/EXCHANGE_OUT
--- [CODES] od_dliv.dliv_pay_type_cd (배송비결제방식) : DLIV_PAY_TYPE: PREPAY/COD
+-- [CODES] od_dliv.dliv_div_cd (입출고구분) : DLIV_DIV { OUTBOUND:출고, INBOUND:입고 }
+-- [CODES] od_dliv.dliv_type_cd (배송유형) : DLIV_TYPE { NORMAL:일반, RETURN:반품, EXCHANGE:교환, EXCHANGE_OUT:교환출고 }
+-- [CODES] od_dliv.dliv_pay_type_cd (배송비결제방식) : DLIV_PAY_TYPE { PREPAY:선불, COD:착불 }
 -- [CODES] od_dliv.outbound_courier_cd (출고(발송) 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
 -- [CODES] od_dliv.dliv_status_cd (배송상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
--- [CODES] od_dliv.shipping_fee_type_cd (배송료 구분) : SHIPPING_FEE_TYPE: OUTBOUND/RETURN/INBOUND/EXCHANGE
--- [CODES] od_dliv.appr_status_cd (결재상태) : APPROVAL_STATUS: REQ/APPROVED/REJECTED/DONE
--- [CODES] od_dliv.appr_target_cd (결재대상 구분) : APPROVAL_TARGET: ORDER/PROD/DLIV/EXTRA
+-- [CODES] od_dliv.shipping_fee_type_cd (배송료 구분) : SHIPPING_FEE_TYPE { OUTBOUND:발송비, RETURN:반품비, INBOUND:반입비, EXCHANGE:교환비 }
+-- [CODES] od_dliv.appr_status_cd (결재상태) : APPROVAL_STATUS { REQ:요청, APPROVED:승인, REJECTED:반려, DONE:완료 }
+-- [CODES] od_dliv.appr_target_cd (결재대상 구분) : APPROVAL_TARGET { ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결재 }

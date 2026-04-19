@@ -50,5 +50,5 @@ CREATE INDEX idx_syh_user_token_log_date      ON syh_user_token_log (reg_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] syh_user_token_log.action_cd (토큰 액션) : TOKEN_ACTION: ISSUE/REFRESH/EXPIRE/REVOKE
--- [CODES] syh_user_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE: ACCESS/REFRESH/TEMP
+-- [CODES] syh_user_token_log.action_cd (토큰 액션) : TOKEN_ACTION { ISSUE:발급, REFRESH:갱신, EXPIRE:만료, REVOKE:폐기 }
+-- [CODES] syh_user_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE { ACCESS:액세스, REFRESH:갱신, TEMP:임시 }

@@ -63,5 +63,5 @@ CREATE INDEX idx_sy_vendor_content_date   ON sy_vendor_content (start_date, end_
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_vendor_content.content_type_cd (콘텐츠유형) : VENDOR_CONTENT_TYPE: INTRO/POLICY/NOTICE
--- [CODES] sy_vendor_content.vendor_content_status_cd (상태) : VENDOR_CONTENT_STATUS: DRAFT/ACTIVE/INACTIVE
+-- [CODES] sy_vendor_content.content_type_cd (콘텐츠유형) : VENDOR_CONTENT_TYPE { INTRO:소개, POLICY:정책, NOTICE:공지 }
+-- [CODES] sy_vendor_content.vendor_content_status_cd (상태) : VENDOR_CONTENT_STATUS { DRAFT:초안, ACTIVE:활성, INACTIVE:비활성 }

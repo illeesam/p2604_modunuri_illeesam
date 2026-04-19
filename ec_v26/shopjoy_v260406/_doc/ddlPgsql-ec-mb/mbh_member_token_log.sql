@@ -50,5 +50,5 @@ CREATE INDEX idx_mbh_member_token_log_date      ON mbh_member_token_log (reg_dat
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] mbh_member_token_log.action_cd (토큰 액션) : TOKEN_ACTION: ISSUE/REFRESH/EXPIRE/REVOKE
--- [CODES] mbh_member_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE: ACCESS/REFRESH/TEMP
+-- [CODES] mbh_member_token_log.action_cd (토큰 액션) : TOKEN_ACTION { ISSUE:발급, REFRESH:갱신, EXPIRE:만료, REVOKE:폐기 }
+-- [CODES] mbh_member_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE { ACCESS:액세스, REFRESH:갱신, TEMP:임시 }

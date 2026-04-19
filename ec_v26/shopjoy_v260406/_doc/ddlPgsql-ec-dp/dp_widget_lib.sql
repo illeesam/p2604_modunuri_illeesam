@@ -46,4 +46,4 @@ COMMENT ON COLUMN dp_widget_lib.disp_path IS '점(.) 구분 표시경로';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] dp_widget_lib.widget_type_cd (위젯유형) : WIDGET_TYPE: image_banner/product_slider/product/cond_product/chart_bar/chart_line/chart_pie/text_banner/info_card/popup/file/file_list/coupon/html_editor/event_banner/cache_banner/widget_embed/barcode/countdown/markdown/video_player/map_widget
+-- [CODES] dp_widget_lib.widget_type_cd (위젯유형) : WIDGET_TYPE { image_banner:이미지배너, product_slider:상품슬라이더, product:상품, cond_product:조건상품, chart_bar:막대차트, chart_line:선형차트, chart_pie:파이차트, text_banner:텍스트배너, info_card:정보카드, popup:팝업, file:파일, file_list:파일목록, coupon:쿠폰, html_editor:HTML에디터, event_banner:이벤트배너, cache_banner:캐쉬배너, widget_embed:위젯임베드, barcode:바코드, countdown:카운트다운, markdown:마크다운, video_player:비디오, map_widget:지도 }

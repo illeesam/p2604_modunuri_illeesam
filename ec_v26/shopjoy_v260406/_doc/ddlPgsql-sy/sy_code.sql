@@ -77,7 +77,9 @@ COMMENT ON COLUMN sy_code.upd_date            IS '수정일';
 -- PRODUCT_STATUS       : 상품상태 (DRAFT/ACTIVE/STOPPED/SOLD_OUT/DISCONTINUED)
 -- PRODUCT_TYPE         : 상품유형 (SINGLE/GROUP/SET)
 -- VAT_TYPE             : 부가세유형 (TAXABLE/TAX_FREE)
--- OPT_TYPE             : 옵션타입 (SELECT/SELECT_INPUT/MULTI_SELECT)
+-- OPT_TYPE             : 옵션카테고리 (NONE/COLOR/SIZE/MATERIAL/CUSTOM)
+-- OPT_VAL              : 옵션프리셋값 (RED/BLUE/.../S/M/L/XL/... parentCodeValue=OPT_TYPE값)
+-- OPT_INPUT_TYPE       : 옵션입력방식 (SELECT/SELECT_INPUT/MULTI_SELECT)
 -- PROD_QNA_TYPE        : 상품문의유형 (SIZE/QUALITY/DLIV/ETC)
 --
 -- [프로모션]

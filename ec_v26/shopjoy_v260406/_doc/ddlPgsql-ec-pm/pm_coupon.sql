@@ -87,4 +87,4 @@ CREATE INDEX idx_pm_coupon_grade  ON pm_coupon (mem_grade_cd);
 -- ============================================================
 -- [CODES] pm_coupon.coupon_type_cd (쿠폰유형) : 쿠폰유형 { RATE:정률 할인, FIXED:정액 할인 }
 -- [CODES] pm_coupon.coupon_status_cd (상태) : 쿠폰상태 { ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료 }
--- [CODES] pm_coupon.target_type_cd (적용대상) : PROMO_TARGET_TYPE: ALL/PRODUCT/CATEGORY/VENDOR/BRAND/MEMBER_GRADE
+-- [CODES] pm_coupon.target_type_cd (적용대상) : PROMO_TARGET_TYPE { ALL:전체, PRODUCT:상품, CATEGORY:카테고리, VENDOR:업체, BRAND:브랜드, MEMBER_GRADE:회원등급 }

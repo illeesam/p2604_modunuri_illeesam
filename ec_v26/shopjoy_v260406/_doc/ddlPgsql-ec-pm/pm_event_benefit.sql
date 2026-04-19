@@ -36,4 +36,4 @@ CREATE INDEX idx_pm_event_benefit_event ON pm_event_benefit (event_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_event_benefit.benefit_type_cd (혜택유형) : BENEFIT_TYPE: COUPON/SAVE/CACHE/GIFT/DISCOUNT
+-- [CODES] pm_event_benefit.benefit_type_cd (혜택유형) : BENEFIT_TYPE { COUPON:쿠폰, SAVE:적립금, CACHE:캐쉬, GIFT:사은품, DISCOUNT:할인 }

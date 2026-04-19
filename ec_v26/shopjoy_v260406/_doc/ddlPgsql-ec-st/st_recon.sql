@@ -70,5 +70,5 @@ CREATE INDEX idx_st_recon_ref        ON st_recon (ref_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_recon.recon_type_cd (대사유형) : RECON_TYPE: ORDER/SETTLE
--- [CODES] st_recon.recon_status_cd (대사상태) : RECON_STATUS: MATCHED/DIFF/MANUAL
+-- [CODES] st_recon.recon_type_cd (대사유형) : RECON_TYPE { ORDER:주문, SETTLE:정산 }
+-- [CODES] st_recon.recon_status_cd (대사상태) : RECON_STATUS { MATCHED:일치, DIFF:불일치, MANUAL:수동처리 }

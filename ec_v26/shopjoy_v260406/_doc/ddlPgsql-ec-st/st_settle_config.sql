@@ -44,4 +44,4 @@ CREATE INDEX idx_st_settle_config_category ON st_settle_config (site_id, categor
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_settle_config.settle_cycle_cd (정산주기) : SETTLE_CYCLE: WEEKLY/BIWEEKLY/MONTHLY
+-- [CODES] st_settle_config.settle_cycle_cd (정산주기) : SETTLE_CYCLE { WEEKLY:주간, BIWEEKLY:격주, MONTHLY:월간 }

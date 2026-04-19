@@ -50,5 +50,5 @@ CREATE INDEX idx_sy_push_log_channel ON cmh_push_log (channel_cd, result_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] cmh_push_log.channel_cd (발송채널) : ALARM_CHANNEL: EMAIL/SMS/PUSH/KAKAO
--- [CODES] cmh_push_log.result_cd (발송결과) : SEND_RESULT: SUCCESS/FAILED/PENDING
+-- [CODES] cmh_push_log.channel_cd (발송채널) : ALARM_CHANNEL { EMAIL:이메일, SMS:SMS, PUSH:푸시알림, KAKAO:카카오 }
+-- [CODES] cmh_push_log.result_cd (발송결과) : SEND_RESULT { SUCCESS:성공, FAILED:실패, PENDING:대기 }

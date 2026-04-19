@@ -29,4 +29,4 @@ CREATE INDEX idx_sy_i18n_msg_lang ON sy_i18n_msg (lang_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_i18n_msg.lang_cd (언어코드) : LANG_CODE: ko/en/ja/in
+-- [CODES] sy_i18n_msg.lang_cd (언어코드) : LANG_CODE { ko:한국어, en:영어, ja:일본어, in:인도네시아어 }

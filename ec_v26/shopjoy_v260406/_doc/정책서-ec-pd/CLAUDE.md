@@ -17,7 +17,7 @@
 ## 관련 테이블 (ec-pd/)
 - `pd_category` — 카테고리
 - `pd_prod` — 상품 마스터 (prod_type_cd: SINGLE/GROUP/SET)
-- `pd_prod_opt_grp`, `pd_prod_opt`, `pd_prod_opt_sku` — 옵션/SKU
+- `pd_prod_opt_item`, `pd_prod_opt_item`, `pd_prod_sku` — 옵션/SKU
 - `pd_prod_bundle` — 묶음상품 구성품
 - `pd_prod_set_item` — 세트상품 구성 목록
 - `pd_dliv_tmplt` — 배송템플릿

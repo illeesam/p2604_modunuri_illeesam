@@ -4,9 +4,9 @@ CREATE TABLE od_order_item (
     site_id         VARCHAR(16),                            -- sy_site.site_id
     order_id        VARCHAR(16)     NOT NULL,
     prod_id         VARCHAR(16)     NOT NULL,
-    sku_id          VARCHAR(16),                            -- pd_prod_opt_sku.sku_id
-    opt_id_1        VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt)
-    opt_id_2        VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt)
+    sku_id          VARCHAR(16),                            -- pd_prod_sku.sku_id
+    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
+    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
     -- ── 상품 스냅샷 (주문 시점) ──
     prod_nm         VARCHAR(200),                           -- 상품명 스냅샷
     brand_nm        VARCHAR(100),                           -- 브랜드명 스냅샷
@@ -64,9 +64,9 @@ COMMENT ON COLUMN od_order_item.order_item_id    IS '주문상품ID (YYMMDDhhmms
 COMMENT ON COLUMN od_order_item.site_id          IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN od_order_item.order_id         IS '주문ID (od_order.)';
 COMMENT ON COLUMN od_order_item.prod_id          IS '상품ID (pd_prod.)';
-COMMENT ON COLUMN od_order_item.sku_id           IS 'SKU ID (pd_prod_opt_sku., 무옵션 시 NULL)';
-COMMENT ON COLUMN od_order_item.opt_id_1         IS '옵션1 값ID (pd_prod_opt.)';
-COMMENT ON COLUMN od_order_item.opt_id_2         IS '옵션2 값ID (pd_prod_opt.)';
+COMMENT ON COLUMN od_order_item.sku_id           IS 'SKU ID (pd_prod_sku., 무옵션 시 NULL)';
+COMMENT ON COLUMN od_order_item.opt_item_id_1     IS '옵션1 값ID (pd_prod_opt_item.opt_item_id)';
+COMMENT ON COLUMN od_order_item.opt_item_id_2     IS '옵션2 값ID (pd_prod_opt_item.opt_item_id)';
 COMMENT ON COLUMN od_order_item.prod_nm          IS '상품명 (주문 시점 스냅샷)';
 COMMENT ON COLUMN od_order_item.brand_nm         IS '브랜드명 (주문 시점 스냅샷)';
 COMMENT ON COLUMN od_order_item.dliv_tmplt_id    IS '배송비 템플릿ID 스냅샷';

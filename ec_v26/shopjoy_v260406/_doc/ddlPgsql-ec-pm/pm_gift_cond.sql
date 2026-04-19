@@ -31,4 +31,4 @@ CREATE INDEX idx_pm_gift_cond_gift ON pm_gift_cond (gift_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_gift_cond.cond_type_cd (조건유형) : GIFT_COND_TYPE: ORDER_AMT/PRODUCT/MEMBER_GRADE
+-- [CODES] pm_gift_cond.cond_type_cd (조건유형) : GIFT_COND_TYPE { ORDER_AMT:주문금액, PRODUCT:상품, MEMBER_GRADE:회원등급 }

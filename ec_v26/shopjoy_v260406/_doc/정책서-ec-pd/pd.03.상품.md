@@ -135,14 +135,15 @@
 - 회원이 상품 페이지에서 문의 등록
 - **비밀글** (scrt_yn=Y): 작성자 본인 + 관리자만 열람
 - **답변** (answ_yn, answ_date, answ_user_id): 관리자/판매자 답변
-- 문의유형 코드: PROD_QNA_TYPE (SIZE/QUALITY/DLIV/ETC)
+- 문의유형 코드: PROD_QNA_TYPE { SIZE:사이즈, QUALITY:품질, DLIV:배송, ETC:기타 }
 - 노출여부 (disp_yn): 관리자가 부적절한 문의 숨김 가능
+- 특정 SKU 문의 시 sku_id 연결 (pd_prod_sku.sku_id)
 
 ### 12. 배송템플릿 (pd_dliv_tmplt)
 - 업체(vendor_id)별로 배송 정책을 템플릿으로 관리
 - 상품 등록 시 배송템플릿 선택 → 배송비/반품비/교환비 자동 적용
-- **배송방법** (dliv_method_cd): COURIER(택배)/DIRECT(직배송)/PICKUP(방문수령)
-- **배송비 결제** (dliv_pay_type_cd): PREPAY(선결제)/COD(착불)
+- **배송방법** (dliv_method_cd): DLIV_METHOD { COURIER:택배, DIRECT:직접배송, PICKUP:방문수령, SAME_DAY:당일배송 }
+- **배송비 결제** (dliv_pay_type_cd): DLIV_PAY_TYPE { PREPAY:선불, COD:착불 }
 - 반품지 주소 (return_addr_*): 반품 접수 시 자동 안내
 - 기본배송지 (base_dliv_yn): 업체당 1개만 Y 가능
 
@@ -161,8 +162,8 @@
 |---|---|
 | `prod_img_id` | 이미지ID |
 | `prod_id` | 상품ID |
-| `opt_id_1` | 옵션1 값ID (NULL=공통) |
-| `opt_id_2` | 옵션2 값ID (NULL=옵션1 전체 공통) |
+| `opt_item_id_1` | 옵션1 값ID (pd_prod_opt_item.opt_item_id, NULL=공통) |
+| `opt_item_id_2` | 옵션2 값ID (pd_prod_opt_item.opt_item_id, NULL=옵션1 전체 공통) |
 | `attach_id` | 원본 파일 ID (sy_attach 연계) |
 | `cdn_img_url` | CDN 원본 이미지 URL (상세 페이지용) |
 | `cdn_thumb_url` | CDN 썸네일 URL (목록·검색용) |
@@ -171,7 +172,7 @@
 | `is_thumb` | 대표이미지 여부 (Y=1개만) |
 
 #### 이미지 범위 규칙
-| opt_id_1 | opt_id_2 | 적용 범위 |
+| opt_item_id_1 | opt_item_id_2 | 적용 범위 |
 |---|---|---|
 | NULL | NULL | 상품 전체 공통 대표이미지 |
 | 색상값 | NULL | 해당 색상의 모든 사이즈 공통 |
@@ -219,23 +220,75 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 
 | content_type_cd | 설명 |
 |---|---|
-| 상세설명 | 상품 주요 특징, 성분, 사용 방법 등 |
-| 사용설명 | 사용 순서, 주의사항 |
-| 배송정보 | 배송 불가 지역, 제주도 추가배송비 안내 등 |
-| AS정보 | AS 접수처, 교환·반품 기간 안내 |
-| 반품정책 | 반품 불가 조건, 고객 귀책 기준 |
+| DETAIL | 상품 주요 특징, 성분, 사용 방법 등 상세설명 |
+| NOTICE | 구매 전 안내사항 |
+| GUIDE | 이용안내, 배송정보, AS정보 등 |
+| SIZE_GUIDE | 사이즈 표 및 측정 방법 안내 |
 
 > `pd_prod.content_html` (단일 필드)과 `pd_prod_content` (다중 탭) 두 방식 지원.
-> 상세설명 탭이 많은 경우 `pd_prod_content`로 분리 관리 권장.
+> 컨텐츠 탭이 많은 경우 `pd_prod_content`로 분리 관리 권장.
+
+### 16. 상품 리뷰 (pd_review / pd_review_attach / pd_review_comment)
+
+구매자가 주문 완료 후 남기는 평가. 평점 + 텍스트 + 첨부미디어 + 댓글(판매자 답변 포함) 구조.
+
+#### pd_review — 리뷰 본문
+| 필드 | 설명 |
+|---|---|
+| `review_id` | 리뷰ID |
+| `prod_id` | 상품ID |
+| `member_id` | 작성 회원ID |
+| `review_title` | 리뷰 제목 |
+| `review_content` | 리뷰 내용 |
+| `rating` | 평점 (NUMERIC(3,1), 1.0~5.0) |
+| `helpful_cnt` | 도움이 돼요 수 |
+| `unhelpful_cnt` | 도움이 안 돼요 수 |
+| `review_status_cd` | 상태 — REVIEW_STATUS { PENDING:검토중, ACTIVE:게시, HIDDEN:숨김, DELETED:삭제 } |
+| `review_status_cd_before` | 변경 전 상태 (상태 추적용) |
+| `review_date` | 리뷰 작성일시 |
+
+#### pd_review_attach — 리뷰 첨부파일
+| 필드 | 설명 |
+|---|---|
+| `review_attach_id` | 미디어ID |
+| `review_id` | 리뷰ID |
+| `attach_id` | 첨부파일ID (sy_attach.attach_id — URL·파일명은 여기서 조회) |
+| `media_type_cd` | 미디어유형 — MEDIA_TYPE { IMAGE:이미지, VIDEO:동영상, DOCUMENT:문서 } |
+| `thumb_url` | 동영상 썸네일 URL (이미지는 sy_attach.url 사용) |
+| `sort_ord` | 정렬순서 |
+
+#### pd_review_comment — 리뷰 댓글
+| 필드 | 설명 |
+|---|---|
+| `review_comment_id` | 댓글ID |
+| `review_id` | 대상 리뷰ID |
+| `parent_reply_id` | 상위 댓글ID (대댓글 시) |
+| `writer_type_cd` | 작성자유형 — REVIEW_WRITER_TYPE { MEMBER:회원, ADMIN:관리자 } |
+| `writer_id` | 작성자ID (member_id 또는 user_id) |
+| `writer_nm` | 작성자명 |
+| `review_reply_content` | 댓글 내용 |
+| `reply_status_cd` | 상태 (ACTIVE/HIDDEN/DELETED) |
+
+#### 운영 규칙
+- 리뷰는 구매 확정(buy_confirm_yn=Y) 이후 작성 가능
+- 상품당 회원 1인 1리뷰 (order_item_id 기반)
+- 관리자가 부적절 리뷰 HIDDEN/DELETED 처리 가능
+- review_status_cd_before로 상태 변경 추적
+
+---
 
 ## 관련 테이블
 - pd_prod: 상품 기본 정보
-- pd_prod_opt_sku: 상품 옵션/SKU
-- pd_prod_content: 상품 상세 콘텐츠
-- pd_prod_view_log: 상품 조회 로그
+- pd_prod_sku: 상품 옵션/SKU
+- pd_prod_content: 상품 상세 콘텐츠 (PROD_CONTENT_TYPE: DETAIL/NOTICE/GUIDE/SIZE_GUIDE)
+- pd_prod_img: 상품 이미지 (opt_item_id_1/2로 옵션 연동)
 - pd_prod_qna: 상품문의
 - pd_dliv_tmplt: 배송템플릿
 - pd_restock_noti: 재입고알림 신청
+- pd_review: 리뷰 본문 (REVIEW_STATUS)
+- pd_review_attach: 리뷰 첨부파일 (sy_attach 연계)
+- pd_review_comment: 리뷰 댓글 (REVIEW_WRITER_TYPE)
+- pdh_prod_view_log: 상품 조회 로그
 
 ## 제약사항
 - 판매가는 정가보다 클 수 없음
@@ -245,6 +298,7 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 - `self_cdiv_rate + seller_cdiv_rate = 100`%가 되어야 함 (프로모션 분담율 기준)
 
 ## 변경이력
+- 2026-04-19: 리뷰(pd_review/attach/comment) 섹션 추가, opt_item_id_1/2 반영, content_type_cd DETAIL/NOTICE/GUIDE/SIZE_GUIDE 코드 정리, 배송템플릿·문의유형 코드 레이블 추가
 - 2026-04-18: 상품문의, 배송템플릿, 재입고알림 정책 추가
 - 2026-04-18: 판매기간, 구매제한, 혜택적용여부, 홍보문구, 매입가, 마진율 필드 추가
 - 2026-04-16: 초기 작성

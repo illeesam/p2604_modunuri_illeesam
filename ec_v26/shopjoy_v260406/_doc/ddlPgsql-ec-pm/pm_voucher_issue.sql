@@ -49,4 +49,4 @@ CREATE INDEX idx_pm_voucher_issue_expire  ON pm_voucher_issue (expire_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_voucher_issue.voucher_issue_status_cd (상태) : SAVE_ISSUE_STATUS: SCHEDULED/COMPLETED/CANCELLED/EXPIRED
+-- [CODES] pm_voucher_issue.voucher_issue_status_cd (상태) : SAVE_ISSUE_STATUS { SCHEDULED:예정, COMPLETED:완료, CANCELLED:취소, EXPIRED:만료 }

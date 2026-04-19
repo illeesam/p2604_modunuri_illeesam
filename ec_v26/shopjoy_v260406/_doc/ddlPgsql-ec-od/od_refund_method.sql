@@ -62,4 +62,4 @@ CREATE INDEX idx_od_refund_method_prio    ON od_refund_method (refund_id, refund
 -- 코드값 참조
 -- ============================================================
 -- [CODES] od_refund_method.pay_method_cd (결제수단코드) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
--- [CODES] od_refund_method.refund_status_cd (수단별 환불상태) : REFUND_STATUS: PENDING/COMPLT/FAILED
+-- [CODES] od_refund_method.refund_status_cd (수단별 환불상태) : REFUND_STATUS { PENDING:대기, COMPLT:완료, FAILED:실패 }

@@ -31,7 +31,7 @@ od_order (주문 1건)
 ```
 
 ### 재고 차감
-- 각 구성품의 `pd_prod_opt_sku.stock` 차감
+- 각 구성품의 `pd_prod_sku.stock` 차감
 - 결제 완료 시점에 차감
 
 ### 배송 분리

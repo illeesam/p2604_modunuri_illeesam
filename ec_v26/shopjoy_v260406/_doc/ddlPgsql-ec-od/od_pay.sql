@@ -115,11 +115,11 @@ CREATE INDEX idx_od_pay_div           ON od_pay (pay_div_cd, pay_dir_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] od_pay.pay_div_cd (주문/클레임 구분) : PAY_DIV: ORDER/CLAIM
--- [CODES] od_pay.pay_dir_cd (입금/환불 방향) : PAY_DIR: DEPOSIT/REFUND
--- [CODES] od_pay.pay_occur_type_cd (결제발생유형) : PAY_OCCUR_TYPE: ORDER/CLAIM_EXTRA/EXCHANGE_EXTRA
+-- [CODES] od_pay.pay_div_cd (주문/클레임 구분) : PAY_DIV { ORDER:주문, CLAIM:클레임 }
+-- [CODES] od_pay.pay_dir_cd (입금/환불 방향) : PAY_DIR { DEPOSIT:입금, REFUND:환불 }
+-- [CODES] od_pay.pay_occur_type_cd (결제발생유형) : PAY_OCCUR_TYPE { ORDER:주문결제, CLAIM_EXTRA:클레임추가, EXCHANGE_EXTRA:교환추가 }
 -- [CODES] od_pay.pay_method_cd (결제수단) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
--- [CODES] od_pay.pay_channel_cd (결제채널) : PAY_CHANNEL: CARD/ACCOUNT/KAKAO/NAVER
--- [CODES] od_pay.pay_status_cd (결제상태) : PAY_STATUS: PENDING/COMPLT/FAILED/CANCELLED/PARTIAL_REFUND/REFUNDED
--- [CODES] od_pay.card_type_cd (카드 타입) : CARD_TYPE: CREDIT/DEBIT/CHECK
--- [CODES] od_pay.refund_status_cd (환불 상태) : REFUND_STATUS: PENDING/COMPLT/FAILED
+-- [CODES] od_pay.pay_channel_cd (결제채널) : PAY_CHANNEL { CARD:카드, ACCOUNT:계좌, KAKAO:카카오, NAVER:네이버 }
+-- [CODES] od_pay.pay_status_cd (결제상태) : PAY_STATUS { PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불 }
+-- [CODES] od_pay.card_type_cd (카드 타입) : CARD_TYPE { CREDIT:신용, DEBIT:직불, CHECK:체크 }
+-- [CODES] od_pay.refund_status_cd (환불 상태) : REFUND_STATUS { PENDING:대기, COMPLT:완료, FAILED:실패 }

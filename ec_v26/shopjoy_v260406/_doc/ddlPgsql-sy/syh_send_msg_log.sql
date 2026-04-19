@@ -66,5 +66,5 @@ CREATE INDEX idx_syh_send_msg_log_ref      ON syh_send_msg_log (ref_type_cd, ref
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] syh_send_msg_log.channel_cd (발송채널) : ALARM_CHANNEL: EMAIL/SMS/PUSH/KAKAO
--- [CODES] syh_send_msg_log.result_cd (발송결과) : SEND_RESULT: SUCCESS/FAILED/PENDING
+-- [CODES] syh_send_msg_log.channel_cd (발송채널) : ALARM_CHANNEL { EMAIL:이메일, SMS:SMS, PUSH:푸시알림, KAKAO:카카오 }
+-- [CODES] syh_send_msg_log.result_cd (발송결과) : SEND_RESULT { SUCCESS:성공, FAILED:실패, PENDING:대기 }

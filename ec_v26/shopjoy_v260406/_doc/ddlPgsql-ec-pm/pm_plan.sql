@@ -51,5 +51,5 @@ CREATE INDEX idx_pm_plan_date   ON pm_plan (start_date, end_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_plan.plan_type_cd (유형) : PLAN_TYPE: GENERAL/BRAND/SEASON/SALE
--- [CODES] pm_plan.plan_status_cd (상태) : PLAN_STATUS: DRAFT/ACTIVE/ENDED/INACTIVE
+-- [CODES] pm_plan.plan_type_cd (유형) : PLAN_TYPE { GENERAL:일반, BRAND:브랜드기획, SEASON:시즌, SALE:세일 }
+-- [CODES] pm_plan.plan_status_cd (상태) : PLAN_STATUS { DRAFT:초안, ACTIVE:활성, ENDED:종료, INACTIVE:비활성 }

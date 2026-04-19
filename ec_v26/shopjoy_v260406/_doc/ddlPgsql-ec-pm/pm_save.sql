@@ -40,4 +40,4 @@ CREATE INDEX idx_pm_save_expire ON pm_save (expire_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_save.save_type_cd (유형) : SAVE_TYPE: EARN/USE/EXPIRE/CANCEL/ADMIN
+-- [CODES] pm_save.save_type_cd (유형) : SAVE_TYPE { EARN:적립, USE:사용, EXPIRE:소멸, CANCEL:취소, ADMIN:관리자 }

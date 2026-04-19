@@ -57,4 +57,4 @@ CREATE INDEX idx_odh_pay_chg_hist_date       ON odh_pay_chg_hist (chg_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] odh_pay_chg_hist.chg_type_cd (변경유형) : PAY_CHG_TYPE: STATUS/METHOD/AMOUNT
+-- [CODES] odh_pay_chg_hist.chg_type_cd (변경유형) : PAY_CHG_TYPE { STATUS:상태변경, METHOD:수단변경, AMOUNT:금액변경 }

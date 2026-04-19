@@ -35,4 +35,4 @@ CREATE INDEX idx_st_settle_adj_settle ON st_settle_adj (settle_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_settle_adj.adj_type_cd (조정유형) : SETTLE_ADJ_TYPE: PENALTY/BONUS/ERROR_FIX/OTHER
+-- [CODES] st_settle_adj.adj_type_cd (조정유형) : SETTLE_ADJ_TYPE { PENALTY:패널티, BONUS:보너스, ERROR_FIX:오류수정, OTHER:기타 }

@@ -33,4 +33,4 @@ CREATE INDEX idx_od_pay_mtd_type   ON od_pay_mtd (mtd_type_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] od_pay_mtd.mtd_type_cd (결제수단유형코드) : PAY_METHOD: BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/SAVE/ZERO
+-- [CODES] od_pay_mtd.mtd_type_cd (결제수단유형코드) : PAY_METHOD { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }

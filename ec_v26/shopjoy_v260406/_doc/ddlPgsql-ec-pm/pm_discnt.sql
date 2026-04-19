@@ -68,6 +68,6 @@ CREATE INDEX idx_pm_discnt_grade  ON pm_discnt (mem_grade_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_discnt.discnt_type_cd (할인유형) : DISCNT_TYPE: RATE/FIXED/FREE_SHIP
--- [CODES] pm_discnt.discnt_target_cd (할인대상) : DISCNT_TARGET: ALL/CATEGORY/PRODUCT/MEMBER_GRADE
--- [CODES] pm_discnt.discnt_status_cd (상태) : DISCNT_STATUS: ACTIVE/INACTIVE/EXPIRED
+-- [CODES] pm_discnt.discnt_type_cd (할인유형) : DISCNT_TYPE { RATE:정률할인, FIXED:정액할인, FREE_SHIP:무료배송 }
+-- [CODES] pm_discnt.discnt_target_cd (할인대상) : DISCNT_TARGET { ALL:전체, CATEGORY:카테고리, PRODUCT:상품, MEMBER_GRADE:회원등급 }
+-- [CODES] pm_discnt.discnt_status_cd (상태) : DISCNT_STATUS { ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료 }

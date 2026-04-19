@@ -51,5 +51,5 @@ CREATE INDEX idx_st_settle_pay_status ON st_settle_pay (pay_status_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_settle_pay.pay_method_cd (지급수단) : PAY_METHOD: BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/SAVE/ZERO
--- [CODES] st_settle_pay.pay_status_cd (지급상태) : SETTLE_PAY_STATUS: PENDING/REQUESTED/COMPLT/FAILED/DISPUTED
+-- [CODES] st_settle_pay.pay_method_cd (지급수단) : PAY_METHOD { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
+-- [CODES] st_settle_pay.pay_status_cd (지급상태) : SETTLE_PAY_STATUS { PENDING:대기, REQUESTED:지급요청, COMPLT:지급완료, FAILED:실패, DISPUTED:이의신청 }

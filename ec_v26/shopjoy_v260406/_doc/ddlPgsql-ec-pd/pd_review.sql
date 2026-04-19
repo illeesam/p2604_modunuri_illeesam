@@ -48,4 +48,4 @@ CREATE INDEX idx_pd_review_date ON pd_review (review_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_review.review_status_cd (상태) : REVIEW_STATUS: PENDING/ACTIVE/HIDDEN/DELETED
+-- [CODES] pd_review.review_status_cd (상태) : REVIEW_STATUS { PENDING:검토중, ACTIVE:게시, HIDDEN:숨김, DELETED:삭제 }

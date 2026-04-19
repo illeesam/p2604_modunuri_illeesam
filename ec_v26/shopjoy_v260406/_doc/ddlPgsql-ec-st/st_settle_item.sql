@@ -52,4 +52,4 @@ CREATE INDEX idx_st_settle_item_vendor ON st_settle_item (vendor_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] st_settle_item.settle_item_type_cd (항목유형) : SETTLE_ITEM_TYPE: SALE/CANCEL/DISCNT/GIFT/SHIP/ADJ
+-- [CODES] st_settle_item.settle_item_type_cd (항목유형) : SETTLE_ITEM_TYPE { SALE:매출, CANCEL:취소, DISCNT:할인, GIFT:사은품, SHIP:배송비, ADJ:조정 }

@@ -74,6 +74,6 @@ CREATE INDEX idx_od_refund_req_date  ON od_refund (refund_req_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] od_refund.refund_type_cd (환불유형코드) : REFUND_TYPE: CANCEL/RETURN/PARTIAL/EXTRA
--- [CODES] od_refund.refund_status_cd (환불상태) : REFUND_STATUS: PENDING/COMPLT/FAILED
--- [CODES] od_refund.fault_type_cd (귀책유형코드) : FAULT_TYPE: CUST/VENDOR/PLATFORM
+-- [CODES] od_refund.refund_type_cd (환불유형코드) : REFUND_TYPE { CANCEL:취소환불, RETURN:반품환불, PARTIAL:부분환불, EXTRA:추가결제 }
+-- [CODES] od_refund.refund_status_cd (환불상태) : REFUND_STATUS { PENDING:대기, COMPLT:완료, FAILED:실패 }
+-- [CODES] od_refund.fault_type_cd (귀책유형코드) : FAULT_TYPE { CUST:고객귀책, VENDOR:업체귀책, PLATFORM:플랫폼귀책 }

@@ -479,13 +479,57 @@
 | TAX_FREE | 면세상품 |
 > 적용: `pd_prod.vat_type_cd`
 
-#### OPT_TYPE — 옵션타입
+#### OPT_TYPE — 옵션카테고리
+상품·옵션그룹에서 어떤 종류의 옵션인지 분류. NONE은 옵션 없는 상품.
+| code_value | label | 비고 |
+|---|---|---|
+| NONE | 옵션없음 | 단일상품, 옵션 미사용 |
+| COLOR | 색상 | OPT_VAL에서 parentCodeValue=COLOR 값 목록 제공 |
+| SIZE | 사이즈 | OPT_VAL에서 parentCodeValue=SIZE 값 목록 제공 |
+| MATERIAL | 소재 | OPT_VAL에서 parentCodeValue=MATERIAL 값 목록 제공 |
+| CUSTOM | 직접입력 | 프리셋 없이 관리자가 직접 opt_code 입력 |
+> 적용: `pd_prod.opt_type_cd`, `pd_prod_opt_item.opt_type_cd`
+
+#### OPT_VAL — 옵션프리셋값
+OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참조.
+관리자가 opt_type_cd 선택 시 해당 parentCodeValue의 OPT_VAL 목록을 자동 제시 → `pd_prod_opt_item.opt_code`에 저장.
+| code_value | label | parentCodeValue |
+|---|---|---|
+| BLACK | 검정 | COLOR |
+| WHITE | 흰색 | COLOR |
+| RED | 빨강 | COLOR |
+| BLUE | 파랑 | COLOR |
+| GREEN | 초록 | COLOR |
+| YELLOW | 노랑 | COLOR |
+| PINK | 핑크 | COLOR |
+| PURPLE | 보라 | COLOR |
+| GRAY | 회색 | COLOR |
+| BROWN | 갈색 | COLOR |
+| BEIGE | 베이지 | COLOR |
+| ORANGE | 주황 | COLOR |
+| NAVY | 네이비 | COLOR |
+| XS | XS | SIZE |
+| S | S | SIZE |
+| M | M | SIZE |
+| L | L | SIZE |
+| XL | XL | SIZE |
+| XXL | XXL | SIZE |
+| FREE | FREE | SIZE |
+| COTTON | 면 | MATERIAL |
+| POLYESTER | 폴리에스터 | MATERIAL |
+| LEATHER | 가죽 | MATERIAL |
+| WOOL | 울 | MATERIAL |
+| LINEN | 린넨 | MATERIAL |
+> 적용: `pd_prod_opt_item.opt_code` (OPT_TYPE 선택 시 자동 제시, CUSTOM이면 직접 입력)
+
+#### OPT_INPUT_TYPE — 옵션입력방식
+옵션값 UI 입력 위젯 타입. OPT_TYPE과 별개로 각 옵션그룹의 입력 방식을 지정.
 | code_value | label |
 |---|---|
 | SELECT | 선택형 |
 | SELECT_INPUT | 선택+입력형 |
 | MULTI_SELECT | 복수선택형 |
-> 적용: `pd_prod_opt.opt_type_cd`
+> 적용: `pd_prod_opt_item.opt_input_type_cd`
 
 #### PROD_QNA_TYPE — 상품문의유형
 | code_value | label |

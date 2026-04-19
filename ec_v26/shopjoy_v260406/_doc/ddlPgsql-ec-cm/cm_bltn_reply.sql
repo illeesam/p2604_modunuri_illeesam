@@ -36,4 +36,4 @@ CREATE INDEX idx_cm_bltn_reply_parent ON cm_bltn_reply (parent_comment_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] cm_bltn_reply.comment_status_cd (상태) : BBS_STATUS: ACTIVE/HIDDEN/DELETED
+-- [CODES] cm_bltn_reply.comment_status_cd (상태) : BBS_STATUS { ACTIVE:활성, HIDDEN:숨김, DELETED:삭제 }

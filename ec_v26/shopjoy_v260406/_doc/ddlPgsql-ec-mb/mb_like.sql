@@ -33,4 +33,4 @@ CREATE INDEX idx_mb_like_target        ON mb_like (target_type_cd, target_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] mb_like.target_type_cd (대상유형) : LIKE_TARGET_TYPE: PRODUCT/BRAND
+-- [CODES] mb_like.target_type_cd (대상유형) : LIKE_TARGET_TYPE { PRODUCT:상품, BRAND:브랜드 }

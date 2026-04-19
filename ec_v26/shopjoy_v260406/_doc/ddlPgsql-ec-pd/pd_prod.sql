@@ -102,6 +102,6 @@ COMMENT ON COLUMN pd_prod.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_prod.prod_type_cd (상품유형) : PRODUCT_TYPE: SINGLE/GROUP/SET
+-- [CODES] pd_prod.prod_type_cd (상품유형) : PRODUCT_TYPE { SINGLE:단일상품, GROUP:그룹상품, SET:세트상품 }
 -- [CODES] pd_prod.prod_status_cd (상태) : 상품상태 { ON_SALE:판매중, PREPARING:준비중, SOLD_OUT:품절, SUSPENDED:판매중지 }
 -- [CODES] pd_prod.size_info_cd (사이즈) : 상품사이즈 { FREE:FREE, XS:XS, S:S, M:M, L:L, XL:XL, XXL:XXL }

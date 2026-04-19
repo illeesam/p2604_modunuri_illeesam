@@ -50,4 +50,4 @@ CREATE INDEX idx_sy_vendor_brand_use    ON sy_vendor_brand (use_yn);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_vendor_brand.contract_cd (계약유형) : BRAND_CONTRACT: EXCLUSIVE/NON_EXCLUSIVE/CONSIGN
+-- [CODES] sy_vendor_brand.contract_cd (계약유형) : BRAND_CONTRACT { EXCLUSIVE:독점, NON_EXCLUSIVE:비독점, CONSIGN:위탁 }

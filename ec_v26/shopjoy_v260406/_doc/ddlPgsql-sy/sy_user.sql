@@ -50,4 +50,4 @@ COMMENT ON COLUMN sy_user.last_login_date  IS '마지막 로그인 일시';
 -- 코드값 참조
 -- ============================================================
 -- [CODES] sy_user.user_status_cd (상태) : 사용자상태 { ACTIVE:활성, INACTIVE:비활성 }
--- [CODES] sy_user.auth_method_cd (인증방식) : AUTH_METHOD: EMAIL/GOOGLE/KAKAO/NAVER
+-- [CODES] sy_user.auth_method_cd (인증방식) : AUTH_METHOD { EMAIL:이메일, GOOGLE:구글, KAKAO:카카오, NAVER:네이버 }

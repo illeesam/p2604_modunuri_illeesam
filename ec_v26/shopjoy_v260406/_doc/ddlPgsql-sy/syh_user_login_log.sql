@@ -55,4 +55,4 @@ CREATE INDEX idx_syh_user_login_log_ip    ON syh_user_login_log (ip);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] syh_user_login_log.result_cd (결과) : LOGIN_RESULT: SUCCESS/FAIL_PW/FAIL_LOCKED/FAIL_DORMANT/FAIL_WITHDRAWN
+-- [CODES] syh_user_login_log.result_cd (결과) : LOGIN_RESULT { SUCCESS:성공, FAIL_PW:비밀번호오류, FAIL_LOCKED:잠금, FAIL_DORMANT:휴면, FAIL_WITHDRAWN:탈퇴 }

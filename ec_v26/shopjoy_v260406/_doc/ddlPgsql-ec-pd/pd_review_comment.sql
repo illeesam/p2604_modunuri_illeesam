@@ -33,4 +33,4 @@ COMMENT ON COLUMN pd_review_comment.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_review_comment.writer_type_cd (작성자유형) : REVIEW_WRITER_TYPE: MEMBER/ADMIN
+-- [CODES] pd_review_comment.writer_type_cd (작성자유형) : REVIEW_WRITER_TYPE { MEMBER:회원, ADMIN:관리자 }

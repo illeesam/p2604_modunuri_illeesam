@@ -59,5 +59,5 @@ CREATE INDEX idx_pm_save_issue_expire  ON pm_save_issue (expire_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_save_issue.save_issue_type_cd (지급유형) : SAVE_ISSUE_TYPE: JOIN/ORDER_COMPLT/REVIEW_TEXT/REVIEW_PHOTO/REVIEW_VIDEO/EVENT/BIRTHDAY/REFERRAL/ADMIN_GRANT/ADMIN_REVOKE/ORDER_CANCEL/EXPIRE/CLAIM_SHIP
--- [CODES] pm_save_issue.issue_status_cd (지급상태) : SAVE_ISSUE_STATUS: SCHEDULED/COMPLETED/CANCELLED/EXPIRED
+-- [CODES] pm_save_issue.save_issue_type_cd (지급유형) : SAVE_ISSUE_TYPE { JOIN:회원가입, ORDER_COMPLT:구매완료, REVIEW_TEXT:텍스트리뷰, REVIEW_PHOTO:포토리뷰, REVIEW_VIDEO:동영상리뷰, EVENT:이벤트, BIRTHDAY:생일, REFERRAL:추천인, ADMIN_GRANT:관리자지급, ADMIN_REVOKE:관리자회수, ORDER_CANCEL:주문취소, EXPIRE:기간만료, CLAIM_SHIP:클레임배송비 }
+-- [CODES] pm_save_issue.issue_status_cd (지급상태) : SAVE_ISSUE_STATUS { SCHEDULED:예정, COMPLETED:완료, CANCELLED:취소, EXPIRED:만료 }

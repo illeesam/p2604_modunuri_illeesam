@@ -37,4 +37,4 @@ CREATE INDEX idx_pd_review_media_attach ON pd_review_attach (attach_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_review_attach.media_type_cd (미디어유형) : MEDIA_TYPE: IMAGE/VIDEO/DOCUMENT
+-- [CODES] pd_review_attach.media_type_cd (미디어유형) : MEDIA_TYPE { IMAGE:이미지, VIDEO:동영상, DOCUMENT:문서 }

@@ -38,4 +38,4 @@ CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type_
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_prod_content.content_type_cd (컨텐츠유형) : PROD_CONTENT_TYPE: DETAIL/NOTICE/GUIDE/SIZE_GUIDE
+-- [CODES] pd_prod_content.content_type_cd (컨텐츠유형) : PROD_CONTENT_TYPE { DETAIL:상세설명, NOTICE:안내, GUIDE:이용안내, SIZE_GUIDE:사이즈안내 }

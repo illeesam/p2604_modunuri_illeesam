@@ -41,4 +41,4 @@ CREATE INDEX idx_pm_gift_issue_order  ON pm_gift_issue (order_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_gift_issue.gift_issue_status_cd (상태) : GIFT_ISSUE_STATUS: ISSUED/DELIVERED/CANCELLED
+-- [CODES] pm_gift_issue.gift_issue_status_cd (상태) : GIFT_ISSUE_STATUS { ISSUED:발급, DELIVERED:지급완료, CANCELLED:취소 }

@@ -24,4 +24,4 @@ CREATE INDEX idx_mb_sns_member_channel ON mb_sns_member (sns_channel_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] mb_sns_member.sns_channel_cd (SNS채널코드) : SNS_CHANNEL: KAKAO/NAVER/GOOGLE/APPLE
+-- [CODES] mb_sns_member.sns_channel_cd (SNS채널코드) : SNS_CHANNEL { KAKAO:카카오, NAVER:네이버, GOOGLE:구글, APPLE:애플 }
