@@ -54,10 +54,21 @@ window.XsSample07 = {
       { label:'삭제',    urlFn: p => `delete${p}Delete`,         method:'DELETE' },
       { label:'일괄삭제',urlFn: p => `delete${p}DeleteList`,     method:'DELETE' },
     ];
+    const REST_CRUD_OPS = [
+      { label:'목록 조회',  urlFn: t => t,              method:'GET'    },
+      { label:'페이지 조회',urlFn: t => `${t}/page`,    method:'GET'    },
+      { label:'건수 조회',  urlFn: t => `${t}/count`,   method:'GET'    },
+      { label:'단건 조회',  urlFn: t => `${t}/{id}`,    method:'GET'    },
+      { label:'등록',       urlFn: t => t,              method:'POST'   },
+      { label:'수정',       urlFn: t => `${t}/{id}`,    method:'PUT'    },
+      { label:'부분수정',   urlFn: t => `${t}/{id}`,    method:'PATCH'  },
+      { label:'삭제',       urlFn: t => `${t}/{id}`,    method:'DELETE' },
+      { label:'일괄삭제',   urlFn: t => t,              method:'DELETE' },
+    ];
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
     let _acSeq = 0;
     const buildAutoCrudNodes = () => makeNode({
-      id: 'ac_root', appId: 'samples', label: 'adminAutoCrud', type: 'app', open: false,
+      id: 'ac_root', appId: 'samples', label: 'adminAutoCrud-method', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
         id: `ac_${domain}_${sub}`, label, type: 'folder', open: false,
         children: tables.map(tbl => {
@@ -74,6 +85,24 @@ window.XsSample07 = {
             })),
           };
         }),
+      })),
+    });
+    let _arSeq = 0;
+    const buildAutoCrudRestNodes = () => makeNode({
+      id: 'ar_root', appId: 'samples', label: 'adminAutoCrud-rest', type: 'app', open: false,
+      children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
+        id: `ar_${domain}_${sub}`, label, type: 'folder', open: false,
+        children: tables.map(tbl => ({
+          id: `ar_${tbl}`, label: tbl, type: 'folder', open: false,
+          children: REST_CRUD_OPS.map(op => ({
+            id: `ar_${tbl}_${++_arSeq}`,
+            label: `${op.label} (${op.method})`,
+            type: 'req', method: op.method,
+            url: `/autoRest/${domain}/${sub}/${op.urlFn(tbl)}`,
+            desc: `${tbl} ${op.label}`,
+            params: [], body: '',
+          })),
+        })),
       })),
     });
 
@@ -495,6 +524,7 @@ window.XsSample07 = {
         (res.data || []).forEach(n => treeRoot.push(makeNode(n)));
         treeLoaded.value = true;
         treeRoot.push(buildAutoCrudNodes());
+        treeRoot.push(buildAutoCrudRestNodes());
       } catch {
         treeRoot.push(makeNode({ id:'err', label:'데이터 로딩 실패', type:'folder', open:false, appId:'front' }));
       }
