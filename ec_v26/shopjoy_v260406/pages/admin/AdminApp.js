@@ -138,6 +138,8 @@
       { group: '이력조회' },
       { id: 'syMemberLoginHist', label: '회원로그인이력' },
       { id: 'syUserLoginHist',   label: '사용자로그인이력' },
+      { group: '개발도구' },
+      { id: 'syPostman',         label: 'API Tester' },
     ],
   };
 
@@ -242,6 +244,9 @@
         'cmNoticeMng':'cm-notice-mng', 'syAlarmMng':'sy-alarm-mng', 'syPropMng':'sy-prop-mng', 'syPathMng':'sy-path-mng', 'syI18nMng':'sy-i18n-mng',
         'syBbmMng':'sy-bbm-mng', 'syBbsMng':'sy-bbs-mng',
         'cmBltnMng':'cm-bltn-mng',
+        'syMemberLoginHist':'sy-member-login-hist',
+        'syUserLoginHist':'sy-user-login-hist',
+        'syPostman':'sy-postman',
       };
 
       const addTab = (mngId) => {
@@ -1073,6 +1078,9 @@
         <st-erp-gen-mng      v-else-if="page==='stErpGenMng'"       :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <st-erp-view-mng     v-else-if="page==='stErpViewMng'"      :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <st-erp-recon-mng    v-else-if="page==='stErpReconMng'"     :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <sy-user-login-hist   v-else-if="page==='syUserLoginHist'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <sy-postman           v-else-if="page==='syPostman'"         :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <admin-error-401 v-else-if="page==='error401'" :navigate="navigate" />
         <admin-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
         <admin-error-404 v-else :navigate="navigate" :page-id="page" />
@@ -1574,8 +1582,11 @@
   .component('PanelPickModal',       window.PanelPickModal || { template: '<div/>' })
   .component('AreaPickModal',        window.AreaPickModal || { template: '<div/>' })
   .component('RowPickModal',         window.RowPickModal || { template: '<div/>' })
-  .component('TemplatePreviewModal', window.TemplatePreviewModal)
-  .component('TemplateSendModal',    window.TemplateSendModal)
+  .component('TemplatePreviewModal',  window.TemplatePreviewModal)
+  .component('TemplateSendModal',     window.TemplateSendModal)
+  .component('SyMemberLoginHist',     window.SyMemberLoginHist)
+  .component('SyUserLoginHist',       window.SyUserLoginHist)
+  .component('SyPostman',             window.SyPostman)
   .mount('#app');
 
   const loadingEl = document.getElementById('_boot_loading');
