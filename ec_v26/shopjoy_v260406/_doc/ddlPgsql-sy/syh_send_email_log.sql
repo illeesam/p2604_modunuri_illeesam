@@ -61,4 +61,4 @@ CREATE INDEX idx_syh_send_email_log_ref      ON syh_send_email_log (ref_type_cd,
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- syh_send_email_log.result_cd (발송결과) : SEND_RESULT(SEND_RESULT) { 코드값 미정의 }
+-- [CODES] syh_send_email_log.result_cd (발송결과) : SEND_RESULT(SEND_RESULT) { 코드값 미정의 }

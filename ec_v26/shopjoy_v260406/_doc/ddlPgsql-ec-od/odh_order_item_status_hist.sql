@@ -41,4 +41,4 @@ CREATE INDEX idx_od_oi_status_hist_date  ON odh_order_item_status_hist (chg_date
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- odh_order_item_status_hist.order_item_status_cd (변경 후 주문상품상태) : 주문항목상태 { ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소 }
+-- [CODES] odh_order_item_status_hist.order_item_status_cd (변경 후 주문상품상태) : 주문항목상태 { ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소 }

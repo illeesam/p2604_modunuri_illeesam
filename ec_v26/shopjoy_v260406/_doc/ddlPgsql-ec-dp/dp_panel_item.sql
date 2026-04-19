@@ -67,4 +67,4 @@ CREATE INDEX idx_dp_panel_item_disp_env ON dp_panel_item (disp_env);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- dp_panel_item.widget_type_cd (위젯유형) : WIDGET_TYPE(WIDGET_TYPE) { 코드값 미정의 }
+-- [CODES] dp_panel_item.widget_type_cd (위젯유형) : WIDGET_TYPE(WIDGET_TYPE) { 코드값 미정의 }

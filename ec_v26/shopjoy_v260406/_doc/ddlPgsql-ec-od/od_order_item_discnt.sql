@@ -49,4 +49,4 @@ CREATE INDEX idx_od_item_discnt_coupon     ON od_order_item_discnt (coupon_id) W
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- od_order_item_discnt.discnt_type_cd (할인유형코드) : ORDER_ITEM_DISCNT_TYPE(ORDER_ITEM_DISCNT_TYPE) { 코드값 미정의 }
+-- [CODES] od_order_item_discnt.discnt_type_cd (할인유형코드) : ORDER_ITEM_DISCNT_TYPE(ORDER_ITEM_DISCNT_TYPE) { 코드값 미정의 }

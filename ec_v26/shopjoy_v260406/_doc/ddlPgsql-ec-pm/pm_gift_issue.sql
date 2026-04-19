@@ -41,4 +41,4 @@ CREATE INDEX idx_pm_gift_issue_order  ON pm_gift_issue (order_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pm_gift_issue.gift_issue_status_cd (상태) : GIFT_ISSUE_STATUS(GIFT_ISSUE_STATUS) { 코드값 미정의 }
+-- [CODES] pm_gift_issue.gift_issue_status_cd (상태) : GIFT_ISSUE_STATUS(GIFT_ISSUE_STATUS) { 코드값 미정의 }

@@ -41,4 +41,4 @@ COMMENT ON COLUMN sy_notice.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- sy_notice.notice_type_cd (공지유형) : 공지유형 { NORMAL:일반, URGENT:긴급 }
+-- [CODES] sy_notice.notice_type_cd (공지유형) : 공지유형 { NORMAL:일반, URGENT:긴급 }

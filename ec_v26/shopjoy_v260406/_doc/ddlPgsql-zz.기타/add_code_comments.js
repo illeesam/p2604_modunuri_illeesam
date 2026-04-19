@@ -61,11 +61,11 @@ function buildCommentBlock(cdCols, codeMap, grpNmMap) {
     const codes = codeMap[codeGrp];
     const grpNm = grpNmMap[codeGrp] || codeGrp;
     if (!codes || codes.length === 0) {
-      lines.push(`-- ${tbl}.${col} (${comment || col}) : ${grpNm}(${codeGrp}) { 코드값 미정의 }`);
+      lines.push(`-- [CODES] ${tbl}.${col} (${comment || col}) : ${grpNm}(${codeGrp}) { 코드값 미정의 }`);
       continue;
     }
     const vals = codes.map(c => `${c.val}:${c.label}`).join(', ');
-    lines.push(`-- ${tbl}.${col} (${comment || col}) : ${grpNm} { ${vals} }`);
+    lines.push(`-- [CODES] ${tbl}.${col} (${comment || col}) : ${grpNm} { ${vals} }`);
   }
   return lines.join('\n') + '\n';
 }

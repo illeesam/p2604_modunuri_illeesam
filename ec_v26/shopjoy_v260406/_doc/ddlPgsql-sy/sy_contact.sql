@@ -45,4 +45,4 @@ COMMENT ON COLUMN sy_contact.upd_date       IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- sy_contact.contact_status_cd (처리상태) : 문의상태 { RECEIVED:접수, IN_PROGRESS:처리중, DONE:완료, ON_HOLD:보류 }
+-- [CODES] sy_contact.contact_status_cd (처리상태) : 문의상태 { RECEIVED:접수, IN_PROGRESS:처리중, DONE:완료, ON_HOLD:보류 }

@@ -49,4 +49,4 @@ COMMENT ON COLUMN od_claim_item.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- od_claim_item.claim_item_status_cd (항목상태) : 클레임항목상태 { REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소 }
+-- [CODES] od_claim_item.claim_item_status_cd (항목상태) : 클레임항목상태 { REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소 }

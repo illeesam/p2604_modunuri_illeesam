@@ -36,4 +36,4 @@ CREATE INDEX idx_mb_mem_grade_cd   ON mb_mem_grade (grade_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- mb_mem_grade.grade_cd (등급코드) : 회원등급 { VIP:VIP, GOLD:우수, NORMAL:일반 }
+-- [CODES] mb_mem_grade.grade_cd (등급코드) : 회원등급 { VIP:VIP, GOLD:우수, NORMAL:일반 }

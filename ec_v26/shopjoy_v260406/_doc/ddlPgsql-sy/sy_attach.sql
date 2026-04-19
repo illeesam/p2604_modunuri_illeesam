@@ -44,4 +44,4 @@ COMMENT ON COLUMN sy_attach.upd_date         IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- sy_attach.mime_type_cd (MIME 타입) : MIME_TYPE(MIME_TYPE) { 코드값 미정의 }
+-- [CODES] sy_attach.mime_type_cd (MIME 타입) : MIME_TYPE(MIME_TYPE) { 코드값 미정의 }

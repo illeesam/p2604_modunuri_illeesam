@@ -115,11 +115,11 @@ CREATE INDEX idx_od_pay_div           ON od_pay (pay_div_cd, pay_dir_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- od_pay.pay_div_cd (주문/클레임 구분) : PAY_DIV(PAY_DIV) { 코드값 미정의 }
--- od_pay.pay_dir_cd (입금/환불 방향) : PAY_DIR(PAY_DIR) { 코드값 미정의 }
--- od_pay.pay_occur_type_cd (결제발생유형) : PAY_OCCUR_TYPE(PAY_OCCUR_TYPE) { 코드값 미정의 }
--- od_pay.pay_method_cd (결제수단) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
--- od_pay.pay_channel_cd (결제채널) : PAY_CHANNEL(PAY_CHANNEL) { 코드값 미정의 }
--- od_pay.pay_status_cd (결제상태) : PAY_STATUS(PAY_STATUS) { 코드값 미정의 }
--- od_pay.card_type_cd (카드 타입) : CARD_TYPE(CARD_TYPE) { 코드값 미정의 }
--- od_pay.refund_status_cd (환불 상태) : REFUND_STATUS(REFUND_STATUS) { 코드값 미정의 }
+-- [CODES] od_pay.pay_div_cd (주문/클레임 구분) : PAY_DIV(PAY_DIV) { 코드값 미정의 }
+-- [CODES] od_pay.pay_dir_cd (입금/환불 방향) : PAY_DIR(PAY_DIR) { 코드값 미정의 }
+-- [CODES] od_pay.pay_occur_type_cd (결제발생유형) : PAY_OCCUR_TYPE(PAY_OCCUR_TYPE) { 코드값 미정의 }
+-- [CODES] od_pay.pay_method_cd (결제수단) : 결제수단 { BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제 }
+-- [CODES] od_pay.pay_channel_cd (결제채널) : PAY_CHANNEL(PAY_CHANNEL) { 코드값 미정의 }
+-- [CODES] od_pay.pay_status_cd (결제상태) : PAY_STATUS(PAY_STATUS) { 코드값 미정의 }
+-- [CODES] od_pay.card_type_cd (카드 타입) : CARD_TYPE(CARD_TYPE) { 코드값 미정의 }
+-- [CODES] od_pay.refund_status_cd (환불 상태) : REFUND_STATUS(REFUND_STATUS) { 코드값 미정의 }

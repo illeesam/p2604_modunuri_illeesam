@@ -56,4 +56,4 @@ CREATE INDEX idx_od_order_discnt_restore   ON od_order_discnt (restore_yn);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- od_order_discnt.discnt_type_cd (할인유형코드) : ORDER_DISCNT_TYPE(ORDER_DISCNT_TYPE) { 코드값 미정의 }
+-- [CODES] od_order_discnt.discnt_type_cd (할인유형코드) : ORDER_DISCNT_TYPE(ORDER_DISCNT_TYPE) { 코드값 미정의 }

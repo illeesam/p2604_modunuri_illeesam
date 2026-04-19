@@ -39,4 +39,4 @@ COMMENT ON COLUMN pd_category.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pd_category.category_status_cd (상태) : 사용여부 { Y:사용, N:미사용 }
+-- [CODES] pd_category.category_status_cd (상태) : 사용여부 { Y:사용, N:미사용 }

@@ -51,5 +51,5 @@ CREATE INDEX idx_st_settle_pay_status ON st_settle_pay (pay_status_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- st_settle_pay.pay_method_cd (지급수단) : PAY_METHOD_CD(PAY_METHOD_CD) { 코드값 미정의 }
--- st_settle_pay.pay_status_cd (지급상태) : SETTLE_PAY_STATUS(SETTLE_PAY_STATUS) { 코드값 미정의 }
+-- [CODES] st_settle_pay.pay_method_cd (지급수단) : PAY_METHOD_CD(PAY_METHOD_CD) { 코드값 미정의 }
+-- [CODES] st_settle_pay.pay_status_cd (지급상태) : SETTLE_PAY_STATUS(SETTLE_PAY_STATUS) { 코드값 미정의 }

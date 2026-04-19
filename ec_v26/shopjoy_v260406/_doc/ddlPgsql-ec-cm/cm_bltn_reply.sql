@@ -36,4 +36,4 @@ CREATE INDEX idx_cm_bltn_reply_parent ON cm_bltn_reply (parent_comment_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- cm_bltn_reply.comment_status_cd (상태) : COMMENT_STATUS(COMMENT_STATUS) { 코드값 미정의 }
+-- [CODES] cm_bltn_reply.comment_status_cd (상태) : COMMENT_STATUS(COMMENT_STATUS) { 코드값 미정의 }

@@ -40,4 +40,4 @@ CREATE INDEX idx_pm_save_expire ON pm_save (expire_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pm_save.save_type_cd (유형) : SAVE_TYPE(SAVE_TYPE) { 코드값 미정의 }
+-- [CODES] pm_save.save_type_cd (유형) : SAVE_TYPE(SAVE_TYPE) { 코드값 미정의 }

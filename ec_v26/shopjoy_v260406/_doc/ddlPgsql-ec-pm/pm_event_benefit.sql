@@ -36,4 +36,4 @@ CREATE INDEX idx_pm_event_benefit_event ON pm_event_benefit (event_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pm_event_benefit.benefit_type_cd (혜택유형) : BENEFIT_TYPE(BENEFIT_TYPE) { 코드값 미정의 }
+-- [CODES] pm_event_benefit.benefit_type_cd (혜택유형) : BENEFIT_TYPE(BENEFIT_TYPE) { 코드값 미정의 }

@@ -117,5 +117,5 @@ CREATE INDEX idx_od_order_item_bundle   ON od_order_item (bundle_group_id) WHERE
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- od_order_item.order_item_status_cd (품목 주문 상태) : 주문항목상태 { ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소 }
--- od_order_item.dliv_courier_cd (해당 항목의 배송 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
+-- [CODES] od_order_item.order_item_status_cd (품목 주문 상태) : 주문항목상태 { ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소 }
+-- [CODES] od_order_item.dliv_courier_cd (해당 항목의 배송 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }

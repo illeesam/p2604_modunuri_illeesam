@@ -55,4 +55,4 @@ CREATE INDEX idx_syh_user_login_log_ip    ON syh_user_login_log (ip);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- syh_user_login_log.result_cd (결과) : LOGIN_RESULT(LOGIN_RESULT) { 코드값 미정의 }
+-- [CODES] syh_user_login_log.result_cd (결과) : LOGIN_RESULT(LOGIN_RESULT) { 코드값 미정의 }

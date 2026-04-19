@@ -48,5 +48,5 @@ CREATE INDEX idx_dp_panel_use ON dp_panel (use_yn, use_start_date, use_end_date)
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- dp_panel.panel_type_cd (표시유형) : 전시유형 { MAIN_BANNER:메인배너, SUB_BANNER:서브배너, POPUP:팝업, SPECIAL:기획전 }
--- dp_panel.disp_panel_status_cd (상태) : 전시상태 { SHOW:노출, HIDE:숨김 }
+-- [CODES] dp_panel.panel_type_cd (표시유형) : 전시유형 { MAIN_BANNER:메인배너, SUB_BANNER:서브배너, POPUP:팝업, SPECIAL:기획전 }
+-- [CODES] dp_panel.disp_panel_status_cd (상태) : 전시상태 { SHOW:노출, HIDE:숨김 }

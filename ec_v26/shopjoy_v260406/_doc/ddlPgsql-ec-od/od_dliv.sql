@@ -108,11 +108,11 @@ CREATE INDEX idx_od_dliv_ship_date ON od_dliv (dliv_ship_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- od_dliv.dliv_div_cd (입출고구분) : DLIV_DIV(DLIV_DIV) { 코드값 미정의 }
--- od_dliv.dliv_type_cd (배송유형) : DLIV_TYPE(DLIV_TYPE) { 코드값 미정의 }
--- od_dliv.dliv_pay_type_cd (배송비결제방식) : DLIV_PAY_TYPE(DLIV_PAY_TYPE) { 코드값 미정의 }
--- od_dliv.outbound_courier_cd (출고(발송) 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
--- od_dliv.dliv_status_cd (배송상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
--- od_dliv.shipping_fee_type_cd (배송료 구분) : SHIPPING_FEE_TYPE(SHIPPING_FEE_TYPE) { 코드값 미정의 }
--- od_dliv.appr_status_cd (결재상태) : APPROVAL_STATUS(APPROVAL_STATUS) { 코드값 미정의 }
--- od_dliv.appr_target_cd (결재대상 구분) : APPROVAL_TARGET(APPROVAL_TARGET) { 코드값 미정의 }
+-- [CODES] od_dliv.dliv_div_cd (입출고구분) : DLIV_DIV(DLIV_DIV) { 코드값 미정의 }
+-- [CODES] od_dliv.dliv_type_cd (배송유형) : DLIV_TYPE(DLIV_TYPE) { 코드값 미정의 }
+-- [CODES] od_dliv.dliv_pay_type_cd (배송비결제방식) : DLIV_PAY_TYPE(DLIV_PAY_TYPE) { 코드값 미정의 }
+-- [CODES] od_dliv.outbound_courier_cd (출고(발송) 택배사) : 택배사 { CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배, POST:우체국택배, LOGEN:로젠택배 }
+-- [CODES] od_dliv.dliv_status_cd (배송상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
+-- [CODES] od_dliv.shipping_fee_type_cd (배송료 구분) : SHIPPING_FEE_TYPE(SHIPPING_FEE_TYPE) { 코드값 미정의 }
+-- [CODES] od_dliv.appr_status_cd (결재상태) : APPROVAL_STATUS(APPROVAL_STATUS) { 코드값 미정의 }
+-- [CODES] od_dliv.appr_target_cd (결재대상 구분) : APPROVAL_TARGET(APPROVAL_TARGET) { 코드값 미정의 }

@@ -24,4 +24,4 @@ CREATE INDEX idx_mb_sns_mem_channel ON mb_sns_mem (sns_channel_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- mb_sns_mem.sns_channel_cd (SNS채널코드) : SNS_CHANNEL(SNS_CHANNEL) { 코드값 미정의 }
+-- [CODES] mb_sns_mem.sns_channel_cd (SNS채널코드) : SNS_CHANNEL(SNS_CHANNEL) { 코드값 미정의 }

@@ -47,4 +47,4 @@ CREATE INDEX idx_dp_area_use ON dp_area (use_yn, use_start_date, use_end_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- dp_area.area_type_cd (영역유형) : DISP_AREA_TYPE(DISP_AREA_TYPE) { 코드값 미정의 }
+-- [CODES] dp_area.area_type_cd (영역유형) : DISP_AREA_TYPE(DISP_AREA_TYPE) { 코드값 미정의 }

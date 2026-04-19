@@ -43,4 +43,4 @@ COMMENT ON COLUMN od_dliv_item.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- od_dliv_item.dliv_item_status_cd (항목 배송상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }
+-- [CODES] od_dliv_item.dliv_item_status_cd (항목 배송상태) : 배송상태 { READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패 }

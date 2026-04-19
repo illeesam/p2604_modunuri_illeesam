@@ -46,4 +46,4 @@ CREATE INDEX idx_dp_ui_use ON dp_ui (use_yn, use_start_date, use_end_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- dp_ui.device_type_cd (디바이스유형) : DEVICE_TYPE(DEVICE_TYPE) { 코드값 미정의 }
+-- [CODES] dp_ui.device_type_cd (디바이스유형) : DEVICE_TYPE(DEVICE_TYPE) { 코드값 미정의 }

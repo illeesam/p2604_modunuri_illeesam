@@ -50,5 +50,5 @@ CREATE INDEX idx_mbh_mem_token_log_date      ON mbh_mem_token_log (reg_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- mbh_mem_token_log.action_cd (토큰 액션) : TOKEN_ACTION(TOKEN_ACTION) { 코드값 미정의 }
--- mbh_mem_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE(TOKEN_TYPE) { 코드값 미정의 }
+-- [CODES] mbh_mem_token_log.action_cd (토큰 액션) : TOKEN_ACTION(TOKEN_ACTION) { 코드값 미정의 }
+-- [CODES] mbh_mem_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE(TOKEN_TYPE) { 코드값 미정의 }

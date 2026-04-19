@@ -53,4 +53,4 @@ CREATE INDEX idx_pd_prod_qna_site   ON pd_prod_qna (site_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pd_prod_qna.qna_type_cd (문의유형코드) : PROD_QNA_TYPE(PROD_QNA_TYPE) { 코드값 미정의 }
+-- [CODES] pd_prod_qna.qna_type_cd (문의유형코드) : PROD_QNA_TYPE(PROD_QNA_TYPE) { 코드값 미정의 }

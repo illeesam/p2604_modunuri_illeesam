@@ -38,4 +38,4 @@ CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type_
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pd_prod_content.content_type_cd (컨텐츠유형) : PROD_CONTENT_TYPE(PROD_CONTENT_TYPE) { 코드값 미정의 }
+-- [CODES] pd_prod_content.content_type_cd (컨텐츠유형) : PROD_CONTENT_TYPE(PROD_CONTENT_TYPE) { 코드값 미정의 }

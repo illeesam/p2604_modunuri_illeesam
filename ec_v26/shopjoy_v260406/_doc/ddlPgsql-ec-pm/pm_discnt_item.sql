@@ -29,4 +29,4 @@ CREATE INDEX idx_pm_discnt_item_target ON pm_discnt_item (target_type_cd, target
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pm_discnt_item.target_type_cd (대상유형) : DISCNT_ITEM_TARGET(DISCNT_ITEM_TARGET) { 코드값 미정의 }
+-- [CODES] pm_discnt_item.target_type_cd (대상유형) : DISCNT_ITEM_TARGET(DISCNT_ITEM_TARGET) { 코드값 미정의 }

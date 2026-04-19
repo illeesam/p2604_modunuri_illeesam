@@ -43,4 +43,4 @@ COMMENT ON COLUMN pm_cache.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- pm_cache.cache_type_cd (유형) : 적립금유형 { EARN_BUY:구매 적립, EARN_ADMIN:관리자 지급, EARN_EVENT:이벤트 지급, USE_ORDER:주문 사용, REFUND:환불 복원, EXPIRE:소멸 }
+-- [CODES] pm_cache.cache_type_cd (유형) : 적립금유형 { EARN_BUY:구매 적립, EARN_ADMIN:관리자 지급, EARN_EVENT:이벤트 지급, USE_ORDER:주문 사용, REFUND:환불 복원, EXPIRE:소멸 }

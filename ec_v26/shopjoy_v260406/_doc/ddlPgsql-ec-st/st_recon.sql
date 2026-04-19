@@ -70,5 +70,5 @@ CREATE INDEX idx_st_recon_ref        ON st_recon (ref_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- st_recon.recon_type_cd (대사유형) : RECON_TYPE(RECON_TYPE) { 코드값 미정의 }
--- st_recon.recon_status_cd (대사상태) : RECON_STATUS(RECON_STATUS) { 코드값 미정의 }
+-- [CODES] st_recon.recon_type_cd (대사유형) : RECON_TYPE(RECON_TYPE) { 코드값 미정의 }
+-- [CODES] st_recon.recon_status_cd (대사상태) : RECON_STATUS(RECON_STATUS) { 코드값 미정의 }

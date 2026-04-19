@@ -44,4 +44,4 @@ CREATE INDEX idx_od_ci_status_hist_date     ON odh_claim_item_status_hist (chg_d
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- odh_claim_item_status_hist.claim_item_status_cd (변경 후 클레임상품상태) : 클레임항목상태 { REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소 }
+-- [CODES] odh_claim_item_status_hist.claim_item_status_cd (변경 후 클레임상품상태) : 클레임항목상태 { REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소 }

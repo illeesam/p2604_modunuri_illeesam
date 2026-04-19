@@ -46,4 +46,4 @@ COMMENT ON COLUMN dp_widget_lib.disp_path IS '점(.) 구분 표시경로';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- dp_widget_lib.widget_type_cd (위젯유형) : WIDGET_TYPE(WIDGET_TYPE) { 코드값 미정의 }
+-- [CODES] dp_widget_lib.widget_type_cd (위젯유형) : WIDGET_TYPE(WIDGET_TYPE) { 코드값 미정의 }

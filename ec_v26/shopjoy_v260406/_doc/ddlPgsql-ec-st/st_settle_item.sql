@@ -52,4 +52,4 @@ CREATE INDEX idx_st_settle_item_vendor ON st_settle_item (vendor_id);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- st_settle_item.settle_item_type_cd (항목유형) : SETTLE_ITEM_TYPE(SETTLE_ITEM_TYPE) { 코드값 미정의 }
+-- [CODES] st_settle_item.settle_item_type_cd (항목유형) : SETTLE_ITEM_TYPE(SETTLE_ITEM_TYPE) { 코드값 미정의 }

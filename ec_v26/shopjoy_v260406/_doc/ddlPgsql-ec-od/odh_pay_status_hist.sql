@@ -45,4 +45,4 @@ CREATE INDEX idx_odh_pay_status_hist_date  ON odh_pay_status_hist (chg_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- odh_pay_status_hist.pay_status_cd (변경 후 결제상태) : PAY_STATUS(PAY_STATUS) { 코드값 미정의 }
+-- [CODES] odh_pay_status_hist.pay_status_cd (변경 후 결제상태) : PAY_STATUS(PAY_STATUS) { 코드값 미정의 }

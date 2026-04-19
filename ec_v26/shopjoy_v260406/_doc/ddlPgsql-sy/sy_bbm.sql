@@ -47,6 +47,6 @@ COMMENT ON COLUMN sy_bbm.upd_date         IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- sy_bbm.bbm_type_cd (게시판유형) : BBM_TYPE(BBM_TYPE) { 코드값 미정의 }
--- sy_bbm.content_type_cd (내용유형) : BBM_CONTENT_TYPE(BBM_CONTENT_TYPE) { 코드값 미정의 }
--- sy_bbm.scope_type_cd (접근범위) : BBM_SCOPE_TYPE(BBM_SCOPE_TYPE) { 코드값 미정의 }
+-- [CODES] sy_bbm.bbm_type_cd (게시판유형) : BBM_TYPE(BBM_TYPE) { 코드값 미정의 }
+-- [CODES] sy_bbm.content_type_cd (내용유형) : BBM_CONTENT_TYPE(BBM_CONTENT_TYPE) { 코드값 미정의 }
+-- [CODES] sy_bbm.scope_type_cd (접근범위) : BBM_SCOPE_TYPE(BBM_SCOPE_TYPE) { 코드값 미정의 }
