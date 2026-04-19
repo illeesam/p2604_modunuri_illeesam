@@ -1,0 +1,46 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/postgres?currentSchema=shopjoy_2604
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: shopjoy_2604
+        format_sql: false
+    open-in-view: false
+
+  sql:
+    init:
+      mode: never
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  config-location: classpath:mybatis/mybatis-config.xml
+  type-aliases-package: com.shopjoy.ecadminapi.domain
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiry: 900000
+  refresh-expiry: 604800000
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

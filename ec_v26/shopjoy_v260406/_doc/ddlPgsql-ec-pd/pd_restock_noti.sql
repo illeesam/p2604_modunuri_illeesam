@@ -1,15 +1,15 @@
 -- ============================================================
 CREATE TABLE pd_restock_noti (
-    restock_noti_id VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
-    sku_id          VARCHAR(16),                            -- pd_prod_sku.sku_id
-    member_id       VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    restock_noti_id VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    prod_id         VARCHAR(20)     NOT NULL,               -- pd_prod.prod_id
+    sku_id          VARCHAR(20),                            -- pd_prod_sku.sku_id
+    member_id       VARCHAR(20)     NOT NULL,               -- mb_member.member_id
     noti_yn         VARCHAR(1)      DEFAULT 'N',            -- 알림 발송 여부
     noti_date       TIMESTAMP,                              -- 알림 발송 일시
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (restock_noti_id),
     UNIQUE (prod_id, sku_id, member_id)

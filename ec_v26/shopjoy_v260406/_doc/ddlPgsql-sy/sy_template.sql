@@ -1,10 +1,10 @@
 -- ============================================================
 -- sy_template : 발송 템플릿 (이메일/SMS/PUSH/카카오)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_template (
-    template_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    template_id     VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     template_type_cd VARCHAR(20)    NOT NULL,               -- 코드: TEMPLATE_TYPE (EMAIL/SMS/PUSH/KAKAO)
     template_code   VARCHAR(50)     NOT NULL,
     template_nm     VARCHAR(100)    NOT NULL,
@@ -12,9 +12,9 @@ CREATE TABLE sy_template (
     template_content TEXT            NOT NULL,
     sample_params   TEXT,                                   -- 치환변수 예시 (JSON)
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (template_id),

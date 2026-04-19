@@ -1,28 +1,28 @@
 -- ============================================================
 -- pm_save_issue : 적립금 지급 이력
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 구매적립/이벤트/리뷰/관리자 등 적립 발생 건별 기록
 -- 지급 확정 후 pm_save 원장에 EARN 타입으로 반영
 -- ============================================================
 CREATE TABLE pm_save_issue (
-    save_issue_id       VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    save_issue_id       VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    member_id           VARCHAR(20)     NOT NULL,               -- mb_member.member_id
     save_issue_type_cd  VARCHAR(20)     NOT NULL,               -- 코드: SAVE_ISSUE_TYPE (ORDER:구매적립/EVENT:이벤트/REVIEW:리뷰/REFERRAL:추천/ADMIN:관리자)
     save_amt            BIGINT          NOT NULL,               -- 지급 적립금액
     save_rate           NUMERIC(5,2),                           -- 적립률 (%, 구매적립 시)
     ref_type_cd         VARCHAR(20),                            -- 참조유형 (ORDER/EVENT/REVIEW/ADMIN)
-    ref_id              VARCHAR(16),                            -- 참조ID (order_id / event_id 등)
-    order_id            VARCHAR(16),                            -- od_order.order_id (구매적립 시)
-    order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 적립 시)
-    prod_id             VARCHAR(16),                            -- pd_prod.prod_id (적립 기준 상품)
+    ref_id              VARCHAR(20),                            -- 참조ID (order_id / event_id 등)
+    order_id            VARCHAR(20),                            -- od_order.order_id (구매적립 시)
+    order_item_id       VARCHAR(20),                            -- od_order_item.order_item_id (상품별 적립 시)
+    prod_id             VARCHAR(20),                            -- pd_prod.prod_id (적립 기준 상품)
     expire_date         TIMESTAMP,                              -- 소멸예정일
     issue_status_cd     VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: SAVE_ISSUE_STATUS (PENDING:대기/CONFIRMED:확정/EXPIRED:소멸/CANCELED:취소)
     issue_status_cd_before VARCHAR(20),                         -- 변경 전 상태
     save_memo           VARCHAR(300),                           -- 지급 메모
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
 
     PRIMARY KEY (save_issue_id)

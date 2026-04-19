@@ -1,16 +1,16 @@
 -- 주문 상품
 CREATE TABLE od_order_item (
-    order_item_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    order_id        VARCHAR(16)     NOT NULL,
-    prod_id         VARCHAR(16)     NOT NULL,
-    sku_id          VARCHAR(16),                            -- pd_prod_sku.sku_id
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
+    order_item_id   VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    order_id        VARCHAR(20)     NOT NULL,
+    prod_id         VARCHAR(20)     NOT NULL,
+    sku_id          VARCHAR(20),                            -- pd_prod_sku.sku_id
+    opt_item_id_1   VARCHAR(20),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
+    opt_item_id_2   VARCHAR(20),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
     -- ── 상품 스냅샷 (주문 시점) ──
     prod_nm         VARCHAR(200),                           -- 상품명 스냅샷
     brand_nm        VARCHAR(100),                           -- 브랜드명 스냅샷
-    dliv_tmplt_id   VARCHAR(16),                            -- 배송비 템플릿ID 스냅샷
+    dliv_tmplt_id   VARCHAR(20),                            -- 배송비 템플릿ID 스냅샷
     -- ── 금액 (현재값) ──
     normal_price    BIGINT          DEFAULT 0,              -- 정상가 (할인 전 1ea)
     unit_price      BIGINT          DEFAULT 0,              -- 판매가 (단가, 옵션추가금 포함)
@@ -46,15 +46,15 @@ CREATE TABLE od_order_item (
     bundle_group_id     VARCHAR(36),                        -- 묶음 그룹 키 (동일 묶음 구성품 묶음, UUID)
     bundle_price_rate   DECIMAL(5,2),                       -- 묶음 가격 안분율 (%) — pd_prod_bundle.price_rate 스냅샷
     -- ── 사은품 ──
-    gift_id             VARCHAR(16),                        -- 발급 사은품ID (pm_gift.gift_id)
+    gift_id             VARCHAR(20),                        -- 발급 사은품ID (pm_gift.gift_id)
     -- ── 부분배송 시 배송정보 ──
     outbound_shipping_fee BIGINT        DEFAULT 0,
     dliv_courier_cd     VARCHAR(30),                        -- 코드: COURIER
     dliv_tracking_no    VARCHAR(100),
     dliv_ship_date      TIMESTAMP,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (order_item_id)
 );

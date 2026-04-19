@@ -1,14 +1,14 @@
 -- ============================================================
 -- syh_send_email_log : 이메일 발송 로그
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE syh_send_email_log (
-    log_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    template_id     VARCHAR(16),                           -- sy_template.template_id
+    log_id          VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    template_id     VARCHAR(20),                           -- sy_template.template_id
     template_code   VARCHAR(50),                           -- 템플릿코드 스냅샷
-    member_id       VARCHAR(16),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
-    user_id         VARCHAR(16),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+    member_id       VARCHAR(20),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
+    user_id         VARCHAR(20),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
     from_addr       VARCHAR(200)    NOT NULL,              -- 발신 이메일
     to_addr         VARCHAR(200)    NOT NULL,              -- 수신 이메일
     cc_addr         VARCHAR(500),                          -- 참조 (복수 시 콤마 구분)
@@ -20,10 +20,10 @@ CREATE TABLE syh_send_email_log (
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/JOIN/PWD_RESET 등)
-    ref_id          VARCHAR(16),                           -- 연관ID
-    reg_by          VARCHAR(16),
+    ref_id          VARCHAR(20),                           -- 연관ID
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (log_id)
 );

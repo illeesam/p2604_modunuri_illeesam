@@ -1,22 +1,22 @@
 -- ============================================================
 -- pm_discnt_usage : 할인 적용 이력
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 주문 시 적용된 할인정책을 건별로 기록
 -- ============================================================
 CREATE TABLE pm_discnt_usage (
-    discnt_usage_id     VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    discnt_id           VARCHAR(16)     NOT NULL,               -- pm_discnt.discnt_id
+    discnt_usage_id     VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    discnt_id           VARCHAR(20)     NOT NULL,               -- pm_discnt.discnt_id
     discnt_nm           VARCHAR(100),                           -- 할인명 스냅샷
-    member_id           VARCHAR(16),                            -- mb_member.member_id
-    order_id            VARCHAR(16),                            -- od_order.order_id
-    order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 할인 적용 시)
-    prod_id             VARCHAR(16),                            -- pd_prod.prod_id (할인 적용 상품)
+    member_id           VARCHAR(20),                            -- mb_member.member_id
+    order_id            VARCHAR(20),                            -- od_order.order_id
+    order_item_id       VARCHAR(20),                            -- od_order_item.order_item_id (상품별 할인 적용 시)
+    prod_id             VARCHAR(20),                            -- pd_prod.prod_id (할인 적용 상품)
     discnt_type_cd      VARCHAR(20),                            -- 할인유형 스냅샷 (RATE/FIXED/FREE_SHIP)
     discnt_value        NUMERIC(10,2)   DEFAULT 0,              -- 할인값 스냅샷 (율 또는 금액)
     discnt_amt          BIGINT          DEFAULT 0,              -- 실할인금액
     used_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (discnt_usage_id)

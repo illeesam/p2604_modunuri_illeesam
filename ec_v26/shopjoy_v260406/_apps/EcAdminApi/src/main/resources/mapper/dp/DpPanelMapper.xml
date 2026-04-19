@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.dp.DpPanelMapper">
+
+    <sql id="dpPanelCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND p.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND p.disp_panel_status_cd = #{p.status}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND p.panel_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (p.panel_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND p.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND p.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpPanelDto">
+        SELECT
+            p.*,
+            ste.site_nm AS site_nm,
+            cd_dt.code_label AS panel_type_cd_nm,
+            cd_ds.code_label AS disp_panel_status_cd_nm
+        FROM dp_panel p
+            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = p.panel_type_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = p.disp_panel_status_cd
+        WHERE p.panel_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpPanelDto">
+        SELECT
+            p.*,
+            ste.site_nm AS site_nm,
+            cd_dt.code_label AS panel_type_cd_nm,
+            cd_ds.code_label AS disp_panel_status_cd_nm
+        FROM dp_panel p
+            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = p.panel_type_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = p.disp_panel_status_cd
+            <include refid="dpPanelCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.panel_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.panel_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY p.panel_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY p.panel_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpPanelDto">
+        SELECT
+            p.*,
+            ste.site_nm AS site_nm,
+            cd_dt.code_label AS panel_type_cd_nm,
+            cd_ds.code_label AS disp_panel_status_cd_nm
+        FROM dp_panel p
+            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = p.panel_type_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = p.disp_panel_status_cd
+            <include refid="dpPanelCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.panel_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.panel_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY p.panel_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY p.panel_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM dp_panel p
+            <include refid="dpPanelCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.dp.entity.DpPanel">
+        UPDATE dp_panel
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="panelNm != null">panel_nm = #{panelNm},</if>
+            <if test="panelTypeCd != null">panel_type_cd = #{panelTypeCd},</if>
+            <if test="dispPath != null">disp_path = #{dispPath},</if>
+            <if test="visibilityTargets != null">visibility_targets = #{visibilityTargets},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="useStartDate != null">use_start_date = #{useStartDate},</if>
+            <if test="useEndDate != null">use_end_date = #{useEndDate},</if>
+            <if test="dispPanelStatusCd != null">disp_panel_status_cd = #{dispPanelStatusCd},</if>
+            <if test="dispPanelStatusCdBefore != null">disp_panel_status_cd_before = #{dispPanelStatusCdBefore},</if>
+            <if test="contentJson != null">content_json = #{contentJson},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE panel_id = #{panelId}
+    </update>
+
+</mapper>

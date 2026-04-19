@@ -1,16 +1,16 @@
 CREATE TABLE cm_bltn_reply (
-    comment_id      VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    blog_id         VARCHAR(16)     NOT NULL,              -- cm_bltn.
-    parent_comment_id VARCHAR(16),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
-    writer_id       VARCHAR(16),                            -- 작성자ID (mb_member.member_id)
+    comment_id      VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),
+    blog_id         VARCHAR(20)     NOT NULL,              -- cm_bltn.
+    parent_comment_id VARCHAR(20),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
+    writer_id       VARCHAR(20),                            -- 작성자ID (mb_member.member_id)
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     blog_comment_content TEXT            NOT NULL,
     comment_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)
     comment_status_cd_before VARCHAR(20),                    -- 변경 전 댓글상태
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (comment_id)
 );

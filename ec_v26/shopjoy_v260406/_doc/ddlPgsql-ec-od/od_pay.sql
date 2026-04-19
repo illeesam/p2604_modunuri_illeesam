@@ -2,13 +2,13 @@
 -- od_pay : 결제 (주문당 N건 결제 가능 - 분할결제 대비)
 -- 결제 방식: 무통장입금, 가상계좌, 토스페이먼스(카드/계좌/카카오/네이버),
 --           핸드폰결제, 카카오페이, 네이버페이
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE od_pay (
-    pay_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.
-    claim_id            VARCHAR(16),                            -- od_claim. (클레임 추가결제 시)
+    pay_id              VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    order_id            VARCHAR(20)     NOT NULL,               -- od_order.
+    claim_id            VARCHAR(20),                            -- od_claim. (클레임 추가결제 시)
     -- ── 결제 구분 ──
     pay_div_cd          VARCHAR(20),                            -- 주문/클레임 구분 (코드: PAY_DIV — ORDER/CLAIM)
     pay_dir_cd          VARCHAR(20),                            -- 입금/환불 방향 (코드: PAY_DIR — DEPOSIT/REFUND)
@@ -51,9 +51,9 @@ CREATE TABLE od_pay (
     failure_date        TIMESTAMP,
     -- ── 기본 ──
     memo                VARCHAR(300),
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (pay_id),
     CONSTRAINT fk_od_pay_order FOREIGN KEY (order_id) REFERENCES od_order (order_id)

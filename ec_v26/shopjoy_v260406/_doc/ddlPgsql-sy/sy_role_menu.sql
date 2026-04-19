@@ -1,13 +1,13 @@
 -- 역할-메뉴 권한 매핑
 CREATE TABLE sy_role_menu (
-    role_menu_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    role_id         VARCHAR(16)     NOT NULL,
-    menu_id         VARCHAR(16)     NOT NULL,
+    role_menu_id    VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    role_id         VARCHAR(20)     NOT NULL,
+    menu_id         VARCHAR(20)     NOT NULL,
     perm_level      SMALLINT        DEFAULT 1,              -- 1:조회 / 2:수정 / 3:삭제
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (role_menu_id),
     UNIQUE (role_id, menu_id)

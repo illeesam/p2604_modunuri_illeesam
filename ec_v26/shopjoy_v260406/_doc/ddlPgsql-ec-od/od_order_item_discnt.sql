@@ -4,24 +4,24 @@
 -- 환불 시 개당 유효단가 계산의 기준 데이터
 -- ============================================================
 CREATE TABLE od_order_item_discnt (
-    item_discnt_id      VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id
-    order_item_id       VARCHAR(16)     NOT NULL,               -- od_order_item.order_item_id
+    item_discnt_id      VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    order_id            VARCHAR(20)     NOT NULL,               -- od_order.order_id
+    order_item_id       VARCHAR(20)     NOT NULL,               -- od_order_item.order_item_id
     -- ── 할인 구분 ──
     discnt_type_cd      VARCHAR(30)     NOT NULL,               -- 코드: ORDER_ITEM_DISCNT_TYPE
                                                                 --   ITEM_DISCNT  : 즉시할인 (상품 판매가 기준 직접 할인)
                                                                 --   ITEM_COUPON  : 상품쿠폰 할인
     -- ── 쿠폰 연결 (ITEM_COUPON인 경우) ──
-    coupon_id           VARCHAR(16),                            -- pm_coupon.coupon_id
-    coupon_issue_id     VARCHAR(16),                            -- pm_coupon_issue.coupon_issue_id
+    coupon_id           VARCHAR(20),                            -- pm_coupon.coupon_id
+    coupon_issue_id     VARCHAR(20),                            -- pm_coupon_issue.coupon_issue_id
     -- ── 할인 금액 ──
     discnt_rate         DECIMAL(5,2),                           -- 할인율 (%) — 비율할인인 경우
     unit_discnt_amt     BIGINT          DEFAULT 0,              -- 1개당 할인금액
     total_discnt_amt    BIGINT          DEFAULT 0,              -- 전체 할인금액 (unit_discnt_amt × order_qty)
     order_qty           INTEGER         DEFAULT 1,              -- 주문수량 (스냅샷)
     -- ── 기본 ──
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (item_discnt_id)
 );

@@ -1,12 +1,12 @@
 -- ============================================================
 -- ec_review : 상품 리뷰
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_review (
-    review_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,              -- pd_prod.prod_id
-    member_id       VARCHAR(16)     NOT NULL,              -- mb_member.member_id
+    review_id       VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    prod_id         VARCHAR(20)     NOT NULL,              -- pd_prod.prod_id
+    member_id       VARCHAR(20)     NOT NULL,              -- mb_member.member_id
     review_title    VARCHAR(200)    NOT NULL,
     review_content  TEXT            NOT NULL,
     rating          NUMERIC(3,1)    NOT NULL,              -- 1.0 ~ 5.0
@@ -15,9 +15,9 @@ CREATE TABLE pd_review (
     review_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: REVIEW_STATUS (ACTIVE/HIDDEN/DELETED)
     review_status_cd_before VARCHAR(20),                     -- 변경 전 리뷰상태
     review_date     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (review_id)
 );

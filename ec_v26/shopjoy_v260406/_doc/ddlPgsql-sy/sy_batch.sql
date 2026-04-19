@@ -1,10 +1,10 @@
 -- ============================================================
 -- sy_batch : 배치 / sy_batch_hist : 배치 실행 이력
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_batch (
-    batch_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    batch_id        VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     batch_code      VARCHAR(50)     NOT NULL,
     batch_nm        VARCHAR(100)    NOT NULL,
     batch_desc      TEXT,
@@ -17,9 +17,9 @@ CREATE TABLE sy_batch (
     batch_run_status VARCHAR(20)     DEFAULT 'IDLE',         -- IDLE/RUNNING/SUCCESS/FAILED
     batch_timeout_sec INTEGER         DEFAULT 300,
     batch_memo      TEXT,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (batch_id),

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdCartMapper">
+
+    <sql id="odCartCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND c.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND c.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdCartDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            mem.member_nm AS member_nm,
+            prd.prod_nm AS prod_nm
+        FROM od_cart c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN mb_member mem ON mem.member_id = c.member_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
+        WHERE c.cart_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdCartDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            mem.member_nm AS member_nm,
+            prd.prod_nm AS prod_nm
+        FROM od_cart c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN mb_member mem ON mem.member_id = c.member_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
+            <include refid="odCartCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.cart_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.cart_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdCartDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            mem.member_nm AS member_nm,
+            prd.prod_nm AS prod_nm
+        FROM od_cart c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN mb_member mem ON mem.member_id = c.member_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
+            <include refid="odCartCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.cart_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.cart_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM od_cart c
+            <include refid="odCartCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdCart">
+        UPDATE od_cart
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="memberId != null">member_id = #{memberId},</if>
+            <if test="sessionKey != null">session_key = #{sessionKey},</if>
+            <if test="prodId != null">prod_id = #{prodId},</if>
+            <if test="skuId != null">sku_id = #{skuId},</if>
+            <if test="optItemId1 != null">opt_item_id_1 = #{optItemId1},</if>
+            <if test="optItemId2 != null">opt_item_id_2 = #{optItemId2},</if>
+            <if test="unitPrice != null">unit_price = #{unitPrice},</if>
+            <if test="orderQty != null">order_qty = #{orderQty},</if>
+            <if test="itemPrice != null">item_price = #{itemPrice},</if>
+            <if test="isChecked != null">is_checked = #{isChecked},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE cart_id = #{cartId}
+    </update>
+
+</mapper>

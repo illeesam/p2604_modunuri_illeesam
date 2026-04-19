@@ -1,14 +1,14 @@
 -- ============================================================
 -- st_settle_raw : 정산 수집원장
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 기본 수집 단위: od_order_item / od_claim_item
 -- 프로모션·쿠폰·할인·상품권·캐쉬·사은품·마일리지 등
 -- 정산에 영향을 미치는 모든 요소를 1행에 펼쳐 저장
 -- 통계·분석 쿼리의 기반 테이블 — od_order_item join 없이 독립 조회 가능해야 함
 -- ============================================================
 CREATE TABLE st_settle_raw (
-    settle_raw_id           VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16)     NOT NULL,               -- sy_site.site_id
+    settle_raw_id           VARCHAR(20)     NOT NULL,
+    site_id                 VARCHAR(20)     NOT NULL,               -- sy_site.site_id
 
     -- ── 수집 구분
     raw_type_cd             VARCHAR(20)     NOT NULL,               -- 코드: RAW_TYPE (ORDER:주문/CLAIM:클레임)
@@ -16,37 +16,37 @@ CREATE TABLE st_settle_raw (
     raw_status_cd_before    VARCHAR(20),                            -- 변경 전 상태
 
     -- ── 주문 원천
-    order_id                VARCHAR(16)     NOT NULL,               -- od_order.order_id
+    order_id                VARCHAR(20)     NOT NULL,               -- od_order.order_id
     order_no                VARCHAR(30),                            -- 주문번호 (스냅샷)
-    order_item_id           VARCHAR(16)     NOT NULL,               -- od_order_item.order_item_id
+    order_item_id           VARCHAR(20)     NOT NULL,               -- od_order_item.order_item_id
     order_date              TIMESTAMP,                              -- 주문일시 (스냅샷)
     order_item_status_cd    VARCHAR(20),                            -- 수집 시점 주문상태 (스냅샷, 코드: ORDER_ITEM_STATUS)
 
     -- ── 주문자
-    member_id               VARCHAR(16),                            -- 주문 회원ID 스냅샷 (mb_member.member_id)
+    member_id               VARCHAR(20),                            -- 주문 회원ID 스냅샷 (mb_member.member_id)
 
     -- ── 클레임 원천 (클레임 수집 시)
-    claim_id                VARCHAR(16),                            -- od_claim.claim_id
-    claim_item_id           VARCHAR(16),                            -- od_claim_item.claim_item_id
+    claim_id                VARCHAR(20),                            -- od_claim.claim_id
+    claim_item_id           VARCHAR(20),                            -- od_claim_item.claim_item_id
 
     -- ── 업체
-    vendor_id               VARCHAR(16),                            -- sy_vendor.vendor_id
+    vendor_id               VARCHAR(20),                            -- sy_vendor.vendor_id
     vendor_type_cd          VARCHAR(20),                            -- 코드: VENDOR_TYPE (SALE:판매/DLIV:배송/EXTERNAL:외부)
 
     -- ── 상품 · 옵션 · 브랜드 · 카테고리
-    prod_id                 VARCHAR(16),                            -- pd_prod.prod_id
+    prod_id                 VARCHAR(20),                            -- pd_prod.prod_id
     prod_nm                 VARCHAR(200),                           -- 상품명 (스냅샷)
-    brand_id                VARCHAR(16),                            -- 브랜드ID 스냅샷 (sy_brand.brand_id)
+    brand_id                VARCHAR(20),                            -- 브랜드ID 스냅샷 (sy_brand.brand_id)
     brand_nm                VARCHAR(100),                           -- 브랜드명 (스냅샷)
-    category_id_1           VARCHAR(16),                            -- 카테고리 1단계ID 스냅샷 (대분류, pd_category.category_id)
-    category_id_2           VARCHAR(16),                            -- 카테고리 2단계ID 스냅샷 (중분류, pd_category.category_id)
-    category_id_3           VARCHAR(16),                            -- 카테고리 3단계ID 스냅샷 (소분류, pd_category.category_id)
-    category_id_4           VARCHAR(16),                            -- 카테고리 4단계ID 스냅샷 (pd_category.category_id)
-    category_id_5           VARCHAR(16),                            -- 카테고리 5단계ID 스냅샷 (pd_category.category_id)
-    sku_id                  VARCHAR(16),                            -- pd_prod_sku.sku_id (스냅샷)
-    opt_item_id_1           VARCHAR(16),                            -- pd_prod_opt_item.opt_item_id (옵션1, 스냅샷)
-    opt_item_id_2           VARCHAR(16),                            -- pd_prod_opt_item.opt_item_id (옵션2, 스냅샷)
-    md_user_id              VARCHAR(16),                            -- 담당 MD (sy_user.user_id)
+    category_id_1           VARCHAR(20),                            -- 카테고리 1단계ID 스냅샷 (대분류, pd_category.category_id)
+    category_id_2           VARCHAR(20),                            -- 카테고리 2단계ID 스냅샷 (중분류, pd_category.category_id)
+    category_id_3           VARCHAR(20),                            -- 카테고리 3단계ID 스냅샷 (소분류, pd_category.category_id)
+    category_id_4           VARCHAR(20),                            -- 카테고리 4단계ID 스냅샷 (pd_category.category_id)
+    category_id_5           VARCHAR(20),                            -- 카테고리 5단계ID 스냅샷 (pd_category.category_id)
+    sku_id                  VARCHAR(20),                            -- pd_prod_sku.sku_id (스냅샷)
+    opt_item_id_1           VARCHAR(20),                            -- pd_prod_opt_item.opt_item_id (옵션1, 스냅샷)
+    opt_item_id_2           VARCHAR(20),                            -- pd_prod_opt_item.opt_item_id (옵션2, 스냅샷)
+    md_user_id              VARCHAR(20),                            -- 담당 MD (sy_user.user_id)
 
     -- ── 수량 · 가격
     normal_price            BIGINT          DEFAULT 0,              -- 정상가 (할인 전 1ea, 스냅샷)
@@ -60,14 +60,14 @@ CREATE TABLE st_settle_raw (
     promo_discnt_amt        BIGINT          DEFAULT 0,              -- 프로모션할인금액
 
     -- ── 프로모션 · 쿠폰 · 할인 참조
-    promo_id                VARCHAR(16),                            -- pm_event.event_id (프로모션)
-    coupon_id               VARCHAR(16),                            -- pm_coupon.coupon_id
-    coupon_issue_id         VARCHAR(16),                            -- pm_coupon_issue.coupon_issue_id
-    discnt_id               VARCHAR(16),                            -- pm_discnt.discnt_id
+    promo_id                VARCHAR(20),                            -- pm_event.event_id (프로모션)
+    coupon_id               VARCHAR(20),                            -- pm_coupon.coupon_id
+    coupon_issue_id         VARCHAR(20),                            -- pm_coupon_issue.coupon_issue_id
+    discnt_id               VARCHAR(20),                            -- pm_discnt.discnt_id
 
     -- ── 상품권
-    voucher_id              VARCHAR(16),                            -- pm_voucher.voucher_id
-    voucher_issue_id        VARCHAR(16),                            -- pm_voucher_issue.voucher_issue_id
+    voucher_id              VARCHAR(20),                            -- pm_voucher.voucher_id
+    voucher_issue_id        VARCHAR(20),                            -- pm_voucher_issue.voucher_issue_id
     voucher_use_amt         BIGINT          DEFAULT 0,              -- 상품권 사용금액
 
     -- ── 캐쉬 · 마일리지 · 적립
@@ -76,7 +76,7 @@ CREATE TABLE st_settle_raw (
     save_schd_amt           BIGINT          DEFAULT 0,              -- 적립 예정금액 (구매확정 전=예상, 확정 후=실적립)
 
     -- ── 사은품
-    gift_id                 VARCHAR(16),                            -- pm_gift.gift_id
+    gift_id                 VARCHAR(20),                            -- pm_gift.gift_id
     gift_amt                BIGINT          DEFAULT 0,              -- 사은품 원가금액 (정산 차감)
 
     -- ── 결제
@@ -97,22 +97,22 @@ CREATE TABLE st_settle_raw (
 
     -- ── 정산 집계 연결
     settle_period           VARCHAR(7),                             -- 정산기간 (YYYY-MM)
-    settle_id               VARCHAR(16),                            -- st_settle.settle_id (집계 후 연결)
+    settle_id               VARCHAR(20),                            -- st_settle.settle_id (집계 후 연결)
 
     -- ── 마감
     close_yn                CHAR(1)         DEFAULT 'N',            -- 정산마감 완료 여부 Y/N
     close_date              TIMESTAMP,                              -- 마감일시
-    settle_close_id         VARCHAR(16),                            -- st_settle_close.settle_close_id
+    settle_close_id         VARCHAR(20),                            -- st_settle_close.settle_close_id
 
     -- ── ERP 전표
-    erp_voucher_id          VARCHAR(16),                            -- st_erp_voucher.erp_voucher_id
+    erp_voucher_id          VARCHAR(20),                            -- st_erp_voucher.erp_voucher_id
     erp_voucher_line_no     INTEGER,                                -- 전표 라인번호 (st_erp_voucher_line.line_no)
     erp_send_yn             CHAR(1)         DEFAULT 'N',            -- ERP 전송 여부 Y/N
     erp_send_date           TIMESTAMP,                              -- ERP 전송일시
 
-    reg_by                  VARCHAR(16),
+    reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(16),
+    upd_by                  VARCHAR(20),
     upd_date                TIMESTAMP,
 
     PRIMARY KEY (settle_raw_id)

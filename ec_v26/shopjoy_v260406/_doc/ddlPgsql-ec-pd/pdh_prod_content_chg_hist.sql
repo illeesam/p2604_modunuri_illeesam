@@ -1,18 +1,18 @@
 -- 상품 컨텐츠 변경 이력
 CREATE TABLE pdh_prod_content_chg_hist (
-    hist_id          VARCHAR(16)     NOT NULL,
-    site_id          VARCHAR(16),                            -- sy_site.site_id
-    prod_id          VARCHAR(16)     NOT NULL,              -- FK: pd_prod.prod_idprod_id
-    prod_content_id  VARCHAR(16)     NOT NULL,              -- FK: pd_prod_content.prod_content_id
+    hist_id          VARCHAR(20)     NOT NULL,
+    site_id          VARCHAR(20),                            -- sy_site.site_id
+    prod_id          VARCHAR(20)     NOT NULL,              -- FK: pd_prod.prod_idprod_id
+    prod_content_id  VARCHAR(20)     NOT NULL,              -- FK: pd_prod_content.prod_content_id
     content_type_cd  VARCHAR(50),                            -- 컨텐츠유형코드 (상세설명, 사용설명 등)
     content_before   TEXT,                                   -- 변경전 컨텐츠
     content_after    TEXT,                                   -- 변경후 컨텐츠
     chg_reason       VARCHAR(200),                           -- 변경사유
-    chg_user_id           VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id           VARCHAR(20),                            -- 처리자 (sy_user.user_id)
     chg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP, -- 처리일시
-    reg_by           VARCHAR(16),
+    reg_by           VARCHAR(20),
     reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by           VARCHAR(16),
+    upd_by           VARCHAR(20),
     upd_date         TIMESTAMP,
     PRIMARY KEY (hist_id)
 );

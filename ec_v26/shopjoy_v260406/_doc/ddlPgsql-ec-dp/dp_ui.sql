@@ -1,10 +1,10 @@
 -- ============================================================
 -- dp_ui : 디스플레이 UI
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_ui (
-    ui_id           VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    ui_id           VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     ui_cd           VARCHAR(50)     NOT NULL,               -- 예: MOBILE_MAIN, PC_MAIN, EVENT_PAGE
     ui_nm           VARCHAR(100)    NOT NULL,
     ui_desc         VARCHAR(300),
@@ -14,9 +14,9 @@ CREATE TABLE dp_ui (
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 (Y/N)
     use_start_date  DATE,                                   -- 사용시작일
     use_end_date    DATE,                                   -- 사용종료일
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (ui_id),
     UNIQUE (site_id, ui_cd)

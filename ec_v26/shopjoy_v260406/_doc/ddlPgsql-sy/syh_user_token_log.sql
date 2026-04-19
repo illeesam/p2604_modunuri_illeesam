@@ -1,14 +1,14 @@
 -- ============================================================
 -- syh_user_token_log : 관리자 사용자 토큰 이력
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 용도: 액세스/리프레시 토큰 발급·갱신·폐기 전 생애주기 추적
 -- 보안 주의: token 컬럼은 SHA-256 해시값 저장 권장 (원문 저장 금지)
 -- ============================================================
 CREATE TABLE syh_user_token_log (
-    log_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    user_id             VARCHAR(16)     NOT NULL,              -- sy_user.user_id
-    login_log_id        VARCHAR(16),                           -- sy_user_login_log.log_id (최초 발급 시점 연결)
+    log_id              VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    user_id             VARCHAR(20)     NOT NULL,              -- sy_user.user_id
+    login_log_id        VARCHAR(20),                           -- sy_user_login_log.log_id (최초 발급 시점 연결)
     action_cd           VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_ACTION (ISSUE/REFRESH/REVOKE/EXPIRE)
     token_type_cd       VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_TYPE (ACCESS/REFRESH)
     token               VARCHAR(512)    NOT NULL,              -- 토큰 (SHA-256 해시값 저장 권장)
@@ -17,9 +17,9 @@ CREATE TABLE syh_user_token_log (
     ip                  VARCHAR(50),
     device              VARCHAR(200),                          -- User-Agent
     revoke_reason       VARCHAR(200),                          -- 폐기 사유 (REVOKE 시: LOGOUT/FORCE/EXPIRED 등)
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (log_id)
 );

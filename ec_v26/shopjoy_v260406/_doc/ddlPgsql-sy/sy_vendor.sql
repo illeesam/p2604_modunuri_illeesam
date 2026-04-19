@@ -1,10 +1,10 @@
 -- ============================================================
 -- sy_vendor : 판매/배송업체 (사업체/법인)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_vendor (
-    vendor_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    vendor_id          VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     vendor_no          VARCHAR(20)     NOT NULL,               -- 판매/배송업체등록번호 (123-45-67890)
     corp_no         VARCHAR(20),                            -- 법인등록번호 (선택)
     vendor_nm          VARCHAR(100)    NOT NULL,               -- 상호 / 회사명
@@ -29,9 +29,9 @@ CREATE TABLE sy_vendor (
     vendor_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_STATUS (ACTIVE/SUSPENDED/TERMINATED)
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     vendor_remark   VARCHAR(500),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (vendor_id),
     UNIQUE (vendor_no)

@@ -3,19 +3,19 @@
 --   chg_type 예: COURIER / TRACKING / RECV_INFO / MEMO / SPLIT / MERGE
 -- ============================================================
 CREATE TABLE odh_dliv_chg_hist (
-    dliv_chg_hist_id  VARCHAR(16)     NOT NULL,
-    site_id           VARCHAR(16),                            -- sy_site.site_id
-    dliv_id           VARCHAR(16)     NOT NULL,
+    dliv_chg_hist_id  VARCHAR(20)     NOT NULL,
+    site_id           VARCHAR(20),                            -- sy_site.site_id
+    dliv_id           VARCHAR(20)     NOT NULL,
     chg_type_cd       VARCHAR(30)     NOT NULL,               -- 변경유형코드 (COURIER/TRACKING/RECV_INFO/MEMO/SPLIT/MERGE)
     chg_field         VARCHAR(50),                            -- 변경 필드명 (예: courier_cd, tracking_no, recv_addr)
     before_val        TEXT,                                   -- 변경전값
     after_val         TEXT,                                   -- 변경후값
     chg_reason        VARCHAR(300),                           -- 변경사유
-    chg_user_id            VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id            VARCHAR(20),                            -- 처리자 (sy_user.user_id)
     chg_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by            VARCHAR(16),
+    reg_by            VARCHAR(20),
     reg_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by            VARCHAR(16),
+    upd_by            VARCHAR(20),
     upd_date          TIMESTAMP,
     PRIMARY KEY (dliv_chg_hist_id)
 );

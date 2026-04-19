@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyCodeMapper">
+
+    <sql id="syCodeCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND c.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND c.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyCodeDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm
+        FROM sy_code c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+        WHERE c.code_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyCodeDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm
+        FROM sy_code c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            <include refid="syCodeCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.code_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.code_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyCodeDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm
+        FROM sy_code c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            <include refid="syCodeCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.code_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.code_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_code c
+            <include refid="syCodeCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyCode">
+        UPDATE sy_code
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="codeGrp != null">code_grp = #{codeGrp},</if>
+            <if test="codeValue != null">code_value = #{codeValue},</if>
+            <if test="codeLabel != null">code_label = #{codeLabel},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="parentCodeValue != null">parent_code_value = #{parentCodeValue},</if>
+            <if test="childCodeValues != null">child_code_values = #{childCodeValues},</if>
+            <if test="codeRemark != null">code_remark = #{codeRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE code_id = #{codeId}
+    </update>
+
+</mapper>

@@ -1,13 +1,13 @@
 -- ============================================================
 -- ec_chatt : 채팅방 (고객 1:1 상담)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE cm_chatt_room (
-    chatt_room_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16)     NOT NULL,
+    chatt_room_id        VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    member_id       VARCHAR(20)     NOT NULL,
     member_nm       VARCHAR(50),
-    admin_user_id   VARCHAR(16),                            -- 담당 관리자 (sy_user.user_id)
+    admin_user_id   VARCHAR(20),                            -- 담당 관리자 (sy_user.user_id)
     subject         VARCHAR(200),                           -- 채팅 주제
     chatt_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CHATT_STATUS (PENDING/ONGOING/CLOSED)
     chatt_status_cd_before VARCHAR(20),                     -- 변경 전 채팅상태
@@ -17,9 +17,9 @@ CREATE TABLE cm_chatt_room (
     chatt_memo      TEXT,
     close_date      TIMESTAMP,
     close_reason    VARCHAR(200),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (chatt_room_id)
 );

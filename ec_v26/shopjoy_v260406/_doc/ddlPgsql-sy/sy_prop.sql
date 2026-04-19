@@ -5,7 +5,7 @@
 -- ============================================================
 CREATE TABLE sy_prop (
     prop_id         BIGSERIAL       NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id (NULL = 전역)
+    site_id         VARCHAR(20),                            -- sy_site.site_id (NULL = 전역)
     disp_path       VARCHAR(200)    NOT NULL,               -- 점 구분 표시경로 (aa.bb.cc)
     prop_key        VARCHAR(100)    NOT NULL,               -- 키 (코드 식별자, snake_case 권장)
     prop_value      TEXT,                                   -- 값 (JSON/문자열/숫자 등)
@@ -14,9 +14,9 @@ CREATE TABLE sy_prop (
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     prop_remark     VARCHAR(500),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prop_id),
     UNIQUE (site_id, disp_path, prop_key)                   -- 사이트 + 표시경로 + 키 조합 유일

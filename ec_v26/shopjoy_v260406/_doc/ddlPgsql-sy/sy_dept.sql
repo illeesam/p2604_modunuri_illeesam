@@ -1,21 +1,21 @@
 -- ============================================================
 -- sy_dept : 부서
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_dept (
-    dept_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    dept_id         VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     dept_code       VARCHAR(50)     NOT NULL,
     dept_nm         VARCHAR(100)    NOT NULL,
-    parent_dept_id       VARCHAR(16),
+    parent_dept_id       VARCHAR(20),
     dept_type_cd    VARCHAR(20),                            -- 코드: DEPT_TYPE
-    manager_id      VARCHAR(16),                            -- sy_user.user_id
+    manager_id      VARCHAR(20),                            -- sy_user.user_id
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     dept_remark     VARCHAR(300),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (dept_id),
     UNIQUE (dept_code)

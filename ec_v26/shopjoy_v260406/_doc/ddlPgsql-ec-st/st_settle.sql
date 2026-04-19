@@ -1,11 +1,11 @@
 -- ============================================================
 -- st_settle : 정산 마스터 (업체별 정산 집계)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE st_settle (
-    settle_id           VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16)     NOT NULL,
-    vendor_id           VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
+    settle_id           VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20)     NOT NULL,
+    vendor_id           VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
     settle_ym           CHAR(6)         NOT NULL,               -- 정산년월 (YYYYMM)
     settle_start_date   TIMESTAMP       NOT NULL,               -- 정산 기준시작일
     settle_end_date     TIMESTAMP       NOT NULL,               -- 정산 기준종료일
@@ -22,9 +22,9 @@ CREATE TABLE st_settle (
     settle_status_cd    VARCHAR(20)     DEFAULT 'DRAFT',        -- 코드: SETTLE_STATUS (DRAFT:작성중/CONFIRMED:확정/CLOSED:마감/PAID:지급완료)
     settle_status_cd_before VARCHAR(20),
     settle_memo         TEXT,                                   -- 정산 메모
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_id),
     UNIQUE (site_id, vendor_id, settle_ym)

@@ -1,17 +1,17 @@
 -- 채팅 메시지
 CREATE TABLE cm_chatt_msg (
-    msg_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    chatt_id        VARCHAR(16)     NOT NULL,
+    msg_id          VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    chatt_id        VARCHAR(20)     NOT NULL,
     sender_cd       VARCHAR(20)     NOT NULL,               -- MEMBER / ADMIN
     msg_text        TEXT,
     ref_type        VARCHAR(20),                            -- ORDER / PRODUCT / CLAIM
-    ref_id          VARCHAR(16),
+    ref_id          VARCHAR(20),
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     read_yn         CHAR(1)         DEFAULT 'N',
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (msg_id)
 );

@@ -1,10 +1,10 @@
 -- ============================================================
 -- dp_panel : 디스플레이 패널
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_panel (
-    panel_id                    VARCHAR(16)     NOT NULL,
-    site_id                     VARCHAR(16),                            -- sy_site.site_id
+    panel_id                    VARCHAR(20)     NOT NULL,
+    site_id                     VARCHAR(20),                            -- sy_site.site_id
     panel_nm                    VARCHAR(100)    NOT NULL,
     panel_type_cd               VARCHAR(30),                            -- 코드: DISP_TYPE
     disp_path                   VARCHAR(200),                           -- 점(.) 구분 표시경로
@@ -15,9 +15,9 @@ CREATE TABLE dp_panel (
     disp_panel_status_cd        VARCHAR(20)     DEFAULT 'ACTIVE',      -- 코드: DISP_STATUS
     disp_panel_status_cd_before VARCHAR(20),                            -- 변경 전 패널상태
     content_json                TEXT,                                   -- 패널의 콘텐츠 데이터 (JSON)
-    reg_by                      VARCHAR(16),
+    reg_by                      VARCHAR(20),
     reg_date                    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                      VARCHAR(16),
+    upd_by                      VARCHAR(20),
     upd_date                    TIMESTAMP,
     PRIMARY KEY (panel_id),
     FOREIGN KEY (area_id) REFERENCES dp_area(area_id)

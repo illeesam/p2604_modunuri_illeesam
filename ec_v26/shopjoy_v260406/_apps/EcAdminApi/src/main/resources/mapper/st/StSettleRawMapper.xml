@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.st.StSettleRawMapper">
+
+    <sql id="stSettleRawCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND r.site_id = #{p.siteId}</if>
+            <if test="p.vendorId != null and p.vendorId != ''">AND r.vendor_id = #{p.vendorId}</if>
+            <if test="p.status != null and p.status != ''">AND r.raw_status_cd = #{p.status}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND r.raw_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (r.prod_nm ILIKE '%' || #{p.kw} || '%'
+                  OR r.brand_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND r.order_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND r.order_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleRawDto">
+        SELECT
+            r.*,
+            ste.site_nm AS site_nm,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            mem.member_nm AS member_nm,
+            cla.member_nm AS claim_nm,
+            ite2.prod_nm AS claim_item_nm,
+            vnd.vendor_nm AS vendor_nm,
+            prd.prod_nm AS prod_id_nm,
+            brd.brand_nm AS brand_id_nm,
+            usr.user_nm AS md_user_nm,
+            evt.event_nm AS promo_nm,
+            cpn.coupon_nm AS coupon_nm,
+            dis.discnt_nm AS discnt_nm,
+            vou.voucher_nm AS voucher_nm,
+            gif.gift_nm AS gift_nm,
+            cd_rt.code_label AS raw_type_cd_nm,
+            cd_rs.code_label AS raw_status_cd_nm,
+            cd_ois.code_label AS order_item_status_cd_nm,
+            cd_vt.code_label AS vendor_type_cd_nm,
+            cd_pmc.code_label AS pay_method_cd_nm
+        FROM st_settle_raw r
+            LEFT JOIN sy_site ste ON ste.site_id = r.site_id
+            LEFT JOIN od_order ord ON ord.order_id = r.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = r.order_item_id
+            LEFT JOIN mb_member mem ON mem.member_id = r.member_id
+            LEFT JOIN od_claim cla ON cla.claim_id = r.claim_id
+            LEFT JOIN od_claim_item ite2 ON ite2.claim_item_id = r.claim_item_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = r.vendor_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = r.prod_id
+            LEFT JOIN sy_brand brd ON brd.brand_id = r.brand_id
+            LEFT JOIN sy_user usr ON usr.user_id = r.md_user_id
+            LEFT JOIN pm_event evt ON evt.event_id = r.promo_id
+            LEFT JOIN pm_coupon cpn ON cpn.coupon_id = r.coupon_id
+            LEFT JOIN pm_discnt dis ON dis.discnt_id = r.discnt_id
+            LEFT JOIN pm_voucher vou ON vou.voucher_id = r.voucher_id
+            LEFT JOIN pm_gift gif ON gif.gift_id = r.gift_id
+            LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'RAW_TYPE' AND cd_rt.code_value = r.raw_type_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'RAW_STATUS' AND cd_rs.code_value = r.raw_status_cd
+            LEFT JOIN sy_code cd_ois ON cd_ois.code_grp = 'ORDER_ITEM_STATUS' AND cd_ois.code_value = r.order_item_status_cd
+            LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VENDOR_TYPE' AND cd_vt.code_value = r.vendor_type_cd
+            LEFT JOIN sy_code cd_pmc ON cd_pmc.code_grp = 'PAY_METHOD_CD' AND cd_pmc.code_value = r.pay_method_cd
+        WHERE r.settle_raw_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleRawDto">
+        SELECT
+            r.*,
+            ste.site_nm AS site_nm,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            mem.member_nm AS member_nm,
+            cla.member_nm AS claim_nm,
+            ite2.prod_nm AS claim_item_nm,
+            vnd.vendor_nm AS vendor_nm,
+            prd.prod_nm AS prod_id_nm,
+            brd.brand_nm AS brand_id_nm,
+            usr.user_nm AS md_user_nm,
+            evt.event_nm AS promo_nm,
+            cpn.coupon_nm AS coupon_nm,
+            dis.discnt_nm AS discnt_nm,
+            vou.voucher_nm AS voucher_nm,
+            gif.gift_nm AS gift_nm,
+            cd_rt.code_label AS raw_type_cd_nm,
+            cd_rs.code_label AS raw_status_cd_nm,
+            cd_ois.code_label AS order_item_status_cd_nm,
+            cd_vt.code_label AS vendor_type_cd_nm,
+            cd_pmc.code_label AS pay_method_cd_nm
+        FROM st_settle_raw r
+            LEFT JOIN sy_site ste ON ste.site_id = r.site_id
+            LEFT JOIN od_order ord ON ord.order_id = r.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = r.order_item_id
+            LEFT JOIN mb_member mem ON mem.member_id = r.member_id
+            LEFT JOIN od_claim cla ON cla.claim_id = r.claim_id
+            LEFT JOIN od_claim_item ite2 ON ite2.claim_item_id = r.claim_item_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = r.vendor_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = r.prod_id
+            LEFT JOIN sy_brand brd ON brd.brand_id = r.brand_id
+            LEFT JOIN sy_user usr ON usr.user_id = r.md_user_id
+            LEFT JOIN pm_event evt ON evt.event_id = r.promo_id
+            LEFT JOIN pm_coupon cpn ON cpn.coupon_id = r.coupon_id
+            LEFT JOIN pm_discnt dis ON dis.discnt_id = r.discnt_id
+            LEFT JOIN pm_voucher vou ON vou.voucher_id = r.voucher_id
+            LEFT JOIN pm_gift gif ON gif.gift_id = r.gift_id
+            LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'RAW_TYPE' AND cd_rt.code_value = r.raw_type_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'RAW_STATUS' AND cd_rs.code_value = r.raw_status_cd
+            LEFT JOIN sy_code cd_ois ON cd_ois.code_grp = 'ORDER_ITEM_STATUS' AND cd_ois.code_value = r.order_item_status_cd
+            LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VENDOR_TYPE' AND cd_vt.code_value = r.vendor_type_cd
+            LEFT JOIN sy_code cd_pmc ON cd_pmc.code_grp = 'PAY_METHOD_CD' AND cd_pmc.code_value = r.pay_method_cd
+            <include refid="stSettleRawCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY r.settle_raw_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY r.settle_raw_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY r.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY r.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY r.order_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY r.order_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleRawDto">
+        SELECT
+            r.*,
+            ste.site_nm AS site_nm,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            mem.member_nm AS member_nm,
+            cla.member_nm AS claim_nm,
+            ite2.prod_nm AS claim_item_nm,
+            vnd.vendor_nm AS vendor_nm,
+            prd.prod_nm AS prod_id_nm,
+            brd.brand_nm AS brand_id_nm,
+            usr.user_nm AS md_user_nm,
+            evt.event_nm AS promo_nm,
+            cpn.coupon_nm AS coupon_nm,
+            dis.discnt_nm AS discnt_nm,
+            vou.voucher_nm AS voucher_nm,
+            gif.gift_nm AS gift_nm,
+            cd_rt.code_label AS raw_type_cd_nm,
+            cd_rs.code_label AS raw_status_cd_nm,
+            cd_ois.code_label AS order_item_status_cd_nm,
+            cd_vt.code_label AS vendor_type_cd_nm,
+            cd_pmc.code_label AS pay_method_cd_nm
+        FROM st_settle_raw r
+            LEFT JOIN sy_site ste ON ste.site_id = r.site_id
+            LEFT JOIN od_order ord ON ord.order_id = r.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = r.order_item_id
+            LEFT JOIN mb_member mem ON mem.member_id = r.member_id
+            LEFT JOIN od_claim cla ON cla.claim_id = r.claim_id
+            LEFT JOIN od_claim_item ite2 ON ite2.claim_item_id = r.claim_item_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = r.vendor_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = r.prod_id
+            LEFT JOIN sy_brand brd ON brd.brand_id = r.brand_id
+            LEFT JOIN sy_user usr ON usr.user_id = r.md_user_id
+            LEFT JOIN pm_event evt ON evt.event_id = r.promo_id
+            LEFT JOIN pm_coupon cpn ON cpn.coupon_id = r.coupon_id
+            LEFT JOIN pm_discnt dis ON dis.discnt_id = r.discnt_id
+            LEFT JOIN pm_voucher vou ON vou.voucher_id = r.voucher_id
+            LEFT JOIN pm_gift gif ON gif.gift_id = r.gift_id
+            LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'RAW_TYPE' AND cd_rt.code_value = r.raw_type_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'RAW_STATUS' AND cd_rs.code_value = r.raw_status_cd
+            LEFT JOIN sy_code cd_ois ON cd_ois.code_grp = 'ORDER_ITEM_STATUS' AND cd_ois.code_value = r.order_item_status_cd
+            LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VENDOR_TYPE' AND cd_vt.code_value = r.vendor_type_cd
+            LEFT JOIN sy_code cd_pmc ON cd_pmc.code_grp = 'PAY_METHOD_CD' AND cd_pmc.code_value = r.pay_method_cd
+            <include refid="stSettleRawCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY r.settle_raw_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY r.settle_raw_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY r.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY r.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY r.order_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY r.order_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM st_settle_raw r
+            <include refid="stSettleRawCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.st.entity.StSettleRaw">
+        UPDATE st_settle_raw
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="rawTypeCd != null">raw_type_cd = #{rawTypeCd},</if>
+            <if test="rawStatusCd != null">raw_status_cd = #{rawStatusCd},</if>
+            <if test="rawStatusCdBefore != null">raw_status_cd_before = #{rawStatusCdBefore},</if>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="orderNo != null">order_no = #{orderNo},</if>
+            <if test="orderItemId != null">order_item_id = #{orderItemId},</if>
+            <if test="orderDate != null">order_date = #{orderDate},</if>
+            <if test="orderItemStatusCd != null">order_item_status_cd = #{orderItemStatusCd},</if>
+            <if test="memberId != null">member_id = #{memberId},</if>
+            <if test="claimId != null">claim_id = #{claimId},</if>
+            <if test="claimItemId != null">claim_item_id = #{claimItemId},</if>
+            <if test="vendorId != null">vendor_id = #{vendorId},</if>
+            <if test="vendorTypeCd != null">vendor_type_cd = #{vendorTypeCd},</if>
+            <if test="prodId != null">prod_id = #{prodId},</if>
+            <if test="prodNm != null">prod_nm = #{prodNm},</if>
+            <if test="brandId != null">brand_id = #{brandId},</if>
+            <if test="brandNm != null">brand_nm = #{brandNm},</if>
+            <if test="categoryId1 != null">category_id_1 = #{categoryId1},</if>
+            <if test="categoryId2 != null">category_id_2 = #{categoryId2},</if>
+            <if test="categoryId3 != null">category_id_3 = #{categoryId3},</if>
+            <if test="categoryId4 != null">category_id_4 = #{categoryId4},</if>
+            <if test="categoryId5 != null">category_id_5 = #{categoryId5},</if>
+            <if test="skuId != null">sku_id = #{skuId},</if>
+            <if test="optItemId1 != null">opt_item_id_1 = #{optItemId1},</if>
+            <if test="optItemId2 != null">opt_item_id_2 = #{optItemId2},</if>
+            <if test="mdUserId != null">md_user_id = #{mdUserId},</if>
+            <if test="normalPrice != null">normal_price = #{normalPrice},</if>
+            <if test="unitPrice != null">unit_price = #{unitPrice},</if>
+            <if test="orderQty != null">order_qty = #{orderQty},</if>
+            <if test="itemPrice != null">item_price = #{itemPrice},</if>
+            <if test="discntAmt != null">discnt_amt = #{discntAmt},</if>
+            <if test="couponDiscntAmt != null">coupon_discnt_amt = #{couponDiscntAmt},</if>
+            <if test="promoDiscntAmt != null">promo_discnt_amt = #{promoDiscntAmt},</if>
+            <if test="promoId != null">promo_id = #{promoId},</if>
+            <if test="couponId != null">coupon_id = #{couponId},</if>
+            <if test="couponIssueId != null">coupon_issue_id = #{couponIssueId},</if>
+            <if test="discntId != null">discnt_id = #{discntId},</if>
+            <if test="voucherId != null">voucher_id = #{voucherId},</if>
+            <if test="voucherIssueId != null">voucher_issue_id = #{voucherIssueId},</if>
+            <if test="voucherUseAmt != null">voucher_use_amt = #{voucherUseAmt},</if>
+            <if test="cacheUseAmt != null">cache_use_amt = #{cacheUseAmt},</if>
+            <if test="mileageUseAmt != null">mileage_use_amt = #{mileageUseAmt},</if>
+            <if test="saveSchdAmt != null">save_schd_amt = #{saveSchdAmt},</if>
+            <if test="giftId != null">gift_id = #{giftId},</if>
+            <if test="giftAmt != null">gift_amt = #{giftAmt},</if>
+            <if test="payMethodCd != null">pay_method_cd = #{payMethodCd},</if>
+            <if test="buyConfirmYn != null">buy_confirm_yn = #{buyConfirmYn},</if>
+            <if test="buyConfirmDate != null">buy_confirm_date = #{buyConfirmDate},</if>
+            <if test="bundlePriceRate != null">bundle_price_rate = #{bundlePriceRate},</if>
+            <if test="settleTargetAmt != null">settle_target_amt = #{settleTargetAmt},</if>
+            <if test="settleFeeRate != null">settle_fee_rate = #{settleFeeRate},</if>
+            <if test="settleFeeAmt != null">settle_fee_amt = #{settleFeeAmt},</if>
+            <if test="settleAmt != null">settle_amt = #{settleAmt},</if>
+            <if test="settlePeriod != null">settle_period = #{settlePeriod},</if>
+            <if test="settleId != null">settle_id = #{settleId},</if>
+            <if test="closeYn != null">close_yn = #{closeYn},</if>
+            <if test="closeDate != null">close_date = #{closeDate},</if>
+            <if test="settleCloseId != null">settle_close_id = #{settleCloseId},</if>
+            <if test="erpVoucherId != null">erp_voucher_id = #{erpVoucherId},</if>
+            <if test="erpVoucherLineNo != null">erp_voucher_line_no = #{erpVoucherLineNo},</if>
+            <if test="erpSendYn != null">erp_send_yn = #{erpSendYn},</if>
+            <if test="erpSendDate != null">erp_send_date = #{erpSendDate},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE settle_raw_id = #{settleRawId}
+    </update>
+
+</mapper>

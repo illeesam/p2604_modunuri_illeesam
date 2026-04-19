@@ -1,16 +1,16 @@
 -- ============================================================
 -- ec_blog_img : 블로그 이미지
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 
 CREATE TABLE cm_bltn_file (
-    blog_img_id     VARCHAR(16)     NOT NULL,
-    blog_id         VARCHAR(16)     NOT NULL,              -- FK: cm_bltn.blog_id
+    blog_img_id     VARCHAR(20)     NOT NULL,
+    blog_id         VARCHAR(20)     NOT NULL,              -- FK: cm_bltn.blog_id
     img_url         VARCHAR(500)    NOT NULL,              -- 원본 이미지 URL
     thumb_url       VARCHAR(500),                           -- 썸네일 이미지 URL
     img_alt_text    VARCHAR(200),                           -- 대체텍스트
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (blog_img_id)
 );

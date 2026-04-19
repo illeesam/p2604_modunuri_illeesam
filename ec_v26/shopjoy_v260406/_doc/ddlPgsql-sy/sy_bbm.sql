@@ -1,10 +1,10 @@
 -- ============================================================
 -- sy_bbm : 게시판 마스터 (게시판 설정)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_bbm (
-    bbm_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    bbm_id          VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     bbm_code        VARCHAR(50)     NOT NULL,
     bbm_nm          VARCHAR(100)    NOT NULL,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
@@ -17,9 +17,9 @@ CREATE TABLE sy_bbm (
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     bbm_remark      VARCHAR(300),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (bbm_id),
     UNIQUE (bbm_code)

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdProdMapper">
+
+    <!-- 원칙1: prod_status_cd_nm, prod_type_cd_nm -->
+    <!-- 원칙2: pd_category, sy_brand, sy_vendor, sy_user(담당MD) -->
+
+    <sql id="pdProdCond">
+<where>
+            <if test="p.siteId != null and p.siteId != ''">AND p.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND p.prod_status_cd = #{p.status}</if>
+            <if test="p.categoryId != null and p.categoryId != ''">AND p.category_id = #{p.categoryId}</if>
+            <if test="p.vendorId != null and p.vendorId != ''">AND p.vendor_id = #{p.vendorId}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (p.prod_nm   ILIKE '%' || #{p.kw} || '%'
+                  OR p.prod_code ILIKE '%' || #{p.kw} || '%'
+                  OR b.brand_nm  ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND p.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND p.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdDto">
+        SELECT
+            p.*,
+            cat.category_nm AS cate_nm,    cat.parent_category_id,
+            b.brand_nm,
+            v.vendor_nm,    v.vendor_tel,
+            u.user_nm                AS md_user_nm,
+            cd_ps.code_label         AS prod_status_cd_nm,
+            cd_pt.code_label         AS prod_type_cd_nm,
+            cd_sz.code_label         AS size_info_cd_nm
+        FROM pd_prod p
+            LEFT JOIN pd_category cat ON cat.category_id = p.category_id
+            LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id
+            LEFT JOIN sy_vendor    v   ON v.vendor_id    = p.vendor_id
+            LEFT JOIN sy_user      u   ON u.user_id      = p.md_user_id
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = p.prod_status_cd
+            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = p.prod_type_cd
+            LEFT JOIN sy_code cd_sz ON cd_sz.code_grp = 'PRODUCT_SIZE'   AND cd_sz.code_value = p.size_info_cd
+        WHERE p.prod_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdDto">
+        SELECT
+            p.*,
+            cat.category_nm AS cate_nm,
+            b.brand_nm,
+            v.vendor_nm,
+            u.user_nm                AS md_user_nm,
+            cd_ps.code_label         AS prod_status_cd_nm,
+            cd_pt.code_label         AS prod_type_cd_nm
+        FROM pd_prod p
+            LEFT JOIN pd_category cat ON cat.category_id = p.category_id
+            LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id
+            LEFT JOIN sy_vendor    v   ON v.vendor_id    = p.vendor_id
+            LEFT JOIN sy_user      u   ON u.user_id      = p.md_user_id
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = p.prod_status_cd
+            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = p.prod_type_cd
+                <include refid="pdProdCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.prod_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.prod_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY p.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY p.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdDto">
+        SELECT
+            p.*,
+            cat.category_nm AS cate_nm,
+            b.brand_nm,
+            v.vendor_nm,
+            u.user_nm                AS md_user_nm,
+            cd_ps.code_label         AS prod_status_cd_nm,
+            cd_pt.code_label         AS prod_type_cd_nm
+        FROM pd_prod p
+            LEFT JOIN pd_category cat ON cat.category_id = p.category_id
+            LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id
+            LEFT JOIN sy_vendor    v   ON v.vendor_id    = p.vendor_id
+            LEFT JOIN sy_user      u   ON u.user_id      = p.md_user_id
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = p.prod_status_cd
+            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = p.prod_type_cd
+                <include refid="pdProdCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.prod_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.prod_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY p.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY p.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM pd_prod p
+            LEFT JOIN sy_brand b ON b.brand_id = p.brand_id
+                <include refid="pdProdCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pd.entity.PdProd">
+        UPDATE pd_prod
+        <set>
+            <if test="prodStatusCd != null">prod_status_cd = #{prodStatusCd},</if>
+            <if test="prodStatusCdBefore != null">prod_status_cd_before = #{prodStatusCdBefore},</if>
+            <if test="prodNm != null">prod_nm = #{prodNm},</if>
+            <if test="salePrice != null">sale_price = #{salePrice},</if>
+            <if test="prodStock != null">prod_stock = #{prodStock},</if>
+            <if test="thumbnailUrl != null">thumbnail_url = #{thumbnailUrl},</if>
+            <if test="isBest != null">is_best = #{isBest},</if>
+            <if test="isNew != null">is_new = #{isNew},</if>
+            <if test="soldOutYn != null">sold_out_yn = #{soldOutYn},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE prod_id = #{prodId}
+    </update>
+
+    <!-- ================================================================
+         확장 쿼리 (연관관계 조회 등)
+         ================================================================ -->
+
+    <select id="selectSkusByProdId" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdSkuDto">
+        SELECT
+            sk.*,
+            oi1.opt_item_nm AS opt_item_nm_1,
+            oi2.opt_item_nm AS opt_item_nm_2
+        FROM pd_prod_sku sk
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = sk.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = sk.opt_item_id_2
+        WHERE sk.prod_id = #{prodId}
+        ORDER BY sk.sort_no ASC, sk.reg_date ASC
+    </select>
+
+    <select id="selectOptsByProdId" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdOptDto">
+        SELECT o.*, cd_ot.code_label AS opt_type_cd_nm
+        FROM pd_prod_opt o
+            LEFT JOIN sy_code cd_ot ON cd_ot.code_grp = 'OPT_TYPE' AND cd_ot.code_value = o.opt_type_cd
+        WHERE o.prod_id = #{prodId}
+        ORDER BY o.opt_level ASC, o.sort_no ASC
+    </select>
+
+</mapper>
+

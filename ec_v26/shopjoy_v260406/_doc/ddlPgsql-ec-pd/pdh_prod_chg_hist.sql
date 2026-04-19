@@ -1,16 +1,16 @@
 CREATE TABLE pdh_prod_chg_hist (
-    prod_chg_hist_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,
+    prod_chg_hist_id    VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    prod_id         VARCHAR(20)     NOT NULL,
     chg_type_cd     VARCHAR(30),                            -- 변경유형코드 (PRICE / STOCK / STATUS)
     before_val      TEXT,
     after_val       TEXT,
     chg_reason      VARCHAR(200),
-    chg_user_id          VARCHAR(16),
+    chg_user_id          VARCHAR(20),
     chg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_chg_hist_id)
 );

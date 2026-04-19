@@ -1,12 +1,12 @@
 -- ============================================================
 -- ec_blog_like : 블로그 좋아요
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 
 CREATE TABLE cm_bltn_good (
-    like_id         VARCHAR(16)     NOT NULL,
-    blog_id         VARCHAR(16)     NOT NULL,              -- FK: cm_bltn.blog_id
-    user_id         VARCHAR(16)     NOT NULL,              -- FK: sy_member.user_id (회원만 가능)
+    like_id         VARCHAR(20)     NOT NULL,
+    blog_id         VARCHAR(20)     NOT NULL,              -- FK: cm_bltn.blog_id
+    user_id         VARCHAR(20)     NOT NULL,              -- FK: sy_member.user_id (회원만 가능)
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (like_id),
     UNIQUE (blog_id, user_id)                              -- 중복 방지

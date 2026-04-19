@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdOrderItemMapper">
+
+    <!-- 원칙1: order_item_status_cd_nm, dliv_courier_cd_nm -->
+    <!-- 원칙2: pd_prod, pd_prod_sku, pd_prod_opt_item(x2) -->
+
+    <sql id="odOrderItemCond">
+<where>
+            <if test="p.siteId != null and p.siteId != ''">AND oi.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND oi.order_item_status_cd = #{p.status}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (oi.order_id::TEXT ILIKE '%' || #{p.kw} || '%'
+                  OR oi.prod_nm        ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND oi.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND oi.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+        SELECT
+            oi.*,
+            p.prod_nm AS prod_nm_current, p.thumbnail_url, p.sale_price,
+            sk.sku_code,
+            oi1.opt_item_nm AS opt_item_nm_1,
+            oi2.opt_item_nm AS opt_item_nm_2,
+            cd_is.code_label AS order_item_status_cd_nm
+        FROM od_order_item oi
+            LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
+            LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = oi.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = oi.opt_item_id_2
+            LEFT JOIN sy_code cd_is
+                ON cd_is.code_grp = 'ORDER_ITEM_STATUS' AND cd_is.code_value = oi.order_item_status_cd
+        WHERE oi.order_item_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+        SELECT
+            oi.*,
+            p.thumbnail_url,    p.sale_price,
+            sk.sku_code,
+            oi1.opt_item_nm     AS opt_item_nm_1,
+            oi2.opt_item_nm     AS opt_item_nm_2,
+            cd_is.code_label    AS order_item_status_cd_nm,
+            cd_dc.code_label    AS dliv_courier_cd_nm
+        FROM od_order_item oi
+            LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
+            LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = oi.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = oi.opt_item_id_2
+            LEFT JOIN sy_code cd_is
+                ON cd_is.code_grp = 'ORDER_ITEM_STATUS' AND cd_is.code_value = oi.order_item_status_cd
+            LEFT JOIN sy_code cd_dc
+                ON cd_dc.code_grp = 'COURIER'           AND cd_dc.code_value = oi.dliv_courier_cd
+                <include refid="odOrderItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY oi.order_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY oi.order_item_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY oi.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY oi.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY oi.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY oi.reg_date DESC</when>
+            <otherwise>ORDER BY oi.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+        SELECT
+            oi.*,
+            p.thumbnail_url,    p.sale_price,
+            sk.sku_code,
+            oi1.opt_item_nm     AS opt_item_nm_1,
+            oi2.opt_item_nm     AS opt_item_nm_2,
+            cd_is.code_label    AS order_item_status_cd_nm,
+            cd_dc.code_label    AS dliv_courier_cd_nm
+        FROM od_order_item oi
+            LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
+            LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = oi.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = oi.opt_item_id_2
+            LEFT JOIN sy_code cd_is
+                ON cd_is.code_grp = 'ORDER_ITEM_STATUS' AND cd_is.code_value = oi.order_item_status_cd
+            LEFT JOIN sy_code cd_dc
+                ON cd_dc.code_grp = 'COURIER'           AND cd_dc.code_value = oi.dliv_courier_cd
+                <include refid="odOrderItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY oi.order_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY oi.order_item_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY oi.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY oi.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY oi.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY oi.reg_date DESC</when>
+            <otherwise>ORDER BY oi.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*) FROM od_order_item oi
+                <include refid="odOrderItemCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdOrderItem">
+        UPDATE od_order_item
+        <set>
+            <if test="orderItemStatusCd != null">order_item_status_cd = #{orderItemStatusCd},</if>
+            <if test="orderItemStatusCdBefore != null">order_item_status_cd_before = #{orderItemStatusCdBefore},</if>
+            <if test="buyConfirmYn != null">buy_confirm_yn = #{buyConfirmYn},</if>
+            <if test="buyConfirmDate != null">buy_confirm_date = #{buyConfirmDate},</if>
+            <if test="settleYn != null">settle_yn = #{settleYn},</if>
+            <if test="settleDate != null">settle_date = #{settleDate},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE order_item_id = #{orderItemId}
+    </update>
+
+    <!-- ================================================================
+         확장 쿼리 (연관관계 조회 등)
+         ================================================================ -->
+
+    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+        SELECT
+            oi.*,
+            p.thumbnail_url,
+            sk.sku_code,
+            oi1.opt_item_nm AS opt_item_nm_1,
+            oi2.opt_item_nm AS opt_item_nm_2,
+            cd_is.code_label AS order_item_status_cd_nm
+        FROM od_order_item oi
+            LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
+            LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = oi.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = oi.opt_item_id_2
+            LEFT JOIN sy_code cd_is
+                ON cd_is.code_grp = 'ORDER_ITEM_STATUS' AND cd_is.code_value = oi.order_item_status_cd
+        WHERE oi.order_id = #{orderId}
+        ORDER BY oi.reg_date ASC
+    </select>
+
+</mapper>
+

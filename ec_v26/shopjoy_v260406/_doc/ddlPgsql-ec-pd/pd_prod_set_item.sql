@@ -5,22 +5,22 @@
 -- - 가격은 세트 단가로 별도 책정 (price_rate 없음)
 -- - 클레임은 세트 전체 단위로만 처리 (부분 취소/반품 불가)
 -- - component_prod_id = NULL 허용 (상품 미등록 구성품 — 예: 증정 엽서)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_prod_set_item (
-    set_item_id         VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    set_prod_id         VARCHAR(16)     NOT NULL,               -- 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
-    item_prod_id        VARCHAR(16),                            -- 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
-    item_sku_id         VARCHAR(16),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
+    set_item_id         VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    set_prod_id         VARCHAR(20)     NOT NULL,               -- 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
+    item_prod_id        VARCHAR(20),                            -- 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
+    item_sku_id         VARCHAR(20),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
     item_nm             VARCHAR(200)    NOT NULL,               -- 구성품 표시명 (예: 머그컵 1개)
     item_qty            INTEGER         DEFAULT 1,              -- 구성 수량
     item_desc           VARCHAR(300),                           -- 구성품 설명 (소재·용량 등 부가 안내)
     sort_ord            INTEGER         DEFAULT 0,              -- 노출 순서
     use_yn              CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (set_item_id)
 );

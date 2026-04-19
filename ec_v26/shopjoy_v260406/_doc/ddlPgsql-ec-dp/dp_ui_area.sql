@@ -1,11 +1,11 @@
 -- ============================================================
 -- dp_ui_area : 디스플레이 UI-영역 매핑
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_ui_area (
-    ui_area_id          VARCHAR(16)     NOT NULL,
-    ui_id               VARCHAR(16)     NOT NULL,              -- FK: dp_ui.ui_id
-    area_id             VARCHAR(16)     NOT NULL,              -- FK: dp_area.area_id
+    ui_area_id          VARCHAR(20)     NOT NULL,
+    ui_id               VARCHAR(20)     NOT NULL,              -- FK: dp_ui.ui_id
+    area_id             VARCHAR(20)     NOT NULL,              -- FK: dp_area.area_id
     area_sort_ord       INTEGER         DEFAULT 0,              -- 영역정렬순서
     visibility_targets  VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
     disp_env            VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
@@ -15,9 +15,9 @@ CREATE TABLE dp_ui_area (
     disp_end_date       DATE,                                   -- 전시종료일
     disp_end_time       TIME,                                   -- 전시종료시간
     use_yn              CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (ui_area_id),
     UNIQUE (ui_id, area_id),

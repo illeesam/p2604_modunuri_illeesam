@@ -1,12 +1,12 @@
 -- ============================================================
 -- dp_panel_item : 디스플레이 패널 항목 (위젯 인스턴스)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 참조 방식: dp_widget_lib 참조 OR 직접 콘텐츠 생성
 -- ============================================================
 CREATE TABLE dp_panel_item (
-    panel_item_id           VARCHAR(16)     NOT NULL,
-    panel_id                VARCHAR(16)     NOT NULL,              -- FK: dp_panel.panel_id
-    widget_lib_id           VARCHAR(16),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
+    panel_item_id           VARCHAR(20)     NOT NULL,
+    panel_id                VARCHAR(20)     NOT NULL,              -- FK: dp_panel.panel_id
+    widget_lib_id           VARCHAR(20),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
     widget_type_cd          VARCHAR(30),                            -- 위젯유형 (코드: WIDGET_TYPE)
     widget_title            VARCHAR(200),                           -- 위젯 타이틀
     widget_content          TEXT,                                   -- 위젯 내용 (HTML 에디터)
@@ -23,9 +23,9 @@ CREATE TABLE dp_panel_item (
     disp_end_time           TIME,                                   -- 전시종료시간
     disp_env                VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
     use_yn                  CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by                  VARCHAR(16),
+    reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(16),
+    upd_by                  VARCHAR(20),
     upd_date                TIMESTAMP,
     PRIMARY KEY (panel_item_id),
     FOREIGN KEY (panel_id) REFERENCES dp_panel(panel_id),

@@ -1,10 +1,10 @@
 -- 상품-태그 매핑
 CREATE TABLE pd_prod_tag (
-    prod_tag_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
-    tag_id          VARCHAR(16)     NOT NULL,               -- pd_tag.
-    reg_by          VARCHAR(16),
+    prod_tag_id     VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),
+    prod_id         VARCHAR(20)     NOT NULL,               -- pd_prod.prod_id
+    tag_id          VARCHAR(20)     NOT NULL,               -- pd_tag.
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (prod_tag_id),
     UNIQUE (prod_id, tag_id)

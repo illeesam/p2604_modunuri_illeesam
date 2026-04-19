@@ -1,22 +1,22 @@
 -- ============================================================
 -- sy_brand : 브랜드
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_brand (
-    brand_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    brand_id        VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     brand_code      VARCHAR(50)     NOT NULL,
     brand_nm        VARCHAR(100)    NOT NULL,
     brand_en_nm     VARCHAR(100),
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로 (예: sports.outdoor)
     logo_url        VARCHAR(500),
-    vendor_id       VARCHAR(16),
+    vendor_id       VARCHAR(20),
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     brand_remark    VARCHAR(300),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (brand_id),
     UNIQUE (brand_code)

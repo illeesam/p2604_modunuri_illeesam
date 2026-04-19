@@ -1,12 +1,12 @@
 -- ============================================================
 -- syh_user_login_log : 관리자 사용자 로그인 로그
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 보안 주의: access_token / refresh_token 은 SHA-256 해시값 저장 권장
 -- ============================================================
 CREATE TABLE syh_user_login_log (
-    log_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    user_id             VARCHAR(16),                           -- sy_user.user_id (실패 시 NULL 가능)
+    log_id              VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    user_id             VARCHAR(20),                           -- sy_user.user_id (실패 시 NULL 가능)
     login_id            VARCHAR(100),                          -- 입력한 로그인ID
     login_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     result_cd           VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: LOGIN_RESULT (SUCCESS/FAIL_PWD/FAIL_LOCKED/FAIL_NOT_FOUND)
@@ -20,9 +20,9 @@ CREATE TABLE syh_user_login_log (
     access_token_exp    TIMESTAMP,                             -- 액세스 토큰 만료일시
     refresh_token       VARCHAR(512),                          -- 리프레시 토큰 (SHA-256 해시 권장)
     refresh_token_exp   TIMESTAMP,                             -- 리프레시 토큰 만료일시
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (log_id)
 );

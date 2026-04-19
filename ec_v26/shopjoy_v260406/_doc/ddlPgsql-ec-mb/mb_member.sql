@@ -1,7 +1,7 @@
 -- ============================================================
 CREATE TABLE mb_member (
-    member_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    member_id       VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     member_email    VARCHAR(100)    NOT NULL,
     member_password VARCHAR(255)    NOT NULL,
     member_nm       VARCHAR(50)     NOT NULL,
@@ -20,9 +20,9 @@ CREATE TABLE mb_member (
     member_addr     VARCHAR(200),
     member_addr_detail VARCHAR(200),
     member_memo     TEXT,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (member_id),
     UNIQUE (member_email)

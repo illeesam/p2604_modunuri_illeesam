@@ -1,10 +1,10 @@
 -- ============================================================
 -- ec_disp_widget_lib : 디스플레이 위젯 라이브러리
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_widget_lib (
-    widget_lib_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    widget_lib_id   VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     widget_code     VARCHAR(50)     NOT NULL,
     widget_nm       VARCHAR(100)    NOT NULL,
     widget_type_cd  VARCHAR(30)     NOT NULL,               -- 코드: WIDGET_TYPE (BANNER/PRODUCT/CATEGORY/HTML/SLIDER)
@@ -16,9 +16,9 @@ CREATE TABLE dp_widget_lib (
     is_system       CHAR(1)         DEFAULT 'N',            -- 시스템 기본 위젯 Y/N
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (widget_lib_id),
     UNIQUE (widget_code)

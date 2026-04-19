@@ -2,18 +2,18 @@
 -- pd_prod_rel : 상품 연관 관계
 -- REL_PROD  : 연관상품  (같이 보면 좋을 상품, 비슷한 상품)
 -- CODY_PROD : 코디상품  (함께 코디하면 좋을 상품, 크로스셀링)
--- ID 규칙   : YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙   : YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_prod_rel (
-    prod_rel_id      VARCHAR(16)     NOT NULL,
-    prod_id          VARCHAR(16)     NOT NULL,                  -- 기준 상품 (pd_prod.prod_id)
-    rel_prod_id      VARCHAR(16)     NOT NULL,                  -- 연관 대상 상품 (pd_prod.prod_id)
+    prod_rel_id      VARCHAR(20)     NOT NULL,
+    prod_id          VARCHAR(20)     NOT NULL,                  -- 기준 상품 (pd_prod.prod_id)
+    rel_prod_id      VARCHAR(20)     NOT NULL,                  -- 연관 대상 상품 (pd_prod.prod_id)
     prod_rel_type_cd VARCHAR(20)     NOT NULL,                  -- 관계 유형 코드: PROD_REL_TYPE (REL_PROD / CODY_PROD)
     sort_ord         INTEGER         DEFAULT 0,                 -- 노출 정렬 순서 (낮을수록 우선)
     use_yn           CHAR(1)         DEFAULT 'Y',               -- 사용여부 Y/N
-    reg_by           VARCHAR(16),
+    reg_by           VARCHAR(20),
     reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by           VARCHAR(16),
+    upd_by           VARCHAR(20),
     upd_date         TIMESTAMP,
     PRIMARY KEY (prod_rel_id),
     UNIQUE (prod_id, rel_prod_id, prod_rel_type_cd)             -- 동일 타입 중복 연결 방지

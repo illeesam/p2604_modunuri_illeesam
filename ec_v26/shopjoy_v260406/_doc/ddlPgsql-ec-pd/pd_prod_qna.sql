@@ -1,11 +1,11 @@
 -- ============================================================
 CREATE TABLE pd_prod_qna (
-    qna_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
-    sku_id          VARCHAR(16),                            -- pd_prod_sku.sku_id (특정 SKU 문의 시)
-    member_id       VARCHAR(16),                            -- mb_member.member_id
-    order_id        VARCHAR(16),                            -- od_order.order_id (주문 관련 문의 시)
+    qna_id          VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    prod_id         VARCHAR(20)     NOT NULL,               -- pd_prod.prod_id
+    sku_id          VARCHAR(20),                            -- pd_prod_sku.sku_id (특정 SKU 문의 시)
+    member_id       VARCHAR(20),                            -- mb_member.member_id
+    order_id        VARCHAR(20),                            -- od_order.order_id (주문 관련 문의 시)
     qna_type_cd     VARCHAR(20),                            -- 코드: PROD_QNA_TYPE (SIZE/QUALITY/DLIV/ETC)
     qna_title       VARCHAR(200)    NOT NULL,
     qna_content     TEXT            NOT NULL,
@@ -13,12 +13,12 @@ CREATE TABLE pd_prod_qna (
     answ_yn         VARCHAR(1)      DEFAULT 'N',
     answ_content    TEXT,
     answ_date       TIMESTAMP,
-    answ_user_id    VARCHAR(16),                            -- 답변자 (sy_user.user_id)
+    answ_user_id    VARCHAR(20),                            -- 답변자 (sy_user.user_id)
     disp_yn         VARCHAR(1)      DEFAULT 'Y',            -- 노출 여부
     use_yn          VARCHAR(1)      DEFAULT 'Y',
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (qna_id)
 );

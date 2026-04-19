@@ -2,13 +2,13 @@
 -- sy_vendor_brand : 판매/배송업체-브랜드 매핑
 --   한 업체(sy_vendor)는 여러 브랜드(sy_brand)를 취급할 수 있고
 --   한 브랜드는 여러 업체에 의해 공급될 수 있음 (N:N)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_vendor_brand (
-    vendor_brand_id VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    vendor_id       VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
-    brand_id        VARCHAR(16)     NOT NULL,               -- sy_brand.brand_id
+    vendor_brand_id VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    vendor_id       VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
+    brand_id        VARCHAR(20)     NOT NULL,               -- sy_brand.brand_id
     is_main         CHAR(1)         DEFAULT 'N',            -- 대표 브랜드 여부 Y/N
     contract_cd     VARCHAR(20),                            -- 코드: VENDOR_BRAND_CONTRACT (직매입/위탁/제휴 등)
     start_date      DATE,                                   -- 계약 시작일
@@ -17,9 +17,9 @@ CREATE TABLE sy_vendor_brand (
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     vendor_brand_remark VARCHAR(500),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (vendor_brand_id),
     UNIQUE (vendor_id, brand_id)

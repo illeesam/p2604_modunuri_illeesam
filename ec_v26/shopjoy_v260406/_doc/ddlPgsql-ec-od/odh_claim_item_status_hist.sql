@@ -1,19 +1,19 @@
 -- 클레임상품 상태 이력
 CREATE TABLE odh_claim_item_status_hist (
-    claim_item_status_hist_id    VARCHAR(16)     NOT NULL,
-    site_id                      VARCHAR(16),                        -- sy_site.site_id
-    claim_item_id                VARCHAR(16)     NOT NULL,           -- od_claim_item.claim_item_id
-    claim_id                     VARCHAR(16),                        -- od_claim.claim_id (조회 편의)
-    order_item_id                VARCHAR(16),                        -- od_order_item.order_item_id (조회 편의)
+    claim_item_status_hist_id    VARCHAR(20)     NOT NULL,
+    site_id                      VARCHAR(20),                        -- sy_site.site_id
+    claim_item_id                VARCHAR(20)     NOT NULL,           -- od_claim_item.claim_item_id
+    claim_id                     VARCHAR(20),                        -- od_claim.claim_id (조회 편의)
+    order_item_id                VARCHAR(20),                        -- od_order_item.order_item_id (조회 편의)
     claim_item_status_cd_before  VARCHAR(20),                        -- 변경 전 클레임상품상태 (코드: CLAIM_ITEM_STATUS)
     claim_item_status_cd         VARCHAR(20),                        -- 변경 후 클레임상품상태 (코드: CLAIM_ITEM_STATUS)
     status_reason                VARCHAR(300),                       -- 상태 변경 사유
-    chg_user_id                  VARCHAR(16),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id                  VARCHAR(20),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date                     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                         VARCHAR(300),
-    reg_by                       VARCHAR(16),
+    reg_by                       VARCHAR(20),
     reg_date                     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                       VARCHAR(16),
+    upd_by                       VARCHAR(20),
     upd_date                     TIMESTAMP,
     PRIMARY KEY (claim_item_status_hist_id),
     CONSTRAINT fk_odh_claim_item_status_hist_item FOREIGN KEY (claim_item_id) REFERENCES od_claim_item (claim_item_id)

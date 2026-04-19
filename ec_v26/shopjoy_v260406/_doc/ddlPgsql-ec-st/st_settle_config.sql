@@ -1,22 +1,22 @@
 -- ============================================================
 -- st_settle_config : 정산기준 설정
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 우선순위: vendor_id+category_id > vendor_id > site_id(전체기준)
 -- ============================================================
 CREATE TABLE st_settle_config (
-    settle_config_id    VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    vendor_id           VARCHAR(16),                            -- sy_vendor.vendor_id (NULL이면 전체)
-    category_id         VARCHAR(16),                            -- pd_category.category_id (NULL이면 전체)
+    settle_config_id    VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20)     NOT NULL,               -- sy_site.site_id
+    vendor_id           VARCHAR(20),                            -- sy_vendor.vendor_id (NULL이면 전체)
+    category_id         VARCHAR(20),                            -- pd_category.category_id (NULL이면 전체)
     settle_cycle_cd     VARCHAR(20)     DEFAULT 'MONTHLY',      -- 코드: SETTLE_CYCLE (DAILY/WEEKLY/MONTHLY)
     settle_day          INTEGER         DEFAULT 10,             -- 정산일 (월 N일)
     commission_rate     NUMERIC(5,2)    DEFAULT 0,              -- 수수료율 (%)
     min_settle_amt      BIGINT          DEFAULT 0,              -- 최소 정산금액
     settle_config_remark VARCHAR(500),                          -- 비고
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_config_id),
     UNIQUE (site_id, vendor_id, category_id)

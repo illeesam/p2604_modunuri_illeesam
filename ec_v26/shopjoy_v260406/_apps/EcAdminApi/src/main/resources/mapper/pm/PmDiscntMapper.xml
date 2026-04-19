@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.pm.PmDiscntMapper">
+
+    <sql id="pmDiscntCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND d.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND d.discnt_status_cd = #{p.status}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND d.discnt_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (d.discnt_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND d.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND d.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmDiscntDto">
+        SELECT
+            d.*,
+            ste.site_nm AS site_nm,
+            cd_dt.code_label AS discnt_type_cd_nm,
+            cd_dt2.code_label AS discnt_target_cd_nm,
+            cd_ds.code_label AS discnt_status_cd_nm,
+            cd_mg.code_label AS mem_grade_cd_nm
+        FROM pm_discnt d
+            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISCNT_TYPE' AND cd_dt.code_value = d.discnt_type_cd
+            LEFT JOIN sy_code cd_dt2 ON cd_dt2.code_grp = 'DISCNT_TARGET' AND cd_dt2.code_value = d.discnt_target_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISCNT_STATUS' AND cd_ds.code_value = d.discnt_status_cd
+            LEFT JOIN sy_code cd_mg ON cd_mg.code_grp = 'MEMBER_GRADE' AND cd_mg.code_value = d.mem_grade_cd
+        WHERE d.discnt_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmDiscntDto">
+        SELECT
+            d.*,
+            ste.site_nm AS site_nm,
+            cd_dt.code_label AS discnt_type_cd_nm,
+            cd_dt2.code_label AS discnt_target_cd_nm,
+            cd_ds.code_label AS discnt_status_cd_nm,
+            cd_mg.code_label AS mem_grade_cd_nm
+        FROM pm_discnt d
+            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISCNT_TYPE' AND cd_dt.code_value = d.discnt_type_cd
+            LEFT JOIN sy_code cd_dt2 ON cd_dt2.code_grp = 'DISCNT_TARGET' AND cd_dt2.code_value = d.discnt_target_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISCNT_STATUS' AND cd_ds.code_value = d.discnt_status_cd
+            LEFT JOIN sy_code cd_mg ON cd_mg.code_grp = 'MEMBER_GRADE' AND cd_mg.code_value = d.mem_grade_cd
+            <include refid="pmDiscntCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY d.discnt_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY d.discnt_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY d.discnt_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY d.discnt_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY d.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY d.reg_date DESC</when>
+            <otherwise>ORDER BY d.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmDiscntDto">
+        SELECT
+            d.*,
+            ste.site_nm AS site_nm,
+            cd_dt.code_label AS discnt_type_cd_nm,
+            cd_dt2.code_label AS discnt_target_cd_nm,
+            cd_ds.code_label AS discnt_status_cd_nm,
+            cd_mg.code_label AS mem_grade_cd_nm
+        FROM pm_discnt d
+            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISCNT_TYPE' AND cd_dt.code_value = d.discnt_type_cd
+            LEFT JOIN sy_code cd_dt2 ON cd_dt2.code_grp = 'DISCNT_TARGET' AND cd_dt2.code_value = d.discnt_target_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISCNT_STATUS' AND cd_ds.code_value = d.discnt_status_cd
+            LEFT JOIN sy_code cd_mg ON cd_mg.code_grp = 'MEMBER_GRADE' AND cd_mg.code_value = d.mem_grade_cd
+            <include refid="pmDiscntCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY d.discnt_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY d.discnt_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY d.discnt_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY d.discnt_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY d.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY d.reg_date DESC</when>
+            <otherwise>ORDER BY d.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM pm_discnt d
+            <include refid="pmDiscntCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pm.entity.PmDiscnt">
+        UPDATE pm_discnt
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="discntNm != null">discnt_nm = #{discntNm},</if>
+            <if test="discntTypeCd != null">discnt_type_cd = #{discntTypeCd},</if>
+            <if test="discntTargetCd != null">discnt_target_cd = #{discntTargetCd},</if>
+            <if test="discntValue != null">discnt_value = #{discntValue},</if>
+            <if test="minOrderAmt != null">min_order_amt = #{minOrderAmt},</if>
+            <if test="minOrderQty != null">min_order_qty = #{minOrderQty},</if>
+            <if test="maxDiscntAmt != null">max_discnt_amt = #{maxDiscntAmt},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="discntStatusCd != null">discnt_status_cd = #{discntStatusCd},</if>
+            <if test="discntStatusCdBefore != null">discnt_status_cd_before = #{discntStatusCdBefore},</if>
+            <if test="discntDesc != null">discnt_desc = #{discntDesc},</if>
+            <if test="memGradeCd != null">mem_grade_cd = #{memGradeCd},</if>
+            <if test="selfCdivRate != null">self_cdiv_rate = #{selfCdivRate},</if>
+            <if test="sellerCdivRate != null">seller_cdiv_rate = #{sellerCdivRate},</if>
+            <if test="dvcPcYn != null">dvc_pc_yn = #{dvcPcYn},</if>
+            <if test="dvcMwebYn != null">dvc_mweb_yn = #{dvcMwebYn},</if>
+            <if test="dvcMappYn != null">dvc_mapp_yn = #{dvcMappYn},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE discnt_id = #{discntId}
+    </update>
+
+</mapper>

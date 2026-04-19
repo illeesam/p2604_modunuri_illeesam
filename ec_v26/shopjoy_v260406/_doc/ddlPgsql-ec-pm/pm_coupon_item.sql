@@ -1,16 +1,16 @@
 -- ============================================================
 -- pm_coupon_item : 쿠폰 적용 대상 항목
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 쿠폰이 적용 가능한 상품/카테고리/판매자/브랜드를 지정
 -- 항목이 없으면 전체 적용 (pm_coupon.target_type_cd=ALL)
 -- ============================================================
 CREATE TABLE pm_coupon_item (
-    coupon_item_id      VARCHAR(16)     NOT NULL,
-    coupon_id           VARCHAR(16)     NOT NULL,               -- pm_coupon.coupon_id
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    coupon_item_id      VARCHAR(20)     NOT NULL,
+    coupon_id           VARCHAR(20)     NOT NULL,               -- pm_coupon.coupon_id
+    site_id             VARCHAR(20),                            -- sy_site.site_id
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_ITEM_TARGET (PRODUCT/CATEGORY/VENDOR/BRAND)
-    target_id           VARCHAR(16)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
-    reg_by              VARCHAR(16),
+    target_id           VARCHAR(20)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (coupon_item_id),

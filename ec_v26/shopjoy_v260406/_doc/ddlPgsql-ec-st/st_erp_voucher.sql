@@ -1,15 +1,15 @@
 -- ============================================================
 -- st_erp_voucher : ERP 전표 마스터
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 정산 확정 후 ERP로 전송할 회계 전표를 생성·관리
 -- ============================================================
 CREATE TABLE st_erp_voucher (
-    erp_voucher_id          VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    vendor_id               VARCHAR(16),                            -- sy_vendor.vendor_id
+    erp_voucher_id          VARCHAR(20)     NOT NULL,
+    site_id                 VARCHAR(20)     NOT NULL,               -- sy_site.site_id
+    vendor_id               VARCHAR(20),                            -- sy_vendor.vendor_id
 
     -- ── 정산 연결
-    settle_id               VARCHAR(16),                            -- st_settle.settle_id
+    settle_id               VARCHAR(20),                            -- st_settle.settle_id
     settle_ym               CHAR(6),                                -- 정산년월 (YYYYMM)
 
     -- ── 전표 기본
@@ -28,9 +28,9 @@ CREATE TABLE st_erp_voucher (
     erp_voucher_no          VARCHAR(50),                            -- ERP 채번 전표번호 (전송 후 수신)
     erp_res_msg             VARCHAR(500),                           -- ERP 처리 응답 메시지
 
-    reg_by                  VARCHAR(16),
+    reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(16),
+    upd_by                  VARCHAR(20),
     upd_date                TIMESTAMP,
 
     PRIMARY KEY (erp_voucher_id)

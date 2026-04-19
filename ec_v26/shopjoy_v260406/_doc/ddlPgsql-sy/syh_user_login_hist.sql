@@ -1,15 +1,15 @@
 -- 관리자 로그인 이력
 CREATE TABLE syh_user_login_hist (
-    login_hist_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    user_id         VARCHAR(16)     NOT NULL,
+    login_hist_id   VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    user_id         VARCHAR(20)     NOT NULL,
     login_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ip              VARCHAR(50),
     device          VARCHAR(100),
     result_cd       VARCHAR(20)     DEFAULT 'SUCCESS',
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (login_hist_id)
 );

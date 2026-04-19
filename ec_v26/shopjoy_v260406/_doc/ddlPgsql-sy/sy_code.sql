@@ -1,7 +1,7 @@
 -- 코드 항목
 CREATE TABLE sy_code (
-    code_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    code_id             VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
     code_grp            VARCHAR(50)     NOT NULL,
     code_value          VARCHAR(50)     NOT NULL,               -- 실제 저장 값
     code_label          VARCHAR(100)    NOT NULL,               -- 화면 표시 라벨
@@ -10,9 +10,9 @@ CREATE TABLE sy_code (
     parent_code_value   VARCHAR(50),                            -- 부모 코드값 (트리 구조 시 상위 code_value, null이면 루트)
     child_code_values   VARCHAR(500),                           -- 허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식)
     code_remark         VARCHAR(300),
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (code_id),
     UNIQUE (code_grp, code_value)

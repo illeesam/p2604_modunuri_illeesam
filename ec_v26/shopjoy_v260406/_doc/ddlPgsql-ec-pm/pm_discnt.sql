@@ -1,10 +1,10 @@
 -- ============================================================
 -- pm_discnt : 할인정책
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_discnt (
-    discnt_id           VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    discnt_id           VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
     discnt_nm           VARCHAR(100)    NOT NULL,               -- 할인명
     discnt_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: DISCNT_TYPE (RATE:정률/FIXED:정액/FREE_SHIP:무료배송)
     discnt_target_cd    VARCHAR(20)     DEFAULT 'ALL',          -- 코드: DISCNT_TARGET (ALL:전체/CATEGORY:카테고리/PRODUCT:상품/MEMBER_GRADE:등급)
@@ -26,9 +26,9 @@ CREATE TABLE pm_discnt (
     dvc_mweb_yn         CHAR(1)         DEFAULT 'Y',            -- 모바일WEB 적용여부 Y/N
     dvc_mapp_yn         CHAR(1)         DEFAULT 'Y',            -- 모바일APP 적용여부 Y/N
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (discnt_id)
 );

@@ -1,10 +1,10 @@
 -- ============================================================
 -- ec_event : 이벤트
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_event (
-    event_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    event_id        VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     event_nm        VARCHAR(100)    NOT NULL,
     event_type_cd   VARCHAR(20),                            -- 코드: EVENT_TYPE (PROMOTION/FLASH/CAMPAIGN/COUPON)
     img_url         VARCHAR(500),                           -- 배너이미지
@@ -21,9 +21,9 @@ CREATE TABLE pm_event (
     view_cnt        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     event_desc      TEXT,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (event_id)
 );

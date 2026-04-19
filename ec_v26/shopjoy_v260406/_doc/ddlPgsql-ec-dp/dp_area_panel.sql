@@ -1,11 +1,11 @@
 -- ============================================================
 -- dp_area_panel : 디스플레이 영역-패널 매핑
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_area_panel (
-    area_panel_id       VARCHAR(16)     NOT NULL,
-    area_id             VARCHAR(16)     NOT NULL,              -- FK: dp_area.area_id
-    panel_id            VARCHAR(16)     NOT NULL,              -- FK: dp_panel.panel_id
+    area_panel_id       VARCHAR(20)     NOT NULL,
+    area_id             VARCHAR(20)     NOT NULL,              -- FK: dp_area.area_id
+    panel_id            VARCHAR(20)     NOT NULL,              -- FK: dp_panel.panel_id
     panel_sort_ord      INTEGER         DEFAULT 0,              -- 패널정렬순서
     visibility_targets  VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
     disp_yn             CHAR(1)         DEFAULT 'Y',            -- 전시여부 Y/N
@@ -15,9 +15,9 @@ CREATE TABLE dp_area_panel (
     disp_end_time       TIME,                                   -- 전시종료시간
     disp_env            VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
     use_yn              CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (area_panel_id),
     UNIQUE (area_id, panel_id),

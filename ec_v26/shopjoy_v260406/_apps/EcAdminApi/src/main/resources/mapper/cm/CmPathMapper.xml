@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.cm.CmPathMapper">
+
+    <sql id="cmPathCond">
+        <where>
+            <if test="p.dateStart != null and p.dateStart != ''">AND p.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND p.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmPathDto">
+        SELECT p.*
+        FROM cm_path p
+        WHERE p.path_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmPathDto">
+        SELECT p.*
+        FROM cm_path p
+            <include refid="cmPathCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.path_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.path_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmPathDto">
+        SELECT p.*
+        FROM cm_path p
+            <include refid="cmPathCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.path_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.path_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM cm_path p
+            <include refid="cmPathCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.cm.entity.CmPath">
+        UPDATE cm_path
+        <set>
+            <if test="bizCd != null">biz_cd = #{bizCd},</if>
+            <if test="parentPathId != null">parent_path_id = #{parentPathId},</if>
+            <if test="pathLabel != null">path_label = #{pathLabel},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="pathRemark != null">path_remark = #{pathRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE path_id = #{pathId}
+    </update>
+
+</mapper>

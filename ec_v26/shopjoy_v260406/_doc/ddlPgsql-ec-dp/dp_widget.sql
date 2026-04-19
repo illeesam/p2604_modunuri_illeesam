@@ -1,11 +1,11 @@
 -- ============================================================
 -- dp_widget : 디스플레이 위젯 정의 (라이브러리 참조 또는 직접 생성)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_widget (
-    widget_id            VARCHAR(16)     NOT NULL,
-    widget_lib_id        VARCHAR(16),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
-    site_id              VARCHAR(16),                            -- sy_site.site_id
+    widget_id            VARCHAR(20)     NOT NULL,
+    widget_lib_id        VARCHAR(20),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
+    site_id              VARCHAR(20),                            -- sy_site.site_id
     widget_nm            VARCHAR(100)    NOT NULL,
     widget_type_cd       VARCHAR(30)     NOT NULL,              -- 코드: WIDGET_TYPE (image_banner/product_slider 등)
     widget_desc          VARCHAR(300),
@@ -18,9 +18,9 @@ CREATE TABLE dp_widget (
     sort_ord             INTEGER         DEFAULT 0,
     use_yn               CHAR(1)         DEFAULT 'Y',
     disp_env             VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
-    reg_by               VARCHAR(16),
+    reg_by               VARCHAR(20),
     reg_date             TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by               VARCHAR(16),
+    upd_by               VARCHAR(20),
     upd_date             TIMESTAMP,
     PRIMARY KEY (widget_id),
     UNIQUE (site_id, widget_nm),

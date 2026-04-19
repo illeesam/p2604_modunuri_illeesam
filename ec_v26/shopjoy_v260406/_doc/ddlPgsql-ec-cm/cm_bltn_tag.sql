@@ -1,13 +1,13 @@
 -- 블로그 태그
 CREATE TABLE cm_bltn_tag (
-    blog_tag_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    blog_id         VARCHAR(16)     NOT NULL,              -- cm_bltn.
+    blog_tag_id     VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),
+    blog_id         VARCHAR(20)     NOT NULL,              -- cm_bltn.
     tag_nm          VARCHAR(50)     NOT NULL,
     sort_ord        INTEGER         DEFAULT 0,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (blog_tag_id)
 );

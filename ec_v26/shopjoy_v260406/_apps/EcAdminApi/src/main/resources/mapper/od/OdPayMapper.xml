@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdPayMapper">
+
+    <!-- 원칙1: pay_status_cd_nm, pay_method_cd_nm, pay_dir_cd_nm, refund_status_cd_nm -->
+    <!-- 원칙2: od_order(주문번호 확인), mb_member -->
+
+    <sql id="odPayCond">
+<where>
+            <if test="p.siteId != null and p.siteId != ''">AND p.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND p.pay_status_cd = #{p.status}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (p.order_id::TEXT    ILIKE '%' || #{p.kw} || '%'
+                  OR p.pg_transaction_id ILIKE '%' || #{p.kw} || '%'
+                  OR m.member_email      ILIKE '%' || #{p.kw} || '%'
+                  OR o.member_nm         ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND p.pay_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND p.pay_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdPayDto">
+        SELECT
+            p.*,
+            o.member_nm, o.order_date, o.order_status_cd,
+            m.member_email,
+            cd_ps.code_label AS pay_status_cd_nm,
+            cd_pm.code_label AS pay_method_cd_nm,
+            cd_pd.code_label AS pay_dir_cd_nm,
+            cd_pc.code_label AS pay_channel_cd_nm,
+            cd_rs.code_label AS refund_status_cd_nm,
+            cd_vb.code_label AS vbank_bank_code_nm,
+            cd_ct.code_label AS card_type_cd_nm
+        FROM od_pay p
+            LEFT JOIN od_order  o ON o.order_id  = p.order_id
+            LEFT JOIN mb_member m ON m.member_id = o.member_id
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PAY_STATUS'     AND cd_ps.code_value = p.pay_status_cd
+            LEFT JOIN sy_code cd_pm ON cd_pm.code_grp = 'PAY_METHOD'     AND cd_pm.code_value = p.pay_method_cd
+            LEFT JOIN sy_code cd_pd ON cd_pd.code_grp = 'PAY_DIR'        AND cd_pd.code_value = p.pay_dir_cd
+            LEFT JOIN sy_code cd_pc ON cd_pc.code_grp = 'PAY_CHANNEL'    AND cd_pc.code_value = p.pay_channel_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'REFUND_STATUS'  AND cd_rs.code_value = p.refund_status_cd
+            LEFT JOIN sy_code cd_vb ON cd_vb.code_grp = 'BANK_CODE'      AND cd_vb.code_value = p.vbank_bank_code
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'CARD_TYPE'      AND cd_ct.code_value = p.card_type_cd
+        WHERE p.pay_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdPayDto">
+        SELECT
+            p.*,
+            o.member_nm,    o.order_date,
+            m.member_email,
+            cd_ps.code_label AS pay_status_cd_nm,
+            cd_pm.code_label AS pay_method_cd_nm,
+            cd_pd.code_label AS pay_dir_cd_nm,
+            cd_rs.code_label AS refund_status_cd_nm
+        FROM od_pay p
+            LEFT JOIN od_order  o  ON o.order_id  = p.order_id
+            LEFT JOIN mb_member m  ON m.member_id = o.member_id
+            LEFT JOIN sy_code cd_ps
+                ON cd_ps.code_grp = 'PAY_STATUS'  AND cd_ps.code_value = p.pay_status_cd
+            LEFT JOIN sy_code cd_pm
+                ON cd_pm.code_grp = 'PAY_METHOD'  AND cd_pm.code_value = p.pay_method_cd
+            LEFT JOIN sy_code cd_pd
+                ON cd_pd.code_grp = 'PAY_DIR'     AND cd_pd.code_value = p.pay_dir_cd
+            LEFT JOIN sy_code cd_rs
+                ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = p.refund_status_cd
+                <include refid="odPayCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.pay_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.pay_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY p.vbank_bank_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY p.vbank_bank_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdPayDto">
+        SELECT
+            p.*,
+            o.member_nm,    o.order_date,
+            m.member_email,
+            cd_ps.code_label AS pay_status_cd_nm,
+            cd_pm.code_label AS pay_method_cd_nm,
+            cd_pd.code_label AS pay_dir_cd_nm,
+            cd_rs.code_label AS refund_status_cd_nm
+        FROM od_pay p
+            LEFT JOIN od_order  o  ON o.order_id  = p.order_id
+            LEFT JOIN mb_member m  ON m.member_id = o.member_id
+            LEFT JOIN sy_code cd_ps
+                ON cd_ps.code_grp = 'PAY_STATUS'  AND cd_ps.code_value = p.pay_status_cd
+            LEFT JOIN sy_code cd_pm
+                ON cd_pm.code_grp = 'PAY_METHOD'  AND cd_pm.code_value = p.pay_method_cd
+            LEFT JOIN sy_code cd_pd
+                ON cd_pd.code_grp = 'PAY_DIR'     AND cd_pd.code_value = p.pay_dir_cd
+            LEFT JOIN sy_code cd_rs
+                ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = p.refund_status_cd
+                <include refid="odPayCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY p.pay_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY p.pay_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY p.vbank_bank_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY p.vbank_bank_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM od_pay p
+            LEFT JOIN od_order  o ON o.order_id  = p.order_id
+            LEFT JOIN mb_member m ON m.member_id = o.member_id
+                <include refid="odPayCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdPay">
+        UPDATE od_pay
+        <set>
+            <if test="payStatusCd != null">pay_status_cd = #{payStatusCd},</if>
+            <if test="payStatusCdBefore != null">pay_status_cd_before = #{payStatusCdBefore},</if>
+            <if test="payDate != null">pay_date = #{payDate},</if>
+            <if test="refundAmt != null">refund_amt = #{refundAmt},</if>
+            <if test="refundStatusCd != null">refund_status_cd = #{refundStatusCd},</if>
+            <if test="refundDate != null">refund_date = #{refundDate},</if>
+            <if test="memo != null">memo = #{memo},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE pay_id = #{payId}
+    </update>
+
+    <!-- ================================================================
+         확장 쿼리 (연관관계 조회 등)
+         ================================================================ -->
+
+    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdPayDto">
+        SELECT
+            p.*,
+            cd_ps.code_label AS pay_status_cd_nm,
+            cd_pm.code_label AS pay_method_cd_nm,
+            cd_pd.code_label AS pay_dir_cd_nm,
+            cd_rs.code_label AS refund_status_cd_nm
+        FROM od_pay p
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PAY_STATUS'    AND cd_ps.code_value = p.pay_status_cd
+            LEFT JOIN sy_code cd_pm ON cd_pm.code_grp = 'PAY_METHOD'    AND cd_pm.code_value = p.pay_method_cd
+            LEFT JOIN sy_code cd_pd ON cd_pd.code_grp = 'PAY_DIR'       AND cd_pd.code_value = p.pay_dir_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = p.refund_status_cd
+        WHERE p.order_id = #{orderId}
+        ORDER BY p.reg_date ASC
+    </select>
+
+</mapper>
+

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.cm.CmBltnTagMapper">
+
+    <sql id="cmBltnTagCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND t.site_id = #{p.siteId}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (t.tag_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND t.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND t.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnTagDto">
+        SELECT
+            t.*,
+            ste.site_nm AS site_nm
+        FROM cm_bltn_tag t
+            LEFT JOIN sy_site ste ON ste.site_id = t.site_id
+        WHERE t.blog_tag_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnTagDto">
+        SELECT
+            t.*,
+            ste.site_nm AS site_nm
+        FROM cm_bltn_tag t
+            LEFT JOIN sy_site ste ON ste.site_id = t.site_id
+            <include refid="cmBltnTagCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY t.blog_tag_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY t.blog_tag_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY t.tag_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY t.tag_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <otherwise>ORDER BY t.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnTagDto">
+        SELECT
+            t.*,
+            ste.site_nm AS site_nm
+        FROM cm_bltn_tag t
+            LEFT JOIN sy_site ste ON ste.site_id = t.site_id
+            <include refid="cmBltnTagCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY t.blog_tag_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY t.blog_tag_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY t.tag_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY t.tag_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <otherwise>ORDER BY t.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM cm_bltn_tag t
+            <include refid="cmBltnTagCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.cm.entity.CmBltnTag">
+        UPDATE cm_bltn_tag
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="blogId != null">blog_id = #{blogId},</if>
+            <if test="tagNm != null">tag_nm = #{tagNm},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE blog_tag_id = #{blogTagId}
+    </update>
+
+</mapper>

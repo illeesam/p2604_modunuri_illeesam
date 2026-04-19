@@ -1,19 +1,19 @@
 -- ============================================================
 -- st_settle_etc_adj : 정산 기타조정 (배송비/반품비/위약금 등)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE st_settle_etc_adj (
-    settle_etc_adj_id   VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
+    settle_etc_adj_id   VARCHAR(20)     NOT NULL,
+    settle_id           VARCHAR(20)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(20),
     etc_adj_type_cd     VARCHAR(20)     NOT NULL,               -- 코드: SETTLE_ETC_ADJ_TYPE (SHIP:배송비/RETURN_SHIP:반품배송비/PENALTY:위약금/OTHER:기타)
     etc_adj_dir_cd      VARCHAR(10)     NOT NULL,               -- 코드: ADJ_DIR (ADD:가산/DEDUCT:차감)
     etc_adj_amt         BIGINT          NOT NULL,               -- 기타조정 금액
     etc_adj_reason      VARCHAR(200)    NOT NULL,               -- 사유
     settle_etc_adj_memo TEXT,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_etc_adj_id)
 );

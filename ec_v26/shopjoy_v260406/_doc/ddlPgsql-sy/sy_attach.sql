@@ -1,8 +1,8 @@
 -- 첨부파일
 CREATE TABLE sy_attach (
-    attach_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    attach_grp_id   VARCHAR(16)     NOT NULL,
+    attach_id       VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    attach_grp_id   VARCHAR(20)     NOT NULL,
     file_nm         VARCHAR(300)    NOT NULL,
     file_size       BIGINT          DEFAULT 0,              -- bytes
     file_ext        VARCHAR(20),
@@ -14,9 +14,9 @@ CREATE TABLE sy_attach (
     cdn_thumb_url   VARCHAR(500),                           -- CDN 썸네일 URL (이미지 파일용)
     sort_ord        INTEGER         DEFAULT 0,
     attach_memo     VARCHAR(300),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (attach_id)
 );

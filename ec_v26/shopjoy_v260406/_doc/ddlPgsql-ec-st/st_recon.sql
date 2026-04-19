@@ -1,12 +1,12 @@
 -- ============================================================
 -- st_recon : 정산 대사 (Reconciliation)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 주문·결제·클레임·업체 별 기대금액 vs 실제금액 차이 관리
 -- ============================================================
 CREATE TABLE st_recon (
-    recon_id                VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    vendor_id               VARCHAR(16),                            -- sy_vendor.vendor_id
+    recon_id                VARCHAR(20)     NOT NULL,
+    site_id                 VARCHAR(20)     NOT NULL,               -- sy_site.site_id
+    vendor_id               VARCHAR(20),                            -- sy_vendor.vendor_id
 
     -- ── 대사 구분
     recon_type_cd           VARCHAR(20)     NOT NULL,               -- 코드: RECON_TYPE (ORDER:주문/PAY:결제/CLAIM:클레임/VENDOR:업체)
@@ -14,9 +14,9 @@ CREATE TABLE st_recon (
     recon_status_cd_before  VARCHAR(20),                            -- 변경 전 대사상태
 
     -- ── 참조
-    settle_id               VARCHAR(16),                            -- st_settle.settle_id
-    settle_raw_id           VARCHAR(16),                            -- st_settle_raw.settle_raw_id
-    ref_id                  VARCHAR(16),                            -- 대사 참조ID (order_id / pay_id / claim_id 등)
+    settle_id               VARCHAR(20),                            -- st_settle.settle_id
+    settle_raw_id           VARCHAR(20),                            -- st_settle_raw.settle_raw_id
+    ref_id                  VARCHAR(20),                            -- 대사 참조ID (order_id / pay_id / claim_id 등)
     ref_no                  VARCHAR(50),                            -- 대사 참조번호 (스냅샷)
     settle_period           VARCHAR(7),                             -- 정산기간 (YYYY-MM)
 
@@ -27,12 +27,12 @@ CREATE TABLE st_recon (
 
     -- ── 해소
     recon_note              TEXT,                                   -- 대사 메모
-    resolved_by             VARCHAR(16),                            -- 해소 처리자 (sy_user.user_id)
+    resolved_by             VARCHAR(20),                            -- 해소 처리자 (sy_user.user_id)
     resolved_date           TIMESTAMP,                              -- 해소 일시
 
-    reg_by                  VARCHAR(16),
+    reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(16),
+    upd_by                  VARCHAR(20),
     upd_date                TIMESTAMP,
 
     PRIMARY KEY (recon_id)

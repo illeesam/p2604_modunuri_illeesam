@@ -1,18 +1,18 @@
 -- ============================================================
 -- ec_blog_cate : 블로그 카테고리
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 
 CREATE TABLE cm_bltn_cate (
-    blog_cate_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    blog_cate_id    VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     blog_cate_nm    VARCHAR(100)    NOT NULL,              -- 카테고리명
-    parent_blog_cate_id VARCHAR(16),                        -- 상위 카테고리ID (계층형)
+    parent_blog_cate_id VARCHAR(20),                        -- 상위 카테고리ID (계층형)
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (blog_cate_id)
 );

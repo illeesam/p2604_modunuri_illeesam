@@ -1,15 +1,15 @@
 -- SKU 가격 변경 이력
 CREATE TABLE pdh_prod_sku_price_hist (
-    hist_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    sku_id              VARCHAR(16)     NOT NULL,               -- pd_prod_sku.sku_id
-    prod_id             VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
+    hist_id             VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    sku_id              VARCHAR(20)     NOT NULL,               -- pd_prod_sku.sku_id
+    prod_id             VARCHAR(20)     NOT NULL,               -- pd_prod.prod_id
     add_price_before    BIGINT          NOT NULL,               -- 변경 전 추가금액
     add_price_after     BIGINT          NOT NULL,               -- 변경 후 추가금액
     chg_reason          VARCHAR(200),                           -- 변경사유 (예: 가격인상, 프로모션 종료)
-    chg_by              VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_by              VARCHAR(20),                            -- 처리자 (sy_user.user_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (hist_id)
 );

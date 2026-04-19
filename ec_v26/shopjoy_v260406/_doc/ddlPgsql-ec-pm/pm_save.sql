@@ -1,20 +1,20 @@
 -- ============================================================
 -- pm_save : 마일리지 적립/사용 이력
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 용도: 구매 시 자동 적립, 유효기간 소멸 있는 포인트
 -- ============================================================
 CREATE TABLE pm_save (
-    save_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    save_id             VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    member_id           VARCHAR(20)     NOT NULL,               -- mb_member.member_id
     save_type_cd        VARCHAR(20)     NOT NULL,               -- 코드: SAVE_TYPE (EARN:구매적립/USE:사용/EXPIRE:소멸/CANCEL:적립취소/ADMIN:관리자조정)
     save_amt            BIGINT          NOT NULL,               -- 마일리지 변동액 (양수:적립/음수:차감)
     balance_amt         BIGINT          DEFAULT 0,              -- 처리 후 잔액
     ref_type_cd         VARCHAR(30),                            -- 연관유형 (ORDER/EVENT/ADMIN 등)
-    ref_id              VARCHAR(16),                            -- 연관ID (order_id 등)
+    ref_id              VARCHAR(20),                            -- 연관ID (order_id 등)
     expire_date         TIMESTAMP,                              -- 소멸예정일 (EARN 시 설정)
     save_memo           TEXT,                                   -- 메모
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (save_id)
 );

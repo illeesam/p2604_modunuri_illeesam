@@ -1,8 +1,8 @@
 -- 배치 실행 로그
 CREATE TABLE syh_batch_log (
-    batch_log_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    batch_id        VARCHAR(16)     NOT NULL,
+    batch_log_id    VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    batch_id        VARCHAR(20)     NOT NULL,
     batch_code      VARCHAR(50),
     batch_nm        VARCHAR(100),
     run_at          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -13,9 +13,9 @@ CREATE TABLE syh_batch_log (
     error_count     INTEGER         DEFAULT 0,
     message         TEXT,
     detail          TEXT,                                   -- 상세 로그 (JSON)
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (batch_log_id)
 );

@@ -1,15 +1,15 @@
 -- ============================================================
 CREATE TABLE od_pay_method (
-    pay_method_id              VARCHAR(16)     NOT NULL,
-    member_id               VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    pay_method_id              VARCHAR(20)     NOT NULL,
+    member_id               VARCHAR(20)     NOT NULL,               -- mb_member.member_id
     pay_method_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: PAY_METHOD (CARD/BANK/KAKAO/NAVER/TOSS 등)
     pay_method_nm              VARCHAR(100)    NOT NULL,               -- 결제수단 이름 (예: 신한카드, 카카오페이)
     pay_method_alias           VARCHAR(100),                           -- 별칭 (사용자 설정)
     pay_key_no              VARCHAR(200),                           -- 결제 게이트웨이 키 (카드/계좌 토큰)
     main_method_yn             VARCHAR(1)      DEFAULT 'N',            -- 기본결제수단 여부
-    reg_by                  VARCHAR(16),
+    reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(16),
+    upd_by                  VARCHAR(20),
     upd_date                TIMESTAMP,
     PRIMARY KEY (pay_method_id)
 );

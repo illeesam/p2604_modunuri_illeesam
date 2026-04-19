@@ -1,9 +1,9 @@
 -- ============================================================
 -- sy_site : 사이트
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_site (
-    site_id         VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(20)     NOT NULL,
     site_code       VARCHAR(50)     NOT NULL,
     site_type_cd    VARCHAR(20),                            -- 코드: SITE_TYPE (EC/ADMIN/API)
     site_nm         VARCHAR(100)    NOT NULL,
@@ -19,9 +19,9 @@ CREATE TABLE sy_site (
     site_ceo        VARCHAR(50),
     site_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: SITE_STATUS
     config_json     TEXT,                                   -- 사이트별 확장 설정 (JSON)
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (site_id),

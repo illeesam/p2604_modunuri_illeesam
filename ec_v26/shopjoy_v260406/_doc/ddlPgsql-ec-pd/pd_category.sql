@@ -1,11 +1,11 @@
 -- ============================================================
 -- ec_category : 카테고리
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_category (
-    category_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    parent_category_id       VARCHAR(16),
+    category_id     VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    parent_category_id       VARCHAR(20),
     category_nm     VARCHAR(100)    NOT NULL,
     category_depth  SMALLINT        DEFAULT 1,              -- 1: 대, 2: 중, 3: 소
     sort_ord        INTEGER         DEFAULT 0,
@@ -13,9 +13,9 @@ CREATE TABLE pd_category (
     category_status_cd_before VARCHAR(20),                   -- 변경 전 카테고리상태
     img_url         VARCHAR(500),
     category_desc   TEXT,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (category_id)
 );

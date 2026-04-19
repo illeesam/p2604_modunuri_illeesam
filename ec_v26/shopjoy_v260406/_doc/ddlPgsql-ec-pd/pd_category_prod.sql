@@ -5,20 +5,20 @@
 -- - category_prod_type_cd: 카테고리 내 상품 진열 유형
 --   (NORMAL=일반상품, HIGHLIGHT=하이라이트상품, RECOMMEND=추천상품,
 --    MAIN=대표상품, BANNER=배너상품, HOT_DEAL=핫딜상품)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_category_prod (
-    category_prod_id        VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16),                                        -- sy_site.site_id
-    category_id             VARCHAR(16)     NOT NULL,                           -- pd_category.category_id
-    prod_id                 VARCHAR(16)     NOT NULL,                           -- pd_prod.prod_id
+    category_prod_id        VARCHAR(20)     NOT NULL,
+    site_id                 VARCHAR(20),                                        -- sy_site.site_id
+    category_id             VARCHAR(20)     NOT NULL,                           -- pd_category.category_id
+    prod_id                 VARCHAR(20)     NOT NULL,                           -- pd_prod.prod_id
     category_prod_type_cd   VARCHAR(20)     NOT NULL DEFAULT 'NORMAL',          -- 진열 유형
     sort_ord                INTEGER         DEFAULT 0,                          -- 동일 타입 내 표시 순서
     emphasis_cd             VARCHAR(200),                                       -- 강조옵션 (^BOLD^TEXT_COLOR^EMOTICON^MARQUEE^)
     disp_yn                 CHAR(1)         NOT NULL DEFAULT 'Y',               -- 전시여부 (Y/N)
     disp_start_date         DATE            DEFAULT CURRENT_DATE,               -- 전시시작일
     disp_end_date           DATE            DEFAULT (CURRENT_DATE + INTERVAL '3 years' - EXTRACT(DOY FROM CURRENT_DATE) * INTERVAL '1 day' + INTERVAL '1 year' - INTERVAL '1 day'), -- 전시종료일 (기본: 3년 후 12월31일)
-    reg_by                  VARCHAR(16),
+    reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (category_prod_id),
     UNIQUE (category_id, prod_id, category_prod_type_cd)                       -- 동일 카테고리+상품+타입 중복 방지

@@ -1,13 +1,13 @@
 -- ============================================================
 -- pm_gift : 사은품
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_gift (
-    gift_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),
+    gift_id             VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),
     gift_nm             VARCHAR(100)    NOT NULL,               -- 사은품명
     gift_type_cd        VARCHAR(20)     DEFAULT 'PRODUCT',      -- 코드: GIFT_TYPE (PRODUCT:상품/SAMPLE:샘플/ETC:기타)
-    prod_id             VARCHAR(16),                            -- 연결 상품 (pd_prod.prod_id, 비상품이면 NULL)
+    prod_id             VARCHAR(20),                            -- 연결 상품 (pd_prod.prod_id, 비상품이면 NULL)
     gift_stock          INTEGER         DEFAULT 0,              -- 사은품 재고
     gift_desc           TEXT,                                   -- 사은품 설명
     start_date          TIMESTAMP,
@@ -21,9 +21,9 @@ CREATE TABLE pm_gift (
     self_cdiv_rate      DECIMAL(5,2)    DEFAULT 100,            -- 자사(사이트) 분담율 (%)
     seller_cdiv_rate    DECIMAL(5,2)    DEFAULT 0,              -- 판매자(업체) 분담율 (%)
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (gift_id)
 );

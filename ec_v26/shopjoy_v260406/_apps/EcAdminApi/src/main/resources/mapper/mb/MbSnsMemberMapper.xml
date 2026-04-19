@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.mb.MbSnsMemberMapper">
+
+    <sql id="mbSnsMemberCond">
+        <where>
+            <if test="p.dateStart != null and p.dateStart != ''">AND m.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND m.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.mb.dto.MbSnsMemberDto">
+        SELECT
+            m.*,
+            mem.member_nm AS member_nm,
+            cd_sc.code_label AS sns_channel_cd_nm
+        FROM mb_sns_member m
+            LEFT JOIN mb_member mem ON mem.member_id = m.member_id
+            LEFT JOIN sy_code cd_sc ON cd_sc.code_grp = 'SNS_CHANNEL' AND cd_sc.code_value = m.sns_channel_cd
+        WHERE m.sns_mem_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.mb.dto.MbSnsMemberDto">
+        SELECT
+            m.*,
+            mem.member_nm AS member_nm,
+            cd_sc.code_label AS sns_channel_cd_nm
+        FROM mb_sns_member m
+            LEFT JOIN mb_member mem ON mem.member_id = m.member_id
+            LEFT JOIN sy_code cd_sc ON cd_sc.code_grp = 'SNS_CHANNEL' AND cd_sc.code_value = m.sns_channel_cd
+            <include refid="mbSnsMemberCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.sns_mem_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.sns_mem_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.mb.dto.MbSnsMemberDto">
+        SELECT
+            m.*,
+            mem.member_nm AS member_nm,
+            cd_sc.code_label AS sns_channel_cd_nm
+        FROM mb_sns_member m
+            LEFT JOIN mb_member mem ON mem.member_id = m.member_id
+            LEFT JOIN sy_code cd_sc ON cd_sc.code_grp = 'SNS_CHANNEL' AND cd_sc.code_value = m.sns_channel_cd
+            <include refid="mbSnsMemberCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.sns_mem_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.sns_mem_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM mb_sns_member m
+            <include refid="mbSnsMemberCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.mb.entity.MbSnsMember">
+        UPDATE mb_sns_member
+        <set>
+            <if test="memberId != null">member_id = #{memberId},</if>
+            <if test="snsChannelCd != null">sns_channel_cd = #{snsChannelCd},</if>
+            <if test="snsUserId != null">sns_user_id = #{snsUserId},</if>
+        </set>
+        WHERE sns_mem_id = #{snsMemId}
+    </update>
+
+</mapper>

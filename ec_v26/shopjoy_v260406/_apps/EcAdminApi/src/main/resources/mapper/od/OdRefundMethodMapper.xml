@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdRefundMethodMapper">
+
+    <sql id="odRefundMethodCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND m.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND m.refund_status_cd = #{p.status}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND m.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND m.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdRefundMethodDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm,
+            ord.member_nm AS order_nm,
+            pay.vbank_bank_nm AS pay_nm,
+            cd_pm.code_label AS pay_method_cd_nm,
+            cd_rs.code_label AS refund_status_cd_nm
+        FROM od_refund_method m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            LEFT JOIN od_order ord ON ord.order_id = m.order_id
+            LEFT JOIN od_pay pay ON pay.pay_id = m.pay_id
+            LEFT JOIN sy_code cd_pm ON cd_pm.code_grp = 'PAY_METHOD' AND cd_pm.code_value = m.pay_method_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = m.refund_status_cd
+        WHERE m.refund_method_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdRefundMethodDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm,
+            ord.member_nm AS order_nm,
+            pay.vbank_bank_nm AS pay_nm,
+            cd_pm.code_label AS pay_method_cd_nm,
+            cd_rs.code_label AS refund_status_cd_nm
+        FROM od_refund_method m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            LEFT JOIN od_order ord ON ord.order_id = m.order_id
+            LEFT JOIN od_pay pay ON pay.pay_id = m.pay_id
+            LEFT JOIN sy_code cd_pm ON cd_pm.code_grp = 'PAY_METHOD' AND cd_pm.code_value = m.pay_method_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = m.refund_status_cd
+            <include refid="odRefundMethodCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.refund_method_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.refund_method_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdRefundMethodDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm,
+            ord.member_nm AS order_nm,
+            pay.vbank_bank_nm AS pay_nm,
+            cd_pm.code_label AS pay_method_cd_nm,
+            cd_rs.code_label AS refund_status_cd_nm
+        FROM od_refund_method m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            LEFT JOIN od_order ord ON ord.order_id = m.order_id
+            LEFT JOIN od_pay pay ON pay.pay_id = m.pay_id
+            LEFT JOIN sy_code cd_pm ON cd_pm.code_grp = 'PAY_METHOD' AND cd_pm.code_value = m.pay_method_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'REFUND_STATUS' AND cd_rs.code_value = m.refund_status_cd
+            <include refid="odRefundMethodCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.refund_method_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.refund_method_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM od_refund_method m
+            <include refid="odRefundMethodCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdRefundMethod">
+        UPDATE od_refund_method
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="refundId != null">refund_id = #{refundId},</if>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="payMethodCd != null">pay_method_cd = #{payMethodCd},</if>
+            <if test="refundPriority != null">refund_priority = #{refundPriority},</if>
+            <if test="refundAmt != null">refund_amt = #{refundAmt},</if>
+            <if test="refundAvailAmt != null">refund_avail_amt = #{refundAvailAmt},</if>
+            <if test="refundStatusCd != null">refund_status_cd = #{refundStatusCd},</if>
+            <if test="refundStatusCdBefore != null">refund_status_cd_before = #{refundStatusCdBefore},</if>
+            <if test="refundDate != null">refund_date = #{refundDate},</if>
+            <if test="payId != null">pay_id = #{payId},</if>
+            <if test="pgRefundId != null">pg_refund_id = #{pgRefundId},</if>
+            <if test="pgResponse != null">pg_response = #{pgResponse},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE refund_method_id = #{refundMethodId}
+    </update>
+
+</mapper>

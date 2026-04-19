@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.cm.CmBltnGoodMapper">
+
+    <sql id="cmBltnGoodCond">
+        <where>
+            <if test="p.dateStart != null and p.dateStart != ''">AND g.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND g.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnGoodDto">
+        SELECT
+            g.*,
+            blt.blog_title AS blog_nm
+        FROM cm_bltn_good g
+            LEFT JOIN cm_bltn blt ON blt.blog_id = g.blog_id
+        WHERE g.like_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnGoodDto">
+        SELECT
+            g.*,
+            blt.blog_title AS blog_nm
+        FROM cm_bltn_good g
+            LEFT JOIN cm_bltn blt ON blt.blog_id = g.blog_id
+            <include refid="cmBltnGoodCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY g.like_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY g.like_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
+            <otherwise>ORDER BY g.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnGoodDto">
+        SELECT
+            g.*,
+            blt.blog_title AS blog_nm
+        FROM cm_bltn_good g
+            LEFT JOIN cm_bltn blt ON blt.blog_id = g.blog_id
+            <include refid="cmBltnGoodCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY g.like_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY g.like_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
+            <otherwise>ORDER BY g.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM cm_bltn_good g
+            <include refid="cmBltnGoodCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.cm.entity.CmBltnGood">
+        UPDATE cm_bltn_good
+        <set>
+            <if test="blogId != null">blog_id = #{blogId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+        </set>
+        WHERE like_id = #{likeId}
+    </update>
+
+</mapper>

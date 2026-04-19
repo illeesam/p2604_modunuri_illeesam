@@ -1,11 +1,11 @@
 -- ============================================================
 -- st_erp_voucher_line : ERP 전표 라인 (분개 항목)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 전표 1건당 차변/대변 복수 라인 (대차 균형 필수)
 -- ============================================================
 CREATE TABLE st_erp_voucher_line (
-    erp_voucher_line_id     VARCHAR(16)     NOT NULL,
-    erp_voucher_id          VARCHAR(16)     NOT NULL,               -- st_erp_voucher.erp_voucher_id
+    erp_voucher_line_id     VARCHAR(20)     NOT NULL,
+    erp_voucher_id          VARCHAR(20)     NOT NULL,               -- st_erp_voucher.erp_voucher_id
     line_no                 INTEGER         NOT NULL,               -- 라인 순번
 
     -- ── 계정 정보
@@ -20,10 +20,10 @@ CREATE TABLE st_erp_voucher_line (
 
     -- ── 참조
     ref_type_cd             VARCHAR(20),                            -- 참조유형 (SETTLE/ORDER/CLAIM/PAY/ADJ)
-    ref_id                  VARCHAR(16),                            -- 참조ID (settle_id / order_id 등)
+    ref_id                  VARCHAR(20),                            -- 참조ID (settle_id / order_id 등)
     line_memo               VARCHAR(300),                           -- 라인 적요
 
-    reg_by                  VARCHAR(16),
+    reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (erp_voucher_line_id),

@@ -2,21 +2,21 @@
 -- 1 ec_dliv → N ec_dliv_item → 1 ec_order_item (1:1 참조)
 -- 부분출고 시 qty < order_item.qty 가능
 CREATE TABLE od_dliv_item (
-    dliv_item_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    dliv_id         VARCHAR(16)     NOT NULL,
-    order_item_id   VARCHAR(16)     NOT NULL,               -- 원 주문상품ID
-    prod_id         VARCHAR(16),
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
+    dliv_item_id    VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    dliv_id         VARCHAR(20)     NOT NULL,
+    order_item_id   VARCHAR(20)     NOT NULL,               -- 원 주문상품ID
+    prod_id         VARCHAR(20),
+    opt_item_id_1   VARCHAR(20),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
+    opt_item_id_2   VARCHAR(20),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
     dliv_type_cd    VARCHAR(20)     DEFAULT 'OUT',           -- 입출고구분: OUT 출고 / IN 입고(반품)
     unit_price      BIGINT          DEFAULT 0,
     dliv_qty        INTEGER         DEFAULT 1,              -- 이 배송의 출고수량 (부분출고 시 < 주문수량)
     dliv_item_status_cd VARCHAR(20)     DEFAULT 'READY',        -- 코드: DLIV_STATUS (항목별 추적)
     dliv_item_status_cd_before VARCHAR(20),                  -- 변경 전 배송상태
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (dliv_item_id),
     UNIQUE (dliv_id, order_item_id)                        -- 동일 배송 내 중복 방지

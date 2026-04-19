@@ -1,15 +1,15 @@
 -- ============================================================
 -- st_settle_item : 정산 항목 (주문항목별 명세)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE st_settle_item (
-    settle_item_id      VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id
-    order_item_id       VARCHAR(16)     NOT NULL,               -- od_order_item.order_item_id
-    vendor_id           VARCHAR(16)     NOT NULL,
-    prod_id             VARCHAR(16),
+    settle_item_id      VARCHAR(20)     NOT NULL,
+    settle_id           VARCHAR(20)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(20),
+    order_id            VARCHAR(20)     NOT NULL,               -- od_order.order_id
+    order_item_id       VARCHAR(20)     NOT NULL,               -- od_order_item.order_item_id
+    vendor_id           VARCHAR(20)     NOT NULL,
+    prod_id             VARCHAR(20),
     settle_item_type_cd VARCHAR(20)     DEFAULT 'SALE',         -- 코드: SETTLE_ITEM_TYPE (SALE:판매/CANCEL:취소/RETURN:반품)
     order_date          TIMESTAMP,
     order_qty           INTEGER         DEFAULT 1,
@@ -19,7 +19,7 @@ CREATE TABLE st_settle_item (
     commission_rate     NUMERIC(5,2)    DEFAULT 0,
     commission_amt      BIGINT          DEFAULT 0,
     settle_item_amt     BIGINT          DEFAULT 0,              -- item_price - discnt_amt - commission_amt
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (settle_item_id),
     UNIQUE (settle_id, order_item_id)

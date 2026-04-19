@@ -1,23 +1,23 @@
 -- ============================================================
 -- ec_cache : 적립금 (캐시)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_cache (
-    cache_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16)     NOT NULL,
+    cache_id        VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    member_id       VARCHAR(20)     NOT NULL,
     member_nm       VARCHAR(50),
     cache_type_cd   VARCHAR(20)     NOT NULL,               -- 코드: CACHE_TYPE (EARN/USE/EXPIRE/ADMIN)
     cache_amt       BIGINT          DEFAULT 0,              -- 양수: 적립, 음수: 사용
     balance_amt     BIGINT          DEFAULT 0,              -- 처리 후 잔액
-    ref_id          VARCHAR(16),                            -- 참조ID (order_id 등)
+    ref_id          VARCHAR(20),                            -- 참조ID (order_id 등)
     cache_desc      VARCHAR(200),
-    proc_user_id         VARCHAR(16),
+    proc_user_id         VARCHAR(20),
     cache_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     expire_date     DATE,                                   -- 소멸예정일
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (cache_id)
 );

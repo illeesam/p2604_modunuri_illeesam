@@ -1,18 +1,18 @@
 -- SKU 재고 변경 이력
 CREATE TABLE pdh_prod_sku_stock_hist (
-    hist_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    sku_id              VARCHAR(16)     NOT NULL,               -- pd_prod_sku.sku_id
-    prod_id             VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
+    hist_id             VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    sku_id              VARCHAR(20)     NOT NULL,               -- pd_prod_sku.sku_id
+    prod_id             VARCHAR(20)     NOT NULL,               -- pd_prod.prod_id
     stock_before        INTEGER         NOT NULL,               -- 변경 전 재고수량
     stock_after         INTEGER         NOT NULL,               -- 변경 후 재고수량
     chg_qty             INTEGER         NOT NULL,               -- 변동수량 (양수=입고, 음수=출고)
     chg_reason_cd       VARCHAR(20)     NOT NULL,               -- 코드: SKU_STOCK_CHG (변동사유)
     chg_reason          VARCHAR(200),                           -- 변동사유 상세
-    order_item_id       VARCHAR(16),                            -- 연관 주문상품ID (SALE/RETURN/EXCHANGE/CLAIM 시)
-    chg_by              VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    order_item_id       VARCHAR(20),                            -- 연관 주문상품ID (SALE/RETURN/EXCHANGE/CLAIM 시)
+    chg_by              VARCHAR(20),                            -- 처리자 (sy_user.user_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (hist_id)
 );

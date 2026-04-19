@@ -1,16 +1,16 @@
 -- 쿠폰 발급 (회원별 보유)
 CREATE TABLE pm_coupon_issue (
-    issue_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    coupon_id       VARCHAR(16)     NOT NULL,
-    member_id       VARCHAR(16)     NOT NULL,
+    issue_id        VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    coupon_id       VARCHAR(20)     NOT NULL,
+    member_id       VARCHAR(20)     NOT NULL,
     issue_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     use_yn          CHAR(1)         DEFAULT 'N',
     use_date        TIMESTAMP,
-    order_id        VARCHAR(16),
-    reg_by          VARCHAR(16),
+    order_id        VARCHAR(20),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (issue_id)
 );

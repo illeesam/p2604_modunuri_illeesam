@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdClaimItemMapper">
+
+    <sql id="odClaimItemCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND i.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND i.claim_item_status_cd = #{p.status}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (i.prod_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND i.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND i.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdClaimItemDto">
+        SELECT
+            i.*,
+            ste.site_nm AS site_nm,
+            cd_cis.code_label AS claim_item_status_cd_nm
+        FROM od_claim_item i
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN sy_code cd_cis ON cd_cis.code_grp = 'CLAIM_ITEM_STATUS' AND cd_cis.code_value = i.claim_item_status_cd
+        WHERE i.claim_item_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdClaimItemDto">
+        SELECT
+            i.*,
+            ste.site_nm AS site_nm,
+            cd_cis.code_label AS claim_item_status_cd_nm
+        FROM od_claim_item i
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN sy_code cd_cis ON cd_cis.code_grp = 'CLAIM_ITEM_STATUS' AND cd_cis.code_value = i.claim_item_status_cd
+            <include refid="odClaimItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY i.claim_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY i.claim_item_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY i.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY i.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdClaimItemDto">
+        SELECT
+            i.*,
+            ste.site_nm AS site_nm,
+            cd_cis.code_label AS claim_item_status_cd_nm
+        FROM od_claim_item i
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN sy_code cd_cis ON cd_cis.code_grp = 'CLAIM_ITEM_STATUS' AND cd_cis.code_value = i.claim_item_status_cd
+            <include refid="odClaimItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY i.claim_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY i.claim_item_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY i.prod_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY i.prod_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM od_claim_item i
+            <include refid="odClaimItemCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdClaimItem">
+        UPDATE od_claim_item
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="claimId != null">claim_id = #{claimId},</if>
+            <if test="orderItemId != null">order_item_id = #{orderItemId},</if>
+            <if test="prodId != null">prod_id = #{prodId},</if>
+            <if test="prodNm != null">prod_nm = #{prodNm},</if>
+            <if test="prodOption != null">prod_option = #{prodOption},</if>
+            <if test="unitPrice != null">unit_price = #{unitPrice},</if>
+            <if test="claimQty != null">claim_qty = #{claimQty},</if>
+            <if test="itemAmt != null">item_amt = #{itemAmt},</if>
+            <if test="refundAmt != null">refund_amt = #{refundAmt},</if>
+            <if test="claimItemStatusCd != null">claim_item_status_cd = #{claimItemStatusCd},</if>
+            <if test="claimItemStatusCdBefore != null">claim_item_status_cd_before = #{claimItemStatusCdBefore},</if>
+            <if test="returnShippingFee != null">return_shipping_fee = #{returnShippingFee},</if>
+            <if test="inboundShippingFee != null">inbound_shipping_fee = #{inboundShippingFee},</if>
+            <if test="exchangeShippingFee != null">exchange_shipping_fee = #{exchangeShippingFee},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE claim_item_id = #{claimItemId}
+    </update>
+
+</mapper>

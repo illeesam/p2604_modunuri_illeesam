@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.dp.DpUiAreaMapper">
+
+    <sql id="dpUiAreaCond">
+        <where>
+            <if test="p.dateStart != null and p.dateStart != ''">AND a.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND a.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpUiAreaDto">
+        SELECT
+            a.*,
+            ui.ui_nm AS ui_nm,
+            are.area_nm AS area_nm
+        FROM dp_ui_area a
+            LEFT JOIN dp_ui ui ON ui.ui_id = a.ui_id
+            LEFT JOIN dp_area are ON are.area_id = a.area_id
+        WHERE a.ui_area_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpUiAreaDto">
+        SELECT
+            a.*,
+            ui.ui_nm AS ui_nm,
+            are.area_nm AS area_nm
+        FROM dp_ui_area a
+            LEFT JOIN dp_ui ui ON ui.ui_id = a.ui_id
+            LEFT JOIN dp_area are ON are.area_id = a.area_id
+            <include refid="dpUiAreaCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY a.ui_area_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY a.ui_area_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
+            <otherwise>ORDER BY a.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpUiAreaDto">
+        SELECT
+            a.*,
+            ui.ui_nm AS ui_nm,
+            are.area_nm AS area_nm
+        FROM dp_ui_area a
+            LEFT JOIN dp_ui ui ON ui.ui_id = a.ui_id
+            LEFT JOIN dp_area are ON are.area_id = a.area_id
+            <include refid="dpUiAreaCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY a.ui_area_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY a.ui_area_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
+            <otherwise>ORDER BY a.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM dp_ui_area a
+            <include refid="dpUiAreaCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.dp.entity.DpUiArea">
+        UPDATE dp_ui_area
+        <set>
+            <if test="uiId != null">ui_id = #{uiId},</if>
+            <if test="areaId != null">area_id = #{areaId},</if>
+            <if test="areaSortOrd != null">area_sort_ord = #{areaSortOrd},</if>
+            <if test="visibilityTargets != null">visibility_targets = #{visibilityTargets},</if>
+            <if test="dispEnv != null">disp_env = #{dispEnv},</if>
+            <if test="dispYn != null">disp_yn = #{dispYn},</if>
+            <if test="dispStartDate != null">disp_start_date = #{dispStartDate},</if>
+            <if test="dispStartTime != null">disp_start_time = #{dispStartTime},</if>
+            <if test="dispEndDate != null">disp_end_date = #{dispEndDate},</if>
+            <if test="dispEndTime != null">disp_end_time = #{dispEndTime},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE ui_area_id = #{uiAreaId}
+    </update>
+
+</mapper>

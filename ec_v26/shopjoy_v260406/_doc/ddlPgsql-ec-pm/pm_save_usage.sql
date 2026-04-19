@@ -1,20 +1,20 @@
 -- ============================================================
 -- pm_save_usage : 적립금 사용 이력
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 주문 시 사용된 적립금을 건별로 기록
 -- 사용 후 pm_save 원장에 USE 타입으로 반영
 -- ============================================================
 CREATE TABLE pm_save_usage (
-    save_usage_id       VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
-    order_id            VARCHAR(16),                            -- od_order.order_id
-    order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 사용 시)
-    prod_id             VARCHAR(16),                            -- pd_prod.prod_id (사용 상품)
+    save_usage_id       VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    member_id           VARCHAR(20)     NOT NULL,               -- mb_member.member_id
+    order_id            VARCHAR(20),                            -- od_order.order_id
+    order_item_id       VARCHAR(20),                            -- od_order_item.order_item_id (상품별 사용 시)
+    prod_id             VARCHAR(20),                            -- pd_prod.prod_id (사용 상품)
     use_amt             BIGINT          NOT NULL,               -- 사용 적립금액
     balance_amt         BIGINT          DEFAULT 0,              -- 사용 후 잔액
     used_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (save_usage_id)

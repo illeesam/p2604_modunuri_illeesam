@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyBbsMapper">
+
+    <sql id="syBbsCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND b.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND b.bbs_status_cd = #{p.status}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (b.author_nm ILIKE '%' || #{p.kw} || '%'
+                  OR b.bbs_title ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND b.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND b.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbsDto">
+        SELECT
+            b.*,
+            ste.site_nm AS site_nm
+        FROM sy_bbs b
+            LEFT JOIN sy_site ste ON ste.site_id = b.site_id
+        WHERE b.bbs_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbsDto">
+        SELECT
+            b.*,
+            ste.site_nm AS site_nm
+        FROM sy_bbs b
+            LEFT JOIN sy_site ste ON ste.site_id = b.site_id
+            <include refid="syBbsCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY b.bbs_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY b.bbs_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY b.author_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY b.author_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
+            <otherwise>ORDER BY b.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbsDto">
+        SELECT
+            b.*,
+            ste.site_nm AS site_nm
+        FROM sy_bbs b
+            LEFT JOIN sy_site ste ON ste.site_id = b.site_id
+            <include refid="syBbsCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY b.bbs_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY b.bbs_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY b.author_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY b.author_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
+            <otherwise>ORDER BY b.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_bbs b
+            <include refid="syBbsCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyBbs">
+        UPDATE sy_bbs
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="bbmId != null">bbm_id = #{bbmId},</if>
+            <if test="parentBbsId != null">parent_bbs_id = #{parentBbsId},</if>
+            <if test="memberId != null">member_id = #{memberId},</if>
+            <if test="authorNm != null">author_nm = #{authorNm},</if>
+            <if test="bbsTitle != null">bbs_title = #{bbsTitle},</if>
+            <if test="contentHtml != null">content_html = #{contentHtml},</if>
+            <if test="attachGrpId != null">attach_grp_id = #{attachGrpId},</if>
+            <if test="viewCount != null">view_count = #{viewCount},</if>
+            <if test="likeCount != null">like_count = #{likeCount},</if>
+            <if test="commentCount != null">comment_count = #{commentCount},</if>
+            <if test="isFixed != null">is_fixed = #{isFixed},</if>
+            <if test="bbsStatusCd != null">bbs_status_cd = #{bbsStatusCd},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+            <if test="dispPath != null">disp_path = #{dispPath},</if>
+        </set>
+        WHERE bbs_id = #{bbsId}
+    </update>
+
+</mapper>

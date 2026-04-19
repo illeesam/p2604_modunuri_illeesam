@@ -1,10 +1,10 @@
 -- ============================================================
 -- pm_plan : 기획전
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_plan (
-    plan_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),
+    plan_id             VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),
     plan_nm             VARCHAR(100)    NOT NULL,               -- 기획전명
     plan_title          VARCHAR(200)    NOT NULL,               -- 기획전 타이틀 (노출용)
     plan_type_cd        VARCHAR(20)     DEFAULT 'THEME',        -- 코드: PLAN_TYPE (SEASON:시즌/BRAND:브랜드/THEME:테마/COLLAB:협업)
@@ -17,9 +17,9 @@ CREATE TABLE pm_plan (
     plan_status_cd_before VARCHAR(20),
     sort_ord            INTEGER         DEFAULT 0,
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (plan_id)
 );

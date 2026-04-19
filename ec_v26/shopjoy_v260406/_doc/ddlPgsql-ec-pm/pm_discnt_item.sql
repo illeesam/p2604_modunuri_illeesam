@@ -1,14 +1,14 @@
 -- ============================================================
 -- pm_discnt_item : 할인 대상 항목 (상품/카테고리)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_discnt_item (
-    discnt_item_id      VARCHAR(16)     NOT NULL,
-    discnt_id           VARCHAR(16)     NOT NULL,               -- pm_discnt.discnt_id
-    site_id             VARCHAR(16),
+    discnt_item_id      VARCHAR(20)     NOT NULL,
+    discnt_id           VARCHAR(20)     NOT NULL,               -- pm_discnt.discnt_id
+    site_id             VARCHAR(20),
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: DISCNT_ITEM_TARGET (CATEGORY/PRODUCT/MEMBER_GRADE)
-    target_id           VARCHAR(16)     NOT NULL,               -- category_id / prod_id / grade_cd
-    reg_by              VARCHAR(16),
+    target_id           VARCHAR(20)     NOT NULL,               -- category_id / prod_id / grade_cd
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (discnt_item_id),
     UNIQUE (discnt_id, target_type_cd, target_id)

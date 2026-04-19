@@ -1,21 +1,21 @@
 -- ============================================================
 CREATE TABLE sy_user (
-    user_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    user_id         VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     login_id        VARCHAR(50)     NOT NULL,
     user_password   VARCHAR(255)    NOT NULL,
     user_nm         VARCHAR(50)     NOT NULL,
     user_email      VARCHAR(100),
     user_phone      VARCHAR(20),
-    dept_id         VARCHAR(16),                            -- sy_dept.dept_id
-    role_id         VARCHAR(16),                            -- sy_role.role_id
+    dept_id         VARCHAR(20),                            -- sy_dept.dept_id
+    role_id         VARCHAR(20),                            -- sy_role.role_id
     user_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USER_STATUS
     last_login      TIMESTAMP,
     login_fail_cnt  SMALLINT        DEFAULT 0,
     user_memo       TEXT,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     -- ── 인증 ──
     auth_method_cd  VARCHAR(20)     DEFAULT 'MAIN',         -- 코드: AUTH_METHOD (MAIN/SMS/OTP/AUTHENTICATOR)

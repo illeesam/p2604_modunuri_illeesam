@@ -3,21 +3,21 @@
 -- 둘 다 NULL이면 상품 대표(공통) 이미지
 -- attach_id: 파일 관리 시스템(sy_attach)과 연계 시 사용
 CREATE TABLE pd_prod_img (
-    prod_img_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,              -- FK: pd_prod.prod_id
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상-블랙)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈-M)
-    attach_id       VARCHAR(16),                            -- FK: sy_attach.attach_id (원본 파일 참조)
+    prod_img_id     VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    prod_id         VARCHAR(20)     NOT NULL,              -- FK: pd_prod.prod_id
+    opt_item_id_1   VARCHAR(20),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상-블랙)
+    opt_item_id_2   VARCHAR(20),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈-M)
+    attach_id       VARCHAR(20),                            -- FK: sy_attach.attach_id (원본 파일 참조)
     cdn_host        VARCHAR(100),                           -- CDN 호스트명 (예: cdn.example.com)
     cdn_img_url     VARCHAR(500),                           -- CDN 원본 이미지 URL (상세 페이지용)
     cdn_thumb_url   VARCHAR(500),                           -- CDN 썸네일 이미지 URL (목록/검색/카테고리용)
     img_alt_text    VARCHAR(200),                           -- 이미지 대체텍스트 (SEO/접근성)
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     is_thumb        CHAR(1)         DEFAULT 'N',            -- 대표이미지여부 Y/N
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_img_id)
 );

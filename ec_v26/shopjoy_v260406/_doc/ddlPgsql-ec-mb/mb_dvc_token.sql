@@ -2,8 +2,8 @@
 -- log 예외: 단일 단어 컬럼 허용 (device_token, os_type, site_id 예외)
 CREATE TABLE mb_dvc_token (
     device_token    VARCHAR(200)    NOT NULL,               -- 앱 디바이스 토큰 값
-    site_id         VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    member_id       VARCHAR(16),                            -- mb_member.member_id
+    site_id         VARCHAR(20)     NOT NULL,               -- sy_site.site_id
+    member_id       VARCHAR(20),                            -- mb_member.member_id
     os_type         VARCHAR(10),                            -- ANDROID / IOS
     benefit_noti_yn VARCHAR(1)      DEFAULT 'Y',            -- 혜택 알림 수신 여부
     alim_read_date  TIMESTAMP,                              -- 알림 리스트 읽음 일시

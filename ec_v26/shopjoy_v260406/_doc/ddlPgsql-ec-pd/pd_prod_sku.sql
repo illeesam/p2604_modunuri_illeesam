@@ -1,16 +1,16 @@
 CREATE TABLE pd_prod_sku (
-    sku_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (예: 색상-블랙)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (예: 사이즈-M)
+    sku_id          VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    prod_id         VARCHAR(20)     NOT NULL,
+    opt_item_id_1   VARCHAR(20),                            -- 옵션1 값ID (예: 색상-블랙)
+    opt_item_id_2   VARCHAR(20),                            -- 옵션2 값ID (예: 사이즈-M)
     sku_code        VARCHAR(50),                            -- 자체 SKU 코드
     add_price       BIGINT          DEFAULT 0,              -- 옵션 추가금액
     prod_opt_stock  INTEGER         DEFAULT 0,              -- 옵션 조합별 재고
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (sku_id)
 );

@@ -6,7 +6,10 @@
       "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/od_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-od/)",
       "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/pm_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-pm/)",
       "Bash(mv 'c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec/dp_*.sql' c:/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/_doc/ddl_pgsql/ec-dp/)",
-      "Read(//c/Users/illee/OneDrive/Desktop/**)"
+      "Read(//c/Users/illee/OneDrive/Desktop/**)",
+      "Read(//c/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/**)",
+      "Read(//c/Users/illee/.claude/projects/c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406/756b42de-a4bf-4ecf-8129-89a75f1290a0/tool-results/**)",
+      "Bash(gradle compileJava)"
     ],
     "additionalDirectories": [
       "C:\\Users\\illee\\.claude\\projects\\c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406\\memory"

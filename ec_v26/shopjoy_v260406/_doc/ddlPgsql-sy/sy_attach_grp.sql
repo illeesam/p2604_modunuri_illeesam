@@ -1,10 +1,10 @@
 -- ============================================================
 -- sy_attach_grp : 첨부파일 그룹 / sy_attach : 첨부파일
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 
 CREATE TABLE sy_attach_grp (
-    attach_grp_id   VARCHAR(16)     NOT NULL,
+    attach_grp_id   VARCHAR(20)     NOT NULL,
     attach_grp_code VARCHAR(50)     NOT NULL,              -- 고유 코드 (PROD_IMG, MEMBER_DOC, INQUIRY_FILE 등)
     attach_grp_nm   VARCHAR(100)    NOT NULL,              -- 그룹명
     file_ext_allow  VARCHAR(200),                           -- 허용 확장자 (쉼표 구분: jpg,png,gif,pdf)
@@ -14,9 +14,9 @@ CREATE TABLE sy_attach_grp (
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     attach_grp_remark VARCHAR(500),                            -- 비고/설명
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (attach_grp_id),
     UNIQUE (attach_grp_code)

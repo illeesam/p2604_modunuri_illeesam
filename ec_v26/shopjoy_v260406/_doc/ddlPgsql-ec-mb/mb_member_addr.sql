@@ -1,11 +1,11 @@
 -- ============================================================
 -- ec_member_addr : 회원 배송지 (복수 관리)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE mb_member_addr (
-    addr_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    member_id       VARCHAR(16)     NOT NULL,              -- mb_member.member_id
+    addr_id         VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),
+    member_id       VARCHAR(20)     NOT NULL,              -- mb_member.member_id
     addr_nm         VARCHAR(50),                           -- 배송지명 (예: 집, 회사)
     recv_nm         VARCHAR(50)     NOT NULL,              -- 수령자명
     recv_phone      VARCHAR(20)     NOT NULL,              -- 수령자 연락처
@@ -13,9 +13,9 @@ CREATE TABLE mb_member_addr (
     addr            VARCHAR(200),                          -- 기본주소
     addr_detail     VARCHAR(200),                          -- 상세주소
     is_default      CHAR(1)         DEFAULT 'N',           -- 기본 배송지 여부 Y/N
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (addr_id)
 );

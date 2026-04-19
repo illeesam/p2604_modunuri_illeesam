@@ -1,22 +1,22 @@
 -- ============================================================
 -- sy_menu : 메뉴
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_menu (
-    menu_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    menu_id         VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     menu_code       VARCHAR(50)     NOT NULL,
     menu_nm         VARCHAR(100)    NOT NULL,
-    parent_menu_id       VARCHAR(16),
+    parent_menu_id       VARCHAR(20),
     menu_url        VARCHAR(200),
     menu_type_cd    VARCHAR(20)     DEFAULT 'PAGE',         -- 코드: MENU_TYPE (PAGE/FOLDER/LINK)
     icon_class      VARCHAR(100),
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     menu_remark     VARCHAR(300),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (menu_id),
     UNIQUE (menu_code)

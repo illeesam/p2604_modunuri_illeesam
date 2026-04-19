@@ -1,10 +1,10 @@
 -- 클레임 항목 (클레임 대상 주문상품 명세)
 CREATE TABLE od_claim_item (
-    claim_item_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    claim_id        VARCHAR(16)     NOT NULL,
-    order_item_id   VARCHAR(16)     NOT NULL,               -- 원 주문상품ID
-    prod_id         VARCHAR(16),
+    claim_item_id   VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    claim_id        VARCHAR(20)     NOT NULL,
+    order_item_id   VARCHAR(20)     NOT NULL,               -- 원 주문상품ID
+    prod_id         VARCHAR(20),
     prod_nm         VARCHAR(200),                           -- 상품명 (주문시점 스냅샷)
     prod_option     VARCHAR(500),                           -- 옵션 (색상/사이즈 스냅샷)
     unit_price      BIGINT          DEFAULT 0,              -- 판매가 (단가)
@@ -17,9 +17,9 @@ CREATE TABLE od_claim_item (
     return_shipping_fee  BIGINT       DEFAULT 0,           -- 수거배송료
     inbound_shipping_fee BIGINT       DEFAULT 0,           -- 반입배송료
     exchange_shipping_fee BIGINT      DEFAULT 0,           -- 교환상품 발송배송료
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (claim_item_id)
 );

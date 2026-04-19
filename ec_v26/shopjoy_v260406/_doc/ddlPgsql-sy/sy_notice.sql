@@ -1,22 +1,22 @@
 -- ============================================================
 -- sy_notice : 공지사항
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_notice (
-    notice_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    notice_id       VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     notice_title    VARCHAR(200)    NOT NULL,
     notice_type_cd  VARCHAR(30),                            -- 코드: NOTICE_TYPE
     is_fixed        CHAR(1)         DEFAULT 'N',            -- 상단고정 Y/N
     content_html    TEXT,
-    attach_grp_id   VARCHAR(16),
+    attach_grp_id   VARCHAR(20),
     start_date      TIMESTAMP,
     end_date        TIMESTAMP,
     notice_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/INACTIVE
     view_count      INTEGER         DEFAULT 0,
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (notice_id)
 );

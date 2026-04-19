@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdReviewCommentMapper">
+
+    <sql id="pdReviewCommentCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND c.reply_status_cd = #{p.status}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND c.writer_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (c.writer_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND c.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND c.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdReviewCommentDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            cd_rwt.code_label AS writer_type_cd_nm
+        FROM pd_review_comment c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN sy_code cd_rwt ON cd_rwt.code_grp = 'REVIEW_WRITER_TYPE' AND cd_rwt.code_value = c.writer_type_cd
+        WHERE c.review_comment_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdReviewCommentDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            cd_rwt.code_label AS writer_type_cd_nm
+        FROM pd_review_comment c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN sy_code cd_rwt ON cd_rwt.code_grp = 'REVIEW_WRITER_TYPE' AND cd_rwt.code_value = c.writer_type_cd
+            <include refid="pdReviewCommentCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.review_comment_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.review_comment_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.writer_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.writer_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdReviewCommentDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            cd_rwt.code_label AS writer_type_cd_nm
+        FROM pd_review_comment c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN sy_code cd_rwt ON cd_rwt.code_grp = 'REVIEW_WRITER_TYPE' AND cd_rwt.code_value = c.writer_type_cd
+            <include refid="pdReviewCommentCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.review_comment_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.review_comment_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.writer_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.writer_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM pd_review_comment c
+            <include refid="pdReviewCommentCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pd.entity.PdReviewComment">
+        UPDATE pd_review_comment
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="reviewId != null">review_id = #{reviewId},</if>
+            <if test="parentReplyId != null">parent_reply_id = #{parentReplyId},</if>
+            <if test="writerTypeCd != null">writer_type_cd = #{writerTypeCd},</if>
+            <if test="writerId != null">writer_id = #{writerId},</if>
+            <if test="writerNm != null">writer_nm = #{writerNm},</if>
+            <if test="reviewReplyContent != null">review_reply_content = #{reviewReplyContent},</if>
+            <if test="replyStatusCd != null">reply_status_cd = #{replyStatusCd},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE review_comment_id = #{reviewCommentId}
+    </update>
+
+</mapper>

@@ -1,8 +1,8 @@
 -- ============================================================
 CREATE TABLE pd_dliv_tmplt (
-    dliv_tmplt_id       VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    vendor_id           VARCHAR(16),                            -- sy_vendor.vendor_id
+    dliv_tmplt_id       VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    vendor_id           VARCHAR(20),                            -- sy_vendor.vendor_id
     dliv_tmplt_nm       VARCHAR(100)    NOT NULL,
     dliv_method_cd      VARCHAR(20),                            -- 코드: DLIV_METHOD (COURIER/DIRECT/PICKUP)
     dliv_pay_type_cd    VARCHAR(20),                            -- 코드: DLIV_PAY_TYPE (PREPAY/COD)
@@ -19,9 +19,9 @@ CREATE TABLE pd_dliv_tmplt (
     return_tel_no       VARCHAR(20),                            -- 반품지 전화번호
     base_dliv_yn        VARCHAR(1)      DEFAULT 'N',            -- 기본 배송지 여부
     use_yn              VARCHAR(1)      DEFAULT 'Y',
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (dliv_tmplt_id)
 );

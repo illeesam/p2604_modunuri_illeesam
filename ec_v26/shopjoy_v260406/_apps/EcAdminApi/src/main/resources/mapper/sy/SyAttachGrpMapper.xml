@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyAttachGrpMapper">
+
+    <sql id="syAttachGrpCond">
+        <where>
+            <if test="p.kw != null and p.kw != ''">
+                AND (g.attach_grp_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND g.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND g.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyAttachGrpDto">
+        SELECT g.*
+        FROM sy_attach_grp g
+        WHERE g.attach_grp_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyAttachGrpDto">
+        SELECT g.*
+        FROM sy_attach_grp g
+            <include refid="syAttachGrpCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY g.attach_grp_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY g.attach_grp_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY g.attach_grp_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY g.attach_grp_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
+            <otherwise>ORDER BY g.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyAttachGrpDto">
+        SELECT g.*
+        FROM sy_attach_grp g
+            <include refid="syAttachGrpCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY g.attach_grp_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY g.attach_grp_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY g.attach_grp_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY g.attach_grp_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
+            <otherwise>ORDER BY g.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_attach_grp g
+            <include refid="syAttachGrpCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyAttachGrp">
+        UPDATE sy_attach_grp
+        <set>
+            <if test="attachGrpCode != null">attach_grp_code = #{attachGrpCode},</if>
+            <if test="attachGrpNm != null">attach_grp_nm = #{attachGrpNm},</if>
+            <if test="fileExtAllow != null">file_ext_allow = #{fileExtAllow},</if>
+            <if test="maxFileSize != null">max_file_size = #{maxFileSize},</if>
+            <if test="maxFileCount != null">max_file_count = #{maxFileCount},</if>
+            <if test="storagePath != null">storage_path = #{storagePath},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="attachGrpRemark != null">attach_grp_remark = #{attachGrpRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE attach_grp_id = #{attachGrpId}
+    </update>
+
+</mapper>

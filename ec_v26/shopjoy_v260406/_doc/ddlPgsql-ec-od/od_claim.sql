@@ -1,9 +1,9 @@
 -- 클레임 (취소/반품/교환)
 CREATE TABLE od_claim (
-    claim_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    order_id        VARCHAR(16)     NOT NULL,
-    member_id       VARCHAR(16),
+    claim_id        VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    order_id        VARCHAR(20)     NOT NULL,
+    member_id       VARCHAR(20),
     member_nm       VARCHAR(50),
     claim_type_cd   VARCHAR(20)     NOT NULL,               -- 코드: CLAIM_TYPE (CANCEL/RETURN/EXCHANGE)
     claim_status_cd VARCHAR(20)     DEFAULT 'REQUESTED',    -- 코드: CLAIM_STATUS
@@ -29,7 +29,7 @@ CREATE TABLE od_claim (
     -- ── 처리 정보 ──
     request_date    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     proc_date       TIMESTAMP,
-    proc_user_id    VARCHAR(16),
+    proc_user_id    VARCHAR(20),
     memo            TEXT,
     -- ── 추가배송비 ──
     add_shipping_fee     BIGINT      DEFAULT 0,             -- 추가배송비 (교환=출고배송비, 반품/취소=무료배송조건 파괴 시)
@@ -52,7 +52,7 @@ CREATE TABLE od_claim (
     inbound_shipping_fee BIGINT      DEFAULT 0,             -- 반입배송료
     inbound_courier_cd   VARCHAR(30),                       -- 코드: COURIER
     inbound_tracking_no  VARCHAR(100),
-    inbound_dliv_id      VARCHAR(16),                       -- 반입 배송ID (od_dliv.)
+    inbound_dliv_id      VARCHAR(20),                       -- 반입 배송ID (od_dliv.)
     -- ── 교환 배송지 (원 주문 배송지와 다를 경우 별도 설정) ──
     exch_recv_nm         VARCHAR(50),                       -- 교환 수령자명
     exch_recv_phone      VARCHAR(20),
@@ -64,15 +64,15 @@ CREATE TABLE od_claim (
     exchange_shipping_fee BIGINT     DEFAULT 0,             -- 교환상품 발송배송료
     exchange_courier_cd   VARCHAR(30),                      -- 코드: COURIER
     exchange_tracking_no  VARCHAR(100),
-    outbound_dliv_id      VARCHAR(16),                      -- 교환상품 발송 배송ID (od_dliv.)
+    outbound_dliv_id      VARCHAR(20),                      -- 교환상품 발송 배송ID (od_dliv.)
     -- ── 배송료 정산 ──
     total_shipping_fee    BIGINT     DEFAULT 0,             -- 총 배송료 (수거+반입+발송)
     shipping_fee_paid_yn  CHAR(1)    DEFAULT 'N',
     shipping_fee_paid_date TIMESTAMP,
     shipping_fee_memo     VARCHAR(300),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     -- ── 결재처리/추가결재요청 (관리자 일괄작업) ──
     appr_status_cd      VARCHAR(20),                        -- 코드: APPROVAL_STATUS
@@ -81,9 +81,9 @@ CREATE TABLE od_claim (
     appr_target_cd      VARCHAR(30),                        -- 코드: APPROVAL_TARGET
     appr_target_nm      VARCHAR(200),
     appr_reason         VARCHAR(500),
-    appr_req_user_id    VARCHAR(16),
+    appr_req_user_id    VARCHAR(20),
     appr_req_date       TIMESTAMP,
-    appr_aprv_user_id   VARCHAR(16),
+    appr_aprv_user_id   VARCHAR(20),
     appr_aprv_date      TIMESTAMP,
     PRIMARY KEY (claim_id)
 );

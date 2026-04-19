@@ -1,11 +1,11 @@
 -- ============================================================
 -- dp_area : 디스플레이 영역
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_area (
-    area_id         VARCHAR(16)     NOT NULL,
-    ui_id           VARCHAR(16)     NOT NULL,              -- FK: dp_ui.ui_id
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    area_id         VARCHAR(20)     NOT NULL,
+    ui_id           VARCHAR(20)     NOT NULL,              -- FK: dp_ui.ui_id
+    site_id         VARCHAR(20),                            -- sy_site.site_id
     area_cd         VARCHAR(50)     NOT NULL,               -- 예: MAIN_TOP, MAIN_BANNER, SIDEBAR_MID
     area_nm         VARCHAR(100)    NOT NULL,
     area_type_cd    VARCHAR(30),                            -- FULL/SIDEBAR/POPUP 등
@@ -14,9 +14,9 @@ CREATE TABLE dp_area (
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 (Y/N)
     use_start_date  DATE,                                   -- 사용시작일
     use_end_date    DATE,                                   -- 사용종료일
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (area_id),
     UNIQUE (site_id, area_cd),

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.st.StErpVoucherLineMapper">
+
+    <sql id="stErpVoucherLineCond">
+        <where>
+            <if test="p.typeCd != null and p.typeCd != ''">AND l.ref_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (l.account_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND l.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND l.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.st.dto.StErpVoucherLineDto">
+        SELECT l.*
+        FROM st_erp_voucher_line l
+        WHERE l.erp_voucher_line_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StErpVoucherLineDto">
+        SELECT l.*
+        FROM st_erp_voucher_line l
+            <include refid="stErpVoucherLineCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY l.erp_voucher_line_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY l.erp_voucher_line_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY l.account_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY l.account_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StErpVoucherLineDto">
+        SELECT l.*
+        FROM st_erp_voucher_line l
+            <include refid="stErpVoucherLineCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY l.erp_voucher_line_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY l.erp_voucher_line_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY l.account_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY l.account_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY l.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY l.reg_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM st_erp_voucher_line l
+            <include refid="stErpVoucherLineCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.st.entity.StErpVoucherLine">
+        UPDATE st_erp_voucher_line
+        <set>
+            <if test="erpVoucherId != null">erp_voucher_id = #{erpVoucherId},</if>
+            <if test="lineNo != null">line_no = #{lineNo},</if>
+            <if test="accountCd != null">account_cd = #{accountCd},</if>
+            <if test="accountNm != null">account_nm = #{accountNm},</if>
+            <if test="costCenterCd != null">cost_center_cd = #{costCenterCd},</if>
+            <if test="profitCenterCd != null">profit_center_cd = #{profitCenterCd},</if>
+            <if test="debitAmt != null">debit_amt = #{debitAmt},</if>
+            <if test="creditAmt != null">credit_amt = #{creditAmt},</if>
+            <if test="refTypeCd != null">ref_type_cd = #{refTypeCd},</if>
+            <if test="refId != null">ref_id = #{refId},</if>
+            <if test="lineMemo != null">line_memo = #{lineMemo},</if>
+        </set>
+        WHERE erp_voucher_line_id = #{erpVoucherLineId}
+    </update>
+
+</mapper>

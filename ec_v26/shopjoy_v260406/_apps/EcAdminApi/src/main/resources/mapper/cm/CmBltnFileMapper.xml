@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.cm.CmBltnFileMapper">
+
+    <sql id="cmBltnFileCond">
+        <where>
+            <if test="p.dateStart != null and p.dateStart != ''">AND f.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND f.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnFileDto">
+        SELECT
+            f.*,
+            blt.blog_title AS blog_nm
+        FROM cm_bltn_file f
+            LEFT JOIN cm_bltn blt ON blt.blog_id = f.blog_id
+        WHERE f.blog_img_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnFileDto">
+        SELECT
+            f.*,
+            blt.blog_title AS blog_nm
+        FROM cm_bltn_file f
+            LEFT JOIN cm_bltn blt ON blt.blog_id = f.blog_id
+            <include refid="cmBltnFileCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY f.blog_img_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY f.blog_img_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY f.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY f.reg_date DESC</when>
+            <otherwise>ORDER BY f.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.cm.dto.CmBltnFileDto">
+        SELECT
+            f.*,
+            blt.blog_title AS blog_nm
+        FROM cm_bltn_file f
+            LEFT JOIN cm_bltn blt ON blt.blog_id = f.blog_id
+            <include refid="cmBltnFileCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY f.blog_img_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY f.blog_img_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY f.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY f.reg_date DESC</when>
+            <otherwise>ORDER BY f.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM cm_bltn_file f
+            <include refid="cmBltnFileCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.cm.entity.CmBltnFile">
+        UPDATE cm_bltn_file
+        <set>
+            <if test="blogId != null">blog_id = #{blogId},</if>
+            <if test="imgUrl != null">img_url = #{imgUrl},</if>
+            <if test="thumbUrl != null">thumb_url = #{thumbUrl},</if>
+            <if test="imgAltText != null">img_alt_text = #{imgAltText},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+        </set>
+        WHERE blog_img_id = #{blogImgId}
+    </update>
+
+</mapper>

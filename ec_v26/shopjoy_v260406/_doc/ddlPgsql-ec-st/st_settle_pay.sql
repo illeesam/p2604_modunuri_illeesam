@@ -1,12 +1,12 @@
 -- ============================================================
 -- st_settle_pay : 정산지급
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE st_settle_pay (
-    settle_pay_id       VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
-    vendor_id           VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
+    settle_pay_id       VARCHAR(20)     NOT NULL,
+    settle_id           VARCHAR(20)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(20),
+    vendor_id           VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
     pay_amt             BIGINT          NOT NULL,               -- 지급금액
     pay_method_cd       VARCHAR(20)     DEFAULT 'BANK_TRANSFER', -- 코드: PAY_METHOD_CD
     bank_nm             VARCHAR(50),                            -- 은행명
@@ -15,11 +15,11 @@ CREATE TABLE st_settle_pay (
     pay_status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: SETTLE_PAY_STATUS (PENDING:지급대기/COMPLT:지급완료/FAILED:지급실패)
     pay_status_cd_before VARCHAR(20),
     pay_date            TIMESTAMP,                              -- 실지급 일시
-    pay_by              VARCHAR(16),                            -- 지급처리자 (sy_user.user_id)
+    pay_by              VARCHAR(20),                            -- 지급처리자 (sy_user.user_id)
     settle_pay_memo     TEXT,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_pay_id)
 );

@@ -4,9 +4,9 @@
 -- 환불 시 주문쿠폰 안분 계산 및 복원 기준 데이터
 -- ============================================================
 CREATE TABLE od_order_discnt (
-    order_discnt_id     VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id
+    order_discnt_id     VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
+    order_id            VARCHAR(20)     NOT NULL,               -- od_order.order_id
     -- ── 할인/차감 구분 ──
     discnt_type_cd      VARCHAR(30)     NOT NULL,               -- 코드: ORDER_DISCNT_TYPE
                                                                 --   ORDER_COUPON : 주문쿠폰 할인
@@ -15,8 +15,8 @@ CREATE TABLE od_order_discnt (
                                                                 --   SHIP_DISCNT  : 배송비 할인
                                                                 --   PROMO_DISCNT : 프로모션 할인 (기타)
     -- ── 쿠폰 연결 (ORDER_COUPON인 경우) ──
-    coupon_id           VARCHAR(16),                            -- pm_coupon.coupon_id
-    coupon_issue_id     VARCHAR(16),                            -- pm_coupon_issue.coupon_issue_id
+    coupon_id           VARCHAR(20),                            -- pm_coupon.coupon_id
+    coupon_issue_id     VARCHAR(20),                            -- pm_coupon_issue.coupon_issue_id
     -- ── 금액 ──
     discnt_rate         DECIMAL(5,2),                           -- 할인율 (%) — 비율할인인 경우
     discnt_amt          BIGINT          DEFAULT 0,              -- 할인·차감 금액
@@ -27,7 +27,7 @@ CREATE TABLE od_order_discnt (
     restore_amt         BIGINT          DEFAULT 0,              -- 복원된 금액 (부분복원 지원)
     restore_date        TIMESTAMP,                              -- 복원 처리일시
     -- ── 기본 ──
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (order_discnt_id)
 );

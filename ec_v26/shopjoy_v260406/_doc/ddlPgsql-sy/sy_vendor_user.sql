@@ -1,16 +1,16 @@
 -- ============================================================
 -- sy_vendor_user : 판매/배송업체 사용자 (판매/배송업체에 소속된 담당자/실무자)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 한 판매/배송업체(sy_vendor)는 여러 담당자를 가질 수 있고,
 -- 한 담당자(user)는 sy_user 와 연결되어 로그인 가능 (선택)
 -- 역할(role_id)는 sy_role 의 판매/배송업체 역할 트리에서 선택
 -- ============================================================
 CREATE TABLE sy_vendor_user (
-    vendor_user_id  VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    vendor_id       VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
-    user_id         VARCHAR(16),                            -- sy_user.user_id (NULL = 비로그인 단순 담당자)
-    role_id         VARCHAR(16),                            -- sy_role.role_id (판매업체/배송업체 역할)
+    vendor_user_id  VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    vendor_id       VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
+    user_id         VARCHAR(20),                            -- sy_user.user_id (NULL = 비로그인 단순 담당자)
+    role_id         VARCHAR(20),                            -- sy_role.role_id (판매업체/배송업체 역할)
     member_nm       VARCHAR(50)     NOT NULL,               -- 이름
     position_cd     VARCHAR(20),                            -- 코드: POSITION (대표/이사/팀장/사원 등)
     vendor_user_dept_nm VARCHAR(100),                           -- 부서/팀명
@@ -24,9 +24,9 @@ CREATE TABLE sy_vendor_user (
     leave_date      DATE,                                   -- 퇴직/탈퇴 일자
     vendor_user_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_MEMBER_STATUS (ACTIVE/LEFT/SUSPENDED)
     vendor_user_remark VARCHAR(500),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (vendor_user_id),
     UNIQUE (vendor_id, user_id)

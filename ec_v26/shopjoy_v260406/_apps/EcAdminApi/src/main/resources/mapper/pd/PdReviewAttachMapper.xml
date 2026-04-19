@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdReviewAttachMapper">
+
+    <sql id="pdReviewAttachCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND a.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND a.media_type_cd = #{p.typeCd}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND a.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND a.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdReviewAttachDto">
+        SELECT
+            a.*,
+            att.file_nm AS attach_nm,
+            ste.site_nm AS site_nm,
+            cd_mt.code_label AS media_type_cd_nm
+        FROM pd_review_attach a
+            LEFT JOIN sy_attach att ON att.attach_id = a.attach_id
+            LEFT JOIN sy_site ste ON ste.site_id = a.site_id
+            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MEDIA_TYPE' AND cd_mt.code_value = a.media_type_cd
+        WHERE a.review_attach_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdReviewAttachDto">
+        SELECT
+            a.*,
+            att.file_nm AS attach_nm,
+            ste.site_nm AS site_nm,
+            cd_mt.code_label AS media_type_cd_nm
+        FROM pd_review_attach a
+            LEFT JOIN sy_attach att ON att.attach_id = a.attach_id
+            LEFT JOIN sy_site ste ON ste.site_id = a.site_id
+            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MEDIA_TYPE' AND cd_mt.code_value = a.media_type_cd
+            <include refid="pdReviewAttachCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY a.review_attach_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY a.review_attach_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
+            <otherwise>ORDER BY a.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdReviewAttachDto">
+        SELECT
+            a.*,
+            att.file_nm AS attach_nm,
+            ste.site_nm AS site_nm,
+            cd_mt.code_label AS media_type_cd_nm
+        FROM pd_review_attach a
+            LEFT JOIN sy_attach att ON att.attach_id = a.attach_id
+            LEFT JOIN sy_site ste ON ste.site_id = a.site_id
+            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MEDIA_TYPE' AND cd_mt.code_value = a.media_type_cd
+            <include refid="pdReviewAttachCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY a.review_attach_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY a.review_attach_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
+            <otherwise>ORDER BY a.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM pd_review_attach a
+            <include refid="pdReviewAttachCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pd.entity.PdReviewAttach">
+        UPDATE pd_review_attach
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="reviewId != null">review_id = #{reviewId},</if>
+            <if test="attachId != null">attach_id = #{attachId},</if>
+            <if test="mediaTypeCd != null">media_type_cd = #{mediaTypeCd},</if>
+            <if test="thumbUrl != null">thumb_url = #{thumbUrl},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE review_attach_id = #{reviewAttachId}
+    </update>
+
+</mapper>

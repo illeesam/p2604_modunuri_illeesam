@@ -1,10 +1,10 @@
 -- ============================================================
 -- pm_coupon : 쿠폰
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_coupon (
-    coupon_id           VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    coupon_id           VARCHAR(20)     NOT NULL,
+    site_id             VARCHAR(20),                            -- sy_site.site_id
     coupon_cd           VARCHAR(50)     NOT NULL,               -- 쿠폰코드 (중복 방지)
     coupon_nm           VARCHAR(100)    NOT NULL,
     coupon_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_TYPE (RATE/FIXED)
@@ -34,9 +34,9 @@ CREATE TABLE pm_coupon (
     dvc_mweb_yn         CHAR(1)         DEFAULT 'Y',            -- 모바일WEB 적용여부 Y/N
     dvc_mapp_yn         CHAR(1)         DEFAULT 'Y',            -- 모바일APP 적용여부 Y/N
     memo                TEXT,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (coupon_id),
     UNIQUE (coupon_cd)

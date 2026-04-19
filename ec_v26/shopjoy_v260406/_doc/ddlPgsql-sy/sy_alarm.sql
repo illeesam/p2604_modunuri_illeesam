@@ -1,24 +1,24 @@
 -- ============================================================
 -- sy_alarm : 알림 / sy_alarm_send_hist : 알림 발송 이력
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_alarm (
-    alarm_id         VARCHAR(16)     NOT NULL,
-    site_id          VARCHAR(16),                            -- sy_site.site_id
+    alarm_id         VARCHAR(20)     NOT NULL,
+    site_id          VARCHAR(20),                            -- sy_site.site_id
     alarm_title      VARCHAR(200)    NOT NULL,
     alarm_type_cd    VARCHAR(30),                            -- 코드: ALARM_TYPE
     channel_cd       VARCHAR(20),                            -- 코드: ALARM_CHANNEL (EMAIL/SMS/PUSH/KAKAO)
     target_type_cd   VARCHAR(20),                            -- 코드: ALARM_TARGET_TYPE (ALL/GRADE/MEMBER)
-    target_id        VARCHAR(16),                            -- 특정 회원 or 등급코드
-    template_id      VARCHAR(16),
+    target_id        VARCHAR(20),                            -- 특정 회원 or 등급코드
+    template_id      VARCHAR(20),
     alarm_msg        TEXT,
     alarm_send_date  TIMESTAMP,
     alarm_status_cd  VARCHAR(20)     DEFAULT 'PENDING',      -- PENDING/SENT/FAILED/CANCELLED
     alarm_send_count INTEGER         DEFAULT 0,
     alarm_fail_count INTEGER         DEFAULT 0,
-    reg_by           VARCHAR(16),
+    reg_by           VARCHAR(20),
     reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by           VARCHAR(16),
+    upd_by           VARCHAR(20),
     upd_date         TIMESTAMP,
     disp_path        VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (alarm_id)

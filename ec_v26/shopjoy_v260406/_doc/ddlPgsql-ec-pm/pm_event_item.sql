@@ -1,18 +1,18 @@
 -- ============================================================
 -- pm_event_item : 이벤트 적용 대상 항목
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- 이벤트에 포함되는 상품/카테고리/판매자/브랜드를 지정
 -- sort_no: 이벤트 내 노출 순서
 -- 항목이 없으면 전체 적용 (pm_event.target_type_cd 기준)
 -- ============================================================
 CREATE TABLE pm_event_item (
-    event_item_id       VARCHAR(16)     NOT NULL,
-    event_id            VARCHAR(16)     NOT NULL,               -- pm_event.event_id
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    event_item_id       VARCHAR(20)     NOT NULL,
+    event_id            VARCHAR(20)     NOT NULL,               -- pm_event.event_id
+    site_id             VARCHAR(20),                            -- sy_site.site_id
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: EVENT_ITEM_TARGET (PRODUCT/CATEGORY/VENDOR/BRAND)
-    target_id           VARCHAR(16)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
+    target_id           VARCHAR(20)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
     sort_no             INTEGER         DEFAULT 0,              -- 이벤트 내 노출 순서
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (event_item_id),

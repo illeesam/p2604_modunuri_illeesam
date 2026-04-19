@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.pm.PmCouponUsageMapper">
+
+    <sql id="pmCouponUsageCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND u.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND u.discount_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (u.coupon_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND u.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND u.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCouponUsageDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            cpn.coupon_nm AS coupon_id_nm,
+            mem.member_nm AS member_nm,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            prd.prod_nm AS prod_nm
+        FROM pm_coupon_usage u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN pm_coupon cpn ON cpn.coupon_id = u.coupon_id
+            LEFT JOIN mb_member mem ON mem.member_id = u.member_id
+            LEFT JOIN od_order ord ON ord.order_id = u.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = u.order_item_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = u.prod_id
+        WHERE u.usage_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCouponUsageDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            cpn.coupon_nm AS coupon_id_nm,
+            mem.member_nm AS member_nm,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            prd.prod_nm AS prod_nm
+        FROM pm_coupon_usage u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN pm_coupon cpn ON cpn.coupon_id = u.coupon_id
+            LEFT JOIN mb_member mem ON mem.member_id = u.member_id
+            LEFT JOIN od_order ord ON ord.order_id = u.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = u.order_item_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = u.prod_id
+            <include refid="pmCouponUsageCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY u.usage_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY u.usage_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY u.coupon_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY u.coupon_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
+            <otherwise>ORDER BY u.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCouponUsageDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            cpn.coupon_nm AS coupon_id_nm,
+            mem.member_nm AS member_nm,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            prd.prod_nm AS prod_nm
+        FROM pm_coupon_usage u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN pm_coupon cpn ON cpn.coupon_id = u.coupon_id
+            LEFT JOIN mb_member mem ON mem.member_id = u.member_id
+            LEFT JOIN od_order ord ON ord.order_id = u.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = u.order_item_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = u.prod_id
+            <include refid="pmCouponUsageCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY u.usage_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY u.usage_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY u.coupon_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY u.coupon_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
+            <otherwise>ORDER BY u.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM pm_coupon_usage u
+            <include refid="pmCouponUsageCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pm.entity.PmCouponUsage">
+        UPDATE pm_coupon_usage
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="couponId != null">coupon_id = #{couponId},</if>
+            <if test="couponCode != null">coupon_code = #{couponCode},</if>
+            <if test="couponNm != null">coupon_nm = #{couponNm},</if>
+            <if test="memberId != null">member_id = #{memberId},</if>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="orderItemId != null">order_item_id = #{orderItemId},</if>
+            <if test="prodId != null">prod_id = #{prodId},</if>
+            <if test="discountTypeCd != null">discount_type_cd = #{discountTypeCd},</if>
+            <if test="discountValue != null">discount_value = #{discountValue},</if>
+            <if test="discountAmt != null">discount_amt = #{discountAmt},</if>
+            <if test="usedDate != null">used_date = #{usedDate},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE usage_id = #{usageId}
+    </update>
+
+</mapper>

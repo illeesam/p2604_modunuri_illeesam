@@ -1,14 +1,14 @@
 -- ============================================================
 -- pd_prod : 상품
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_prod (
-    prod_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    category_id     VARCHAR(16),
-    brand_id        VARCHAR(16),
-    vendor_id       VARCHAR(16),
-    md_user_id      VARCHAR(16),                            -- 담당MD (sy_user.user_id)
+    prod_id         VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    category_id     VARCHAR(20),
+    brand_id        VARCHAR(20),
+    vendor_id       VARCHAR(20),
+    md_user_id      VARCHAR(20),                            -- 담당MD (sy_user.user_id)
     prod_nm         VARCHAR(200)    NOT NULL,
     prod_type_cd    VARCHAR(20)     DEFAULT 'SINGLE',           -- 코드: PRODUCT_TYPE (SINGLE/GROUP/SET)
     prod_code       VARCHAR(50),
@@ -39,7 +39,7 @@ CREATE TABLE pd_prod (
     adlt_yn         CHAR(1)         DEFAULT 'N',            -- 성인상품 여부 Y/N
     same_day_dliv_yn CHAR(1)        DEFAULT 'N',            -- 당일배송여부 Y/N
     sold_out_yn     CHAR(1)         DEFAULT 'N',            -- 품절여부 Y/N
-    dliv_tmplt_id   VARCHAR(16),                            -- 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+    dliv_tmplt_id   VARCHAR(20),                            -- 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
     -- 혜택 적용 여부
     coupon_use_yn   CHAR(1)         DEFAULT 'Y',            -- 쿠폰 사용 가능 여부 Y/N
     save_use_yn     CHAR(1)         DEFAULT 'Y',            -- 적립금 사용 가능 여부 Y/N
@@ -48,9 +48,9 @@ CREATE TABLE pd_prod (
     advrt_stmt      VARCHAR(500),                           -- 홍보문구
     advrt_start_date TIMESTAMP,                             -- 홍보문구 시작일시
     advrt_end_date  TIMESTAMP,                              -- 홍보문구 종료일시
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_id)
 );

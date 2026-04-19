@@ -1,20 +1,20 @@
 -- ============================================================
 -- pm_gift_issue : 사은품 발급
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_gift_issue (
-    gift_issue_id       VARCHAR(16)     NOT NULL,
-    gift_id             VARCHAR(16)     NOT NULL,               -- pm_gift.gift_id
-    site_id             VARCHAR(16),
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
-    order_id            VARCHAR(16),                            -- 발급 기준 주문 (od_order.order_id)
+    gift_issue_id       VARCHAR(20)     NOT NULL,
+    gift_id             VARCHAR(20)     NOT NULL,               -- pm_gift.gift_id
+    site_id             VARCHAR(20),
+    member_id           VARCHAR(20)     NOT NULL,               -- mb_member.member_id
+    order_id            VARCHAR(20),                            -- 발급 기준 주문 (od_order.order_id)
     issue_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     gift_issue_status_cd VARCHAR(20)    DEFAULT 'ISSUED',       -- 코드: GIFT_ISSUE_STATUS (ISSUED:발급/DELIVERED:배송완료/CANCELLED:취소)
     gift_issue_status_cd_before VARCHAR(20),
     gift_issue_memo     TEXT,
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (gift_issue_id)
 );

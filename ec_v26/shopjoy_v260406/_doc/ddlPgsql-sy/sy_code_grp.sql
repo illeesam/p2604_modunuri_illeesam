@@ -1,16 +1,16 @@
 -- ============================================================
 -- 코드 그룹
 CREATE TABLE sy_code_grp (
-    code_grp_id     VARCHAR(16)     NOT NULL,       -- 코드그룹ID (YYMMDDhhmmss+rand4)
-    site_id         VARCHAR(16),                    -- sy_site.site_id
+    code_grp_id     VARCHAR(20)     NOT NULL,       -- 코드그룹ID (YYMMDDhhmmss+rand4)
+    site_id         VARCHAR(20),                    -- sy_site.site_id
     code_grp        VARCHAR(50)     NOT NULL,       -- 코드그룹코드 (예: MEMBER_GRADE)
     grp_nm          VARCHAR(100)    NOT NULL,
     disp_path       VARCHAR(200),                   -- 점(.) 구분 표시경로 (예: order.payment)
     code_grp_desc   VARCHAR(300),
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (code_grp_id),
     UNIQUE (site_id, code_grp)

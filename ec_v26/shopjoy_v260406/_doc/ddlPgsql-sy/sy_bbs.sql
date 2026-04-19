@@ -1,25 +1,25 @@
 -- ============================================================
 -- sy_bbs : 게시물
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_bbs (
-    bbs_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    bbm_id          VARCHAR(16)     NOT NULL,
-    parent_bbs_id   VARCHAR(16),                            -- 답글 시 부모글 ID
-    member_id       VARCHAR(16),
+    bbs_id          VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(20),                            -- sy_site.site_id
+    bbm_id          VARCHAR(20)     NOT NULL,
+    parent_bbs_id   VARCHAR(20),                            -- 답글 시 부모글 ID
+    member_id       VARCHAR(20),
     author_nm          VARCHAR(50),
     bbs_title       VARCHAR(200)    NOT NULL,
     content_html    TEXT,
-    attach_grp_id   VARCHAR(16),
+    attach_grp_id   VARCHAR(20),
     view_count      INTEGER         DEFAULT 0,
     like_count      INTEGER         DEFAULT 0,
     comment_count   INTEGER         DEFAULT 0,
     is_fixed        CHAR(1)         DEFAULT 'N',
     bbs_status_cd   VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/DELETED/HIDDEN
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (bbs_id)

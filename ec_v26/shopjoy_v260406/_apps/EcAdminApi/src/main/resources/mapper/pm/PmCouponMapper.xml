@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.pm.PmCouponMapper">
+
+    <!-- 원칙1: coupon_type_cd_nm, coupon_status_cd_nm, mem_grade_cd_nm -->
+
+    <sql id="pmCouponCond">
+<where>
+            <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND c.coupon_status_cd = #{p.status}</if>
+            <if test="p.couponType != null and p.couponType != ''">AND c.coupon_type_cd = #{p.couponType}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (c.coupon_nm ILIKE '%' || #{p.kw} || '%'
+                  OR c.coupon_cd ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND c.valid_from &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND c.valid_to   &lt;= #{p.dateEnd}::DATE</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCouponDto">
+        SELECT
+            c.*,
+            cd_ct.code_label AS coupon_type_cd_nm,
+            cd_cs.code_label AS coupon_status_cd_nm,
+            cd_tt.code_label AS target_type_cd_nm,
+            cd_mg.code_label AS mem_grade_cd_nm
+        FROM pm_coupon c
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'COUPON_TYPE'   AND cd_ct.code_value = c.coupon_type_cd
+            LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'COUPON_STATUS' AND cd_cs.code_value = c.coupon_status_cd
+            LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'COUPON_TARGET' AND cd_tt.code_value = c.target_type_cd
+            LEFT JOIN sy_code cd_mg ON cd_mg.code_grp = 'MEMBER_GRADE'  AND cd_mg.code_value = c.mem_grade_cd
+        WHERE c.coupon_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCouponDto">
+        SELECT
+            c.*,
+            cd_ct.code_label AS coupon_type_cd_nm,
+            cd_cs.code_label AS coupon_status_cd_nm,
+            cd_mg.code_label AS mem_grade_cd_nm
+        FROM pm_coupon c
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'COUPON_TYPE'   AND cd_ct.code_value = c.coupon_type_cd
+            LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'COUPON_STATUS' AND cd_cs.code_value = c.coupon_status_cd
+            LEFT JOIN sy_code cd_mg ON cd_mg.code_grp = 'MEMBER_GRADE'  AND cd_mg.code_value = c.mem_grade_cd
+                <include refid="pmCouponCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.coupon_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.coupon_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.coupon_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.coupon_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCouponDto">
+        SELECT
+            c.*,
+            cd_ct.code_label AS coupon_type_cd_nm,
+            cd_cs.code_label AS coupon_status_cd_nm,
+            cd_mg.code_label AS mem_grade_cd_nm
+        FROM pm_coupon c
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'COUPON_TYPE'   AND cd_ct.code_value = c.coupon_type_cd
+            LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'COUPON_STATUS' AND cd_cs.code_value = c.coupon_status_cd
+            LEFT JOIN sy_code cd_mg ON cd_mg.code_grp = 'MEMBER_GRADE'  AND cd_mg.code_value = c.mem_grade_cd
+                <include refid="pmCouponCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.coupon_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.coupon_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.coupon_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.coupon_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*) FROM pm_coupon c
+                <include refid="pmCouponCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pm.entity.PmCoupon">
+        UPDATE pm_coupon
+        <set>
+            <if test="couponStatusCd != null">coupon_status_cd = #{couponStatusCd},</if>
+            <if test="couponStatusCdBefore != null">coupon_status_cd_before = #{couponStatusCdBefore},</if>
+            <if test="couponNm != null">coupon_nm = #{couponNm},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="validFrom != null">valid_from = #{validFrom},</if>
+            <if test="validTo != null">valid_to = #{validTo},</if>
+            <if test="issueCnt != null">issue_cnt = #{issueCnt},</if>
+            <if test="memo != null">memo = #{memo},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE coupon_id = #{couponId}
+    </update>
+
+    <!-- ================================================================
+         확장 쿼리 (연관관계 조회 등)
+         ================================================================ -->
+
+    <select id="selectIssuesByCouponId" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCouponIssueDto">
+        SELECT
+            ci.*,
+            m.member_nm,    m.member_email
+        FROM pm_coupon_issue ci
+            LEFT JOIN mb_member m ON m.member_id = ci.member_id
+        WHERE ci.coupon_id = #{couponId}
+        ORDER BY ci.issue_date DESC
+    </select>
+
+</mapper>
+

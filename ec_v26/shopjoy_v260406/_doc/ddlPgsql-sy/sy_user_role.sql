@@ -3,17 +3,17 @@
 -- 한 사용자는 여러 역할을, 한 역할은 여러 사용자에 할당 가능
 -- ============================================================
 CREATE TABLE sy_user_role (
-    user_role_id    VARCHAR(16)     NOT NULL,                -- 사용자역할ID (YYMMDDhhmmss+rand4)
-    user_id         VARCHAR(16)     NOT NULL,               -- sy_user.user_id
-    role_id         VARCHAR(16)     NOT NULL,               -- sy_role.role_id
-    grant_user_id   VARCHAR(16),                            -- 부여자 (sy_user.user_id)
+    user_role_id    VARCHAR(20)     NOT NULL,                -- 사용자역할ID (YYMMDDhhmmss+rand4)
+    user_id         VARCHAR(20)     NOT NULL,               -- sy_user.user_id
+    role_id         VARCHAR(20)     NOT NULL,               -- sy_role.role_id
+    grant_user_id   VARCHAR(20),                            -- 부여자 (sy_user.user_id)
     grant_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     valid_from      DATE,                                   -- 적용 시작일 (NULL = 즉시)
     valid_to        DATE,                                   -- 적용 종료일 (NULL = 무기한)
     user_role_remark VARCHAR(500),
-    reg_by          VARCHAR(16),
+    reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
+    upd_by          VARCHAR(20),
     upd_date        TIMESTAMP,
     PRIMARY KEY (user_role_id),
     UNIQUE (user_id, role_id)

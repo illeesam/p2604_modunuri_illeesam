@@ -1,17 +1,17 @@
 -- ============================================================
 -- pm_plan_item : 기획전 상품
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_plan_item (
-    plan_item_id        VARCHAR(16)     NOT NULL,
-    plan_id             VARCHAR(16)     NOT NULL,               -- pm_plan.plan_id
-    site_id             VARCHAR(16),
-    prod_id             VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
+    plan_item_id        VARCHAR(20)     NOT NULL,
+    plan_id             VARCHAR(20)     NOT NULL,               -- pm_plan.plan_id
+    site_id             VARCHAR(20),
+    prod_id             VARCHAR(20)     NOT NULL,               -- pd_prod.prod_id
     sort_ord            INTEGER         DEFAULT 0,
     plan_item_memo      VARCHAR(500),                           -- 항목 메모 (특가/한정수량 등)
-    reg_by              VARCHAR(16),
+    reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(16),
+    upd_by              VARCHAR(20),
     upd_date            TIMESTAMP,
     PRIMARY KEY (plan_item_id),
     UNIQUE (plan_id, prod_id)

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyDeptMapper">
+
+    <sql id="syDeptCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND d.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND d.dept_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (d.dept_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND d.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND d.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyDeptDto">
+        SELECT
+            d.*,
+            ste.site_nm AS site_nm,
+            usr.user_nm AS manager_nm,
+            cd_dt.code_label AS dept_type_cd_nm
+        FROM sy_dept d
+            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
+        WHERE d.dept_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyDeptDto">
+        SELECT
+            d.*,
+            ste.site_nm AS site_nm,
+            usr.user_nm AS manager_nm,
+            cd_dt.code_label AS dept_type_cd_nm
+        FROM sy_dept d
+            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
+            <include refid="syDeptCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY d.dept_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY d.dept_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY d.dept_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY d.dept_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY d.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY d.reg_date DESC</when>
+            <otherwise>ORDER BY d.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyDeptDto">
+        SELECT
+            d.*,
+            ste.site_nm AS site_nm,
+            usr.user_nm AS manager_nm,
+            cd_dt.code_label AS dept_type_cd_nm
+        FROM sy_dept d
+            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
+            <include refid="syDeptCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY d.dept_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY d.dept_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY d.dept_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY d.dept_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY d.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY d.reg_date DESC</when>
+            <otherwise>ORDER BY d.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_dept d
+            <include refid="syDeptCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyDept">
+        UPDATE sy_dept
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="deptCode != null">dept_code = #{deptCode},</if>
+            <if test="deptNm != null">dept_nm = #{deptNm},</if>
+            <if test="parentDeptId != null">parent_dept_id = #{parentDeptId},</if>
+            <if test="deptTypeCd != null">dept_type_cd = #{deptTypeCd},</if>
+            <if test="managerId != null">manager_id = #{managerId},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="deptRemark != null">dept_remark = #{deptRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE dept_id = #{deptId}
+    </update>
+
+</mapper>
