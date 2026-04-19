@@ -8,6 +8,7 @@ CREATE TABLE pd_prod (
     category_id     VARCHAR(16),
     brand_id        VARCHAR(16),
     vendor_id       VARCHAR(16),
+    md_user_id      VARCHAR(16),                            -- 담당MD (sy_user.user_id)
     prod_nm         VARCHAR(200)    NOT NULL,
     prod_type_cd    VARCHAR(20)     DEFAULT 'SINGLE',           -- 코드: PRODUCT_TYPE (SINGLE/GROUP/SET)
     prod_code       VARCHAR(50),
@@ -60,6 +61,7 @@ COMMENT ON COLUMN pd_prod.site_id       IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pd_prod.category_id   IS '카테고리ID';
 COMMENT ON COLUMN pd_prod.brand_id      IS '브랜드ID';
 COMMENT ON COLUMN pd_prod.vendor_id     IS '업체ID';
+COMMENT ON COLUMN pd_prod.md_user_id    IS '담당MD (sy_user.user_id) — 등록 시 본인 기본값, 변경 가능';
 COMMENT ON COLUMN pd_prod.prod_nm       IS '상품명';
 COMMENT ON COLUMN pd_prod.prod_type_cd  IS '상품유형 (코드: PRODUCT_TYPE — SINGLE/GROUP/SET)';
 COMMENT ON COLUMN pd_prod.prod_code     IS '상품코드(SKU)';

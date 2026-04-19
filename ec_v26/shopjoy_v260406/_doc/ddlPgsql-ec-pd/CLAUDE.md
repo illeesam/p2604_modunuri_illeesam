@@ -15,8 +15,9 @@
 - `pd_review_comment.sql` — 리뷰 댓글
 - `pd_prod_qna.sql` — 상품문의 (FK: prod_id + member_id, 답변: answ_yn/answ_date/answ_user_id)
 - `pd_dliv_tmplt.sql` — 배송템플릿 (FK: vendor_id, 배송비/반품비/교환비/반품지 포함)
-- `pd_prod_bundle.sql` — 묶음상품 구성품 (FK: bundle_prod_id + component_prod_id, price_rate 안분율)
-- `pd_prod_set_item.sql` — 세트상품 구성 목록 (FK: set_prod_id, 표시용)
+- `pd_prod_rel.sql` — 상품 연관 관계 (prod_rel_type_cd: REL_PROD=연관상품 / CODY_PROD=코디상품, UNIQUE: prod_id+rel_prod_id+type)
+- `pd_prod_bundle_item.sql` — 묶음상품 구성품 (FK: bundle_prod_id + item_prod_id, item_sku_id, price_rate 안분율 합계=100%)
+- `pd_prod_set_item.sql` — 세트상품 구성 목록 (FK: set_prod_id, item_prod_id NULL허용=비상품구성품, item_sku_id, 표시용)
 - `pd_restock_noti.sql` — 재입고알림 신청 (FK: prod_id + sku_id + member_id)
 - `pdh_prod_status_hist.sql` — 상품 상태 이력
 - `pdh_prod_chg_hist.sql` — 상품 변경 이력

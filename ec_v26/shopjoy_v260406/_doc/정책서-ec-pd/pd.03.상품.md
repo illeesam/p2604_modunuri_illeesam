@@ -32,6 +32,7 @@
 - **초기상태**: DRAFT
 - **브랜드**: 선택사항
 - **업체**: 판매자/판매자 상품은 vendor_id 지정
+- **담당MD**: 등록 시 로그인한 본인 자동 설정 (변경 가능) — `pd_prod.md_user_id` (FK: sy_user.user_id)
 
 ### 2. 상품 가격 정책
 - **정가**: 원래 정가 (변경 기록 유지)
@@ -277,11 +278,48 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 
 ---
 
+### 17. 연관상품 / 코디상품 (pd_prod_rel)
+
+두 가지 관계 유형을 하나의 테이블 `pd_prod_rel`로 통합 관리. `prod_rel_type_cd`로 구분.
+
+#### 관계 유형 코드 (PROD_REL_TYPE)
+
+| 코드 | 명칭 | 설명 | 노출 위치 |
+|---|---|---|---|
+| `REL_PROD` | 연관상품 | 비슷하거나 대체 가능한 상품 | PDP 하단 "관련 상품" 섹션 |
+| `CODY_PROD` | 코디상품 | 함께 코디·조합하면 좋은 상품 | PDP 하단 "코디 추천" 섹션 |
+
+#### 주요 필드
+
+| 필드 | 설명 |
+|---|---|
+| `prod_rel_id` | 연관관계ID (YYMMDDhhmmss+rand4) |
+| `prod_id` | 기준 상품ID (pd_prod.prod_id) |
+| `rel_prod_id` | 연관 대상 상품ID (pd_prod.prod_id) |
+| `prod_rel_type_cd` | 관계유형 코드 (PROD_REL_TYPE: REL_PROD/CODY_PROD) |
+| `sort_ord` | 노출 정렬 순서 (낮을수록 우선) |
+| `use_yn` | 사용여부 Y/N |
+
+#### 운영 규칙
+- **UNIQUE 제약**: `(prod_id, rel_prod_id, prod_rel_type_cd)` — 동일 타입 중복 연결 불가
+- 연관상품·코디상품은 **단방향 관계** (A→B 등록이 B→A를 의미하지 않음)
+- `sort_ord` 기준 오름차순 정렬하여 프론트에 노출
+- `use_yn = 'N'` 처리로 일시 숨김 (물리 삭제 대신 권장)
+- 상품 삭제(DELETED) 시 해당 상품을 `prod_id` 또는 `rel_prod_id`로 참조하는 레코드 `use_yn = 'N'` 일괄 처리
+
+#### 관리자 화면
+- **상품 수정 > 연관상품 탭**:
+  - 상단 섹션: 연관상품 (`REL_PROD`) — 상품 피커 모달에서 추가, 행 드래그로 `sort_ord` 순서 조정
+  - 하단 섹션: 코디상품 (`CODY_PROD`) — 동일 인터페이스
+
+---
+
 ## 관련 테이블
 - pd_prod: 상품 기본 정보
-- pd_prod_sku: 상품 옵션/SKU
+- pd_prod_sku: 상품 옵션/SKU (statusCd: PREPARING/ON_SALE/SOLD_OUT/SUSPENDED, saleCnt 포함)
 - pd_prod_content: 상품 상세 콘텐츠 (PROD_CONTENT_TYPE: DETAIL/NOTICE/GUIDE/SIZE_GUIDE)
 - pd_prod_img: 상품 이미지 (opt_item_id_1/2로 옵션 연동)
+- **pd_prod_rel**: 연관상품·코디상품 (PROD_REL_TYPE: REL_PROD/CODY_PROD)
 - pd_prod_qna: 상품문의
 - pd_dliv_tmplt: 배송템플릿
 - pd_restock_noti: 재입고알림 신청
@@ -296,8 +334,10 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 - 브랜드 삭제는 해당 상품 없을 때만 가능
 - 배송템플릿 삭제는 참조 상품이 없을 때만 가능
 - `self_cdiv_rate + seller_cdiv_rate = 100`%가 되어야 함 (프로모션 분담율 기준)
+- pd_prod_rel: `(prod_id, rel_prod_id, prod_rel_type_cd)` UNIQUE 제약으로 중복 연결 방지
 
 ## 변경이력
+- 2026-04-19: 연관상품·코디상품(pd_prod_rel) 섹션 추가, PROD_REL_TYPE 코드 정의 (REL_PROD/CODY_PROD), pd_prod_sku statusCd/saleCnt 필드 반영, 담당MD(md_user_id) 정책 추가
 - 2026-04-19: 리뷰(pd_review/attach/comment) 섹션 추가, opt_item_id_1/2 반영, content_type_cd DETAIL/NOTICE/GUIDE/SIZE_GUIDE 코드 정리, 배송템플릿·문의유형 코드 레이블 추가
 - 2026-04-18: 상품문의, 배송템플릿, 재입고알림 정책 추가
 - 2026-04-18: 판매기간, 구매제한, 혜택적용여부, 홍보문구, 매입가, 마진율 필드 추가

@@ -111,11 +111,22 @@ window.PdProdMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'productId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'category'},{label:'가격',key:'price'},{label:'재고',key:'stock'},{label:'브랜드',key:'brand'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '상품목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
+    const descOpen = ref(false);
+    return { descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
   },
   template: /* html */`
 <div>
   <div class="page-title">상품관리</div>
+  <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
+    <span><strong style="color:#1a7a52">상품관리</strong>는 판매 상품의 기본정보·가격·재고·옵션을 등록하고 관리합니다.</span>
+    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" style="margin-top:6px">
+      ✔ 단품/묶음/세트 상품 유형별 등록·수정·삭제를 처리합니다.<br>
+      ✔ 옵션(1단/2단) 및 SKU별 가격·재고를 설정합니다.<br>
+      ✔ 상품 상태(임시저장→검수→판매중→품절·중단)를 관리합니다.<br>
+      <span style="color:#888;font-size:12px">예) 단품 의류 등록, 옵션(색상·사이즈) 설정, 재고 이력 확인</span>
+    </div>
+  </div>
   <div class="card">
     <div class="search-bar">
       <input v-model="searchKw" placeholder="상품명 / ID 검색" />

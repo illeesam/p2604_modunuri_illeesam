@@ -19,7 +19,35 @@
       { productId: 2, prodNm: '슬림핏 데님 진', category: '하의', price: 59900, stock: 80, status: '판매중', brand: 'ShopJoy', regDate: '2026-01-15' },
       { productId: 3, prodNm: '케이블 니트 스웨터', category: '상의', price: 49000, stock: 60, status: '판매중', brand: 'ShopJoy', regDate: '2026-01-20' },
       { productId: 4, prodNm: '플로럴 미디 드레스', category: '원피스', price: 79000, stock: 45, status: '판매중', brand: 'ShopJoy', regDate: '2026-02-01' },
-      { productId: 5, prodNm: '카고 와이드 팬츠', category: '하의', price: 55000, stock: 90, status: '판매중', brand: 'ShopJoy', regDate: '2026-02-05' },
+      { productId: 5, prodNm: '카고 와이드 팬츠', category: '하의', price: 55000, listPrice: 55000, salePrice: 55000, stock: 90, status: '판매중', brand: 'ShopJoy', regDate: '2026-02-05',
+        optGroups: [
+          { _id: 1, grpNm: '색상', typeCd: 'COLOR', inputTypeCd: 'SELECT', level: 1, items: [
+            { _id: 101, nm: '블랙', val: 'BLACK', valCodeId: 'BLACK', useYn: 'Y' },
+            { _id: 102, nm: '베이지', val: 'BEIGE', valCodeId: 'BEIGE', useYn: 'Y' },
+            { _id: 103, nm: '카키', val: 'KHAKI', valCodeId: 'KHAKI', useYn: 'Y' },
+          ]},
+          { _id: 2, grpNm: '사이즈', typeCd: 'SIZE', inputTypeCd: 'SELECT', level: 2, items: [
+            { _id: 201, nm: 'S',  val: 'S',  valCodeId: 'S',  useYn: 'Y' },
+            { _id: 202, nm: 'M',  val: 'M',  valCodeId: 'M',  useYn: 'Y' },
+            { _id: 203, nm: 'L',  val: 'L',  valCodeId: 'L',  useYn: 'Y' },
+            { _id: 204, nm: 'XL', val: 'XL', valCodeId: 'XL', useYn: 'Y' },
+          ]},
+        ],
+        skus: [
+          { _id: 'sku_101_201', _optKey: '101_201', _nm1: '블랙',  _nm2: 'S',  skuCode: 'SKU-CARGO-BLK-S',  addPrice: 0,    stock: 15, useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 42 },
+          { _id: 'sku_101_202', _optKey: '101_202', _nm1: '블랙',  _nm2: 'M',  skuCode: 'SKU-CARGO-BLK-M',  addPrice: 0,    stock: 20, useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 78 },
+          { _id: 'sku_101_203', _optKey: '101_203', _nm1: '블랙',  _nm2: 'L',  skuCode: 'SKU-CARGO-BLK-L',  addPrice: 0,    stock: 12, useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 35 },
+          { _id: 'sku_101_204', _optKey: '101_204', _nm1: '블랙',  _nm2: 'XL', skuCode: 'SKU-CARGO-BLK-XL', addPrice: 2000, stock: 8,  useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 19 },
+          { _id: 'sku_102_201', _optKey: '102_201', _nm1: '베이지', _nm2: 'S', skuCode: 'SKU-CARGO-BGE-S',  addPrice: 0,    stock: 10, useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 28 },
+          { _id: 'sku_102_202', _optKey: '102_202', _nm1: '베이지', _nm2: 'M', skuCode: 'SKU-CARGO-BGE-M',  addPrice: 0,    stock: 8,  useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 54 },
+          { _id: 'sku_102_203', _optKey: '102_203', _nm1: '베이지', _nm2: 'L', skuCode: 'SKU-CARGO-BGE-L',  addPrice: 0,    stock: 0,  useYn: 'Y', statusCd: 'SOLD_OUT',  saleCnt: 61 },
+          { _id: 'sku_102_204', _optKey: '102_204', _nm1: '베이지', _nm2: 'XL',skuCode: 'SKU-CARGO-BGE-XL', addPrice: 2000, stock: 5,  useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 12 },
+          { _id: 'sku_103_201', _optKey: '103_201', _nm1: '카키',  _nm2: 'S',  skuCode: 'SKU-CARGO-KHK-S',  addPrice: 0,    stock: 7,  useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 23 },
+          { _id: 'sku_103_202', _optKey: '103_202', _nm1: '카키',  _nm2: 'M',  skuCode: 'SKU-CARGO-KHK-M',  addPrice: 0,    stock: 3,  useYn: 'Y', statusCd: 'PREPARING', saleCnt: 8  },
+          { _id: 'sku_103_203', _optKey: '103_203', _nm1: '카키',  _nm2: 'L',  skuCode: 'SKU-CARGO-KHK-L',  addPrice: 0,    stock: 0,  useYn: 'N', statusCd: 'SUSPENDED', saleCnt: 45 },
+          { _id: 'sku_103_204', _optKey: '103_204', _nm1: '카키',  _nm2: 'XL', skuCode: 'SKU-CARGO-KHK-XL', addPrice: 2000, stock: 2,  useYn: 'Y', statusCd: 'ON_SALE',   saleCnt: 6  },
+        ],
+      },
       { productId: 6, prodNm: '울 블렌드 롱코트', category: '아우터', price: 119000, stock: 30, status: '판매중', brand: 'ShopJoy', regDate: '2026-02-10' },
       { productId: 7, prodNm: '스트라이프 린넨 셔츠', category: '상의', price: 45000, stock: 70, status: '판매중', brand: 'ShopJoy', regDate: '2026-02-15' },
       { productId: 8, prodNm: '퀼티드 숏 점퍼', category: '아우터', price: 89000, stock: 25, status: '품절', brand: 'ShopJoy', regDate: '2026-02-20' },
@@ -2198,19 +2226,44 @@
     ],
 
     categories: [
-      { categoryId: 1, parentId: null, categoryNm: '의류', depth: 1, sortOrd: 1, status: '활성', description: '의류 전체', imgUrl: '' },
-      { categoryId: 2, parentId: 1, categoryNm: '상의', depth: 2, sortOrd: 1, status: '활성', description: '티셔츠, 셔츠, 니트 등', imgUrl: '' },
-      { categoryId: 3, parentId: 1, categoryNm: '하의', depth: 2, sortOrd: 2, status: '활성', description: '청바지, 바지, 스커트 등', imgUrl: '' },
-      { categoryId: 4, parentId: 1, categoryNm: '아우터', depth: 2, sortOrd: 3, status: '활성', description: '코트, 재킷, 점퍼 등', imgUrl: '' },
-      { categoryId: 5, parentId: 1, categoryNm: '원피스', depth: 2, sortOrd: 4, status: '활성', description: '미디, 맥시, 미니 원피스', imgUrl: '' },
-      { categoryId: 6, parentId: null, categoryNm: '가방', depth: 1, sortOrd: 2, status: '활성', description: '가방 전체', imgUrl: '' },
-      { categoryId: 7, parentId: 6, categoryNm: '숄더백', depth: 2, sortOrd: 1, status: '활성', description: '', imgUrl: '' },
-      { categoryId: 8, parentId: 6, categoryNm: '토트백', depth: 2, sortOrd: 2, status: '활성', description: '', imgUrl: '' },
-      { categoryId: 9, parentId: 6, categoryNm: '백팩', depth: 2, sortOrd: 3, status: '활성', description: '', imgUrl: '' },
-      { categoryId: 10, parentId: null, categoryNm: '신발', depth: 1, sortOrd: 3, status: '활성', description: '신발 전체', imgUrl: '' },
-      { categoryId: 11, parentId: 10, categoryNm: '스니커즈', depth: 2, sortOrd: 1, status: '활성', description: '', imgUrl: '' },
-      { categoryId: 12, parentId: 10, categoryNm: '구두', depth: 2, sortOrd: 2, status: '활성', description: '', imgUrl: '' },
-      { categoryId: 13, parentId: null, categoryNm: '액세서리', depth: 1, sortOrd: 4, status: '비활성', description: '악세사리 전체', imgUrl: '' },
+      /* ── 카테고리 (1) > 상의/하의/아우터/원피스 ── */
+      { categoryId:  1, parentId: null, categoryNm: '카테고리', depth: 1, sortOrd: 1, status: '활성', description: '카테고리별 진열', imgUrl: '' },
+      { categoryId:  2, parentId:  1,   categoryNm: '상의',     depth: 2, sortOrd: 1, status: '활성', description: '티셔츠, 셔츠, 니트 등', imgUrl: '' },
+      { categoryId:  3, parentId:  1,   categoryNm: '하의',     depth: 2, sortOrd: 2, status: '활성', description: '청바지, 바지, 스커트 등', imgUrl: '' },
+      { categoryId:  4, parentId:  1,   categoryNm: '아우터',   depth: 2, sortOrd: 3, status: '활성', description: '코트, 재킷, 점퍼 등', imgUrl: '' },
+      { categoryId:  5, parentId:  1,   categoryNm: '원피스',   depth: 2, sortOrd: 4, status: '활성', description: '미디, 맥시, 미니 원피스', imgUrl: '' },
+      /* ── 브랜드 (6) > 상의/하의/아우터/원피스 ── */
+      { categoryId:  6, parentId: null, categoryNm: '브랜드',   depth: 1, sortOrd: 2, status: '활성', description: '브랜드별 진열', imgUrl: '' },
+      { categoryId: 13, parentId:  6,   categoryNm: '상의',     depth: 2, sortOrd: 1, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 14, parentId:  6,   categoryNm: '하의',     depth: 2, sortOrd: 2, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 15, parentId:  6,   categoryNm: '아우터',   depth: 2, sortOrd: 3, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 16, parentId:  6,   categoryNm: '원피스',   depth: 2, sortOrd: 4, status: '활성', description: '', imgUrl: '' },
+      /* ── 아울렛 (7) > 카테고리(8) > 상의/하의/아우터/원피스 ── */
+      { categoryId:  7, parentId: null, categoryNm: '아울렛',   depth: 1, sortOrd: 3, status: '활성', description: '아울렛 할인 섹션', imgUrl: '' },
+      { categoryId:  8, parentId:  7,   categoryNm: '카테고리', depth: 2, sortOrd: 1, status: '활성', description: '아울렛 카테고리별', imgUrl: '' },
+      { categoryId: 17, parentId:  8,   categoryNm: '상의',     depth: 3, sortOrd: 1, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 18, parentId:  8,   categoryNm: '하의',     depth: 3, sortOrd: 2, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 19, parentId:  8,   categoryNm: '아우터',   depth: 3, sortOrd: 3, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 20, parentId:  8,   categoryNm: '원피스',   depth: 3, sortOrd: 4, status: '활성', description: '', imgUrl: '' },
+      /* ── 아울렛 (7) > 브랜드(9) > 상의/하의/아우터/원피스 ── */
+      { categoryId:  9, parentId:  7,   categoryNm: '브랜드',   depth: 2, sortOrd: 2, status: '활성', description: '아울렛 브랜드별', imgUrl: '' },
+      { categoryId: 21, parentId:  9,   categoryNm: '상의',     depth: 3, sortOrd: 1, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 22, parentId:  9,   categoryNm: '하의',     depth: 3, sortOrd: 2, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 23, parentId:  9,   categoryNm: '아우터',   depth: 3, sortOrd: 3, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 24, parentId:  9,   categoryNm: '원피스',   depth: 3, sortOrd: 4, status: '활성', description: '', imgUrl: '' },
+      /* ── 사내 (10) > 카테고리(11) > 상의/하의/아우터/원피스 ── */
+      { categoryId: 10, parentId: null, categoryNm: '사내',     depth: 1, sortOrd: 4, status: '활성', description: '사내 임직원 전용 섹션', imgUrl: '' },
+      { categoryId: 11, parentId: 10,   categoryNm: '카테고리', depth: 2, sortOrd: 1, status: '활성', description: '사내 카테고리별', imgUrl: '' },
+      { categoryId: 25, parentId: 11,   categoryNm: '상의',     depth: 3, sortOrd: 1, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 26, parentId: 11,   categoryNm: '하의',     depth: 3, sortOrd: 2, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 27, parentId: 11,   categoryNm: '아우터',   depth: 3, sortOrd: 3, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 28, parentId: 11,   categoryNm: '원피스',   depth: 3, sortOrd: 4, status: '활성', description: '', imgUrl: '' },
+      /* ── 사내 (10) > 브랜드(12) > 상의/하의/아우터/원피스 ── */
+      { categoryId: 12, parentId: 10,   categoryNm: '브랜드',   depth: 2, sortOrd: 2, status: '활성', description: '사내 브랜드별', imgUrl: '' },
+      { categoryId: 29, parentId: 12,   categoryNm: '상의',     depth: 3, sortOrd: 1, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 30, parentId: 12,   categoryNm: '하의',     depth: 3, sortOrd: 2, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 31, parentId: 12,   categoryNm: '아우터',   depth: 3, sortOrd: 3, status: '활성', description: '', imgUrl: '' },
+      { categoryId: 32, parentId: 12,   categoryNm: '원피스',   depth: 3, sortOrd: 4, status: '활성', description: '', imgUrl: '' },
     ],
 
     adminUsers: [
@@ -2877,12 +2930,51 @@
       { dlivTmpltId: 'DT004', siteId: 1, vendorId: 1, dlivTmpltNm: '당일배송 템플릿',      dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'LOGEN',dlivCost: 5000, freeDlivMinAmt: 100000,islandExtraCost: 5000, returnCost: 5000, exchangeCost: 10000, returnCourierCd: 'LOGEN',baseDlivYn: 'N', useYn: 'Y', regDate: '2026-02-10' },
     ],
 
-    /* ── 묶음상품 구성품 ── */
+    /* ── 카테고리-상품 연결 (pd_category_prod) ── */
+    categoryProds: [
+      /* ── 카테고리 > 상의 (2) ── */
+      { categoryProdId: 'CP001', siteId: '1', categoryId:  2, prodId:  1, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '^BOLD^',                  dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP002', siteId: '1', categoryId:  2, prodId:  3, categoryProdTypeCd: 'NORMAL',    sortOrd: 2, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP003', siteId: '1', categoryId:  2, prodId:  7, categoryProdTypeCd: 'NORMAL',    sortOrd: 3, emphasisCd: '',                         dispYn: 'N', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP004', siteId: '1', categoryId:  2, prodId: 12, categoryProdTypeCd: 'HIGHLIGHT', sortOrd: 1, emphasisCd: '^BOLD^TEXT_COLOR^',        dispYn: 'Y', dispStartDate: '2026-04-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP005', siteId: '1', categoryId:  2, prodId: 13, categoryProdTypeCd: 'HIGHLIGHT', sortOrd: 2, emphasisCd: '^EMOTICON^MARQUEE^',       dispYn: 'Y', dispStartDate: '2026-04-01', dispEndDate: '2029-12-31' },
+      /* ── 카테고리 > 하의 (3) ── */
+      { categoryProdId: 'CP006', siteId: '1', categoryId:  3, prodId:  2, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP007', siteId: '1', categoryId:  3, prodId:  5, categoryProdTypeCd: 'NORMAL',    sortOrd: 2, emphasisCd: '^BOLD^MARQUEE^',           dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP008', siteId: '1', categoryId:  3, prodId: 11, categoryProdTypeCd: 'RECOMMEND', sortOrd: 1, emphasisCd: '^TEXT_COLOR^EMOTICON^',    dispYn: 'Y', dispStartDate: '2026-03-01', dispEndDate: '2029-12-31' },
+      /* ── 카테고리 > 아우터 (4) ── */
+      { categoryProdId: 'CP009', siteId: '1', categoryId:  4, prodId:  6, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP010', siteId: '1', categoryId:  4, prodId:  8, categoryProdTypeCd: 'NORMAL',    sortOrd: 2, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP011', siteId: '1', categoryId:  4, prodId:  9, categoryProdTypeCd: 'HOT_DEAL',  sortOrd: 1, emphasisCd: '^BOLD^TEXT_COLOR^MARQUEE^',dispYn: 'Y', dispStartDate: '2026-04-19', dispEndDate: '2026-06-30' },
+      { categoryProdId: 'CP012', siteId: '1', categoryId:  4, prodId: 14, categoryProdTypeCd: 'BANNER',    sortOrd: 1, emphasisCd: '^EMOTICON^',               dispYn: 'Y', dispStartDate: '2026-04-01', dispEndDate: '2029-12-31' },
+      /* ── 카테고리 > 원피스 (5) ── */
+      { categoryProdId: 'CP013', siteId: '1', categoryId:  5, prodId:  4, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP014', siteId: '1', categoryId:  5, prodId: 10, categoryProdTypeCd: 'MAIN',      sortOrd: 1, emphasisCd: '^BOLD^TEXT_COLOR^EMOTICON^MARQUEE^', dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      /* ── 브랜드 > 상의 (13) ── */
+      { categoryProdId: 'CP016', siteId: '1', categoryId: 13, prodId:  1, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '^BOLD^',                  dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP017', siteId: '1', categoryId: 13, prodId:  3, categoryProdTypeCd: 'NORMAL',    sortOrd: 2, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      /* ── 브랜드 > 하의 (14) ── */
+      { categoryProdId: 'CP022', siteId: '1', categoryId: 14, prodId:  2, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      /* ── 아울렛 > 카테고리 > 상의 (17) ── */
+      { categoryProdId: 'CP018', siteId: '1', categoryId: 17, prodId:  7, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP019', siteId: '1', categoryId: 17, prodId: 12, categoryProdTypeCd: 'HOT_DEAL',  sortOrd: 1, emphasisCd: '^BOLD^MARQUEE^',           dispYn: 'Y', dispStartDate: '2026-04-01', dispEndDate: '2026-12-31' },
+      /* ── 아울렛 > 카테고리 > 아우터 (19) ── */
+      { categoryProdId: 'CP023', siteId: '1', categoryId: 19, prodId:  6, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      /* ── 아울렛 > 브랜드 > 원피스 (24) ── */
+      { categoryProdId: 'CP024', siteId: '1', categoryId: 24, prodId:  4, categoryProdTypeCd: 'BANNER',    sortOrd: 1, emphasisCd: '^EMOTICON^TEXT_COLOR^',    dispYn: 'Y', dispStartDate: '2026-04-01', dispEndDate: '2029-12-31' },
+      /* ── 사내 > 카테고리 > 원피스 (28) ── */
+      { categoryProdId: 'CP020', siteId: '1', categoryId: 28, prodId:  4, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      { categoryProdId: 'CP021', siteId: '1', categoryId: 28, prodId: 10, categoryProdTypeCd: 'NORMAL',    sortOrd: 2, emphasisCd: '',                         dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+      /* ── 사내 > 브랜드 > 상의 (29) ── */
+      { categoryProdId: 'CP025', siteId: '1', categoryId: 29, prodId:  1, categoryProdTypeCd: 'NORMAL',    sortOrd: 1, emphasisCd: '^BOLD^',                  dispYn: 'Y', dispStartDate: '2026-01-01', dispEndDate: '2029-12-31' },
+    ],
+
+    /* ── 묶음상품 구성품 (pd_prod_bundle_item) ── */
     bundles: [
-      { bundleItemId: 'B001', siteId: 1, bundleProdId: 3, componentProdId: 1, componentQty: 1, priceRate: 60.00, sortOrd: 1, useYn: 'Y' },
-      { bundleItemId: 'B002', siteId: 1, bundleProdId: 3, componentProdId: 2, componentQty: 2, priceRate: 40.00, sortOrd: 2, useYn: 'Y' },
-      { bundleItemId: 'B003', siteId: 1, bundleProdId: 4, componentProdId: 2, componentQty: 1, priceRate: 50.00, sortOrd: 1, useYn: 'Y' },
-      { bundleItemId: 'B004', siteId: 1, bundleProdId: 4, componentProdId: 5, componentQty: 1, priceRate: 50.00, sortOrd: 2, useYn: 'Y' },
+      { bundleItemId: 'B001', siteId: '1', bundleProdId: 3, itemProdId: 1,  itemSkuId: null, itemQty: 1, priceRate: 60.00, sortOrd: 1, useYn: 'Y' },
+      { bundleItemId: 'B002', siteId: '1', bundleProdId: 3, itemProdId: 2,  itemSkuId: null, itemQty: 2, priceRate: 40.00, sortOrd: 2, useYn: 'Y' },
+      { bundleItemId: 'B003', siteId: '1', bundleProdId: 4, itemProdId: 2,  itemSkuId: null, itemQty: 1, priceRate: 50.00, sortOrd: 1, useYn: 'Y' },
+      { bundleItemId: 'B004', siteId: '1', bundleProdId: 4, itemProdId: 5,  itemSkuId: null, itemQty: 1, priceRate: 50.00, sortOrd: 2, useYn: 'Y' },
     ],
 
     /* ── 세트상품 구성품 ── */

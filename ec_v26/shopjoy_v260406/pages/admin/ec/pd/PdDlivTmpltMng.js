@@ -75,14 +75,27 @@ window.PdDlivTmpltMng = {
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const methodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
-    return { searchKw, searchMethod, searchUse, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
+    const descOpen = ref(false);
+
+    return { descOpen,
+             searchKw, searchMethod, searchUse, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
              selectedId, form, isNew, openDetail, openNew, closeDetail, doSave, doDelete,
              ynBadge, methodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS };
   },
   template: `
 <div>
   <div class="page-title">배송템플릿관리</div>
-    <div class="card">
+  <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
+    <span><strong style="color:#1a7a52">배송템플릿</strong>은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다.</span>
+    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" style="margin-top:6px">
+      ✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 <strong>상품 등록 시 템플릿을 연결</strong>해 재사용합니다.<br>
+      ✔ 도서·산간 지역 추가 배송비, <strong>반품지 주소</strong>를 함께 관리합니다.<br>
+      ✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.<br>
+      <span style="color:#888;font-size:12px">예) 3만원 이상 무료배송, 제주·도서 추가 3,000원</span>
+    </div>
+  </div>
+  <div class="card">
       <div class="search-bar">
         <label class="search-label">템플릿명</label>
         <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="템플릿명 검색">

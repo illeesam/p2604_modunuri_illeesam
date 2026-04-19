@@ -32,13 +32,15 @@
       { id: 'mbMemGroupMng',  label: '회원그룹관리' },
     ],
     product:   [
+      { group: '카테고리' },
+      { id: 'pdCategoryMng',     label: '카테고리관리' },
+      { id: 'pdCategoryProdMng', label: '카테고리상품관리' },
       { group: '상품' },
-      { id: 'pdCategoryMng',    label: '카테고리관리' },
-      { id: 'pdProdMng',        label: '상품관리' },
-      { group: '특수상품' },
-      { id: 'pdDlivTmpltMng',   label: '배송템플릿관리' },
-      { id: 'pdBundleMng',      label: '묶음상품관리' },
-      { id: 'pdSetMng',         label: '세트상품관리' },
+      { id: 'pdProdMng',         label: '상품관리' },
+      { id: 'pdBundleMng',       label: '묶음상품관리' },
+      { id: 'pdSetMng',          label: '세트상품관리' },
+      { group: '상품템플릿' },
+      { id: 'pdDlivTmpltMng',    label: '배송템플릿관리' },
       { group: '상품정보관리' },
       { id: 'pdReviewMng',      label: '상품리뷰관리' },
       { id: 'pdQnaMng',         label: '상품Q&A관리' },
@@ -233,7 +235,7 @@
         'syBrandMng':'sy-brand-mng', 'syAttachMng':'sy-attach-mng',
         'syTemplateMng':'sy-template-mng', 'syTemplateDtl':'sy-template-dtl',
         'syVendorMng':'sy-vendor-mng', 'syVendorDtl':'sy-vendor-dtl', 'syBizMng':'sy-biz-mng', 'syBizUserMng':'sy-biz-user-mng',
-        'pdCategoryMng':'pd-category-mng', 'pdCategoryDtl':'pd-category-dtl',
+        'pdCategoryMng':'pd-category-mng', 'pdCategoryDtl':'pd-category-dtl', 'pdCategoryProdMng':'pd-category-prod-mng',
         'syUserMng':'sy-user-mng', 'syUserDtl':'sy-user-dtl',
         'syBatchMng':'sy-batch-mng', 'syBatchDtl':'sy-batch-dtl',
         'syDeptMng':'sy-dept-mng', 'syMenuMng':'sy-menu-mng', 'syRoleMng':'sy-role-mng',
@@ -1028,6 +1030,7 @@
         <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
+        <pd-category-prod-mng v-else-if="page==='pdCategoryProdMng'" :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-user-mng    v-else-if="page==='syUserMng'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-user-dtl    v-else-if="page==='syUserDtl'"    :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <sy-batch-mng   v-else-if="page==='syBatchMng'"   :navigate="navigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -1468,6 +1471,7 @@
   /* ── pages/admin/ec/ — 카테고리 ── */
   .component('PdCategoryMng',  window.PdCategoryMng)
   .component('PdCategoryDtl',  window.PdCategoryDtl)
+  .component('PdCategoryProdMng', window.PdCategoryProdMng)
   /* ── pages/admin/ec/ — 이벤트/공지 ── */
   .component('PmEventMng',     window.PmEventMng)
   .component('PmEventDtl',     window.PmEventDtl)

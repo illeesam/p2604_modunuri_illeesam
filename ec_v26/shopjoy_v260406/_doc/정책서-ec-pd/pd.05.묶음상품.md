@@ -4,27 +4,28 @@
 독립적으로 판매 가능한 상품 N개를 하나의 패키지로 묶어 **할인 가격**으로 판매하는 상품 유형.
 구성품은 개별 판매도 가능하며, 묶음 구성원으로도 판매 가능.
 
-> `pd_prod.prod_type_cd = 'GROUP'`
+> `pd_prod.prod_type_cd = 'BUNDLE'`
 
 ---
 
 ## 구성 구조
 
 ```
-pd_prod (묶음상품, prod_type_cd=GROUP)
-└─ pd_prod_bundle (구성 매핑)
-     ├─ component_prod_id → pd_prod (구성품 A)
-     ├─ component_prod_id → pd_prod (구성품 B)
-     └─ component_prod_id → pd_prod (구성품 C)
+pd_prod (묶음상품, prod_type_cd=BUNDLE)
+└─ pd_prod_bundle_item (구성품 매핑)
+     ├─ item_prod_id → pd_prod (구성품 A)
+     ├─ item_prod_id → pd_prod (구성품 B)
+     └─ item_prod_id → pd_prod (구성품 C)
 ```
 
-### pd_prod_bundle 주요 필드
+### pd_prod_bundle_item 주요 필드
 | 필드 | 설명 |
 |---|---|
-| `bundle_id` | 묶음상품 ID (pd_prod.prod_id) |
-| `component_prod_id` | 구성품 상품ID |
-| `component_qty` | 구성 수량 (기본 1) |
-| `price_rate` | 가격 안분율 (%) — 클레임 환불 기준 |
+| `bundle_prod_id` | 묶음상품 ID (pd_prod.prod_id, prod_type_cd=BUNDLE) |
+| `item_prod_id` | 구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품 |
+| `item_sku_id` | 구성품 SKU ID (NULL=SKU 미지정) |
+| `item_qty` | 구성 수량 (기본 1) |
+| `price_rate` | 가격 안분율 (%) — 구성품 합계 100% 필수 |
 | `sort_ord` | 노출 순서 |
 
 ---
@@ -79,17 +80,9 @@ pd_prod (묶음상품, prod_type_cd=GROUP)
 od_order_item
   bundle_group_id : BG-001       ← 같은 묶음임을 표시
   prod_id         : B-PROD-001   ← 묶음상품 마스터 ID (참조용)
-  component_prod_id : A-PROD-001 ← 실제 구성품 ID
+  item_prod_id    : A-PROD-001   ← 실제 구성품 ID
   prod_nm         : [묶음] 홈케어세트 - 핸드워시 (스냅샷)
   unit_price      : 10,000원     ← 묶음가 × price_rate (안분 기준가)
-  qty             : 1
-
-od_order_item
-  bundle_group_id : BG-001       ← 동일 bundle_group_id
-  prod_id         : B-PROD-001
-  component_prod_id : A-PROD-002
-  prod_nm         : [묶음] 홈케어세트 - 바디워시 (스냅샷)
-  unit_price      : 15,000원
   qty             : 1
 ```
 
@@ -110,20 +103,6 @@ od_order_item
 | 취소 | 묶음 전체 또는 구성품 1개 이상 | 배송 전만 가능 |
 | 반품 | 구성품 단위 | 구성품별 개별 반품 가능 |
 | 교환 | 구성품 단위 | 동일 구성품 내 옵션 변경 |
-
-### 클레임 접수 흐름
-```
-구성품A 반품 신청
-  → od_claim 생성 (claim_type = RETURN)
-  → od_claim_item: component_prod_id = A-PROD-001 연결
-  → 반품지: 구성품A의 dliv_tmplt.return_addr 기준
-  → 반품배송비: 구성품A의 dliv_tmplt.return_cost 기준
-```
-
-### 구성품 업체가 다른 경우
-- 구성품A (업체X) 반품 + 구성품B (업체Y) 유지
-- 클레임은 업체 단위로 분리 생성 (`od_claim.vendor_id` 구분)
-- 배송비도 각 업체 템플릿 기준 별도 적용
 
 ---
 
@@ -154,91 +133,26 @@ sale_price   : 30,000원 (묶음 할인가)
 A-PROD-001  핸드워시     price_rate = 30%  개별가 12,000원
 A-PROD-002  바디워시     price_rate = 40%  개별가 18,000원
 A-PROD-003  샴푸         price_rate = 30%  개별가 15,000원
-
-[배송템플릿 - 동일 업체]
-dliv_cost         : 3,000원
-free_dliv_min_amt : 30,000원
-return_cost       : 3,000원
 ```
 
 ---
 
-### 주문 생성 결과
-```
-[주문]
-ord_id      : ORD-2604-001
-prod_amt    : 30,000원
-dliv_cost   :      0원   ← 30,000 ≥ 30,000 → 무료배송
-pay_amt     : 30,000원
-
-[od_order_item]
-행1  bundle_group_id=BG-001  핸드워시  unit_price=9,000원   (30,000×0.30)
-행2  bundle_group_id=BG-001  바디워시  unit_price=12,000원  (30,000×0.40)
-행3  bundle_group_id=BG-001  샴푸      unit_price=9,000원   (30,000×0.30)
-```
-
----
-
-### 시나리오A: 구성품 1개 반품 (고객귀책)
-```
-반품 대상: 바디워시 (price_rate=40%)
-
-환불 기준가  = 30,000 × 40% = 12,000원
-반품 후 잔여 = 18,000원  (< 30,000원 → 무료배송 조건 파괴)
-
-환불액 계산:
-  구성품 기준가   12,000원
-− add_shipping_fee  3,000원  (무료배송 조건 파괴)
-− return_cost       3,000원  (고객귀책)
-= 환불액            6,000원
-```
-
----
-
-### 시나리오B: 구성품 2개 반품 (판매자귀책 - 불량)
-```
-반품 대상: 핸드워시(30%) + 바디워시(40%)
-
-환불 기준가  = 30,000 × 30% + 30,000 × 40% = 9,000 + 12,000 = 21,000원
-반품 후 잔여 = 9,000원  (< 30,000원 → 무료배송 조건 파괴)
-귀책         : 판매자 (불량품)
-
-환불액 계산:
-  구성품 기준가   21,000원
-− add_shipping_fee      0원  (판매자 귀책 → 배송비 청구 불가)
-− return_cost           0원  (판매자 귀책 → 면제)
-= 환불액           21,000원
-```
-
----
-
-### 시나리오C: 묶음 전체 취소 (배송 전)
-```
-취소 대상: 전체 (3개 구성품)
-취소 시점: 배송 전
-
-환불액 = 결제금액 전액 = 30,000원
-배송비 환불 여부: 취소이므로 배송 미발생 → 배송비 없음 (0원 부과됐으므로 환급 없음)
-```
-
----
-
-## DDL 추가 필요
-- `pd_prod_bundle` — 묶음 구성품 테이블 (신규)
-- `pd_prod.prod_type_cd` — SINGLE/GROUP/SET 컬럼 추가
-- `od_order_item.bundle_group_id` — 묶음 주문 그룹키 (신규)
-- `od_order_item.component_prod_id` — 묶음 구성품 상품ID (신규)
+## DDL
+- `pd_prod` — 묶음상품 마스터 (`prod_type_cd = 'BUNDLE'`)
+- `pd_prod_bundle_item` — 구성품 매핑 (`bundle_prod_id`, `item_prod_id`, `item_sku_id`, `item_qty`, `price_rate`)
+- `od_order_item` — 주문 시 구성품별 행 생성 (`bundle_group_id`, `item_prod_id`)
 
 ## 관련 테이블
-- `pd_prod` (prod_type_cd=GROUP)
-- `pd_prod_bundle` (구성 매핑)
-- `od_order_item` (bundle_group_id, component_prod_id)
+- `pd_prod` (prod_type_cd=BUNDLE)
+- `pd_prod_bundle_item` (구성 매핑)
+- `od_order_item` (bundle_group_id)
 - `od_claim` / `od_claim_item` (구성품 단위 클레임)
 
 ## 관련 화면
 | pageId | 라벨 |
 |---|---|
-| `pdProdMng` | 상품관리 > 상품관리 (묶음 탭) |
+| `pdBundleMng` | 상품관리 > 묶음상품관리 |
+| `pdProdMng` | 상품관리 > 상품관리 (prod_type_cd=BUNDLE 필터) |
 
 ## 관련 정책서
 - `pd.06.세트상품.md` — 세트상품과 차이점
@@ -246,5 +160,6 @@ pay_amt     : 30,000원
 - `od.16.묶음세트사은품-클레임.md` — 클레임 처리
 
 ## 변경이력
+- 2026-04-19: DDL 테이블명 `pd_prod_bundle` → `pd_prod_bundle_item` 반영, `item_prod_id`·`item_sku_id`·`item_qty` 필드명 현행화, prod_type_cd BUNDLE 정정
 - 2026-04-19: 주문 관점·클레임 관점·환불 계산 관점 및 데이터 시뮬레이션 추가
 - 2026-04-18: 초기 작성
