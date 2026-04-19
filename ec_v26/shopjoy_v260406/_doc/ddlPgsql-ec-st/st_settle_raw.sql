@@ -22,6 +22,9 @@ CREATE TABLE st_settle_raw (
     order_date              TIMESTAMP,                              -- 주문일시 (스냅샷)
     order_item_status_cd    VARCHAR(20),                            -- 수집 시점 주문상태 (스냅샷, 코드: ORDER_ITEM_STATUS)
 
+    -- ── 주문자
+    member_id               VARCHAR(16),                            -- 주문 회원ID 스냅샷 (mb_member.member_id)
+
     -- ── 클레임 원천 (클레임 수집 시)
     claim_id                VARCHAR(16),                            -- od_claim.claim_id
     claim_item_id           VARCHAR(16),                            -- od_claim_item.claim_item_id
@@ -30,10 +33,16 @@ CREATE TABLE st_settle_raw (
     vendor_id               VARCHAR(16),                            -- sy_vendor.vendor_id
     vendor_type_cd          VARCHAR(20),                            -- 코드: VENDOR_TYPE (SALE:판매/DLIV:배송/EXTERNAL:외부)
 
-    -- ── 상품 · 옵션 · 브랜드
+    -- ── 상품 · 옵션 · 브랜드 · 카테고리
     prod_id                 VARCHAR(16),                            -- pd_prod.prod_id
     prod_nm                 VARCHAR(200),                           -- 상품명 (스냅샷)
+    brand_id                VARCHAR(16),                            -- 브랜드ID 스냅샷 (sy_brand.brand_id)
     brand_nm                VARCHAR(100),                           -- 브랜드명 (스냅샷)
+    category_id_1           VARCHAR(16),                            -- 카테고리 1단계ID 스냅샷 (대분류, pd_category.category_id)
+    category_id_2           VARCHAR(16),                            -- 카테고리 2단계ID 스냅샷 (중분류, pd_category.category_id)
+    category_id_3           VARCHAR(16),                            -- 카테고리 3단계ID 스냅샷 (소분류, pd_category.category_id)
+    category_id_4           VARCHAR(16),                            -- 카테고리 4단계ID 스냅샷 (pd_category.category_id)
+    category_id_5           VARCHAR(16),                            -- 카테고리 5단계ID 스냅샷 (pd_category.category_id)
     sku_id                  VARCHAR(16),                            -- pd_prod_sku.sku_id (스냅샷)
     opt_item_id_1           VARCHAR(16),                            -- pd_prod_opt_item.opt_item_id (옵션1, 스냅샷)
     opt_item_id_2           VARCHAR(16),                            -- pd_prod_opt_item.opt_item_id (옵션2, 스냅샷)
@@ -120,13 +129,20 @@ COMMENT ON COLUMN st_settle_raw.order_no             IS '주문번호 스냅샷'
 COMMENT ON COLUMN st_settle_raw.order_item_id        IS '주문상품ID (od_order_item.order_item_id)';
 COMMENT ON COLUMN st_settle_raw.order_date           IS '주문일시 스냅샷';
 COMMENT ON COLUMN st_settle_raw.order_item_status_cd IS '수집 시점 주문상태 스냅샷 (코드: ORDER_ITEM_STATUS)';
+COMMENT ON COLUMN st_settle_raw.member_id            IS '주문 회원ID 스냅샷 (mb_member.member_id)';
 COMMENT ON COLUMN st_settle_raw.claim_id             IS '클레임ID (클레임 수집 시)';
 COMMENT ON COLUMN st_settle_raw.claim_item_id        IS '클레임상품ID (클레임 수집 시)';
 COMMENT ON COLUMN st_settle_raw.vendor_id            IS '업체ID';
 COMMENT ON COLUMN st_settle_raw.vendor_type_cd       IS '업체구분 (코드: VENDOR_TYPE — SALE/DLIV/EXTERNAL)';
 COMMENT ON COLUMN st_settle_raw.prod_id              IS '상품ID';
 COMMENT ON COLUMN st_settle_raw.prod_nm              IS '상품명 스냅샷';
+COMMENT ON COLUMN st_settle_raw.brand_id             IS '브랜드ID 스냅샷 (sy_brand.brand_id)';
 COMMENT ON COLUMN st_settle_raw.brand_nm             IS '브랜드명 스냅샷';
+COMMENT ON COLUMN st_settle_raw.category_id_1        IS '카테고리 1단계(대분류) ID 스냅샷 (pd_category.category_id)';
+COMMENT ON COLUMN st_settle_raw.category_id_2        IS '카테고리 2단계(중분류) ID 스냅샷 (pd_category.category_id)';
+COMMENT ON COLUMN st_settle_raw.category_id_3        IS '카테고리 3단계(소분류) ID 스냅샷 (pd_category.category_id)';
+COMMENT ON COLUMN st_settle_raw.category_id_4        IS '카테고리 4단계 ID 스냅샷 (pd_category.category_id)';
+COMMENT ON COLUMN st_settle_raw.category_id_5        IS '카테고리 5단계 ID 스냅샷 (pd_category.category_id)';
 COMMENT ON COLUMN st_settle_raw.sku_id               IS 'SKU ID 스냅샷 (pd_prod_sku.sku_id)';
 COMMENT ON COLUMN st_settle_raw.opt_item_id_1        IS '옵션1 값ID 스냅샷 (pd_prod_opt_item.opt_item_id)';
 COMMENT ON COLUMN st_settle_raw.opt_item_id_2        IS '옵션2 값ID 스냅샷 (pd_prod_opt_item.opt_item_id)';
@@ -175,10 +191,15 @@ COMMENT ON COLUMN st_settle_raw.upd_date             IS '수정일';
 CREATE INDEX idx_st_settle_raw_order        ON st_settle_raw (order_id);
 CREATE INDEX idx_st_settle_raw_item         ON st_settle_raw (order_item_id);
 CREATE INDEX idx_st_settle_raw_claim        ON st_settle_raw (claim_id);
+CREATE INDEX idx_st_settle_raw_member       ON st_settle_raw (member_id);
 CREATE INDEX idx_st_settle_raw_vendor       ON st_settle_raw (site_id, vendor_id);
 CREATE INDEX idx_st_settle_raw_prod         ON st_settle_raw (prod_id);
 CREATE INDEX idx_st_settle_raw_sku          ON st_settle_raw (sku_id);
-CREATE INDEX idx_st_settle_raw_brand        ON st_settle_raw (brand_nm);
+CREATE INDEX idx_st_settle_raw_brand        ON st_settle_raw (brand_id);
+CREATE INDEX idx_st_settle_raw_brand_nm     ON st_settle_raw (brand_nm);
+CREATE INDEX idx_st_settle_raw_cate1        ON st_settle_raw (category_id_1);
+CREATE INDEX idx_st_settle_raw_cate2        ON st_settle_raw (category_id_2);
+CREATE INDEX idx_st_settle_raw_cate3        ON st_settle_raw (category_id_3);
 CREATE INDEX idx_st_settle_raw_md           ON st_settle_raw (md_user_id);
 CREATE INDEX idx_st_settle_raw_period       ON st_settle_raw (settle_period, vendor_id);
 CREATE INDEX idx_st_settle_raw_settle       ON st_settle_raw (settle_id);
