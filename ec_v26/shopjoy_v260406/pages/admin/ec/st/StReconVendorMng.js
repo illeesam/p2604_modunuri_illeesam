@@ -4,6 +4,8 @@ window.StReconVendorMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const descOpen = ref(false);
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
@@ -44,11 +46,20 @@ window.StReconVendorMng = {
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchDiff.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    return { DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, rows, total, totPages, pageList, pageNums, summary, diffBadge, fmtW, onSearch, onReset };
+    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, rows, total, totPages, pageList, pageNums, summary, diffBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
   <div class="page-title">업체-정산 대사</div>
+  <div class="page-desc-bar">
+    <span class="page-desc-summary">업체가 제출한 정산 내역과 시스템 정산 데이터 간 불일치를 검출하고 대사 처리합니다.</span>
+    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" class="page-desc-detail">• 시스템 집계금액(sys_amt) vs 업체 제출금액(vendor_amt) 차이를 자동 비교합니다.
+• 업체별 정산 명세서와 대조하여 불일치 원인을 파악합니다.
+• 차이 발생 시 상호 확인 후 조정(StSettleAdjMng)으로 처리합니다.</div>
+  </div>
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
@@ -86,11 +97,21 @@ window.StReconVendorMng = {
         <tr v-if="!pageList.length"><td colspan="6" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="totPages > 1">
-      <button class="pager" @click="pager.page=Math.max(1,pager.page-1)" :disabled="pager.page===1">‹</button>
-      <button v-for="n in pageNums" :key="n" class="pager" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-      <button class="pager" @click="pager.page=Math.min(totPages,pager.page+1)" :disabled="pager.page===totPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 </div>
 `,

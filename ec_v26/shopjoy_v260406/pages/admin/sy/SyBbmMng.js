@@ -25,7 +25,7 @@ window.SyBbmMng = {
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };

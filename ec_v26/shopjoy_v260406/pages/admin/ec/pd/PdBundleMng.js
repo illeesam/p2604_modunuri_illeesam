@@ -4,6 +4,7 @@ window.PdBundleMng = {
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* ── 검색 ── */
     const searchNm = ref('');
@@ -122,6 +123,7 @@ window.PdBundleMng = {
     const onSearch = () => { Object.assign(applied, { nm: searchNm.value }); pager.page = 1; };
     const onReset  = () => { searchNm.value = ''; Object.assign(applied, { nm: '' }); pager.page = 1; };
     const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
 
     /* ── 신규등록 열기 ── */
     const openNew = () => {
@@ -309,7 +311,7 @@ window.PdBundleMng = {
       addItem, removeItem,
       pickerOpen, pickerSearch, pickerList,
       dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
-    };
+      PAGE_SIZES, onSizeChange };
   },
 
   template: `
@@ -404,11 +406,21 @@ window.PdBundleMng = {
         </tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="totalPages > 1">
-      <button class="pager" @click="setPage(pager.page-1)" :disabled="pager.page===1">◀</button>
-      <button v-for="n in pageNums" :key="n" class="pager" :class="{active:n===pager.page}" @click="setPage(n)">{{ n }}</button>
-      <button class="pager" @click="setPage(pager.page+1)" :disabled="pager.page===totalPages">▶</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 
   <!-- 신규등록 / 구성관리 (인라인 Dtl) -->

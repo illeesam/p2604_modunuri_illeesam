@@ -56,7 +56,7 @@ window.DpDispWidgetMng = {
     const searchType   = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100, 200, 300];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const applied = reactive({ kw: '', type: '', status: '' });
     const doSearch = () => {
@@ -204,6 +204,8 @@ window.DpDispWidgetMng = {
 
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
 
+    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
     return {
       pathLabel,
       WIDGET_TYPES, wTypeLabel, wIcon, doDelete,
@@ -215,7 +217,8 @@ window.DpDispWidgetMng = {
       siteNm,
       loadDetail, openNew, closeDetail, inlineNavigate,
       contentSummary, statusCls,
-    };
+       setPage, onSizeChange,
+    };;
   },
   template: /* html */`
 <div>
@@ -388,21 +391,21 @@ window.DpDispWidgetMng = {
     </table>
 
     <!-- 페이저 -->
-    <div class="pagination" style="padding:12px 18px;border-top:1px solid #f0f0f0;margin-top:0;">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.page===1" @click="pager.page=1">«</button>
-        <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-        <button v-for="n in pageNumbers" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
-        <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
-      </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-        </select>
-      </div>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNumbers" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 
   </div><!-- /우측 목록 -->

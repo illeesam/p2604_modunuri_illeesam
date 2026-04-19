@@ -4,6 +4,7 @@ window.StConfigMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const descOpen = ref(false);
 
     const configs = reactive([
       { configId: 1, siteId: 1, siteNm: 'ShopJoy 01', vendorType: '판매업체', commRate: 10, settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: '기본 판매업체 정산 기준' },
@@ -68,11 +69,19 @@ window.StConfigMng = {
 
     const cycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');
 
-    return { configs, selectedId, form, errors, isNew, openEdit, openNew, closeForm, doSave, doDelete, cycleBadge };
+    return { descOpen, configs, selectedId, form, errors, isNew, openEdit, openNew, closeForm, doSave, doDelete, cycleBadge };
   },
   template: /* html */`
 <div>
   <div class="page-title">정산기준관리</div>
+  <div class="page-desc-bar">
+    <span class="page-desc-summary">사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다.</span>
+    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" class="page-desc-detail">• 정산 주기: 월정산 / 주정산 / 건별정산
+• 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다.
+• 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다.
+• 설정 변경은 변경 이후 수집분부터 적용됩니다.</div>
+  </div>
   <div class="card">
     <div class="toolbar">
       <span class="list-title">정산기준 목록</span>

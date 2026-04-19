@@ -37,7 +37,7 @@ window.SyMenuMng = {
 
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];

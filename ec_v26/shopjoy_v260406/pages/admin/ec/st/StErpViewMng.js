@@ -4,6 +4,8 @@ window.StErpViewMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const descOpen = ref(false);
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
@@ -60,11 +62,21 @@ window.StErpViewMng = {
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    return { DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchKw, searchType, searchStatus, pager, filtered, total, totPages, pageList, pageNums, doResend, statusBadge, typeBadge, fmtW, onSearch, onReset };
+    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchKw, searchType, searchStatus, pager, filtered, total, totPages, pageList, pageNums, doResend, statusBadge, typeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
   <div class="page-title">ERP 전표조회</div>
+  <div class="page-desc-bar">
+    <span class="page-desc-summary">생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.</span>
+    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" class="page-desc-detail">• 전표 유형: 정산지급 / 수수료 / 조정 / 기타
+• 전송 상태: 미전송 / 전송완료 / 오류
+• [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다.
+• 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.</div>
+  </div>
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
@@ -107,11 +119,21 @@ window.StErpViewMng = {
         <tr v-if="!pageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="totPages > 1">
-      <button class="pager" @click="pager.page=Math.max(1,pager.page-1)" :disabled="pager.page===1">‹</button>
-      <button v-for="n in pageNums" :key="n" class="pager" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-      <button class="pager" @click="pager.page=Math.min(totPages,pager.page+1)" :disabled="pager.page===totPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 </div>
 `,

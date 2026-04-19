@@ -3,7 +3,11 @@
 body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; }
 
 .admin-wrap { padding: 20px; max-width: 1550px; margin: 0 auto; }
-.page-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #1a1a2e; }
+.page-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #1a1a2e; }
+.page-desc-bar { margin-bottom: 14px; font-size: 13px; color: #555; line-height: 1.6; }
+.page-desc-summary { display: inline; }
+.page-desc-toggle { margin-left: 6px; font-size: 11px; color: #e91e8c; background: none; border: none; cursor: pointer; padding: 0; vertical-align: middle; }
+.page-desc-detail { margin-top: 6px; padding: 10px 14px; background: #fafafa; border-left: 3px solid #f0b8d0; border-radius: 0 6px 6px 0; color: #444; white-space: pre-line; }
 
 .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 20px; margin-bottom: 16px; }
 

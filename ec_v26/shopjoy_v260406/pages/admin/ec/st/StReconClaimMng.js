@@ -4,6 +4,8 @@ window.StReconClaimMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const descOpen = ref(false);
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
@@ -49,11 +51,20 @@ window.StReconClaimMng = {
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchDiff.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    return { DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, rows, total, totPages, pageList, pageNums, summary, diffBadge, typeBadge, statusBadge, fmtW, onSearch, onReset };
+    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, rows, total, totPages, pageList, pageNums, summary, diffBadge, typeBadge, statusBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
   <div class="page-title">클레임-정산 대사</div>
+  <div class="page-desc-bar">
+    <span class="page-desc-summary">클레임(취소·반품·교환) 환불 데이터와 정산 조정액 간 불일치를 검출하고 대사 처리합니다.</span>
+    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" class="page-desc-detail">• 클레임 환불금액(refund_amt) vs 정산 차감 조정액(settle_adj) 차이를 자동 비교합니다.
+• 클레임 유형: 취소 / 반품 / 교환
+• 차이 발생 건은 조정(StSettleAdjMng) 또는 기타조정(StSettleEtcAdjMng)으로 보정합니다.</div>
+  </div>
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
@@ -93,11 +104,21 @@ window.StReconClaimMng = {
         <tr v-if="!pageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="totPages > 1">
-      <button class="pager" @click="pager.page=Math.max(1,pager.page-1)" :disabled="pager.page===1">‹</button>
-      <button v-for="n in pageNums" :key="n" class="pager" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-      <button class="pager" @click="pager.page=Math.min(totPages,pager.page+1)" :disabled="pager.page===totPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 </div>
 `,

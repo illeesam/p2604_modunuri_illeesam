@@ -40,7 +40,7 @@ window.SyDeptMng = {
 
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50, 100, 200, 500];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
     const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
     const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });

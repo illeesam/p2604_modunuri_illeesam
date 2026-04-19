@@ -4,6 +4,7 @@ window.StErpGenMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const descOpen = ref(false);
 
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
@@ -48,11 +49,19 @@ window.StErpGenMng = {
     const statusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
-    return { targetMon, slipType, previewRows, genHistory, doGenerate, statusBadge, fmtW };
+    return { descOpen, targetMon, slipType, previewRows, genHistory, doGenerate, statusBadge, fmtW };
   },
   template: /* html */`
 <div>
   <div class="page-title">ERP 전표생성</div>
+  <div class="page-desc-bar">
+    <span class="page-desc-summary">마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다.</span>
+    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" class="page-desc-detail">• 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다.
+• 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다.
+• 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다.
+• 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.</div>
+  </div>
 
   <!-- 생성 설정 -->
   <div class="card">

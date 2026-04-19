@@ -4,6 +4,7 @@ window.MbMemGradeMng = {
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const GRADE_CODES = ['BASIC','SILVER','GOLD','VIP','VVIP','PLATINUM'];
 
     const searchKw  = ref('');
@@ -71,10 +72,11 @@ window.MbMemGradeMng = {
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', use: '' }); pager.page = 1; };
     const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return { searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
-             gridRows, addRow, onCellChange, deleteRow, saveAll, focusedIdx, ynBadge, GRADE_CODES };
+             gridRows, addRow, onCellChange, deleteRow, saveAll, focusedIdx, ynBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -134,11 +136,21 @@ window.MbMemGradeMng = {
           <tr v-if="!gridRows.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
-      <div class="pagination" v-if="totalPages > 1">
-        <button class="pager" @click="setPage(pager.page-1)" :disabled="pager.page===1">◀</button>
-        <button v-for="n in pageNums" :key="n" class="pager" :class="{active:n===pager.page}" @click="setPage(n)">{{ n }}</button>
-        <button class="pager" @click="setPage(pager.page+1)" :disabled="pager.page===totalPages">▶</button>
-      </div>
+      <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
     </div>
 </div>`
 };

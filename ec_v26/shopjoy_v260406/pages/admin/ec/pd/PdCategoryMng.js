@@ -59,7 +59,7 @@ window.PdCategoryMng = {
     let   _tempId    = -1;
     const focusedIdx = ref(null);
     const pager      = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 50];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status'];
 
     /* 그리드 트리 평탄화 */

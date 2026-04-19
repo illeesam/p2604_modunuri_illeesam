@@ -4,6 +4,8 @@ window.StErpReconMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const descOpen = ref(false);
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
@@ -63,11 +65,21 @@ window.StErpReconMng = {
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchDiff.value = ''; searchType.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    return { DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, searchType, pager, filtered, total, totPages, pageList, pageNums, summary, doFix, diffBadge, typeBadge, fmtW, onSearch, onReset };
+    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, searchType, pager, filtered, total, totPages, pageList, pageNums, summary, doFix, diffBadge, typeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
   <div class="page-title">ERP 전표대사</div>
+  <div class="page-desc-bar">
+    <span class="page-desc-summary">ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다.</span>
+    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" class="page-desc-detail">• ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다.
+• 차이 상태: 일치 / 차이발생 / 오류
+• [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다.
+• 유형 필터: 정산지급 / 수수료 / 조정 / 기타</div>
+  </div>
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
@@ -115,11 +127,21 @@ window.StErpReconMng = {
         <tr v-if="!pageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="totPages > 1">
-      <button class="pager" @click="pager.page=Math.max(1,pager.page-1)" :disabled="pager.page===1">‹</button>
-      <button v-for="n in pageNums" :key="n" class="pager" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-      <button class="pager" @click="pager.page=Math.min(totPages,pager.page+1)" :disabled="pager.page===totPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 </div>
 `,

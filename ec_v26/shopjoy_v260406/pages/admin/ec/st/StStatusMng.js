@@ -4,6 +4,8 @@ window.StStatusMng = {
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const descOpen = ref(false);
 
     /* ── 탭 ── */
     const activeTab = ref('vendor');
@@ -221,6 +223,17 @@ window.StStatusMng = {
 
     const pageNums = (cur, last) => { const s = Math.max(1, cur-2), e = Math.min(last, s+4); return Array.from({length: e-s+1}, (_,i) => s+i); };
 
+    const setVendorPage = n => { if (n >= 1 && n <= vendorPages.value) vendorPager.page = n; };
+    const onVendorSizeChange = () => { vendorPager.page = 1; };
+    const setOrderPage = n => { if (n >= 1 && n <= orderPages.value) orderPager.page = n; };
+    const onOrderSizeChange = () => { orderPager.page = 1; };
+    const setClaimPage = n => { if (n >= 1 && n <= claimPages.value) claimPager.page = n; };
+    const onClaimSizeChange = () => { claimPager.page = 1; };
+    const setPromoPage = n => { if (n >= 1 && n <= promoPages.value) promoPager.page = n; };
+    const onPromoSizeChange = () => { promoPager.page = 1; };
+    const setSettlePage = n => { if (n >= 1 && n <= settlePages.value) settlePager.page = n; };
+    const onSettleSizeChange = () => { settlePager.page = 1; };
+
     const exportTab = () => {
       const tab = TABS.find(t => t.id === activeTab.value);
       props.showToast && props.showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
@@ -234,12 +247,26 @@ window.StStatusMng = {
       /* claim  */ claimSearchType, claimSearchStatus, claimPager, claimRows, claimTotal, claimPages, claimPageList, claimSummary,
       /* promo  */ promoSearchKw, promoSearchType, promoPager, promoRows, promoTotal, promoPages, promoPageList, promoSummary,
       /* settle */ settleSearchMonth, settlePager, settleRows, settleTotal, settlePages, settlePageList, settleSummary,
-      fmt, fmtW, statusBadge, typeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
+      descOpen, fmt, fmtW, statusBadge, typeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
+      PAGE_SIZES,
+      setVendorPage, onVendorSizeChange,
+      setOrderPage, onOrderSizeChange,
+      setClaimPage, onClaimSizeChange,
+      setPromoPage, onPromoSizeChange,
+      setSettlePage, onSettleSizeChange,
     };
   },
   template: /* html */`
 <div>
   <div class="page-title">정산현황</div>
+  <div class="page-desc-bar">
+    <span class="page-desc-summary">업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다.</span>
+    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="descOpen" class="page-desc-detail">• 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계
+• 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계
+• 정산집계 탭: 마감 기준 월별 최종 정산액 목록
+• CSV 내보내기를 지원합니다.</div>
+  </div>
 
   <!-- 공통 날짜 필터 -->
   <div class="card" style="margin-bottom:12px">
@@ -310,11 +337,21 @@ window.StStatusMng = {
         <tr v-if="!vendorPageList.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="vendorPages > 1">
-      <button class="pager" @click="vendorPager.page=Math.max(1,vendorPager.page-1)" :disabled="vendorPager.page===1">‹</button>
-      <button v-for="n in pageNums(vendorPager.page,vendorPages)" :key="n" class="pager" :class="{active:vendorPager.page===n}" @click="vendorPager.page=n">{{ n }}</button>
-      <button class="pager" @click="vendorPager.page=Math.min(vendorPages,vendorPager.page+1)" :disabled="vendorPager.page===vendorPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="vendorPager.page===1" @click="setVendorPage(1)">«</button>
+           <button :disabled="vendorPager.page===1" @click="setVendorPage(vendorPager.page-1)">‹</button>
+           <button v-for="n in pageNums(vendorPager.page,vendorPages)" :key="n" :class="{active:vendorPager.page===n}" @click="setVendorPage(n)">{{ n }}</button>
+           <button :disabled="vendorPager.page===vendorPages" @click="setVendorPage(vendorPager.page+1)">›</button>
+           <button :disabled="vendorPager.page===vendorPages" @click="setVendorPage(vendorPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="vendorPager.size" @change="onVendorSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 
   <!-- ══ 2. 주문별현황 ══ -->
@@ -365,11 +402,21 @@ window.StStatusMng = {
         <tr v-if="!orderPageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="orderPages > 1">
-      <button class="pager" @click="orderPager.page=Math.max(1,orderPager.page-1)" :disabled="orderPager.page===1">‹</button>
-      <button v-for="n in pageNums(orderPager.page,orderPages)" :key="n" class="pager" :class="{active:orderPager.page===n}" @click="orderPager.page=n">{{ n }}</button>
-      <button class="pager" @click="orderPager.page=Math.min(orderPages,orderPager.page+1)" :disabled="orderPager.page===orderPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="orderPager.page===1" @click="setOrderPage(1)">«</button>
+           <button :disabled="orderPager.page===1" @click="setOrderPage(orderPager.page-1)">‹</button>
+           <button v-for="n in pageNums(orderPager.page,orderPages)" :key="n" :class="{active:orderPager.page===n}" @click="setOrderPage(n)">{{ n }}</button>
+           <button :disabled="orderPager.page===orderPages" @click="setOrderPage(orderPager.page+1)">›</button>
+           <button :disabled="orderPager.page===orderPages" @click="setOrderPage(orderPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="orderPager.size" @change="onOrderSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 
   <!-- ══ 3. 클레임별현황 ══ -->
@@ -425,11 +472,21 @@ window.StStatusMng = {
         <tr v-if="!claimPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="claimPages > 1">
-      <button class="pager" @click="claimPager.page=Math.max(1,claimPager.page-1)" :disabled="claimPager.page===1">‹</button>
-      <button v-for="n in pageNums(claimPager.page,claimPages)" :key="n" class="pager" :class="{active:claimPager.page===n}" @click="claimPager.page=n">{{ n }}</button>
-      <button class="pager" @click="claimPager.page=Math.min(claimPages,claimPager.page+1)" :disabled="claimPager.page===claimPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="claimPager.page===1" @click="setClaimPage(1)">«</button>
+           <button :disabled="claimPager.page===1" @click="setClaimPage(claimPager.page-1)">‹</button>
+           <button v-for="n in pageNums(claimPager.page,claimPages)" :key="n" :class="{active:claimPager.page===n}" @click="setClaimPage(n)">{{ n }}</button>
+           <button :disabled="claimPager.page===claimPages" @click="setClaimPage(claimPager.page+1)">›</button>
+           <button :disabled="claimPager.page===claimPages" @click="setClaimPage(claimPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="claimPager.size" @change="onClaimSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 
   <!-- ══ 4. 프로모션별현황 ══ -->
@@ -475,11 +532,21 @@ window.StStatusMng = {
         <tr v-if="!promoPageList.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="promoPages > 1">
-      <button class="pager" @click="promoPager.page=Math.max(1,promoPager.page-1)" :disabled="promoPager.page===1">‹</button>
-      <button v-for="n in pageNums(promoPager.page,promoPages)" :key="n" class="pager" :class="{active:promoPager.page===n}" @click="promoPager.page=n">{{ n }}</button>
-      <button class="pager" @click="promoPager.page=Math.min(promoPages,promoPager.page+1)" :disabled="promoPager.page===promoPages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="promoPager.page===1" @click="setPromoPage(1)">«</button>
+           <button :disabled="promoPager.page===1" @click="setPromoPage(promoPager.page-1)">‹</button>
+           <button v-for="n in pageNums(promoPager.page,promoPages)" :key="n" :class="{active:promoPager.page===n}" @click="setPromoPage(n)">{{ n }}</button>
+           <button :disabled="promoPager.page===promoPages" @click="setPromoPage(promoPager.page+1)">›</button>
+           <button :disabled="promoPager.page===promoPages" @click="setPromoPage(promoPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="promoPager.size" @change="onPromoSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 
   <!-- ══ 5. 정산별현황 ══ -->
@@ -525,11 +592,21 @@ window.StStatusMng = {
         <tr v-if="!settlePageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="settlePages > 1">
-      <button class="pager" @click="settlePager.page=Math.max(1,settlePager.page-1)" :disabled="settlePager.page===1">‹</button>
-      <button v-for="n in pageNums(settlePager.page,settlePages)" :key="n" class="pager" :class="{active:settlePager.page===n}" @click="settlePager.page=n">{{ n }}</button>
-      <button class="pager" @click="settlePager.page=Math.min(settlePages,settlePager.page+1)" :disabled="settlePager.page===settlePages">›</button>
-    </div>
+    <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="settlePager.page===1" @click="setSettlePage(1)">«</button>
+           <button :disabled="settlePager.page===1" @click="setSettlePage(settlePager.page-1)">‹</button>
+           <button v-for="n in pageNums(settlePager.page,settlePages)" :key="n" :class="{active:settlePager.page===n}" @click="setSettlePage(n)">{{ n }}</button>
+           <button :disabled="settlePager.page===settlePages" @click="setSettlePage(settlePager.page+1)">›</button>
+           <button :disabled="settlePager.page===settlePages" @click="setSettlePage(settlePages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="settlePager.size" @change="onSettleSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
   </div>
 </div>
 `,

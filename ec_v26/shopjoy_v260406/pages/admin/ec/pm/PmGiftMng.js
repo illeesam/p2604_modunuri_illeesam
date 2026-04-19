@@ -16,7 +16,7 @@ window.PmGiftMng = {
     const searchStatus = ref('');
     const viewMode = ref('list'); // 'list' | 'card'
     const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const selectedId = ref(null);
     const openMode = ref('view');

@@ -4,6 +4,7 @@ window.PdDlivTmpltMng = {
   props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchMethod = ref('');
     const searchUse    = ref('');
@@ -72,6 +73,7 @@ window.PdDlivTmpltMng = {
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, method: searchMethod.value, use: searchUse.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchMethod.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', method: '', use: '' }); pager.page = 1; };
     const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const methodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
@@ -80,7 +82,7 @@ window.PdDlivTmpltMng = {
     return { descOpen,
              searchKw, searchMethod, searchUse, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
              selectedId, form, isNew, openDetail, openNew, closeDetail, doSave, doDelete,
-             ynBadge, methodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS };
+             ynBadge, methodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -142,11 +144,21 @@ window.PdDlivTmpltMng = {
           <tr v-if="!pageList.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
-      <div class="pagination" v-if="totalPages > 1">
-        <button class="pager" @click="setPage(pager.page-1)" :disabled="pager.page===1">◀</button>
-        <button v-for="n in pageNums" :key="n" class="pager" :class="{active:n===pager.page}" @click="setPage(n)">{{ n }}</button>
-        <button class="pager" @click="setPage(pager.page+1)" :disabled="pager.page===totalPages">▶</button>
-      </div>
+      <div class="pagination">
+         <div></div>
+         <div class="pager">
+           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+         </div>
+         <div class="pager-right">
+           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           </select>
+         </div>
+       </div>
     </div>
     <!-- 상세 폼 -->
     <div class="card" v-if="selectedId">
