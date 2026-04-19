@@ -8,7 +8,7 @@
 - `pd_prod_img.sql` — 상품 이미지 (sort_no 순서)
 - `pd_prod_tag.sql` — 상품-태그 연결
 - `pd_prod_opt.sql` — 옵션 (opt_level: 1단/2단, opt_type_cd: COLOR/SIZE 등)
-- `pd_prod_opt_item.sql` — 옵션항목 (FK: opt_id, opt_val/opt_cd)
+- `pd_prod_opt_item.sql` — 옵션항목 (FK: opt_id, opt_val/opt_val_code_id, parent_opt_item_id 2단 연결)
 - `pd_prod_sku.sql` — SKU (옵션 조합, 재고/가격 단위)
 - `pd_review.sql` — 구매 리뷰 (FK: order_item_id, 1건당 1리뷰)
 - `pd_review_attach.sql` — 리뷰 첨부파일

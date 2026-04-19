@@ -13,7 +13,7 @@
 
 ### 결제
 - `od_pay.sql` — 결제 마스터 (PK: pay_id, FK: order_id)
-- `od_pay_mtd.sql` — 마이페이지 등록 결제수단 (FK: member_id, pay_key_no: 게이트웨이 토큰)
+- `od_pay_method.sql` — 마이페이지 등록 결제수단 (FK: member_id, pay_key_no: 게이트웨이 토큰)
 
 ### 환불
 - `od_refund.sql` — 환불 마스터 (클레임 1건 = 1행, PK: refund_id, refund_type_cd: CANCEL/RETURN/PARTIAL/EXTRA)

@@ -1908,12 +1908,21 @@
       { codeId:1322, codeGrp: 'DLIV_COST_TYPE',      codeLabel: '조건부무료',       codeValue: 'COND_FREE',       sortOrd: 3, useYn: 'Y', remark: '금액/수량 충족 시',       parentCodeValue: null, regDate: '2026-04-19' },
       { codeId:1323, codeGrp: 'DLIV_COST_TYPE',      codeLabel: '도서산간추가',     codeValue: 'ISLAND_EXTRA',    sortOrd: 4, useYn: 'Y', remark: '도서산간 추가배송비',     parentCodeValue: null, regDate: '2026-04-19' },
       /* ── 상품 추가 ── */
-      // OPT_TYPE — 옵션카테고리
-      { codeId:1330, codeGrp: 'OPT_TYPE',            codeLabel: '옵션없음',         codeValue: 'NONE',            sortOrd: 1, useYn: 'Y', remark: '단일상품, 옵션 미사용',   parentCodeValue: null, regDate: '2026-04-19' },
-      { codeId:1331, codeGrp: 'OPT_TYPE',            codeLabel: '색상',             codeValue: 'COLOR',           sortOrd: 2, useYn: 'Y', remark: 'OPT_VAL COLOR 목록 제시', parentCodeValue: null, regDate: '2026-04-19' },
-      { codeId:1332, codeGrp: 'OPT_TYPE',            codeLabel: '사이즈',           codeValue: 'SIZE',            sortOrd: 3, useYn: 'Y', remark: 'OPT_VAL SIZE 목록 제시',  parentCodeValue: null, regDate: '2026-04-19' },
-      { codeId:1333, codeGrp: 'OPT_TYPE',            codeLabel: '소재',             codeValue: 'MATERIAL',        sortOrd: 4, useYn: 'Y', remark: 'OPT_VAL MATERIAL 목록',   parentCodeValue: null, regDate: '2026-04-19' },
-      { codeId:1334, codeGrp: 'OPT_TYPE',            codeLabel: '직접입력',         codeValue: 'CUSTOM',          sortOrd: 5, useYn: 'Y', remark: '프리셋 없이 직접 입력',   parentCodeValue: null, regDate: '2026-04-19' },
+      // OPT_TYPE — 1레벨 (루트: 카테고리 조합, parentCodeValue: null)
+      { codeId:1325, codeGrp: 'OPT_TYPE', codeLabel: '의류 (색상+사이즈)', codeValue: 'CLOTHING',   sortOrd: 1, useYn: 'Y', remark: 'COLOR + SIZE 조합',     parentCodeValue: null, regDate: '2026-04-19' },
+      { codeId:1326, codeGrp: 'OPT_TYPE', codeLabel: '신발 (색상+사이즈)', codeValue: 'SHOES',      sortOrd: 2, useYn: 'Y', remark: 'COLOR + SIZE 조합',     parentCodeValue: null, regDate: '2026-04-19' },
+      { codeId:1327, codeGrp: 'OPT_TYPE', codeLabel: '가방 (색상+소재)',   codeValue: 'BAG',        sortOrd: 3, useYn: 'Y', remark: 'COLOR + MATERIAL 조합', parentCodeValue: null, regDate: '2026-04-19' },
+      { codeId:1328, codeGrp: 'OPT_TYPE', codeLabel: '커스텀',            codeValue: 'CUSTOM_GRP', sortOrd: 4, useYn: 'Y', remark: '직접입력 조합',          parentCodeValue: null, regDate: '2026-04-19' },
+      { codeId:1330, codeGrp: 'OPT_TYPE', codeLabel: '옵션없음',          codeValue: 'NONE',       sortOrd:99, useYn: 'N', remark: '단일상품, 옵션 미사용',   parentCodeValue: null, regDate: '2026-04-19' },
+      // OPT_TYPE — 2레벨 (옵션 유형: 1레벨의 자식)
+      { codeId:1331, codeGrp: 'OPT_TYPE', codeLabel: '색상',   codeValue: 'COLOR',    sortOrd: 1, useYn: 'Y', remark: 'OPT_VAL COLOR 목록 제시', parentCodeValue: 'CLOTHING',   regDate: '2026-04-19' },
+      { codeId:1332, codeGrp: 'OPT_TYPE', codeLabel: '사이즈', codeValue: 'SIZE',     sortOrd: 2, useYn: 'Y', remark: 'OPT_VAL SIZE 목록 제시',  parentCodeValue: 'CLOTHING',   regDate: '2026-04-19' },
+      { codeId:1333, codeGrp: 'OPT_TYPE', codeLabel: '소재',   codeValue: 'MATERIAL', sortOrd: 3, useYn: 'Y', remark: 'OPT_VAL MATERIAL 목록',   parentCodeValue: 'CLOTHING',   regDate: '2026-04-19' },
+      { codeId:1334, codeGrp: 'OPT_TYPE', codeLabel: '직접입력', codeValue: 'CUSTOM', sortOrd: 1, useYn: 'Y', remark: '프리셋 없이 직접 입력',   parentCodeValue: 'CUSTOM_GRP', regDate: '2026-04-19' },
+      { codeId:1381, codeGrp: 'OPT_TYPE', codeLabel: '색상',   codeValue: 'COLOR',    sortOrd: 1, useYn: 'Y', remark: 'OPT_VAL COLOR 목록 제시', parentCodeValue: 'SHOES',      regDate: '2026-04-19' },
+      { codeId:1382, codeGrp: 'OPT_TYPE', codeLabel: '사이즈', codeValue: 'SIZE',     sortOrd: 2, useYn: 'Y', remark: 'OPT_VAL SIZE 목록 제시',  parentCodeValue: 'SHOES',      regDate: '2026-04-19' },
+      { codeId:1383, codeGrp: 'OPT_TYPE', codeLabel: '색상',   codeValue: 'COLOR',    sortOrd: 1, useYn: 'Y', remark: 'OPT_VAL COLOR 목록 제시', parentCodeValue: 'BAG',        regDate: '2026-04-19' },
+      { codeId:1384, codeGrp: 'OPT_TYPE', codeLabel: '소재',   codeValue: 'MATERIAL', sortOrd: 2, useYn: 'Y', remark: 'OPT_VAL MATERIAL 목록',   parentCodeValue: 'BAG',        regDate: '2026-04-19' },
       // OPT_VAL — 옵션프리셋값 (COLOR)
       { codeId:1340, codeGrp: 'OPT_VAL', codeLabel: '검정',       codeValue: 'BLACK',      sortOrd:  1, useYn: 'Y', remark: '', parentCodeValue: 'COLOR',    regDate: '2026-04-19' },
       { codeId:1341, codeGrp: 'OPT_VAL', codeLabel: '흰색',       codeValue: 'WHITE',      sortOrd:  2, useYn: 'Y', remark: '', parentCodeValue: 'COLOR',    regDate: '2026-04-19' },
