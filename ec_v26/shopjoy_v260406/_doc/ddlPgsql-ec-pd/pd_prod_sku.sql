@@ -8,9 +8,9 @@ CREATE TABLE pd_prod_sku (
     add_price       BIGINT          DEFAULT 0,              -- 옵션 추가금액
     prod_opt_stock  INTEGER         DEFAULT 0,              -- 옵션 조합별 재고
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (sku_id)
 );

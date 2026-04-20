@@ -31,7 +31,8 @@ public class BoPmCouponController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, status, dateStart, dateEnd)));
+        List<PmCouponDto> result = service.getList(siteId, kw, status, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -43,12 +44,14 @@ public class BoPmCouponController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<PmCouponDto> result = service.getPageData(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCouponDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        PmCouponDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -58,7 +61,8 @@ public class BoPmCouponController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCouponDto>> update(@PathVariable String id, @RequestBody PmCoupon body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        PmCouponDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")
@@ -70,6 +74,7 @@ public class BoPmCouponController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmCouponDto>> changeStatus(
             @PathVariable String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("statusCd"))));
+        PmCouponDto result = service.changeStatus(id, body.get("statusCd"));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdDlivTmpltMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdDlivTmpltRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdDlivTmpltService {
     @Transactional
     public PdDlivTmplt save(PdDlivTmplt entity) {
         if (!repository.existsById(entity.getDlivTmpltId()))
-            throw new BusinessException("존재하지 않는 PdDlivTmplt입니다: " + entity.getDlivTmpltId());
+            throw new CmBizException("존재하지 않는 PdDlivTmplt입니다: " + entity.getDlivTmpltId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdDlivTmplt result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdDlivTmpltService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdDlivTmplt입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdDlivTmplt입니다: " + id);
         repository.deleteById(id);
     }
 

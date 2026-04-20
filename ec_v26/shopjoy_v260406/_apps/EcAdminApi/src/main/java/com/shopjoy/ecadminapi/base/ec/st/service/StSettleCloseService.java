@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleCloseMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleCloseRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class StSettleCloseService {
     @Transactional
     public StSettleClose save(StSettleClose entity) {
         if (!repository.existsById(entity.getSettleCloseId()))
-            throw new BusinessException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId());
+            throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleClose result = repository.save(entity);
@@ -82,7 +82,7 @@ public class StSettleCloseService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 StSettleClose입니다: " + id);
+            throw new CmBizException("존재하지 않는 StSettleClose입니다: " + id);
         repository.deleteById(id);
     }
 

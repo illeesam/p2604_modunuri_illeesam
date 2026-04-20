@@ -7,9 +7,9 @@ CREATE TABLE syh_user_login_hist (
     ip              VARCHAR(50),
     device          VARCHAR(100),
     result_cd       VARCHAR(20)     DEFAULT 'SUCCESS',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (login_hist_id)
 );

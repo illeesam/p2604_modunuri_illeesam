@@ -11,9 +11,9 @@ CREATE TABLE pd_prod_rel (
     prod_rel_type_cd VARCHAR(20)     NOT NULL,                  -- 관계 유형 코드: PROD_REL_TYPE (REL_PROD / CODY_PROD)
     sort_ord         INTEGER         DEFAULT 0,                 -- 노출 정렬 순서 (낮을수록 우선)
     use_yn           CHAR(1)         DEFAULT 'Y',               -- 사용여부 Y/N
-    reg_by           VARCHAR(20),
+    reg_by           VARCHAR(30),
     reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by           VARCHAR(20),
+    upd_by           VARCHAR(30),
     upd_date         TIMESTAMP,
     PRIMARY KEY (prod_rel_id),
     UNIQUE (prod_id, rel_prod_id, prod_rel_type_cd)             -- 동일 타입 중복 연결 방지

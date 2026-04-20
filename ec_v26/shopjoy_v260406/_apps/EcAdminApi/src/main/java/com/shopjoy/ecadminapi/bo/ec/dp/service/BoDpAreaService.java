@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpAreaMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpAreaRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoDpAreaService {
     private final DpAreaRepository repository;
 
     @Transactional(readOnly = true)
-    public List<DpAreaDto> list(String siteId, String kw) {
+    public List<DpAreaDto> getList(String siteId, String kw) {
         Map<String, Object> p = buildParams(siteId, kw);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<DpAreaDto> page(String siteId, String kw, int pageNo, int pageSize) {
+    public PageResult<DpAreaDto> getPageData(String siteId, String kw, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoDpAreaService {
     @Transactional(readOnly = true)
     public DpAreaDto getById(String id) {
         DpAreaDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoDpAreaService {
 
     @Transactional
     public DpAreaDto update(String id, DpArea body) {
-        DpArea entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        DpArea entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,7 +64,7 @@ public class BoDpAreaService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 

@@ -10,9 +10,9 @@ CREATE TABLE pm_coupon_item (
     site_id             VARCHAR(21),                            -- sy_site.site_id
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_ITEM_TARGET (PRODUCT/CATEGORY/VENDOR/BRAND)
     target_id           VARCHAR(21)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
 
     PRIMARY KEY (coupon_item_id),

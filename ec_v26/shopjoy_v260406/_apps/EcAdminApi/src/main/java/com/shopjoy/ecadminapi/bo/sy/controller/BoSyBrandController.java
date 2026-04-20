@@ -27,7 +27,8 @@ public class BoSyBrandController {
     public ResponseEntity<ApiResponse<List<SyBrandDto>>> list(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String kw) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw)));
+        List<SyBrandDto> result = service.getList(siteId, kw);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -36,12 +37,14 @@ public class BoSyBrandController {
             @RequestParam(required = false) String kw,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, pageNo, pageSize)));
+        PageResult<SyBrandDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBrandDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        SyBrandDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -51,7 +54,8 @@ public class BoSyBrandController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBrandDto>> update(@PathVariable String id, @RequestBody SyBrand body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        SyBrandDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

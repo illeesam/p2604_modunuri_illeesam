@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGroupDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGroup;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberGroupMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGroupRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoMbMemGroupService {
     private final MbMemberGroupRepository repository;
 
     @Transactional(readOnly = true)
-    public List<MbMemberGroupDto> list(String siteId, String kw) {
+    public List<MbMemberGroupDto> getList(String siteId, String kw) {
         Map<String, Object> p = buildParams(siteId, kw);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<MbMemberGroupDto> page(String siteId, String kw, int pageNo, int pageSize) {
+    public PageResult<MbMemberGroupDto> getPageData(String siteId, String kw, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoMbMemGroupService {
     @Transactional(readOnly = true)
     public MbMemberGroupDto getById(String id) {
         MbMemberGroupDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoMbMemGroupService {
 
     @Transactional
     public MbMemberGroupDto update(String id, MbMemberGroup body) {
-        MbMemberGroup entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        MbMemberGroup entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,7 +64,7 @@ public class BoMbMemGroupService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 

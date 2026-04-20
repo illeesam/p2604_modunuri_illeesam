@@ -9,9 +9,9 @@ CREATE TABLE cm_chatt_msg (
     ref_id          VARCHAR(21),
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     read_yn         CHAR(1)         DEFAULT 'N',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (msg_id)
 );

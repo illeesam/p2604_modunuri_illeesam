@@ -18,9 +18,9 @@ CREATE TABLE pd_category_prod (
     disp_yn                 CHAR(1)         NOT NULL DEFAULT 'Y',               -- 전시여부 (Y/N)
     disp_start_date         DATE            DEFAULT CURRENT_DATE,               -- 전시시작일
     disp_end_date           DATE            DEFAULT (CURRENT_DATE + INTERVAL '3 years' - EXTRACT(DOY FROM CURRENT_DATE) * INTERVAL '1 day' + INTERVAL '1 year' - INTERVAL '1 day'), -- 전시종료일 (기본: 3년 후 12월31일)
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (category_prod_id),
     UNIQUE (category_id, prod_id, category_prod_type_cd)                       -- 동일 카테고리+상품+타입 중복 방지

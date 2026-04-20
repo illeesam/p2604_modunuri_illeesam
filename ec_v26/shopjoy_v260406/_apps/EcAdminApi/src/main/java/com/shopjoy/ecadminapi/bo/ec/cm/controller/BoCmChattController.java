@@ -39,7 +39,8 @@ public class BoCmChattController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, status, dateStart, dateEnd)));
+        List<CmChattRoomDto> result = service.getList(siteId, kw, status, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -51,12 +52,14 @@ public class BoCmChattController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<CmChattRoomDto> result = service.getPageData(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        CmChattRoomDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -66,7 +69,8 @@ public class BoCmChattController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> update(@PathVariable String id, @RequestBody CmChattRoom body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        CmChattRoomDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")
@@ -78,6 +82,7 @@ public class BoCmChattController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<CmChattRoomDto>> changeStatus(
             @PathVariable String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("statusCd"))));
+        CmChattRoomDto result = service.changeStatus(id, body.get("statusCd"));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

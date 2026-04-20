@@ -7,9 +7,9 @@ CREATE TABLE sy_voc (
     voc_nm          VARCHAR(100)    NOT NULL,               -- VOC 항목명
     voc_content     TEXT,                                   -- VOC 항목 설명
     use_yn          VARCHAR(1)      DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (voc_id),
     UNIQUE (site_id, voc_master_cd, voc_detail_cd)

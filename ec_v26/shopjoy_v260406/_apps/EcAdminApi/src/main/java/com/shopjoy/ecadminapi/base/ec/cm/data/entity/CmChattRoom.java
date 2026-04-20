@@ -16,19 +16,19 @@ import lombok.Setter;
 public class CmChattRoom {
 
     @Id
-    @Column(name = "chatt_room_id", length = 20, nullable = false)
+    @Column(name = "chatt_room_id", length = 21, nullable = false)
     private String chattRoomId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "member_nm", length = 50)
     private String memberNm;
 
-    @Column(name = "admin_user_id", length = 20)
+    @Column(name = "admin_user_id", length = 21)
     private String adminUserId;
 
     @Column(name = "subject", length = 200)
@@ -59,13 +59,13 @@ public class CmChattRoom {
     @Column(name = "close_reason", length = 200)
     private String closeReason;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

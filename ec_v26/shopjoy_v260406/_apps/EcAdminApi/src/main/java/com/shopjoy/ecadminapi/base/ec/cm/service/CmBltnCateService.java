@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.vo.CmBltnCateReq;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltnCate;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnCateMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnCateRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +74,7 @@ public class CmBltnCateService {
     @Transactional
     public CmBltnCate save(CmBltnCate entity) {
         if (!repository.existsById(entity.getBlogCateId())) {
-            throw new BusinessException("존재하지 않는 카테고리입니다: " + entity.getBlogCateId());
+            throw new CmBizException("존재하지 않는 카테고리입니다: " + entity.getBlogCateId());
         }
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
@@ -85,7 +85,7 @@ public class CmBltnCateService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id)) {
-            throw new BusinessException("존재하지 않는 카테고리입니다: " + id);
+            throw new CmBizException("존재하지 않는 카테고리입니다: " + id);
         }
         repository.deleteById(id);
     }
@@ -113,16 +113,16 @@ public class CmBltnCateService {
             case "I" -> create(req.toEntity());
             case "U" -> {
                 if (!repository.existsById(req.getBlogCateId()))
-                    throw new BusinessException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
+                    throw new CmBizException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
                 yield save(req.toEntity());
             }
             case "D" -> {
                 if (!repository.existsById(req.getBlogCateId()))
-                    throw new BusinessException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
+                    throw new CmBizException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
                 repository.deleteById(req.getBlogCateId());
                 yield null;
             }
-            default -> throw new BusinessException("올바르지 않은 _row_status: " + req.getRowStatus());
+            default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());
         };
     }
 

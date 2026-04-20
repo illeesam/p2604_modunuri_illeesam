@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdClaimItemMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimItemRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class OdClaimItemService {
     @Transactional
     public OdClaimItem save(OdClaimItem entity) {
         if (!repository.existsById(entity.getClaimItemId()))
-            throw new BusinessException("존재하지 않는 OdClaimItem입니다: " + entity.getClaimItemId());
+            throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + entity.getClaimItemId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdClaimItem result = repository.save(entity);
@@ -82,7 +82,7 @@ public class OdClaimItemService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 OdClaimItem입니다: " + id);
+            throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + id);
         repository.deleteById(id);
     }
 

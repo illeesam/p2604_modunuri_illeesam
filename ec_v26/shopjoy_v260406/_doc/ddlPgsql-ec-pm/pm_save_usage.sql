@@ -14,9 +14,9 @@ CREATE TABLE pm_save_usage (
     use_amt             BIGINT          NOT NULL,               -- 사용 적립금액
     balance_amt         BIGINT          DEFAULT 0,              -- 사용 후 잔액
     used_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
 
     PRIMARY KEY (save_usage_id)

@@ -17,9 +17,9 @@ CREATE TABLE cmh_push_log (
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/EVENT 등)
     ref_id          VARCHAR(21),                           -- 연관ID (order_id 등)
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (log_id)
 );

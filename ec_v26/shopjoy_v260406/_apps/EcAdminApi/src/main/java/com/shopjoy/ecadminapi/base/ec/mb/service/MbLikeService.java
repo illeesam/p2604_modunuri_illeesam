@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbLikeMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbLikeRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class MbLikeService {
     @Transactional
     public MbLike save(MbLike entity) {
         if (!repository.existsById(entity.getLikeId()))
-            throw new BusinessException("존재하지 않는 MbLike입니다: " + entity.getLikeId());
+            throw new CmBizException("존재하지 않는 MbLike입니다: " + entity.getLikeId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         MbLike result = repository.save(entity);
@@ -82,7 +82,7 @@ public class MbLikeService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 MbLike입니다: " + id);
+            throw new CmBizException("존재하지 않는 MbLike입니다: " + id);
         repository.deleteById(id);
     }
 

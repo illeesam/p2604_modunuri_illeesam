@@ -27,7 +27,8 @@ public class BoSyDeptController {
     public ResponseEntity<ApiResponse<List<SyDeptDto>>> list(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String kw) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw)));
+        List<SyDeptDto> result = service.getList(siteId, kw);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -36,12 +37,14 @@ public class BoSyDeptController {
             @RequestParam(required = false) String kw,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, pageNo, pageSize)));
+        PageResult<SyDeptDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyDeptDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        SyDeptDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -51,7 +54,8 @@ public class BoSyDeptController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyDeptDto>> update(@PathVariable String id, @RequestBody SyDept body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        SyDeptDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

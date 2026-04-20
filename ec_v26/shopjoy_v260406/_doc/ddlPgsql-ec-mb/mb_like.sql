@@ -8,9 +8,9 @@ CREATE TABLE mb_like (
     member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     target_type_cd  VARCHAR(20)     NOT NULL,               -- 코드: LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
     target_id       VARCHAR(21)     NOT NULL,               -- 대상ID (pd_prod.prod_id 등)
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (like_id)
 );

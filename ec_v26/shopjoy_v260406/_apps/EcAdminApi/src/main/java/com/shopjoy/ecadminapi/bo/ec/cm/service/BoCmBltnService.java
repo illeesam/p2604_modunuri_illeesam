@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBltnDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltn;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoCmBltnService {
     private final CmBltnRepository repository;
 
     @Transactional(readOnly = true)
-    public List<CmBltnDto> list(String siteId, String kw, String dateStart, String dateEnd) {
+    public List<CmBltnDto> getList(String siteId, String kw, String dateStart, String dateEnd) {
         Map<String, Object> p = buildParams(siteId, kw, dateStart, dateEnd);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<CmBltnDto> page(String siteId, String kw, String dateStart, String dateEnd, int pageNo, int pageSize) {
+    public PageResult<CmBltnDto> getPageData(String siteId, String kw, String dateStart, String dateEnd, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw, dateStart, dateEnd);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoCmBltnService {
     @Transactional(readOnly = true)
     public CmBltnDto getById(String id) {
         CmBltnDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoCmBltnService {
 
     @Transactional
     public CmBltnDto update(String id, CmBltn body) {
-        CmBltn entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        CmBltn entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,7 +64,7 @@ public class BoCmBltnService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 

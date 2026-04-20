@@ -36,7 +36,8 @@ public class BoCmNoticeController {
             @RequestParam(required = false) String kw,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, dateStart, dateEnd)));
+        List<SyNoticeDto> result = service.getList(siteId, kw, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -47,12 +48,14 @@ public class BoCmNoticeController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<SyNoticeDto> result = service.getPageData(siteId, kw, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        SyNoticeDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -62,7 +65,8 @@ public class BoCmNoticeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyNoticeDto>> update(@PathVariable String id, @RequestBody SyNotice body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        SyNoticeDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

@@ -34,13 +34,13 @@ public class CmBltnFile {
     @Column(name = "sort_ord")
     private Integer sortOrd;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPayMethod;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdPayMethodMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdPayMethodRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class OdPayMethodService {
     @Transactional
     public OdPayMethod save(OdPayMethod entity) {
         if (!repository.existsById(entity.getPayMethodId()))
-            throw new BusinessException("존재하지 않는 OdPayMethod입니다: " + entity.getPayMethodId());
+            throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + entity.getPayMethodId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdPayMethod result = repository.save(entity);
@@ -82,7 +82,7 @@ public class OdPayMethodService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 OdPayMethod입니다: " + id);
+            throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + id);
         repository.deleteById(id);
     }
 

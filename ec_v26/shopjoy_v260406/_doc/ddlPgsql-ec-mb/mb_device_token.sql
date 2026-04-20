@@ -11,9 +11,9 @@ CREATE TABLE mb_device_token (
     os_type         VARCHAR(10),                            -- ANDROID / IOS
     benefit_noti_yn VARCHAR(1)      DEFAULT 'Y',            -- 혜택 알림 수신 여부
     alim_read_date  TIMESTAMP,                              -- 알림 리스트 읽음 일시
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (device_token_id),
     UNIQUE (device_token, site_id)                         -- 기기+사이트 중복 방지

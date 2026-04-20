@@ -15,9 +15,9 @@ CREATE TABLE pd_review (
     review_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: REVIEW_STATUS (ACTIVE/HIDDEN/DELETED)
     review_status_cd_before VARCHAR(20),                     -- 변경 전 리뷰상태
     review_date     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (review_id)
 );

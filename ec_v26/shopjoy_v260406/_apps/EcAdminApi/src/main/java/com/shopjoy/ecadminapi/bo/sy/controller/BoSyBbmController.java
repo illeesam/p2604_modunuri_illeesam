@@ -27,7 +27,8 @@ public class BoSyBbmController {
     public ResponseEntity<ApiResponse<List<SyBbmDto>>> list(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String kw) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw)));
+        List<SyBbmDto> result = service.getList(siteId, kw);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -36,12 +37,14 @@ public class BoSyBbmController {
             @RequestParam(required = false) String kw,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, pageNo, pageSize)));
+        PageResult<SyBbmDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbmDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        SyBbmDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -51,7 +54,8 @@ public class BoSyBbmController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyBbmDto>> update(@PathVariable String id, @RequestBody SyBbm body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        SyBbmDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

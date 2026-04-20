@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdCategoryService {
     @Transactional
     public PdCategory save(PdCategory entity) {
         if (!repository.existsById(entity.getCategoryId()))
-            throw new BusinessException("존재하지 않는 PdCategory입니다: " + entity.getCategoryId());
+            throw new CmBizException("존재하지 않는 PdCategory입니다: " + entity.getCategoryId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdCategory result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdCategoryService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdCategory입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdCategory입니다: " + id);
         repository.deleteById(id);
     }
 

@@ -24,9 +24,9 @@ CREATE TABLE sy_vendor_user (
     leave_date      DATE,                                   -- 퇴직/탈퇴 일자
     vendor_user_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_MEMBER_STATUS (ACTIVE/LEFT/SUSPENDED)
     vendor_user_remark VARCHAR(500),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (vendor_user_id),
     UNIQUE (vendor_id, user_id)

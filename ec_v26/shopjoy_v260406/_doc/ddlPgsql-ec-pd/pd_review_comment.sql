@@ -8,9 +8,9 @@ CREATE TABLE pd_review_comment (
     writer_nm       VARCHAR(50),
     review_reply_content TEXT            NOT NULL,
     reply_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',      -- ACTIVE/HIDDEN/DELETED
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (review_comment_id)
 );

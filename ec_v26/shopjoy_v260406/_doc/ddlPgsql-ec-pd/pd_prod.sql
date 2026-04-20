@@ -48,9 +48,9 @@ CREATE TABLE pd_prod (
     advrt_stmt      VARCHAR(500),                           -- 홍보문구
     advrt_start_date TIMESTAMP,                             -- 홍보문구 시작일시
     advrt_end_date  TIMESTAMP,                              -- 홍보문구 종료일시
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_id)
 );

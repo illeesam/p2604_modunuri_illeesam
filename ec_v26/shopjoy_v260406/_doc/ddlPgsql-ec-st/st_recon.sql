@@ -30,9 +30,9 @@ CREATE TABLE st_recon (
     resolved_by             VARCHAR(21),                            -- 해소 처리자 (sy_user.user_id)
     resolved_date           TIMESTAMP,                              -- 해소 일시
 
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(20),
+    upd_by                  VARCHAR(30),
     upd_date                TIMESTAMP,
 
     PRIMARY KEY (recon_id)

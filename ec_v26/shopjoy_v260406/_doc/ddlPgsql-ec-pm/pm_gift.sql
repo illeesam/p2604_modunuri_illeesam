@@ -21,9 +21,9 @@ CREATE TABLE pm_gift (
     self_cdiv_rate      DECIMAL(5,2)    DEFAULT 100,            -- 자사(사이트) 분담율 (%)
     seller_cdiv_rate    DECIMAL(5,2)    DEFAULT 0,              -- 판매자(업체) 분담율 (%)
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (gift_id)
 );

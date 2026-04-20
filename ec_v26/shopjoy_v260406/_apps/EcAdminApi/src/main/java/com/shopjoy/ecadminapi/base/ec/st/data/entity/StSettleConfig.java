@@ -17,16 +17,16 @@ import lombok.Setter;
 public class StSettleConfig {
 
     @Id
-    @Column(name = "settle_config_id", length = 20, nullable = false)
+    @Column(name = "settle_config_id", length = 21, nullable = false)
     private String settleConfigId;
 
-    @Column(name = "site_id", length = 20, nullable = false)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Column(name = "vendor_id", length = 20)
+    @Column(name = "vendor_id", length = 21)
     private String vendorId;
 
-    @Column(name = "category_id", length = 20)
+    @Column(name = "category_id", length = 21)
     private String categoryId;
 
     @Column(name = "settle_cycle_cd", length = 20)
@@ -47,13 +47,13 @@ public class StSettleConfig {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

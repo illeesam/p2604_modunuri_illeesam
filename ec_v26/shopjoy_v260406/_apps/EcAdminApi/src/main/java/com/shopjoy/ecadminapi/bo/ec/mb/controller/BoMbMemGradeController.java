@@ -34,7 +34,8 @@ public class BoMbMemGradeController {
     public ResponseEntity<ApiResponse<List<MbMemberGradeDto>>> list(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String kw) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw)));
+        List<MbMemberGradeDto> result = service.getList(siteId, kw);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -43,12 +44,14 @@ public class BoMbMemGradeController {
             @RequestParam(required = false) String kw,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, pageNo, pageSize)));
+        PageResult<MbMemberGradeDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGradeDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        MbMemberGradeDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -58,7 +61,8 @@ public class BoMbMemGradeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGradeDto>> update(@PathVariable String id, @RequestBody MbMemberGrade body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        MbMemberGradeDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

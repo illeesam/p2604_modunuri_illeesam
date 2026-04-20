@@ -15,9 +15,9 @@ CREATE TABLE cm_bltn (
     view_count      INTEGER         DEFAULT 0,              -- 조회수
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 공개여부 Y/N
     is_notice       CHAR(1)         DEFAULT 'N',            -- 공지글 여부 Y/N (상단 고정)
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (blog_id)
 );

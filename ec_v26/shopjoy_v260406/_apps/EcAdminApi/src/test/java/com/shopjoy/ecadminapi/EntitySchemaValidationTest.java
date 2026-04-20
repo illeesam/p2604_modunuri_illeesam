@@ -59,7 +59,7 @@ class EntitySchemaValidationTest {
             if (!entityClass.getName().startsWith(BASE_PACKAGE)) continue;
 
             AbstractEntityPersister aep = (AbstractEntityPersister)
-                    mappingMetamodel.getEntityDescriptor(entityType.getName());
+                    mappingMetamodel.getEntityDescriptor(entityType.getJavaType().getName());
 
             // 테이블명 추출 (schema.table → table)
             String qualifiedTable = aep.getTableName();

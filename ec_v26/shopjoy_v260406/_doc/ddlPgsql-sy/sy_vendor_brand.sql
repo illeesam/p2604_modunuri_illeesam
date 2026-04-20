@@ -17,9 +17,9 @@ CREATE TABLE sy_vendor_brand (
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     vendor_brand_remark VARCHAR(500),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (vendor_brand_id),
     UNIQUE (vendor_id, brand_id)

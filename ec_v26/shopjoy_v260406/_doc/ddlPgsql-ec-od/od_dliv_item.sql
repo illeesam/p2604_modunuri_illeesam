@@ -14,9 +14,9 @@ CREATE TABLE od_dliv_item (
     dliv_qty        INTEGER         DEFAULT 1,              -- 이 배송의 출고수량 (부분출고 시 < 주문수량)
     dliv_item_status_cd VARCHAR(20)     DEFAULT 'READY',        -- 코드: DLIV_STATUS (항목별 추적)
     dliv_item_status_cd_before VARCHAR(20),                  -- 변경 전 배송상태
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (dliv_item_id),
     UNIQUE (dliv_id, order_item_id)                        -- 동일 배송 내 중복 방지

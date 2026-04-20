@@ -34,7 +34,8 @@ public class BoDpPanelController {
     public ResponseEntity<ApiResponse<List<DpPanelDto>>> list(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String kw) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw)));
+        List<DpPanelDto> result = service.getList(siteId, kw);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -43,12 +44,14 @@ public class BoDpPanelController {
             @RequestParam(required = false) String kw,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, pageNo, pageSize)));
+        PageResult<DpPanelDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanelDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        DpPanelDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -58,7 +61,8 @@ public class BoDpPanelController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DpPanelDto>> update(@PathVariable String id, @RequestBody DpPanel body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        DpPanelDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

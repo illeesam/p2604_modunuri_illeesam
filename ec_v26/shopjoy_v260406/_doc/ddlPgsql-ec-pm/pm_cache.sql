@@ -15,9 +15,9 @@ CREATE TABLE pm_cache (
     proc_user_id         VARCHAR(21),
     cache_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     expire_date     DATE,                                   -- 소멸예정일
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (cache_id)
 );

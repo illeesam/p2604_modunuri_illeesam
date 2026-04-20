@@ -17,9 +17,9 @@ CREATE TABLE st_settle_pay (
     pay_date            TIMESTAMP,                              -- 실지급 일시
     pay_by              VARCHAR(21),                            -- 지급처리자 (sy_user.user_id)
     settle_pay_memo     TEXT,
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_pay_id)
 );

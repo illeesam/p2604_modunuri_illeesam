@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyCodeMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyCodeRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyCodeService {
     @Transactional
     public SyCode save(SyCode entity) {
         if (!repository.existsById(entity.getCodeId()))
-            throw new BusinessException("존재하지 않는 SyCode입니다: " + entity.getCodeId());
+            throw new CmBizException("존재하지 않는 SyCode입니다: " + entity.getCodeId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyCode result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyCodeService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyCode입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyCode입니다: " + id);
         repository.deleteById(id);
     }
 

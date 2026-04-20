@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.vo.SyAlarmReq;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyAlarmMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +74,7 @@ public class SyAlarmService {
     @Transactional
     public SyAlarm save(SyAlarm entity) {
         if (!repository.existsById(entity.getAlarmId())) {
-            throw new BusinessException("존재하지 않는 알람입니다: " + entity.getAlarmId());
+            throw new CmBizException("존재하지 않는 알람입니다: " + entity.getAlarmId());
         }
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
@@ -85,7 +85,7 @@ public class SyAlarmService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id)) {
-            throw new BusinessException("존재하지 않는 알람입니다: " + id);
+            throw new CmBizException("존재하지 않는 알람입니다: " + id);
         }
         repository.deleteById(id);
     }
@@ -113,16 +113,16 @@ public class SyAlarmService {
             case "I" -> create(req.toEntity());
             case "U" -> {
                 if (!repository.existsById(req.getAlarmId()))
-                    throw new BusinessException("존재하지 않는 알람입니다: " + req.getAlarmId());
+                    throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId());
                 yield save(req.toEntity());
             }
             case "D" -> {
                 if (!repository.existsById(req.getAlarmId()))
-                    throw new BusinessException("존재하지 않는 알람입니다: " + req.getAlarmId());
+                    throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId());
                 repository.deleteById(req.getAlarmId());
                 yield null;
             }
-            default -> throw new BusinessException("올바르지 않은 _row_status: " + req.getRowStatus());
+            default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());
         };
     }
 

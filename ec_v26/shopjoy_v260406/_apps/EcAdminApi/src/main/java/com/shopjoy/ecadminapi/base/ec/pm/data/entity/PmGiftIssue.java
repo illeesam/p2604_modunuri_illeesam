@@ -16,19 +16,19 @@ import lombok.Setter;
 public class PmGiftIssue {
 
     @Id
-    @Column(name = "gift_issue_id", length = 20, nullable = false)
+    @Column(name = "gift_issue_id", length = 21, nullable = false)
     private String giftIssueId;
 
-    @Column(name = "gift_id", length = 20, nullable = false)
+    @Column(name = "gift_id", length = 21, nullable = false)
     private String giftId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
-    @Column(name = "order_id", length = 20)
+    @Column(name = "order_id", length = 21)
     private String orderId;
 
     @Column(name = "issue_date")
@@ -44,13 +44,13 @@ public class PmGiftIssue {
     @Column(name = "gift_issue_memo", columnDefinition = "TEXT")
     private String giftIssueMemo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

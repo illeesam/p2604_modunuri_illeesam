@@ -10,9 +10,9 @@ CREATE TABLE cm_bltn_file (
     thumb_url       VARCHAR(500),                           -- 썸네일 이미지 URL
     img_alt_text    VARCHAR(200),                           -- 대체텍스트
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (blog_img_id)
 );

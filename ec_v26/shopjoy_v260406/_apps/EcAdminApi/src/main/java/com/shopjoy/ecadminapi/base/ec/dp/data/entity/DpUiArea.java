@@ -17,13 +17,13 @@ import lombok.Setter;
 public class DpUiArea {
 
     @Id
-    @Column(name = "ui_area_id", length = 20, nullable = false)
+    @Column(name = "ui_area_id", length = 21, nullable = false)
     private String uiAreaId;
 
-    @Column(name = "ui_id", length = 20, nullable = false)
+    @Column(name = "ui_id", length = 21, nullable = false)
     private String uiId;
 
-    @Column(name = "area_id", length = 20, nullable = false)
+    @Column(name = "area_id", length = 21, nullable = false)
     private String areaId;
 
     @Column(name = "area_sort_ord")
@@ -47,13 +47,13 @@ public class DpUiArea {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

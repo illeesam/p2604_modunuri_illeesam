@@ -12,9 +12,9 @@ CREATE TABLE pdh_prod_sku_chg_hist (
     chg_reason      VARCHAR(200),                           -- 변경사유
     chg_by          VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (hist_id)
 );

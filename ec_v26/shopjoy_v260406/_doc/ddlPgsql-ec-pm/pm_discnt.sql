@@ -26,9 +26,9 @@ CREATE TABLE pm_discnt (
     dvc_mweb_yn         CHAR(1)         DEFAULT 'Y',            -- 모바일WEB 적용여부 Y/N
     dvc_mapp_yn         CHAR(1)         DEFAULT 'Y',            -- 모바일APP 적용여부 Y/N
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (discnt_id)
 );

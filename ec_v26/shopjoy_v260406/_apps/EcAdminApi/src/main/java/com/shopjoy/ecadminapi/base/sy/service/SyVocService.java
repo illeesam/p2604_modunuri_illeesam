@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyVoc;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyVocMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVocRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyVocService {
     @Transactional
     public SyVoc save(SyVoc entity) {
         if (!repository.existsById(entity.getVocId()))
-            throw new BusinessException("존재하지 않는 SyVoc입니다: " + entity.getVocId());
+            throw new CmBizException("존재하지 않는 SyVoc입니다: " + entity.getVocId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyVoc result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyVocService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyVoc입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyVoc입니다: " + id);
         repository.deleteById(id);
     }
 

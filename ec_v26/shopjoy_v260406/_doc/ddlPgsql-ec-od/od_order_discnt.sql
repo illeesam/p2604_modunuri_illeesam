@@ -27,9 +27,9 @@ CREATE TABLE od_order_discnt (
     restore_amt         BIGINT          DEFAULT 0,              -- 복원된 금액 (부분복원 지원)
     restore_date        TIMESTAMP,                              -- 복원 처리일시
     -- ── 기본 ──
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (order_discnt_id)
 );

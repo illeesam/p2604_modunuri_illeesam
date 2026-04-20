@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleItem;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleItemMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleItemRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class StSettleItemService {
     @Transactional
     public StSettleItem save(StSettleItem entity) {
         if (!repository.existsById(entity.getSettleItemId()))
-            throw new BusinessException("존재하지 않는 StSettleItem입니다: " + entity.getSettleItemId());
+            throw new CmBizException("존재하지 않는 StSettleItem입니다: " + entity.getSettleItemId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleItem result = repository.save(entity);
@@ -82,7 +82,7 @@ public class StSettleItemService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 StSettleItem입니다: " + id);
+            throw new CmBizException("존재하지 않는 StSettleItem입니다: " + id);
         repository.deleteById(id);
     }
 

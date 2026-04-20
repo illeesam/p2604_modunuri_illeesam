@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdRestockNotiMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdRestockNotiRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdRestockNotiService {
     @Transactional
     public PdRestockNoti save(PdRestockNoti entity) {
         if (!repository.existsById(entity.getRestockNotiId()))
-            throw new BusinessException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId());
+            throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdRestockNoti result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdRestockNotiService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdRestockNoti입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + id);
         repository.deleteById(id);
     }
 

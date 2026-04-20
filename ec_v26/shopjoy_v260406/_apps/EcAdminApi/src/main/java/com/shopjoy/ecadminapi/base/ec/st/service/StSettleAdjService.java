@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleAdjMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleAdjRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class StSettleAdjService {
     @Transactional
     public StSettleAdj save(StSettleAdj entity) {
         if (!repository.existsById(entity.getSettleAdjId()))
-            throw new BusinessException("존재하지 않는 StSettleAdj입니다: " + entity.getSettleAdjId());
+            throw new CmBizException("존재하지 않는 StSettleAdj입니다: " + entity.getSettleAdjId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleAdj result = repository.save(entity);
@@ -82,7 +82,7 @@ public class StSettleAdjService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 StSettleAdj입니다: " + id);
+            throw new CmBizException("존재하지 않는 StSettleAdj입니다: " + id);
         repository.deleteById(id);
     }
 

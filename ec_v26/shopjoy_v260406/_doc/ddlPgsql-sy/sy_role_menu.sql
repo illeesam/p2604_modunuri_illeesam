@@ -5,9 +5,9 @@ CREATE TABLE sy_role_menu (
     role_id         VARCHAR(21)     NOT NULL,
     menu_id         VARCHAR(21)     NOT NULL,
     perm_level      SMALLINT        DEFAULT 1,              -- 1:조회 / 2:수정 / 3:삭제
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (role_menu_id),
     UNIQUE (role_id, menu_id)

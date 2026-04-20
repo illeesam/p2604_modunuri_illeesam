@@ -43,12 +43,14 @@ public class FoMyPageController {
 
     @GetMapping("/info")
     public ResponseEntity<ApiResponse<MbMemberDto>> getMyInfo() {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyInfo()));
+        MbMemberDto result = service.getMyInfo();
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PutMapping("/info")
     public ResponseEntity<ApiResponse<MbMemberDto>> updateMyInfo(@RequestBody MbMember body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.updateMyInfo(body)));
+        MbMemberDto result = service.updateMyInfo(body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/password")
@@ -59,7 +61,8 @@ public class FoMyPageController {
 
     @GetMapping("/addr")
     public ResponseEntity<ApiResponse<List<MbMemberAddrDto>>> getMyAddrs() {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyAddrs()));
+        List<MbMemberAddrDto> result = service.getMyAddrs();
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/addr")
@@ -76,22 +79,26 @@ public class FoMyPageController {
     @GetMapping("/order")
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> getMyOrders(
             @RequestParam(required = false) String siteId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyOrders(siteId)));
+        List<OdOrderDto> result = service.getMyOrders(siteId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/claim")
     public ResponseEntity<ApiResponse<List<OdClaimDto>>> getMyClaims(
             @RequestParam(required = false) String siteId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyClaims(siteId)));
+        List<OdClaimDto> result = service.getMyClaims(siteId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/coupon")
     public ResponseEntity<ApiResponse<List<PmCouponDto>>> getMyCoupons() {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyCoupons()));
+        List<PmCouponDto> result = service.getMyCoupons();
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/cache")
     public ResponseEntity<ApiResponse<List<PmCacheDto>>> getMyCacheHistory() {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyCacheHistory()));
+        List<PmCacheDto> result = service.getMyCacheHistory();
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

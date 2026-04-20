@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyRoleMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoSyRoleService {
     private final SyRoleRepository repository;
 
     @Transactional(readOnly = true)
-    public List<SyRoleDto> list(String siteId, String kw) {
+    public List<SyRoleDto> getList(String siteId, String kw) {
         Map<String, Object> p = buildParams(siteId, kw);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<SyRoleDto> page(String siteId, String kw, int pageNo, int pageSize) {
+    public PageResult<SyRoleDto> getPageData(String siteId, String kw, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoSyRoleService {
     @Transactional(readOnly = true)
     public SyRoleDto getById(String id) {
         SyRoleDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoSyRoleService {
 
     @Transactional
     public SyRoleDto update(String id, SyRole body) {
-        SyRole entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        SyRole entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,7 +64,7 @@ public class BoSyRoleService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 

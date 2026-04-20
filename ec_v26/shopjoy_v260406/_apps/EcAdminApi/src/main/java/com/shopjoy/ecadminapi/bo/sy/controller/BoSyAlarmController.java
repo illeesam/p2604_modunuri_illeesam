@@ -29,7 +29,8 @@ public class BoSyAlarmController {
             @RequestParam(required = false) String kw,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, dateStart, dateEnd)));
+        List<SyAlarmDto> result = service.getList(siteId, kw, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -40,12 +41,14 @@ public class BoSyAlarmController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<SyAlarmDto> result = service.getPageData(siteId, kw, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarmDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        SyAlarmDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -55,7 +58,8 @@ public class BoSyAlarmController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarmDto>> update(@PathVariable String id, @RequestBody SyAlarm body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        SyAlarmDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

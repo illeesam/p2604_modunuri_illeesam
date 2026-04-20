@@ -16,7 +16,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCacheMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponMapper;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,7 +50,7 @@ public class FoMyPageService {
     public MbMemberDto getMyInfo() {
         String memberId = SecurityUtil.currentUserId();
         MbMemberDto dto = memberMapper.selectById(memberId);
-        if (dto == null) throw new BusinessException("회원 정보를 찾을 수 없습니다.");
+        if (dto == null) throw new CmBizException("회원 정보를 찾을 수 없습니다.");
         return dto;
     }
 
@@ -58,7 +58,7 @@ public class FoMyPageService {
     public MbMemberDto updateMyInfo(MbMember body) {
         String memberId = SecurityUtil.currentUserId();
         MbMember member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new BusinessException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
         if (body.getMemberNm()      != null) member.setMemberNm(body.getMemberNm());
         if (body.getMemberPhone()   != null) member.setMemberPhone(body.getMemberPhone());
@@ -77,10 +77,10 @@ public class FoMyPageService {
     public void changePassword(String currentPassword, String newPassword) {
         String memberId = SecurityUtil.currentUserId();
         MbMember member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new BusinessException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
         if (!passwordEncoder.matches(currentPassword, member.getMemberPassword())) {
-            throw new BusinessException("현재 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("현재 비밀번호가 올바르지 않습니다.");
         }
         member.setMemberPassword(passwordEncoder.encode(newPassword));
         member.setUpdBy(memberId);
@@ -106,9 +106,9 @@ public class FoMyPageService {
     public void deleteAddr(String addrId) {
         String memberId = SecurityUtil.currentUserId();
         MbMemberAddr addr = addrRepository.findById(addrId)
-                .orElseThrow(() -> new BusinessException("주소를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CmBizException("주소를 찾을 수 없습니다."));
         if (!memberId.equals(addr.getMemberId()))
-            throw new BusinessException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다.");
         addrRepository.delete(addr);
     }
 

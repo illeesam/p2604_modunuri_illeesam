@@ -8,9 +8,9 @@ CREATE TABLE pm_discnt_item (
     site_id             VARCHAR(21),
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: DISCNT_ITEM_TARGET (CATEGORY/PRODUCT/MEMBER_GRADE)
     target_id           VARCHAR(21)     NOT NULL,               -- category_id / prod_id / grade_cd
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (discnt_item_id),
     UNIQUE (discnt_id, target_type_cd, target_id)

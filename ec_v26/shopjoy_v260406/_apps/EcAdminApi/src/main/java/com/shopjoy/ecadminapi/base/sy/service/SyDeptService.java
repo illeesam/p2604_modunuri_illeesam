@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyDeptMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyDeptService {
     @Transactional
     public SyDept save(SyDept entity) {
         if (!repository.existsById(entity.getDeptId()))
-            throw new BusinessException("존재하지 않는 SyDept입니다: " + entity.getDeptId());
+            throw new CmBizException("존재하지 않는 SyDept입니다: " + entity.getDeptId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyDept result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyDeptService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyDept입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyDept입니다: " + id);
         repository.deleteById(id);
     }
 

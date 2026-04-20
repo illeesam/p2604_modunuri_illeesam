@@ -16,10 +16,10 @@ import lombok.Setter;
 public class SyRole {
 
     @Id
-    @Column(name = "role_id", length = 20, nullable = false)
+    @Column(name = "role_id", length = 21, nullable = false)
     private String roleId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "role_code", length = 50, nullable = false)
@@ -28,7 +28,7 @@ public class SyRole {
     @Column(name = "role_nm", length = 100, nullable = false)
     private String roleNm;
 
-    @Column(name = "parent_role_id", length = 20)
+    @Column(name = "parent_role_id", length = 21)
     private String parentRoleId;
 
     @Column(name = "role_type_cd", length = 20)
@@ -46,13 +46,13 @@ public class SyRole {
     @Column(name = "role_remark", length = 300)
     private String roleRemark;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

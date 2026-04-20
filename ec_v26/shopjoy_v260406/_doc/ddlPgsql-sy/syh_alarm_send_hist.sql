@@ -9,9 +9,9 @@ CREATE TABLE syh_alarm_send_hist (
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     send_hist_status_cd VARCHAR(20)     DEFAULT 'SENT',         -- SENT/FAILED
     error_msg       VARCHAR(500),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (send_hist_id)
 );

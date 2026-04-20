@@ -13,9 +13,9 @@ CREATE TABLE syh_batch_hist (
     error_count     INTEGER         DEFAULT 0,
     message         TEXT,
     detail          TEXT,                                   -- 상세 로그 (JSON)
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (batch_hist_id)
 );

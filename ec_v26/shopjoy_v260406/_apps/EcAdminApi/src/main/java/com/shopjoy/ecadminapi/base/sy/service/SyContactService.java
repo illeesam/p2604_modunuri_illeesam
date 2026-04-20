@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyContactMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyContactService {
     @Transactional
     public SyContact save(SyContact entity) {
         if (!repository.existsById(entity.getContactId()))
-            throw new BusinessException("존재하지 않는 SyContact입니다: " + entity.getContactId());
+            throw new CmBizException("존재하지 않는 SyContact입니다: " + entity.getContactId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyContact result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyContactService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyContact입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyContact입니다: " + id);
         repository.deleteById(id);
     }
 

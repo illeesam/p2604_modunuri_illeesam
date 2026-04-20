@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StReconMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StReconRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class StReconService {
     @Transactional
     public StRecon save(StRecon entity) {
         if (!repository.existsById(entity.getReconId()))
-            throw new BusinessException("존재하지 않는 StRecon입니다: " + entity.getReconId());
+            throw new CmBizException("존재하지 않는 StRecon입니다: " + entity.getReconId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         StRecon result = repository.save(entity);
@@ -82,7 +82,7 @@ public class StReconService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 StRecon입니다: " + id);
+            throw new CmBizException("존재하지 않는 StRecon입니다: " + id);
         repository.deleteById(id);
     }
 

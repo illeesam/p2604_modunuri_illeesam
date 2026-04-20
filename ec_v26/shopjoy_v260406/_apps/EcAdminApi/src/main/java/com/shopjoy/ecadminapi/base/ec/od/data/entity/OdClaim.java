@@ -16,16 +16,16 @@ import lombok.Setter;
 public class OdClaim {
 
     @Id
-    @Column(name = "claim_id", length = 20, nullable = false)
+    @Column(name = "claim_id", length = 21, nullable = false)
     private String claimId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
     @Column(name = "member_nm", length = 50)
@@ -95,7 +95,7 @@ public class OdClaim {
     @Column(name = "proc_date")
     private LocalDateTime procDate;
 
-    @Column(name = "proc_user_id", length = 20)
+    @Column(name = "proc_user_id", length = 21)
     private String procUserId;
 
     @Lob
@@ -156,7 +156,7 @@ public class OdClaim {
     @Column(name = "inbound_tracking_no", length = 100)
     private String inboundTrackingNo;
 
-    @Column(name = "inbound_dliv_id", length = 20)
+    @Column(name = "inbound_dliv_id", length = 21)
     private String inboundDlivId;
 
     @Column(name = "exch_recv_nm", length = 50)
@@ -186,7 +186,7 @@ public class OdClaim {
     @Column(name = "exchange_tracking_no", length = 100)
     private String exchangeTrackingNo;
 
-    @Column(name = "outbound_dliv_id", length = 20)
+    @Column(name = "outbound_dliv_id", length = 21)
     private String outboundDlivId;
 
     @Column(name = "total_shipping_fee")
@@ -201,13 +201,13 @@ public class OdClaim {
     @Column(name = "shipping_fee_memo", length = 300)
     private String shippingFeeMemo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")
@@ -231,13 +231,13 @@ public class OdClaim {
     @Column(name = "appr_reason", length = 500)
     private String apprReason;
 
-    @Column(name = "appr_req_user_id", length = 20)
+    @Column(name = "appr_req_user_id", length = 21)
     private String apprReqUserId;
 
     @Column(name = "appr_req_date")
     private LocalDateTime apprReqDate;
 
-    @Column(name = "appr_aprv_user_id", length = 20)
+    @Column(name = "appr_aprv_user_id", length = 21)
     private String apprAprvUserId;
 
     @Column(name = "appr_aprv_date")

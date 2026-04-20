@@ -42,10 +42,19 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
-    /** 비즈니스 규칙 위반 — BusinessException에 지정된 HTTP 상태코드로 응답 */
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex, HttpServletRequest req) {
-        log.warn("BusinessException: {}", ex.getMessage());
+    /** 인증/인가 실패 — AuthException에 지정된 HTTP 상태코드로 응답 (기본 401) */
+    @ExceptionHandler(CmAuthException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuth(CmAuthException ex, HttpServletRequest req) {
+        log.warn("CmAuthException: {}", ex.getMessage());
+        return ResponseEntity.status(ex.getHttpStatus())
+            .body(ApiResponse.<Void>error(ex.getHttpStatus().value(), ex.getMessage())
+                .withDebug(buildStack(ex), buildUserInfo(req)));
+    }
+
+    /** 비즈니스 규칙 위반 — BizException에 지정된 HTTP 상태코드로 응답 */
+    @ExceptionHandler(CmBizException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusiness(CmBizException ex, HttpServletRequest req) {
+        log.warn("CmBizException: {}", ex.getMessage());
         return ResponseEntity.status(ex.getHttpStatus())
             .body(ApiResponse.<Void>error(ex.getHttpStatus().value(), ex.getMessage())
                 .withDebug(buildStack(ex), buildUserInfo(req)));

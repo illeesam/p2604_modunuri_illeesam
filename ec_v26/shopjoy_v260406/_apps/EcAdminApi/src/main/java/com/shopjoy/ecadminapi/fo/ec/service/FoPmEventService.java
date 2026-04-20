@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventMapper;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class FoPmEventService {
     @Transactional(readOnly = true)
     public PmEventDto getById(String eventId) {
         PmEventDto dto = mapper.selectById(eventId);
-        if (dto == null) throw new BusinessException("존재하지 않는 이벤트입니다: " + eventId);
+        if (dto == null) throw new CmBizException("존재하지 않는 이벤트입니다: " + eventId);
         return dto;
     }
 }

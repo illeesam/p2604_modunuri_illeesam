@@ -17,9 +17,9 @@ CREATE TABLE cm_chatt_room (
     chatt_memo      TEXT,
     close_date      TIMESTAMP,
     close_reason    VARCHAR(200),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (chatt_room_id)
 );

@@ -17,9 +17,9 @@ CREATE TABLE od_claim_item (
     return_shipping_fee  BIGINT       DEFAULT 0,           -- 수거배송료
     inbound_shipping_fee BIGINT       DEFAULT 0,           -- 반입배송료
     exchange_shipping_fee BIGINT      DEFAULT 0,           -- 교환상품 발송배송료
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (claim_item_id)
 );

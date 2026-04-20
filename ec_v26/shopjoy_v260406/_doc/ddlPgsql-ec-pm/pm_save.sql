@@ -14,9 +14,9 @@ CREATE TABLE pm_save (
     ref_id              VARCHAR(21),                            -- 연관ID (order_id 등)
     expire_date         TIMESTAMP,                              -- 소멸예정일 (EARN 시 설정)
     save_memo           TEXT,                                   -- 메모
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (save_id)
 );

@@ -52,9 +52,9 @@ CREATE TABLE od_order_item (
     dliv_courier_cd     VARCHAR(30),                        -- 코드: COURIER
     dliv_tracking_no    VARCHAR(100),
     dliv_ship_date      TIMESTAMP,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (order_item_id)
 );

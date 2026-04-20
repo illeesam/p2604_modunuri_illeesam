@@ -15,9 +15,9 @@ CREATE TABLE dp_ui_area (
     disp_end_date       DATE,                                   -- 전시종료일
     disp_end_time       TIME,                                   -- 전시종료시간
     use_yn              CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (ui_area_id),
     UNIQUE (ui_id, area_id),

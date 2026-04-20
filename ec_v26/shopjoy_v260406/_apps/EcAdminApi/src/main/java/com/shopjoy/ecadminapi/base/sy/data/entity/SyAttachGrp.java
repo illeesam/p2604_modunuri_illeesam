@@ -16,7 +16,7 @@ import lombok.Setter;
 public class SyAttachGrp {
 
     @Id
-    @Column(name = "attach_grp_id", length = 20, nullable = false)
+    @Column(name = "attach_grp_id", length = 21, nullable = false)
     private String attachGrpId;
 
     @Column(name = "attach_grp_code", length = 50, nullable = false)
@@ -46,13 +46,13 @@ public class SyAttachGrp {
     @Column(name = "attach_grp_remark", length = 500)
     private String attachGrpRemark;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

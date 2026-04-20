@@ -16,13 +16,13 @@ import lombok.Setter;
 public class PmEventBenefit {
 
     @Id
-    @Column(name = "benefit_id", length = 20, nullable = false)
+    @Column(name = "benefit_id", length = 21, nullable = false)
     private String benefitId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "event_id", length = 20, nullable = false)
+    @Column(name = "event_id", length = 21, nullable = false)
     private String eventId;
 
     @Column(name = "benefit_nm", length = 100, nullable = false)
@@ -37,19 +37,19 @@ public class PmEventBenefit {
     @Column(name = "benefit_value", length = 100)
     private String benefitValue;
 
-    @Column(name = "coupon_id", length = 20)
+    @Column(name = "coupon_id", length = 21)
     private String couponId;
 
     @Column(name = "sort_ord")
     private Integer sortOrd;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

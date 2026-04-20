@@ -8,9 +8,9 @@ CREATE TABLE mb_member_grade (
     min_purchase_amt BIGINT         DEFAULT 0,              -- 등급 유지 최소 구매금액
     save_rate       DECIMAL(5,2)    DEFAULT 1.00,           -- 적립률 (%)
     use_yn          VARCHAR(1)      DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (grade_id),
     UNIQUE (site_id, grade_cd)

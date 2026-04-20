@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdReviewCommentMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewCommentRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdReviewCommentService {
     @Transactional
     public PdReviewComment save(PdReviewComment entity) {
         if (!repository.existsById(entity.getReviewCommentId()))
-            throw new BusinessException("존재하지 않는 PdReviewComment입니다: " + entity.getReviewCommentId());
+            throw new CmBizException("존재하지 않는 PdReviewComment입니다: " + entity.getReviewCommentId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdReviewComment result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdReviewCommentService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdReviewComment입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdReviewComment입니다: " + id);
         repository.deleteById(id);
     }
 

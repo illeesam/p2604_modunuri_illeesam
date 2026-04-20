@@ -16,10 +16,10 @@ import lombok.Setter;
 public class OdPayMethod {
 
     @Id
-    @Column(name = "pay_method_id", length = 20, nullable = false)
+    @Column(name = "pay_method_id", length = 21, nullable = false)
     private String payMethodId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "pay_method_type_cd", length = 20, nullable = false)
@@ -37,13 +37,13 @@ public class OdPayMethod {
     @Column(name = "main_method_yn", length = 1)
     private String mainMethodYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

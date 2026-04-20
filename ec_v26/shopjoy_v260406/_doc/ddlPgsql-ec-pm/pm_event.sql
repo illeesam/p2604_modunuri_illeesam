@@ -21,9 +21,9 @@ CREATE TABLE pm_event (
     view_cnt        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     event_desc      TEXT,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (event_id)
 );

@@ -16,13 +16,13 @@ import lombok.Setter;
 public class OdhClaimChgHist {
 
     @Id
-    @Column(name = "claim_chg_hist_id", length = 20, nullable = false)
+    @Column(name = "claim_chg_hist_id", length = 21, nullable = false)
     private String claimChgHistId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "claim_id", length = 20, nullable = false)
+    @Column(name = "claim_id", length = 21, nullable = false)
     private String claimId;
 
     @Column(name = "chg_type_cd", length = 30, nullable = false)
@@ -42,19 +42,19 @@ public class OdhClaimChgHist {
     @Column(name = "chg_reason", length = 300)
     private String chgReason;
 
-    @Column(name = "chg_user_id", length = 20)
+    @Column(name = "chg_user_id", length = 21)
     private String chgUserId;
 
     @Column(name = "chg_date")
     private LocalDateTime chgDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

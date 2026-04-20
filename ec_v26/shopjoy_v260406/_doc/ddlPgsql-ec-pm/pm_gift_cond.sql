@@ -10,9 +10,9 @@ CREATE TABLE pm_gift_cond (
     min_order_amt       BIGINT          DEFAULT 0,              -- ORDER_AMT 조건: 최소주문금액
     target_type_cd      VARCHAR(20),                            -- PRODUCT/CATEGORY/MEMBER_GRADE
     target_id           VARCHAR(21),                            -- prod_id / category_id / grade_cd
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (gift_cond_id)
 );

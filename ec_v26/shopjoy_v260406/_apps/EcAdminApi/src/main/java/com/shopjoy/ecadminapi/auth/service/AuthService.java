@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -36,17 +36,34 @@ public class AuthService {
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
     @Transactional
+    public SyUser join(SyUser body) {
+        boolean exists = em.createQuery(
+                "SELECT COUNT(u) FROM SyUser u WHERE u.loginId = :loginId", Long.class)
+            .setParameter("loginId", body.getLoginId())
+            .getSingleResult() > 0;
+        if (exists) throw new CmBizException("이미 사용 중인 아이디입니다.");
+
+        body.setUserId("US" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyMMddHHmmss"))
+            + String.format("%04d", (int)(Math.random() * 10000)));
+        body.setUserPassword(passwordEncoder.encode(body.getUserPassword()));
+        body.setUserStatusCd("ACTIVE");
+        body.setRegDate(LocalDateTime.now());
+        em.persist(body);
+        return body;
+    }
+
+    @Transactional
     public LoginRes login(LoginReq request) {
         SyUser user = findUserByLoginId(request.getLoginId());
 
         if (!"ACTIVE".equals(user.getUserStatusCd())) {
-            throw new BusinessException("비활성화된 계정입니다.");
+            throw new CmBizException("비활성화된 계정입니다.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
             // Increment login fail count
             user.setLoginFailCnt(user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1);
-            throw new BusinessException("아이디 또는 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         // Reset fail count on success
@@ -73,23 +90,23 @@ public class AuthService {
     @Transactional(readOnly = true)
     public TokenPair refresh(String refreshToken) {
         if (revokedTokens.contains(refreshToken)) {
-            throw new BusinessException("이미 무효화된 토큰입니다.");
+            throw new CmBizException("이미 무효화된 토큰입니다.");
         }
 
         if (!jwtProvider.validate(refreshToken)) {
-            throw new BusinessException("유효하지 않거나 만료된 refreshToken입니다.");
+            throw new CmBizException("유효하지 않거나 만료된 refreshToken입니다.");
         }
 
         String tokenType = jwtProvider.getTokenType(refreshToken);
         if (!"refresh".equals(tokenType)) {
-            throw new BusinessException("refreshToken이 아닙니다.");
+            throw new CmBizException("refreshToken이 아닙니다.");
         }
 
         String userId   = jwtProvider.getUserId(refreshToken);
         String userType = jwtProvider.getUserType(refreshToken);
         SyUser user = em.find(SyUser.class, userId);
         if (user == null) {
-            throw new BusinessException("사용자를 찾을 수 없습니다.");
+            throw new CmBizException("사용자를 찾을 수 없습니다.");
         }
 
         // Rotate refresh token
@@ -115,7 +132,7 @@ public class AuthService {
                 .setParameter("loginId", loginId)
                 .getSingleResult();
         } catch (NoResultException e) {
-            throw new BusinessException("아이디 또는 비밀번호가 올바르지 않습니다.");
+            throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
     }
 }

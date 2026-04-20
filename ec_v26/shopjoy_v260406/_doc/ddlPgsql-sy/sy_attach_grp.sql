@@ -14,9 +14,9 @@ CREATE TABLE sy_attach_grp (
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     attach_grp_remark VARCHAR(500),                            -- 비고/설명
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (attach_grp_id),
     UNIQUE (attach_grp_code)

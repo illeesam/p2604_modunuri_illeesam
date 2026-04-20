@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucherIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmVoucherIssueMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmVoucherIssueRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmVoucherIssueService {
     @Transactional
     public PmVoucherIssue save(PmVoucherIssue entity) {
         if (!repository.existsById(entity.getVoucherIssueId()))
-            throw new BusinessException("존재하지 않는 PmVoucherIssue입니다: " + entity.getVoucherIssueId());
+            throw new CmBizException("존재하지 않는 PmVoucherIssue입니다: " + entity.getVoucherIssueId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmVoucherIssue result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmVoucherIssueService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmVoucherIssue입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmVoucherIssue입니다: " + id);
         repository.deleteById(id);
     }
 

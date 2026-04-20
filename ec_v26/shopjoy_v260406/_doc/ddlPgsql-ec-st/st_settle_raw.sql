@@ -110,9 +110,9 @@ CREATE TABLE st_settle_raw (
     erp_send_yn             CHAR(1)         DEFAULT 'N',            -- ERP 전송 여부 Y/N
     erp_send_date           TIMESTAMP,                              -- ERP 전송일시
 
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(20),
+    upd_by                  VARCHAR(30),
     upd_date                TIMESTAMP,
 
     PRIMARY KEY (settle_raw_id)

@@ -18,9 +18,9 @@ CREATE TABLE pd_prod_set_item (
     item_desc           VARCHAR(300),                           -- 구성품 설명 (소재·용량 등 부가 안내)
     sort_ord            INTEGER         DEFAULT 0,              -- 노출 순서
     use_yn              CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (set_item_id)
 );

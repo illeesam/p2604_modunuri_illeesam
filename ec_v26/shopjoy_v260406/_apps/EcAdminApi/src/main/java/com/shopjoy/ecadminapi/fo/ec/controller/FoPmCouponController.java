@@ -25,6 +25,7 @@ public class FoPmCouponController {
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<PmCouponIssueDto>>> available(
             @RequestParam(required = false) String siteId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getAvailableCoupons(siteId)));
+        List<PmCouponIssueDto> result = service.getAvailableCoupons(siteId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

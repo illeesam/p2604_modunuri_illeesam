@@ -16,10 +16,10 @@ import lombok.Setter;
 public class StErpVoucherLine {
 
     @Id
-    @Column(name = "erp_voucher_line_id", length = 20, nullable = false)
+    @Column(name = "erp_voucher_line_id", length = 21, nullable = false)
     private String erpVoucherLineId;
 
-    @Column(name = "erp_voucher_id", length = 20, nullable = false)
+    @Column(name = "erp_voucher_id", length = 21, nullable = false)
     private String erpVoucherId;
 
     @Column(name = "line_no", nullable = false)
@@ -46,19 +46,19 @@ public class StErpVoucherLine {
     @Column(name = "ref_type_cd", length = 20)
     private String refTypeCd;
 
-    @Column(name = "ref_id", length = 20)
+    @Column(name = "ref_id", length = 21)
     private String refId;
 
     @Column(name = "line_memo", length = 300)
     private String lineMemo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmGiftCondMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmGiftCondRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmGiftCondService {
     @Transactional
     public PmGiftCond save(PmGiftCond entity) {
         if (!repository.existsById(entity.getGiftCondId()))
-            throw new BusinessException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId());
+            throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmGiftCond result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmGiftCondService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmGiftCond입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + id);
         repository.deleteById(id);
     }
 

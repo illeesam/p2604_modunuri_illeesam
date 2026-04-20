@@ -41,7 +41,8 @@ public class MbDeviceTokenController {
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd,
             @RequestParam(required = false) String sort) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(buildParam(siteId, kw, dateStart, dateEnd, sort))));
+        List<MbDeviceTokenDto> result = service.getList(buildParam(siteId, kw, dateStart, dateEnd, sort));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -53,7 +54,8 @@ public class MbDeviceTokenController {
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(buildParam(siteId, kw, dateStart, dateEnd, sort), pageNo, pageSize)));
+        PageResult<MbDeviceTokenDto> result = service.getPageData(buildParam(siteId, kw, dateStart, dateEnd, sort), pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
@@ -72,14 +74,16 @@ public class MbDeviceTokenController {
     public ResponseEntity<ApiResponse<MbDeviceToken>> save(
             @PathVariable String id, @RequestBody MbDeviceToken entity) {
         entity.setDeviceTokenId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        MbDeviceToken result = service.save(entity);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
             @PathVariable String id, @RequestBody MbDeviceToken entity) {
         entity.setDeviceTokenId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.update(entity)));
+        int result = service.update(entity);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")
@@ -90,12 +94,14 @@ public class MbDeviceTokenController {
 
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<MbDeviceToken>> saveByRowStatus(@RequestBody @Valid MbDeviceTokenReq req) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveByRowStatus(req)));
+        MbDeviceToken result = service.saveByRowStatus(req);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<List<MbDeviceToken>>> saveListByRowStatus(@RequestBody @Valid List<MbDeviceTokenReq> list) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveListByRowStatus(list)));
+        List<MbDeviceToken> result = service.saveListByRowStatus(list);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     private Map<String, Object> buildParam(String siteId, String kw,

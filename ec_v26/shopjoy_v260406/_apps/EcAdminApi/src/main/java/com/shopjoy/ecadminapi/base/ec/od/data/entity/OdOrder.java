@@ -16,13 +16,13 @@ import lombok.Setter;
 public class OdOrder {
 
     @Id
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "member_nm", length = 50)
@@ -118,7 +118,7 @@ public class OdOrder {
     @Column(name = "refund_account_nm", length = 50)
     private String refundAccountNm;
 
-    @Column(name = "coupon_id", length = 20)
+    @Column(name = "coupon_id", length = 21)
     private String couponId;
 
     @Lob
@@ -140,13 +140,13 @@ public class OdOrder {
     @Column(name = "dliv_ship_date")
     private LocalDateTime dlivShipDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")
@@ -170,13 +170,13 @@ public class OdOrder {
     @Column(name = "appr_reason", length = 500)
     private String apprReason;
 
-    @Column(name = "appr_req_user_id", length = 20)
+    @Column(name = "appr_req_user_id", length = 21)
     private String apprReqUserId;
 
     @Column(name = "appr_req_date")
     private LocalDateTime apprReqDate;
 
-    @Column(name = "appr_aprv_user_id", length = 20)
+    @Column(name = "appr_aprv_user_id", length = 21)
     private String apprAprvUserId;
 
     @Column(name = "appr_aprv_date")

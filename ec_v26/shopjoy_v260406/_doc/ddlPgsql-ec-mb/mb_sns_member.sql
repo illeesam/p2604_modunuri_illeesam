@@ -4,9 +4,9 @@ CREATE TABLE mb_sns_member (
     member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     sns_channel_cd  VARCHAR(20)     NOT NULL,               -- 코드: SNS_CHANNEL (KAKAO/NAVER/GOOGLE/APPLE)
     sns_user_id     VARCHAR(200)    NOT NULL,               -- SNS 플랫폼 사용자 ID
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (sns_mem_id),
     UNIQUE (member_id, sns_channel_cd)

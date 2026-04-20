@@ -12,9 +12,9 @@ CREATE TABLE pm_gift_issue (
     gift_issue_status_cd VARCHAR(20)    DEFAULT 'ISSUED',       -- 코드: GIFT_ISSUE_STATUS (ISSUED:발급/DELIVERED:배송완료/CANCELLED:취소)
     gift_issue_status_cd_before VARCHAR(20),
     gift_issue_memo     TEXT,
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (gift_issue_id)
 );

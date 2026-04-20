@@ -18,19 +18,19 @@ import lombok.Setter;
 public class OdOrderItem {
 
     @Id
-    @Column(name = "order_item_id", length = 20, nullable = false)
+    @Column(name = "order_item_id", length = 21, nullable = false)
     private String orderItemId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Column(name = "prod_id", length = 20, nullable = false)
+    @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Column(name = "sku_id", length = 20)
+    @Column(name = "sku_id", length = 21)
     private String skuId;
 
     @Column(name = "opt_item_id_1", length = 20)
@@ -45,7 +45,7 @@ public class OdOrderItem {
     @Column(name = "brand_nm", length = 100)
     private String brandNm;
 
-    @Column(name = "dliv_tmplt_id", length = 20)
+    @Column(name = "dliv_tmplt_id", length = 21)
     private String dlivTmpltId;
 
     @Column(name = "normal_price")
@@ -129,7 +129,7 @@ public class OdOrderItem {
     @Column(name = "bundle_price_rate")
     private BigDecimal bundlePriceRate;
 
-    @Column(name = "gift_id", length = 20)
+    @Column(name = "gift_id", length = 21)
     private String giftId;
 
     @Column(name = "outbound_shipping_fee")
@@ -144,13 +144,13 @@ public class OdOrderItem {
     @Column(name = "dliv_ship_date")
     private LocalDateTime dlivShipDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

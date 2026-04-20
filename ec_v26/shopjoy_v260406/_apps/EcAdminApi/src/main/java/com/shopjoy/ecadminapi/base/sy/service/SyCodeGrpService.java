@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyCodeGrpMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyCodeGrpRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyCodeGrpService {
     @Transactional
     public SyCodeGrp save(SyCodeGrp entity) {
         if (!repository.existsById(entity.getCodeGrpId()))
-            throw new BusinessException("존재하지 않는 SyCodeGrp입니다: " + entity.getCodeGrpId());
+            throw new CmBizException("존재하지 않는 SyCodeGrp입니다: " + entity.getCodeGrpId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyCodeGrp result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyCodeGrpService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyCodeGrp입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyCodeGrp입니다: " + id);
         repository.deleteById(id);
     }
 

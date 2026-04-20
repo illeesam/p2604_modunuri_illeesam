@@ -16,22 +16,22 @@ import lombok.Setter;
 public class OdCart {
 
     @Id
-    @Column(name = "cart_id", length = 20, nullable = false)
+    @Column(name = "cart_id", length = 21, nullable = false)
     private String cartId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
     @Column(name = "session_key", length = 100)
     private String sessionKey;
 
-    @Column(name = "prod_id", length = 20, nullable = false)
+    @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Column(name = "sku_id", length = 20)
+    @Column(name = "sku_id", length = 21)
     private String skuId;
 
     @Column(name = "opt_item_id_1", length = 20)
@@ -52,13 +52,13 @@ public class OdCart {
     @Column(name = "is_checked", length = 1)
     private String isChecked;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

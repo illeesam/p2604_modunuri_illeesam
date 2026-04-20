@@ -16,13 +16,13 @@ import lombok.Setter;
 public class DpWidget {
 
     @Id
-    @Column(name = "widget_id", length = 20, nullable = false)
+    @Column(name = "widget_id", length = 21, nullable = false)
     private String widgetId;
 
-    @Column(name = "widget_lib_id", length = 20)
+    @Column(name = "widget_lib_id", length = 21)
     private String widgetLibId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "widget_nm", length = 100, nullable = false)
@@ -63,13 +63,13 @@ public class DpWidget {
     @Column(name = "disp_env", length = 50)
     private String dispEnv;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

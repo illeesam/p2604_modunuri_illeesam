@@ -16,9 +16,9 @@ CREATE TABLE pdh_prod_view_log (
     device          VARCHAR(200),                          -- User-Agent
     referrer        VARCHAR(500),                          -- 유입 경로 URL
     view_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (log_id)
 );

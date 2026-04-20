@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmGiftIssueMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmGiftIssueRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmGiftIssueService {
     @Transactional
     public PmGiftIssue save(PmGiftIssue entity) {
         if (!repository.existsById(entity.getGiftIssueId()))
-            throw new BusinessException("존재하지 않는 PmGiftIssue입니다: " + entity.getGiftIssueId());
+            throw new CmBizException("존재하지 않는 PmGiftIssue입니다: " + entity.getGiftIssueId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmGiftIssue result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmGiftIssueService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmGiftIssue입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmGiftIssue입니다: " + id);
         repository.deleteById(id);
     }
 

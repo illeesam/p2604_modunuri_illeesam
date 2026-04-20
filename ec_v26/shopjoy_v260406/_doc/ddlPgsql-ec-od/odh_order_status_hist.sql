@@ -9,9 +9,9 @@ CREATE TABLE odh_order_status_hist (
     chg_user_id             VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                    VARCHAR(300),
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(20),
+    upd_by                  VARCHAR(30),
     upd_date                TIMESTAMP,
     PRIMARY KEY (order_status_hist_id),
     CONSTRAINT fk_odh_order_status_hist_order FOREIGN KEY (order_id) REFERENCES od_order (order_id)

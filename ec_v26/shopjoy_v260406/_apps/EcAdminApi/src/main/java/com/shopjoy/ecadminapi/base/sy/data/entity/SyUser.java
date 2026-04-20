@@ -16,10 +16,10 @@ import lombok.Setter;
 public class SyUser {
 
     @Id
-    @Column(name = "user_id", length = 20, nullable = false)
+    @Column(name = "user_id", length = 21, nullable = false)
     private String userId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "login_id", length = 50, nullable = false)
@@ -37,10 +37,10 @@ public class SyUser {
     @Column(name = "user_phone", length = 20)
     private String userPhone;
 
-    @Column(name = "dept_id", length = 20)
+    @Column(name = "dept_id", length = 21)
     private String deptId;
 
-    @Column(name = "role_id", length = 20)
+    @Column(name = "role_id", length = 21)
     private String roleId;
 
     @Column(name = "user_status_cd", length = 20)
@@ -56,13 +56,13 @@ public class SyUser {
     @Column(name = "user_memo", columnDefinition = "TEXT")
     private String userMemo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

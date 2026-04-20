@@ -6,7 +6,7 @@ import com.shopjoy.ecadminapi.autorest.data.dto.QueryParam;
 import com.shopjoy.ecadminapi.autorest.data.dto.RowMap;
 import com.shopjoy.ecadminapi.autorest.data.vo.SearchReq;
 import com.shopjoy.ecadminapi.autorest.mapper.AutoRestMapper;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
@@ -39,14 +39,14 @@ public class AutoRestService {
 
     /* ── 목록 (전체, 최대 1000건) ── */
     @Transactional(readOnly = true)
-    public List<RowMap> list(String table, SearchReq search) {
+    public List<RowMap> getList(String table, SearchReq search) {
         QueryParam p = buildParams(table, search, 1000, 0);
         return mapper.selectList(p);
     }
 
     /* ── 페이지 ── */
     @Transactional(readOnly = true)
-    public PageResult<RowMap> page(String table, SearchReq search) {
+    public PageResult<RowMap> getPageData(String table, SearchReq search) {
         int size = Math.min(search.getPageSize(), 500);
         int offset = (search.getPageNo() - 1) * search.getPageSize();
         QueryParam p = buildParams(table, search, size, offset);
@@ -159,7 +159,7 @@ public class AutoRestService {
         if (ids == null || ids.isEmpty()) return 0;
         for (String id : ids) {
             if (!id.matches("[a-zA-Z0-9_\\-]{1,50}")) {
-                throw new BusinessException("유효하지 않은 ID: " + id);
+                throw new CmBizException("유효하지 않은 ID: " + id);
             }
         }
         TableConfig cfg = registry.getConfig(table);
@@ -193,7 +193,7 @@ public class AutoRestService {
 
     private RowMap doSaveByRowStatus(String table, RowMap body) {
         String rowStatus = (String) body.remove("_row_status");
-        if (rowStatus == null) throw new BusinessException("_row_status 값이 없습니다.");
+        if (rowStatus == null) throw new CmBizException("_row_status 값이 없습니다.");
 
         TableConfig cfg = registry.getConfig(table);
         String pkCol = cfg.getPkColumn();
@@ -202,16 +202,16 @@ public class AutoRestService {
             case "I" -> create(table, body);
             case "U" -> {
                 String id = (String) body.get(pkCol);
-                if (id == null || id.isBlank()) throw new BusinessException(pkCol + " 값이 없습니다.");
+                if (id == null || id.isBlank()) throw new CmBizException(pkCol + " 값이 없습니다.");
                 yield update(table, id, body);
             }
             case "D" -> {
                 String id = (String) body.get(pkCol);
-                if (id == null || id.isBlank()) throw new BusinessException(pkCol + " 값이 없습니다.");
+                if (id == null || id.isBlank()) throw new CmBizException(pkCol + " 값이 없습니다.");
                 delete(table, id);
                 yield null;
             }
-            default -> throw new BusinessException("올바르지 않은 _row_status: " + rowStatus);
+            default -> throw new CmBizException("올바르지 않은 _row_status: " + rowStatus);
         };
     }
 
@@ -307,7 +307,7 @@ public class AutoRestService {
         for (String f : cfg.getRequiredFields()) {
             Object v = body.get(f);
             if (v == null || v.toString().isBlank()) {
-                throw new BusinessException("필수 항목 누락: " + f);
+                throw new CmBizException("필수 항목 누락: " + f);
             }
         }
     }

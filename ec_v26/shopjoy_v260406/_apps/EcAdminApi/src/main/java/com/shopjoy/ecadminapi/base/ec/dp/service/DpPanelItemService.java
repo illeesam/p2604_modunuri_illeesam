@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanelItem;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpPanelItemMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelItemRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class DpPanelItemService {
     @Transactional
     public DpPanelItem save(DpPanelItem entity) {
         if (!repository.existsById(entity.getPanelItemId()))
-            throw new BusinessException("존재하지 않는 DpPanelItem입니다: " + entity.getPanelItemId());
+            throw new CmBizException("존재하지 않는 DpPanelItem입니다: " + entity.getPanelItemId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         DpPanelItem result = repository.save(entity);
@@ -82,7 +82,7 @@ public class DpPanelItemService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 DpPanelItem입니다: " + id);
+            throw new CmBizException("존재하지 않는 DpPanelItem입니다: " + id);
         repository.deleteById(id);
     }
 

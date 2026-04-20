@@ -18,9 +18,9 @@ CREATE TABLE dp_widget (
     sort_ord             INTEGER         DEFAULT 0,
     use_yn               CHAR(1)         DEFAULT 'Y',
     disp_env             VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
-    reg_by               VARCHAR(20),
+    reg_by               VARCHAR(30),
     reg_date             TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by               VARCHAR(20),
+    upd_by               VARCHAR(30),
     upd_date             TIMESTAMP,
     PRIMARY KEY (widget_id),
     UNIQUE (site_id, widget_nm),

@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmSaveMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoPmSaveService {
     private final PmSaveRepository repository;
 
     @Transactional(readOnly = true)
-    public List<PmSaveDto> list(String siteId, String kw, String dateStart, String dateEnd) {
+    public List<PmSaveDto> getList(String siteId, String kw, String dateStart, String dateEnd) {
         Map<String, Object> p = buildParams(siteId, kw, dateStart, dateEnd);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PmSaveDto> page(String siteId, String kw, String dateStart, String dateEnd, int pageNo, int pageSize) {
+    public PageResult<PmSaveDto> getPageData(String siteId, String kw, String dateStart, String dateEnd, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw, dateStart, dateEnd);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoPmSaveService {
     @Transactional(readOnly = true)
     public PmSaveDto getById(String id) {
         PmSaveDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoPmSaveService {
 
     @Transactional
     public PmSaveDto update(String id, PmSave body) {
-        PmSave entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        PmSave entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,7 +64,7 @@ public class BoPmSaveService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 

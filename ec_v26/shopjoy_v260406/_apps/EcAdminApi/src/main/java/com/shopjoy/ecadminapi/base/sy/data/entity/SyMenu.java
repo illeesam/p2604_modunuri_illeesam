@@ -16,10 +16,10 @@ import lombok.Setter;
 public class SyMenu {
 
     @Id
-    @Column(name = "menu_id", length = 20, nullable = false)
+    @Column(name = "menu_id", length = 21, nullable = false)
     private String menuId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "menu_code", length = 50, nullable = false)
@@ -28,7 +28,7 @@ public class SyMenu {
     @Column(name = "menu_nm", length = 100, nullable = false)
     private String menuNm;
 
-    @Column(name = "parent_menu_id", length = 20)
+    @Column(name = "parent_menu_id", length = 21)
     private String parentMenuId;
 
     @Column(name = "menu_url", length = 200)
@@ -49,13 +49,13 @@ public class SyMenu {
     @Column(name = "menu_remark", length = 300)
     private String menuRemark;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

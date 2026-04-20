@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventBenefitMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventBenefitRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmEventBenefitService {
     @Transactional
     public PmEventBenefit save(PmEventBenefit entity) {
         if (!repository.existsById(entity.getBenefitId()))
-            throw new BusinessException("존재하지 않는 PmEventBenefit입니다: " + entity.getBenefitId());
+            throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + entity.getBenefitId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmEventBenefit result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmEventBenefitService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmEventBenefit입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + id);
         repository.deleteById(id);
     }
 

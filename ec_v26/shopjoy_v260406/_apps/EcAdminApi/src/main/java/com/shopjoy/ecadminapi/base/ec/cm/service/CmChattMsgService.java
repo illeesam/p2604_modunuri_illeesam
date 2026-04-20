@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmChattMsgMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattMsgRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class CmChattMsgService {
     @Transactional
     public CmChattMsg save(CmChattMsg entity) {
         if (!repository.existsById(entity.getMsgId()))
-            throw new BusinessException("존재하지 않는 CmChattMsg입니다: " + entity.getMsgId());
+            throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getMsgId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattMsg result = repository.save(entity);
@@ -82,7 +82,7 @@ public class CmChattMsgService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 CmChattMsg입니다: " + id);
+            throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + id);
         repository.deleteById(id);
     }
 

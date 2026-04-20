@@ -17,13 +17,13 @@ import lombok.Setter;
 public class PmCache {
 
     @Id
-    @Column(name = "cache_id", length = 20, nullable = false)
+    @Column(name = "cache_id", length = 21, nullable = false)
     private String cacheId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "member_nm", length = 50)
@@ -38,13 +38,13 @@ public class PmCache {
     @Column(name = "balance_amt")
     private Long balanceAmt;
 
-    @Column(name = "ref_id", length = 20)
+    @Column(name = "ref_id", length = 21)
     private String refId;
 
     @Column(name = "cache_desc", length = 200)
     private String cacheDesc;
 
-    @Column(name = "proc_user_id", length = 20)
+    @Column(name = "proc_user_id", length = 21)
     private String procUserId;
 
     @Column(name = "cache_date")
@@ -53,13 +53,13 @@ public class PmCache {
     @Column(name = "expire_date")
     private LocalDate expireDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

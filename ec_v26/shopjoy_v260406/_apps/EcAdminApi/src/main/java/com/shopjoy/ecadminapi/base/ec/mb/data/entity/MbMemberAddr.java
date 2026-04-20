@@ -16,13 +16,13 @@ import lombok.Setter;
 public class MbMemberAddr {
 
     @Id
-    @Column(name = "addr_id", length = 20, nullable = false)
+    @Column(name = "addr_id", length = 21, nullable = false)
     private String addrId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "addr_nm", length = 50)
@@ -46,13 +46,13 @@ public class MbMemberAddr {
     @Column(name = "is_default", length = 1)
     private String isDefault;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

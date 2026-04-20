@@ -14,9 +14,9 @@ CREATE TABLE sy_attach (
     cdn_thumb_url   VARCHAR(500),                           -- CDN 썸네일 URL (이미지 파일용)
     sort_ord        INTEGER         DEFAULT 0,
     attach_memo     VARCHAR(300),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (attach_id)
 );

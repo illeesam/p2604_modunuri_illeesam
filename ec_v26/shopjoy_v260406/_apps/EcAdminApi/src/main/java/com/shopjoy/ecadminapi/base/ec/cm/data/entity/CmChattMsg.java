@@ -16,13 +16,13 @@ import lombok.Setter;
 public class CmChattMsg {
 
     @Id
-    @Column(name = "msg_id", length = 20, nullable = false)
+    @Column(name = "msg_id", length = 21, nullable = false)
     private String msgId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "chatt_id", length = 20, nullable = false)
+    @Column(name = "chatt_id", length = 21, nullable = false)
     private String chattId;
 
     @Column(name = "sender_cd", length = 20, nullable = false)
@@ -35,7 +35,7 @@ public class CmChattMsg {
     @Column(name = "ref_type", length = 20)
     private String refType;
 
-    @Column(name = "ref_id", length = 20)
+    @Column(name = "ref_id", length = 21)
     private String refId;
 
     @Column(name = "send_date")
@@ -44,13 +44,13 @@ public class CmChattMsg {
     @Column(name = "read_yn", length = 1)
     private String readYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

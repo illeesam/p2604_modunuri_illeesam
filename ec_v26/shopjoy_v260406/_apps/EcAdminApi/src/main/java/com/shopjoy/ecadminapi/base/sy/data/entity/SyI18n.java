@@ -19,7 +19,7 @@ public class SyI18n {
     @Column(name = "i18n_id", length = 20, nullable = false)
     private String i18nId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "i18n_key", length = 200, nullable = false)
@@ -40,13 +40,13 @@ public class SyI18n {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

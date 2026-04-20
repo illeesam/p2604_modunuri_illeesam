@@ -21,9 +21,9 @@ CREATE TABLE odh_pay_chg_hist (
     chg_user_id         VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                VARCHAR(300),
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (pay_chg_hist_id),
     CONSTRAINT fk_ec_pay_chg_hist_pay FOREIGN KEY (pay_id) REFERENCES od_pay (pay_id)

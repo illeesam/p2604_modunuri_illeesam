@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -50,9 +50,9 @@ public class FoOdOrderService {
     @Transactional(readOnly = true)
     public OdOrderDto getById(String orderId) {
         OdOrderDto dto = mapper.selectById(orderId);
-        if (dto == null) throw new BusinessException("존재하지 않는 주문입니다: " + orderId);
+        if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId);
         if (!dto.getMemberId().equals(SecurityUtil.currentUserId()))
-            throw new BusinessException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다.");
         return dto;
     }
 

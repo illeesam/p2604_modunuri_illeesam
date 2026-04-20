@@ -16,13 +16,13 @@ import lombok.Setter;
 public class PdProdOptItem {
 
     @Id
-    @Column(name = "opt_item_id", length = 20, nullable = false)
+    @Column(name = "opt_item_id", length = 21, nullable = false)
     private String optItemId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "opt_id", length = 20, nullable = false)
+    @Column(name = "opt_id", length = 21, nullable = false)
     private String optId;
 
     @Column(name = "opt_type_cd", length = 20, nullable = false)
@@ -37,7 +37,7 @@ public class PdProdOptItem {
     @Column(name = "opt_val_code_id", length = 50)
     private String optValCodeId;
 
-    @Column(name = "parent_opt_item_id", length = 20)
+    @Column(name = "parent_opt_item_id", length = 21)
     private String parentOptItemId;
 
     @Column(name = "sort_ord")
@@ -46,13 +46,13 @@ public class PdProdOptItem {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

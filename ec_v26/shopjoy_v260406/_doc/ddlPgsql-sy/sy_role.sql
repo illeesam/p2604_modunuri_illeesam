@@ -13,9 +13,9 @@ CREATE TABLE sy_role (
     use_yn          CHAR(1)         DEFAULT 'Y',
     restrict_perm   CHAR(1)         DEFAULT 'N',            -- 제한권한여부
     role_remark     VARCHAR(300),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (role_id),

@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyI18nMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyI18nRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyI18nService {
     @Transactional
     public SyI18n save(SyI18n entity) {
         if (!repository.existsById(entity.getI18nId()))
-            throw new BusinessException("존재하지 않는 SyI18n입니다: " + entity.getI18nId());
+            throw new CmBizException("존재하지 않는 SyI18n입니다: " + entity.getI18nId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyI18n result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyI18nService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyI18n입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyI18n입니다: " + id);
         repository.deleteById(id);
     }
 

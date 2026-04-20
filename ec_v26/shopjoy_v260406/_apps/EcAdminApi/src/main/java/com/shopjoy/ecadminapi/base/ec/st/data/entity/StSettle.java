@@ -17,13 +17,13 @@ import lombok.Setter;
 public class StSettle {
 
     @Id
-    @Column(name = "settle_id", length = 20, nullable = false)
+    @Column(name = "settle_id", length = 21, nullable = false)
     private String settleId;
 
-    @Column(name = "site_id", length = 20, nullable = false)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Column(name = "vendor_id", length = 20, nullable = false)
+    @Column(name = "vendor_id", length = 21, nullable = false)
     private String vendorId;
 
     @Column(name = "settle_ym", length = 6, nullable = false)
@@ -75,13 +75,13 @@ public class StSettle {
     @Column(name = "settle_memo", columnDefinition = "TEXT")
     private String settleMemo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

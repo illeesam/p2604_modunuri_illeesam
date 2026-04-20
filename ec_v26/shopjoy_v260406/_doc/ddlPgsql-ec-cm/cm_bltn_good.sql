@@ -7,9 +7,9 @@ CREATE TABLE cm_bltn_good (
     like_id         VARCHAR(21)     NOT NULL,
     blog_id         VARCHAR(21)     NOT NULL,              -- FK: cm_bltn.blog_id
     user_id         VARCHAR(21)     NOT NULL,              -- FK: sy_member.user_id (회원만 가능)
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (like_id),
     UNIQUE (blog_id, user_id)                              -- 중복 방지

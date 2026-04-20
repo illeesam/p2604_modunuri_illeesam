@@ -12,9 +12,9 @@ CREATE TABLE sy_template (
     template_content TEXT            NOT NULL,
     sample_params   TEXT,                                   -- 치환변수 예시 (JSON)
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (template_id),

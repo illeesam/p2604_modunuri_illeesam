@@ -14,9 +14,9 @@ CREATE TABLE sy_notice (
     end_date        TIMESTAMP,
     notice_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/INACTIVE
     view_count      INTEGER         DEFAULT 0,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (notice_id)
 );

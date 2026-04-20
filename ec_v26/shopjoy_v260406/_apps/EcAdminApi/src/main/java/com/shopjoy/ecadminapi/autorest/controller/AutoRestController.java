@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.autorest.data.dto.RowMap;
 import com.shopjoy.ecadminapi.autorest.data.vo.BulkDeleteReq;
 import com.shopjoy.ecadminapi.autorest.data.vo.SearchReq;
 import com.shopjoy.ecadminapi.autorest.service.AutoRestService;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import jakarta.validation.Valid;
@@ -46,7 +46,8 @@ public class AutoRestController {
             @PathVariable String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
-        return ResponseEntity.ok(ApiResponse.ok(service.list(table, search)));
+        List<RowMap> result = service.getList(table, search);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 2. 페이지 조회 ── */
@@ -57,7 +58,8 @@ public class AutoRestController {
             @PathVariable String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
-        return ResponseEntity.ok(ApiResponse.ok(service.page(table, search)));
+        PageResult<RowMap> result = service.getPageData(table, search);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 3. 건수 조회 ── */
@@ -68,7 +70,8 @@ public class AutoRestController {
             @PathVariable String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
-        return ResponseEntity.ok(ApiResponse.ok(service.count(table, search)));
+        long result = service.count(table, search);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 4. 단건 조회 ── */
@@ -104,7 +107,8 @@ public class AutoRestController {
             @PathVariable String id,
             @RequestBody RowMap body) {
         checkTable(table);
-        return ResponseEntity.ok(ApiResponse.ok(service.update(table, id, body)));
+        RowMap result = service.update(table, id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 7. 부분 수정 ── */
@@ -116,7 +120,8 @@ public class AutoRestController {
             @PathVariable String id,
             @RequestBody RowMap body) {
         checkTable(table);
-        return ResponseEntity.ok(ApiResponse.ok(service.patch(table, id, body)));
+        RowMap result = service.patch(table, id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 8. 단건 삭제 ── */
@@ -139,7 +144,8 @@ public class AutoRestController {
             @PathVariable String table,
             @RequestBody RowMap body) {
         checkTable(table);
-        return ResponseEntity.ok(ApiResponse.ok(service.saveByRowStatus(table, body)));
+        RowMap result = service.saveByRowStatus(table, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 11. _row_status 목록 저장 ── */
@@ -150,7 +156,8 @@ public class AutoRestController {
             @PathVariable String table,
             @RequestBody List<RowMap> list) {
         checkTable(table);
-        return ResponseEntity.ok(ApiResponse.ok(service.saveListByRowStatus(table, list)));
+        List<RowMap> result = service.saveListByRowStatus(table, list);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 9. 일괄 삭제 ── */
@@ -167,7 +174,7 @@ public class AutoRestController {
 
     private void checkTable(String table) {
         if (!TableRegistry.isSafeIdentifier(table)) {
-            throw new BusinessException("유효하지 않은 테이블명입니다: " + table);
+            throw new CmBizException("유효하지 않은 테이블명입니다: " + table);
         }
     }
 }

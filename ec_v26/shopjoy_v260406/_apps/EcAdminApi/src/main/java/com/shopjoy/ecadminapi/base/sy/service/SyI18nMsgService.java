@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18nMsg;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyI18nMsgMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyI18nMsgService {
     @Transactional
     public SyI18nMsg save(SyI18nMsg entity) {
         if (!repository.existsById(entity.getI18nMsgId()))
-            throw new BusinessException("존재하지 않는 SyI18nMsg입니다: " + entity.getI18nMsgId());
+            throw new CmBizException("존재하지 않는 SyI18nMsg입니다: " + entity.getI18nMsgId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyI18nMsg result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyI18nMsgService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyI18nMsg입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyI18nMsg입니다: " + id);
         repository.deleteById(id);
     }
 

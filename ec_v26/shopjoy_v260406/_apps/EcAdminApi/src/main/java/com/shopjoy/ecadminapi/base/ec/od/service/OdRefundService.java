@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefund;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdRefundMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdRefundRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class OdRefundService {
     @Transactional
     public OdRefund save(OdRefund entity) {
         if (!repository.existsById(entity.getRefundId()))
-            throw new BusinessException("존재하지 않는 OdRefund입니다: " + entity.getRefundId());
+            throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdRefund result = repository.save(entity);
@@ -82,7 +82,7 @@ public class OdRefundService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 OdRefund입니다: " + id);
+            throw new CmBizException("존재하지 않는 OdRefund입니다: " + id);
         repository.deleteById(id);
     }
 

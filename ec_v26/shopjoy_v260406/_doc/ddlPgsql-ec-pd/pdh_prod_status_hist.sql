@@ -10,9 +10,9 @@ CREATE TABLE pdh_prod_status_hist (
     memo                 VARCHAR(300),                           -- 처리 메모
     proc_user_id              VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     proc_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by               VARCHAR(20),
+    reg_by               VARCHAR(30),
     reg_date             TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by               VARCHAR(20),
+    upd_by               VARCHAR(30),
     upd_date             TIMESTAMP,
     PRIMARY KEY (prod_status_hist_id)
 );

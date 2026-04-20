@@ -16,25 +16,25 @@ import lombok.Setter;
 public class SyhSendMsgLog {
 
     @Id
-    @Column(name = "log_id", length = 20, nullable = false)
+    @Column(name = "log_id", length = 21, nullable = false)
     private String logId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "channel_cd", length = 20, nullable = false)
     private String channelCd;
 
-    @Column(name = "template_id", length = 20)
+    @Column(name = "template_id", length = 21)
     private String templateId;
 
     @Column(name = "template_code", length = 50)
     private String templateCode;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
-    @Column(name = "user_id", length = 20)
+    @Column(name = "user_id", length = 21)
     private String userId;
 
     @Column(name = "recv_phone", length = 20)
@@ -75,16 +75,16 @@ public class SyhSendMsgLog {
     @Column(name = "ref_type_cd", length = 30)
     private String refTypeCd;
 
-    @Column(name = "ref_id", length = 20)
+    @Column(name = "ref_id", length = 21)
     private String refId;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

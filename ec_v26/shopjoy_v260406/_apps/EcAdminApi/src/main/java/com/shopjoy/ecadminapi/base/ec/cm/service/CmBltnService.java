@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltn;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class CmBltnService {
     @Transactional
     public CmBltn save(CmBltn entity) {
         if (!repository.existsById(entity.getBlogId()))
-            throw new BusinessException("존재하지 않는 CmBltn입니다: " + entity.getBlogId());
+            throw new CmBizException("존재하지 않는 CmBltn입니다: " + entity.getBlogId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmBltn result = repository.save(entity);
@@ -82,7 +82,7 @@ public class CmBltnService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 CmBltn입니다: " + id);
+            throw new CmBizException("존재하지 않는 CmBltn입니다: " + id);
         repository.deleteById(id);
     }
 

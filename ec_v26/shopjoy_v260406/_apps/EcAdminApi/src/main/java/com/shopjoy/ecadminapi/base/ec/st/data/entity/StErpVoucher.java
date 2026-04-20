@@ -17,16 +17,16 @@ import lombok.Setter;
 public class StErpVoucher {
 
     @Id
-    @Column(name = "erp_voucher_id", length = 20, nullable = false)
+    @Column(name = "erp_voucher_id", length = 21, nullable = false)
     private String erpVoucherId;
 
-    @Column(name = "site_id", length = 20, nullable = false)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Column(name = "vendor_id", length = 20)
+    @Column(name = "vendor_id", length = 21)
     private String vendorId;
 
-    @Column(name = "settle_id", length = 20)
+    @Column(name = "settle_id", length = 21)
     private String settleId;
 
     @Column(name = "settle_ym", length = 6)
@@ -62,13 +62,13 @@ public class StErpVoucher {
     @Column(name = "erp_res_msg", length = 500)
     private String erpResMsg;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

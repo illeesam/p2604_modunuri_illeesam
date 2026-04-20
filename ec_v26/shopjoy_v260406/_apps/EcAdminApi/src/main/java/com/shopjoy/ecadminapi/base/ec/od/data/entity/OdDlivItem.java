@@ -16,19 +16,19 @@ import lombok.Setter;
 public class OdDlivItem {
 
     @Id
-    @Column(name = "dliv_item_id", length = 20, nullable = false)
+    @Column(name = "dliv_item_id", length = 21, nullable = false)
     private String dlivItemId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "dliv_id", length = 20, nullable = false)
+    @Column(name = "dliv_id", length = 21, nullable = false)
     private String dlivId;
 
-    @Column(name = "order_item_id", length = 20, nullable = false)
+    @Column(name = "order_item_id", length = 21, nullable = false)
     private String orderItemId;
 
-    @Column(name = "prod_id", length = 20)
+    @Column(name = "prod_id", length = 21)
     private String prodId;
 
     @Column(name = "opt_item_id_1", length = 20)
@@ -52,13 +52,13 @@ public class OdDlivItem {
     @Column(name = "dliv_item_status_cd_before", length = 20)
     private String dlivItemStatusCdBefore;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

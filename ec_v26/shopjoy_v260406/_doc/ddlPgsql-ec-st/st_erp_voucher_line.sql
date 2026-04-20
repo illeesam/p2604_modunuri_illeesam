@@ -23,9 +23,9 @@ CREATE TABLE st_erp_voucher_line (
     ref_id                  VARCHAR(21),                            -- 참조ID (settle_id / order_id 등)
     line_memo               VARCHAR(300),                           -- 라인 적요
 
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
 
     PRIMARY KEY (erp_voucher_line_id),

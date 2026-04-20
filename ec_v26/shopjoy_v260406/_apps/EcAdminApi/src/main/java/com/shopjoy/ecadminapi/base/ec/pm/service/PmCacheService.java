@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCacheMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCacheRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmCacheService {
     @Transactional
     public PmCache save(PmCache entity) {
         if (!repository.existsById(entity.getCacheId()))
-            throw new BusinessException("존재하지 않는 PmCache입니다: " + entity.getCacheId());
+            throw new CmBizException("존재하지 않는 PmCache입니다: " + entity.getCacheId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmCache result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmCacheService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmCache입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmCache입니다: " + id);
         repository.deleteById(id);
     }
 

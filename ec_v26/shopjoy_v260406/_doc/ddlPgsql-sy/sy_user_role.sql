@@ -11,9 +11,9 @@ CREATE TABLE sy_user_role (
     valid_from      DATE,                                   -- 적용 시작일 (NULL = 즉시)
     valid_to        DATE,                                   -- 적용 종료일 (NULL = 무기한)
     user_role_remark VARCHAR(500),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (user_role_id),
     UNIQUE (user_id, role_id)

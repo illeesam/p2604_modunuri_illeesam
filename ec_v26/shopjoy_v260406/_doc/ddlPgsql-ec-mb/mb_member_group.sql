@@ -5,9 +5,9 @@ CREATE TABLE mb_member_group (
     group_nm        VARCHAR(100)    NOT NULL,
     group_memo      TEXT,
     use_yn          VARCHAR(1)      DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (group_id)
 );
@@ -27,7 +27,7 @@ COMMENT ON COLUMN mb_member_group.upd_date   IS '수정일시';
 CREATE TABLE mb_member_group_map (
     group_id        VARCHAR(21)     NOT NULL,               -- mb_member_group.group_id
     member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (group_id, member_id)
 );

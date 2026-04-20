@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyBbmMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBbmRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyBbmService {
     @Transactional
     public SyBbm save(SyBbm entity) {
         if (!repository.existsById(entity.getBbmId()))
-            throw new BusinessException("존재하지 않는 SyBbm입니다: " + entity.getBbmId());
+            throw new CmBizException("존재하지 않는 SyBbm입니다: " + entity.getBbmId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbm result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyBbmService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyBbm입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyBbm입니다: " + id);
         repository.deleteById(id);
     }
 

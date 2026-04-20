@@ -17,13 +17,13 @@ import lombok.Setter;
 public class PmSaveIssue {
 
     @Id
-    @Column(name = "save_issue_id", length = 20, nullable = false)
+    @Column(name = "save_issue_id", length = 21, nullable = false)
     private String saveIssueId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "save_issue_type_cd", length = 20, nullable = false)
@@ -38,16 +38,16 @@ public class PmSaveIssue {
     @Column(name = "ref_type_cd", length = 20)
     private String refTypeCd;
 
-    @Column(name = "ref_id", length = 20)
+    @Column(name = "ref_id", length = 21)
     private String refId;
 
-    @Column(name = "order_id", length = 20)
+    @Column(name = "order_id", length = 21)
     private String orderId;
 
-    @Column(name = "order_item_id", length = 20)
+    @Column(name = "order_item_id", length = 21)
     private String orderItemId;
 
-    @Column(name = "prod_id", length = 20)
+    @Column(name = "prod_id", length = 21)
     private String prodId;
 
     @Column(name = "expire_date")
@@ -62,13 +62,13 @@ public class PmSaveIssue {
     @Column(name = "save_memo", length = 300)
     private String saveMemo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

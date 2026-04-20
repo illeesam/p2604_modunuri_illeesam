@@ -15,9 +15,9 @@ CREATE TABLE pm_voucher_issue (
     use_amt             BIGINT,                                 -- 실제 사용 할인금액
     voucher_issue_status_cd VARCHAR(20) DEFAULT 'ISSUED',       -- 코드: VOUCHER_ISSUE_STATUS (ISSUED:발급/USED:사용/EXPIRED:만료/CANCELLED:취소)
     voucher_issue_status_cd_before VARCHAR(20),
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (voucher_issue_id),
     UNIQUE (voucher_code)

@@ -4,9 +4,9 @@ CREATE TABLE sy_i18n_msg (
     i18n_id         VARCHAR(21)     NOT NULL,               -- sy_i18n.i18n_id
     lang_cd         VARCHAR(10)     NOT NULL,               -- 코드: LANG_CODE (ko/en/ja/in)
     i18n_msg        TEXT            NOT NULL,               -- 번역 메시지
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (i18n_msg_id),
     UNIQUE (i18n_id, lang_cd),

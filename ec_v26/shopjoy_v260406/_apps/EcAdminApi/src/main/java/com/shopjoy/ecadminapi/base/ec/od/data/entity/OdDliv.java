@@ -16,22 +16,22 @@ import lombok.Setter;
 public class OdDliv {
 
     @Id
-    @Column(name = "dliv_id", length = 20, nullable = false)
+    @Column(name = "dliv_id", length = 21, nullable = false)
     private String dlivId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Column(name = "claim_id", length = 20)
+    @Column(name = "claim_id", length = 21)
     private String claimId;
 
-    @Column(name = "vendor_id", length = 20)
+    @Column(name = "vendor_id", length = 21)
     private String vendorId;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
     @Column(name = "member_nm", length = 50)
@@ -100,16 +100,16 @@ public class OdDliv {
     @Column(name = "shipping_fee_type_cd", length = 20)
     private String shippingFeeTypeCd;
 
-    @Column(name = "parent_dliv_id", length = 20)
+    @Column(name = "parent_dliv_id", length = 21)
     private String parentDlivId;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")
@@ -133,13 +133,13 @@ public class OdDliv {
     @Column(name = "appr_reason", length = 500)
     private String apprReason;
 
-    @Column(name = "appr_req_user_id", length = 20)
+    @Column(name = "appr_req_user_id", length = 21)
     private String apprReqUserId;
 
     @Column(name = "appr_req_date")
     private LocalDateTime apprReqDate;
 
-    @Column(name = "appr_aprv_user_id", length = 20)
+    @Column(name = "appr_aprv_user_id", length = 21)
     private String apprAprvUserId;
 
     @Column(name = "appr_aprv_date")

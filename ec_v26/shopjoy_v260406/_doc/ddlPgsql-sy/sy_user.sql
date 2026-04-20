@@ -13,9 +13,9 @@ CREATE TABLE sy_user (
     last_login      TIMESTAMP,
     login_fail_cnt  SMALLINT        DEFAULT 0,
     user_memo       TEXT,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     -- ── 인증 ──
     auth_method_cd  VARCHAR(20)     DEFAULT 'MAIN',         -- 코드: AUTH_METHOD (MAIN/SMS/OTP/AUTHENTICATOR)

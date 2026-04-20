@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorContent;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyVendorContentMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorContentRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyVendorContentService {
     @Transactional
     public SyVendorContent save(SyVendorContent entity) {
         if (!repository.existsById(entity.getVendorContentId()))
-            throw new BusinessException("존재하지 않는 SyVendorContent입니다: " + entity.getVendorContentId());
+            throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + entity.getVendorContentId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorContent result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyVendorContentService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyVendorContent입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + id);
         repository.deleteById(id);
     }
 

@@ -16,19 +16,19 @@ import lombok.Setter;
 public class PdRestockNoti {
 
     @Id
-    @Column(name = "restock_noti_id", length = 20, nullable = false)
+    @Column(name = "restock_noti_id", length = 21, nullable = false)
     private String restockNotiId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "prod_id", length = 20, nullable = false)
+    @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Column(name = "sku_id", length = 20)
+    @Column(name = "sku_id", length = 21)
     private String skuId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "noti_yn", length = 1)
@@ -37,13 +37,13 @@ public class PdRestockNoti {
     @Column(name = "noti_date")
     private LocalDateTime notiDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

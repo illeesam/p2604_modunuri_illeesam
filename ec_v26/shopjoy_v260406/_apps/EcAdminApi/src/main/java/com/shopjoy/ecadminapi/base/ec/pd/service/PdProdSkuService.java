@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdSkuMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdProdSkuService {
     @Transactional
     public PdProdSku save(PdProdSku entity) {
         if (!repository.existsById(entity.getSkuId()))
-            throw new BusinessException("존재하지 않는 PdProdSku입니다: " + entity.getSkuId());
+            throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getSkuId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdSku result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdProdSkuService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdProdSku입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdProdSku입니다: " + id);
         repository.deleteById(id);
     }
 

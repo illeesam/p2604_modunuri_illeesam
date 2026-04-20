@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyTemplateMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyTemplateRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyTemplateService {
     @Transactional
     public SyTemplate save(SyTemplate entity) {
         if (!repository.existsById(entity.getTemplateId()))
-            throw new BusinessException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId());
+            throw new CmBizException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyTemplate result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyTemplateService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyTemplate입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyTemplate입니다: " + id);
         repository.deleteById(id);
     }
 

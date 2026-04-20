@@ -14,9 +14,9 @@ CREATE TABLE sy_prop (
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     prop_remark     VARCHAR(500),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prop_id),
     UNIQUE (site_id, disp_path, prop_key)                   -- 사이트 + 표시경로 + 키 조합 유일

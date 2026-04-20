@@ -17,22 +17,22 @@ import lombok.Setter;
 public class PdProd {
 
     @Id
-    @Column(name = "prod_id", length = 20, nullable = false)
+    @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "category_id", length = 20)
+    @Column(name = "category_id", length = 21)
     private String categoryId;
 
-    @Column(name = "brand_id", length = 20)
+    @Column(name = "brand_id", length = 21)
     private String brandId;
 
-    @Column(name = "vendor_id", length = 20)
+    @Column(name = "vendor_id", length = 21)
     private String vendorId;
 
-    @Column(name = "md_user_id", length = 20)
+    @Column(name = "md_user_id", length = 21)
     private String mdUserId;
 
     @Column(name = "prod_nm", length = 200, nullable = false)
@@ -117,7 +117,7 @@ public class PdProd {
     @Column(name = "sold_out_yn", length = 1)
     private String soldOutYn;
 
-    @Column(name = "dliv_tmplt_id", length = 20)
+    @Column(name = "dliv_tmplt_id", length = 21)
     private String dlivTmpltId;
 
     @Column(name = "coupon_use_yn", length = 1)
@@ -138,13 +138,13 @@ public class PdProd {
     @Column(name = "advrt_end_date")
     private LocalDateTime advrtEndDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

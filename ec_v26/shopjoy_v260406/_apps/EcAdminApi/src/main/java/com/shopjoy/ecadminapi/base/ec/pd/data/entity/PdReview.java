@@ -17,16 +17,16 @@ import lombok.Setter;
 public class PdReview {
 
     @Id
-    @Column(name = "review_id", length = 20, nullable = false)
+    @Column(name = "review_id", length = 21, nullable = false)
     private String reviewId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "prod_id", length = 20, nullable = false)
+    @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "review_title", length = 200, nullable = false)
@@ -54,13 +54,13 @@ public class PdReview {
     @Column(name = "review_date")
     private LocalDateTime reviewDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

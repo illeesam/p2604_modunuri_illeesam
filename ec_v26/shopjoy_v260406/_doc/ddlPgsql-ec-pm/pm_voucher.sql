@@ -15,9 +15,9 @@ CREATE TABLE pm_voucher (
     voucher_status_cd_before VARCHAR(20),
     voucher_desc        TEXT,
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (voucher_id)
 );

@@ -29,9 +29,9 @@ CREATE TABLE sy_vendor (
     vendor_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: VENDOR_STATUS (ACTIVE/SUSPENDED/TERMINATED)
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     vendor_remark   VARCHAR(500),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (vendor_id),
     UNIQUE (vendor_no)

@@ -15,9 +15,9 @@ CREATE TABLE pd_prod_img (
     img_alt_text    VARCHAR(200),                           -- 이미지 대체텍스트 (SEO/접근성)
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     is_thumb        CHAR(1)         DEFAULT 'N',            -- 대표이미지여부 Y/N
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_img_id)
 );

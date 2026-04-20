@@ -16,9 +16,9 @@ CREATE TABLE pd_prod_bundle_item (
     price_rate          DECIMAL(5,2)    NOT NULL,               -- 가격 안분율 (%) — 구성품 합계 100% 필수
     sort_ord            INTEGER         DEFAULT 0,              -- 노출 순서
     use_yn              CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (bundle_item_id),
     UNIQUE (bundle_prod_id, item_prod_id)                       -- 동일 묶음에 동일 상품 중복 방지

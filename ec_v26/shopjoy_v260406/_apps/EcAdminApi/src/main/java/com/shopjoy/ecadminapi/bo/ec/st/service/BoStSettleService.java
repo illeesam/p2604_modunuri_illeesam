@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettle;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoStSettleService {
     private final StSettleRepository repository;
 
     @Transactional(readOnly = true)
-    public List<StSettleDto> list(String siteId, String kw, String status, String dateStart, String dateEnd) {
+    public List<StSettleDto> getList(String siteId, String kw, String status, String dateStart, String dateEnd) {
         Map<String, Object> p = buildParams(siteId, kw, status, dateStart, dateEnd);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<StSettleDto> page(String siteId, String kw, String status, String dateStart, String dateEnd, int pageNo, int pageSize) {
+    public PageResult<StSettleDto> getPageData(String siteId, String kw, String status, String dateStart, String dateEnd, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw, status, dateStart, dateEnd);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoStSettleService {
     @Transactional(readOnly = true)
     public StSettleDto getById(String id) {
         StSettleDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoStSettleService {
 
     @Transactional
     public StSettleDto update(String id, StSettle body) {
-        StSettle entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        StSettle entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,13 +64,13 @@ public class BoStSettleService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 
     @Transactional
     public StSettleDto changeStatus(String id, String statusCd) {
-        StSettle entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않습니다: " + id));
+        StSettle entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setSettleStatusCdBefore(entity.getSettleStatusCd());
         entity.setSettleStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.currentUserId());

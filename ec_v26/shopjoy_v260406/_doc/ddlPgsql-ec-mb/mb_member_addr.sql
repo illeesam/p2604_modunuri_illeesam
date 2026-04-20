@@ -13,9 +13,9 @@ CREATE TABLE mb_member_addr (
     addr            VARCHAR(200),                          -- 기본주소
     addr_detail     VARCHAR(200),                          -- 상세주소
     is_default      CHAR(1)         DEFAULT 'N',           -- 기본 배송지 여부 Y/N
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (addr_id)
 );

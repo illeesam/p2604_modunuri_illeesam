@@ -13,9 +13,9 @@ CREATE TABLE pd_category (
     category_status_cd_before VARCHAR(20),                   -- 변경 전 카테고리상태
     img_url         VARCHAR(500),
     category_desc   TEXT,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (category_id)
 );

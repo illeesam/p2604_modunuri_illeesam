@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlan;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmPlanMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmPlanRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmPlanService {
     @Transactional
     public PmPlan save(PmPlan entity) {
         if (!repository.existsById(entity.getPlanId()))
-            throw new BusinessException("존재하지 않는 PmPlan입니다: " + entity.getPlanId());
+            throw new CmBizException("존재하지 않는 PmPlan입니다: " + entity.getPlanId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmPlan result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmPlanService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmPlan입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmPlan입니다: " + id);
         repository.deleteById(id);
     }
 

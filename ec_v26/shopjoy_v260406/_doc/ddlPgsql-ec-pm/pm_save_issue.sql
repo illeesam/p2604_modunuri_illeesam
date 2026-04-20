@@ -20,9 +20,9 @@ CREATE TABLE pm_save_issue (
     issue_status_cd     VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: SAVE_ISSUE_STATUS (PENDING:대기/CONFIRMED:확정/EXPIRED:소멸/CANCELED:취소)
     issue_status_cd_before VARCHAR(20),                         -- 변경 전 상태
     save_memo           VARCHAR(300),                           -- 지급 메모
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
 
     PRIMARY KEY (save_issue_id)

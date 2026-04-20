@@ -16,9 +16,9 @@ CREATE TABLE od_cart (
     order_qty       INTEGER         DEFAULT 1,
     item_price      BIGINT          DEFAULT 0,             -- 소계 (unit_price × order_qty)
     is_checked      CHAR(1)         DEFAULT 'Y',           -- 주문 선택 여부 Y/N
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (cart_id)
 );

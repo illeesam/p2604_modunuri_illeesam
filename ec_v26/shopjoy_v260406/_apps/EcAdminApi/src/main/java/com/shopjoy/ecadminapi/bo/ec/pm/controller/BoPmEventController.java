@@ -31,7 +31,8 @@ public class BoPmEventController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, status, dateStart, dateEnd)));
+        List<PmEventDto> result = service.getList(siteId, kw, status, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -43,12 +44,14 @@ public class BoPmEventController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<PmEventDto> result = service.getPageData(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        PmEventDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -58,7 +61,8 @@ public class BoPmEventController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmEventDto>> update(@PathVariable String id, @RequestBody PmEvent body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        PmEventDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")
@@ -70,6 +74,7 @@ public class BoPmEventController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmEventDto>> changeStatus(
             @PathVariable String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("statusCd"))));
+        PmEventDto result = service.changeStatus(id, body.get("statusCd"));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

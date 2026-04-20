@@ -90,13 +90,15 @@ public class CmBltnFileController {
     /* ── _row_status 단건 저장 ── */
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<CmBltnFile>> saveByRowStatus(@RequestBody @Valid CmBltnFileReq req) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveByRowStatus(req)));
+        CmBltnFile result = service.saveByRowStatus(req);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── _row_status 목록 저장 ── */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<List<CmBltnFile>>> saveListByRowStatus(@RequestBody @Valid List<CmBltnFileReq> list) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveListByRowStatus(list)));
+        List<CmBltnFile> result = service.saveListByRowStatus(list);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     private Map<String, Object> buildParam(String siteId, String kw,

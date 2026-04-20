@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyPropMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyPropService {
     @Transactional
     public SyProp save(SyProp entity) {
         if (!repository.existsById(entity.getSiteId()))
-            throw new BusinessException("존재하지 않는 SyProp입니다: " + entity.getSiteId());
+            throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getSiteId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyProp result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyPropService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyProp입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyProp입니다: " + id);
         repository.deleteById(id);
     }
 

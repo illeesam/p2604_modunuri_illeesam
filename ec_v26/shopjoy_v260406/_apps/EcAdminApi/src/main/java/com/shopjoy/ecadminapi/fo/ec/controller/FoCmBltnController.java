@@ -42,7 +42,8 @@ public class FoCmBltnController {
             @RequestParam(required = false) String blogCateId,
             @RequestParam(required = false) String useYn,
             @RequestParam(required = false) String sort) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(buildParam(siteId, kw, blogCateId, useYn, sort))));
+        List<CmBltnDto> result = service.getList(buildParam(siteId, kw, blogCateId, useYn, sort));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -54,12 +55,14 @@ public class FoCmBltnController {
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(buildParam(siteId, kw, blogCateId, useYn, sort), pageNo, pageSize)));
+        PageResult<CmBltnDto> result = service.getPageData(buildParam(siteId, kw, blogCateId, useYn, sort), pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBltnDto>> getById(@PathVariable String blogId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getByIdAndIncrView(blogId)));
+        CmBltnDto result = service.getByIdAndIncrView(blogId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -72,7 +75,8 @@ public class FoCmBltnController {
     @UserOrMember
     public ResponseEntity<ApiResponse<CmBltn>> update(
             @PathVariable String blogId, @RequestBody CmBltn entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(blogId, entity)));
+        CmBltn result = service.update(blogId, entity);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{blogId}")

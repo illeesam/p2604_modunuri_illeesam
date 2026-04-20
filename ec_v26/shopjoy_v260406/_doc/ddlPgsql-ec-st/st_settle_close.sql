@@ -11,9 +11,9 @@ CREATE TABLE st_settle_close (
     final_settle_amt    BIGINT          DEFAULT 0,              -- 마감 시점 최종정산금액 스냅샷
     close_by            VARCHAR(21)     NOT NULL,               -- 처리자 (sy_user.user_id)
     close_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (settle_close_id)
 );

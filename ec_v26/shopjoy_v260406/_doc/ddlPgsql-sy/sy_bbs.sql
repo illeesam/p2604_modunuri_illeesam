@@ -17,9 +17,9 @@ CREATE TABLE sy_bbs (
     comment_count   INTEGER         DEFAULT 0,
     is_fixed        CHAR(1)         DEFAULT 'N',
     bbs_status_cd   VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/DELETED/HIDDEN
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
     PRIMARY KEY (bbs_id)

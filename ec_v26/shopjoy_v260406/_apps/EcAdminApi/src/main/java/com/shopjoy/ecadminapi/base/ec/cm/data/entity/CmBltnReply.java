@@ -16,19 +16,19 @@ import lombok.Setter;
 public class CmBltnReply {
 
     @Id
-    @Column(name = "comment_id", length = 20, nullable = false)
+    @Column(name = "comment_id", length = 21, nullable = false)
     private String commentId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "blog_id", length = 20, nullable = false)
+    @Column(name = "blog_id", length = 21, nullable = false)
     private String blogId;
 
-    @Column(name = "parent_comment_id", length = 20)
+    @Column(name = "parent_comment_id", length = 21)
     private String parentCommentId;
 
-    @Column(name = "writer_id", length = 20)
+    @Column(name = "writer_id", length = 21)
     private String writerId;
 
     @Column(name = "writer_nm", length = 50)
@@ -44,13 +44,13 @@ public class CmBltnReply {
     @Column(name = "comment_status_cd_before", length = 20)
     private String commentStatusCdBefore;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

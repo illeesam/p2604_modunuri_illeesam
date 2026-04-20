@@ -34,7 +34,8 @@ public class FoPdProdController {
             @RequestParam(required = false) String categoryId,
             @RequestParam(required = false) String prodStatusCd,
             @RequestParam(required = false) String sort) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(buildParam(siteId, kw, categoryId, prodStatusCd, sort))));
+        List<PdProdDto> result = service.getList(buildParam(siteId, kw, categoryId, prodStatusCd, sort));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -46,12 +47,14 @@ public class FoPdProdController {
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(buildParam(siteId, kw, categoryId, prodStatusCd, sort), pageNo, pageSize)));
+        PageResult<PdProdDto> result = service.getPageData(buildParam(siteId, kw, categoryId, prodStatusCd, sort), pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        PdProdDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     private Map<String, Object> buildParam(String siteId, String kw, String categoryId, String prodStatusCd, String sort) {

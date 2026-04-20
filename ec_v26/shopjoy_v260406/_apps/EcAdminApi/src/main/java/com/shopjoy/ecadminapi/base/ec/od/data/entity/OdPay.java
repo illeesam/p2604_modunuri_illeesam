@@ -17,16 +17,16 @@ import lombok.Setter;
 public class OdPay {
 
     @Id
-    @Column(name = "pay_id", length = 20, nullable = false)
+    @Column(name = "pay_id", length = 21, nullable = false)
     private String payId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Column(name = "claim_id", length = 20)
+    @Column(name = "claim_id", length = 21)
     private String claimId;
 
     @Column(name = "pay_div_cd", length = 20)
@@ -132,13 +132,13 @@ public class OdPay {
     @Column(name = "memo", length = 300)
     private String memo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

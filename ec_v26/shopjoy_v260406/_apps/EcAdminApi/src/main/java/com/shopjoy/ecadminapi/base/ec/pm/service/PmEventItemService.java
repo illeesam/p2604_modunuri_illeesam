@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventItemMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventItemRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmEventItemService {
     @Transactional
     public PmEventItem save(PmEventItem entity) {
         if (!repository.existsById(entity.getEventItemId()))
-            throw new BusinessException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId());
+            throw new CmBizException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmEventItem result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmEventItemService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmEventItem입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmEventItem입니다: " + id);
         repository.deleteById(id);
     }
 

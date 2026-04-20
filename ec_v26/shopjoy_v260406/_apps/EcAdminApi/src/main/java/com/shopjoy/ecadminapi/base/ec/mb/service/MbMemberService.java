@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class MbMemberService {
     @Transactional
     public MbMember save(MbMember entity) {
         if (!repository.existsById(entity.getMemberId()))
-            throw new BusinessException("존재하지 않는 MbMember입니다: " + entity.getMemberId());
+            throw new CmBizException("존재하지 않는 MbMember입니다: " + entity.getMemberId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         MbMember result = repository.save(entity);
@@ -82,7 +82,7 @@ public class MbMemberService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 MbMember입니다: " + id);
+            throw new CmBizException("존재하지 않는 MbMember입니다: " + id);
         repository.deleteById(id);
     }
 

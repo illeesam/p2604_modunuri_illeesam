@@ -16,16 +16,16 @@ import lombok.Setter;
 public class PdhProdSkuChgHist {
 
     @Id
-    @Column(name = "hist_id", length = 20, nullable = false)
+    @Column(name = "hist_id", length = 21, nullable = false)
     private String histId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "sku_id", length = 20, nullable = false)
+    @Column(name = "sku_id", length = 21, nullable = false)
     private String skuId;
 
-    @Column(name = "prod_id", length = 20, nullable = false)
+    @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
     @Column(name = "chg_type_cd", length = 30, nullable = false)
@@ -46,7 +46,7 @@ public class PdhProdSkuChgHist {
     @Column(name = "chg_date")
     private LocalDateTime chgDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")

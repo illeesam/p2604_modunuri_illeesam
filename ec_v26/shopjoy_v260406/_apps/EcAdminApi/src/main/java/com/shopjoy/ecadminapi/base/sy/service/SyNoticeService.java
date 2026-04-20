@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyNoticeMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyNoticeRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyNoticeService {
     @Transactional
     public SyNotice save(SyNotice entity) {
         if (!repository.existsById(entity.getNoticeId()))
-            throw new BusinessException("존재하지 않는 SyNotice입니다: " + entity.getNoticeId());
+            throw new CmBizException("존재하지 않는 SyNotice입니다: " + entity.getNoticeId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyNotice result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyNoticeService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyNotice입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyNotice입니다: " + id);
         repository.deleteById(id);
     }
 

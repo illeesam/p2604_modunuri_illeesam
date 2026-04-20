@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdContent;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdContentMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdContentRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdProdContentService {
     @Transactional
     public PdProdContent save(PdProdContent entity) {
         if (!repository.existsById(entity.getProdContentId()))
-            throw new BusinessException("존재하지 않는 PdProdContent입니다: " + entity.getProdContentId());
+            throw new CmBizException("존재하지 않는 PdProdContent입니다: " + entity.getProdContentId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdContent result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdProdContentService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdProdContent입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdProdContent입니다: " + id);
         repository.deleteById(id);
     }
 

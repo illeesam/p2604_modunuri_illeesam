@@ -19,9 +19,9 @@ CREATE TABLE pd_dliv_tmplt (
     return_tel_no       VARCHAR(20),                            -- 반품지 전화번호
     base_dliv_yn        VARCHAR(1)      DEFAULT 'N',            -- 기본 배송지 여부
     use_yn              VARCHAR(1)      DEFAULT 'Y',
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (dliv_tmplt_id)
 );

@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdCartMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdCartRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class OdCartService {
     @Transactional
     public OdCart save(OdCart entity) {
         if (!repository.existsById(entity.getCartId()))
-            throw new BusinessException("존재하지 않는 OdCart입니다: " + entity.getCartId());
+            throw new CmBizException("존재하지 않는 OdCart입니다: " + entity.getCartId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdCart result = repository.save(entity);
@@ -82,7 +82,7 @@ public class OdCartService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 OdCart입니다: " + id);
+            throw new CmBizException("존재하지 않는 OdCart입니다: " + id);
         repository.deleteById(id);
     }
 

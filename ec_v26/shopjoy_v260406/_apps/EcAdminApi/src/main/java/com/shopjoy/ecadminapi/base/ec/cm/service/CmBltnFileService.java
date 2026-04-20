@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltnFile;
 import com.shopjoy.ecadminapi.base.ec.cm.data.vo.CmBltnFileReq;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnFileMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnFileRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +67,7 @@ public class CmBltnFileService {
     @Transactional
     public CmBltnFile save(CmBltnFile entity) {
         CmBltnFile existing = repository.findById(entity.getBlogImgId())
-                .orElseThrow(() -> new BusinessException("존재하지 않는 파일입니다: " + entity.getBlogImgId()));
+                .orElseThrow(() -> new CmBizException("존재하지 않는 파일입니다: " + entity.getBlogImgId()));
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
         entity.setUpdBy(SecurityUtil.currentUserId());
@@ -78,7 +78,7 @@ public class CmBltnFileService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 파일입니다: " + id);
+            throw new CmBizException("존재하지 않는 파일입니다: " + id);
         repository.deleteById(id);
     }
 
@@ -107,7 +107,7 @@ public class CmBltnFileService {
                 delete(req.getBlogImgId());
                 yield null;
             }
-            default -> throw new BusinessException("올바르지 않은 _row_status: " + req.getRowStatus());
+            default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());
         };
     }
 

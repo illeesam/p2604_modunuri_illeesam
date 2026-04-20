@@ -12,9 +12,9 @@ CREATE TABLE pdh_prod_sku_stock_hist (
     order_item_id       VARCHAR(21),                            -- 연관 주문상품ID (SALE/RETURN/EXCHANGE/CLAIM 시)
     chg_by              VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (hist_id)
 );

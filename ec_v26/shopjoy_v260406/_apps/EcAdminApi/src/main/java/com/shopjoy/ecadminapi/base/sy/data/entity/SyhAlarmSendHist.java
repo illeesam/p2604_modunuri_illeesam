@@ -16,16 +16,16 @@ import lombok.Setter;
 public class SyhAlarmSendHist {
 
     @Id
-    @Column(name = "send_hist_id", length = 20, nullable = false)
+    @Column(name = "send_hist_id", length = 21, nullable = false)
     private String sendHistId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "alarm_id", length = 20, nullable = false)
+    @Column(name = "alarm_id", length = 21, nullable = false)
     private String alarmId;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
     @Column(name = "channel", length = 20)
@@ -43,13 +43,13 @@ public class SyhAlarmSendHist {
     @Column(name = "error_msg", length = 500)
     private String errorMsg;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

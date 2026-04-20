@@ -16,13 +16,13 @@ import lombok.Setter;
 public class PdCategory {
 
     @Id
-    @Column(name = "category_id", length = 20, nullable = false)
+    @Column(name = "category_id", length = 21, nullable = false)
     private String categoryId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "parent_category_id", length = 20)
+    @Column(name = "parent_category_id", length = 21)
     private String parentCategoryId;
 
     @Column(name = "category_nm", length = 100, nullable = false)
@@ -47,13 +47,13 @@ public class PdCategory {
     @Column(name = "category_desc", columnDefinition = "TEXT")
     private String categoryDesc;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

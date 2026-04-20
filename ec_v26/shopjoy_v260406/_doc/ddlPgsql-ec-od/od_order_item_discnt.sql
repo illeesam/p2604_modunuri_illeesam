@@ -21,9 +21,9 @@ CREATE TABLE od_order_item_discnt (
     total_discnt_amt    BIGINT          DEFAULT 0,              -- 전체 할인금액 (unit_discnt_amt × order_qty)
     order_qty           INTEGER         DEFAULT 1,              -- 주문수량 (스냅샷)
     -- ── 기본 ──
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (item_discnt_id)
 );

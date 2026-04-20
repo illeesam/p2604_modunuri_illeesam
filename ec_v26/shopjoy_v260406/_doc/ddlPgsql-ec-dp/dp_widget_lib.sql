@@ -16,9 +16,9 @@ CREATE TABLE dp_widget_lib (
     is_system       CHAR(1)         DEFAULT 'N',            -- 시스템 기본 위젯 Y/N
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (widget_lib_id),
     UNIQUE (widget_code)

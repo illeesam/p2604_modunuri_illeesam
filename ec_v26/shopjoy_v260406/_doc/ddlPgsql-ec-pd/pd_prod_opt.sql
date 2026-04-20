@@ -7,9 +7,9 @@ CREATE TABLE pd_prod_opt (
     opt_type_cd       VARCHAR(20),                            -- 코드: OPT_TYPE (COLOR/SIZE/MATERIAL/CUSTOM)
     opt_input_type_cd VARCHAR(20)     DEFAULT 'SELECT',       -- 코드: OPT_INPUT_TYPE (SELECT/SELECT_INPUT/MULTI_SELECT)
     sort_ord          INTEGER         DEFAULT 0,
-    reg_by            VARCHAR(20),
+    reg_by            VARCHAR(30),
     reg_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by            VARCHAR(20),
+    upd_by            VARCHAR(30),
     upd_date          TIMESTAMP,
     PRIMARY KEY (opt_id)
 );

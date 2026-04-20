@@ -16,28 +16,28 @@ import lombok.Setter;
 public class SyRoleMenu {
 
     @Id
-    @Column(name = "role_menu_id", length = 20, nullable = false)
+    @Column(name = "role_menu_id", length = 21, nullable = false)
     private String roleMenuId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "role_id", length = 20, nullable = false)
+    @Column(name = "role_id", length = 21, nullable = false)
     private String roleId;
 
-    @Column(name = "menu_id", length = 20, nullable = false)
+    @Column(name = "menu_id", length = 21, nullable = false)
     private String menuId;
 
     @Column(name = "perm_level")
     private Integer permLevel;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

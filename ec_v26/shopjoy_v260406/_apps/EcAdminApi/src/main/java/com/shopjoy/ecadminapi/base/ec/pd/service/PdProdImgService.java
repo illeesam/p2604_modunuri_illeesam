@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdImgMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdImgRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdProdImgService {
     @Transactional
     public PdProdImg save(PdProdImg entity) {
         if (!repository.existsById(entity.getProdImgId()))
-            throw new BusinessException("존재하지 않는 PdProdImg입니다: " + entity.getProdImgId());
+            throw new CmBizException("존재하지 않는 PdProdImg입니다: " + entity.getProdImgId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdImg result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdProdImgService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdProdImg입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdProdImg입니다: " + id);
         repository.deleteById(id);
     }
 

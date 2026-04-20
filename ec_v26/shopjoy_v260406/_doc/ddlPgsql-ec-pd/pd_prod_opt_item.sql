@@ -9,9 +9,9 @@ CREATE TABLE pd_prod_opt_item (
     parent_opt_item_id  VARCHAR(21),                            -- 상위 옵션값ID (2단 옵션에서 1단 값 참조, pd_prod_opt_item.opt_item_id)
     sort_ord            INTEGER         DEFAULT 0,
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (opt_item_id)
 );

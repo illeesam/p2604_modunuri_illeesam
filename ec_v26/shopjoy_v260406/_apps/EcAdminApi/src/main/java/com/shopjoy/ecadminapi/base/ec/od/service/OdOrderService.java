@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class OdOrderService {
     @Transactional
     public OdOrder save(OdOrder entity) {
         if (!repository.existsById(entity.getOrderId()))
-            throw new BusinessException("존재하지 않는 OdOrder입니다: " + entity.getOrderId());
+            throw new CmBizException("존재하지 않는 OdOrder입니다: " + entity.getOrderId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrder result = repository.save(entity);
@@ -82,7 +82,7 @@ public class OdOrderService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 OdOrder입니다: " + id);
+            throw new CmBizException("존재하지 않는 OdOrder입니다: " + id);
         repository.deleteById(id);
     }
 

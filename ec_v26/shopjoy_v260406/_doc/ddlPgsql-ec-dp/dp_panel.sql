@@ -15,9 +15,9 @@ CREATE TABLE dp_panel (
     disp_panel_status_cd        VARCHAR(20)     DEFAULT 'ACTIVE',      -- 코드: DISP_STATUS
     disp_panel_status_cd_before VARCHAR(20),                            -- 변경 전 패널상태
     content_json                TEXT,                                   -- 패널의 콘텐츠 데이터 (JSON)
-    reg_by                      VARCHAR(20),
+    reg_by                      VARCHAR(30),
     reg_date                    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                      VARCHAR(20),
+    upd_by                      VARCHAR(30),
     upd_date                    TIMESTAMP,
     PRIMARY KEY (panel_id),
     FOREIGN KEY (area_id) REFERENCES dp_area(area_id)

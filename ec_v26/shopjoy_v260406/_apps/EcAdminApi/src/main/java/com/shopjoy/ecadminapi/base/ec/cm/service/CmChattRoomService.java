@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattRoom;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmChattRoomMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattRoomRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class CmChattRoomService {
     @Transactional
     public CmChattRoom save(CmChattRoom entity) {
         if (!repository.existsById(entity.getChattRoomId()))
-            throw new BusinessException("존재하지 않는 CmChattRoom입니다: " + entity.getChattRoomId());
+            throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + entity.getChattRoomId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattRoom result = repository.save(entity);
@@ -82,7 +82,7 @@ public class CmChattRoomService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 CmChattRoom입니다: " + id);
+            throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + id);
         repository.deleteById(id);
     }
 

@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewAttach;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdReviewAttachMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewAttachRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdReviewAttachService {
     @Transactional
     public PdReviewAttach save(PdReviewAttach entity) {
         if (!repository.existsById(entity.getReviewAttachId()))
-            throw new BusinessException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId());
+            throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdReviewAttach result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdReviewAttachService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdReviewAttach입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + id);
         repository.deleteById(id);
     }
 

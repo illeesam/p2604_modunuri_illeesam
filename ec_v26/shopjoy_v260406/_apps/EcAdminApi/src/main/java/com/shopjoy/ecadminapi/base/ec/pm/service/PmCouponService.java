@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmCouponService {
     @Transactional
     public PmCoupon save(PmCoupon entity) {
         if (!repository.existsById(entity.getCouponId()))
-            throw new BusinessException("존재하지 않는 PmCoupon입니다: " + entity.getCouponId());
+            throw new CmBizException("존재하지 않는 PmCoupon입니다: " + entity.getCouponId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmCoupon result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmCouponService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmCoupon입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmCoupon입니다: " + id);
         repository.deleteById(id);
     }
 

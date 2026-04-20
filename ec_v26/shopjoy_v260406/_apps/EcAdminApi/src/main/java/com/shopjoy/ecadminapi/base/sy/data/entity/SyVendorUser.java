@@ -17,19 +17,19 @@ import lombok.Setter;
 public class SyVendorUser {
 
     @Id
-    @Column(name = "vendor_user_id", length = 20, nullable = false)
+    @Column(name = "vendor_user_id", length = 21, nullable = false)
     private String vendorUserId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "vendor_id", length = 20, nullable = false)
+    @Column(name = "vendor_id", length = 21, nullable = false)
     private String vendorId;
 
-    @Column(name = "user_id", length = 20)
+    @Column(name = "user_id", length = 21)
     private String userId;
 
-    @Column(name = "role_id", length = 20)
+    @Column(name = "role_id", length = 21)
     private String roleId;
 
     @Column(name = "member_nm", length = 50, nullable = false)
@@ -71,13 +71,13 @@ public class SyVendorUser {
     @Column(name = "vendor_user_remark", length = 500)
     private String vendorUserRemark;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

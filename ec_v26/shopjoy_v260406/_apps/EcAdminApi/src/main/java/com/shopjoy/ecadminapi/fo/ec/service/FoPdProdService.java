@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdMapper;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ public class FoPdProdService {
     @Transactional(readOnly = true)
     public PdProdDto getById(String id) {
         PdProdDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 상품입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 상품입니다: " + id);
         return dto;
     }
 }

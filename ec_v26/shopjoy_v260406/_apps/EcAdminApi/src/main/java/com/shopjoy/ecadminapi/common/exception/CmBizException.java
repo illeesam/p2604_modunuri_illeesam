@@ -12,18 +12,18 @@ import org.springframework.http.HttpStatus;
  * @Transactional 메서드 내에서 던지면 자동 롤백된다.
  */
 @Getter
-public class BusinessException extends RuntimeException {
+public class CmBizException extends RuntimeException {
 
     private final HttpStatus httpStatus;
 
     /** 400 Bad Request로 응답한다. */
-    public BusinessException(String message) {
+    public CmBizException(String message) {
         super(message);
         this.httpStatus = HttpStatus.BAD_REQUEST;
     }
 
     /** 지정한 HTTP 상태코드로 응답한다. */
-    public BusinessException(String message, HttpStatus httpStatus) {
+    public CmBizException(String message, HttpStatus httpStatus) {
         super(message);
         this.httpStatus = httpStatus;
     }

@@ -14,9 +14,9 @@ CREATE TABLE dp_area (
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 (Y/N)
     use_start_date  DATE,                                   -- 사용시작일
     use_end_date    DATE,                                   -- 사용종료일
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (area_id),
     UNIQUE (site_id, area_cd),

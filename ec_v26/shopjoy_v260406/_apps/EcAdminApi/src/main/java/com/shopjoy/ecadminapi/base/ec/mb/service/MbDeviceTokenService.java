@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
 import com.shopjoy.ecadminapi.base.ec.mb.data.vo.MbDeviceTokenReq;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbDeviceTokenMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +67,7 @@ public class MbDeviceTokenService {
     @Transactional
     public MbDeviceToken save(MbDeviceToken entity) {
         MbDeviceToken existing = repository.findById(entity.getDeviceTokenId())
-                .orElseThrow(() -> new BusinessException("존재하지 않는 디바이스 토큰입니다: " + entity.getDeviceTokenId()));
+                .orElseThrow(() -> new CmBizException("존재하지 않는 디바이스 토큰입니다: " + entity.getDeviceTokenId()));
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
         entity.setUpdBy(SecurityUtil.currentUserId());
@@ -78,7 +78,7 @@ public class MbDeviceTokenService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 디바이스 토큰입니다: " + id);
+            throw new CmBizException("존재하지 않는 디바이스 토큰입니다: " + id);
         repository.deleteById(id);
     }
 
@@ -106,7 +106,7 @@ public class MbDeviceTokenService {
                 delete(req.getDeviceTokenId());
                 yield null;
             }
-            default -> throw new BusinessException("올바르지 않은 _row_status: " + req.getRowStatus());
+            default -> throw new CmBizException("올바르지 않은 _row_status: " + req.getRowStatus());
         };
     }
 

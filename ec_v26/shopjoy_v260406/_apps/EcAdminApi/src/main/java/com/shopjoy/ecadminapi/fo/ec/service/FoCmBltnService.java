@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBltnDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltn;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class FoCmBltnService {
     @Transactional
     public CmBltnDto getByIdAndIncrView(String blogId) {
         CmBltn entity = repository.findById(blogId)
-                .orElseThrow(() -> new BusinessException("존재하지 않는 게시물입니다: " + blogId));
+                .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         entity.setViewCount((entity.getViewCount() != null ? entity.getViewCount() : 0) + 1);
         repository.save(entity);
         return mapper.selectById(blogId);
@@ -69,9 +69,9 @@ public class FoCmBltnService {
     @Transactional
     public CmBltn update(String blogId, CmBltn entity) {
         CmBltn existing = repository.findById(blogId)
-                .orElseThrow(() -> new BusinessException("존재하지 않는 게시물입니다: " + blogId));
+                .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         if (!existing.getRegBy().equals(SecurityUtil.currentUserId()) && !SecurityUtil.isUser())
-            throw new BusinessException("수정 권한이 없습니다.");
+            throw new CmBizException("수정 권한이 없습니다.");
         entity.setBlogId(blogId);
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
@@ -83,9 +83,9 @@ public class FoCmBltnService {
     @Transactional
     public void delete(String blogId) {
         CmBltn existing = repository.findById(blogId)
-                .orElseThrow(() -> new BusinessException("존재하지 않는 게시물입니다: " + blogId));
+                .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         if (!existing.getRegBy().equals(SecurityUtil.currentUserId()) && !SecurityUtil.isUser())
-            throw new BusinessException("삭제 권한이 없습니다.");
+            throw new CmBizException("삭제 권한이 없습니다.");
         repository.deleteById(blogId);
     }
 

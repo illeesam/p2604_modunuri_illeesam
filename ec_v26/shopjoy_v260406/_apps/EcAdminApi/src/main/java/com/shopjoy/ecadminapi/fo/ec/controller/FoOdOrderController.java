@@ -30,7 +30,8 @@ public class FoOdOrderController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> myOrders(
             @RequestParam(required = false) String siteId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyOrders(siteId)));
+        List<OdOrderDto> result = service.getMyOrders(siteId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -38,12 +39,14 @@ public class FoOdOrderController {
             @RequestParam(required = false) String siteId,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyOrderPage(siteId, pageNo, pageSize)));
+        PageResult<OdOrderDto> result = service.getMyOrderPage(siteId, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OdOrderDto>> getById(@PathVariable String orderId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(orderId)));
+        OdOrderDto result = service.getById(orderId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping

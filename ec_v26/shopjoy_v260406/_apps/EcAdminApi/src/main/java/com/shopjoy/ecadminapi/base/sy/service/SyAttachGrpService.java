@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyAttachGrpMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachGrpRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyAttachGrpService {
     @Transactional
     public SyAttachGrp save(SyAttachGrp entity) {
         if (!repository.existsById(entity.getAttachGrpId()))
-            throw new BusinessException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId());
+            throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyAttachGrp result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyAttachGrpService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyAttachGrp입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + id);
         repository.deleteById(id);
     }
 

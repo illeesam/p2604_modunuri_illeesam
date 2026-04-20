@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucherLine;
 import com.shopjoy.ecadminapi.base.ec.st.mapper.StErpVoucherLineMapper;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherLineRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class StErpVoucherLineService {
     @Transactional
     public StErpVoucherLine save(StErpVoucherLine entity) {
         if (!repository.existsById(entity.getErpVoucherLineId()))
-            throw new BusinessException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId());
+            throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         StErpVoucherLine result = repository.save(entity);
@@ -82,7 +82,7 @@ public class StErpVoucherLineService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 StErpVoucherLine입니다: " + id);
+            throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + id);
         repository.deleteById(id);
     }
 

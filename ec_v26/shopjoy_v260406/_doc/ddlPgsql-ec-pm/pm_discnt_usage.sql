@@ -16,9 +16,9 @@ CREATE TABLE pm_discnt_usage (
     discnt_value        NUMERIC(10,2)   DEFAULT 0,              -- 할인값 스냅샷 (율 또는 금액)
     discnt_amt          BIGINT          DEFAULT 0,              -- 실할인금액
     used_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
 
     PRIMARY KEY (discnt_usage_id)

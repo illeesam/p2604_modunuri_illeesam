@@ -17,13 +17,13 @@ import lombok.Setter;
 public class DpPanelItem {
 
     @Id
-    @Column(name = "panel_item_id", length = 20, nullable = false)
+    @Column(name = "panel_item_id", length = 21, nullable = false)
     private String panelItemId;
 
-    @Column(name = "panel_id", length = 20, nullable = false)
+    @Column(name = "panel_id", length = 21, nullable = false)
     private String panelId;
 
-    @Column(name = "widget_lib_id", length = 20)
+    @Column(name = "widget_lib_id", length = 21)
     private String widgetLibId;
 
     @Column(name = "widget_type_cd", length = 30)
@@ -70,13 +70,13 @@ public class DpPanelItem {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

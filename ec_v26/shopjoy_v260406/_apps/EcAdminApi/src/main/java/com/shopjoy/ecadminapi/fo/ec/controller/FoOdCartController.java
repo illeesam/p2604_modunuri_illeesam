@@ -30,7 +30,8 @@ public class FoOdCartController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdCartDto>>> myCart(
             @RequestParam(required = false) String siteId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyCart(siteId)));
+        List<OdCartDto> result = service.getMyCart(siteId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -43,7 +44,8 @@ public class FoOdCartController {
             @PathVariable String cartId,
             @RequestBody Map<String, Integer> body) {
         int qty = body.getOrDefault("qty", 1);
-        return ResponseEntity.ok(ApiResponse.ok(service.updateQty(cartId, qty)));
+        OdCart result = service.updateQty(cartId, qty);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{cartId}")

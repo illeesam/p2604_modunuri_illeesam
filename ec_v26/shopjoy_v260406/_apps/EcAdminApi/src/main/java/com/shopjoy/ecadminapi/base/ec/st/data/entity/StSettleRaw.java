@@ -17,10 +17,10 @@ import lombok.Setter;
 public class StSettleRaw {
 
     @Id
-    @Column(name = "settle_raw_id", length = 20, nullable = false)
+    @Column(name = "settle_raw_id", length = 21, nullable = false)
     private String settleRawId;
 
-    @Column(name = "site_id", length = 20, nullable = false)
+    @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
     @Column(name = "raw_type_cd", length = 20, nullable = false)
@@ -32,13 +32,13 @@ public class StSettleRaw {
     @Column(name = "raw_status_cd_before", length = 20)
     private String rawStatusCdBefore;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
     @Column(name = "order_no", length = 30)
     private String orderNo;
 
-    @Column(name = "order_item_id", length = 20, nullable = false)
+    @Column(name = "order_item_id", length = 21, nullable = false)
     private String orderItemId;
 
     @Column(name = "order_date")
@@ -47,28 +47,28 @@ public class StSettleRaw {
     @Column(name = "order_item_status_cd", length = 20)
     private String orderItemStatusCd;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
-    @Column(name = "claim_id", length = 20)
+    @Column(name = "claim_id", length = 21)
     private String claimId;
 
-    @Column(name = "claim_item_id", length = 20)
+    @Column(name = "claim_item_id", length = 21)
     private String claimItemId;
 
-    @Column(name = "vendor_id", length = 20)
+    @Column(name = "vendor_id", length = 21)
     private String vendorId;
 
     @Column(name = "vendor_type_cd", length = 20)
     private String vendorTypeCd;
 
-    @Column(name = "prod_id", length = 20)
+    @Column(name = "prod_id", length = 21)
     private String prodId;
 
     @Column(name = "prod_nm", length = 200)
     private String prodNm;
 
-    @Column(name = "brand_id", length = 20)
+    @Column(name = "brand_id", length = 21)
     private String brandId;
 
     @Column(name = "brand_nm", length = 100)
@@ -89,7 +89,7 @@ public class StSettleRaw {
     @Column(name = "category_id_5", length = 20)
     private String categoryId5;
 
-    @Column(name = "sku_id", length = 20)
+    @Column(name = "sku_id", length = 21)
     private String skuId;
 
     @Column(name = "opt_item_id_1", length = 20)
@@ -98,7 +98,7 @@ public class StSettleRaw {
     @Column(name = "opt_item_id_2", length = 20)
     private String optItemId2;
 
-    @Column(name = "md_user_id", length = 20)
+    @Column(name = "md_user_id", length = 21)
     private String mdUserId;
 
     @Column(name = "normal_price")
@@ -122,22 +122,22 @@ public class StSettleRaw {
     @Column(name = "promo_discnt_amt")
     private Long promoDiscntAmt;
 
-    @Column(name = "promo_id", length = 20)
+    @Column(name = "promo_id", length = 21)
     private String promoId;
 
-    @Column(name = "coupon_id", length = 20)
+    @Column(name = "coupon_id", length = 21)
     private String couponId;
 
-    @Column(name = "coupon_issue_id", length = 20)
+    @Column(name = "coupon_issue_id", length = 21)
     private String couponIssueId;
 
-    @Column(name = "discnt_id", length = 20)
+    @Column(name = "discnt_id", length = 21)
     private String discntId;
 
-    @Column(name = "voucher_id", length = 20)
+    @Column(name = "voucher_id", length = 21)
     private String voucherId;
 
-    @Column(name = "voucher_issue_id", length = 20)
+    @Column(name = "voucher_issue_id", length = 21)
     private String voucherIssueId;
 
     @Column(name = "voucher_use_amt")
@@ -152,7 +152,7 @@ public class StSettleRaw {
     @Column(name = "save_schd_amt")
     private Long saveSchdAmt;
 
-    @Column(name = "gift_id", length = 20)
+    @Column(name = "gift_id", length = 21)
     private String giftId;
 
     @Column(name = "gift_amt")
@@ -185,7 +185,7 @@ public class StSettleRaw {
     @Column(name = "settle_period", length = 7)
     private String settlePeriod;
 
-    @Column(name = "settle_id", length = 20)
+    @Column(name = "settle_id", length = 21)
     private String settleId;
 
     @Column(name = "close_yn", length = 1)
@@ -194,10 +194,10 @@ public class StSettleRaw {
     @Column(name = "close_date")
     private LocalDateTime closeDate;
 
-    @Column(name = "settle_close_id", length = 20)
+    @Column(name = "settle_close_id", length = 21)
     private String settleCloseId;
 
-    @Column(name = "erp_voucher_id", length = 20)
+    @Column(name = "erp_voucher_id", length = 21)
     private String erpVoucherId;
 
     @Column(name = "erp_voucher_line_no")
@@ -209,13 +209,13 @@ public class StSettleRaw {
     @Column(name = "erp_send_date")
     private LocalDateTime erpSendDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

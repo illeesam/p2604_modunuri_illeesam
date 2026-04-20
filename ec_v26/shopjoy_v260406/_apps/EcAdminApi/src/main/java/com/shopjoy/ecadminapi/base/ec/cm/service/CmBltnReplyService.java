@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltnReply;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnReplyMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnReplyRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class CmBltnReplyService {
     @Transactional
     public CmBltnReply save(CmBltnReply entity) {
         if (!repository.existsById(entity.getCommentId()))
-            throw new BusinessException("존재하지 않는 CmBltnReply입니다: " + entity.getCommentId());
+            throw new CmBizException("존재하지 않는 CmBltnReply입니다: " + entity.getCommentId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmBltnReply result = repository.save(entity);
@@ -82,7 +82,7 @@ public class CmBltnReplyService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 CmBltnReply입니다: " + id);
+            throw new CmBizException("존재하지 않는 CmBltnReply입니다: " + id);
         repository.deleteById(id);
     }
 

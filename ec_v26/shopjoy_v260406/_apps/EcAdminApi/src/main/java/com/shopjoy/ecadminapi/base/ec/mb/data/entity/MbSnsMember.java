@@ -16,10 +16,10 @@ import lombok.Setter;
 public class MbSnsMember {
 
     @Id
-    @Column(name = "sns_mem_id", length = 20, nullable = false)
+    @Column(name = "sns_mem_id", length = 21, nullable = false)
     private String snsMemId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
     @Column(name = "sns_channel_cd", length = 20, nullable = false)
@@ -28,13 +28,13 @@ public class MbSnsMember {
     @Column(name = "sns_user_id", length = 200, nullable = false)
     private String snsUserId;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

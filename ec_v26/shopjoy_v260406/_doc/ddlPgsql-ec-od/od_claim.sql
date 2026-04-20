@@ -70,9 +70,9 @@ CREATE TABLE od_claim (
     shipping_fee_paid_yn  CHAR(1)    DEFAULT 'N',
     shipping_fee_paid_date TIMESTAMP,
     shipping_fee_memo     VARCHAR(300),
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     -- ── 결재처리/추가결재요청 (관리자 일괄작업) ──
     appr_status_cd      VARCHAR(20),                        -- 코드: APPROVAL_STATUS

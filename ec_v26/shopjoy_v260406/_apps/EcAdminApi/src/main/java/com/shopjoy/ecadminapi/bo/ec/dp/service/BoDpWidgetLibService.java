@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpWidgetLibMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoDpWidgetLibService {
     private final DpWidgetLibRepository repository;
 
     @Transactional(readOnly = true)
-    public List<DpWidgetLibDto> list(String siteId, String kw) {
+    public List<DpWidgetLibDto> getList(String siteId, String kw) {
         Map<String, Object> p = buildParams(siteId, kw);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<DpWidgetLibDto> page(String siteId, String kw, int pageNo, int pageSize) {
+    public PageResult<DpWidgetLibDto> getPageData(String siteId, String kw, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoDpWidgetLibService {
     @Transactional(readOnly = true)
     public DpWidgetLibDto getById(String id) {
         DpWidgetLibDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoDpWidgetLibService {
 
     @Transactional
     public DpWidgetLibDto update(String id, DpWidgetLib body) {
-        DpWidgetLib entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        DpWidgetLib entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,7 +64,7 @@ public class BoDpWidgetLibService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 

@@ -7,9 +7,9 @@ CREATE TABLE pd_prod_content (
     content_html    TEXT,                                   -- HTML 에디터 컨텐츠
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_content_id)
 );

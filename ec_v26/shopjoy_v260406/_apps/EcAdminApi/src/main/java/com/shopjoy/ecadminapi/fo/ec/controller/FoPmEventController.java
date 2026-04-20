@@ -33,7 +33,8 @@ public class FoPmEventController {
             @RequestParam(required = false) String kw,
             @RequestParam(required = false) String eventTypeCd,
             @RequestParam(required = false) String sort) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(buildParam(siteId, kw, eventTypeCd, sort))));
+        List<PmEventDto> result = service.getList(buildParam(siteId, kw, eventTypeCd, sort));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -44,12 +45,14 @@ public class FoPmEventController {
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(buildParam(siteId, kw, eventTypeCd, sort), pageNo, pageSize)));
+        PageResult<PmEventDto> result = service.getPageData(buildParam(siteId, kw, eventTypeCd, sort), pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{eventId}")
     public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable String eventId) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(eventId)));
+        PmEventDto result = service.getById(eventId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     private Map<String, Object> buildParam(String siteId, String kw, String eventTypeCd, String sort) {

@@ -29,7 +29,8 @@ public class BoPmSaveController {
             @RequestParam(required = false) String kw,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, dateStart, dateEnd)));
+        List<PmSaveDto> result = service.getList(siteId, kw, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -40,12 +41,14 @@ public class BoPmSaveController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<PmSaveDto> result = service.getPageData(siteId, kw, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PmSaveDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        PmSaveDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -55,7 +58,8 @@ public class BoPmSaveController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmSaveDto>> update(@PathVariable String id, @RequestBody PmSave body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        PmSaveDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

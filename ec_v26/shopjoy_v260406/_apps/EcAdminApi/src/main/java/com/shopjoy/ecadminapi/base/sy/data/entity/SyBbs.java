@@ -16,19 +16,19 @@ import lombok.Setter;
 public class SyBbs {
 
     @Id
-    @Column(name = "bbs_id", length = 20, nullable = false)
+    @Column(name = "bbs_id", length = 21, nullable = false)
     private String bbsId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "bbm_id", length = 20, nullable = false)
+    @Column(name = "bbm_id", length = 21, nullable = false)
     private String bbmId;
 
-    @Column(name = "parent_bbs_id", length = 20)
+    @Column(name = "parent_bbs_id", length = 21)
     private String parentBbsId;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
     @Column(name = "author_nm", length = 50)
@@ -41,7 +41,7 @@ public class SyBbs {
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 
-    @Column(name = "attach_grp_id", length = 20)
+    @Column(name = "attach_grp_id", length = 21)
     private String attachGrpId;
 
     @Column(name = "view_count")
@@ -59,13 +59,13 @@ public class SyBbs {
     @Column(name = "bbs_status_cd", length = 20)
     private String bbsStatusCd;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

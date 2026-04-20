@@ -7,9 +7,9 @@ CREATE TABLE od_pay_method (
     pay_method_alias           VARCHAR(100),                           -- 별칭 (사용자 설정)
     pay_key_no              VARCHAR(200),                           -- 결제 게이트웨이 키 (카드/계좌 토큰)
     main_method_yn             VARCHAR(1)      DEFAULT 'N',            -- 기본결제수단 여부
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(20),
+    upd_by                  VARCHAR(30),
     upd_date                TIMESTAMP,
     PRIMARY KEY (pay_method_id)
 );

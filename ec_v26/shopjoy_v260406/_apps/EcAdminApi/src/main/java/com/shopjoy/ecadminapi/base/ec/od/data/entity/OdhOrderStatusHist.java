@@ -16,13 +16,13 @@ import lombok.Setter;
 public class OdhOrderStatusHist {
 
     @Id
-    @Column(name = "order_status_hist_id", length = 20, nullable = false)
+    @Column(name = "order_status_hist_id", length = 21, nullable = false)
     private String orderStatusHistId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
     @Column(name = "order_status_cd_before", length = 20)
@@ -34,7 +34,7 @@ public class OdhOrderStatusHist {
     @Column(name = "status_reason", length = 300)
     private String statusReason;
 
-    @Column(name = "chg_user_id", length = 20)
+    @Column(name = "chg_user_id", length = 21)
     private String chgUserId;
 
     @Column(name = "chg_date")
@@ -43,13 +43,13 @@ public class OdhOrderStatusHist {
     @Column(name = "memo", length = 300)
     private String memo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

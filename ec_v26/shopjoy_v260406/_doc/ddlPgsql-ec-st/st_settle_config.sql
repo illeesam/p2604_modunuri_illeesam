@@ -14,9 +14,9 @@ CREATE TABLE st_settle_config (
     min_settle_amt      BIGINT          DEFAULT 0,              -- 최소 정산금액
     settle_config_remark VARCHAR(500),                          -- 비고
     use_yn              CHAR(1)         DEFAULT 'Y',
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_config_id),
     UNIQUE (site_id, vendor_id, category_id)

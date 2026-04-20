@@ -37,7 +37,8 @@ public class BoCmBltnController {
             @RequestParam(required = false) String kw,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, dateStart, dateEnd)));
+        List<CmBltnDto> result = service.getList(siteId, kw, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -48,12 +49,14 @@ public class BoCmBltnController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<CmBltnDto> result = service.getPageData(siteId, kw, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBltnDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        CmBltnDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -63,7 +66,8 @@ public class BoCmBltnController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBltnDto>> update(@PathVariable String id, @RequestBody CmBltn body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        CmBltnDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

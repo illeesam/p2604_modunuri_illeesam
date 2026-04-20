@@ -29,7 +29,8 @@ public class FoMbLikeController {
     public ResponseEntity<ApiResponse<List<MbLikeDto>>> myLikes(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String targetTypeCd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getMyLikes(siteId, targetTypeCd)));
+        List<MbLikeDto> result = service.getMyLikes(siteId, targetTypeCd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{targetTypeCd}/{targetId}")

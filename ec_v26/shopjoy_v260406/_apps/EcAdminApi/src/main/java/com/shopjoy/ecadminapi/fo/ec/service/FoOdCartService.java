@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdCartMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdCartRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,9 +46,9 @@ public class FoOdCartService {
     @Transactional
     public OdCart updateQty(String cartId, int qty) {
         OdCart cart = repository.findById(cartId)
-                .orElseThrow(() -> new BusinessException("장바구니 항목이 없습니다: " + cartId));
+                .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
         if (!cart.getMemberId().equals(SecurityUtil.currentUserId()))
-            throw new BusinessException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다.");
         cart.setOrderQty(qty);
         cart.setUpdBy(SecurityUtil.currentUserId());
         cart.setUpdDate(LocalDateTime.now());
@@ -58,9 +58,9 @@ public class FoOdCartService {
     @Transactional
     public void removeFromCart(String cartId) {
         OdCart cart = repository.findById(cartId)
-                .orElseThrow(() -> new BusinessException("장바구니 항목이 없습니다: " + cartId));
+                .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
         if (!cart.getMemberId().equals(SecurityUtil.currentUserId()))
-            throw new BusinessException("접근 권한이 없습니다.");
+            throw new CmBizException("접근 권한이 없습니다.");
         repository.deleteById(cartId);
     }
 

@@ -25,9 +25,9 @@ CREATE TABLE od_refund_method (
     pg_refund_id        VARCHAR(100),                           -- PG 환불 거래ID
     pg_response         TEXT,                                   -- PG 환불 응답 JSON
     -- ── 기본 ──
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (refund_method_id)
 );

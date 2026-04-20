@@ -10,9 +10,9 @@ CREATE TABLE cm_bltn_cate (
     parent_blog_cate_id VARCHAR(21),                        -- 상위 카테고리ID (계층형)
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (blog_cate_id)
 );

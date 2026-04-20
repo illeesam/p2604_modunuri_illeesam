@@ -16,10 +16,10 @@ import lombok.Setter;
 public class SyhApiLog {
 
     @Id
-    @Column(name = "log_id", length = 20, nullable = false)
+    @Column(name = "log_id", length = 21, nullable = false)
     private String logId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "api_type_cd", length = 50, nullable = false)
@@ -57,19 +57,19 @@ public class SyhApiLog {
     @Column(name = "ref_type_cd", length = 30)
     private String refTypeCd;
 
-    @Column(name = "ref_id", length = 20)
+    @Column(name = "ref_id", length = 21)
     private String refId;
 
     @Column(name = "call_date")
     private LocalDateTime callDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

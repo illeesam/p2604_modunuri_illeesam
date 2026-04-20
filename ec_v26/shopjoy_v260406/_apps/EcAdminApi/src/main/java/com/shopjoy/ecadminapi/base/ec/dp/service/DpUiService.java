@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpUiMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpUiRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class DpUiService {
     @Transactional
     public DpUi save(DpUi entity) {
         if (!repository.existsById(entity.getUiId()))
-            throw new BusinessException("존재하지 않는 DpUi입니다: " + entity.getUiId());
+            throw new CmBizException("존재하지 않는 DpUi입니다: " + entity.getUiId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         DpUi result = repository.save(entity);
@@ -82,7 +82,7 @@ public class DpUiService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 DpUi입니다: " + id);
+            throw new CmBizException("존재하지 않는 DpUi입니다: " + id);
         repository.deleteById(id);
     }
 

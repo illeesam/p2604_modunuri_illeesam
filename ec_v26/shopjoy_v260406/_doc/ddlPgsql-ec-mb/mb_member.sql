@@ -20,9 +20,9 @@ CREATE TABLE mb_member (
     member_addr     VARCHAR(200),
     member_addr_detail VARCHAR(200),
     member_memo     TEXT,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (member_id),
     UNIQUE (member_email)

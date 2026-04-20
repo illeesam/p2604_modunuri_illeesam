@@ -16,13 +16,13 @@ import lombok.Setter;
 public class SyContact {
 
     @Id
-    @Column(name = "contact_id", length = 20, nullable = false)
+    @Column(name = "contact_id", length = 21, nullable = false)
     private String contactId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
     @Column(name = "member_nm", length = 50)
@@ -38,7 +38,7 @@ public class SyContact {
     @Column(name = "contact_content", columnDefinition = "TEXT")
     private String contactContent;
 
-    @Column(name = "attach_grp_id", length = 20)
+    @Column(name = "attach_grp_id", length = 21)
     private String attachGrpId;
 
     @Column(name = "contact_status_cd", length = 20)
@@ -48,7 +48,7 @@ public class SyContact {
     @Column(name = "contact_answer", columnDefinition = "TEXT")
     private String contactAnswer;
 
-    @Column(name = "answer_user_id", length = 20)
+    @Column(name = "answer_user_id", length = 21)
     private String answerUserId;
 
     @Column(name = "answer_date")
@@ -57,13 +57,13 @@ public class SyContact {
     @Column(name = "contact_date")
     private LocalDateTime contactDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

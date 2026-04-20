@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdDlivMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdDlivRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class OdDlivService {
     @Transactional
     public OdDliv save(OdDliv entity) {
         if (!repository.existsById(entity.getDlivId()))
-            throw new BusinessException("존재하지 않는 OdDliv입니다: " + entity.getDlivId());
+            throw new CmBizException("존재하지 않는 OdDliv입니다: " + entity.getDlivId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdDliv result = repository.save(entity);
@@ -82,7 +82,7 @@ public class OdDlivService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 OdDliv입니다: " + id);
+            throw new CmBizException("존재하지 않는 OdDliv입니다: " + id);
         repository.deleteById(id);
     }
 

@@ -10,9 +10,9 @@ CREATE TABLE sy_code (
     parent_code_value   VARCHAR(50),                            -- 부모 코드값 (트리 구조 시 상위 code_value, null이면 루트)
     child_code_values   VARCHAR(500),                           -- 허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식)
     code_remark         VARCHAR(300),
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (code_id),
     UNIQUE (code_grp, code_value)

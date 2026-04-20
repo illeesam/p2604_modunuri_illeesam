@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.mapper.DpWidgetLibMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class DpWidgetLibService {
     @Transactional
     public DpWidgetLib save(DpWidgetLib entity) {
         if (!repository.existsById(entity.getWidgetLibId()))
-            throw new BusinessException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId());
+            throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         DpWidgetLib result = repository.save(entity);
@@ -82,7 +82,7 @@ public class DpWidgetLibService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 DpWidgetLib입니다: " + id);
+            throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + id);
         repository.deleteById(id);
     }
 

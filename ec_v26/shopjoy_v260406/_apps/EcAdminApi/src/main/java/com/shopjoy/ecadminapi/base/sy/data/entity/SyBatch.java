@@ -16,10 +16,10 @@ import lombok.Setter;
 public class SyBatch {
 
     @Id
-    @Column(name = "batch_id", length = 20, nullable = false)
+    @Column(name = "batch_id", length = 21, nullable = false)
     private String batchId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "batch_code", length = 50, nullable = false)
@@ -60,13 +60,13 @@ public class SyBatch {
     @Column(name = "batch_memo", columnDefinition = "TEXT")
     private String batchMemo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

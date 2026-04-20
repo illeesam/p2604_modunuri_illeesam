@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmSaveMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PmSaveService {
     @Transactional
     public PmSave save(PmSave entity) {
         if (!repository.existsById(entity.getSaveId()))
-            throw new BusinessException("존재하지 않는 PmSave입니다: " + entity.getSaveId());
+            throw new CmBizException("존재하지 않는 PmSave입니다: " + entity.getSaveId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmSave result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PmSaveService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PmSave입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmSave입니다: " + id);
         repository.deleteById(id);
     }
 

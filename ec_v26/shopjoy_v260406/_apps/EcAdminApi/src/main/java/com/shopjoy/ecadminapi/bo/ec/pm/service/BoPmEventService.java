@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoPmEventService {
     private final PmEventRepository repository;
 
     @Transactional(readOnly = true)
-    public List<PmEventDto> list(String siteId, String kw, String status, String dateStart, String dateEnd) {
+    public List<PmEventDto> getList(String siteId, String kw, String status, String dateStart, String dateEnd) {
         Map<String, Object> p = buildParams(siteId, kw, status, dateStart, dateEnd);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PmEventDto> page(String siteId, String kw, String status, String dateStart, String dateEnd, int pageNo, int pageSize) {
+    public PageResult<PmEventDto> getPageData(String siteId, String kw, String status, String dateStart, String dateEnd, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw, status, dateStart, dateEnd);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoPmEventService {
     @Transactional(readOnly = true)
     public PmEventDto getById(String id) {
         PmEventDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoPmEventService {
 
     @Transactional
     public PmEventDto update(String id, PmEvent body) {
-        PmEvent entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        PmEvent entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,13 +64,13 @@ public class BoPmEventService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 
     @Transactional
     public PmEventDto changeStatus(String id, String statusCd) {
-        PmEvent entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않습니다: " + id));
+        PmEvent entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setEventStatusCdBefore(entity.getEventStatusCd());
         entity.setEventStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.currentUserId());

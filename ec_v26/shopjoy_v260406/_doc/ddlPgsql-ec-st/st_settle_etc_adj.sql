@@ -11,9 +11,9 @@ CREATE TABLE st_settle_etc_adj (
     etc_adj_amt         BIGINT          NOT NULL,               -- 기타조정 금액
     etc_adj_reason      VARCHAR(200)    NOT NULL,               -- 사유
     settle_etc_adj_memo TEXT,
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_etc_adj_id)
 );

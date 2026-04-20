@@ -8,9 +8,9 @@ CREATE TABLE cm_bltn_reply (
     blog_comment_content TEXT            NOT NULL,
     comment_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)
     comment_status_cd_before VARCHAR(20),                    -- 변경 전 댓글상태
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (comment_id)
 );

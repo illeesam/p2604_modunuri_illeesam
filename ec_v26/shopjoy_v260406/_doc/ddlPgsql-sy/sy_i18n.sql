@@ -8,9 +8,9 @@ CREATE TABLE sy_i18n (
     i18n_category   VARCHAR(50),                            -- 키 첫 세그먼트 (common/error/link 등)
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (i18n_id),
     UNIQUE (i18n_key, i18n_scope_cd)

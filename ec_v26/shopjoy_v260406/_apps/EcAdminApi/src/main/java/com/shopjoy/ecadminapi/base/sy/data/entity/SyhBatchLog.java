@@ -16,13 +16,13 @@ import lombok.Setter;
 public class SyhBatchLog {
 
     @Id
-    @Column(name = "batch_log_id", length = 20, nullable = false)
+    @Column(name = "batch_log_id", length = 21, nullable = false)
     private String batchLogId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "batch_id", length = 20, nullable = false)
+    @Column(name = "batch_id", length = 21, nullable = false)
     private String batchId;
 
     @Column(name = "batch_code", length = 50)
@@ -57,13 +57,13 @@ public class SyhBatchLog {
     @Column(name = "detail", columnDefinition = "TEXT")
     private String detail;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

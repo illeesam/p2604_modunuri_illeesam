@@ -16,10 +16,10 @@ import lombok.Setter;
 public class SyCodeGrp {
 
     @Id
-    @Column(name = "code_grp_id", length = 20, nullable = false)
+    @Column(name = "code_grp_id", length = 21, nullable = false)
     private String codeGrpId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "code_grp", length = 50, nullable = false)
@@ -37,13 +37,13 @@ public class SyCodeGrp {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

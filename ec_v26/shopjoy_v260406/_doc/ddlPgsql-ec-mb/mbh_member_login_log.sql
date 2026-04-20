@@ -21,9 +21,9 @@ CREATE TABLE mbh_member_login_log (
     access_token_exp    TIMESTAMP,                             -- 액세스 토큰 만료일시
     refresh_token       VARCHAR(512),                          -- 리프레시 토큰 (SHA-256 해시 권장)
     refresh_token_exp   TIMESTAMP,                             -- 리프레시 토큰 만료일시
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (log_id)
 );

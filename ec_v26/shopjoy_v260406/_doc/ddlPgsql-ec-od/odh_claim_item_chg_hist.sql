@@ -14,9 +14,9 @@ CREATE TABLE odh_claim_item_chg_hist (
     chg_reason              VARCHAR(300),                           -- 변경사유
     chg_user_id                  VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(20),
+    upd_by                  VARCHAR(30),
     upd_date                TIMESTAMP,
     PRIMARY KEY (claim_item_chg_hist_id)
 );

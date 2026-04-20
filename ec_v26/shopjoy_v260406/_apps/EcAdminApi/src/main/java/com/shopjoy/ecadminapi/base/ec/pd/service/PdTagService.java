@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdTagMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdTagRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class PdTagService {
     @Transactional
     public PdTag save(PdTag entity) {
         if (!repository.existsById(entity.getTagId()))
-            throw new BusinessException("존재하지 않는 PdTag입니다: " + entity.getTagId());
+            throw new CmBizException("존재하지 않는 PdTag입니다: " + entity.getTagId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdTag result = repository.save(entity);
@@ -82,7 +82,7 @@ public class PdTagService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 PdTag입니다: " + id);
+            throw new CmBizException("존재하지 않는 PdTag입니다: " + id);
         repository.deleteById(id);
     }
 

@@ -39,7 +39,8 @@ public class BoOdDlivController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, status, dateStart, dateEnd)));
+        List<OdDlivDto> result = service.getList(siteId, kw, status, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -51,12 +52,14 @@ public class BoOdDlivController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<OdDlivDto> result = service.getPageData(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OdDlivDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        OdDlivDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -66,7 +69,8 @@ public class BoOdDlivController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OdDlivDto>> update(@PathVariable String id, @RequestBody OdDliv body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        OdDlivDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")
@@ -78,6 +82,7 @@ public class BoOdDlivController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<OdDlivDto>> changeStatus(
             @PathVariable String id, @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("statusCd"))));
+        OdDlivDto result = service.changeStatus(id, body.get("statusCd"));
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

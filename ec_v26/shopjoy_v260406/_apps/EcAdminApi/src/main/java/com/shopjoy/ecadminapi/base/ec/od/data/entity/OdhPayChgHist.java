@@ -16,16 +16,16 @@ import lombok.Setter;
 public class OdhPayChgHist {
 
     @Id
-    @Column(name = "pay_chg_hist_id", length = 20, nullable = false)
+    @Column(name = "pay_chg_hist_id", length = 21, nullable = false)
     private String payChgHistId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "pay_id", length = 20, nullable = false)
+    @Column(name = "pay_id", length = 21, nullable = false)
     private String payId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
     @Column(name = "pay_status_cd_before", length = 20)
@@ -50,7 +50,7 @@ public class OdhPayChgHist {
     @Column(name = "refund_pg_tid", length = 100)
     private String refundPgTid;
 
-    @Column(name = "chg_user_id", length = 20)
+    @Column(name = "chg_user_id", length = 21)
     private String chgUserId;
 
     @Column(name = "chg_date")
@@ -59,13 +59,13 @@ public class OdhPayChgHist {
     @Column(name = "memo", length = 300)
     private String memo;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

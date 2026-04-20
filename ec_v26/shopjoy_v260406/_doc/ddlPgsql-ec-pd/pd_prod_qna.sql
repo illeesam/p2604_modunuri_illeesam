@@ -16,9 +16,9 @@ CREATE TABLE pd_prod_qna (
     answ_user_id    VARCHAR(21),                            -- 답변자 (sy_user.user_id)
     disp_yn         VARCHAR(1)      DEFAULT 'Y',            -- 노출 여부
     use_yn          VARCHAR(1)      DEFAULT 'Y',
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (qna_id)
 );

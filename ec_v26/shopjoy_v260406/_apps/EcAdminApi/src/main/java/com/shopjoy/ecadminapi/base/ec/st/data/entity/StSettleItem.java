@@ -17,25 +17,25 @@ import lombok.Setter;
 public class StSettleItem {
 
     @Id
-    @Column(name = "settle_item_id", length = 20, nullable = false)
+    @Column(name = "settle_item_id", length = 21, nullable = false)
     private String settleItemId;
 
-    @Column(name = "settle_id", length = 20, nullable = false)
+    @Column(name = "settle_id", length = 21, nullable = false)
     private String settleId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Column(name = "order_item_id", length = 20, nullable = false)
+    @Column(name = "order_item_id", length = 21, nullable = false)
     private String orderItemId;
 
-    @Column(name = "vendor_id", length = 20, nullable = false)
+    @Column(name = "vendor_id", length = 21, nullable = false)
     private String vendorId;
 
-    @Column(name = "prod_id", length = 20)
+    @Column(name = "prod_id", length = 21)
     private String prodId;
 
     @Column(name = "settle_item_type_cd", length = 20)
@@ -65,13 +65,13 @@ public class StSettleItem {
     @Column(name = "settle_item_amt")
     private Long settleItemAmt;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

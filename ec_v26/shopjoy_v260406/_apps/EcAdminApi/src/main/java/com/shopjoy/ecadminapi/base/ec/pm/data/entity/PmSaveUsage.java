@@ -16,22 +16,22 @@ import lombok.Setter;
 public class PmSaveUsage {
 
     @Id
-    @Column(name = "save_usage_id", length = 20, nullable = false)
+    @Column(name = "save_usage_id", length = 21, nullable = false)
     private String saveUsageId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_id", length = 20, nullable = false)
+    @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
-    @Column(name = "order_id", length = 20)
+    @Column(name = "order_id", length = 21)
     private String orderId;
 
-    @Column(name = "order_item_id", length = 20)
+    @Column(name = "order_item_id", length = 21)
     private String orderItemId;
 
-    @Column(name = "prod_id", length = 20)
+    @Column(name = "prod_id", length = 21)
     private String prodId;
 
     @Column(name = "use_amt", nullable = false)
@@ -43,13 +43,13 @@ public class PmSaveUsage {
     @Column(name = "used_date")
     private LocalDateTime usedDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

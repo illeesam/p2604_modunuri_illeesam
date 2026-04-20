@@ -19,9 +19,9 @@ CREATE TABLE st_settle_item (
     commission_rate     NUMERIC(5,2)    DEFAULT 0,
     commission_amt      BIGINT          DEFAULT 0,
     settle_item_amt     BIGINT          DEFAULT 0,              -- item_price - discnt_amt - commission_amt
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (settle_item_id),
     UNIQUE (settle_id, order_item_id)

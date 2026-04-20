@@ -22,9 +22,9 @@ CREATE TABLE st_settle (
     settle_status_cd    VARCHAR(20)     DEFAULT 'DRAFT',        -- 코드: SETTLE_STATUS (DRAFT:작성중/CONFIRMED:확정/CLOSED:마감/PAID:지급완료)
     settle_status_cd_before VARCHAR(20),
     settle_memo         TEXT,                                   -- 정산 메모
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (settle_id),
     UNIQUE (site_id, vendor_id, settle_ym)

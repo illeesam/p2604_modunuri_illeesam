@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdDlivMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdDlivRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ public class BoOdDlivService {
     private final OdDlivRepository repository;
 
     @Transactional(readOnly = true)
-    public List<OdDlivDto> list(String siteId, String kw, String status, String dateStart, String dateEnd) {
+    public List<OdDlivDto> getList(String siteId, String kw, String status, String dateStart, String dateEnd) {
         Map<String, Object> p = buildParams(siteId, kw, status, dateStart, dateEnd);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<OdDlivDto> page(String siteId, String kw, String status, String dateStart, String dateEnd, int pageNo, int pageSize) {
+    public PageResult<OdDlivDto> getPageData(String siteId, String kw, String status, String dateStart, String dateEnd, int pageNo, int pageSize) {
         Map<String, Object> p = buildParams(siteId, kw, status, dateStart, dateEnd);
         p.put("limit", pageSize);
         p.put("offset", (pageNo - 1) * pageSize);
@@ -41,7 +41,7 @@ public class BoOdDlivService {
     @Transactional(readOnly = true)
     public OdDlivDto getById(String id) {
         OdDlivDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -55,7 +55,7 @@ public class BoOdDlivService {
 
     @Transactional
     public OdDlivDto update(String id, OdDliv body) {
-        OdDliv entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -64,13 +64,13 @@ public class BoOdDlivService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 
     @Transactional
     public OdDlivDto changeStatus(String id, String statusCd) {
-        OdDliv entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않습니다: " + id));
+        OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setDlivStatusCdBefore(entity.getDlivStatusCd());
         entity.setDlivStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.currentUserId());

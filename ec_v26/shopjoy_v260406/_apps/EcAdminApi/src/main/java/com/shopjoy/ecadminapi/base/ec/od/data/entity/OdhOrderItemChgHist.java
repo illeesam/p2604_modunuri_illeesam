@@ -16,16 +16,16 @@ import lombok.Setter;
 public class OdhOrderItemChgHist {
 
     @Id
-    @Column(name = "order_item_chg_hist_id", length = 20, nullable = false)
+    @Column(name = "order_item_chg_hist_id", length = 21, nullable = false)
     private String orderItemChgHistId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
-    @Column(name = "order_item_id", length = 20, nullable = false)
+    @Column(name = "order_item_id", length = 21, nullable = false)
     private String orderItemId;
 
     @Column(name = "chg_type_cd", length = 30, nullable = false)
@@ -45,19 +45,19 @@ public class OdhOrderItemChgHist {
     @Column(name = "chg_reason", length = 300)
     private String chgReason;
 
-    @Column(name = "chg_user_id", length = 20)
+    @Column(name = "chg_user_id", length = 21)
     private String chgUserId;
 
     @Column(name = "chg_date")
     private LocalDateTime chgDate;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

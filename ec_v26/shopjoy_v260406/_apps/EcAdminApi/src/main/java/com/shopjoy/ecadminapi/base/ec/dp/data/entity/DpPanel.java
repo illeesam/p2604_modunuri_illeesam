@@ -17,10 +17,10 @@ import lombok.Setter;
 public class DpPanel {
 
     @Id
-    @Column(name = "panel_id", length = 20, nullable = false)
+    @Column(name = "panel_id", length = 21, nullable = false)
     private String panelId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
     @Column(name = "panel_nm", length = 100, nullable = false)
@@ -54,13 +54,13 @@ public class DpPanel {
     @Column(name = "content_json", columnDefinition = "TEXT")
     private String contentJson;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

@@ -9,9 +9,9 @@ CREATE TABLE pd_review_attach (
     media_type_cd   VARCHAR(20)     DEFAULT 'IMAGE',       -- 코드: MEDIA_TYPE (IMAGE/VIDEO)
     thumb_url       VARCHAR(500),                          -- 동영상 썸네일 URL (이미지는 sy_attach.url 사용)
     sort_ord        INTEGER         DEFAULT 0,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (review_attach_id)
 );

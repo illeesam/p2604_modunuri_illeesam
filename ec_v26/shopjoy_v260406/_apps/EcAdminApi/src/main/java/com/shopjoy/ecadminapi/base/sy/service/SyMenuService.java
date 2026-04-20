@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyMenuMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class SyMenuService {
     @Transactional
     public SyMenu save(SyMenu entity) {
         if (!repository.existsById(entity.getMenuId()))
-            throw new BusinessException("존재하지 않는 SyMenu입니다: " + entity.getMenuId());
+            throw new CmBizException("존재하지 않는 SyMenu입니다: " + entity.getMenuId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyMenu result = repository.save(entity);
@@ -82,7 +82,7 @@ public class SyMenuService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 SyMenu입니다: " + id);
+            throw new CmBizException("존재하지 않는 SyMenu입니다: " + id);
         repository.deleteById(id);
     }
 

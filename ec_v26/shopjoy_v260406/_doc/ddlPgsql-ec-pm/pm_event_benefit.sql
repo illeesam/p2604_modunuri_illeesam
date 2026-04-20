@@ -9,9 +9,9 @@ CREATE TABLE pm_event_benefit (
     benefit_value   VARCHAR(100),                           -- 혜택 값 (예: 10,000원, 10%)
     coupon_id       VARCHAR(21),                            -- 연결 쿠폰ID (pm_coupon.)
     sort_ord        INTEGER         DEFAULT 0,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (benefit_id)
 );

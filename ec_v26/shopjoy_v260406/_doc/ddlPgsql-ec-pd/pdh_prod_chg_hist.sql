@@ -8,9 +8,9 @@ CREATE TABLE pdh_prod_chg_hist (
     chg_reason      VARCHAR(200),
     chg_user_id          VARCHAR(21),
     chg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_chg_hist_id)
 );

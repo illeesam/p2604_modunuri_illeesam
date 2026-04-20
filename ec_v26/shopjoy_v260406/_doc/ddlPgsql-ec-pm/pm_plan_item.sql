@@ -9,9 +9,9 @@ CREATE TABLE pm_plan_item (
     prod_id             VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
     sort_ord            INTEGER         DEFAULT 0,
     plan_item_memo      VARCHAR(500),                           -- 항목 메모 (특가/한정수량 등)
-    reg_by              VARCHAR(20),
+    reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by              VARCHAR(20),
+    upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
     PRIMARY KEY (plan_item_id),
     UNIQUE (plan_id, prod_id)

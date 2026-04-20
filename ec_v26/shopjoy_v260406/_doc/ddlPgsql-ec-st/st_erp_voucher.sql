@@ -28,9 +28,9 @@ CREATE TABLE st_erp_voucher (
     erp_voucher_no          VARCHAR(50),                            -- ERP 채번 전표번호 (전송 후 수신)
     erp_res_msg             VARCHAR(500),                           -- ERP 처리 응답 메시지
 
-    reg_by                  VARCHAR(20),
+    reg_by                  VARCHAR(30),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by                  VARCHAR(20),
+    upd_by                  VARCHAR(30),
     upd_date                TIMESTAMP,
 
     PRIMARY KEY (erp_voucher_id)

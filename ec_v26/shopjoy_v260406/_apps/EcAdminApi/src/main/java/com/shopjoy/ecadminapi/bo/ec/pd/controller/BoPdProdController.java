@@ -37,7 +37,8 @@ public class BoPdProdController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String dateStart,
             @RequestParam(required = false) String dateEnd) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(siteId, kw, status, dateStart, dateEnd)));
+        List<PdProdDto> result = service.getList(siteId, kw, status, dateStart, dateEnd);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
@@ -49,12 +50,14 @@ public class BoPdProdController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(ApiResponse.ok(service.page(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize)));
+        PageResult<PdProdDto> result = service.getPageData(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+        PdProdDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
@@ -64,7 +67,8 @@ public class BoPdProdController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdDto>> update(@PathVariable String id, @RequestBody PdProd body) {
-        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+        PdProdDto result = service.update(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")

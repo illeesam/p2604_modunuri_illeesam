@@ -16,16 +16,16 @@ import lombok.Setter;
 public class OdRefundMethod {
 
     @Id
-    @Column(name = "refund_method_id", length = 20, nullable = false)
+    @Column(name = "refund_method_id", length = 21, nullable = false)
     private String refundMethodId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "refund_id", length = 20, nullable = false)
+    @Column(name = "refund_id", length = 21, nullable = false)
     private String refundId;
 
-    @Column(name = "order_id", length = 20, nullable = false)
+    @Column(name = "order_id", length = 21, nullable = false)
     private String orderId;
 
     @Column(name = "pay_method_cd", length = 20, nullable = false)
@@ -49,7 +49,7 @@ public class OdRefundMethod {
     @Column(name = "refund_date")
     private LocalDateTime refundDate;
 
-    @Column(name = "pay_id", length = 20)
+    @Column(name = "pay_id", length = 21)
     private String payId;
 
     @Column(name = "pg_refund_id", length = 100)
@@ -59,13 +59,13 @@ public class OdRefundMethod {
     @Column(name = "pg_response", columnDefinition = "TEXT")
     private String pgResponse;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

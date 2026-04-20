@@ -5,7 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberGradeMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGradeRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +72,7 @@ public class MbMemberGradeService {
     @Transactional
     public MbMemberGrade save(MbMemberGrade entity) {
         if (!repository.existsById(entity.getGradeId()))
-            throw new BusinessException("존재하지 않는 MbMemberGrade입니다: " + entity.getGradeId());
+            throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getGradeId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);
@@ -82,7 +82,7 @@ public class MbMemberGradeService {
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new BusinessException("존재하지 않는 MbMemberGrade입니다: " + id);
+            throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + id);
         repository.deleteById(id);
     }
 

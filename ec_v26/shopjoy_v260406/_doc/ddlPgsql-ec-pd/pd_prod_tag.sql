@@ -4,9 +4,9 @@ CREATE TABLE pd_prod_tag (
     site_id         VARCHAR(21),
     prod_id         VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
     tag_id          VARCHAR(21)     NOT NULL,               -- pd_tag.
-    reg_by          VARCHAR(20),
+    reg_by          VARCHAR(30),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(20),
+    upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     PRIMARY KEY (prod_tag_id),
     UNIQUE (prod_id, tag_id)

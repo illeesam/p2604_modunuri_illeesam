@@ -16,22 +16,22 @@ import lombok.Setter;
 public class PdProdQna {
 
     @Id
-    @Column(name = "qna_id", length = 20, nullable = false)
+    @Column(name = "qna_id", length = 21, nullable = false)
     private String qnaId;
 
-    @Column(name = "site_id", length = 20)
+    @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "prod_id", length = 20, nullable = false)
+    @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Column(name = "sku_id", length = 20)
+    @Column(name = "sku_id", length = 21)
     private String skuId;
 
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 21)
     private String memberId;
 
-    @Column(name = "order_id", length = 20)
+    @Column(name = "order_id", length = 21)
     private String orderId;
 
     @Column(name = "qna_type_cd", length = 20)
@@ -57,7 +57,7 @@ public class PdProdQna {
     @Column(name = "answ_date")
     private LocalDateTime answDate;
 
-    @Column(name = "answ_user_id", length = 20)
+    @Column(name = "answ_user_id", length = 21)
     private String answUserId;
 
     @Column(name = "disp_yn", length = 1)
@@ -66,13 +66,13 @@ public class PdProdQna {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Column(name = "reg_by", length = 20)
+    @Column(name = "reg_by", length = 30)
     private String regBy;
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
 
-    @Column(name = "upd_by", length = 20)
+    @Column(name = "upd_by", length = 30)
     private String updBy;
 
     @Column(name = "upd_date")

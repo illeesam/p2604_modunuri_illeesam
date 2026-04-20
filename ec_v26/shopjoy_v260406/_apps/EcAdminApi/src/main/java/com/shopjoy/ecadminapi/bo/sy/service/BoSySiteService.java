@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.mapper.SySiteMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
-import com.shopjoy.ecadminapi.common.exception.BusinessException;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +25,14 @@ public class BoSySiteService {
     private final SySiteRepository repository;
 
     @Transactional(readOnly = true)
-    public List<SySiteDto> list(String kw) {
+    public List<SySiteDto> getList(String kw) {
         Map<String, Object> p = new HashMap<>();
         if (kw != null && !kw.isBlank()) p.put("kw", kw);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<SySiteDto> page(String kw, int pageNo, int pageSize) {
+    public PageResult<SySiteDto> getPageData(String kw, int pageNo, int pageSize) {
         Map<String, Object> p = new HashMap<>();
         if (kw != null && !kw.isBlank()) p.put("kw", kw);
         p.put("limit", pageSize);
@@ -43,7 +43,7 @@ public class BoSySiteService {
     @Transactional(readOnly = true)
     public SySiteDto getById(String id) {
         SySiteDto dto = mapper.selectById(id);
-        if (dto == null) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
@@ -57,7 +57,7 @@ public class BoSySiteService {
 
     @Transactional
     public SySiteDto update(String id, SySite body) {
-        SySite entity = repository.findById(id).orElseThrow(() -> new BusinessException("존재하지 않는 데이터입니다: " + id));
+        SySite entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -66,7 +66,7 @@ public class BoSySiteService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id)) throw new BusinessException("존재하지 않는 데이터입니다: " + id);
+        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
 }
