@@ -46,15 +46,15 @@ import java.util.List;
  *   /autoRest/**   POST/PUT/PATCH/DELETE → USER만
  *
  * 어노테이션 방식 (개별 메서드 예외 처리):
- *   @UserOnly      → USER만
- *   @MemberOnly    → MEMBER만
- *   @UserOrMember  → USER 또는 MEMBER
+ *   @BoOnly      → USER만
+ *   @FoOnly    → MEMBER만
+ *   @BoOrFo  → USER 또는 MEMBER
  *
  * 필터 순서: JwtAuthFilter → UsernamePasswordAuthenticationFilter
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity          // @UserOnly / @UserOrMember 어노테이션 활성화
+@EnableMethodSecurity          // @BoOnly / @BoOrFo 어노테이션 활성화
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -62,11 +62,11 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     /** USER만 허용 */
-    private static final AuthorizationManager<RequestAuthorizationContext> USER_ONLY =
+    private static final AuthorizationManager<RequestAuthorizationContext> BO_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.USER));
 
     /** USER 또는 MEMBER 허용 */
-    private static final AuthorizationManager<RequestAuthorizationContext> USER_OR_MEMBER =
+    private static final AuthorizationManager<RequestAuthorizationContext> BO_OR_FO =
         (supplier, ctx) -> {
             Authentication auth = supplier.get();
             return new AuthorizationDecision(
@@ -75,7 +75,7 @@ public class SecurityConfig {
         };
 
     /** MEMBER만 허용 */
-    private static final AuthorizationManager<RequestAuthorizationContext> MEMBER_ONLY =
+    private static final AuthorizationManager<RequestAuthorizationContext> FO_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.MEMBER));
 
     @Bean
@@ -94,23 +94,23 @@ public class SecurityConfig {
 
                 // /api/base/** — GET 누구나, 변경(POST/PUT/PATCH/DELETE) USER만
                 .requestMatchers(HttpMethod.GET,    "/api/base/**").permitAll()
-                .requestMatchers(HttpMethod.POST,   "/api/base/**").access(USER_ONLY)
-                .requestMatchers(HttpMethod.PUT,    "/api/base/**").access(USER_ONLY)
-                .requestMatchers(HttpMethod.PATCH,  "/api/base/**").access(USER_ONLY)
-                .requestMatchers(HttpMethod.DELETE, "/api/base/**").access(USER_ONLY)
+                .requestMatchers(HttpMethod.POST,   "/api/base/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PUT,    "/api/base/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PATCH,  "/api/base/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.DELETE, "/api/base/**").access(BO_ONLY)
 
                 // /api/fo/ec/my/** — MEMBER만 (더 구체적인 경로 먼저)
-                .requestMatchers("/api/fo/ec/my/**").access(MEMBER_ONLY)
+                .requestMatchers("/api/fo/ec/my/**").access(FO_ONLY)
 
                 // /api/fo/ec/** — 누구나 (my/** 제외한 FO EC 전체)
                 .requestMatchers("/api/fo/ec/**").permitAll()
 
                 // /api/**, /autoRest/** — GET: USER or MEMBER / 변경: USER만
-                .requestMatchers(HttpMethod.GET,    "/api/**", "/autoRest/**").access(USER_OR_MEMBER)
-                .requestMatchers(HttpMethod.POST,   "/api/**", "/autoRest/**").access(USER_ONLY)
-                .requestMatchers(HttpMethod.PUT,    "/api/**", "/autoRest/**").access(USER_ONLY)
-                .requestMatchers(HttpMethod.PATCH,  "/api/**", "/autoRest/**").access(USER_ONLY)
-                .requestMatchers(HttpMethod.DELETE, "/api/**", "/autoRest/**").access(USER_ONLY)
+                .requestMatchers(HttpMethod.GET,    "/api/**", "/autoRest/**").access(BO_OR_FO)
+                .requestMatchers(HttpMethod.POST,   "/api/**", "/autoRest/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PUT,    "/api/**", "/autoRest/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PATCH,  "/api/**", "/autoRest/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.DELETE, "/api/**", "/autoRest/**").access(BO_ONLY)
 
                 .anyRequest().authenticated()
             )

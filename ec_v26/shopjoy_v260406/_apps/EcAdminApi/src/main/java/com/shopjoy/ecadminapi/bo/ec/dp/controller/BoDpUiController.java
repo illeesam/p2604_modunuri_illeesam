@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpUiService;
@@ -23,12 +23,12 @@ import java.util.Map;
  * PUT    /api/bo/ec/dp/ui/{id}  — 수정
  * DELETE /api/bo/ec/dp/ui/{id}  — 삭제
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/dp/ui")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoDpUiController {
     private final BoDpUiService service;
 

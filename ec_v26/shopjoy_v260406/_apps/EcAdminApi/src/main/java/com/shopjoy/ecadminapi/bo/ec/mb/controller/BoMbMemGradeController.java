@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemGradeService;
@@ -23,12 +23,12 @@ import java.util.Map;
  * PUT    /api/bo/ec/mb/mem-grade/{id}  — 수정
  * DELETE /api/bo/ec/mb/mem-grade/{id}  — 삭제
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/mb/mem-grade")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoMbMemGradeController {
     private final BoMbMemGradeService service;
 

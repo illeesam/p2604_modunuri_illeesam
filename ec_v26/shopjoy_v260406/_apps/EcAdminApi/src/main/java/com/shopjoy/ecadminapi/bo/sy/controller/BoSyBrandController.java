@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBrandService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 브랜드 API — /api/bo/sy/brand
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/brand")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyBrandController {
     private final BoSyBrandService service;
 

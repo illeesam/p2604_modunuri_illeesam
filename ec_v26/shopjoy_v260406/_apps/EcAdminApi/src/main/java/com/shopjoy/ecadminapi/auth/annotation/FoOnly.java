@@ -10,12 +10,12 @@ import java.lang.annotation.*;
  *
  * 사용 예:
  *   @GetMapping("/info")
- *   @MemberOnly
+ *   @FoOnly
  *   public ResponseEntity<?> getMyInfo(...) { ... }
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@PreAuthorize("@authz.isMember(authentication)")
-public @interface MemberOnly {
+@PreAuthorize("@authz.isFo(authentication)")
+public @interface FoOnly {
 }

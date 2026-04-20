@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyContactService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 문의 API — /api/bo/sy/contact
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/contact")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyContactController {
     private final BoSyContactService service;
 

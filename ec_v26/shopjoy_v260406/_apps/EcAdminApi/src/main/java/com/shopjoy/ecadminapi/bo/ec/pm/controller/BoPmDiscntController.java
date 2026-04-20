@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmDiscntService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 할인 API — /api/bo/ec/pm/discnt
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/pm/discnt")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoPmDiscntController {
     private final BoPmDiscntService service;
 

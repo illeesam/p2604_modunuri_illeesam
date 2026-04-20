@@ -69,7 +69,7 @@ public class FoCmBlogService {
     public CmBlog update(String blogId, CmBlog entity) {
         CmBlog existing = repository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
-        if (!existing.getRegBy().equals(SecurityUtil.currentUserId()) && !SecurityUtil.isUser())
+        if (!existing.getRegBy().equals(SecurityUtil.currentUserId()) && !SecurityUtil.isBo())
             throw new CmBizException("수정 권한이 없습니다.");
         entity.setBlogId(blogId);
         entity.setRegBy(existing.getRegBy());
@@ -83,7 +83,7 @@ public class FoCmBlogService {
     public void delete(String blogId) {
         CmBlog existing = repository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
-        if (!existing.getRegBy().equals(SecurityUtil.currentUserId()) && !SecurityUtil.isUser())
+        if (!existing.getRegBy().equals(SecurityUtil.currentUserId()) && !SecurityUtil.isBo())
             throw new CmBizException("삭제 권한이 없습니다.");
         repository.deleteById(blogId);
     }

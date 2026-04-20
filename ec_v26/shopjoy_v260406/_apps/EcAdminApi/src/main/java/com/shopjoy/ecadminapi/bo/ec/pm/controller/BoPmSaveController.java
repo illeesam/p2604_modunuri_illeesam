@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmSaveService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 적립금 API — /api/bo/ec/pm/save
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/pm/save")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoPmSaveController {
     private final BoPmSaveService service;
 

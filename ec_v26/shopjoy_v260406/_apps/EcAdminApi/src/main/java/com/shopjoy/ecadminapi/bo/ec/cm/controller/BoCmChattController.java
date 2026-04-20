@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattRoom;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmChattService;
@@ -24,12 +24,12 @@ import java.util.Map;
  * DELETE /api/bo/ec/cm/chatt/{id}  — 삭제
  * PATCH  /api/bo/ec/cm/chatt/{id}/status — 상태변경
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/cm/chatt")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoCmChattController {
     private final BoCmChattService service;
 

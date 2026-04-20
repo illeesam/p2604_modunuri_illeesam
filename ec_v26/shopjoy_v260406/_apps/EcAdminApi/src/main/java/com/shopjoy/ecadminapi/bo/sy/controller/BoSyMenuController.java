@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyMenuService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 메뉴 API — /api/bo/sy/menu
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/menu")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyMenuController {
     private final BoSyMenuService service;
 

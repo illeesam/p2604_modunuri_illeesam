@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdClaimService;
@@ -24,12 +24,12 @@ import java.util.Map;
  * DELETE /api/bo/ec/ord/claim/{id}  — 삭제
  * PATCH  /api/bo/ec/ord/claim/{id}/status — 상태변경
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/ord/claim")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoOdClaimController {
     private final BoOdClaimService service;
 

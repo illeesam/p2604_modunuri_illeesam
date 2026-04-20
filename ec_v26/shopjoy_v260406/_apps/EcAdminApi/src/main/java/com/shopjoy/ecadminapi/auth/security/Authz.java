@@ -7,19 +7,19 @@ import org.springframework.stereotype.Component;
  * Spring Security @PreAuthorize SpEL에서 사용하는 인가 헬퍼 빈.
  *
  * 사용 예:
- *   @PreAuthorize("@authz.isUser(authentication)")
- *   @PreAuthorize("@authz.isMember(authentication)")
- *   @PreAuthorize("@authz.isUserOrMember(authentication)")
+ *   @PreAuthorize("@authz.isBo(authentication)")
+ *   @PreAuthorize("@authz.isFo(authentication)")
+ *   @PreAuthorize("@authz.isBoOrFo(authentication)")
  *
  * 또는 커스텀 어노테이션:
- *   @UserOnly      → USER만 허용
- *   @MemberOnly    → MEMBER만 허용
- *   @UserOrMember  → USER 또는 MEMBER 허용
+ *   @BoOnly   → USER(관리자)만 허용
+ *   @FoOnly   → MEMBER(고객)만 허용
+ *   @BoOrFo   → USER 또는 MEMBER 허용
  */
 @Component("authz")
 public class Authz {
 
-    public boolean isUser(Authentication auth) {
+    public boolean isBo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
             return AuthPrincipal.USER.equals(p.userType());
@@ -27,7 +27,7 @@ public class Authz {
         return false;
     }
 
-    public boolean isMember(Authentication auth) {
+    public boolean isFo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
             return AuthPrincipal.MEMBER.equals(p.userType());
@@ -35,7 +35,7 @@ public class Authz {
         return false;
     }
 
-    public boolean isUserOrMember(Authentication auth) {
+    public boolean isBoOrFo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
             return AuthPrincipal.USER.equals(p.userType()) || AuthPrincipal.MEMBER.equals(p.userType());

@@ -10,12 +10,12 @@ import java.lang.annotation.*;
  *
  * 사용 예:
  *   @PostMapping
- *   @UserOnly
+ *   @BoOnly
  *   public ResponseEntity<?> create(...) { ... }
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@PreAuthorize("@authz.isUser(authentication)")
-public @interface UserOnly {
+@PreAuthorize("@authz.isBo(authentication)")
+public @interface BoOnly {
 }

@@ -14,8 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * - currentUserId()   : 인증된 사용자 ID, 미인증 시 "SYSTEM"
  * - currentUserType() : "USER"(관리자) | "MEMBER"(고객), 미인증 시 null
  * - currentRoleId()   : 관리자 역할 ID (sy_user.role_id), MEMBER/미인증 시 null
- * - isUser()          : sy_user 관리자 여부
- * - isMember()        : ec_member 고객 여부
+ * - isBo()          : sy_user 관리자 여부
+ * - isFo()        : ec_member 고객 여부
  *
  * 주의: @Transactional 메서드 내부에서도 동일 스레드이므로 SecurityContext가 유지된다.
  *       비동기(@Async) 처리 시에는 SecurityContext가 전파되지 않으므로 별도 처리 필요.
@@ -53,16 +53,16 @@ public final class SecurityUtil {
     }
 
     /** sy_user 테이블 사용자 여부 */
-    public static boolean isUser() {
+    public static boolean isBo() {
         return AuthPrincipal.USER.equals(currentUserType());
     }
 
     /** ec_member 테이블 사용자 여부 */
-    public static boolean isMember() {
+    public static boolean isFo() {
         return AuthPrincipal.MEMBER.equals(currentUserType());
     }
 
-    /** ROLE_ADMIN 권한 보유 여부 (isUser()와 별개로 권한 기반 체크) */
+    /** ROLE_ADMIN 권한 보유 여부 (isBo()와 별개로 권한 기반 체크) */
     public static boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return false;

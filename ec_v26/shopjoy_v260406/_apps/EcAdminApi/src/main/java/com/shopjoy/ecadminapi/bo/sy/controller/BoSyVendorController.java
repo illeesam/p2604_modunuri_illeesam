@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyVendorService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 업체 API — /api/bo/sy/vendor
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/vendor")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyVendorController {
     private final BoSyVendorService service;
 

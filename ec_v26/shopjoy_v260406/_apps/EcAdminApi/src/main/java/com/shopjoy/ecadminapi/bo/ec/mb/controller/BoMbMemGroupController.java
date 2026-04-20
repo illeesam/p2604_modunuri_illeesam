@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGroupDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGroup;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemGroupService;
@@ -23,12 +23,12 @@ import java.util.Map;
  * PUT    /api/bo/ec/mb/mem-group/{id}  — 수정
  * DELETE /api/bo/ec/mb/mem-group/{id}  — 삭제
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/mb/mem-group")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoMbMemGroupController {
     private final BoMbMemGroupService service;
 

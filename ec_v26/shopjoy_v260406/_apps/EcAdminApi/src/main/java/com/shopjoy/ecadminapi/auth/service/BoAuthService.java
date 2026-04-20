@@ -1,8 +1,9 @@
 package com.shopjoy.ecadminapi.auth.service;
 
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
-import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.auth.data.vo.LoginRes;
+import com.shopjoy.ecadminapi.auth.data.vo.BoJoinRes;
+import com.shopjoy.ecadminapi.auth.data.vo.BoLoginReq;
+import com.shopjoy.ecadminapi.auth.data.vo.BoLoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -24,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class BoAuthService {
 
     @PersistenceContext
     private EntityManager em;
@@ -36,7 +37,7 @@ public class AuthService {
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
     @Transactional
-    public SyUser join(SyUser body) {
+    public BoJoinRes join(SyUser body) {
         boolean exists = em.createQuery(
                 "SELECT COUNT(u) FROM SyUser u WHERE u.loginId = :loginId", Long.class)
             .setParameter("loginId", body.getLoginId())
@@ -49,11 +50,11 @@ public class AuthService {
         body.setUserStatusCd("ACTIVE");
         body.setRegDate(LocalDateTime.now());
         em.persist(body);
-        return body;
+        return new BoJoinRes(body.getUserId(), body.getLoginId());
     }
 
     @Transactional
-    public LoginRes login(LoginReq request) {
+    public BoLoginRes login(BoLoginReq request) {
         SyUser user = findUserByLoginId(request.getLoginId());
 
         if (!"ACTIVE".equals(user.getUserStatusCd())) {
@@ -61,29 +62,31 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
-            // Increment login fail count
             user.setLoginFailCnt(user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1);
             throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        // Reset fail count on success
         user.setLoginFailCnt(0);
-        user.setLastLoginDate(LocalDateTime.now());
+        LocalDateTime loginAt = LocalDateTime.now();
+        user.setLastLoginDate(loginAt);
 
         List<String> roles = List.of("ROLE_ADMIN");
         String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getLoginId(), roles, AuthPrincipal.USER, user.getRoleId());
         String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), AuthPrincipal.USER);
 
-        return LoginRes.builder()
+        return BoLoginRes.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .expiresIn(900)
+            .expiresIn(jwtProvider.getAccessExpiryMinutes() * 60)
             .userId(user.getUserId())
             .loginId(user.getLoginId())
             .userNm(user.getUserNm())
             .userEmail(user.getUserEmail())
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
+            .loginAt(loginAt)
+            .accessExpiresIn(jwtProvider.getAccessExpiryMinutes())
+            .refreshExpiresIn(jwtProvider.getRefreshExpiryMinutes())
             .build();
     }
 
@@ -109,14 +112,14 @@ public class AuthService {
             throw new CmBizException("사용자를 찾을 수 없습니다.");
         }
 
-        // Rotate refresh token
         revokedTokens.add(refreshToken);
 
         List<String> roles = List.of("ROLE_ADMIN");
         String newAccessToken = jwtProvider.createAccessToken(userId, user.getLoginId(), roles, userType, user.getRoleId());
         String newRefreshToken = jwtProvider.createRefreshToken(userId, userType);
 
-        return new TokenPair(newAccessToken, newRefreshToken);
+        return new TokenPair(newAccessToken, newRefreshToken,
+                LocalDateTime.now(), jwtProvider.getAccessExpiryMinutes(), jwtProvider.getRefreshExpiryMinutes());
     }
 
     public void logout(String refreshToken) {

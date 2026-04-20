@@ -1,5 +1,9 @@
-package com.shopjoy.ecadminapi.fo.ec.service;
+package com.shopjoy.ecadminapi.auth.service;
 
+import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
+import com.shopjoy.ecadminapi.auth.data.vo.FoJoinRes;
+import com.shopjoy.ecadminapi.auth.data.vo.FoLoginReq;
+import com.shopjoy.ecadminapi.auth.data.vo.FoLoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
@@ -13,17 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * FO 회원 로그인/회원가입/토큰갱신 서비스
- * URL: /api/fo/ec/cm/login
- */
 @Service
 @RequiredArgsConstructor
-public class FoCmLoginService {
+public class FoAuthService {
 
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
@@ -34,38 +33,43 @@ public class FoCmLoginService {
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
     @Transactional
-    public Map<String, Object> login(String memberEmail, String memberPassword) {
-        MbMember member = memberRepository.findByMemberEmail(memberEmail)
+    public FoLoginRes login(FoLoginReq request) {
+        MbMember member = memberRepository.findByMemberEmail(request.getMemberEmail())
                 .orElseThrow(() -> new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
-        if (!passwordEncoder.matches(memberPassword, member.getMemberPassword())) {
+        if (!passwordEncoder.matches(request.getMemberPassword(), member.getMemberPassword())) {
             throw new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        member.setLastLogin(LocalDateTime.now());
+        LocalDateTime loginAt = LocalDateTime.now();
+        member.setLastLogin(loginAt);
 
         String accessToken  = jwtProvider.createAccessToken(
                 member.getMemberId(), member.getMemberEmail(),
                 List.of("ROLE_MEMBER"), AuthPrincipal.MEMBER, null);
         String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), AuthPrincipal.MEMBER);
 
-        return Map.of(
-                "accessToken",  accessToken,
-                "refreshToken", refreshToken,
-                "expiresIn",    900,
-                "memberId",     member.getMemberId(),
-                "memberEmail",  member.getMemberEmail(),
-                "memberNm",     member.getMemberNm(),
-                "siteId",       member.getSiteId() != null ? member.getSiteId() : ""
-        );
+        return FoLoginRes.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(jwtProvider.getAccessExpiryMinutes() * 60)
+                .memberId(member.getMemberId())
+                .memberEmail(member.getMemberEmail())
+                .memberNm(member.getMemberNm())
+                .siteId(member.getSiteId() != null ? member.getSiteId() : "")
+                .roleId(null)
+                .loginAt(loginAt)
+                .accessExpiresIn(jwtProvider.getAccessExpiryMinutes())
+                .refreshExpiresIn(jwtProvider.getRefreshExpiryMinutes())
+                .build();
     }
 
     @Transactional
-    public Map<String, Object> join(MbMember body) {
+    public FoJoinRes join(MbMember body) {
         if (memberRepository.findByMemberEmail(body.getMemberEmail()).isPresent()) {
             throw new CmBizException("이미 사용 중인 이메일입니다.");
         }
@@ -82,11 +86,11 @@ public class FoCmLoginService {
 
         memberRepository.save(body);
 
-        return Map.of("memberId", newId, "memberEmail", body.getMemberEmail());
+        return new FoJoinRes(newId, body.getMemberEmail());
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> refresh(String refreshToken) {
+    public TokenPair refresh(String refreshToken) {
         if (revokedTokens.contains(refreshToken))
             throw new CmBizException("이미 무효화된 토큰입니다.");
         if (!jwtProvider.validate(refreshToken))
@@ -107,7 +111,8 @@ public class FoCmLoginService {
                 List.of("ROLE_MEMBER"), AuthPrincipal.MEMBER, null);
         String newRefresh = jwtProvider.createRefreshToken(memberId, AuthPrincipal.MEMBER);
 
-        return Map.of("accessToken", newAccess, "refreshToken", newRefresh, "expiresIn", 900);
+        return new TokenPair(newAccess, newRefresh,
+                LocalDateTime.now(), jwtProvider.getAccessExpiryMinutes(), jwtProvider.getRefreshExpiryMinutes());
     }
 
     public void logout(String refreshToken) {

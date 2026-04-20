@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettle;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleService;
@@ -24,12 +24,12 @@ import java.util.Map;
  * DELETE /api/bo/ec/st/settle/{id}  — 삭제
  * PATCH  /api/bo/ec/st/settle/{id}/status — 상태변경
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/st/settle")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoStSettleController {
     private final BoStSettleService service;
 

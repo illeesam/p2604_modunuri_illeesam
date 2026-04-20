@@ -13,7 +13,7 @@ package com.shopjoy.ecadminapi.auth.security;
  * - "USER"   → sy_user  (관리자, Back Office)
  * - "MEMBER" → ec_member (고객, Front Office)
  *
- * 사용: SecurityUtil.currentUserId() / currentUserType() / isUser() / isMember()
+ * 사용: SecurityUtil.currentUserId() / currentUserType() / isBo() / isFo()
  */
 public record AuthPrincipal(String userId, String userType, String roleId) {
 

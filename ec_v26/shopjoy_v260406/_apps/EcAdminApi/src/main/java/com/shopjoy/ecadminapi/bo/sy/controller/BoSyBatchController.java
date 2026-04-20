@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBatchService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 배치 API — /api/bo/sy/batch
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/batch")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyBatchController {
     private final BoSyBatchService service;
 

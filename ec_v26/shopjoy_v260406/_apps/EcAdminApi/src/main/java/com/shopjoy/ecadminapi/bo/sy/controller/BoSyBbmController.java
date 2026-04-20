@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBbmService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO BBM(푸시/문자발송) API — /api/bo/sy/bbm
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/bbm")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyBbmController {
     private final BoSyBbmService service;
 

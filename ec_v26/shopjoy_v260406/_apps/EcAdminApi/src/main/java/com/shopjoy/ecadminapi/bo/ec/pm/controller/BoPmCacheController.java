@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmCacheService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 캐시(충전금) API — /api/bo/ec/pm/cache
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/pm/cache")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoPmCacheController {
     private final BoPmCacheService service;
 

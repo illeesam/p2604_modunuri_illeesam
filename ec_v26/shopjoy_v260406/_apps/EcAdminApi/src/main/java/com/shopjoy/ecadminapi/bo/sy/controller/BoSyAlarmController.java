@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAlarmService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 알람 API — /api/bo/sy/alarm
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/alarm")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyAlarmController {
     private final BoSyAlarmService service;
 

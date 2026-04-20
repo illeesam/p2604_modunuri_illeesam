@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmVoucherService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 바우처 API — /api/bo/ec/pm/voucher
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/pm/voucher")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoPmVoucherController {
     private final BoPmVoucherService service;
 

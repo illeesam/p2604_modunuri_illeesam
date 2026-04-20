@@ -10,12 +10,12 @@ import java.lang.annotation.*;
  *
  * 사용 예:
  *   @GetMapping
- *   @UserOrMember
+ *   @BoOrFo
  *   public ResponseEntity<?> list(...) { ... }
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@PreAuthorize("@authz.isUserOrMember(authentication)")
-public @interface UserOrMember {
+@PreAuthorize("@authz.isBoOrFo(authentication)")
+public @interface BoOrFo {
 }

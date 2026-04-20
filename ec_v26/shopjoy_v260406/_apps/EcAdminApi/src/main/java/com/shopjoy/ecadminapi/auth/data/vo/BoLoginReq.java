@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class LoginReq {
+public class BoLoginReq {
     @NotBlank(message = "로그인 ID를 입력해주세요.")
     private String loginId;
 

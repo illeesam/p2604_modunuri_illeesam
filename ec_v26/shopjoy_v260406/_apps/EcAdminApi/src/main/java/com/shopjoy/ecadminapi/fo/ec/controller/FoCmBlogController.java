@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOrMember;
+import com.shopjoy.ecadminapi.auth.annotation.BoOrFo;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmBlogService;
@@ -24,8 +24,8 @@ import java.util.Map;
  *
  * 인가:
  *   GET    → USER or MEMBER (SecurityConfig 전역 룰)
- *   POST   → @UserOrMember  (전역 룰 override: 회원도 작성 가능)
- *   PUT/DELETE → @UserOrMember (작성자 본인 여부는 서비스에서 검증)
+ *   POST   → @BoOrFo  (전역 룰 override: 회원도 작성 가능)
+ *   PUT/DELETE → @BoOrFo (작성자 본인 여부는 서비스에서 검증)
  */
 @RestController
 @RequestMapping("/api/fo/ec/cm/bltn")
@@ -55,14 +55,14 @@ public class FoCmBlogController {
     }
 
     @PostMapping
-    @UserOrMember
+    @BoOrFo
     public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog entity) {
         CmBlog result = service.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{blogId}")
-    @UserOrMember
+    @BoOrFo
     public ResponseEntity<ApiResponse<CmBlog>> update(
             @PathVariable String blogId, @RequestBody CmBlog entity) {
         CmBlog result = service.update(blogId, entity);
@@ -70,7 +70,7 @@ public class FoCmBlogController {
     }
 
     @DeleteMapping("/{blogId}")
-    @UserOrMember
+    @BoOrFo
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String blogId) {
         service.delete(blogId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));

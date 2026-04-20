@@ -74,6 +74,9 @@ public class JwtProvider {
             .compact();
     }
 
+    public long getAccessExpiryMinutes()  { return accessExpiry  / 60_000; }
+    public long getRefreshExpiryMinutes() { return refreshExpiry / 60_000; }
+
     public boolean validate(String token) {
         try {
             Jwts.parser()

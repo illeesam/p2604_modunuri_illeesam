@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdService;
@@ -23,12 +23,12 @@ import java.util.Map;
  * PUT    /api/bo/ec/pd/prod/{id}  — 수정
  * DELETE /api/bo/ec/pd/prod/{id}  — 삭제
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/pd/prod")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoPdProdController {
     private final BoPdProdService service;
 

@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemberService;
@@ -24,12 +24,12 @@ import java.util.Map;
  * DELETE /api/bo/ec/mb/member/{id}  — 삭제
  * PATCH  /api/bo/ec/mb/member/{id}/status — 상태변경
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/mb/member")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoMbMemberController {
     private final BoMbMemberService service;
 

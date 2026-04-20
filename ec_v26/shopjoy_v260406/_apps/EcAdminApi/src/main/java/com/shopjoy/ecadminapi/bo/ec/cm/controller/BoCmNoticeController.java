@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmNoticeService;
@@ -23,12 +23,12 @@ import java.util.Map;
  * PUT    /api/bo/ec/cm/notice/{id}  — 수정
  * DELETE /api/bo/ec/cm/notice/{id}  — 삭제
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/cm/notice")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoCmNoticeController {
     private final BoCmNoticeService service;
 

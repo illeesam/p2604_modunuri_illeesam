@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmBlogService;
@@ -23,12 +23,12 @@ import java.util.Map;
  * PUT    /api/bo/ec/cm/bltn/{id}  — 수정
  * DELETE /api/bo/ec/cm/bltn/{id}  — 삭제
  *
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/cm/bltn")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoCmBlogController {
     private final BoCmBlogService service;
 

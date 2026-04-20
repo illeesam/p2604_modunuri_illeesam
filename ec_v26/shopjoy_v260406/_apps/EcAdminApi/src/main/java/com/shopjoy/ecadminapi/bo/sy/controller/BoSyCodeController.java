@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyCodeService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 공통코드 API — /api/bo/sy/code
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/code")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyCodeController {
     private final BoSyCodeService service;
 

@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAttachService;
@@ -16,12 +16,12 @@ import java.util.Map;
 
 /**
  * BO 첨부파일 API — /api/bo/sy/attach
- * 인가: USER_ONLY (관리자)
+ * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/sy/attach")
 @RequiredArgsConstructor
-@UserOnly
+@BoOnly
 public class BoSyAttachController {
     private final BoSyAttachService service;
 

@@ -1,11 +1,12 @@
 package com.shopjoy.ecadminapi.auth.controller;
 
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
-import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.auth.data.vo.LoginRes;
+import com.shopjoy.ecadminapi.auth.data.vo.BoJoinRes;
+import com.shopjoy.ecadminapi.auth.data.vo.BoLoginReq;
+import com.shopjoy.ecadminapi.auth.data.vo.BoLoginRes;
 import com.shopjoy.ecadminapi.auth.data.vo.RefreshReq;
-import com.shopjoy.ecadminapi.auth.service.AuthService;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
+import com.shopjoy.ecadminapi.auth.service.BoAuthService;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser; // @RequestBody 파라미터 타입
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,23 +25,26 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth/bo")
 @RequiredArgsConstructor
-public class AuthBoController {
+public class BoAuthController {
 
-    private final AuthService authService;
+    private final BoAuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginRes>> login(@RequestBody @Valid LoginReq request) {
-        return ResponseEntity.ok(ApiResponse.ok(authService.login(request)));
+    public ResponseEntity<ApiResponse<BoLoginRes>> login(@RequestBody @Valid BoLoginReq request) {
+        BoLoginRes result = authService.login(request);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/join")
-    public ResponseEntity<ApiResponse<SyUser>> join(@RequestBody SyUser body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(authService.join(body)));
+    public ResponseEntity<ApiResponse<BoJoinRes>> join(@RequestBody SyUser body) {
+        BoJoinRes result = authService.join(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenPair>> refresh(@RequestBody @Valid RefreshReq request) {
-        return ResponseEntity.ok(ApiResponse.ok(authService.refresh(request.getRefreshToken())));
+        TokenPair result = authService.refresh(request.getRefreshToken());
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/logout")
