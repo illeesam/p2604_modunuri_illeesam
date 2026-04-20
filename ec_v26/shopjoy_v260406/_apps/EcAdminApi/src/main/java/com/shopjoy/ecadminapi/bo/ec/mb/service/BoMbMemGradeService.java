@@ -45,7 +45,7 @@ public class BoMbMemGradeService {
 
     @Transactional
     public MbMemberGrade create(MbMemberGrade body) {
-        body.setGradeId("GR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+        body.setMemberGradeId("GR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.currentUserId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);

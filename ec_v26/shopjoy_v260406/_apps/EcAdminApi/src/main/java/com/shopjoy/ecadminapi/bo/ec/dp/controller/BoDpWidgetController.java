@@ -50,7 +50,8 @@ public class BoDpWidgetController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<DpWidget>> create(@RequestBody DpWidget body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        DpWidget result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

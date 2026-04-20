@@ -98,7 +98,7 @@ const insert = (table, cols, vals) =>
 section('1. mb_member_grade — 회원 등급');
 D.memGrades.forEach((g) => {
   insert('mb_member_grade',
-    ['grade_id','site_id','grade_cd','grade_nm','grade_rank','min_purchase_amt','save_rate','use_yn','reg_by','reg_date'],
+    ['member_grade_id','site_id','grade_cd','grade_nm','grade_rank','min_purchase_amt','save_rate','use_yn','reg_by','reg_date'],
     [g.gradeId, siteId1, g.gradeCd, g.gradeNm, g.gradeRank, g.minPurchaseAmt || 0,
      g.saveRate || 0, g.useYn || 'Y', REG_BY, REG_DATE]
   );
@@ -110,7 +110,7 @@ D.memGrades.forEach((g) => {
 section('2. mb_member_group — 회원 그룹');
 D.memGroups.forEach((g) => {
   insert('mb_member_group',
-    ['group_id','site_id','group_nm','group_memo','use_yn','reg_by','reg_date'],
+    ['member_group_id','site_id','group_nm','group_memo','use_yn','reg_by','reg_date'],
     [g.groupId, siteId1, g.groupNm, g.groupMemo || null, g.useYn || 'Y', REG_BY, REG_DATE]
   );
 });

@@ -38,7 +38,7 @@ PREFERRED_ALIAS = {
     'pd_prod_sku':  'sku',
     'pm_coupon':    'cpn',
     'pm_event':     'evt',
-    'cm_bltn_cate': 'bct',
+    'cm_blog_cate': 'bct',
     'sy_attach_grp':'atg',
 }
 

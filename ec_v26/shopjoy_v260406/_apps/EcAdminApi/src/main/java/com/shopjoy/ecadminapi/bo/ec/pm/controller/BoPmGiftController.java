@@ -43,7 +43,8 @@ public class BoPmGiftController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmGift>> create(@RequestBody PmGift body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PmGift result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

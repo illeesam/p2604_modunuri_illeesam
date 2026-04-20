@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class MbMemberGroupDto {
 
     // ── mb_member_group ──────────────────────────────────────────
-    private String groupId;
+    private String memberGroupId;
     private String siteId;
     private String groupNm;
     private String groupMemo;

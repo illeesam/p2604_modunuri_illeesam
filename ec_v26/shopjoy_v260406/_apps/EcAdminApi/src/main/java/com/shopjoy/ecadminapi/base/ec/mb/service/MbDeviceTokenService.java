@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
 import com.shopjoy.ecadminapi.base.ec.mb.data.vo.MbDeviceTokenReq;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbDeviceTokenMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,16 +37,14 @@ public class MbDeviceTokenService {
 
     @Transactional(readOnly = true)
     public List<MbDeviceTokenDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<MbDeviceTokenDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        p = new HashMap<>(p);
-        int offset = (pageNo - 1) * pageSize;
-        p.put("limit", pageSize);
-        p.put("offset", offset);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), pageNo, pageSize, p);
+    public PageResult<MbDeviceTokenDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional

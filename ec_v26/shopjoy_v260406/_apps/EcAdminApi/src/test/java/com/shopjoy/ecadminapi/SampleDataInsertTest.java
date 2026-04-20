@@ -66,6 +66,8 @@ class SampleDataInsertTest {
                 "수동 작성 — 브랜드명 치환");
         runSqlFile(docDir.resolve("sample_data_st.sql"),
                 "node _doc/generate_sample_sql_st.js");
+        runSqlFile(docDir.resolve("sample_data_bltn.sql"),
+                "node _doc/generate_sample_sql_bltn.js");
     }
 
     private void runSqlFile(Path sqlFile, String hint) throws Exception {

@@ -16,14 +16,14 @@ import lombok.Setter;
 public class CmChattMsg {
 
     @Id
-    @Column(name = "msg_id", length = 21, nullable = false)
-    private String msgId;
+    @Column(name = "chatt_msg_id", length = 21, nullable = false)
+    private String chattMsgId;
 
     @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "chatt_id", length = 21, nullable = false)
-    private String chattId;
+    @Column(name = "chatt_room_id", length = 21, nullable = false)
+    private String chattRoomId;
 
     @Column(name = "sender_cd", length = 20, nullable = false)
     private String senderCd;

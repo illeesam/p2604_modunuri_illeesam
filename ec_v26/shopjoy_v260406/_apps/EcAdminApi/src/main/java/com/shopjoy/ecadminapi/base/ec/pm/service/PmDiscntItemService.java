@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntItem;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmDiscntItemMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmDiscntItemRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,20 +36,15 @@ public class PmDiscntItemService {
 
     @Transactional(readOnly = true)
     public List<PmDiscntItemDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<PmDiscntItemDto> result = mapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PmDiscntItemDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        p = new HashMap<>(p);
-        int offset = (pageNo - 1) * pageSize;
-        p.put("limit", pageSize);
-        p.put("offset", offset);
-        long totalCount = mapper.selectPageCount(p);
-        List<PmDiscntItemDto> pageList = mapper.selectPageList(p);
-        PageResult<PmDiscntItemDto> result = PageResult.of(pageList, totalCount, pageNo, pageSize, p);
-        return result;
+    public PageResult<PmDiscntItemDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional

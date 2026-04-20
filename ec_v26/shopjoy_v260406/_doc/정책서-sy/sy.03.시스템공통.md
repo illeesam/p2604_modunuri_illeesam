@@ -30,8 +30,8 @@
 
 | 테이블명 | prefix 산출 | prefix |
 |---|---|---|
-| `cm_bltn_cate` | BL(bltn) + C(cate) | `BLC` |
-| `cm_bltn` | BL(bltn) | `BL` |
+| `cm_blog_cate` | BL(bltn) + C(cate) | `BLC` |
+| `cm_blog` | BL(bltn) | `BL` |
 | `od_order` | OR(order) | `OR` |
 | `od_order_item` | OR(order) + I(item) | `ORI` |
 | `cm_order_item_hist` | OR(order) + I(item) + H(hist) | `ORIH` |
@@ -41,14 +41,14 @@
 #### 예시
 
 ```
-BLC2604201530421234   ← cm_bltn_cate 의 ID
+BLC2604201530421234   ← cm_blog_cate 의 ID
 ORIH2604201530425678  ← cm_order_item_hist 의 ID
 ```
 
 #### 구현 참조
 
 - `AutoRestService.generateId(table)` — 테이블명을 받아 prefix 자동 산출
-- `CmBltnCateService.generateId()` — prefix 하드코딩(`blc`)으로 동일 규칙 적용
+- `CmBlogCateService.generateId()` — prefix 하드코딩(`blc`)으로 동일 규칙 적용
 
 ### 2. 코드 관리
 - **포맷**: 대문자 영문 + 언더스코어 조합

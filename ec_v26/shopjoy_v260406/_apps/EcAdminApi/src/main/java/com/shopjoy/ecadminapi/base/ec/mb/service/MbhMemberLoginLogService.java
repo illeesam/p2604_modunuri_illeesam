@@ -4,12 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbhMemberLoginLogMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberLoginLogRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,20 +30,15 @@ public class MbhMemberLoginLogService {
 
     @Transactional(readOnly = true)
     public List<MbhMemberLoginLogDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<MbhMemberLoginLogDto> result = mapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public PageResult<MbhMemberLoginLogDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        p = new HashMap<>(p);
-        int offset = (pageNo - 1) * pageSize;
-        p.put("limit", pageSize);
-        p.put("offset", offset);
-        long totalCount = mapper.selectPageCount(p);
-        List<MbhMemberLoginLogDto> pageList = mapper.selectPageList(p);
-        PageResult<MbhMemberLoginLogDto> result = PageResult.of(pageList, totalCount, pageNo, pageSize, p);
-        return result;
+    public PageResult<MbhMemberLoginLogDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional

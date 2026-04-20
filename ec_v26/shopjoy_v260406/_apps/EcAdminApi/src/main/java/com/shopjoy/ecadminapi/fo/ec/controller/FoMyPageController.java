@@ -67,7 +67,8 @@ public class FoMyPageController {
 
     @PostMapping("/addr")
     public ResponseEntity<ApiResponse<MbMemberAddr>> saveAddr(@RequestBody MbMemberAddr body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.saveAddr(body)));
+        MbMemberAddr result = service.saveAddr(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @DeleteMapping("/addr/{addrId}")
@@ -78,27 +79,29 @@ public class FoMyPageController {
 
     @GetMapping("/order")
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> getMyOrders(
-            @RequestParam(required = false) String siteId) {
-        List<OdOrderDto> result = service.getMyOrders(siteId);
+            @RequestParam Map<String, Object> p) {
+        List<OdOrderDto> result = service.getMyOrders(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/claim")
     public ResponseEntity<ApiResponse<List<OdClaimDto>>> getMyClaims(
-            @RequestParam(required = false) String siteId) {
-        List<OdClaimDto> result = service.getMyClaims(siteId);
+            @RequestParam Map<String, Object> p) {
+        List<OdClaimDto> result = service.getMyClaims(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/coupon")
-    public ResponseEntity<ApiResponse<List<PmCouponDto>>> getMyCoupons() {
-        List<PmCouponDto> result = service.getMyCoupons();
+    public ResponseEntity<ApiResponse<List<PmCouponDto>>> getMyCoupons(
+            @RequestParam Map<String, Object> p) {
+        List<PmCouponDto> result = service.getMyCoupons(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/cache")
-    public ResponseEntity<ApiResponse<List<PmCacheDto>>> getMyCacheHistory() {
-        List<PmCacheDto> result = service.getMyCacheHistory();
+    public ResponseEntity<ApiResponse<List<PmCacheDto>>> getMyCacheHistory(
+            @RequestParam Map<String, Object> p) {
+        List<PmCacheDto> result = service.getMyCacheHistory(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

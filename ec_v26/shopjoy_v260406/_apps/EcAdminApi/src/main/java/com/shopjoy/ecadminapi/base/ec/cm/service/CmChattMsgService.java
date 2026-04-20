@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmChattMsgMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattMsgRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,20 +36,15 @@ public class CmChattMsgService {
 
     @Transactional(readOnly = true)
     public List<CmChattMsgDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<CmChattMsgDto> result = mapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public PageResult<CmChattMsgDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        p = new HashMap<>(p);
-        int offset = (pageNo - 1) * pageSize;
-        p.put("limit", pageSize);
-        p.put("offset", offset);
-        long totalCount = mapper.selectPageCount(p);
-        List<CmChattMsgDto> pageList = mapper.selectPageList(p);
-        PageResult<CmChattMsgDto> result = PageResult.of(pageList, totalCount, pageNo, pageSize, p);
-        return result;
+    public PageResult<CmChattMsgDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
@@ -62,7 +57,7 @@ public class CmChattMsgService {
 
     @Transactional
     public CmChattMsg create(CmChattMsg entity) {
-        entity.setMsgId(generateId());
+        entity.setChattMsgId(generateId());
         entity.setRegBy(SecurityUtil.currentUserId());
         entity.setRegDate(LocalDateTime.now());
         CmChattMsg result = repository.save(entity);
@@ -71,8 +66,8 @@ public class CmChattMsgService {
 
     @Transactional
     public CmChattMsg save(CmChattMsg entity) {
-        if (!repository.existsById(entity.getMsgId()))
-            throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getMsgId());
+        if (!repository.existsById(entity.getChattMsgId()))
+            throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattMsg result = repository.save(entity);

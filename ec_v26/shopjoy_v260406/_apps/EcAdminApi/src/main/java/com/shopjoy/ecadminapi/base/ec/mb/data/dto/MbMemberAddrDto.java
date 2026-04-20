@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor
 // 회원 주소 DTO
 public class MbMemberAddrDto {
-    private String addrId;
+    private String memberAddrId;
     private String memberId;
     private String addrNm;
     private String recvNm;

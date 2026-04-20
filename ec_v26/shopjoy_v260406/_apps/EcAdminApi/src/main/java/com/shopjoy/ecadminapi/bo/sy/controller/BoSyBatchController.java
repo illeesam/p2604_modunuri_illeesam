@@ -43,7 +43,8 @@ public class BoSyBatchController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyBatch>> create(@RequestBody SyBatch body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyBatch result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

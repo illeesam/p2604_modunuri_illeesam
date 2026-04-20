@@ -51,7 +51,8 @@ public class BoOdClaimController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdClaim>> create(@RequestBody OdClaim body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        OdClaim result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

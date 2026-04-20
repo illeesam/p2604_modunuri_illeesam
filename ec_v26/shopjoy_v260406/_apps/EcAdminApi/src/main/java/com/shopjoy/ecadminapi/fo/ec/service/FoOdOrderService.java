@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -31,20 +32,16 @@ public class FoOdOrderService {
     private final OdOrderRepository repository;
 
     @Transactional(readOnly = true)
-    public List<OdOrderDto> getMyOrders(String siteId) {
-        String memberId = SecurityUtil.currentUserId();
-        return mapper.selectList(Map.of("memberId", memberId, "siteId", siteId != null ? siteId : ""));
+    public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<OdOrderDto> getMyOrderPage(String siteId, int pageNo, int pageSize) {
-        String memberId = SecurityUtil.currentUserId();
-        Map<String, Object> p = new HashMap<>();
-        p.put("memberId", memberId);
-        if (siteId != null) p.put("siteId", siteId);
-        p.put("limit",  pageSize);
-        p.put("offset", (pageNo - 1) * pageSize);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), pageNo, pageSize, p);
+    public PageResult<OdOrderDto> getMyOrderPage(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)

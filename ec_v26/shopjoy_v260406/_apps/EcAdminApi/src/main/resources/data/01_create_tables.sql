@@ -1887,24 +1887,24 @@ CREATE INDEX idx_syh_user_token_log_date      ON syh_user_token_log (reg_date);
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_member_grade (
-    grade_id        VARCHAR(21)     NOT NULL,
-    site_id         VARCHAR(21),                            -- sy_site.site_id
-    grade_cd        VARCHAR(20)     NOT NULL,               -- 코드: MEMBER_GRADE (BASIC/SILVER/GOLD/VIP)
-    grade_nm        VARCHAR(50)     NOT NULL,
-    grade_rank      INTEGER         DEFAULT 1,              -- 등급 우선순위 (낮을수록 낮은 등급)
-    min_purchase_amt BIGINT         DEFAULT 0,              -- 등급 유지 최소 구매금액
-    save_rate       DECIMAL(5,2)    DEFAULT 1.00,           -- 적립률 (%)
-    use_yn          VARCHAR(1)      DEFAULT 'Y',
-    reg_by          VARCHAR(16),
-    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
-    upd_date        TIMESTAMP,
-    PRIMARY KEY (grade_id),
+    member_grade_id  VARCHAR(21)     NOT NULL,
+    site_id          VARCHAR(21),                            -- sy_site.site_id
+    grade_cd         VARCHAR(20)     NOT NULL,               -- 코드: MEMBER_GRADE (BASIC/SILVER/GOLD/VIP)
+    grade_nm         VARCHAR(50)     NOT NULL,
+    grade_rank       INTEGER         DEFAULT 1,              -- 등급 우선순위 (낮을수록 낮은 등급)
+    min_purchase_amt BIGINT          DEFAULT 0,              -- 등급 유지 최소 구매금액
+    save_rate        DECIMAL(5,2)    DEFAULT 1.00,           -- 적립률 (%)
+    use_yn           VARCHAR(1)      DEFAULT 'Y',
+    reg_by           VARCHAR(16),
+    reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by           VARCHAR(16),
+    upd_date         TIMESTAMP,
+    PRIMARY KEY (member_grade_id),
     UNIQUE (site_id, grade_cd)
 );
 
 COMMENT ON TABLE mb_member_grade IS '회원등급';
-COMMENT ON COLUMN mb_member_grade.grade_id         IS '등급ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN mb_member_grade.member_grade_id  IS '등급ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN mb_member_grade.site_id          IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN mb_member_grade.grade_cd         IS '등급코드 (코드: MEMBER_GRADE)';
 COMMENT ON COLUMN mb_member_grade.grade_nm         IS '등급명';
@@ -1927,43 +1927,46 @@ CREATE INDEX idx_mb_member_grade_cd   ON mb_member_grade (grade_cd);
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_member_group (
-    group_id        VARCHAR(21)     NOT NULL,
-    site_id         VARCHAR(21),                            -- sy_site.site_id
-    group_nm        VARCHAR(100)    NOT NULL,
-    group_memo      TEXT,
-    use_yn          VARCHAR(1)      DEFAULT 'Y',
-    reg_by          VARCHAR(16),
-    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
-    upd_date        TIMESTAMP,
-    PRIMARY KEY (group_id)
+    member_group_id  VARCHAR(21)     NOT NULL,
+    site_id          VARCHAR(21),                            -- sy_site.site_id
+    group_nm         VARCHAR(100)    NOT NULL,
+    group_memo       TEXT,
+    use_yn           VARCHAR(1)      DEFAULT 'Y',
+    reg_by           VARCHAR(16),
+    reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by           VARCHAR(16),
+    upd_date         TIMESTAMP,
+    PRIMARY KEY (member_group_id)
 );
 
 COMMENT ON TABLE mb_member_group IS '회원그룹';
-COMMENT ON COLUMN mb_member_group.group_id   IS '그룹ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN mb_member_group.site_id    IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN mb_member_group.group_nm   IS '그룹명';
-COMMENT ON COLUMN mb_member_group.group_memo IS '메모';
-COMMENT ON COLUMN mb_member_group.use_yn     IS '사용여부 Y/N';
-COMMENT ON COLUMN mb_member_group.reg_by     IS '등록자ID';
-COMMENT ON COLUMN mb_member_group.reg_date   IS '등록일시';
-COMMENT ON COLUMN mb_member_group.upd_by     IS '수정자ID';
-COMMENT ON COLUMN mb_member_group.upd_date   IS '수정일시';
+COMMENT ON COLUMN mb_member_group.member_group_id IS '그룹ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN mb_member_group.site_id         IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN mb_member_group.group_nm        IS '그룹명';
+COMMENT ON COLUMN mb_member_group.group_memo      IS '메모';
+COMMENT ON COLUMN mb_member_group.use_yn          IS '사용여부 Y/N';
+COMMENT ON COLUMN mb_member_group.reg_by          IS '등록자ID';
+COMMENT ON COLUMN mb_member_group.reg_date        IS '등록일시';
+COMMENT ON COLUMN mb_member_group.upd_by          IS '수정자ID';
+COMMENT ON COLUMN mb_member_group.upd_date        IS '수정일시';
 
 -- 회원-그룹 매핑
 CREATE TABLE IF NOT EXISTS mb_member_group_map (
-    group_id        VARCHAR(21)     NOT NULL,               -- mb_member_group.group_id
-    member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
-    reg_by          VARCHAR(16),
-    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (group_id, member_id)
+    member_group_map_id VARCHAR(21)  NOT NULL,
+    member_group_id  VARCHAR(21)     NOT NULL,               -- mb_member_group.member_group_id
+    member_id        VARCHAR(21)     NOT NULL,               -- mb_member.member_id
+    reg_by           VARCHAR(16),
+    reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (member_group_map_id),
+    UNIQUE (member_group_id, member_id)
 );
 
 COMMENT ON TABLE mb_member_group_map IS '회원그룹-회원 매핑';
-COMMENT ON COLUMN mb_member_group_map.group_id   IS '그룹ID (mb_member_group.group_id)';
-COMMENT ON COLUMN mb_member_group_map.member_id  IS '회원ID (mb_member.member_id)';
-COMMENT ON COLUMN mb_member_group_map.reg_by     IS '등록자ID';
-COMMENT ON COLUMN mb_member_group_map.reg_date   IS '등록일시';
+COMMENT ON COLUMN mb_member_group_map.member_group_map_id IS '매핑ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN mb_member_group_map.member_group_id     IS '그룹ID (mb_member_group.member_group_id)';
+COMMENT ON COLUMN mb_member_group_map.member_id           IS '회원ID (mb_member.member_id)';
+COMMENT ON COLUMN mb_member_group_map.reg_by              IS '등록자ID';
+COMMENT ON COLUMN mb_member_group_map.reg_date            IS '등록일시';
 
 CREATE INDEX idx_mb_member_group_site      ON mb_member_group (site_id);
 CREATE INDEX idx_mb_member_group_map_mem   ON mb_member_group_map (member_id);
@@ -2032,10 +2035,10 @@ COMMENT ON COLUMN mb_member.upd_date       IS '수정일';
 
 -- ============================================================
 -- ec_member_addr : 회원 배송지 (복수 관리)
--- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
+-- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(21)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_member_addr (
-    addr_id         VARCHAR(21)     NOT NULL,
+    member_addr_id  VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),
     member_id       VARCHAR(21)     NOT NULL,              -- mb_member.member_id
     addr_nm         VARCHAR(50),                           -- 배송지명 (예: 집, 회사)
@@ -2049,12 +2052,12 @@ CREATE TABLE IF NOT EXISTS mb_member_addr (
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
-    PRIMARY KEY (addr_id)
+    PRIMARY KEY (member_addr_id)
 );
 
 COMMENT ON TABLE mb_member_addr IS '회원 배송지';
-COMMENT ON COLUMN mb_member_addr.addr_id      IS '배송지ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN mb_member_addr.site_id      IS '사이트ID';
+COMMENT ON COLUMN mb_member_addr.member_addr_id IS '배송지ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN mb_member_addr.site_id        IS '사이트ID';
 COMMENT ON COLUMN mb_member_addr.member_id    IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN mb_member_addr.addr_nm      IS '배송지명 (예: 집, 회사)';
 COMMENT ON COLUMN mb_member_addr.recv_nm      IS '수령자명';
@@ -2135,32 +2138,34 @@ CREATE INDEX idx_mb_like_target        ON mb_like (target_type_cd, target_id);
 -- [CODES] mb_like.target_type_cd (대상유형) : LIKE_TARGET_TYPE { PRODUCT:상품, BRAND:브랜드 }
 
 -- ============================================================
-CREATE TABLE IF NOT EXISTS mb_sns_member (
-    sns_mem_id      VARCHAR(21)     NOT NULL,
+CREATE TABLE IF NOT EXISTS mb_member_sns (
+    member_sns_id   VARCHAR(21)     NOT NULL,
     member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     sns_channel_cd  VARCHAR(20)     NOT NULL,               -- 코드: SNS_CHANNEL (KAKAO/NAVER/GOOGLE/APPLE)
     sns_user_id     VARCHAR(200)    NOT NULL,               -- SNS 플랫폼 사용자 ID
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (sns_mem_id),
+    upd_by          VARCHAR(16),
+    upd_date        TIMESTAMP,
+    PRIMARY KEY (member_sns_id),
     UNIQUE (member_id, sns_channel_cd)
 );
 
-COMMENT ON TABLE mb_sns_member IS '회원 SNS 연동';
-COMMENT ON COLUMN mb_sns_member.sns_mem_id    IS 'SNS연동ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN mb_sns_member.member_id     IS '회원ID (mb_member.member_id)';
-COMMENT ON COLUMN mb_sns_member.sns_channel_cd IS 'SNS채널코드 (코드: SNS_CHANNEL)';
-COMMENT ON COLUMN mb_sns_member.sns_user_id   IS 'SNS 플랫폼 사용자ID';
-COMMENT ON COLUMN mb_sns_member.reg_by        IS '등록자ID';
-COMMENT ON COLUMN mb_sns_member.reg_date      IS '등록일시';
+COMMENT ON TABLE mb_member_sns IS '회원 SNS 연동';
+COMMENT ON COLUMN mb_member_sns.member_sns_id   IS 'SNS연동ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN mb_member_sns.member_id       IS '회원ID (mb_member.member_id)';
+COMMENT ON COLUMN mb_member_sns.sns_channel_cd  IS 'SNS채널코드 (코드: SNS_CHANNEL)';
+COMMENT ON COLUMN mb_member_sns.sns_user_id     IS 'SNS 플랫폼 사용자ID';
+COMMENT ON COLUMN mb_member_sns.reg_by          IS '등록자ID';
+COMMENT ON COLUMN mb_member_sns.reg_date        IS '등록일시';
 
-CREATE INDEX idx_mb_sns_member_member  ON mb_sns_member (member_id);
-CREATE INDEX idx_mb_sns_member_channel ON mb_sns_member (sns_channel_cd);
+CREATE INDEX idx_mb_member_sns_member  ON mb_member_sns (member_id);
+CREATE INDEX idx_mb_member_sns_channel ON mb_member_sns (sns_channel_cd);
 
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] mb_sns_member.sns_channel_cd (SNS채널코드) : SNS_CHANNEL { KAKAO:카카오, NAVER:네이버, GOOGLE:구글, APPLE:애플 }
+-- [CODES] mb_member_sns.sns_channel_cd (SNS채널코드) : SNS_CHANNEL { KAKAO:카카오, NAVER:네이버, GOOGLE:구글, APPLE:애플 }
 
 -- 로그인 이력
 CREATE TABLE IF NOT EXISTS mbh_member_login_hist (
@@ -6811,7 +6816,7 @@ CREATE INDEX idx_sy_path_parent ON cm_path (parent_path_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS cm_bltn_cate (
+CREATE TABLE IF NOT EXISTS cm_blog_cate (
     blog_cate_id    VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),                            -- sy_site.site_id
     blog_cate_nm    VARCHAR(100)    NOT NULL,              -- 카테고리명
@@ -6825,27 +6830,27 @@ CREATE TABLE IF NOT EXISTS cm_bltn_cate (
     PRIMARY KEY (blog_cate_id)
 );
 
-COMMENT ON TABLE cm_bltn_cate IS '블로그 카테고리';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_id IS '블로그카테고리ID';
-COMMENT ON COLUMN cm_bltn_cate.site_id      IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN cm_bltn_cate.blog_cate_nm IS '카테고리명';
-COMMENT ON COLUMN cm_bltn_cate.parent_blog_cate_id IS '상위 카테고리ID (NULL이면 최상위)';
-COMMENT ON COLUMN cm_bltn_cate.sort_ord     IS '정렬순서';
-COMMENT ON COLUMN cm_bltn_cate.use_yn       IS '사용여부 Y/N';
-COMMENT ON COLUMN cm_bltn_cate.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
-COMMENT ON COLUMN cm_bltn_cate.reg_date     IS '등록일';
-COMMENT ON COLUMN cm_bltn_cate.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
-COMMENT ON COLUMN cm_bltn_cate.upd_date     IS '수정일';
+COMMENT ON TABLE cm_blog_cate IS '블로그 카테고리';
+COMMENT ON COLUMN cm_blog_cate.blog_cate_id IS '블로그카테고리ID';
+COMMENT ON COLUMN cm_blog_cate.site_id      IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN cm_blog_cate.blog_cate_nm IS '카테고리명';
+COMMENT ON COLUMN cm_blog_cate.parent_blog_cate_id IS '상위 카테고리ID (NULL이면 최상위)';
+COMMENT ON COLUMN cm_blog_cate.sort_ord     IS '정렬순서';
+COMMENT ON COLUMN cm_blog_cate.use_yn       IS '사용여부 Y/N';
+COMMENT ON COLUMN cm_blog_cate.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN cm_blog_cate.reg_date     IS '등록일';
+COMMENT ON COLUMN cm_blog_cate.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN cm_blog_cate.upd_date     IS '수정일';
 
 -- ============================================================
 -- ec_blog : 블로그 게시글
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS cm_bltn (
+CREATE TABLE IF NOT EXISTS cm_blog (
     blog_id         VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),                            -- sy_site.site_id
-    blog_cate_id    VARCHAR(21),                            -- FK: cm_bltn_cate.blog_cate_idblog_cate_id
+    blog_cate_id    VARCHAR(21),                            -- FK: cm_blog_cate.blog_cate_idblog_cate_id
     blog_title      VARCHAR(200)    NOT NULL,              -- 제목
     blog_summary    VARCHAR(500),                           -- 요약 (미리보기용)
     blog_content    TEXT            NOT NULL,              -- 본문 (HTML)
@@ -6861,32 +6866,32 @@ CREATE TABLE IF NOT EXISTS cm_bltn (
     PRIMARY KEY (blog_id)
 );
 
-COMMENT ON TABLE cm_bltn IS '블로그 게시글';
-COMMENT ON COLUMN cm_bltn.blog_id      IS '블로그ID';
-COMMENT ON COLUMN cm_bltn.site_id      IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN cm_bltn.blog_cate_id IS '블로그카테고리ID (cm_bltn_cate.blog_cate_id)';
-COMMENT ON COLUMN cm_bltn.blog_title   IS '제목';
-COMMENT ON COLUMN cm_bltn.blog_summary IS '요약 (미리보기, 검색결과용)';
-COMMENT ON COLUMN cm_bltn.blog_content IS '본문 (HTML 에디터)';
-COMMENT ON COLUMN cm_bltn.blog_author  IS '작성자 이름';
-COMMENT ON COLUMN cm_bltn.prod_id      IS '상품ID (pd_prod.prod_id, 상품 관련 글일 때만)';
-COMMENT ON COLUMN cm_bltn.view_count   IS '조회수';
-COMMENT ON COLUMN cm_bltn.use_yn       IS '공개여부 Y/N (비공개 글)';
-COMMENT ON COLUMN cm_bltn.is_notice    IS '공지글 여부 Y/N (상단 고정)';
-COMMENT ON COLUMN cm_bltn.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
-COMMENT ON COLUMN cm_bltn.reg_date     IS '등록일';
-COMMENT ON COLUMN cm_bltn.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
-COMMENT ON COLUMN cm_bltn.upd_date     IS '수정일';
+COMMENT ON TABLE cm_blog IS '블로그 게시글';
+COMMENT ON COLUMN cm_blog.blog_id      IS '블로그ID';
+COMMENT ON COLUMN cm_blog.site_id      IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN cm_blog.blog_cate_id IS '블로그카테고리ID (cm_blog_cate.blog_cate_id)';
+COMMENT ON COLUMN cm_blog.blog_title   IS '제목';
+COMMENT ON COLUMN cm_blog.blog_summary IS '요약 (미리보기, 검색결과용)';
+COMMENT ON COLUMN cm_blog.blog_content IS '본문 (HTML 에디터)';
+COMMENT ON COLUMN cm_blog.blog_author  IS '작성자 이름';
+COMMENT ON COLUMN cm_blog.prod_id      IS '상품ID (pd_prod.prod_id, 상품 관련 글일 때만)';
+COMMENT ON COLUMN cm_blog.view_count   IS '조회수';
+COMMENT ON COLUMN cm_blog.use_yn       IS '공개여부 Y/N (비공개 글)';
+COMMENT ON COLUMN cm_blog.is_notice    IS '공지글 여부 Y/N (상단 고정)';
+COMMENT ON COLUMN cm_blog.reg_by       IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN cm_blog.reg_date     IS '등록일';
+COMMENT ON COLUMN cm_blog.upd_by       IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN cm_blog.upd_date     IS '수정일';
 
-CREATE INDEX idx_cm_bltn_cate ON cm_bltn (blog_cate_id);
-CREATE INDEX idx_cm_bltn_prod ON cm_bltn (prod_id);
-CREATE INDEX idx_cm_bltn_date ON cm_bltn (reg_date DESC);
+CREATE INDEX idx_cm_blog_cate ON cm_blog (blog_cate_id);
+CREATE INDEX idx_cm_blog_prod ON cm_blog (prod_id);
+CREATE INDEX idx_cm_blog_date ON cm_blog (reg_date DESC);
 
-CREATE TABLE IF NOT EXISTS cm_bltn_reply (
+CREATE TABLE IF NOT EXISTS cm_blog_reply (
     comment_id      VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),
-    blog_id         VARCHAR(21)     NOT NULL,              -- cm_bltn.
-    parent_comment_id VARCHAR(21),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
+    blog_id         VARCHAR(21)     NOT NULL,              -- cm_blog.
+    parent_comment_id VARCHAR(21),                          -- 대댓글 (cm_blog_reply.blog_comment_id)
     writer_id       VARCHAR(21),                            -- 작성자ID (mb_member.member_id)
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     blog_comment_content TEXT            NOT NULL,
@@ -6899,37 +6904,37 @@ CREATE TABLE IF NOT EXISTS cm_bltn_reply (
     PRIMARY KEY (comment_id)
 );
 
-COMMENT ON TABLE cm_bltn_reply IS '블로그 댓글';
-COMMENT ON COLUMN cm_bltn_reply.comment_id   IS '댓글ID';
-COMMENT ON COLUMN cm_bltn_reply.site_id      IS '사이트ID';
-COMMENT ON COLUMN cm_bltn_reply.blog_id      IS '블로그ID';
-COMMENT ON COLUMN cm_bltn_reply.parent_comment_id IS '대댓글 부모ID';
-COMMENT ON COLUMN cm_bltn_reply.writer_id    IS '작성자ID';
-COMMENT ON COLUMN cm_bltn_reply.writer_nm    IS '작성자명';
-COMMENT ON COLUMN cm_bltn_reply.blog_comment_content IS '댓글 내용';
-COMMENT ON COLUMN cm_bltn_reply.comment_status_cd IS '상태 (코드: COMMENT_STATUS)';
-COMMENT ON COLUMN cm_bltn_reply.comment_status_cd_before IS '변경 전 댓글상태 (코드: COMMENT_STATUS)';
-COMMENT ON COLUMN cm_bltn_reply.reg_by       IS '등록자';
-COMMENT ON COLUMN cm_bltn_reply.reg_date     IS '등록일';
-COMMENT ON COLUMN cm_bltn_reply.upd_by       IS '수정자';
-COMMENT ON COLUMN cm_bltn_reply.upd_date     IS '수정일';
+COMMENT ON TABLE cm_blog_reply IS '블로그 댓글';
+COMMENT ON COLUMN cm_blog_reply.comment_id   IS '댓글ID';
+COMMENT ON COLUMN cm_blog_reply.site_id      IS '사이트ID';
+COMMENT ON COLUMN cm_blog_reply.blog_id      IS '블로그ID';
+COMMENT ON COLUMN cm_blog_reply.parent_comment_id IS '대댓글 부모ID';
+COMMENT ON COLUMN cm_blog_reply.writer_id    IS '작성자ID';
+COMMENT ON COLUMN cm_blog_reply.writer_nm    IS '작성자명';
+COMMENT ON COLUMN cm_blog_reply.blog_comment_content IS '댓글 내용';
+COMMENT ON COLUMN cm_blog_reply.comment_status_cd IS '상태 (코드: COMMENT_STATUS)';
+COMMENT ON COLUMN cm_blog_reply.comment_status_cd_before IS '변경 전 댓글상태 (코드: COMMENT_STATUS)';
+COMMENT ON COLUMN cm_blog_reply.reg_by       IS '등록자';
+COMMENT ON COLUMN cm_blog_reply.reg_date     IS '등록일';
+COMMENT ON COLUMN cm_blog_reply.upd_by       IS '수정자';
+COMMENT ON COLUMN cm_blog_reply.upd_date     IS '수정일';
 
-CREATE INDEX idx_cm_bltn_reply_blog   ON cm_bltn_reply (blog_id);
-CREATE INDEX idx_cm_bltn_reply_parent ON cm_bltn_reply (parent_comment_id);
+CREATE INDEX idx_cm_blog_reply_blog   ON cm_blog_reply (blog_id);
+CREATE INDEX idx_cm_blog_reply_parent ON cm_blog_reply (parent_comment_id);
 
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] cm_bltn_reply.comment_status_cd (상태) : BBS_STATUS { ACTIVE:활성, HIDDEN:숨김, DELETED:삭제 }
+-- [CODES] cm_blog_reply.comment_status_cd (상태) : BBS_STATUS { ACTIVE:활성, HIDDEN:숨김, DELETED:삭제 }
 
 -- ============================================================
 -- ec_blog_img : 블로그 이미지
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS cm_bltn_file (
+CREATE TABLE IF NOT EXISTS cm_blog_file (
     blog_img_id     VARCHAR(21)     NOT NULL,
-    blog_id         VARCHAR(21)     NOT NULL,              -- FK: cm_bltn.blog_id
+    blog_id         VARCHAR(21)     NOT NULL,              -- FK: cm_blog.blog_id
     img_url         VARCHAR(500)    NOT NULL,              -- 원본 이미지 URL
     thumb_url       VARCHAR(500),                           -- 썸네일 이미지 URL
     img_alt_text    VARCHAR(200),                           -- 대체텍스트
@@ -6939,23 +6944,23 @@ CREATE TABLE IF NOT EXISTS cm_bltn_file (
     PRIMARY KEY (blog_img_id)
 );
 
-COMMENT ON TABLE cm_bltn_file IS '블로그 이미지';
-COMMENT ON COLUMN cm_bltn_file.blog_img_id IS '블로그이미지ID';
-COMMENT ON COLUMN cm_bltn_file.blog_id     IS '블로그ID (cm_bltn.)';
-COMMENT ON COLUMN cm_bltn_file.img_url     IS '원본 이미지 URL';
-COMMENT ON COLUMN cm_bltn_file.thumb_url   IS '썸네일 이미지 URL';
-COMMENT ON COLUMN cm_bltn_file.img_alt_text IS '이미지 대체텍스트';
-COMMENT ON COLUMN cm_bltn_file.sort_ord    IS '정렬순서';
-COMMENT ON COLUMN cm_bltn_file.reg_by      IS '등록자 (sy_user.user_id, mb_member.member_id)';
-COMMENT ON COLUMN cm_bltn_file.reg_date    IS '등록일';
+COMMENT ON TABLE cm_blog_file IS '블로그 이미지';
+COMMENT ON COLUMN cm_blog_file.blog_img_id IS '블로그이미지ID';
+COMMENT ON COLUMN cm_blog_file.blog_id     IS '블로그ID (cm_blog.)';
+COMMENT ON COLUMN cm_blog_file.img_url     IS '원본 이미지 URL';
+COMMENT ON COLUMN cm_blog_file.thumb_url   IS '썸네일 이미지 URL';
+COMMENT ON COLUMN cm_blog_file.img_alt_text IS '이미지 대체텍스트';
+COMMENT ON COLUMN cm_blog_file.sort_ord    IS '정렬순서';
+COMMENT ON COLUMN cm_blog_file.reg_by      IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN cm_blog_file.reg_date    IS '등록일';
 
-CREATE INDEX idx_cm_bltn_file_blog ON cm_bltn_file (blog_id);
+CREATE INDEX idx_cm_blog_file_blog ON cm_blog_file (blog_id);
 
 -- 블로그 태그
-CREATE TABLE IF NOT EXISTS cm_bltn_tag (
+CREATE TABLE IF NOT EXISTS cm_blog_tag (
     blog_tag_id     VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),
-    blog_id         VARCHAR(21)     NOT NULL,              -- cm_bltn.
+    blog_id         VARCHAR(21)     NOT NULL,              -- cm_blog.
     tag_nm          VARCHAR(50)     NOT NULL,
     sort_ord        INTEGER         DEFAULT 0,
     reg_by          VARCHAR(16),
@@ -6965,18 +6970,18 @@ CREATE TABLE IF NOT EXISTS cm_bltn_tag (
     PRIMARY KEY (blog_tag_id)
 );
 
-COMMENT ON TABLE cm_bltn_tag IS '블로그 태그';
-COMMENT ON COLUMN cm_bltn_tag.blog_tag_id IS '태그ID';
-COMMENT ON COLUMN cm_bltn_tag.site_id    IS '사이트ID';
-COMMENT ON COLUMN cm_bltn_tag.blog_id    IS '블로그ID';
-COMMENT ON COLUMN cm_bltn_tag.tag_nm     IS '태그명';
-COMMENT ON COLUMN cm_bltn_tag.sort_ord   IS '정렬순서';
-COMMENT ON COLUMN cm_bltn_tag.reg_by     IS '등록자';
-COMMENT ON COLUMN cm_bltn_tag.reg_date   IS '등록일';
-COMMENT ON COLUMN cm_bltn_tag.upd_by     IS '수정자';
-COMMENT ON COLUMN cm_bltn_tag.upd_date   IS '수정일';
+COMMENT ON TABLE cm_blog_tag IS '블로그 태그';
+COMMENT ON COLUMN cm_blog_tag.blog_tag_id IS '태그ID';
+COMMENT ON COLUMN cm_blog_tag.site_id    IS '사이트ID';
+COMMENT ON COLUMN cm_blog_tag.blog_id    IS '블로그ID';
+COMMENT ON COLUMN cm_blog_tag.tag_nm     IS '태그명';
+COMMENT ON COLUMN cm_blog_tag.sort_ord   IS '정렬순서';
+COMMENT ON COLUMN cm_blog_tag.reg_by     IS '등록자';
+COMMENT ON COLUMN cm_blog_tag.reg_date   IS '등록일';
+COMMENT ON COLUMN cm_blog_tag.upd_by     IS '수정자';
+COMMENT ON COLUMN cm_blog_tag.upd_date   IS '수정일';
 
-CREATE INDEX idx_cm_bltn_tag_blog ON cm_bltn_tag (blog_id);
+CREATE INDEX idx_cm_blog_tag_blog ON cm_blog_tag (blog_id);
 
 -- 블로그 댓글
 
@@ -6985,23 +6990,23 @@ CREATE INDEX idx_cm_bltn_tag_blog ON cm_bltn_tag (blog_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS cm_bltn_good (
+CREATE TABLE IF NOT EXISTS cm_blog_good (
     like_id         VARCHAR(21)     NOT NULL,
-    blog_id         VARCHAR(21)     NOT NULL,              -- FK: cm_bltn.blog_id
+    blog_id         VARCHAR(21)     NOT NULL,              -- FK: cm_blog.blog_id
     user_id         VARCHAR(21)     NOT NULL,              -- FK: sy_member.user_id (회원만 가능)
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (like_id),
     UNIQUE (blog_id, user_id)                              -- 중복 방지
 );
 
-COMMENT ON TABLE cm_bltn_good IS '블로그 좋아요';
-COMMENT ON COLUMN cm_bltn_good.like_id IS '좋아요ID';
-COMMENT ON COLUMN cm_bltn_good.blog_id IS '블로그ID (cm_bltn.)';
-COMMENT ON COLUMN cm_bltn_good.user_id IS '사용자ID (sy_member.user_id)';
-COMMENT ON COLUMN cm_bltn_good.reg_date IS '등록일';
+COMMENT ON TABLE cm_blog_good IS '블로그 좋아요';
+COMMENT ON COLUMN cm_blog_good.like_id IS '좋아요ID';
+COMMENT ON COLUMN cm_blog_good.blog_id IS '블로그ID (cm_blog.)';
+COMMENT ON COLUMN cm_blog_good.user_id IS '사용자ID (sy_member.user_id)';
+COMMENT ON COLUMN cm_blog_good.reg_date IS '등록일';
 
-CREATE INDEX idx_cm_bltn_good_blog ON cm_bltn_good (blog_id);
-CREATE INDEX idx_cm_bltn_good_user ON cm_bltn_good (user_id);
+CREATE INDEX idx_cm_blog_good_blog ON cm_blog_good (blog_id);
+CREATE INDEX idx_cm_blog_good_user ON cm_blog_good (user_id);
 
 -- ============================================================
 -- ec_chatt : 채팅방 (고객 1:1 상담)
@@ -7060,9 +7065,9 @@ CREATE INDEX idx_od_chatt_status ON cm_chatt_room (chatt_status_cd);
 
 -- 채팅 메시지
 CREATE TABLE IF NOT EXISTS cm_chatt_msg (
-    msg_id          VARCHAR(21)     NOT NULL,
+    chatt_msg_id    VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),                            -- sy_site.site_id
-    chatt_id        VARCHAR(21)     NOT NULL,
+    chatt_room_id   VARCHAR(21)     NOT NULL,
     sender_cd       VARCHAR(20)     NOT NULL,               -- MEMBER / ADMIN
     msg_text        TEXT,
     ref_type        VARCHAR(20),                            -- ORDER / PRODUCT / CLAIM
@@ -7073,13 +7078,13 @@ CREATE TABLE IF NOT EXISTS cm_chatt_msg (
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
-    PRIMARY KEY (msg_id)
+    PRIMARY KEY (chatt_msg_id)
 );
 
 COMMENT ON TABLE cm_chatt_msg IS '채팅 메시지';
-COMMENT ON COLUMN cm_chatt_msg.msg_id    IS '메시지ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN cm_chatt_msg.site_id   IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN cm_chatt_msg.chatt_id  IS '채팅방ID';
+COMMENT ON COLUMN cm_chatt_msg.chatt_msg_id  IS '메시지ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN cm_chatt_msg.site_id       IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN cm_chatt_msg.chatt_room_id IS '채팅방ID';
 COMMENT ON COLUMN cm_chatt_msg.sender_cd  IS '발신자유형 (MEMBER/ADMIN)';
 COMMENT ON COLUMN cm_chatt_msg.msg_text  IS '메시지내용';
 COMMENT ON COLUMN cm_chatt_msg.ref_type  IS '참조유형 (ORDER/PRODUCT/CLAIM)';

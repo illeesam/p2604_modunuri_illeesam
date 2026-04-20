@@ -43,7 +43,8 @@ public class BoPmSaveController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmSave>> create(@RequestBody PmSave body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PmSave result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

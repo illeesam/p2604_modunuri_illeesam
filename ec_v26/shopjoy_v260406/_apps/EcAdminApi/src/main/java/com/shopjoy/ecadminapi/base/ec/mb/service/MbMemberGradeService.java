@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberGradeMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGradeRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,20 +36,15 @@ public class MbMemberGradeService {
 
     @Transactional(readOnly = true)
     public List<MbMemberGradeDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<MbMemberGradeDto> result = mapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public PageResult<MbMemberGradeDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        p = new HashMap<>(p);
-        int offset = (pageNo - 1) * pageSize;
-        p.put("limit", pageSize);
-        p.put("offset", offset);
-        long totalCount = mapper.selectPageCount(p);
-        List<MbMemberGradeDto> pageList = mapper.selectPageList(p);
-        PageResult<MbMemberGradeDto> result = PageResult.of(pageList, totalCount, pageNo, pageSize, p);
-        return result;
+    public PageResult<MbMemberGradeDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
@@ -62,7 +57,7 @@ public class MbMemberGradeService {
 
     @Transactional
     public MbMemberGrade create(MbMemberGrade entity) {
-        entity.setGradeId(generateId());
+        entity.setMemberGradeId(generateId());
         entity.setRegBy(SecurityUtil.currentUserId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);
@@ -71,8 +66,8 @@ public class MbMemberGradeService {
 
     @Transactional
     public MbMemberGrade save(MbMemberGrade entity) {
-        if (!repository.existsById(entity.getGradeId()))
-            throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getGradeId());
+        if (!repository.existsById(entity.getMemberGradeId()))
+            throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);

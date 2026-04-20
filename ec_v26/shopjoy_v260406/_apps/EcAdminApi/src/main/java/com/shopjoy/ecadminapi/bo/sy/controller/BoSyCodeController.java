@@ -43,7 +43,8 @@ public class BoSyCodeController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyCode>> create(@RequestBody SyCode body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyCode result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

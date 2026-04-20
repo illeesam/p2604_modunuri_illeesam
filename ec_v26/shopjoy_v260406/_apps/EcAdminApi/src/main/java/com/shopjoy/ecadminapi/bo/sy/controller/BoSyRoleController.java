@@ -43,7 +43,8 @@ public class BoSyRoleController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyRole>> create(@RequestBody SyRole body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyRole result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

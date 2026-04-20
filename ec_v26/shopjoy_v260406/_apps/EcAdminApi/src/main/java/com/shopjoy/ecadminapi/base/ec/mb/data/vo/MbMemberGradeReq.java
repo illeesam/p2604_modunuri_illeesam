@@ -14,7 +14,7 @@ public class MbMemberGradeReq {
     @JsonProperty("_row_status")
     private String rowStatus;   // I: insert, U: update, D: delete
 
-    private String gradeId;
+    private String memberGradeId;
     private String siteId;
     private String gradeCd;
     private String gradeNm;
@@ -29,7 +29,7 @@ public class MbMemberGradeReq {
 
     public MbMemberGrade toEntity() {
         return MbMemberGrade.builder()
-                .gradeId(gradeId)
+                .memberGradeId(memberGradeId)
                 .siteId(siteId)
                 .gradeCd(gradeCd)
                 .gradeNm(gradeNm)

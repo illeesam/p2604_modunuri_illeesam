@@ -43,7 +43,8 @@ public class BoSyDeptController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyDept>> create(@RequestBody SyDept body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyDept result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

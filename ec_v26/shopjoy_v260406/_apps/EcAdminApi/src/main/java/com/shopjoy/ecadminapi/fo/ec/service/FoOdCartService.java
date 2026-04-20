@@ -29,9 +29,9 @@ public class FoOdCartService {
     private final OdCartRepository repository;
 
     @Transactional(readOnly = true)
-    public List<OdCartDto> getMyCart(String siteId) {
-        String memberId = SecurityUtil.currentUserId();
-        return mapper.selectList(Map.of("memberId", memberId, "siteId", siteId != null ? siteId : ""));
+    public List<OdCartDto> getMyCart(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        return mapper.selectList(p);
     }
 
     @Transactional

@@ -51,7 +51,8 @@ public class BoOdDlivController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdDliv>> create(@RequestBody OdDliv body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        OdDliv result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

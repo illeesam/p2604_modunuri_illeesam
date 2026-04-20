@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.vo.SyAlarmReq;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyAlarmMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,20 +38,15 @@ public class SyAlarmService {
 
     @Transactional(readOnly = true)
     public List<SyAlarmDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<SyAlarmDto> result = mapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public PageResult<SyAlarmDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        p = new HashMap<>(p);
-        int offset = (pageNo - 1) * pageSize;
-        p.put("limit", pageSize);
-        p.put("offset", offset);
-        long totalCount = mapper.selectPageCount(p);
-        List<SyAlarmDto> pageList = mapper.selectPageList(p);
-        PageResult<SyAlarmDto> result = PageResult.of(pageList, totalCount, pageNo, pageSize, p);
-        return result;
+    public PageResult<SyAlarmDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional

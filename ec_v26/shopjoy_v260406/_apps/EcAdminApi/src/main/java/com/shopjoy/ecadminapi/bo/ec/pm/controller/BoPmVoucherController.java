@@ -43,7 +43,8 @@ public class BoPmVoucherController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmVoucher>> create(@RequestBody PmVoucher body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PmVoucher result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

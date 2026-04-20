@@ -13,9 +13,9 @@ public class CmChattMsgReq {
     @JsonProperty("_row_status")
     private String rowStatus;   // I: insert, U: update, D: delete
 
-    private String msgId;
+    private String chattMsgId;
     private String siteId;
-    private String chattId;
+    private String chattRoomId;
     private String senderCd;
     private String msgText;
     private String refType;
@@ -29,9 +29,9 @@ public class CmChattMsgReq {
 
     public CmChattMsg toEntity() {
         return CmChattMsg.builder()
-                .msgId(msgId)
+                .chattMsgId(chattMsgId)
                 .siteId(siteId)
-                .chattId(chattId)
+                .chattRoomId(chattRoomId)
                 .senderCd(senderCd)
                 .msgText(msgText)
                 .refType(refType)

@@ -51,7 +51,8 @@ public class BoOdOrderController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdOrder>> create(@RequestBody OdOrder body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        OdOrder result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

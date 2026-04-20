@@ -51,7 +51,8 @@ public class BoCmChattController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<CmChattRoom>> create(@RequestBody CmChattRoom body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        CmChattRoom result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

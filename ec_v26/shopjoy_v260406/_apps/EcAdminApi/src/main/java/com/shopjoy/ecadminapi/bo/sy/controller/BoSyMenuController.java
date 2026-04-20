@@ -43,7 +43,8 @@ public class BoSyMenuController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyMenu>> create(@RequestBody SyMenu body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyMenu result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

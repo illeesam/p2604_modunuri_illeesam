@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,25 +28,15 @@ public class FoPdProdController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String categoryId,
-            @RequestParam(required = false) String prodStatusCd,
-            @RequestParam(required = false) String sort) {
-        List<PdProdDto> result = service.getList(buildParam(siteId, kw, categoryId, prodStatusCd, sort));
+            @RequestParam Map<String, Object> p) {
+        List<PdProdDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String categoryId,
-            @RequestParam(required = false) String prodStatusCd,
-            @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<PdProdDto> result = service.getPageData(buildParam(siteId, kw, categoryId, prodStatusCd, sort), pageNo, pageSize);
+            @RequestParam Map<String, Object> p) {
+        PageResult<PdProdDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -55,15 +44,5 @@ public class FoPdProdController {
     public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable String id) {
         PdProdDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    private Map<String, Object> buildParam(String siteId, String kw, String categoryId, String prodStatusCd, String sort) {
-        Map<String, Object> p = new HashMap<>();
-        if (siteId      != null) p.put("siteId",      siteId);
-        if (kw          != null) p.put("kw",           kw);
-        if (categoryId  != null) p.put("categoryId",   categoryId);
-        if (prodStatusCd!= null) p.put("prodStatusCd", prodStatusCd);
-        if (sort        != null) p.put("sort",          sort);
-        return p;
     }
 }

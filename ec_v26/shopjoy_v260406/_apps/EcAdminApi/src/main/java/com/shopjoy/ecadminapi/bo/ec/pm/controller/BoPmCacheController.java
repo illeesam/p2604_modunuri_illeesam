@@ -43,7 +43,8 @@ public class BoPmCacheController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmCache>> create(@RequestBody PmCache body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PmCache result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

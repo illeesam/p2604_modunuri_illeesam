@@ -50,7 +50,8 @@ public class BoPdReviewController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdReview>> create(@RequestBody PdReview body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PdReview result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

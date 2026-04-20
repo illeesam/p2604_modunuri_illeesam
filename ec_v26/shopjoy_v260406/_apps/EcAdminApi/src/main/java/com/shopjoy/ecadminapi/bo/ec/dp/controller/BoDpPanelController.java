@@ -50,7 +50,8 @@ public class BoDpPanelController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<DpPanel>> create(@RequestBody DpPanel body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        DpPanel result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

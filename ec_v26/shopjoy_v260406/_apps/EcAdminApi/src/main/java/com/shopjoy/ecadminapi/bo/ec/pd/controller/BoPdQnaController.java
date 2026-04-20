@@ -50,7 +50,8 @@ public class BoPdQnaController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdProdQna>> create(@RequestBody PdProdQna body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PdProdQna result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,27 +21,15 @@ public class CmChattMsgController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmChattMsgDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd,
-            @RequestParam(required = false) String sort) {
-        Map<String, Object> p = buildParam(siteId, kw, dateStart, dateEnd, sort);
+            @RequestParam Map<String, Object> p) {
         List<CmChattMsgDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<CmChattMsgDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd,
-            @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        Map<String, Object> p = buildParam(siteId, kw, dateStart, dateEnd, sort);
-        PageResult<CmChattMsgDto> result = service.getPageData(p, pageNo, pageSize);
+            @RequestParam Map<String, Object> p) {
+        PageResult<CmChattMsgDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -64,7 +51,7 @@ public class CmChattMsgController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmChattMsg>> save(
             @PathVariable String id, @RequestBody CmChattMsg entity) {
-        entity.setMsgId(id);
+        entity.setChattMsgId(id);
         CmChattMsg result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -73,7 +60,7 @@ public class CmChattMsgController {
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
             @PathVariable String id, @RequestBody CmChattMsg entity) {
-        entity.setMsgId(id);
+        entity.setChattMsgId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -85,14 +72,4 @@ public class CmChattMsgController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    private Map<String, Object> buildParam(String siteId, String kw,
-                                           String dateStart, String dateEnd, String sort) {
-        Map<String, Object> p = new HashMap<>();
-        if (siteId    != null) p.put("siteId",    siteId);
-        if (kw        != null) p.put("kw",        kw);
-        if (dateStart != null) p.put("dateStart", dateStart);
-        if (dateEnd   != null) p.put("dateEnd",   dateEnd);
-        if (sort      != null) p.put("sort",      sort);
-        return p;
-    }
 }

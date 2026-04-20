@@ -1,7 +1,7 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltn;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.Map;
  * FO 문의(Contact) 서비스 — 1:1 문의 / 고객 문의 폼 접수
  * URL: /api/fo/ec/cm/contact
  *
- * 문의 내용을 cm_bltn 테이블에 저장 (blogCateId = CONTACT)
+ * 문의 내용을 cm_blog 테이블에 저장 (blogCateId = CONTACT)
  */
 @Service
 @RequiredArgsConstructor
@@ -24,11 +24,11 @@ public class FoCmContactService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private static final String CONTACT_CATE = "CONTACT";
 
-    private final CmBltnRepository repository;
+    private final CmBlogRepository repository;
 
     @Transactional
-    public CmBltn submit(Map<String, Object> body) {
-        CmBltn entity = new CmBltn();
+    public CmBlog submit(Map<String, Object> body) {
+        CmBlog entity = new CmBlog();
         entity.setBlogId(generateId());
         entity.setSiteId((String) body.get("siteId"));
         entity.setBlogCateId(CONTACT_CATE);

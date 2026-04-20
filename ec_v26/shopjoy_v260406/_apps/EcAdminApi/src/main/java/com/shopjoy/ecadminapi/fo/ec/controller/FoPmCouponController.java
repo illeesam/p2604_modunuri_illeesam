@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * FO 쿠폰 API — 현재 로그인 회원의 사용 가능 쿠폰
@@ -24,8 +25,8 @@ public class FoPmCouponController {
 
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<PmCouponIssueDto>>> available(
-            @RequestParam(required = false) String siteId) {
-        List<PmCouponIssueDto> result = service.getAvailableCoupons(siteId);
+            @RequestParam Map<String, Object> p) {
+        List<PmCouponIssueDto> result = service.getAvailableCoupons(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

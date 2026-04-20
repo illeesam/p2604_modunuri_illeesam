@@ -43,7 +43,8 @@ public class BoPmEventController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmEvent>> create(@RequestBody PmEvent body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PmEvent result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

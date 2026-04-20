@@ -1,15 +1,15 @@
 -- Auto-generated: ADD COLUMN audit fields
 -- Schema: shopjoy_2604
 
-ALTER TABLE shopjoy_2604.cm_bltn_file ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
-ALTER TABLE shopjoy_2604.cm_bltn_file ADD COLUMN IF NOT EXISTS upd_date TIMESTAMP;
-ALTER TABLE shopjoy_2604.cm_bltn_good ADD COLUMN IF NOT EXISTS reg_by VARCHAR(30);
-ALTER TABLE shopjoy_2604.cm_bltn_good ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
-ALTER TABLE shopjoy_2604.cm_bltn_good ADD COLUMN IF NOT EXISTS upd_date TIMESTAMP;
+ALTER TABLE shopjoy_2604.cm_blog_file ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
+ALTER TABLE shopjoy_2604.cm_blog_file ADD COLUMN IF NOT EXISTS upd_date TIMESTAMP;
+ALTER TABLE shopjoy_2604.cm_blog_good ADD COLUMN IF NOT EXISTS reg_by VARCHAR(30);
+ALTER TABLE shopjoy_2604.cm_blog_good ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
+ALTER TABLE shopjoy_2604.cm_blog_good ADD COLUMN IF NOT EXISTS upd_date TIMESTAMP;
 ALTER TABLE shopjoy_2604.mb_dvc_token ADD COLUMN IF NOT EXISTS reg_by VARCHAR(30);
 ALTER TABLE shopjoy_2604.mb_dvc_token ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
-ALTER TABLE shopjoy_2604.mb_sns_member ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
-ALTER TABLE shopjoy_2604.mb_sns_member ADD COLUMN IF NOT EXISTS upd_date TIMESTAMP;
+ALTER TABLE shopjoy_2604.mb_member_sns ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
+ALTER TABLE shopjoy_2604.mb_member_sns ADD COLUMN IF NOT EXISTS upd_date TIMESTAMP;
 ALTER TABLE shopjoy_2604.od_order_discnt ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);
 ALTER TABLE shopjoy_2604.od_order_discnt ADD COLUMN IF NOT EXISTS upd_date TIMESTAMP;
 ALTER TABLE shopjoy_2604.od_order_item_discnt ADD COLUMN IF NOT EXISTS upd_by VARCHAR(30);

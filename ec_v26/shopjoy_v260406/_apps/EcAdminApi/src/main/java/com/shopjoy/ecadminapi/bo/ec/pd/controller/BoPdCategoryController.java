@@ -50,7 +50,8 @@ public class BoPdCategoryController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdCategory>> create(@RequestBody PdCategory body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PdCategory result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

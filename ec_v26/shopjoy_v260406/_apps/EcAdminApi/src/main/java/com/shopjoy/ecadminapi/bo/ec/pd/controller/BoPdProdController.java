@@ -50,7 +50,8 @@ public class BoPdProdController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PdProd>> create(@RequestBody PdProd body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PdProd result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

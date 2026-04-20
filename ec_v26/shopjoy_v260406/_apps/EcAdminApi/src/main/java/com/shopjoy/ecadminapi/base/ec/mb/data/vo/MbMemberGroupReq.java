@@ -13,7 +13,7 @@ public class MbMemberGroupReq {
     @JsonProperty("_row_status")
     private String rowStatus;   // I: insert, U: update, D: delete
 
-    private String groupId;
+    private String memberGroupId;
     private String siteId;
     private String groupNm;
     private String groupMemo;
@@ -25,7 +25,7 @@ public class MbMemberGroupReq {
 
     public MbMemberGroup toEntity() {
         return MbMemberGroup.builder()
-                .groupId(groupId)
+                .memberGroupId(memberGroupId)
                 .siteId(siteId)
                 .groupNm(groupNm)
                 .groupMemo(groupMemo)

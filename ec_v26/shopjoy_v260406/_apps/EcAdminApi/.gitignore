@@ -20,7 +20,7 @@ out/
 !.vscode/launch.json
 
 # ── Spring Boot ─────────────────────────────────────────
-application-local.yml
+# application-local.yml
 logs/
 *.log
 

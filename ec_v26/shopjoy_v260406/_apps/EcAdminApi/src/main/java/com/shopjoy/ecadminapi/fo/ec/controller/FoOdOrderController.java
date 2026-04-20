@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * FO 주문 API — 현재 로그인 회원 전용
@@ -29,17 +30,15 @@ public class FoOdOrderController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdOrderDto>>> myOrders(
-            @RequestParam(required = false) String siteId) {
-        List<OdOrderDto> result = service.getMyOrders(siteId);
+            @RequestParam Map<String, Object> p) {
+        List<OdOrderDto> result = service.getMyOrders(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdOrderDto>>> myOrderPage(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        PageResult<OdOrderDto> result = service.getMyOrderPage(siteId, pageNo, pageSize);
+            @RequestParam Map<String, Object> p) {
+        PageResult<OdOrderDto> result = service.getMyOrderPage(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -51,6 +50,7 @@ public class FoOdOrderController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdOrder>> placeOrder(@RequestBody OdOrder entity) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.placeOrder(entity)));
+        OdOrder result = service.placeOrder(entity);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 }

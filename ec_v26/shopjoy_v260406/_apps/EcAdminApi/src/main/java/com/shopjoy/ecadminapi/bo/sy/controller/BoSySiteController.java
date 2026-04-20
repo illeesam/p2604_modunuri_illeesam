@@ -41,7 +41,8 @@ public class BoSySiteController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SySite>> create(@RequestBody SySite body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SySite result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

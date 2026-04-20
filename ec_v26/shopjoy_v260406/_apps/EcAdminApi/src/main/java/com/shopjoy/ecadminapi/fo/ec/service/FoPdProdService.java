@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdMapper;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,9 @@ public class FoPdProdService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PdProdDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        Map<String, Object> param = new HashMap<>(p);
-        param.put("limit",  pageSize);
-        param.put("offset", (pageNo - 1) * pageSize);
-        return PageResult.of(mapper.selectPageList(param), mapper.selectPageCount(param), pageNo, pageSize, p);
+    public PageResult<PdProdDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)

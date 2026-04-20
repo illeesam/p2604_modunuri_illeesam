@@ -27,7 +27,11 @@
       "Bash(node -e ' *)",
       "Bash(node _doc/generate_sample_sql.js)",
       "Bash(node _doc/generate_sample_sql_ec.js)",
-      "Bash(node _doc/generate_sample_sql_prod.js)"
+      "Bash(node _doc/generate_sample_sql_prod.js)",
+      "Bash(python3 /tmp/fix_base_files.py)",
+      "Read(//c/tmp/**)",
+      "Bash(python3 /c/tmp/fix_base_files.py)",
+      "Read(//c/Users/illee/.claude/projects/c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406/4e549dcd-5ec2-4196-b3c8-09a9df31ad20/tool-results/**)"
     ],
     "additionalDirectories": [
       "C:\\Users\\illee\\.claude\\projects\\c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406\\memory"

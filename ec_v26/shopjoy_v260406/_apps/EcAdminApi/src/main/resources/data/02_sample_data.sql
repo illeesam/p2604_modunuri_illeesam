@@ -159,12 +159,12 @@ ON CONFLICT (vendor_id) DO NOTHING;
 -- ============================================================
 -- [MB] 회원등급
 -- ============================================================
-INSERT INTO mb_member_grade (grade_id, grade_cd, grade_nm, min_purchase_amt, save_rate, use_yn, reg_by, reg_date)
+INSERT INTO mb_member_grade (member_grade_id, grade_cd, grade_nm, min_purchase_amt, save_rate, use_yn, reg_by, reg_date)
 VALUES
   ('GRD0000000000001', 'BASIC', '일반회원', 0,       1.0, 'Y', 'SYSTEM', NOW()),
   ('GRD0000000000002', 'GOLD',  '우수회원', 500000,  2.0, 'Y', 'SYSTEM', NOW()),
   ('GRD0000000000003', 'VIP',   'VIP회원',  1000000, 3.0, 'Y', 'SYSTEM', NOW())
-ON CONFLICT (grade_id) DO NOTHING;
+ON CONFLICT (member_grade_id) DO NOTHING;
 
 -- ============================================================
 -- [MB] 회원

@@ -1,0 +1,90 @@
+package com.shopjoy.ecadminapi.base.ec.cm.service;
+
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogTag;
+import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogTagMapper;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogTagRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class CmBlogTagService {
+
+    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
+
+    private final CmBlogTagMapper mapper;
+    private final CmBlogTagRepository repository;
+
+    // ── MyBatis 조회 ────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public CmBlogTagDto getById(String id) {
+        CmBlogTagDto result = mapper.selectById(id);
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CmBlogTagDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        List<CmBlogTagDto> result = mapper.selectList(p);
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public PageResult<CmBlogTagDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    }
+
+    @Transactional
+    public int update(CmBlogTag entity) {
+        int result = mapper.updateSelective(entity);
+        return result;
+    }
+
+    // ── JPA 저장/삭제 ────────────────────────────────────────────
+
+    @Transactional
+    public CmBlogTag create(CmBlogTag entity) {
+        entity.setBlogTagId(generateId());
+        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegDate(LocalDateTime.now());
+        CmBlogTag result = repository.save(entity);
+        return result;
+    }
+
+    @Transactional
+    public CmBlogTag save(CmBlogTag entity) {
+        if (!repository.existsById(entity.getBlogTagId()))
+            throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId());
+        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdDate(LocalDateTime.now());
+        CmBlogTag result = repository.save(entity);
+        return result;
+    }
+
+    @Transactional
+    public void delete(String id) {
+        if (!repository.existsById(id))
+            throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + id);
+        repository.deleteById(id);
+    }
+
+    /** ID 생성: prefix=BLT (cm_blog_tag) */
+    private String generateId() {
+        String ts   = LocalDateTime.now().format(ID_FMT);
+        String rand = String.format("%04d", (int)(Math.random() * 10000));
+        return "BLT" + ts + rand;
+    }
+}

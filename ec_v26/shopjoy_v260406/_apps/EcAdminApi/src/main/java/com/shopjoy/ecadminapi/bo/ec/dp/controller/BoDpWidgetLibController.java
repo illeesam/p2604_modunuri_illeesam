@@ -50,7 +50,8 @@ public class BoDpWidgetLibController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<DpWidgetLib>> create(@RequestBody DpWidgetLib body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        DpWidgetLib result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

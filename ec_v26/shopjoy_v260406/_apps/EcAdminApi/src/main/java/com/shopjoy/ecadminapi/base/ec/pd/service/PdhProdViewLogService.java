@@ -4,12 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdViewLog;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdhProdViewLogMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdhProdViewLogRepository;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,20 +30,15 @@ public class PdhProdViewLogService {
 
     @Transactional(readOnly = true)
     public List<PdhProdViewLogDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         List<PdhProdViewLogDto> result = mapper.selectList(p);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PdhProdViewLogDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
-        p = new HashMap<>(p);
-        int offset = (pageNo - 1) * pageSize;
-        p.put("limit", pageSize);
-        p.put("offset", offset);
-        long totalCount = mapper.selectPageCount(p);
-        List<PdhProdViewLogDto> pageList = mapper.selectPageList(p);
-        PageResult<PdhProdViewLogDto> result = PageResult.of(pageList, totalCount, pageNo, pageSize, p);
-        return result;
+    public PageResult<PdhProdViewLogDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional

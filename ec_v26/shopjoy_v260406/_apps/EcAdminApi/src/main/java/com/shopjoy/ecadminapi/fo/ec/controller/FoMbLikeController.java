@@ -27,9 +27,8 @@ public class FoMbLikeController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbLikeDto>>> myLikes(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String targetTypeCd) {
-        List<MbLikeDto> result = service.getMyLikes(siteId, targetTypeCd);
+            @RequestParam Map<String, Object> p) {
+        List<MbLikeDto> result = service.getMyLikes(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -37,8 +36,8 @@ public class FoMbLikeController {
     public ResponseEntity<ApiResponse<Map<String, Boolean>>> toggle(
             @PathVariable String targetTypeCd,
             @PathVariable String targetId,
-            @RequestParam(required = false) String siteId) {
-        boolean liked = service.toggle(siteId, targetTypeCd, targetId);
+            @RequestParam Map<String, Object> p) {
+        boolean liked = service.toggle(targetTypeCd, targetId, p);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("liked", liked)));
     }
 
@@ -46,8 +45,8 @@ public class FoMbLikeController {
     public ResponseEntity<ApiResponse<Void>> unlike(
             @PathVariable String targetTypeCd,
             @PathVariable String targetId,
-            @RequestParam(required = false) String siteId) {
-        service.unlike(siteId, targetTypeCd, targetId);
+            @RequestParam Map<String, Object> p) {
+        service.unlike(targetTypeCd, targetId, p);
         return ResponseEntity.ok(ApiResponse.ok(null, "찜이 취소되었습니다."));
     }
 }

@@ -43,7 +43,8 @@ public class BoSyBrandController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyBrand>> create(@RequestBody SyBrand body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyBrand result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

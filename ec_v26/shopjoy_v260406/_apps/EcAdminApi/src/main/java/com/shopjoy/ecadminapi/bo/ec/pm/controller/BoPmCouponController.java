@@ -43,7 +43,8 @@ public class BoPmCouponController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PmCoupon>> create(@RequestBody PmCoupon body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        PmCoupon result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

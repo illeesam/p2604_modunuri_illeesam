@@ -43,7 +43,8 @@ public class BoSyContactController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyContact>> create(@RequestBody SyContact body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyContact result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

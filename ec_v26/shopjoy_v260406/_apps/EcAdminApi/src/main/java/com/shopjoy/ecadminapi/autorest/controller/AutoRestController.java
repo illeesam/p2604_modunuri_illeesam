@@ -95,7 +95,8 @@ public class AutoRestController {
             @PathVariable String table,
             @RequestBody RowMap body) {
         checkTable(table);
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(table, body)));
+        RowMap result = service.create(table, body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     /* ── 6. 전체 수정 ── */

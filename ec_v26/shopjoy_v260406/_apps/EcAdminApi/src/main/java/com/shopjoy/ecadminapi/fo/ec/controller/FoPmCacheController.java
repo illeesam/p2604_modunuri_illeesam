@@ -23,8 +23,8 @@ public class FoPmCacheController {
 
     @GetMapping("/balance")
     public ResponseEntity<ApiResponse<Map<String, Long>>> balance(
-            @RequestParam(required = false) String siteId) {
-        long bal = service.getBalance(siteId);
+            @RequestParam Map<String, Object> p) {
+        long bal = service.getBalance(p);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("balance", bal)));
     }
 }

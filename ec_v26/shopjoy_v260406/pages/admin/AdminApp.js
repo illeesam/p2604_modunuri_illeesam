@@ -1562,7 +1562,7 @@
   .component('SyBbsDtl',       window.SyBbsDtl)
   .component('SyContactMng',   window.SyContactMng)
   .component('SyContactDtl',   window.SyContactDtl)
-  .component('CmBltnMng',      window.CmBltnMng)
+  .component('CmBlogMng',      window.CmBlogMng)
   /* ── components/modals/ — 선택 모달 ── */
   .component('AdminUserSelectModal', window.AdminUserSelectModal)
   .component('BbmSelectModal',       window.BbmSelectModal)

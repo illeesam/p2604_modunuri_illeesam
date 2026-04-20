@@ -1790,11 +1790,11 @@
       { codeId:1082, codeGrp: 'CONTACT_CATEGORY', codeLabel: '상품문의',   codeValue: 'PRODUCT',     sortOrd: 3, useYn: 'Y', remark: '상품 관련 문의',     parentCodeValue: null, regDate: '2026-04-19' },
       { codeId:1083, codeGrp: 'CONTACT_CATEGORY', codeLabel: '클레임문의', codeValue: 'CLAIM',       sortOrd: 4, useYn: 'Y', remark: '취소·반품·교환 문의', parentCodeValue: null, regDate: '2026-04-19' },
       { codeId:1084, codeGrp: 'CONTACT_CATEGORY', codeLabel: '기타',       codeValue: 'OTHER',       sortOrd: 5, useYn: 'Y', remark: '기타 문의',           parentCodeValue: null, regDate: '2026-04-19' },
-      /* ── 댓글 상태 (cm_bltn_reply.comment_status_cd) ── */
+      /* ── 댓글 상태 (cm_blog_reply.comment_status_cd) ── */
       { codeId:1090, codeGrp: 'COMMENT_STATUS', codeLabel: '정상',       codeValue: 'ACTIVE',        sortOrd: 1, useYn: 'Y', remark: '정상 노출',         parentCodeValue: null, regDate: '2026-04-19' },
       { codeId:1091, codeGrp: 'COMMENT_STATUS', codeLabel: '숨김',       codeValue: 'HIDDEN',        sortOrd: 2, useYn: 'Y', remark: '관리자 숨김',       parentCodeValue: null, regDate: '2026-04-19' },
       { codeId:1092, codeGrp: 'COMMENT_STATUS', codeLabel: '삭제',       codeValue: 'DELETED',       sortOrd: 3, useYn: 'Y', remark: '삭제',               parentCodeValue: null, regDate: '2026-04-19' },
-      /* ── 작성자 유형 (cm_bltn_reply.writer_type_cd) ── */
+      /* ── 작성자 유형 (cm_blog_reply.writer_type_cd) ── */
       { codeId:1100, codeGrp: 'WRITER_TYPE',    codeLabel: '회원',       codeValue: 'MEMBER',        sortOrd: 1, useYn: 'Y', remark: '회원',               parentCodeValue: null, regDate: '2026-04-19' },
       { codeId:1101, codeGrp: 'WRITER_TYPE',    codeLabel: '관리자',     codeValue: 'ADMIN',         sortOrd: 2, useYn: 'Y', remark: '관리자',             parentCodeValue: null, regDate: '2026-04-19' },
       { codeId:1102, codeGrp: 'WRITER_TYPE',    codeLabel: '비회원',     codeValue: 'GUEST',         sortOrd: 3, useYn: 'Y', remark: '비회원',             parentCodeValue: null, regDate: '2026-04-19' },

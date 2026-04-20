@@ -69,7 +69,7 @@
 | total_purchase_amt | 누적구매액 | BIGINT, 기본값 0 |
 | cache_balance_amt | 캐시잔액 | BIGINT, 기본값 0 |
 
-### 6. SNS 연동 (mb_sns_member)
+### 6. SNS 연동 (mb_member_sns)
 - 지원 채널: KAKAO / NAVER / GOOGLE / APPLE (코드: SNS_CHANNEL)
 - 1 회원 = 동일 채널 1개만 연동 가능 (UNIQUE: member_id + sns_channel_cd)
 - sns_user_id: SNS 플랫폼 제공 사용자 고유 ID
@@ -90,7 +90,7 @@
 - mb_member_grade: 회원등급 정의 (grade_cd, save_rate, min_purchase_amt)
 - mb_member_group: 회원그룹
 - mb_member_group_map: 회원-그룹 매핑
-- mb_sns_member: SNS 연동 정보
+- mb_member_sns: SNS 연동 정보
 - mb_dvc_token: 앱 디바이스 토큰
 - mb_member_login_log: 로그인 이력
 - mb_member_token_log: 토큰/세션 관리

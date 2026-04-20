@@ -577,6 +577,78 @@ package-lock.json       ← npm 관리용
 
 > 데이터베이스 접속 비밀번호는 이후 별도로 전달 예정
 
+## EcAdminApi Controller / Service 파라미터 패턴
+
+**핵심 원칙**: 개별 String/int 파라미터 대신 `Map<String, Object>`, DTO, VO로 받는다.  
+이유: 항목 추가·삭제 시 Controller/Service 서명을 변경하지 않고 Mapper XML만 수정.
+
+### Controller 규칙
+
+```java
+// ✅ GET 목록/페이징 — Map으로 모든 쿼리 파라미터 수신
+@GetMapping
+public ResponseEntity<ApiResponse<List<XxxDto>>> list(
+        @RequestParam Map<String, Object> p) {
+    List<XxxDto> result = service.getList(p);
+    return ResponseEntity.ok(ApiResponse.ok(result));
+}
+
+@GetMapping("/page")
+public ResponseEntity<ApiResponse<PageResult<XxxDto>>> page(
+        @RequestParam Map<String, Object> p) {
+    PageResult<XxxDto> result = service.getPageData(p);
+    return ResponseEntity.ok(ApiResponse.ok(result));
+}
+
+// ✅ POST/PUT — Entity 또는 DTO/VO @RequestBody
+@PostMapping
+public ResponseEntity<ApiResponse<XxxEntity>> create(@RequestBody XxxEntity entity) { ... }
+
+// 불가피한 예외: @PathVariable (경로 변수), @RequestBody Map (단순 단건 데이터)
+```
+
+### Service 규칙
+
+```java
+// getList: pageSize 포함 시 자동 페이징 지원
+@Transactional(readOnly = true)
+public List<XxxDto> getList(Map<String, Object> p) {
+    if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+    return mapper.selectList(p);
+}
+
+// getPageData: PageHelper로 페이징
+@Transactional(readOnly = true)
+public PageResult<XxxDto> getPageData(Map<String, Object> p) {
+    PageHelper.addPaging(p);
+    return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+        PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+}
+
+// FO 서비스: memberId는 SecurityUtil로 주입 후 mapper 전달
+public List<XxxDto> getMyXxx(Map<String, Object> p) {
+    p.put("memberId", SecurityUtil.currentUserId());
+    return mapper.selectList(p);
+}
+```
+
+### buildParam 금지
+
+`buildParam()` 헬퍼 메서드 금지. Spring이 `@RequestParam Map<String, Object> p`로 모든 쿼리 파라미터를 자동 수집한다.
+
+### Mapper XML 유연성
+
+```xml
+<!-- p에 없는 키는 WHERE 조건에서 자동 제외 -->
+<where>
+  <if test="siteId != null">AND site_id = #{siteId}</if>
+  <if test="kw != null">AND (title LIKE '%'||#{kw}||'%')</if>
+  <if test="dateStart != null">AND reg_date >= #{dateStart}</if>
+</where>
+```
+
+---
+
 ## 작업 지침
 
 1. **새 관리자 페이지 추가 3단계 누락 금지**: `admin.html` script 태그 + `AdminApp.js` PAGE_COMP_MAP + `app.component()`
@@ -584,6 +656,7 @@ package-lock.json       ← npm 관리용
 3. **`window.*` 전역 의존이 많음** — 모듈화 이전에 건드릴 때 주입 순서 주의
 4. **`adminData` 직접 수정이 소스 오브 트루스** — 목업 변경하면 전 화면 즉시 반영
 5. **Dtl 탭 구조 변경 시** 5개 뷰모드 + 영속화 + dtl-tab-card-title 헤더 패턴 유지
+6. **신규 Controller/Service** — 개별 String/int 파라미터 금지, `@RequestParam Map<String, Object> p` 패턴 사용
 
 ## DDL 컬럼명 표준화
 

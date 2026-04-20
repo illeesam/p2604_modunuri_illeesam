@@ -45,7 +45,7 @@ public class BoMbMemGroupService {
 
     @Transactional
     public MbMemberGroup create(MbMemberGroup body) {
-        body.setGroupId("MG" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+        body.setMemberGroupId("MG" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.currentUserId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);

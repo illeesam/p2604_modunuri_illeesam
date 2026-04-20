@@ -13,7 +13,7 @@ public class MbMemberAddrReq {
     @JsonProperty("_row_status")
     private String rowStatus;   // I: insert, U: update, D: delete
 
-    private String addrId;
+    private String memberAddrId;
     private String siteId;
     private String memberId;
     private String addrNm;
@@ -30,7 +30,7 @@ public class MbMemberAddrReq {
 
     public MbMemberAddr toEntity() {
         return MbMemberAddr.builder()
-                .addrId(addrId)
+                .memberAddrId(memberAddrId)
                 .siteId(siteId)
                 .memberId(memberId)
                 .addrNm(addrNm)

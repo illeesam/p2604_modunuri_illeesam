@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -113,32 +112,26 @@ public class FoMyPageService {
     }
 
     @Transactional(readOnly = true)
-    public List<OdOrderDto> getMyOrders(String siteId) {
-        String memberId = SecurityUtil.currentUserId();
-        Map<String, Object> p = new HashMap<>();
-        p.put("memberId", memberId);
-        if (siteId != null) p.put("siteId", siteId);
+    public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
         return orderMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public List<OdClaimDto> getMyClaims(String siteId) {
-        String memberId = SecurityUtil.currentUserId();
-        Map<String, Object> p = new HashMap<>();
-        p.put("memberId", memberId);
-        if (siteId != null) p.put("siteId", siteId);
+    public List<OdClaimDto> getMyClaims(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
         return claimMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public List<PmCouponDto> getMyCoupons() {
-        String memberId = SecurityUtil.currentUserId();
-        return couponMapper.selectList(Map.of("memberId", memberId));
+    public List<PmCouponDto> getMyCoupons(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        return couponMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public List<PmCacheDto> getMyCacheHistory() {
-        String memberId = SecurityUtil.currentUserId();
-        return cacheMapper.selectList(Map.of("memberId", memberId));
+    public List<PmCacheDto> getMyCacheHistory(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        return cacheMapper.selectList(p);
     }
 }

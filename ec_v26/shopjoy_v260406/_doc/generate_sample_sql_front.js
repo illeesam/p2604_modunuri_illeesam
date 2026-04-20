@@ -8,7 +8,7 @@
  *   → _doc/sample_data_front.sql 생성
  *
  * 소스:
- *   pages/Blog.js, pages/BlogView.js  → cm_bltn_cate, cm_bltn, cm_bltn_reply, cm_bltn_tag
+ *   pages/Blog.js, pages/BlogView.js  → cm_blog_cate, cm_blog, cm_blog_reply, cm_blog_tag
  *   api/products/list.json            → pd_prod(50), pd_prod_opt, pd_prod_opt_item, pd_prod_sku
  *                                        pd_tag, pd_prod_tag, pd_category_prod
  *   api/my/orders.json                → od_order(25), od_order_item, mb_member_addr
@@ -96,9 +96,9 @@ const insert = (table, cols, vals) =>
   lines.push(`INSERT INTO ${SCHEMA}.${table} (${cols.join(', ')}) VALUES (${vals.map(esc).join(', ')}) ON CONFLICT DO NOTHING;`);
 
 // ────────────────────────────────────────────────────────────────
-// 1. cm_bltn_cate — 블로그 카테고리 (Blog.js)
+// 1. cm_blog_cate — 블로그 카테고리 (Blog.js)
 // ────────────────────────────────────────────────────────────────
-section('1. cm_bltn_cate — 블로그 카테고리');
+section('1. cm_blog_cate — 블로그 카테고리');
 const blogCates = [
   { id: 'BC000001', code: 'fashion',   nm: '패션',         sort: 1 },
   { id: 'BC000002', code: 'trend',     nm: '트렌드',       sort: 2 },
@@ -108,16 +108,16 @@ const blogCates = [
 const blogCateMap = {};
 blogCates.forEach(c => {
   blogCateMap[c.code] = c.id;
-  insert('cm_bltn_cate',
+  insert('cm_blog_cate',
     ['blog_cate_id','site_id','blog_cate_nm','sort_ord','use_yn','reg_by','reg_date'],
     [c.id, siteId1, c.nm, c.sort, 'Y', REG_BY, REG_DATE]
   );
 });
 
 // ────────────────────────────────────────────────────────────────
-// 2. cm_bltn — 블로그 게시글 (Blog.js + BlogView.js body)
+// 2. cm_blog — 블로그 게시글 (Blog.js + BlogView.js body)
 // ────────────────────────────────────────────────────────────────
-section('2. cm_bltn — 블로그 게시글');
+section('2. cm_blog — 블로그 게시글');
 const blogPosts = [
   { id: 1, title: 'Anteposuerit litterarum formas.', category: 'fashion',   author: '김민지', date: '2026-04-10',
     summary: '고급 코튼 소재로 제작된 프리미엄 티셔츠. 통기성이 우수하고 세탁 후에도 형태가 유지됩니다.',
@@ -145,7 +145,7 @@ const blogPosts = [
     tags: ['아우터','추천','봄패션'], viewCount: 1890 },
 ];
 blogPosts.forEach((p) => {
-  insert('cm_bltn',
+  insert('cm_blog',
     ['blog_id','site_id','blog_cate_id','blog_title','blog_summary',
      'blog_content','blog_author','view_count','use_yn','reg_by','reg_date'],
     [mkId('BL', p.id), siteId1, blogCateMap[p.category] || null,
@@ -155,13 +155,13 @@ blogPosts.forEach((p) => {
 });
 
 // ────────────────────────────────────────────────────────────────
-// 3. cm_bltn_tag — 블로그 태그
+// 3. cm_blog_tag — 블로그 태그
 // ────────────────────────────────────────────────────────────────
-section('3. cm_bltn_tag — 블로그 태그');
+section('3. cm_blog_tag — 블로그 태그');
 let bltnTagSeq = 1;
 blogPosts.forEach((p) => {
   (p.tags || []).forEach((tag, i) => {
-    insert('cm_bltn_tag',
+    insert('cm_blog_tag',
       ['blog_tag_id','site_id','blog_id','tag_nm','sort_ord','reg_by','reg_date'],
       [mkId('BTG', bltnTagSeq++), siteId1, mkId('BL', p.id), tag, i + 1, REG_BY, REG_DATE]
     );
@@ -169,9 +169,9 @@ blogPosts.forEach((p) => {
 });
 
 // ────────────────────────────────────────────────────────────────
-// 4. cm_bltn_reply — 블로그 댓글 (BlogView.js)
+// 4. cm_blog_reply — 블로그 댓글 (BlogView.js)
 // ────────────────────────────────────────────────────────────────
-section('4. cm_bltn_reply — 블로그 댓글');
+section('4. cm_blog_reply — 블로그 댓글');
 const bltnComments = [
   { postId: 1, id: 1, author: '이수진', date: '2026-04-11', text: '정말 유용한 정보네요! 다음 시즌 스타일링에 참고하겠습니다.' },
   { postId: 1, id: 2, author: '박지현', date: '2026-04-11', text: '사진도 예쁘고 설명도 자세해서 좋아요.' },
@@ -180,7 +180,7 @@ const bltnComments = [
 ];
 let replySeq = 1;
 bltnComments.forEach((c) => {
-  insert('cm_bltn_reply',
+  insert('cm_blog_reply',
     ['comment_id','site_id','blog_id','writer_nm','blog_comment_content',
      'comment_status_cd','reg_by','reg_date'],
     [mkId('BR', replySeq++), siteId1, mkId('BL', c.postId),
@@ -430,7 +430,7 @@ apiOrders.forEach((o) => {
   if (o.shippingAddr && !addrSet.has(o.shippingAddr)) {
     addrSet.add(o.shippingAddr);
     insert('mb_member_addr',
-      ['addr_id','site_id','member_id','addr_nm','recv_nm','recv_phone',
+      ['member_addr_id','site_id','member_id','addr_nm','recv_nm','recv_phone',
        'addr','is_default','reg_by','reg_date'],
       [mkId('MA', addrSeq++), siteId1, member1,
        '배송지' + addrSeq, o.receiverNm || '홍길동',
@@ -443,7 +443,7 @@ apiOrders.forEach((o) => {
 // 기본 주소 1개는 항상 추가
 if (addrSeq === 1) {
   insert('mb_member_addr',
-    ['addr_id','site_id','member_id','addr_nm','recv_nm','recv_phone',
+    ['member_addr_id','site_id','member_id','addr_nm','recv_nm','recv_phone',
      'addr','is_default','reg_by','reg_date'],
     [mkId('MA', 1), siteId1, member1, '기본배송지', '홍길동',
      '010-1111-1111', '서울 강남구 테헤란로 123', 'Y', REG_BY, REG_DATE]
@@ -552,7 +552,7 @@ apiChats.forEach((c, i) => {
   );
   (c.messages || []).forEach((msg) => {
     insert('cm_chatt_msg',
-      ['msg_id','site_id','chatt_id','sender_cd','msg_text',
+      ['chatt_msg_id','site_id','chatt_room_id','sender_cd','msg_text',
        'send_date','read_yn','reg_by','reg_date'],
       [mkId('MSG', msgSeq++), siteId1, roomId,
        senderMap[msg.from] || 'MEMBER',

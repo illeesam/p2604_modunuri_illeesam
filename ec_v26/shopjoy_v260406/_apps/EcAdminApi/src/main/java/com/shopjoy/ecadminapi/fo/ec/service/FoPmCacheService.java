@@ -22,15 +22,9 @@ public class FoPmCacheService {
 
     /** 현재 회원의 최신 잔액 (balance_amt 기준) */
     @Transactional(readOnly = true)
-    public long getBalance(String siteId) {
-        String memberId = SecurityUtil.currentUserId();
-        List<PmCacheDto> list = mapper.selectList(Map.of(
-            "memberId", memberId,
-            "siteId",   siteId != null ? siteId : "",
-            "sort",     "reg_desc",
-            "limit",    1,
-            "offset",   0
-        ));
+    public long getBalance(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        List<PmCacheDto> list = mapper.selectList(p);
         return list.isEmpty() ? 0L : (list.get(0).getBalanceAmt() != null ? list.get(0).getBalanceAmt() : 0L);
     }
 }

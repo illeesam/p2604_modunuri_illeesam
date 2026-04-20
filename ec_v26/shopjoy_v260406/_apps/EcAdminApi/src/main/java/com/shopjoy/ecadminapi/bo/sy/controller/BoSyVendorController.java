@@ -43,7 +43,8 @@ public class BoSyVendorController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyVendor>> create(@RequestBody SyVendor body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyVendor result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

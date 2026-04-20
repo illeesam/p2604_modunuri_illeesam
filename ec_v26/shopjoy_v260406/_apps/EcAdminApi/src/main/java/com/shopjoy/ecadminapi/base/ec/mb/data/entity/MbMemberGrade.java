@@ -17,8 +17,8 @@ import lombok.Setter;
 public class MbMemberGrade {
 
     @Id
-    @Column(name = "grade_id", length = 21, nullable = false)
-    private String gradeId;
+    @Column(name = "member_grade_id", length = 21, nullable = false)
+    private String memberGradeId;
 
     @Column(name = "site_id", length = 21)
     private String siteId;

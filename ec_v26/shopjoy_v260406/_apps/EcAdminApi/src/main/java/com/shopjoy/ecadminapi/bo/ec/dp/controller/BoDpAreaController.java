@@ -50,7 +50,8 @@ public class BoDpAreaController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<DpArea>> create(@RequestBody DpArea body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        DpArea result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

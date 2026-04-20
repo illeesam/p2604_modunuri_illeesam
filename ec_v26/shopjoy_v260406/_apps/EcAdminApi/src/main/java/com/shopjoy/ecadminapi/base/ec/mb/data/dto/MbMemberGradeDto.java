@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public class MbMemberGradeDto {
 
     // ── mb_member_grade ──────────────────────────────────────────
-    private String gradeId;
+    private String memberGradeId;
     private String siteId;
     private String gradeCd;
     private String gradeNm;

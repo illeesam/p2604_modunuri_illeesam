@@ -51,7 +51,8 @@ public class BoMbMemberController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<MbMember>> create(@RequestBody MbMember body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        MbMember result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

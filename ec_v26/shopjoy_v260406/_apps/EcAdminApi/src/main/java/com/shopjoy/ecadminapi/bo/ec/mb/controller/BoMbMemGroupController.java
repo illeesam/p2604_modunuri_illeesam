@@ -50,7 +50,8 @@ public class BoMbMemGroupController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<MbMemberGroup>> create(@RequestBody MbMemberGroup body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        MbMemberGroup result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

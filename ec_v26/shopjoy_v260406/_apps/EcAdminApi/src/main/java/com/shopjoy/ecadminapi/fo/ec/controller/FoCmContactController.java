@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltn;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmContactService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,8 @@ public class FoCmContactController {
     private final FoCmContactService service;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CmBltn>> submit(@RequestBody Map<String, Object> body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.submit(body)));
+    public ResponseEntity<ApiResponse<CmBlog>> submit(@RequestBody Map<String, Object> body) {
+        CmBlog result = service.submit(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 }

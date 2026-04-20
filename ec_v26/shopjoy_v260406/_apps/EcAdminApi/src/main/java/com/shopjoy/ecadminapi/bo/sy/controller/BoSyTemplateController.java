@@ -43,7 +43,8 @@ public class BoSyTemplateController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyTemplate>> create(@RequestBody SyTemplate body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyTemplate result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

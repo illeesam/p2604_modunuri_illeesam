@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 public class CmChattMsgDto {
 
     // ── cm_chatt_msg ──────────────────────────────────────────
-    private String msgId;
+    private String chattMsgId;
     private String siteId;
-    private String chattId;
+    private String chattRoomId;
     private String senderCd;
     private String msgText;
     private String refType;

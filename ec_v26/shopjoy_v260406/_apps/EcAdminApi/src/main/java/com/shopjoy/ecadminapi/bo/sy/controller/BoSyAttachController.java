@@ -43,7 +43,8 @@ public class BoSyAttachController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyAttach>> create(@RequestBody SyAttach body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyAttach result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

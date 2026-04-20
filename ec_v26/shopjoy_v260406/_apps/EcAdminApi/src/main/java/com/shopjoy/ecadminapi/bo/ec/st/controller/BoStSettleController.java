@@ -51,7 +51,8 @@ public class BoStSettleController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<StSettle>> create(@RequestBody StSettle body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        StSettle result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

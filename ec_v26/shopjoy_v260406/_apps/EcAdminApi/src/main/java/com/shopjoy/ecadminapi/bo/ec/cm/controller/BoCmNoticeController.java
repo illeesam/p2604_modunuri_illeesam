@@ -50,7 +50,8 @@ public class BoCmNoticeController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyNotice>> create(@RequestBody SyNotice body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyNotice result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

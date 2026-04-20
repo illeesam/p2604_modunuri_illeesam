@@ -43,7 +43,8 @@ public class BoSyBbmController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyBbm>> create(@RequestBody SyBbm body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyBbm result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

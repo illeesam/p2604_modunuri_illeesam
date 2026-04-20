@@ -13,14 +13,14 @@ public class TableRegistry {
     // Full whitelist of allowed table names (prevents SQL injection)
     private static final Set<String> ALLOWED_TABLES = Set.of(
         // ec - 게시판/채팅
-        "cm_bltn_cate", "cm_bltn_file", "cm_bltn_good", "cm_bltn_reply", "cm_bltn_tag", "cm_bltn",
+        "cm_blog_cate", "cm_blog_file", "cm_blog_good", "cm_blog_reply", "cm_blog_tag", "cm_blog",
         "cm_chatt_msg", "cm_chatt_room", "cm_path",
         // ec - 전시
         "dp_area_panel", "dp_area", "dp_panel_item", "dp_panel", "dp_ui_area", "dp_ui",
         "dp_widget_lib", "dp_widget",
         // ec - 회원
         "mb_dvc_token", "mb_like", "mb_member_addr", "mb_member_grade", "mb_member_group",
-        "mb_member", "mb_sns_member",
+        "mb_member", "mb_member_sns",
         // ec - 주문
         "od_cart", "od_claim_item", "od_claim", "od_dliv_item", "od_dliv",
         "od_order_discnt", "od_order_item_discnt", "od_order_item", "od_order",
@@ -319,7 +319,7 @@ public class TableRegistry {
             .fkFields(Map.of("member_id", "mb_member"))
             .build());
 
-        register("mb_sns_member", TableConfig.builder()
+        register("mb_member_sns", TableConfig.builder()
             .pkColumn("sns_member_id")
             .requiredFields(List.of("member_id", "sns_type_cd"))
             .fkFields(Map.of("member_id", "mb_member"))
@@ -810,46 +810,46 @@ public class TableRegistry {
             .build());
 
         // ─── EC - 게시판/채팅 ─────────────────────────────────────────
-        register("cm_bltn", TableConfig.builder()
+        register("cm_blog", TableConfig.builder()
             .pkColumn("bltn_id")
             .requiredFields(List.of("bbm_id", "title"))
             .fkFields(Map.of(
                 "bbm_id", "sy_bbm",
                 "member_id", "mb_member"))
-            .childTables(List.of("cm_bltn_file", "cm_bltn_reply", "cm_bltn_tag", "cm_bltn_good"))
+            .childTables(List.of("cm_blog_file", "cm_blog_reply", "cm_blog_tag", "cm_blog_good"))
             .searchFields(List.of("title", "content"))
             .build());
 
-        register("cm_bltn_cate", TableConfig.builder()
+        register("cm_blog_cate", TableConfig.builder()
             .pkColumn("bltn_cate_id")
             .requiredFields(List.of("bbm_id", "cate_nm"))
             .fkFields(Map.of("bbm_id", "sy_bbm"))
             .build());
 
-        register("cm_bltn_file", TableConfig.builder()
+        register("cm_blog_file", TableConfig.builder()
             .pkColumn("bltn_file_id")
             .requiredFields(List.of("bltn_id", "file_url"))
-            .fkFields(Map.of("bltn_id", "cm_bltn"))
+            .fkFields(Map.of("bltn_id", "cm_blog"))
             .build());
 
-        register("cm_bltn_good", TableConfig.builder()
+        register("cm_blog_good", TableConfig.builder()
             .pkColumn("bltn_good_id")
             .requiredFields(List.of("bltn_id", "member_id"))
             .fkFields(Map.of(
-                "bltn_id", "cm_bltn",
+                "bltn_id", "cm_blog",
                 "member_id", "mb_member"))
             .build());
 
-        register("cm_bltn_reply", TableConfig.builder()
+        register("cm_blog_reply", TableConfig.builder()
             .pkColumn("bltn_reply_id")
             .requiredFields(List.of("bltn_id", "reply_content"))
-            .fkFields(Map.of("bltn_id", "cm_bltn"))
+            .fkFields(Map.of("bltn_id", "cm_blog"))
             .build());
 
-        register("cm_bltn_tag", TableConfig.builder()
+        register("cm_blog_tag", TableConfig.builder()
             .pkColumn("bltn_tag_id")
             .requiredFields(List.of("bltn_id", "tag_nm"))
-            .fkFields(Map.of("bltn_id", "cm_bltn"))
+            .fkFields(Map.of("bltn_id", "cm_blog"))
             .build());
 
         register("cm_chatt_room", TableConfig.builder()

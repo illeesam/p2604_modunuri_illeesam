@@ -21,12 +21,9 @@ public class FoPmCouponService {
     private final PmCouponIssueMapper mapper;
 
     @Transactional(readOnly = true)
-    public List<PmCouponIssueDto> getAvailableCoupons(String siteId) {
-        String memberId = SecurityUtil.currentUserId();
-        return mapper.selectList(Map.of(
-            "memberId", memberId,
-            "useYn",    "N",
-            "siteId",   siteId != null ? siteId : ""
-        ));
+    public List<PmCouponIssueDto> getAvailableCoupons(Map<String, Object> p) {
+        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("useYn", "N");
+        return mapper.selectList(p);
     }
 }

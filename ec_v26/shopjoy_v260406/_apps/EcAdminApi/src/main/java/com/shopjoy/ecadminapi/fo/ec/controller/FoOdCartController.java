@@ -29,14 +29,15 @@ public class FoOdCartController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdCartDto>>> myCart(
-            @RequestParam(required = false) String siteId) {
-        List<OdCartDto> result = service.getMyCart(siteId);
+            @RequestParam Map<String, Object> p) {
+        List<OdCartDto> result = service.getMyCart(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<OdCart>> add(@RequestBody OdCart entity) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.addToCart(entity)));
+        OdCart result = service.addToCart(entity);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PatchMapping("/{cartId}")

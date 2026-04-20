@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,23 +28,15 @@ public class FoPmEventController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmEventDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String eventTypeCd,
-            @RequestParam(required = false) String sort) {
-        List<PmEventDto> result = service.getList(buildParam(siteId, kw, eventTypeCd, sort));
+            @RequestParam Map<String, Object> p) {
+        List<PmEventDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmEventDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String eventTypeCd,
-            @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        PageResult<PmEventDto> result = service.getPageData(buildParam(siteId, kw, eventTypeCd, sort), pageNo, pageSize);
+            @RequestParam Map<String, Object> p) {
+        PageResult<PmEventDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
@@ -53,14 +44,5 @@ public class FoPmEventController {
     public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable String eventId) {
         PmEventDto result = service.getById(eventId);
         return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    private Map<String, Object> buildParam(String siteId, String kw, String eventTypeCd, String sort) {
-        Map<String, Object> p = new HashMap<>();
-        if (siteId      != null) p.put("siteId",       siteId);
-        if (kw          != null) p.put("kw",            kw);
-        if (eventTypeCd != null) p.put("eventTypeCd",   eventTypeCd);
-        if (sort        != null) p.put("sort",          sort);
-        return p;
     }
 }

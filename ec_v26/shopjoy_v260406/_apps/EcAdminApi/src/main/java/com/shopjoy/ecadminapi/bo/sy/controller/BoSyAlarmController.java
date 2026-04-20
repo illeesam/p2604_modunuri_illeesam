@@ -49,7 +49,8 @@ public class BoSyAlarmController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<SyAlarm>> create(@RequestBody SyAlarm body) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));
+        SyAlarm result = service.create(body);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{id}")

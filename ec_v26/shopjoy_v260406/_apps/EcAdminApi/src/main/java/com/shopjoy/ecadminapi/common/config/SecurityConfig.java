@@ -89,6 +89,9 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                // static 리소스 — 인증 없이 허용
+                .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll()
+
                 // /api/base/** — GET 누구나, 변경(POST/PUT/PATCH/DELETE) USER만
                 .requestMatchers(HttpMethod.GET,    "/api/base/**").permitAll()
                 .requestMatchers(HttpMethod.POST,   "/api/base/**").access(USER_ONLY)

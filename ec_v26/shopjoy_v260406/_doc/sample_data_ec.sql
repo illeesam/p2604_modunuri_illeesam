@@ -9,19 +9,19 @@ SET search_path TO shopjoy_2604;
 -- ================================================================
 -- 1. mb_member_grade — 회원 등급
 -- ================================================================
-INSERT INTO shopjoy_2604.mb_member_grade (grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G001', 'SITE000001', 'BASIC', '일반', 1, 0, 1, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
-INSERT INTO shopjoy_2604.mb_member_grade (grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G002', 'SITE000001', 'SILVER', '실버', 2, 100000, 2, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
-INSERT INTO shopjoy_2604.mb_member_grade (grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G003', 'SITE000001', 'GOLD', '골드', 3, 500000, 3, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
-INSERT INTO shopjoy_2604.mb_member_grade (grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G004', 'SITE000001', 'VIP', 'VIP', 4, 1000000, 5, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
-INSERT INTO shopjoy_2604.mb_member_grade (grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G005', 'SITE000001', 'VVIP', 'VVIP', 5, 3000000, 7, 'N', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_grade (member_grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G001', 'SITE000001', 'BASIC', '일반', 1, 0, 1, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_grade (member_grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G002', 'SITE000001', 'SILVER', '실버', 2, 100000, 2, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_grade (member_grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G003', 'SITE000001', 'GOLD', '골드', 3, 500000, 3, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_grade (member_grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G004', 'SITE000001', 'VIP', 'VIP', 4, 1000000, 5, 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_grade (member_grade_id, site_id, grade_cd, grade_nm, grade_rank, min_purchase_amt, save_rate, use_yn, reg_by, reg_date) VALUES ('G005', 'SITE000001', 'VVIP', 'VVIP', 5, 3000000, 7, 'N', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
 
 -- ================================================================
 -- 2. mb_member_group — 회원 그룹
 -- ================================================================
-INSERT INTO shopjoy_2604.mb_member_group (group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP001', 'SITE000001', '우수고객', '구매실적 우수 고객', 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
-INSERT INTO shopjoy_2604.mb_member_group (group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP002', 'SITE000001', 'VIP초청', 'VIP 이벤트 초청 대상자', 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
-INSERT INTO shopjoy_2604.mb_member_group (group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP003', 'SITE000001', '휴면예정', '90일 미접속 예정', 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
-INSERT INTO shopjoy_2604.mb_member_group (group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP004', 'SITE000001', '블랙리스트', '결제분쟁 이력 고객', 'N', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_group (member_group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP001', 'SITE000001', '우수고객', '구매실적 우수 고객', 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_group (member_group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP002', 'SITE000001', 'VIP초청', 'VIP 이벤트 초청 대상자', 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_group (member_group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP003', 'SITE000001', '휴면예정', '90일 미접속 예정', 'Y', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
+INSERT INTO shopjoy_2604.mb_member_group (member_group_id, site_id, group_nm, group_memo, use_yn, reg_by, reg_date) VALUES ('GRP004', 'SITE000001', '블랙리스트', '결제분쟁 이력 고객', 'N', 'SYSTEM', '2026-04-20 00:00:00') ON CONFLICT DO NOTHING;
 
 -- ================================================================
 -- 3. pd_category — 상품 카테고리
