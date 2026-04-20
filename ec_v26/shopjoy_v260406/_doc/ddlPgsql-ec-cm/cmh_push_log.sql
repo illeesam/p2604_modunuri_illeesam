@@ -4,11 +4,11 @@
 -- 용도: 이메일, SMS, 카카오 알림톡, 앱 푸시 통합 관리
 -- ============================================================
 CREATE TABLE cmh_push_log (
-    log_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
     channel_cd      VARCHAR(20)     NOT NULL,              -- 코드: PUSH_CHANNEL (EMAIL/SMS/KAKAO/APP)
-    template_id     VARCHAR(20),                           -- sy_template.template_id
-    member_id       VARCHAR(20),                           -- 대상 회원 (시스템 발송 시 NULL)
+    template_id     VARCHAR(21),                           -- sy_template.template_id
+    member_id       VARCHAR(21),                           -- 대상 회원 (시스템 발송 시 NULL)
     recv_addr       VARCHAR(200)    NOT NULL,              -- 수신처 (이메일, 전화번호, 토큰 등)
     push_log_title  VARCHAR(200),                          -- 발송 제목
     push_log_content TEXT,                                  -- 발송 내용
@@ -16,7 +16,7 @@ CREATE TABLE cmh_push_log (
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/EVENT 등)
-    ref_id          VARCHAR(20),                           -- 연관ID (order_id 등)
+    ref_id          VARCHAR(21),                           -- 연관ID (order_id 등)
     reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(20),

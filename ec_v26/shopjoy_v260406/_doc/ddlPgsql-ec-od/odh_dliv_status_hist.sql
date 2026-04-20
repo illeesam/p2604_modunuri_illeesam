@@ -1,13 +1,13 @@
 -- 배송 상태 이력
 CREATE TABLE odh_dliv_status_hist (
-    dliv_status_hist_id    VARCHAR(20)     NOT NULL,
-    site_id                VARCHAR(20),                            -- sy_site.site_id
-    dliv_id                VARCHAR(20)     NOT NULL,               -- od_dliv.dliv_id
-    order_id               VARCHAR(20),                            -- od_order.order_id (조회 편의)
+    dliv_status_hist_id    VARCHAR(21)     NOT NULL,
+    site_id                VARCHAR(21),                            -- sy_site.site_id
+    dliv_id                VARCHAR(21)     NOT NULL,               -- od_dliv.dliv_id
+    order_id               VARCHAR(21),                            -- od_order.order_id (조회 편의)
     dliv_status_cd_before  VARCHAR(20),                            -- 변경 전 배송상태 (코드: DLIV_STATUS)
     dliv_status_cd         VARCHAR(20),                            -- 변경 후 배송상태 (코드: DLIV_STATUS)
     status_reason          VARCHAR(300),                           -- 상태 변경 사유
-    chg_user_id            VARCHAR(20),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id            VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date               TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                   VARCHAR(300),
     reg_by                 VARCHAR(20),

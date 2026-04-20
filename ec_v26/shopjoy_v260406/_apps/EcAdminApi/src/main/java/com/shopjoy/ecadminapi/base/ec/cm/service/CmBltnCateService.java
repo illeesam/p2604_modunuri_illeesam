@@ -1,8 +1,8 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.dto.CmBltnCateDto;
-import com.shopjoy.ecadminapi.base.ec.cm.dto.CmBltnCateReq;
-import com.shopjoy.ecadminapi.base.ec.cm.entity.CmBltnCate;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBltnCateDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.vo.CmBltnCateReq;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltnCate;
 import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnCateMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnCateRepository;
 import com.shopjoy.ecadminapi.common.exception.BusinessException;
@@ -32,28 +32,32 @@ public class CmBltnCateService {
 
     @Transactional(readOnly = true)
     public CmBltnCateDto getById(String id) {
-        return mapper.selectById(id);
+        CmBltnCateDto result = mapper.selectById(id);
+        return result;
     }
 
     @Transactional(readOnly = true)
     public List<CmBltnCateDto> getList(Map<String, Object> p) {
-        return mapper.selectList(p);
+        List<CmBltnCateDto> result = mapper.selectList(p);
+        return result;
     }
 
     @Transactional(readOnly = true)
-    public PageResult<CmBltnCateDto> getPageList(Map<String, Object> p, int pageNo, int pageSize) {
+    public PageResult<CmBltnCateDto> getPageData(Map<String, Object> p, int pageNo, int pageSize) {
         p = new HashMap<>(p);
         int offset = (pageNo - 1) * pageSize;
         p.put("limit", pageSize);
         p.put("offset", offset);
-        long total = mapper.selectPageCount(p);
-        List<CmBltnCateDto> content = mapper.selectPageList(p);
-        return PageResult.of(content, total, pageNo, pageSize);
+        long totalCount = mapper.selectPageCount(p);
+        List<CmBltnCateDto> pageList = mapper.selectPageList(p);
+        PageResult<CmBltnCateDto> result = PageResult.of(pageList, totalCount, pageNo, pageSize, p);
+        return result;
     }
 
     @Transactional
     public int update(CmBltnCate entity) {
-        return mapper.updateSelective(entity);
+        int result = mapper.updateSelective(entity);
+        return result;
     }
 
     // ── JPA 저장/삭제 ────────────────────────────────────────────
@@ -63,7 +67,8 @@ public class CmBltnCateService {
         entity.setBlogCateId(generateId());
         entity.setRegBy(SecurityUtil.currentUserId());
         entity.setRegDate(LocalDateTime.now());
-        return repository.save(entity);
+        CmBltnCate result = repository.save(entity);
+        return result;
     }
 
     @Transactional
@@ -73,7 +78,8 @@ public class CmBltnCateService {
         }
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        CmBltnCate result = repository.save(entity);
+        return result;
     }
 
     @Transactional
@@ -88,15 +94,17 @@ public class CmBltnCateService {
 
     @Transactional
     public CmBltnCate saveByRowStatus(CmBltnCateReq req) {
-        return doSaveByRowStatus(req);
+        CmBltnCate result = doSaveByRowStatus(req);
+        return result;
     }
 
+    // D → U → I 순서로 처리: 삭제 후 수정, 마지막에 신규 등록하여 유니크 제약 충돌 방지
     @Transactional
     public List<CmBltnCate> saveListByRowStatus(List<CmBltnCateReq> list) {
         List<CmBltnCate> result = new ArrayList<>();
-        for (CmBltnCateReq req : list) {
-            result.add(doSaveByRowStatus(req));
-        }
+        for (CmBltnCateReq req : list.stream().filter(r -> "D".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
+        for (CmBltnCateReq req : list.stream().filter(r -> "U".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
+        for (CmBltnCateReq req : list.stream().filter(r -> "I".equals(r.getRowStatus())).toList()) result.add(doSaveByRowStatus(req));
         return result;
     }
 
@@ -118,9 +126,23 @@ public class CmBltnCateService {
         };
     }
 
+    /**
+     * ID 생성 규칙: {테이블prefix}{yyMMddHHmmss}{rand4}
+     *
+     * 테이블 prefix 산출 방법 (도메인 세그먼트 제외, 대문자):
+     *   1. 첫 번째 세그먼트(도메인: cm/od/sy 등) 제외
+     *   2. 두 번째 세그먼트(엔티티명) 앞 2자
+     *   3. 세 번째 이후 세그먼트의 첫 글자
+     *
+     * 예시:
+     *   cm_bltn_cate       → BL(bltn) + C(cate)            = BLC
+     *   cm_order_item_hist → OR(order) + I(item) + H(hist)  = ORIH
+     *   od_order           → OR(order)                      = OR
+     *   od_order_item      → OR(order) + I(item)            = ORI
+     */
     private String generateId() {
         String ts   = LocalDateTime.now().format(ID_FMT);
         String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "cmc" + ts + rand;
+        return "BLC" + ts + rand;
     }
 }

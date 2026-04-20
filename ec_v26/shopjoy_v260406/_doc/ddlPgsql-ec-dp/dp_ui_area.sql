@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_ui_area (
-    ui_area_id          VARCHAR(20)     NOT NULL,
-    ui_id               VARCHAR(20)     NOT NULL,              -- FK: dp_ui.ui_id
-    area_id             VARCHAR(20)     NOT NULL,              -- FK: dp_area.area_id
+    ui_area_id          VARCHAR(21)     NOT NULL,
+    ui_id               VARCHAR(21)     NOT NULL,              -- FK: dp_ui.ui_id
+    area_id             VARCHAR(21)     NOT NULL,              -- FK: dp_area.area_id
     area_sort_ord       INTEGER         DEFAULT 0,              -- 영역정렬순서
     visibility_targets  VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
     disp_env            VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)

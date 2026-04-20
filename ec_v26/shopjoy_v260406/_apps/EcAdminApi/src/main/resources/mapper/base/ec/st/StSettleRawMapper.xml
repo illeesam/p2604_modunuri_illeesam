@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.st.StSettleRawMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleRawMapper">
 
     <!-- 정산 원천 데이터 조회 조건 -->
     <sql id="stSettleRawCond">
@@ -21,7 +21,7 @@
     </sql>
 
     <!-- 정산 원천 데이터 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleRawDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto">
         SELECT
             r.*,
             ste.site_nm AS site_nm,
@@ -69,7 +69,7 @@
     </select>
 
     <!-- 정산 원천 데이터 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleRawDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto">
         SELECT
             r.*,
             ste.site_nm AS site_nm,
@@ -127,7 +127,7 @@
     </select>
 
     <!-- 정산 원천 데이터 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleRawDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto">
         SELECT
             r.*,
             ste.site_nm AS site_nm,
@@ -192,7 +192,7 @@
     </select>
 
     <!-- 정산 원천 데이터 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.st.entity.StSettleRaw">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleRaw">
         UPDATE st_settle_raw
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

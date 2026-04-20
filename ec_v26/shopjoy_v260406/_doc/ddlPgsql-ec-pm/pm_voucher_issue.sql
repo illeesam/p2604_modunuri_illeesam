@@ -3,15 +3,15 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_voucher_issue (
-    voucher_issue_id    VARCHAR(20)     NOT NULL,
-    voucher_id          VARCHAR(20)     NOT NULL,               -- pm_voucher.voucher_id
-    site_id             VARCHAR(20),
-    member_id           VARCHAR(20),                            -- 발급 대상 회원 (NULL이면 미할당)
+    voucher_issue_id    VARCHAR(21)     NOT NULL,
+    voucher_id          VARCHAR(21)     NOT NULL,               -- pm_voucher.voucher_id
+    site_id             VARCHAR(21),
+    member_id           VARCHAR(21),                            -- 발급 대상 회원 (NULL이면 미할당)
     voucher_code        VARCHAR(50)     NOT NULL,               -- 발급된 고유 코드
     issue_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     expire_date         TIMESTAMP,                              -- 만료일시
     use_date            TIMESTAMP,                              -- 사용일시
-    order_id            VARCHAR(20),                            -- 사용된 주문 (od_order.order_id)
+    order_id            VARCHAR(21),                            -- 사용된 주문 (od_order.order_id)
     use_amt             BIGINT,                                 -- 실제 사용 할인금액
     voucher_issue_status_cd VARCHAR(20) DEFAULT 'ISSUED',       -- 코드: VOUCHER_ISSUE_STATUS (ISSUED:발급/USED:사용/EXPIRED:만료/CANCELLED:취소)
     voucher_issue_status_cd_before VARCHAR(20),

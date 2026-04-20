@@ -3,10 +3,10 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_review (
-    review_id       VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    prod_id         VARCHAR(20)     NOT NULL,              -- pd_prod.prod_id
-    member_id       VARCHAR(20)     NOT NULL,              -- mb_member.member_id
+    review_id       VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,              -- pd_prod.prod_id
+    member_id       VARCHAR(21)     NOT NULL,              -- mb_member.member_id
     review_title    VARCHAR(200)    NOT NULL,
     review_content  TEXT            NOT NULL,
     rating          NUMERIC(3,1)    NOT NULL,              -- 1.0 ~ 5.0

@@ -3,10 +3,10 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_plan_item (
-    plan_item_id        VARCHAR(20)     NOT NULL,
-    plan_id             VARCHAR(20)     NOT NULL,               -- pm_plan.plan_id
-    site_id             VARCHAR(20),
-    prod_id             VARCHAR(20)     NOT NULL,               -- pd_prod.prod_id
+    plan_item_id        VARCHAR(21)     NOT NULL,
+    plan_id             VARCHAR(21)     NOT NULL,               -- pm_plan.plan_id
+    site_id             VARCHAR(21),
+    prod_id             VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
     sort_ord            INTEGER         DEFAULT 0,
     plan_item_memo      VARCHAR(500),                           -- 항목 메모 (특가/한정수량 등)
     reg_by              VARCHAR(20),

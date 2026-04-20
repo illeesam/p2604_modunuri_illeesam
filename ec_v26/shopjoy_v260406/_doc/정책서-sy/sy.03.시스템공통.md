@@ -12,10 +12,43 @@
 ## 주요 정책
 
 ### 1. ID 생성 규칙
-- **포맷**: YYMMDDhhmmss + random(4자리)
-  - 예: 260416153042abcd
-- **길이**: 16자리 (VARCHAR)
+
+#### 포맷
+`{테이블prefix}{yyMMddHHmmss}{rand4자리}`
+
+- **prefix**: 테이블명에서 추출한 2~4자 소문자 이니셜
+- **timestamp**: `yyMMddHHmmss` (12자리)
+- **random**: 0000~9999 (4자리, 0-padded)
+- **전체 길이**: 18~20자 (VARCHAR)
 - **용도**: 모든 엔티티의 Primary Key
+
+#### prefix 산출 규칙
+
+1. **첫 번째 세그먼트(도메인: cm/od/sy 등) 제외**
+2. **두 번째 세그먼트(엔티티명) 앞 2자** 사용
+3. **세 번째 이후 각 세그먼트의 첫 글자** 추가 (최대 prefix 4자)
+
+| 테이블명 | prefix 산출 | prefix |
+|---|---|---|
+| `cm_bltn_cate` | BL(bltn) + C(cate) | `BLC` |
+| `cm_bltn` | BL(bltn) | `BL` |
+| `od_order` | OR(order) | `OR` |
+| `od_order_item` | OR(order) + I(item) | `ORI` |
+| `cm_order_item_hist` | OR(order) + I(item) + H(hist) | `ORIH` |
+| `pd_prod_sku` | PR(prod) + S(sku) | `PRS` |
+| `sy_user` | US(user) | `US` |
+
+#### 예시
+
+```
+BLC2604201530421234   ← cm_bltn_cate 의 ID
+ORIH2604201530425678  ← cm_order_item_hist 의 ID
+```
+
+#### 구현 참조
+
+- `AutoRestService.generateId(table)` — 테이블명을 받아 prefix 자동 산출
+- `CmBltnCateService.generateId()` — prefix 하드코딩(`blc`)으로 동일 규칙 적용
 
 ### 2. 코드 관리
 - **포맷**: 대문자 영문 + 언더스코어 조합

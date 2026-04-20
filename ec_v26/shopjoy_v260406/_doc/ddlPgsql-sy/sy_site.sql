@@ -3,7 +3,7 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_site (
-    site_id         VARCHAR(20)     NOT NULL,
+    site_id         VARCHAR(21)     NOT NULL,
     site_code       VARCHAR(50)     NOT NULL,
     site_type_cd    VARCHAR(20),                            -- 코드: SITE_TYPE (EC/ADMIN/API)
     site_nm         VARCHAR(100)    NOT NULL,

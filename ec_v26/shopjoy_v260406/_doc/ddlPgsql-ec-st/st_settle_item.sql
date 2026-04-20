@@ -3,13 +3,13 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE st_settle_item (
-    settle_item_id      VARCHAR(20)     NOT NULL,
-    settle_id           VARCHAR(20)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(20),
-    order_id            VARCHAR(20)     NOT NULL,               -- od_order.order_id
-    order_item_id       VARCHAR(20)     NOT NULL,               -- od_order_item.order_item_id
-    vendor_id           VARCHAR(20)     NOT NULL,
-    prod_id             VARCHAR(20),
+    settle_item_id      VARCHAR(21)     NOT NULL,
+    settle_id           VARCHAR(21)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(21),
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id
+    order_item_id       VARCHAR(21)     NOT NULL,               -- od_order_item.order_item_id
+    vendor_id           VARCHAR(21)     NOT NULL,
+    prod_id             VARCHAR(21),
     settle_item_type_cd VARCHAR(20)     DEFAULT 'SALE',         -- 코드: SETTLE_ITEM_TYPE (SALE:판매/CANCEL:취소/RETURN:반품)
     order_date          TIMESTAMP,
     order_qty           INTEGER         DEFAULT 1,
@@ -21,6 +21,8 @@ CREATE TABLE st_settle_item (
     settle_item_amt     BIGINT          DEFAULT 0,              -- item_price - discnt_amt - commission_amt
     reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(20),
+    upd_date        TIMESTAMP,
     PRIMARY KEY (settle_item_id),
     UNIQUE (settle_id, order_item_id)
 );
@@ -44,6 +46,8 @@ COMMENT ON COLUMN st_settle_item.commission_amt     IS '수수료금액';
 COMMENT ON COLUMN st_settle_item.settle_item_amt    IS '항목 정산금액';
 COMMENT ON COLUMN st_settle_item.reg_by             IS '등록자';
 COMMENT ON COLUMN st_settle_item.reg_date           IS '등록일';
+COMMENT ON COLUMN st_settle_item.upd_by   IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN st_settle_item.upd_date IS '수정일';
 
 CREATE INDEX idx_st_settle_item_settle ON st_settle_item (settle_id);
 CREATE INDEX idx_st_settle_item_order  ON st_settle_item (order_id);

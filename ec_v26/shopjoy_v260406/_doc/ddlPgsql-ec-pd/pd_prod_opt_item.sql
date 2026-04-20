@@ -1,12 +1,12 @@
 CREATE TABLE pd_prod_opt_item (
-    opt_item_id         VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    opt_id              VARCHAR(20)     NOT NULL,               -- pd_prod_opt.opt_id
+    opt_item_id         VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    opt_id              VARCHAR(21)     NOT NULL,               -- pd_prod_opt.opt_id
     opt_type_cd         VARCHAR(20)     NOT NULL,               -- 코드: OPT_TYPE (COLOR/SIZE/MATERIAL/CUSTOM)
     opt_nm              VARCHAR(100)    NOT NULL,               -- 옵션값 표시명 (예: 빨강, M)
     opt_val             VARCHAR(50),                            -- 실제 저장값 (opt_val_code_id 선택 시 codeValue 자동 채움, 직접입력 가능)
     opt_val_code_id     VARCHAR(50),                            -- OPT_VAL 공통코드 참조ID (sy_code.code_id, NULL이면 직접입력)
-    parent_opt_item_id  VARCHAR(20),                            -- 상위 옵션값ID (2단 옵션에서 1단 값 참조, pd_prod_opt_item.opt_item_id)
+    parent_opt_item_id  VARCHAR(21),                            -- 상위 옵션값ID (2단 옵션에서 1단 값 참조, pd_prod_opt_item.opt_item_id)
     sort_ord            INTEGER         DEFAULT 0,
     use_yn              CHAR(1)         DEFAULT 'Y',
     reg_by              VARCHAR(20),

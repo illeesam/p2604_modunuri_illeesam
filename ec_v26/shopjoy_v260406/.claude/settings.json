@@ -9,7 +9,19 @@
       "Read(//c/Users/illee/OneDrive/Desktop/**)",
       "Read(//c/_pjt_github/p2604_modunuri_illeesam/ec_v26/shopjoy_v260406/**)",
       "Read(//c/Users/illee/.claude/projects/c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406/756b42de-a4bf-4ecf-8129-89a75f1290a0/tool-results/**)",
-      "Bash(gradle compileJava)"
+      "Bash(gradle compileJava)",
+      "Bash(python3 -c \"import psycopg2; print\\('ok'\\)\")",
+      "Bash(xargs grep *)",
+      "Bash(gradle --version)",
+      "Bash(java -version)",
+      "Bash(./gradlew bootRun)",
+      "Bash(powershell -command \"Get-Process -Id 6084 | Select-Object Name, Id, MainWindowTitle\")",
+      "Bash(powershell -command \"Stop-Process -Id 6084 -Force\")",
+      "Bash(./gradlew bootRun --args='--spring.profiles.active=dev')",
+      "Bash(netstat -ano)",
+      "Bash(powershell -command \"Stop-Process -Id 14844 -Force; Start-Sleep 2; Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue\")",
+      "Bash(powershell -command \"Stop-Process -Id 9172 -Force\")",
+      "Bash(./gradlew test *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\illee\\.claude\\projects\\c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406\\memory"

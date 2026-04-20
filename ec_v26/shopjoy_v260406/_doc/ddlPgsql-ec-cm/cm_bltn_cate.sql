@@ -4,10 +4,10 @@
 -- ============================================================
 
 CREATE TABLE cm_bltn_cate (
-    blog_cate_id    VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    blog_cate_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     blog_cate_nm    VARCHAR(100)    NOT NULL,              -- 카테고리명
-    parent_blog_cate_id VARCHAR(20),                        -- 상위 카테고리ID (계층형)
+    parent_blog_cate_id VARCHAR(21),                        -- 상위 카테고리ID (계층형)
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
     reg_by          VARCHAR(20),

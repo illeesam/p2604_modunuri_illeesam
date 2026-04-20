@@ -10,6 +10,15 @@ import org.apache.ibatis.session.RowBounds;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * MyBatis 쿼리 실행 인터셉터 (local/dev 전용).
+ *
+ * query/update 실행 후 Mapper 메서드명과 결과 건수를 DEBUG 로그로 출력한다.
+ * P6SpyFormatter와 연동해 SQL 헤더에 "MbMemberMapper.selectPageList [12ms]" 형태로 표시.
+ *
+ * ThreadLocal로 현재 실행 중인 Mapper 정보를 P6SpyFormatter에 전달한다.
+ * 요청이 끝나면 반드시 remove()로 정리하여 스레드 풀 오염을 방지한다.
+ */
 @Slf4j
 @Intercepts({
     @Signature(type = Executor.class, method = "query",
@@ -20,8 +29,11 @@ import java.util.Properties;
 public class MyBatisQueryInterceptor implements Interceptor {
 
     private static final int PREVIEW_ROWS = 3;
+
+    /** P6SpyFormatter가 읽는 현재 Mapper 정보 (스레드 로컬) */
     private static final ThreadLocal<String> MAPPER_INFO = new ThreadLocal<>();
 
+    /** P6SpyFormatter에서 호출 — 현재 실행 중인 Mapper.메서드명 반환 */
     public static String getCurrentMapperInfo() {
         return MAPPER_INFO.get();
     }
@@ -31,8 +43,7 @@ public class MyBatisQueryInterceptor implements Interceptor {
         MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
         String fullId = ms.getId();
 
-        // e.g. com.shopjoy.ecadminapi.mapper.mb.MbMemberMapper.selectPageList
-        //  → MbMemberMapper.selectPageList
+        // com.shopjoy.ecadminapi.mapper.mb.MbMemberMapper.selectPageList → MbMemberMapper.selectPageList
         int lastDot = fullId.lastIndexOf('.');
         int prevDot = fullId.lastIndexOf('.', lastDot - 1);
         String shortId = prevDot >= 0 ? fullId.substring(prevDot + 1) : fullId;
@@ -43,10 +54,11 @@ public class MyBatisQueryInterceptor implements Interceptor {
             logResult(result);
             return result;
         } finally {
-            MAPPER_INFO.remove();
+            MAPPER_INFO.remove(); // 스레드 풀 재사용 시 이전 값 유출 방지
         }
     }
 
+    /** 결과가 List인 경우에만 건수 및 상위 N건 미리보기를 로깅한다. */
     private void logResult(Object result) {
         if (!(result instanceof List<?> list) || list.isEmpty()) return;
 

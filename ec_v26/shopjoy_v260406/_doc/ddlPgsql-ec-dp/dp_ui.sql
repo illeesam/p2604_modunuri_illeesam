@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_ui (
-    ui_id           VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    ui_id           VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     ui_cd           VARCHAR(50)     NOT NULL,               -- 예: MOBILE_MAIN, PC_MAIN, EVENT_PAGE
     ui_nm           VARCHAR(100)    NOT NULL,
     ui_desc         VARCHAR(300),

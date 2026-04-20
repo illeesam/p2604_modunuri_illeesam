@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pm.PmCacheMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCacheMapper">
 
     <!-- 캐시(충전금) 조회 조건 -->
     <sql id="pmCacheCond">
@@ -18,7 +18,7 @@
     </sql>
 
     <!-- 캐시(충전금) 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCacheDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto">
         SELECT
             c.*,
             ste.site_nm AS site_nm,
@@ -30,7 +30,7 @@
     </select>
 
     <!-- 캐시(충전금) 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCacheDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto">
         SELECT
             c.*,
             ste.site_nm AS site_nm,
@@ -52,7 +52,7 @@
     </select>
 
     <!-- 캐시(충전금) 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmCacheDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto">
         SELECT
             c.*,
             ste.site_nm AS site_nm,
@@ -81,7 +81,7 @@
     </select>
 
     <!-- 캐시(충전금) 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pm.entity.PmCache">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache">
         UPDATE pm_cache
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

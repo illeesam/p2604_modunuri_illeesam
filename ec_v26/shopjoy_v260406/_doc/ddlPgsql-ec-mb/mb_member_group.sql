@@ -1,7 +1,7 @@
 -- ============================================================
 CREATE TABLE mb_member_group (
-    group_id        VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    group_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     group_nm        VARCHAR(100)    NOT NULL,
     group_memo      TEXT,
     use_yn          VARCHAR(1)      DEFAULT 'Y',
@@ -25,8 +25,8 @@ COMMENT ON COLUMN mb_member_group.upd_date   IS '수정일시';
 
 -- 회원-그룹 매핑
 CREATE TABLE mb_member_group_map (
-    group_id        VARCHAR(20)     NOT NULL,               -- mb_member_group.group_id
-    member_id       VARCHAR(20)     NOT NULL,               -- mb_member.member_id
+    group_id        VARCHAR(21)     NOT NULL,               -- mb_member_group.group_id
+    member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (group_id, member_id)

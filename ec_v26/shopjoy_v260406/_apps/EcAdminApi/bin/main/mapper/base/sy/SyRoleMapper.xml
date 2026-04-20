@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyRoleMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyRoleMapper">
 
     <sql id="syRoleCond">
         <where>
@@ -16,7 +16,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
         SELECT
             r.*,
             ste.site_nm AS site_nm,
@@ -27,7 +27,7 @@
         WHERE r.role_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
         SELECT
             r.*,
             ste.site_nm AS site_nm,
@@ -48,7 +48,7 @@
         <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
         SELECT
             r.*,
             ste.site_nm AS site_nm,
@@ -75,7 +75,7 @@
             <include refid="syRoleCond"/>
     </select>
 
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyRole">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyRole">
         UPDATE sy_role
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

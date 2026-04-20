@@ -1,8 +1,8 @@
 -- 배치 실행 이력
 CREATE TABLE syh_batch_hist (
-    batch_hist_id   VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    batch_id        VARCHAR(20)     NOT NULL,
+    batch_hist_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    batch_id        VARCHAR(21)     NOT NULL,
     batch_code      VARCHAR(50),
     batch_nm        VARCHAR(100),
     run_at          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

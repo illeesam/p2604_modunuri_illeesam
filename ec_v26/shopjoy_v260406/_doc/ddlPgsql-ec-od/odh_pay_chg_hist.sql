@@ -5,10 +5,10 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE odh_pay_chg_hist (
-    pay_chg_hist_id     VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    pay_id              VARCHAR(20)     NOT NULL,               -- od_pay.
-    order_id            VARCHAR(20)     NOT NULL,               -- od_order.
+    pay_chg_hist_id     VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    pay_id              VARCHAR(21)     NOT NULL,               -- od_pay.
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.
     pay_status_cd_before VARCHAR(20),                           -- 변경 전 결제상태 (PAY_STATUS)
     pay_status_cd_after VARCHAR(20),                            -- 변경 후 결제상태 (PAY_STATUS)
     chg_type_cd         VARCHAR(30)     NOT NULL,               -- 코드: PAYMENT_CHG_TYPE
@@ -18,7 +18,7 @@ CREATE TABLE odh_pay_chg_hist (
     pg_response         TEXT,                                   -- PG 응답 데이터 (JSON)
     refund_amt          BIGINT,                                 -- 환불 금액 (환불 시만)
     refund_pg_tid       VARCHAR(100),                           -- 환불 거래 ID (환불 시만)
-    chg_user_id         VARCHAR(20),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id         VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                VARCHAR(300),
     reg_by              VARCHAR(20),

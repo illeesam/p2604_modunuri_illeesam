@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pm.PmEventMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventMapper">
 
     <!-- 이벤트 조회 조건 -->
     <sql id="pmEventCond">
@@ -20,7 +20,7 @@
     </sql>
 
     <!-- 이벤트 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmEventDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto">
         SELECT
             e.*,
             ste.site_nm AS site_nm,
@@ -36,7 +36,7 @@
     </select>
 
     <!-- 이벤트 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmEventDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto">
         SELECT
             e.*,
             ste.site_nm AS site_nm,
@@ -62,7 +62,7 @@
     </select>
 
     <!-- 이벤트 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmEventDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto">
         SELECT
             e.*,
             ste.site_nm AS site_nm,
@@ -95,7 +95,7 @@
     </select>
 
     <!-- 이벤트 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pm.entity.PmEvent">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent">
         UPDATE pm_event
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

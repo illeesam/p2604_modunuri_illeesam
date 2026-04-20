@@ -4,8 +4,8 @@
 -- 용도: PG사, 물류사, 카카오, 네이버 등 외부 API 호출 추적
 -- ============================================================
 CREATE TABLE syh_api_log (
-    log_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
     api_type_cd     VARCHAR(50)     NOT NULL,              -- 연동유형코드 (PG/LOGISTICS/KAKAO/NAVER/SMS 등)
     api_nm          VARCHAR(100),                          -- API명 (예: 결제승인, 운송장등록)
     method_cd       VARCHAR(10),                           -- HTTP 메서드 (GET/POST/PUT/DELETE)
@@ -17,7 +17,7 @@ CREATE TABLE syh_api_log (
     error_msg       VARCHAR(500),                          -- 오류 메시지
     elapsed_ms      INTEGER,                               -- 응답시간 (ms)
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/DLIV/PUSH 등)
-    ref_id          VARCHAR(20),                           -- 연관ID
+    ref_id          VARCHAR(21),                           -- 연관ID
     call_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

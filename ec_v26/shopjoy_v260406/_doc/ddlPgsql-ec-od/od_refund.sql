@@ -4,10 +4,10 @@
 -- 환불 총액 및 상태 관리 — 수단별 내역은 od_refund_method
 -- ============================================================
 CREATE TABLE od_refund (
-    refund_id           VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    order_id            VARCHAR(20)     NOT NULL,               -- od_order.order_id
-    claim_id            VARCHAR(20),                            -- od_claim.claim_id (클레임 환불 시)
+    refund_id           VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id
+    claim_id            VARCHAR(21),                            -- od_claim.claim_id (클레임 환불 시)
     -- ── 환불 구분 ──
     refund_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: REFUND_TYPE
                                                                 --   CANCEL   : 주문취소 환불

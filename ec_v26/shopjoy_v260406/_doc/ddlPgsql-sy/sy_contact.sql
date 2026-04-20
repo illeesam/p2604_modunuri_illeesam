@@ -3,17 +3,17 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_contact (
-    contact_id      VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    member_id       VARCHAR(20),
+    contact_id      VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21),
     member_nm       VARCHAR(50),
     category_cd     VARCHAR(30),                            -- 코드: 문의유형
     contact_title   VARCHAR(200)    NOT NULL,
     contact_content TEXT            NOT NULL,
-    attach_grp_id   VARCHAR(20),
+    attach_grp_id   VARCHAR(21),
     contact_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CONTACT_STATUS
     contact_answer  TEXT,
-    answer_user_id       VARCHAR(20),
+    answer_user_id       VARCHAR(21),
     answer_date     TIMESTAMP,
     contact_date    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(20),

@@ -4,10 +4,10 @@
 -- 우선순위: 카드(1) → 캐쉬(2) → 적립금(3)
 -- ============================================================
 CREATE TABLE od_refund_method (
-    refund_method_id    VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    refund_id           VARCHAR(20)     NOT NULL,               -- od_refund.refund_id
-    order_id            VARCHAR(20)     NOT NULL,               -- od_order.order_id (조회 편의)
+    refund_method_id    VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    refund_id           VARCHAR(21)     NOT NULL,               -- od_refund.refund_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id (조회 편의)
     -- ── 수단 정보 ──
     pay_method_cd       VARCHAR(20)     NOT NULL,               -- 코드: PAY_METHOD (BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
                                                                 --   CACHE : 캐쉬(충전금) 차감분 환불
@@ -21,7 +21,7 @@ CREATE TABLE od_refund_method (
     refund_status_cd_before VARCHAR(20),
     refund_date         TIMESTAMP,                              -- 해당 수단 환불 완료일시
     -- ── PG/내부 처리 참조 ──
-    pay_id              VARCHAR(20),                            -- od_pay.pay_id (원 결제 레코드 참조)
+    pay_id              VARCHAR(21),                            -- od_pay.pay_id (원 결제 레코드 참조)
     pg_refund_id        VARCHAR(100),                           -- PG 환불 거래ID
     pg_response         TEXT,                                   -- PG 환불 응답 JSON
     -- ── 기본 ──

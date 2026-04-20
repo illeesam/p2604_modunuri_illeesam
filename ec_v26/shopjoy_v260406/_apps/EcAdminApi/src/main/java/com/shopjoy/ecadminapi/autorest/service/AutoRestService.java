@@ -2,9 +2,9 @@ package com.shopjoy.ecadminapi.autorest.service;
 
 import com.shopjoy.ecadminapi.autorest.comn.TableConfig;
 import com.shopjoy.ecadminapi.autorest.comn.TableRegistry;
-import com.shopjoy.ecadminapi.autorest.dto.QueryParam;
-import com.shopjoy.ecadminapi.autorest.dto.RowMap;
-import com.shopjoy.ecadminapi.autorest.dto.SearchRequest;
+import com.shopjoy.ecadminapi.autorest.data.dto.QueryParam;
+import com.shopjoy.ecadminapi.autorest.data.dto.RowMap;
+import com.shopjoy.ecadminapi.autorest.data.vo.SearchReq;
 import com.shopjoy.ecadminapi.autorest.mapper.AutoRestMapper;
 import com.shopjoy.ecadminapi.common.exception.BusinessException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
@@ -39,25 +39,25 @@ public class AutoRestService {
 
     /* ── 목록 (전체, 최대 1000건) ── */
     @Transactional(readOnly = true)
-    public List<RowMap> list(String table, SearchRequest search) {
+    public List<RowMap> list(String table, SearchReq search) {
         QueryParam p = buildParams(table, search, 1000, 0);
         return mapper.selectList(p);
     }
 
     /* ── 페이지 ── */
     @Transactional(readOnly = true)
-    public PageResult<RowMap> page(String table, SearchRequest search) {
+    public PageResult<RowMap> page(String table, SearchReq search) {
         int size = Math.min(search.getPageSize(), 500);
         int offset = (search.getPageNo() - 1) * search.getPageSize();
         QueryParam p = buildParams(table, search, size, offset);
         long total = mapper.selectCount(p);
         List<RowMap> rows = mapper.selectPage(p);
-        return PageResult.of(rows, total, search.getPageNo(), search.getPageSize());
+        return PageResult.of(rows, total, search.getPageNo(), search.getPageSize(), search);
     }
 
     /* ── 건수 ── */
     @Transactional(readOnly = true)
-    public long count(String table, SearchRequest search) {
+    public long count(String table, SearchReq search) {
         QueryParam p = buildParams(table, search, 0, 0);
         return mapper.selectCount(p);
     }
@@ -175,9 +175,49 @@ public class AutoRestService {
         return cnt;
     }
 
+    /* ── _row_status 단건 저장 ── */
+    @Transactional
+    public RowMap saveByRowStatus(String table, RowMap body) {
+        return doSaveByRowStatus(table, body);
+    }
+
+    // D → U → I 순서로 처리: 삭제 후 수정, 마지막에 신규 등록하여 유니크 제약 충돌 방지
+    @Transactional
+    public List<RowMap> saveListByRowStatus(String table, List<RowMap> list) {
+        List<RowMap> result = new ArrayList<>();
+        for (RowMap body : list.stream().filter(b -> "D".equals(b.get("_row_status"))).toList()) result.add(doSaveByRowStatus(table, body));
+        for (RowMap body : list.stream().filter(b -> "U".equals(b.get("_row_status"))).toList()) result.add(doSaveByRowStatus(table, body));
+        for (RowMap body : list.stream().filter(b -> "I".equals(b.get("_row_status"))).toList()) result.add(doSaveByRowStatus(table, body));
+        return result;
+    }
+
+    private RowMap doSaveByRowStatus(String table, RowMap body) {
+        String rowStatus = (String) body.remove("_row_status");
+        if (rowStatus == null) throw new BusinessException("_row_status 값이 없습니다.");
+
+        TableConfig cfg = registry.getConfig(table);
+        String pkCol = cfg.getPkColumn();
+
+        return switch (rowStatus) {
+            case "I" -> create(table, body);
+            case "U" -> {
+                String id = (String) body.get(pkCol);
+                if (id == null || id.isBlank()) throw new BusinessException(pkCol + " 값이 없습니다.");
+                yield update(table, id, body);
+            }
+            case "D" -> {
+                String id = (String) body.get(pkCol);
+                if (id == null || id.isBlank()) throw new BusinessException(pkCol + " 값이 없습니다.");
+                delete(table, id);
+                yield null;
+            }
+            default -> throw new BusinessException("올바르지 않은 _row_status: " + rowStatus);
+        };
+    }
+
     /* ── Private helpers ── */
 
-    private QueryParam buildParams(String table, SearchRequest search, int limit, int offset) {
+    private QueryParam buildParams(String table, SearchReq search, int limit, int offset) {
         TableConfig cfg = registry.getConfig(table);
         return QueryParam.builder()
                 .schema(SCHEMA)

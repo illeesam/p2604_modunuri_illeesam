@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdOrderMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderMapper">
 
     <!-- ============================================================
          목록 조회
@@ -28,7 +28,7 @@
     </sql>
 
     <!-- 주문 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
             o.*,
             m.member_email,  m.member_phone   AS member_phone_origin,
@@ -61,7 +61,7 @@
     </select>
 
     <!-- 주문 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
             o.*,
             m.member_email,
@@ -100,7 +100,7 @@
     </select>
 
     <!-- 주문 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
             o.*,
             m.member_email,
@@ -147,7 +147,7 @@
     </select>
 
     <!-- 주문 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdOrder">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder">
         UPDATE od_order
         <set>
             <if test="orderStatusCd != null">order_status_cd = #{orderStatusCd},</if>
@@ -167,7 +167,7 @@
          ================================================================ -->
 
     <!-- 주문번호로 주문 아이템 목록 조회 -->
-    <select id="selectItemsByOrderId" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderDto">
+    <select id="selectItemsByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
             oi.*,
             p.thumbnail_url,
@@ -190,7 +190,7 @@
     </select>
 
     <!-- 주문 등록 -->
-    <insert id="insert" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdOrder">
+    <insert id="insert" parameterType="com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder">
         INSERT INTO od_order
             (order_id, site_id, member_id, member_nm, orderer_email,
              total_amt, pay_amt, order_status_cd, pay_method_cd,

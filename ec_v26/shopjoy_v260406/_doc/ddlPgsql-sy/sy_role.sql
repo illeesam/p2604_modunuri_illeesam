@@ -3,11 +3,11 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_role (
-    role_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    role_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     role_code       VARCHAR(50)     NOT NULL,
     role_nm         VARCHAR(100)    NOT NULL,
-    parent_role_id       VARCHAR(20),
+    parent_role_id       VARCHAR(21),
     role_type_cd    VARCHAR(20),                            -- 코드: ROLE_TYPE (SYSTEM/CUSTOM)
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',

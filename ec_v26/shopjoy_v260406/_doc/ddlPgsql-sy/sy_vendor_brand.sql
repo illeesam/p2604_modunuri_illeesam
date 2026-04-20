@@ -5,10 +5,10 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_vendor_brand (
-    vendor_brand_id VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    vendor_id       VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
-    brand_id        VARCHAR(20)     NOT NULL,               -- sy_brand.brand_id
+    vendor_brand_id VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    vendor_id       VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
+    brand_id        VARCHAR(21)     NOT NULL,               -- sy_brand.brand_id
     is_main         CHAR(1)         DEFAULT 'N',            -- 대표 브랜드 여부 Y/N
     contract_cd     VARCHAR(20),                            -- 코드: VENDOR_BRAND_CONTRACT (직매입/위탁/제휴 등)
     start_date      DATE,                                   -- 계약 시작일

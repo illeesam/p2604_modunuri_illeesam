@@ -1,7 +1,7 @@
 -- ============================================================
 CREATE TABLE mb_member (
-    member_id       VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     member_email    VARCHAR(100)    NOT NULL,
     member_password VARCHAR(255)    NOT NULL,
     member_nm       VARCHAR(50)     NOT NULL,

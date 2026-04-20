@@ -2,10 +2,10 @@
 -- attach_id → sy_attach.attach_id (파일 실체: url, file_nm, file_size 등은 sy_attach에서 조회)
 -- thumb_url은 동영상 썸네일처럼 별도 생성 파일이므로 유지
 CREATE TABLE pd_review_attach (
-    review_attach_id        VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
-    review_id       VARCHAR(20)     NOT NULL,              -- pd_review.
-    attach_id       VARCHAR(20)     NOT NULL,              -- sy_attach.attach_id
+    review_attach_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    review_id       VARCHAR(21)     NOT NULL,              -- pd_review.
+    attach_id       VARCHAR(21)     NOT NULL,              -- sy_attach.attach_id
     media_type_cd   VARCHAR(20)     DEFAULT 'IMAGE',       -- 코드: MEDIA_TYPE (IMAGE/VIDEO)
     thumb_url       VARCHAR(500),                          -- 동영상 썸네일 URL (이미지는 sy_attach.url 사용)
     sort_ord        INTEGER         DEFAULT 0,

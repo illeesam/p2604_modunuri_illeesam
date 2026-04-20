@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.mb.mapper.MbDeviceTokenMapper">
+
+    <sql id="mbDeviceTokenCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND t.site_id = #{p.siteId}</if>
+            <if test="p.memberId != null and p.memberId != ''">AND t.member_id = #{p.memberId}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND t.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND t.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
+        SELECT
+            t.*,
+            mem.member_nm AS member_nm
+        FROM mb_device_token t
+            LEFT JOIN mb_member mem ON mem.member_id = t.member_id
+        WHERE t.device_token_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
+        SELECT
+            t.*,
+            mem.member_nm AS member_nm
+        FROM mb_device_token t
+            LEFT JOIN mb_member mem ON mem.member_id = t.member_id
+            <include refid="mbDeviceTokenCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY t.device_token_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY t.device_token_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <otherwise>ORDER BY t.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
+        SELECT
+            t.*,
+            mem.member_nm AS member_nm
+        FROM mb_device_token t
+            LEFT JOIN mb_member mem ON mem.member_id = t.member_id
+            <include refid="mbDeviceTokenCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY t.device_token_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY t.device_token_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <otherwise>ORDER BY t.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM mb_device_token t
+            <include refid="mbDeviceTokenCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken">
+        UPDATE mb_device_token
+        <set>
+            <if test="deviceToken != null">device_token = #{deviceToken},</if>
+            <if test="memberId != null">member_id = #{memberId},</if>
+            <if test="osType != null">os_type = #{osType},</if>
+            <if test="benefitNotiYn != null">benefit_noti_yn = #{benefitNotiYn},</if>
+            <if test="alimReadDate != null">alim_read_date = #{alimReadDate},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE device_token_id = #{deviceTokenId}
+    </update>
+
+</mapper>

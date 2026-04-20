@@ -4,10 +4,10 @@
 -- 우선순위: vendor_id+category_id > vendor_id > site_id(전체기준)
 -- ============================================================
 CREATE TABLE st_settle_config (
-    settle_config_id    VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20)     NOT NULL,               -- sy_site.site_id
-    vendor_id           VARCHAR(20),                            -- sy_vendor.vendor_id (NULL이면 전체)
-    category_id         VARCHAR(20),                            -- pd_category.category_id (NULL이면 전체)
+    settle_config_id    VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21)     NOT NULL,               -- sy_site.site_id
+    vendor_id           VARCHAR(21),                            -- sy_vendor.vendor_id (NULL이면 전체)
+    category_id         VARCHAR(21),                            -- pd_category.category_id (NULL이면 전체)
     settle_cycle_cd     VARCHAR(20)     DEFAULT 'MONTHLY',      -- 코드: SETTLE_CYCLE (DAILY/WEEKLY/MONTHLY)
     settle_day          INTEGER         DEFAULT 10,             -- 정산일 (월 N일)
     commission_rate     NUMERIC(5,2)    DEFAULT 0,              -- 수수료율 (%)

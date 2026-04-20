@@ -3,11 +3,11 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE mb_like (
-    like_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    member_id       VARCHAR(20)     NOT NULL,               -- mb_member.member_id
+    like_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     target_type_cd  VARCHAR(20)     NOT NULL,               -- 코드: LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
-    target_id       VARCHAR(20)     NOT NULL,               -- 대상ID (pd_prod.prod_id 등)
+    target_id       VARCHAR(21)     NOT NULL,               -- 대상ID (pd_prod.prod_id 등)
     reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(20),

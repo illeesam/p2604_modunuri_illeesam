@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_tag (
-    tag_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    tag_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     tag_nm          VARCHAR(100)    NOT NULL,
     tag_desc        VARCHAR(300),
     use_count       INTEGER         DEFAULT 0,              -- 사용 빈도

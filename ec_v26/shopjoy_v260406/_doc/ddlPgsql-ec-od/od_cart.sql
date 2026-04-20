@@ -4,14 +4,14 @@
 -- 설계: 헤더 없이 행 단위로 관리. member_id + prod_id + 옵션 조합이 PK 역할.
 -- ============================================================
 CREATE TABLE od_cart (
-    cart_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    member_id       VARCHAR(20),                           -- mb_member.member_id (비회원 NULL)
+    cart_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21),                           -- mb_member.member_id (비회원 NULL)
     session_key     VARCHAR(100),                          -- 비회원 세션키
-    prod_id         VARCHAR(20)     NOT NULL,              -- pd_prod.prod_id
-    sku_id          VARCHAR(20),                           -- pd_prod_sku.sku_id
-    opt_item_id_1   VARCHAR(20),                           -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상)
-    opt_item_id_2   VARCHAR(20),                           -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈)
+    prod_id         VARCHAR(21)     NOT NULL,              -- pd_prod.prod_id
+    sku_id          VARCHAR(21),                           -- pd_prod_sku.sku_id
+    opt_item_id_1   VARCHAR(21),                           -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상)
+    opt_item_id_2   VARCHAR(21),                           -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈)
     unit_price      BIGINT          DEFAULT 0,             -- 단가 (담을 시점)
     order_qty       INTEGER         DEFAULT 1,
     item_price      BIGINT          DEFAULT 0,             -- 소계 (unit_price × order_qty)

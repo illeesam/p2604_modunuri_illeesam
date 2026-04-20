@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE st_settle (
-    settle_id           VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20)     NOT NULL,
-    vendor_id           VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
+    settle_id           VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21)     NOT NULL,
+    vendor_id           VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
     settle_ym           CHAR(6)         NOT NULL,               -- 정산년월 (YYYYMM)
     settle_start_date   TIMESTAMP       NOT NULL,               -- 정산 기준시작일
     settle_end_date     TIMESTAMP       NOT NULL,               -- 정산 기준종료일

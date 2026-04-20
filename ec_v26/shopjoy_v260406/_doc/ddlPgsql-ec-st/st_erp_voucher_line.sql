@@ -4,8 +4,8 @@
 -- 전표 1건당 차변/대변 복수 라인 (대차 균형 필수)
 -- ============================================================
 CREATE TABLE st_erp_voucher_line (
-    erp_voucher_line_id     VARCHAR(20)     NOT NULL,
-    erp_voucher_id          VARCHAR(20)     NOT NULL,               -- st_erp_voucher.erp_voucher_id
+    erp_voucher_line_id     VARCHAR(21)     NOT NULL,
+    erp_voucher_id          VARCHAR(21)     NOT NULL,               -- st_erp_voucher.erp_voucher_id
     line_no                 INTEGER         NOT NULL,               -- 라인 순번
 
     -- ── 계정 정보
@@ -20,11 +20,13 @@ CREATE TABLE st_erp_voucher_line (
 
     -- ── 참조
     ref_type_cd             VARCHAR(20),                            -- 참조유형 (SETTLE/ORDER/CLAIM/PAY/ADJ)
-    ref_id                  VARCHAR(20),                            -- 참조ID (settle_id / order_id 등)
+    ref_id                  VARCHAR(21),                            -- 참조ID (settle_id / order_id 등)
     line_memo               VARCHAR(300),                           -- 라인 적요
 
     reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(20),
+    upd_date        TIMESTAMP,
 
     PRIMARY KEY (erp_voucher_line_id),
     UNIQUE (erp_voucher_id, line_no)
@@ -45,6 +47,8 @@ COMMENT ON COLUMN st_erp_voucher_line.ref_id              IS '참조ID (settle_i
 COMMENT ON COLUMN st_erp_voucher_line.line_memo           IS '라인 적요';
 COMMENT ON COLUMN st_erp_voucher_line.reg_by              IS '등록자';
 COMMENT ON COLUMN st_erp_voucher_line.reg_date            IS '등록일';
+COMMENT ON COLUMN st_erp_voucher_line.upd_by   IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN st_erp_voucher_line.upd_date IS '수정일';
 
 CREATE INDEX idx_st_erp_voucher_line_voucher ON st_erp_voucher_line (erp_voucher_id);
 CREATE INDEX idx_st_erp_voucher_line_account ON st_erp_voucher_line (account_cd);

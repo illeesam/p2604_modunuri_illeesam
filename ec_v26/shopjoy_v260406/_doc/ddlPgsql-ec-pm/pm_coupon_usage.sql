@@ -3,15 +3,15 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_coupon_usage (
-    usage_id            VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    coupon_id           VARCHAR(20)     NOT NULL,               -- pm_coupon.coupon_id
+    usage_id            VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    coupon_id           VARCHAR(21)     NOT NULL,               -- pm_coupon.coupon_id
     coupon_code         VARCHAR(50),                            -- 쿠폰코드 스냅샷
     coupon_nm           VARCHAR(100),                           -- 쿠폰명 스냅샷
-    member_id           VARCHAR(20),                            -- mb_member.member_id
-    order_id            VARCHAR(20),                            -- od_order.order_id
-    order_item_id       VARCHAR(20),                            -- od_order_item.order_item_id (상품별 쿠폰 적용 시)
-    prod_id             VARCHAR(20),                            -- pd_prod.prod_id (쿠폰 적용 상품)
+    member_id           VARCHAR(21),                            -- mb_member.member_id
+    order_id            VARCHAR(21),                            -- od_order.order_id
+    order_item_id       VARCHAR(21),                            -- od_order_item.order_item_id (상품별 쿠폰 적용 시)
+    prod_id             VARCHAR(21),                            -- pd_prod.prod_id (쿠폰 적용 상품)
     discount_type_cd    VARCHAR(20),                            -- 할인유형 (RATE/FIXED)
     discount_value      INTEGER         DEFAULT 0,              -- 할인값 (율 또는 금액)
     discount_amt        BIGINT          DEFAULT 0,              -- 실할인금액

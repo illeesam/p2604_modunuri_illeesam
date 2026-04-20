@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE mb_member_addr (
-    addr_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
-    member_id       VARCHAR(20)     NOT NULL,              -- mb_member.member_id
+    addr_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    member_id       VARCHAR(21)     NOT NULL,              -- mb_member.member_id
     addr_nm         VARCHAR(50),                           -- 배송지명 (예: 집, 회사)
     recv_nm         VARCHAR(50)     NOT NULL,              -- 수령자명
     recv_phone      VARCHAR(20)     NOT NULL,              -- 수령자 연락처

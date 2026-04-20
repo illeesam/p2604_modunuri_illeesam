@@ -4,9 +4,9 @@
 -- 보안 주의: access_token / refresh_token 은 SHA-256 해시값 저장 권장
 -- ============================================================
 CREATE TABLE syh_user_login_log (
-    log_id              VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    user_id             VARCHAR(20),                           -- sy_user.user_id (실패 시 NULL 가능)
+    log_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    user_id             VARCHAR(21),                           -- sy_user.user_id (실패 시 NULL 가능)
     login_id            VARCHAR(100),                          -- 입력한 로그인ID
     login_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     result_cd           VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: LOGIN_RESULT (SUCCESS/FAIL_PWD/FAIL_LOCKED/FAIL_NOT_FOUND)

@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_batch (
-    batch_id        VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    batch_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     batch_code      VARCHAR(50)     NOT NULL,
     batch_nm        VARCHAR(100)    NOT NULL,
     batch_desc      TEXT,

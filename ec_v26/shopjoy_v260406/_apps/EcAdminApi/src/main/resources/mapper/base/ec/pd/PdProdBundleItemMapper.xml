@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdProdBundleItemMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdBundleItemMapper">
 
     <!-- 묶음상품 구성 조회 조건 -->
     <sql id="pdProdBundleItemCond">
@@ -14,7 +14,7 @@
     </sql>
 
     <!-- 묶음상품 구성 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdBundleItemDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto">
         SELECT
             i.*,
             ste.site_nm AS site_nm,
@@ -28,7 +28,7 @@
     </select>
 
     <!-- 묶음상품 구성 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdBundleItemDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto">
         SELECT
             i.*,
             ste.site_nm AS site_nm,
@@ -50,7 +50,7 @@
     </select>
 
     <!-- 묶음상품 구성 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdBundleItemDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdBundleItemDto">
         SELECT
             i.*,
             ste.site_nm AS site_nm,
@@ -79,7 +79,7 @@
     </select>
 
     <!-- 묶음상품 구성 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pd.entity.PdProdBundleItem">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdBundleItem">
         UPDATE pd_prod_bundle_item
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

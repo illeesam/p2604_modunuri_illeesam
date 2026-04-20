@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_coupon (
-    coupon_id           VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
+    coupon_id           VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     coupon_cd           VARCHAR(50)     NOT NULL,               -- 쿠폰코드 (중복 방지)
     coupon_nm           VARCHAR(100)    NOT NULL,
     coupon_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_TYPE (RATE/FIXED)

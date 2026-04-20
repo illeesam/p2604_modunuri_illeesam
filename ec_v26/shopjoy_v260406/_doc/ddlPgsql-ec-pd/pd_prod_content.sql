@@ -1,8 +1,8 @@
 -- 상품 상세 컨텐츠 (HTML 에디터로 관리)
 CREATE TABLE pd_prod_content (
-    prod_content_id VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    prod_id         VARCHAR(20)     NOT NULL,              -- FK: pd_prod.prod_id
+    prod_content_id VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,              -- FK: pd_prod.prod_id
     content_type_cd VARCHAR(50)     NOT NULL,              -- 코드: PROD_CONTENT_TYPE (상세설명, 사용설명, 배송정보, AS정보, 반품정책 등)
     content_html    TEXT,                                   -- HTML 에디터 컨텐츠
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서

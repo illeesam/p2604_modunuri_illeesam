@@ -1,9 +1,9 @@
 CREATE TABLE pd_prod_sku (
-    sku_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    prod_id         VARCHAR(20)     NOT NULL,
-    opt_item_id_1   VARCHAR(20),                            -- 옵션1 값ID (예: 색상-블랙)
-    opt_item_id_2   VARCHAR(20),                            -- 옵션2 값ID (예: 사이즈-M)
+    sku_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,
+    opt_item_id_1   VARCHAR(21),                            -- 옵션1 값ID (예: 색상-블랙)
+    opt_item_id_2   VARCHAR(21),                            -- 옵션2 값ID (예: 사이즈-M)
     sku_code        VARCHAR(50),                            -- 자체 SKU 코드
     add_price       BIGINT          DEFAULT 0,              -- 옵션 추가금액
     prod_opt_stock  INTEGER         DEFAULT 0,              -- 옵션 조합별 재고

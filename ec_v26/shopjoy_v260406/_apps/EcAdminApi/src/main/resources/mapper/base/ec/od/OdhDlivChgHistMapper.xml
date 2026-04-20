@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdhDlivChgHistMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.od.mapper.OdhDlivChgHistMapper">
 
     <!-- 배송 변경 이력 조회 조건 -->
     <sql id="odhDlivChgHistCond">
@@ -14,7 +14,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdhDlivChgHistDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivChgHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,
@@ -25,7 +25,7 @@
         WHERE h.dliv_chg_hist_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdhDlivChgHistDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivChgHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,
@@ -44,7 +44,7 @@
         <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdhDlivChgHistDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivChgHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,

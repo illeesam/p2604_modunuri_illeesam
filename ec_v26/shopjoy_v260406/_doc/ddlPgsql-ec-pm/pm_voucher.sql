@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_voucher (
-    voucher_id          VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),
+    voucher_id          VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),
     voucher_nm          VARCHAR(100)    NOT NULL,               -- 상품권명
     voucher_type_cd     VARCHAR(20)     NOT NULL,               -- 코드: VOUCHER_TYPE (AMOUNT:금액권/RATE:정률권)
     voucher_value       NUMERIC(10,2)   NOT NULL,               -- 권면금액 (금액이면 원, 정률이면 %)

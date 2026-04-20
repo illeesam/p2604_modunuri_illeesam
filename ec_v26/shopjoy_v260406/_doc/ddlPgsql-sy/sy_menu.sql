@@ -3,11 +3,11 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_menu (
-    menu_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    menu_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     menu_code       VARCHAR(50)     NOT NULL,
     menu_nm         VARCHAR(100)    NOT NULL,
-    parent_menu_id       VARCHAR(20),
+    parent_menu_id       VARCHAR(21),
     menu_url        VARCHAR(200),
     menu_type_cd    VARCHAR(20)     DEFAULT 'PAGE',         -- 코드: MENU_TYPE (PAGE/FOLDER/LINK)
     icon_class      VARCHAR(100),

@@ -1,8 +1,8 @@
 -- 블로그 태그
 CREATE TABLE cm_bltn_tag (
-    blog_tag_id     VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
-    blog_id         VARCHAR(20)     NOT NULL,              -- cm_bltn.
+    blog_tag_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    blog_id         VARCHAR(21)     NOT NULL,              -- cm_bltn.
     tag_nm          VARCHAR(50)     NOT NULL,
     sort_ord        INTEGER         DEFAULT 0,
     reg_by          VARCHAR(20),

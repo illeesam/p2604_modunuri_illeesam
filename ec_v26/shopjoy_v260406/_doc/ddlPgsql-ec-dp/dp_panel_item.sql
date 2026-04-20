@@ -4,9 +4,9 @@
 -- 참조 방식: dp_widget_lib 참조 OR 직접 콘텐츠 생성
 -- ============================================================
 CREATE TABLE dp_panel_item (
-    panel_item_id           VARCHAR(20)     NOT NULL,
-    panel_id                VARCHAR(20)     NOT NULL,              -- FK: dp_panel.panel_id
-    widget_lib_id           VARCHAR(20),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
+    panel_item_id           VARCHAR(21)     NOT NULL,
+    panel_id                VARCHAR(21)     NOT NULL,              -- FK: dp_panel.panel_id
+    widget_lib_id           VARCHAR(21),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
     widget_type_cd          VARCHAR(30),                            -- 위젯유형 (코드: WIDGET_TYPE)
     widget_title            VARCHAR(200),                           -- 위젯 타이틀
     widget_content          TEXT,                                   -- 위젯 내용 (HTML 에디터)

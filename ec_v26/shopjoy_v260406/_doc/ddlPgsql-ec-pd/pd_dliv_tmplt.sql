@@ -1,8 +1,8 @@
 -- ============================================================
 CREATE TABLE pd_dliv_tmplt (
-    dliv_tmplt_id       VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    vendor_id           VARCHAR(20),                            -- sy_vendor.vendor_id
+    dliv_tmplt_id       VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    vendor_id           VARCHAR(21),                            -- sy_vendor.vendor_id
     dliv_tmplt_nm       VARCHAR(100)    NOT NULL,
     dliv_method_cd      VARCHAR(20),                            -- 코드: DLIV_METHOD (COURIER/DIRECT/PICKUP)
     dliv_pay_type_cd    VARCHAR(20),                            -- 코드: DLIV_PAY_TYPE (PREPAY/COD)

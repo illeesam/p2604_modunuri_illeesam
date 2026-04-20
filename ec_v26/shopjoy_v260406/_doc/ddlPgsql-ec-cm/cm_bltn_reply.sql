@@ -1,9 +1,9 @@
 CREATE TABLE cm_bltn_reply (
-    comment_id      VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
-    blog_id         VARCHAR(20)     NOT NULL,              -- cm_bltn.
-    parent_comment_id VARCHAR(20),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
-    writer_id       VARCHAR(20),                            -- 작성자ID (mb_member.member_id)
+    comment_id      VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    blog_id         VARCHAR(21)     NOT NULL,              -- cm_bltn.
+    parent_comment_id VARCHAR(21),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
+    writer_id       VARCHAR(21),                            -- 작성자ID (mb_member.member_id)
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     blog_comment_content TEXT            NOT NULL,
     comment_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)

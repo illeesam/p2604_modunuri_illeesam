@@ -1,11 +1,11 @@
 -- 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송)
 CREATE TABLE od_dliv (
-    dliv_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    order_id        VARCHAR(20)     NOT NULL,
-    claim_id        VARCHAR(20),                            -- od_claim. (클레임 배송일 때만)
-    vendor_id       VARCHAR(20),                            -- 분리출고 시 담당 업체
-    member_id       VARCHAR(20),
+    dliv_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    order_id        VARCHAR(21)     NOT NULL,
+    claim_id        VARCHAR(21),                            -- od_claim. (클레임 배송일 때만)
+    vendor_id       VARCHAR(21),                            -- 분리출고 시 담당 업체
+    member_id       VARCHAR(21),
     member_nm       VARCHAR(50),
     -- ── 수령지 ──
     recv_nm         VARCHAR(50),
@@ -35,7 +35,7 @@ CREATE TABLE od_dliv (
     shipping_discount_amt BIGINT     DEFAULT 0,             -- 배송비 쿠폰할인금액
     shipping_fee_type_cd VARCHAR(20),                       -- 코드: SHIPPING_FEE_TYPE (OUTBOUND/RETURN/INBOUND/EXCHANGE)
     -- ── 교환 참조 ──
-    parent_dliv_id  VARCHAR(20),                            -- 교환 시 원본 배송 참조
+    parent_dliv_id  VARCHAR(21),                            -- 교환 시 원본 배송 참조
     reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(20),
@@ -47,9 +47,9 @@ CREATE TABLE od_dliv (
     appr_target_cd      VARCHAR(30),                        -- 코드: APPROVAL_TARGET
     appr_target_nm      VARCHAR(200),
     appr_reason         VARCHAR(500),
-    appr_req_user_id    VARCHAR(20),
+    appr_req_user_id    VARCHAR(21),
     appr_req_date       TIMESTAMP,
-    appr_aprv_user_id   VARCHAR(20),
+    appr_aprv_user_id   VARCHAR(21),
     appr_aprv_date      TIMESTAMP,
     PRIMARY KEY (dliv_id)
 );

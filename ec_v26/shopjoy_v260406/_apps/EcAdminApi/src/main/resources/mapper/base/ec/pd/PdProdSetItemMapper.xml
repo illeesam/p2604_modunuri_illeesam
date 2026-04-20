@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdProdSetItemMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pd.mapper.PdProdSetItemMapper">
 
     <!-- 세트상품 구성 조회 조건 -->
     <sql id="pdProdSetItemCond">
@@ -17,7 +17,7 @@
     </sql>
 
     <!-- 세트상품 구성 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdSetItemDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSetItemDto">
         SELECT
             i.*,
             ste.site_nm AS site_nm,
@@ -31,7 +31,7 @@
     </select>
 
     <!-- 세트상품 구성 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdSetItemDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSetItemDto">
         SELECT
             i.*,
             ste.site_nm AS site_nm,
@@ -55,7 +55,7 @@
     </select>
 
     <!-- 세트상품 구성 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdSetItemDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSetItemDto">
         SELECT
             i.*,
             ste.site_nm AS site_nm,
@@ -86,7 +86,7 @@
     </select>
 
     <!-- 세트상품 구성 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pd.entity.PdProdSetItem">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSetItem">
         UPDATE pd_prod_set_item
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

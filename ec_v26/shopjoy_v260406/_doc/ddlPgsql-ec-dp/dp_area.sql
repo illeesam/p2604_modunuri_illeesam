@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_area (
-    area_id         VARCHAR(20)     NOT NULL,
-    ui_id           VARCHAR(20)     NOT NULL,              -- FK: dp_ui.ui_id
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    area_id         VARCHAR(21)     NOT NULL,
+    ui_id           VARCHAR(21)     NOT NULL,              -- FK: dp_ui.ui_id
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     area_cd         VARCHAR(50)     NOT NULL,               -- 예: MAIN_TOP, MAIN_BANNER, SIDEBAR_MID
     area_nm         VARCHAR(100)    NOT NULL,
     area_type_cd    VARCHAR(30),                            -- FULL/SIDEBAR/POPUP 등

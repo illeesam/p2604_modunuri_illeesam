@@ -3,15 +3,15 @@
 --   chg_type 예: PAY_METHOD / RECV_INFO / AMOUNT / MEMO / COUPON / CACHE / APPROVAL
 -- ============================================================
 CREATE TABLE odh_order_chg_hist (
-    order_chg_hist_id  VARCHAR(20)     NOT NULL,
-    site_id            VARCHAR(20),                            -- sy_site.site_id
-    order_id           VARCHAR(20)     NOT NULL,
+    order_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id            VARCHAR(21),                            -- sy_site.site_id
+    order_id           VARCHAR(21)     NOT NULL,
     chg_type_cd        VARCHAR(30)     NOT NULL,               -- 변경유형코드 (PAY_METHOD/RECV_INFO/AMOUNT/MEMO/COUPON/CACHE/APPROVAL)
     chg_field          VARCHAR(50),                            -- 변경 필드명 (예: pay_method_cd, recv_addr)
     before_val         TEXT,                                   -- 변경전값
     after_val          TEXT,                                   -- 변경후값
     chg_reason         VARCHAR(300),                           -- 변경사유
-    chg_user_id             VARCHAR(20),                            -- 처리자 (sy_user.user_id)
+    chg_user_id             VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by             VARCHAR(20),
     reg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

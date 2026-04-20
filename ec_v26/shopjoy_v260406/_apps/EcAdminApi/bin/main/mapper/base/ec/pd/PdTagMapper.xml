@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdTagMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pd.mapper.PdTagMapper">
 
     <!-- 태그 조회 조건 -->
     <sql id="pdTagCond">
@@ -17,7 +17,7 @@
     </sql>
 
     <!-- 태그 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdTagDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto">
         SELECT
             t.*,
             ste.site_nm AS site_nm
@@ -27,7 +27,7 @@
     </select>
 
     <!-- 태그 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdTagDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto">
         SELECT
             t.*,
             ste.site_nm AS site_nm
@@ -47,7 +47,7 @@
     </select>
 
     <!-- 태그 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdTagDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto">
         SELECT
             t.*,
             ste.site_nm AS site_nm
@@ -74,7 +74,7 @@
     </select>
 
     <!-- 태그 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pd.entity.PdTag">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag">
         UPDATE pd_tag
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

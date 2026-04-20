@@ -1,7 +1,7 @@
 -- ============================================================
 CREATE TABLE sy_voc (
-    voc_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    voc_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     voc_master_cd   VARCHAR(20)     NOT NULL,               -- VOC 마스터 분류 코드 (코드: VOC_MASTER)
     voc_detail_cd   VARCHAR(20)     NOT NULL,               -- VOC 세부 분류 코드 (코드: VOC_DETAIL)
     voc_nm          VARCHAR(100)    NOT NULL,               -- VOC 항목명

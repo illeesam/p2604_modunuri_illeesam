@@ -3,14 +3,14 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_alarm (
-    alarm_id         VARCHAR(20)     NOT NULL,
-    site_id          VARCHAR(20),                            -- sy_site.site_id
+    alarm_id         VARCHAR(21)     NOT NULL,
+    site_id          VARCHAR(21),                            -- sy_site.site_id
     alarm_title      VARCHAR(200)    NOT NULL,
     alarm_type_cd    VARCHAR(30),                            -- 코드: ALARM_TYPE
     channel_cd       VARCHAR(20),                            -- 코드: ALARM_CHANNEL (EMAIL/SMS/PUSH/KAKAO)
     target_type_cd   VARCHAR(20),                            -- 코드: ALARM_TARGET_TYPE (ALL/GRADE/MEMBER)
-    target_id        VARCHAR(20),                            -- 특정 회원 or 등급코드
-    template_id      VARCHAR(20),
+    target_id        VARCHAR(21),                            -- 특정 회원 or 등급코드
+    template_id      VARCHAR(21),
     alarm_msg        TEXT,
     alarm_send_date  TIMESTAMP,
     alarm_status_cd  VARCHAR(20)     DEFAULT 'PENDING',      -- PENDING/SENT/FAILED/CANCELLED

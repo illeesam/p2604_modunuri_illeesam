@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdhProdStatusHistMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pd.mapper.PdhProdStatusHistMapper">
 
     <!-- 상품 상태 이력 조회 조건 -->
     <sql id="pdhProdStatusHistCond">
@@ -15,7 +15,7 @@
     </sql>
 
     <!-- 상품 상태 이력 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdhProdStatusHistDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,
@@ -29,7 +29,7 @@
     </select>
 
     <!-- 상품 상태 이력 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdhProdStatusHistDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,
@@ -51,7 +51,7 @@
     </select>
 
     <!-- 상품 상태 이력 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdhProdStatusHistDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,

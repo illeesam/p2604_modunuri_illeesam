@@ -6,11 +6,11 @@
 -- 역할(role_id)는 sy_role 의 판매/배송업체 역할 트리에서 선택
 -- ============================================================
 CREATE TABLE sy_vendor_user (
-    vendor_user_id  VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    vendor_id       VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
-    user_id         VARCHAR(20),                            -- sy_user.user_id (NULL = 비로그인 단순 담당자)
-    role_id         VARCHAR(20),                            -- sy_role.role_id (판매업체/배송업체 역할)
+    vendor_user_id  VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    vendor_id       VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
+    user_id         VARCHAR(21),                            -- sy_user.user_id (NULL = 비로그인 단순 담당자)
+    role_id         VARCHAR(21),                            -- sy_role.role_id (판매업체/배송업체 역할)
     member_nm       VARCHAR(50)     NOT NULL,               -- 이름
     position_cd     VARCHAR(20),                            -- 코드: POSITION (대표/이사/팀장/사원 등)
     vendor_user_dept_nm VARCHAR(100),                           -- 부서/팀명

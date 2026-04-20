@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:p6spy:postgresql://illeesam.synology.me:17632/postgres?currentSchema=shopjoy_2604
+    url: jdbc:postgresql://illeesam.synology.me:17632/postgres?currentSchema=shopjoy_2604
     username: postgres
     password: postgresilleesam
     driver-class-name: org.postgresql.Driver
@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:

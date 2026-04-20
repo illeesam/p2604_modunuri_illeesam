@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyVendorUserMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyVendorUserMapper">
 
     <sql id="syVendorUserCond">
         <where>
@@ -18,7 +18,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorUserDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
         SELECT
             u.*,
             ste.site_nm AS site_nm,
@@ -37,7 +37,7 @@
         WHERE u.vendor_user_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorUserDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
         SELECT
             u.*,
             ste.site_nm AS site_nm,
@@ -66,7 +66,7 @@
         <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorUserDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
         SELECT
             u.*,
             ste.site_nm AS site_nm,
@@ -101,7 +101,7 @@
             <include refid="syVendorUserCond"/>
     </select>
 
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyVendorUser">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser">
         UPDATE sy_vendor_user
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

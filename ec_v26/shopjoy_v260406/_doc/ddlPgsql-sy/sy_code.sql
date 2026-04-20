@@ -1,7 +1,7 @@
 -- 코드 항목
 CREATE TABLE sy_code (
-    code_id             VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
+    code_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     code_grp            VARCHAR(50)     NOT NULL,
     code_value          VARCHAR(50)     NOT NULL,               -- 실제 저장 값
     code_label          VARCHAR(100)    NOT NULL,               -- 화면 표시 라벨

@@ -3,13 +3,13 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE syh_send_msg_log (
-    log_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     channel_cd      VARCHAR(20)     NOT NULL,              -- 코드: MSG_CHANNEL (SMS/LMS/MMS/KAKAO/APP)
-    template_id     VARCHAR(20),                           -- sy_template.template_id
+    template_id     VARCHAR(21),                           -- sy_template.template_id
     template_code   VARCHAR(50),                           -- 템플릿코드 스냅샷
-    member_id       VARCHAR(20),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
-    user_id         VARCHAR(20),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+    member_id       VARCHAR(21),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
+    user_id         VARCHAR(21),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
     recv_phone      VARCHAR(20),                           -- 수신 전화번호 (SMS/LMS/카카오)
     device_token    VARCHAR(300),                          -- 디바이스 토큰 (앱 푸시용)
     sender_phone    VARCHAR(20),                           -- 발신 번호 (SMS/LMS)
@@ -22,7 +22,7 @@ CREATE TABLE syh_send_msg_log (
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/JOIN/AUTH 등)
-    ref_id          VARCHAR(20),                           -- 연관ID
+    ref_id          VARCHAR(21),                           -- 연관ID
     reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(20),

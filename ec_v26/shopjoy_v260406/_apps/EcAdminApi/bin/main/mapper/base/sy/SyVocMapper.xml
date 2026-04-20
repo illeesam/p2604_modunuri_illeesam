@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyVocMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyVocMapper">
 
     <sql id="syVocCond">
         <where>
@@ -15,7 +15,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVocDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
         SELECT
             v.*,
             ste.site_nm AS site_nm,
@@ -28,7 +28,7 @@
         WHERE v.voc_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVocDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
         SELECT
             v.*,
             ste.site_nm AS site_nm,
@@ -51,7 +51,7 @@
         <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVocDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
         SELECT
             v.*,
             ste.site_nm AS site_nm,
@@ -80,7 +80,7 @@
             <include refid="syVocCond"/>
     </select>
 
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyVoc">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyVoc">
         UPDATE sy_voc
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

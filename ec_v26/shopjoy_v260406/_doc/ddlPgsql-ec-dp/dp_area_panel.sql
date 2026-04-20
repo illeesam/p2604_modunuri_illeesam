@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_area_panel (
-    area_panel_id       VARCHAR(20)     NOT NULL,
-    area_id             VARCHAR(20)     NOT NULL,              -- FK: dp_area.area_id
-    panel_id            VARCHAR(20)     NOT NULL,              -- FK: dp_panel.panel_id
+    area_panel_id       VARCHAR(21)     NOT NULL,
+    area_id             VARCHAR(21)     NOT NULL,              -- FK: dp_area.area_id
+    panel_id            VARCHAR(21)     NOT NULL,              -- FK: dp_panel.panel_id
     panel_sort_ord      INTEGER         DEFAULT 0,              -- 패널정렬순서
     visibility_targets  VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
     disp_yn             CHAR(1)         DEFAULT 'Y',            -- 전시여부 Y/N

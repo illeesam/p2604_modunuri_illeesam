@@ -1,13 +1,13 @@
 -- 이벤트 혜택 (쿠폰/적립 등 구체 혜택 항목)
 CREATE TABLE pm_event_benefit (
-    benefit_id      VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
-    event_id        VARCHAR(20)     NOT NULL,              -- pm_event.
+    benefit_id      VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    event_id        VARCHAR(21)     NOT NULL,              -- pm_event.
     benefit_nm      VARCHAR(100)    NOT NULL,
     benefit_type_cd VARCHAR(20),                            -- 코드: BENEFIT_TYPE (COUPON/POINT/DISCOUNT/GIFT)
     condition_desc  VARCHAR(200),                           -- 조건 설명 (예: 20만원 이상)
     benefit_value   VARCHAR(100),                           -- 혜택 값 (예: 10,000원, 10%)
-    coupon_id       VARCHAR(20),                            -- 연결 쿠폰ID (pm_coupon.)
+    coupon_id       VARCHAR(21),                            -- 연결 쿠폰ID (pm_coupon.)
     sort_ord        INTEGER         DEFAULT 0,
     reg_by          VARCHAR(20),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

@@ -3,12 +3,12 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_prod (
-    prod_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    category_id     VARCHAR(20),
-    brand_id        VARCHAR(20),
-    vendor_id       VARCHAR(20),
-    md_user_id      VARCHAR(20),                            -- 담당MD (sy_user.user_id)
+    prod_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    category_id     VARCHAR(21),
+    brand_id        VARCHAR(21),
+    vendor_id       VARCHAR(21),
+    md_user_id      VARCHAR(21),                            -- 담당MD (sy_user.user_id)
     prod_nm         VARCHAR(200)    NOT NULL,
     prod_type_cd    VARCHAR(20)     DEFAULT 'SINGLE',           -- 코드: PRODUCT_TYPE (SINGLE/GROUP/SET)
     prod_code       VARCHAR(50),
@@ -39,7 +39,7 @@ CREATE TABLE pd_prod (
     adlt_yn         CHAR(1)         DEFAULT 'N',            -- 성인상품 여부 Y/N
     same_day_dliv_yn CHAR(1)        DEFAULT 'N',            -- 당일배송여부 Y/N
     sold_out_yn     CHAR(1)         DEFAULT 'N',            -- 품절여부 Y/N
-    dliv_tmplt_id   VARCHAR(20),                            -- 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+    dliv_tmplt_id   VARCHAR(21),                            -- 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
     -- 혜택 적용 여부
     coupon_use_yn   CHAR(1)         DEFAULT 'Y',            -- 쿠폰 사용 가능 여부 Y/N
     save_use_yn     CHAR(1)         DEFAULT 'Y',            -- 적립금 사용 가능 여부 Y/N

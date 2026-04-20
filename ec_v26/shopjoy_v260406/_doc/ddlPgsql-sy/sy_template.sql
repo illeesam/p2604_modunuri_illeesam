@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_template (
-    template_id     VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    template_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     template_type_cd VARCHAR(20)    NOT NULL,               -- 코드: TEMPLATE_TYPE (EMAIL/SMS/PUSH/KAKAO)
     template_code   VARCHAR(50)     NOT NULL,
     template_nm     VARCHAR(100)    NOT NULL,

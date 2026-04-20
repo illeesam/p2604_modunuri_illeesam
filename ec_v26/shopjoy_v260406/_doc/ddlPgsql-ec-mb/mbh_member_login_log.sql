@@ -4,9 +4,9 @@
 -- 보안 주의: access_token / refresh_token 은 SHA-256 해시값 저장 권장
 -- ============================================================
 CREATE TABLE mbh_member_login_log (
-    log_id              VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    member_id           VARCHAR(20),                           -- mb_member.member_id (실패 시 NULL 가능)
+    log_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    member_id           VARCHAR(21),                           -- mb_member.member_id (실패 시 NULL 가능)
     login_id            VARCHAR(100),                          -- 입력한 로그인ID (이메일)
     login_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     result_cd           VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: LOGIN_RESULT (SUCCESS/FAIL_PWD/FAIL_LOCKED/FAIL_NOT_FOUND)

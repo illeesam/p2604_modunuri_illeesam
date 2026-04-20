@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyBbmMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyBbmMapper">
 
     <!-- 게시판 마스터 조회 조건 -->
     <sql id="syBbmCond">
@@ -18,7 +18,7 @@
     </sql>
 
     <!-- 게시판 마스터 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbmDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto">
         SELECT
             b.*,
             ste.site_nm AS site_nm,
@@ -34,7 +34,7 @@
     </select>
 
     <!-- 게시판 마스터 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbmDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto">
         SELECT
             b.*,
             ste.site_nm AS site_nm,
@@ -60,7 +60,7 @@
     </select>
 
     <!-- 게시판 마스터 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbmDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto">
         SELECT
             b.*,
             ste.site_nm AS site_nm,
@@ -93,7 +93,7 @@
     </select>
 
     <!-- 게시판 마스터 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyBbm">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm">
         UPDATE sy_bbm
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

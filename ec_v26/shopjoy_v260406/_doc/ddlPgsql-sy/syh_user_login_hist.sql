@@ -1,8 +1,8 @@
 -- 관리자 로그인 이력
 CREATE TABLE syh_user_login_hist (
-    login_hist_id   VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    user_id         VARCHAR(20)     NOT NULL,
+    login_hist_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    user_id         VARCHAR(21)     NOT NULL,
     login_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ip              VARCHAR(50),
     device          VARCHAR(100),

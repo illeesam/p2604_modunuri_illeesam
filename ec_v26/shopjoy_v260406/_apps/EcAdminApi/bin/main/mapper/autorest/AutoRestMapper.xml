@@ -64,7 +64,7 @@
     <!-- ============================================================
          목록 조회 (전체, limit 1000)
          ============================================================ -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.autorest.dto.RowMap">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT t.*
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
@@ -82,7 +82,7 @@
     <!-- ============================================================
          페이지 조회
          ============================================================ -->
-    <select id="selectPage" resultType="com.shopjoy.ecadminapi.autorest.dto.RowMap">
+    <select id="selectPage" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT t.*
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
@@ -109,7 +109,7 @@
     <!-- ============================================================
          단건 조회
          ============================================================ -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.autorest.dto.RowMap">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT t.*
         FROM ${p.schema}.${p.table} t
         WHERE t.${p.pk} = #{p.id}
@@ -118,7 +118,7 @@
     <!-- ============================================================
          자식 테이블 조회 (getById 에서 childTables 처리)
          ============================================================ -->
-    <select id="selectChildren" resultType="com.shopjoy.ecadminapi.autorest.dto.RowMap">
+    <select id="selectChildren" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT *
         FROM ${p.schema}.${p.table}
         WHERE ${p.fkCol} = #{p.fkVal}
@@ -128,7 +128,7 @@
     <!-- ============================================================
          공통코드 라벨 조회 (cdFields 처리용)
          ============================================================ -->
-    <select id="selectCodeLabels" resultType="com.shopjoy.ecadminapi.autorest.dto.RowMap">
+    <select id="selectCodeLabels" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT code_value, code_label
         FROM sy_code c
         JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id

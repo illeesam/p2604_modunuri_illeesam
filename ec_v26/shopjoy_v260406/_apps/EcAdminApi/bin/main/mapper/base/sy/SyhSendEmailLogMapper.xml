@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyhSendEmailLogMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyhSendEmailLogMapper">
 
     <sql id="syhSendEmailLogCond">
         <where>
@@ -13,7 +13,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyhSendEmailLogDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto">
         SELECT
             l.*,
             ste.site_nm AS site_nm,
@@ -28,7 +28,7 @@
         WHERE l.log_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyhSendEmailLogDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto">
         SELECT
             l.*,
             ste.site_nm AS site_nm,
@@ -51,7 +51,7 @@
         <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyhSendEmailLogDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto">
         SELECT
             l.*,
             ste.site_nm AS site_nm,

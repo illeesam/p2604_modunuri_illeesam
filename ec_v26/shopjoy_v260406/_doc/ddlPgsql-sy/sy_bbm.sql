@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_bbm (
-    bbm_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
+    bbm_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     bbm_code        VARCHAR(50)     NOT NULL,
     bbm_nm          VARCHAR(100)    NOT NULL,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로

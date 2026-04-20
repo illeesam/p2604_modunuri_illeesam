@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_panel (
-    panel_id                    VARCHAR(20)     NOT NULL,
-    site_id                     VARCHAR(20),                            -- sy_site.site_id
+    panel_id                    VARCHAR(21)     NOT NULL,
+    site_id                     VARCHAR(21),                            -- sy_site.site_id
     panel_nm                    VARCHAR(100)    NOT NULL,
     panel_type_cd               VARCHAR(30),                            -- 코드: DISP_TYPE
     disp_path                   VARCHAR(200),                           -- 점(.) 구분 표시경로

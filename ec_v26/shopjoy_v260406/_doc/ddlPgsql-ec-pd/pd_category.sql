@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_category (
-    category_id     VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    parent_category_id       VARCHAR(20),
+    category_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    parent_category_id       VARCHAR(21),
     category_nm     VARCHAR(100)    NOT NULL,
     category_depth  SMALLINT        DEFAULT 1,              -- 1: 대, 2: 중, 3: 소
     sort_ord        INTEGER         DEFAULT 0,

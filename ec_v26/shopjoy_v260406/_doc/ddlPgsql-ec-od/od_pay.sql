@@ -5,10 +5,10 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE od_pay (
-    pay_id              VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    order_id            VARCHAR(20)     NOT NULL,               -- od_order.
-    claim_id            VARCHAR(20),                            -- od_claim. (클레임 추가결제 시)
+    pay_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.
+    claim_id            VARCHAR(21),                            -- od_claim. (클레임 추가결제 시)
     -- ── 결제 구분 ──
     pay_div_cd          VARCHAR(20),                            -- 주문/클레임 구분 (코드: PAY_DIV — ORDER/CLAIM)
     pay_dir_cd          VARCHAR(20),                            -- 입금/환불 방향 (코드: PAY_DIR — DEPOSIT/REFUND)

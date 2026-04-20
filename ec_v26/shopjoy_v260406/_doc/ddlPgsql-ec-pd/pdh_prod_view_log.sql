@@ -4,12 +4,12 @@
 -- 용도: 최근 본 상품, 인기 상품 집계, 개인화 추천 기반 데이터
 -- ============================================================
 CREATE TABLE pdh_prod_view_log (
-    log_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
-    member_id       VARCHAR(20),                           -- 비회원 NULL
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    member_id       VARCHAR(21),                           -- 비회원 NULL
     session_key     VARCHAR(100),                          -- 비회원 세션키
-    prod_id       VARCHAR(20)     NOT NULL,              -- PROD
-    ref_id          VARCHAR(20),                           -- prod_id별 참조ID (prod_id, category_id 등)
+    prod_id       VARCHAR(21)     NOT NULL,              -- PROD
+    ref_id          VARCHAR(21),                           -- prod_id별 참조ID (prod_id, category_id 등)
     ref_nm          VARCHAR(200),                          -- 참조명 스냅샷 (상품명 등)
     search_kw       VARCHAR(200),                          -- prod_id=SEARCH 시 검색어
     ip              VARCHAR(50),

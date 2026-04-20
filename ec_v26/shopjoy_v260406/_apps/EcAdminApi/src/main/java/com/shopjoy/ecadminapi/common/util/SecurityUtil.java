@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.common.util;
 
-import com.shopjoy.ecadminapi.auth.AuthPrincipal;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

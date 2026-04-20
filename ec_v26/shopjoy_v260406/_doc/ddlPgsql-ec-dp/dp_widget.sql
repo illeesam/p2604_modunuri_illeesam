@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE dp_widget (
-    widget_id            VARCHAR(20)     NOT NULL,
-    widget_lib_id        VARCHAR(20),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
-    site_id              VARCHAR(20),                            -- sy_site.site_id
+    widget_id            VARCHAR(21)     NOT NULL,
+    widget_lib_id        VARCHAR(21),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
+    site_id              VARCHAR(21),                            -- sy_site.site_id
     widget_nm            VARCHAR(100)    NOT NULL,
     widget_type_cd       VARCHAR(30)     NOT NULL,              -- 코드: WIDGET_TYPE (image_banner/product_slider 등)
     widget_desc          VARCHAR(300),

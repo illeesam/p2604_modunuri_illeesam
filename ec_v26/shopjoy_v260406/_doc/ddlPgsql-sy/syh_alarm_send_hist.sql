@@ -1,9 +1,9 @@
 -- 알림 발송 이력 (수신자별)
 CREATE TABLE syh_alarm_send_hist (
-    send_hist_id    VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    alarm_id        VARCHAR(20)     NOT NULL,
-    member_id       VARCHAR(20),
+    send_hist_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    alarm_id        VARCHAR(21)     NOT NULL,
+    member_id       VARCHAR(21),
     channel         VARCHAR(20),
     send_to         VARCHAR(200),                           -- 이메일 or 전화번호 or 토큰
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

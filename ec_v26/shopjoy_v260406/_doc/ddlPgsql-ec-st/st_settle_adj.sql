@@ -3,9 +3,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE st_settle_adj (
-    settle_adj_id       VARCHAR(20)     NOT NULL,
-    settle_id           VARCHAR(20)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(20),
+    settle_adj_id       VARCHAR(21)     NOT NULL,
+    settle_id           VARCHAR(21)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(21),
     adj_type_cd         VARCHAR(20)     NOT NULL,               -- 코드: SETTLE_ADJ_TYPE (ADD:가산/DEDUCT:차감)
     adj_amt             BIGINT          NOT NULL,               -- 조정금액 (양수)
     adj_reason          VARCHAR(200)    NOT NULL,               -- 조정 사유

@@ -6,14 +6,16 @@
 -- 항목이 없으면 전체 적용 (pm_event.target_type_cd 기준)
 -- ============================================================
 CREATE TABLE pm_event_item (
-    event_item_id       VARCHAR(20)     NOT NULL,
-    event_id            VARCHAR(20)     NOT NULL,               -- pm_event.event_id
-    site_id             VARCHAR(20),                            -- sy_site.site_id
+    event_item_id       VARCHAR(21)     NOT NULL,
+    event_id            VARCHAR(21)     NOT NULL,               -- pm_event.event_id
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: EVENT_ITEM_TARGET (PRODUCT/CATEGORY/VENDOR/BRAND)
-    target_id           VARCHAR(20)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
+    target_id           VARCHAR(21)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
     sort_no             INTEGER         DEFAULT 0,              -- 이벤트 내 노출 순서
     reg_by              VARCHAR(20),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(20),
+    upd_date        TIMESTAMP,
 
     PRIMARY KEY (event_item_id),
     UNIQUE (event_id, target_type_cd, target_id)
@@ -28,6 +30,8 @@ COMMENT ON COLUMN pm_event_item.target_id       IS '대상ID (prod_id / category
 COMMENT ON COLUMN pm_event_item.sort_no         IS '이벤트 내 노출 순서';
 COMMENT ON COLUMN pm_event_item.reg_by          IS '등록자';
 COMMENT ON COLUMN pm_event_item.reg_date        IS '등록일';
+COMMENT ON COLUMN pm_event_item.upd_by   IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN pm_event_item.upd_date IS '수정일';
 
 CREATE INDEX idx_pm_event_item_event  ON pm_event_item (event_id);
 CREATE INDEX idx_pm_event_item_target ON pm_event_item (target_type_cd, target_id);

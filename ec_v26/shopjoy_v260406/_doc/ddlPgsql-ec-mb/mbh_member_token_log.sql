@@ -5,10 +5,10 @@
 -- 보안 주의: token 컬럼은 SHA-256 해시값 저장 권장 (원문 저장 금지)
 -- ============================================================
 CREATE TABLE mbh_member_token_log (
-    log_id              VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    member_id           VARCHAR(20)     NOT NULL,              -- mb_member.member_id
-    login_log_id        VARCHAR(20),                           -- mb_member_login_log. (최초 발급 시점 연결)
+    log_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    member_id           VARCHAR(21)     NOT NULL,              -- mb_member.member_id
+    login_log_id        VARCHAR(21),                           -- mb_member_login_log. (최초 발급 시점 연결)
     action_cd           VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_ACTION (ISSUE/REFRESH/REVOKE/EXPIRE)
     token_type_cd       VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_TYPE (ACCESS/REFRESH)
     token               VARCHAR(512)    NOT NULL,              -- 토큰 (SHA-256 해시값 저장 권장)

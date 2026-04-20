@@ -16,7 +16,7 @@ SET search_path TO shopjoy_2604;
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_site (
-    site_id         VARCHAR(16)     NOT NULL,
+    site_id         VARCHAR(21)     NOT NULL,
     site_code       VARCHAR(50)     NOT NULL,
     site_type_cd    VARCHAR(20),                            -- 코드: SITE_TYPE (EC/ADMIN/API)
     site_nm         VARCHAR(100)    NOT NULL,
@@ -73,8 +73,8 @@ COMMENT ON COLUMN sy_site.disp_path IS '점(.) 구분 표시경로 (트리 빌�
 -- ============================================================
 -- 코드 그룹
 CREATE TABLE IF NOT EXISTS sy_code_grp (
-    code_grp_id     VARCHAR(16)     NOT NULL,       -- 코드그룹ID (YYMMDDhhmmss+rand4)
-    site_id         VARCHAR(16),                    -- sy_site.site_id
+    code_grp_id     VARCHAR(21)     NOT NULL,       -- 코드그룹ID (YYMMDDhhmmss+rand4)
+    site_id         VARCHAR(21),                    -- sy_site.site_id
     code_grp        VARCHAR(50)     NOT NULL,       -- 코드그룹코드 (예: MEMBER_GRADE)
     grp_nm          VARCHAR(100)    NOT NULL,
     disp_path       VARCHAR(200),                   -- 점(.) 구분 표시경로 (예: order.payment)
@@ -105,8 +105,8 @@ CREATE INDEX idx_sy_code_grp_code ON sy_code_grp (code_grp);
 
 -- 코드 항목
 CREATE TABLE IF NOT EXISTS sy_code (
-    code_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    code_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     code_grp            VARCHAR(50)     NOT NULL,
     code_value          VARCHAR(50)     NOT NULL,               -- 실제 저장 값
     code_label          VARCHAR(100)    NOT NULL,               -- 화면 표시 라벨
@@ -227,13 +227,13 @@ CREATE INDEX idx_sy_code_use   ON sy_code (code_grp, use_yn);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_dept (
-    dept_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    dept_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     dept_code       VARCHAR(50)     NOT NULL,
     dept_nm         VARCHAR(100)    NOT NULL,
-    parent_dept_id       VARCHAR(16),
+    parent_dept_id       VARCHAR(21),
     dept_type_cd    VARCHAR(20),                            -- 코드: DEPT_TYPE
-    manager_id      VARCHAR(16),                            -- sy_user.user_id
+    manager_id      VARCHAR(21),                            -- sy_user.user_id
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     dept_remark     VARCHAR(300),
@@ -271,11 +271,11 @@ COMMENT ON COLUMN sy_dept.upd_date       IS '수정일';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_role (
-    role_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    role_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     role_code       VARCHAR(50)     NOT NULL,
     role_nm         VARCHAR(100)    NOT NULL,
-    parent_role_id       VARCHAR(16),
+    parent_role_id       VARCHAR(21),
     role_type_cd    VARCHAR(20),                            -- 코드: ROLE_TYPE (SYSTEM/CUSTOM)
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
@@ -314,10 +314,10 @@ COMMENT ON COLUMN sy_role.disp_path IS '점(.) 구분 표시경로 (트리 빌�
 
 -- 역할-메뉴 권한 매핑
 CREATE TABLE IF NOT EXISTS sy_role_menu (
-    role_menu_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    role_id         VARCHAR(16)     NOT NULL,
-    menu_id         VARCHAR(16)     NOT NULL,
+    role_menu_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    role_id         VARCHAR(21)     NOT NULL,
+    menu_id         VARCHAR(21)     NOT NULL,
     perm_level      SMALLINT        DEFAULT 1,              -- 1:조회 / 2:수정 / 3:삭제
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -340,15 +340,15 @@ COMMENT ON COLUMN sy_role_menu.upd_date     IS '수정일';
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_user (
-    user_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    user_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     login_id        VARCHAR(50)     NOT NULL,
     user_password   VARCHAR(255)    NOT NULL,
     user_nm         VARCHAR(50)     NOT NULL,
     user_email      VARCHAR(100),
     user_phone      VARCHAR(20),
-    dept_id         VARCHAR(16),                            -- sy_dept.dept_id
-    role_id         VARCHAR(16),                            -- sy_role.role_id
+    dept_id         VARCHAR(21),                            -- sy_dept.dept_id
+    role_id         VARCHAR(21),                            -- sy_role.role_id
     user_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USER_STATUS
     last_login      TIMESTAMP,
     login_fail_cnt  SMALLINT        DEFAULT 0,
@@ -397,10 +397,10 @@ COMMENT ON COLUMN sy_user.last_login_date  IS '마지막 로그인 일시';
 -- 한 사용자는 여러 역할을, 한 역할은 여러 사용자에 할당 가능
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_user_role (
-    user_role_id    VARCHAR(16)     NOT NULL,                -- 사용자역할ID (YYMMDDhhmmss+rand4)
-    user_id         VARCHAR(16)     NOT NULL,               -- sy_user.user_id
-    role_id         VARCHAR(16)     NOT NULL,               -- sy_role.role_id
-    grant_user_id   VARCHAR(16),                            -- 부여자 (sy_user.user_id)
+    user_role_id    VARCHAR(21)     NOT NULL,                -- 사용자역할ID (YYMMDDhhmmss+rand4)
+    user_id         VARCHAR(21)     NOT NULL,               -- sy_user.user_id
+    role_id         VARCHAR(21)     NOT NULL,               -- sy_role.role_id
+    grant_user_id   VARCHAR(21),                            -- 부여자 (sy_user.user_id)
     grant_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     valid_from      DATE,                                   -- 적용 시작일 (NULL = 즉시)
     valid_to        DATE,                                   -- 적용 종료일 (NULL = 무기한)
@@ -435,14 +435,14 @@ CREATE INDEX idx_sy_user_role_role ON sy_user_role (role_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_brand (
-    brand_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    brand_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     brand_code      VARCHAR(50)     NOT NULL,
     brand_nm        VARCHAR(100)    NOT NULL,
     brand_en_nm     VARCHAR(100),
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로 (예: sports.outdoor)
     logo_url        VARCHAR(500),
-    vendor_id       VARCHAR(16),
+    vendor_id       VARCHAR(21),
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     brand_remark    VARCHAR(300),
@@ -476,8 +476,8 @@ COMMENT ON COLUMN sy_brand.upd_date      IS '수정일';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_vendor (
-    vendor_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    vendor_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     vendor_no          VARCHAR(20)     NOT NULL,               -- 판매/배송업체등록번호 (123-45-67890)
     corp_no         VARCHAR(20),                            -- 법인등록번호 (선택)
     vendor_nm          VARCHAR(100)    NOT NULL,               -- 상호 / 회사명
@@ -558,10 +558,10 @@ CREATE INDEX idx_sy_vendor_status ON sy_vendor (vendor_status_cd);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_vendor_brand (
-    vendor_brand_id VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    vendor_id       VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
-    brand_id        VARCHAR(16)     NOT NULL,               -- sy_brand.brand_id
+    vendor_brand_id VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    vendor_id       VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
+    brand_id        VARCHAR(21)     NOT NULL,               -- sy_brand.brand_id
     is_main         CHAR(1)         DEFAULT 'N',            -- 대표 브랜드 여부 Y/N
     contract_cd     VARCHAR(20),                            -- 코드: VENDOR_BRAND_CONTRACT (직매입/위탁/제휴 등)
     start_date      DATE,                                   -- 계약 시작일
@@ -611,9 +611,9 @@ CREATE INDEX idx_sy_vendor_brand_use    ON sy_vendor_brand (use_yn);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_vendor_content (
-    vendor_content_id VARCHAR(16)     NOT NULL,
-    site_id           VARCHAR(16),                            -- sy_site.site_id
-    vendor_id         VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
+    vendor_content_id VARCHAR(21)     NOT NULL,
+    site_id           VARCHAR(21),                            -- sy_site.site_id
+    vendor_id         VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
     content_type_cd   VARCHAR(30)     NOT NULL,               -- 코드: VENDOR_CONTENT_TYPE (INTRO/BANNER/TERMS/POLICY/NOTICE/FAQ/GUIDE)
     vendor_content_title VARCHAR(200),
     vendor_content_subtitle VARCHAR(300),
@@ -621,7 +621,7 @@ CREATE TABLE IF NOT EXISTS sy_vendor_content (
     thumb_url         VARCHAR(500),                           -- 썸네일 이미지
     image_url         VARCHAR(500),                           -- 대표 이미지
     link_url          VARCHAR(500),                           -- 링크 URL
-    attach_grp_id     VARCHAR(16),                            -- sy_attach_grp.attach_grp_id
+    attach_grp_id     VARCHAR(21),                            -- sy_attach_grp.attach_grp_id
     lang_cd           VARCHAR(10)     DEFAULT 'ko',           -- 다국어 (ko/en/ja 등)
     start_date        TIMESTAMP,                              -- 노출 시작
     end_date          TIMESTAMP,                              -- 노출 종료
@@ -681,11 +681,11 @@ CREATE INDEX idx_sy_vendor_content_date   ON sy_vendor_content (start_date, end_
 -- 역할(role_id)는 sy_role 의 판매/배송업체 역할 트리에서 선택
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_vendor_user (
-    vendor_user_id  VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    vendor_id       VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
-    user_id         VARCHAR(16),                            -- sy_user.user_id (NULL = 비로그인 단순 담당자)
-    role_id         VARCHAR(16),                            -- sy_role.role_id (판매업체/배송업체 역할)
+    vendor_user_id  VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    vendor_id       VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
+    user_id         VARCHAR(21),                            -- sy_user.user_id (NULL = 비로그인 단순 담당자)
+    role_id         VARCHAR(21),                            -- sy_role.role_id (판매업체/배송업체 역할)
     member_nm       VARCHAR(50)     NOT NULL,               -- 이름
     position_cd     VARCHAR(20),                            -- 코드: POSITION (대표/이사/팀장/사원 등)
     vendor_user_dept_nm VARCHAR(100),                           -- 부서/팀명
@@ -748,7 +748,7 @@ CREATE INDEX idx_sy_vendor_user_status ON sy_vendor_user (vendor_user_status_cd)
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS sy_attach_grp (
-    attach_grp_id   VARCHAR(16)     NOT NULL,
+    attach_grp_id   VARCHAR(21)     NOT NULL,
     attach_grp_code VARCHAR(50)     NOT NULL,              -- 고유 코드 (PROD_IMG, MEMBER_DOC, INQUIRY_FILE 등)
     attach_grp_nm   VARCHAR(100)    NOT NULL,              -- 그룹명
     file_ext_allow  VARCHAR(200),                           -- 허용 확장자 (쉼표 구분: jpg,png,gif,pdf)
@@ -791,9 +791,9 @@ COMMENT ON COLUMN sy_attach_grp.upd_date       IS '수정일';
 
 -- 첨부파일
 CREATE TABLE IF NOT EXISTS sy_attach (
-    attach_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    attach_grp_id   VARCHAR(16)     NOT NULL,
+    attach_id       VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    attach_grp_id   VARCHAR(21)     NOT NULL,
     file_nm         VARCHAR(300)    NOT NULL,
     file_size       BIGINT          DEFAULT 0,              -- bytes
     file_ext        VARCHAR(20),
@@ -842,8 +842,8 @@ COMMENT ON COLUMN sy_attach.upd_date         IS '수정일';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_bbm (
-    bbm_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    bbm_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     bbm_code        VARCHAR(50)     NOT NULL,
     bbm_nm          VARCHAR(100)    NOT NULL,
     disp_path       VARCHAR(200),                           -- 점(.) 구분 표시경로
@@ -895,15 +895,15 @@ COMMENT ON COLUMN sy_bbm.upd_date         IS '수정일';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_bbs (
-    bbs_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    bbm_id          VARCHAR(16)     NOT NULL,
-    parent_bbs_id   VARCHAR(16),                            -- 답글 시 부모글 ID
-    member_id       VARCHAR(16),
+    bbs_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    bbm_id          VARCHAR(21)     NOT NULL,
+    parent_bbs_id   VARCHAR(21),                            -- 답글 시 부모글 ID
+    member_id       VARCHAR(21),
     author_nm          VARCHAR(50),
     bbs_title       VARCHAR(200)    NOT NULL,
     content_html    TEXT,
-    attach_grp_id   VARCHAR(16),
+    attach_grp_id   VARCHAR(21),
     view_count      INTEGER         DEFAULT 0,
     like_count      INTEGER         DEFAULT 0,
     comment_count   INTEGER         DEFAULT 0,
@@ -943,13 +943,13 @@ COMMENT ON COLUMN sy_bbs.disp_path IS '점(.) 구분 표시경로 (트리 빌드
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_notice (
-    notice_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    notice_id       VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     notice_title    VARCHAR(200)    NOT NULL,
     notice_type_cd  VARCHAR(30),                            -- 코드: NOTICE_TYPE
     is_fixed        CHAR(1)         DEFAULT 'N',            -- 상단고정 Y/N
     content_html    TEXT,
-    attach_grp_id   VARCHAR(16),
+    attach_grp_id   VARCHAR(21),
     start_date      TIMESTAMP,
     end_date        TIMESTAMP,
     notice_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- ACTIVE/INACTIVE
@@ -988,8 +988,8 @@ COMMENT ON COLUMN sy_notice.upd_date      IS '수정일';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_template (
-    template_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    template_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     template_type_cd VARCHAR(20)    NOT NULL,               -- 코드: TEMPLATE_TYPE (EMAIL/SMS/PUSH/KAKAO)
     template_code   VARCHAR(50)     NOT NULL,
     template_nm     VARCHAR(100)    NOT NULL,
@@ -1032,14 +1032,14 @@ COMMENT ON COLUMN sy_template.disp_path IS '점(.) 구분 표시경로 (트리 �
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_alarm (
-    alarm_id         VARCHAR(16)     NOT NULL,
-    site_id          VARCHAR(16),                            -- sy_site.site_id
+    alarm_id         VARCHAR(21)     NOT NULL,
+    site_id          VARCHAR(21),                            -- sy_site.site_id
     alarm_title      VARCHAR(200)    NOT NULL,
     alarm_type_cd    VARCHAR(30),                            -- 코드: ALARM_TYPE
     channel_cd       VARCHAR(20),                            -- 코드: ALARM_CHANNEL (EMAIL/SMS/PUSH/KAKAO)
     target_type_cd   VARCHAR(20),                            -- 코드: ALARM_TARGET_TYPE (ALL/GRADE/MEMBER)
-    target_id        VARCHAR(16),                            -- 특정 회원 or 등급코드
-    template_id      VARCHAR(16),
+    target_id        VARCHAR(21),                            -- 특정 회원 or 등급코드
+    template_id      VARCHAR(21),
     alarm_msg        TEXT,
     alarm_send_date  TIMESTAMP,
     alarm_status_cd  VARCHAR(20)     DEFAULT 'PENDING',      -- PENDING/SENT/FAILED/CANCELLED
@@ -1085,8 +1085,8 @@ COMMENT ON COLUMN sy_alarm.disp_path IS '점(.) 구분 표시경로 (트리 빌�
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_batch (
-    batch_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    batch_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     batch_code      VARCHAR(50)     NOT NULL,
     batch_nm        VARCHAR(100)    NOT NULL,
     batch_desc      TEXT,
@@ -1183,17 +1183,17 @@ CREATE INDEX idx_sy_path_parent ON sy_path (parent_path_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_contact (
-    contact_id      VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16),
+    contact_id      VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21),
     member_nm       VARCHAR(50),
     category_cd     VARCHAR(30),                            -- 코드: 문의유형
     contact_title   VARCHAR(200)    NOT NULL,
     contact_content TEXT            NOT NULL,
-    attach_grp_id   VARCHAR(16),
+    attach_grp_id   VARCHAR(21),
     contact_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CONTACT_STATUS
     contact_answer  TEXT,
-    answer_user_id       VARCHAR(16),
+    answer_user_id       VARCHAR(21),
     answer_date     TIMESTAMP,
     contact_date    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(16),
@@ -1229,8 +1229,8 @@ COMMENT ON COLUMN sy_contact.upd_date       IS '수정일';
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_voc (
-    voc_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    voc_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     voc_master_cd   VARCHAR(20)     NOT NULL,               -- VOC 마스터 분류 코드 (코드: VOC_MASTER)
     voc_detail_cd   VARCHAR(20)     NOT NULL,               -- VOC 세부 분류 코드 (코드: VOC_DETAIL)
     voc_nm          VARCHAR(100)    NOT NULL,               -- VOC 항목명
@@ -1271,11 +1271,11 @@ CREATE INDEX idx_sy_voc_master_cd  ON sy_voc (voc_master_cd);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_menu (
-    menu_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    menu_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     menu_code       VARCHAR(50)     NOT NULL,
     menu_nm         VARCHAR(100)    NOT NULL,
-    parent_menu_id       VARCHAR(16),
+    parent_menu_id       VARCHAR(21),
     menu_url        VARCHAR(200),
     menu_type_cd    VARCHAR(20)     DEFAULT 'PAGE',         -- 코드: MENU_TYPE (PAGE/FOLDER/LINK)
     icon_class      VARCHAR(100),
@@ -1319,7 +1319,7 @@ COMMENT ON COLUMN sy_menu.upd_date       IS '수정일';
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sy_prop (
     prop_id         BIGSERIAL       NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id (NULL = 전역)
+    site_id         VARCHAR(21),                            -- sy_site.site_id (NULL = 전역)
     disp_path       VARCHAR(200)    NOT NULL,               -- 점 구분 표시경로 (aa.bb.cc)
     prop_key        VARCHAR(100)    NOT NULL,               -- 키 (코드 식별자, snake_case 권장)
     prop_value      TEXT,                                   -- 값 (JSON/문자열/숫자 등)
@@ -1358,8 +1358,8 @@ CREATE INDEX idx_sy_prop_site  ON sy_prop (site_id);
 
 -- 다국어 키 마스터
 CREATE TABLE IF NOT EXISTS sy_i18n (
-    i18n_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id (NULL=전체 공용)
+    i18n_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id (NULL=전체 공용)
     i18n_key        VARCHAR(200)    NOT NULL,               -- 다국어 키 (예: common.bt.save)
     i18n_desc       VARCHAR(200),                           -- 키 설명
     i18n_scope_cd   VARCHAR(20)     DEFAULT 'COMMON',       -- 코드: I18N_SCOPE (FO/BO/COMMON)
@@ -1399,8 +1399,8 @@ CREATE INDEX idx_sy_i18n_site     ON sy_i18n (site_id) WHERE site_id IS NOT NULL
 
 -- 다국어 메시지 (언어별)
 CREATE TABLE IF NOT EXISTS sy_i18n_msg (
-    i18n_msg_id     VARCHAR(16)     NOT NULL,
-    i18n_id         VARCHAR(16)     NOT NULL,               -- sy_i18n.i18n_id
+    i18n_msg_id     VARCHAR(21)     NOT NULL,
+    i18n_id         VARCHAR(21)     NOT NULL,               -- sy_i18n.i18n_id
     lang_cd         VARCHAR(10)     NOT NULL,               -- 코드: LANG_CODE (ko/en/ja/in)
     i18n_msg        TEXT            NOT NULL,               -- 번역 메시지
     reg_by          VARCHAR(16),
@@ -1432,10 +1432,10 @@ CREATE INDEX idx_sy_i18n_msg_lang ON sy_i18n_msg (lang_cd);
 
 -- 알림 발송 이력 (수신자별)
 CREATE TABLE IF NOT EXISTS syh_alarm_send_hist (
-    send_hist_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    alarm_id        VARCHAR(16)     NOT NULL,
-    member_id       VARCHAR(16),
+    send_hist_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    alarm_id        VARCHAR(21)     NOT NULL,
+    member_id       VARCHAR(21),
     channel         VARCHAR(20),
     send_to         VARCHAR(200),                           -- 이메일 or 전화번호 or 토큰
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -1469,8 +1469,8 @@ COMMENT ON COLUMN syh_alarm_send_hist.upd_date       IS '수정일';
 -- 용도: PG사, 물류사, 카카오, 네이버 등 외부 API 호출 추적
 -- ============================================================
 CREATE TABLE IF NOT EXISTS syh_api_log (
-    log_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
     api_type_cd     VARCHAR(50)     NOT NULL,              -- 연동유형코드 (PG/LOGISTICS/KAKAO/NAVER/SMS 등)
     api_nm          VARCHAR(100),                          -- API명 (예: 결제승인, 운송장등록)
     method_cd       VARCHAR(10),                           -- HTTP 메서드 (GET/POST/PUT/DELETE)
@@ -1482,7 +1482,7 @@ CREATE TABLE IF NOT EXISTS syh_api_log (
     error_msg       VARCHAR(500),                          -- 오류 메시지
     elapsed_ms      INTEGER,                               -- 응답시간 (ms)
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/DLIV/PUSH 등)
-    ref_id          VARCHAR(16),                           -- 연관ID
+    ref_id          VARCHAR(21),                           -- 연관ID
     call_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -1518,9 +1518,9 @@ CREATE INDEX idx_syh_api_log_ref  ON syh_api_log (ref_type_cd, ref_id);
 
 -- 배치 실행 이력
 CREATE TABLE IF NOT EXISTS syh_batch_hist (
-    batch_hist_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    batch_id        VARCHAR(16)     NOT NULL,
+    batch_hist_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    batch_id        VARCHAR(21)     NOT NULL,
     batch_code      VARCHAR(50),
     batch_nm        VARCHAR(100),
     run_at          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -1559,9 +1559,9 @@ COMMENT ON COLUMN syh_batch_hist.upd_date      IS '수정일';
 
 -- 배치 실행 로그
 CREATE TABLE IF NOT EXISTS syh_batch_log (
-    batch_log_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    batch_id        VARCHAR(16)     NOT NULL,
+    batch_log_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    batch_id        VARCHAR(21)     NOT NULL,
     batch_code      VARCHAR(50),
     batch_nm        VARCHAR(100),
     run_at          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -1607,12 +1607,12 @@ CREATE INDEX idx_syh_batch_log_status ON syh_batch_log (run_status);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS syh_send_email_log (
-    log_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    template_id     VARCHAR(16),                           -- sy_template.template_id
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    template_id     VARCHAR(21),                           -- sy_template.template_id
     template_code   VARCHAR(50),                           -- 템플릿코드 스냅샷
-    member_id       VARCHAR(16),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
-    user_id         VARCHAR(16),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+    member_id       VARCHAR(21),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
+    user_id         VARCHAR(21),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
     from_addr       VARCHAR(200)    NOT NULL,              -- 발신 이메일
     to_addr         VARCHAR(200)    NOT NULL,              -- 수신 이메일
     cc_addr         VARCHAR(500),                          -- 참조 (복수 시 콤마 구분)
@@ -1624,7 +1624,7 @@ CREATE TABLE IF NOT EXISTS syh_send_email_log (
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/JOIN/PWD_RESET 등)
-    ref_id          VARCHAR(16),                           -- 연관ID
+    ref_id          VARCHAR(21),                           -- 연관ID
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -1672,13 +1672,13 @@ CREATE INDEX idx_syh_send_email_log_ref      ON syh_send_email_log (ref_type_cd,
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS syh_send_msg_log (
-    log_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     channel_cd      VARCHAR(20)     NOT NULL,              -- 코드: MSG_CHANNEL (SMS/LMS/MMS/KAKAO/APP)
-    template_id     VARCHAR(16),                           -- sy_template.template_id
+    template_id     VARCHAR(21),                           -- sy_template.template_id
     template_code   VARCHAR(50),                           -- 템플릿코드 스냅샷
-    member_id       VARCHAR(16),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
-    user_id         VARCHAR(16),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+    member_id       VARCHAR(21),                           -- 대상 회원ID (ec_member.member_id, 비회원 NULL)
+    user_id         VARCHAR(21),                           -- 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
     recv_phone      VARCHAR(20),                           -- 수신 전화번호 (SMS/LMS/카카오)
     device_token    VARCHAR(300),                          -- 디바이스 토큰 (앱 푸시용)
     sender_phone    VARCHAR(20),                           -- 발신 번호 (SMS/LMS)
@@ -1691,7 +1691,7 @@ CREATE TABLE IF NOT EXISTS syh_send_msg_log (
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/JOIN/AUTH 등)
-    ref_id          VARCHAR(16),                           -- 연관ID
+    ref_id          VARCHAR(21),                           -- 연관ID
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -1740,9 +1740,9 @@ CREATE INDEX idx_syh_send_msg_log_ref      ON syh_send_msg_log (ref_type_cd, ref
 
 -- 관리자 로그인 이력
 CREATE TABLE IF NOT EXISTS syh_user_login_hist (
-    login_hist_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    user_id         VARCHAR(16)     NOT NULL,
+    login_hist_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    user_id         VARCHAR(21)     NOT NULL,
     login_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ip              VARCHAR(50),
     device          VARCHAR(100),
@@ -1773,9 +1773,9 @@ COMMENT ON COLUMN syh_user_login_hist.upd_date      IS '수정일';
 -- 보안 주의: access_token / refresh_token 은 SHA-256 해시값 저장 권장
 -- ============================================================
 CREATE TABLE IF NOT EXISTS syh_user_login_log (
-    log_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    user_id             VARCHAR(16),                           -- sy_user.user_id (실패 시 NULL 가능)
+    log_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    user_id             VARCHAR(21),                           -- sy_user.user_id (실패 시 NULL 가능)
     login_id            VARCHAR(100),                          -- 입력한 로그인ID
     login_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     result_cd           VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: LOGIN_RESULT (SUCCESS/FAIL_PWD/FAIL_LOCKED/FAIL_NOT_FOUND)
@@ -1833,10 +1833,10 @@ CREATE INDEX idx_syh_user_login_log_ip    ON syh_user_login_log (ip);
 -- 보안 주의: token 컬럼은 SHA-256 해시값 저장 권장 (원문 저장 금지)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS syh_user_token_log (
-    log_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    user_id             VARCHAR(16)     NOT NULL,              -- sy_user.user_id
-    login_log_id        VARCHAR(16),                           -- sy_user_login_log.log_id (최초 발급 시점 연결)
+    log_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    user_id             VARCHAR(21)     NOT NULL,              -- sy_user.user_id
+    login_log_id        VARCHAR(21),                           -- sy_user_login_log.log_id (최초 발급 시점 연결)
     action_cd           VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_ACTION (ISSUE/REFRESH/REVOKE/EXPIRE)
     token_type_cd       VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_TYPE (ACCESS/REFRESH)
     token               VARCHAR(512)    NOT NULL,              -- 토큰 (SHA-256 해시값 저장 권장)
@@ -1887,8 +1887,8 @@ CREATE INDEX idx_syh_user_token_log_date      ON syh_user_token_log (reg_date);
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_member_grade (
-    grade_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    grade_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     grade_cd        VARCHAR(20)     NOT NULL,               -- 코드: MEMBER_GRADE (BASIC/SILVER/GOLD/VIP)
     grade_nm        VARCHAR(50)     NOT NULL,
     grade_rank      INTEGER         DEFAULT 1,              -- 등급 우선순위 (낮을수록 낮은 등급)
@@ -1927,8 +1927,8 @@ CREATE INDEX idx_mb_member_grade_cd   ON mb_member_grade (grade_cd);
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_member_group (
-    group_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    group_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     group_nm        VARCHAR(100)    NOT NULL,
     group_memo      TEXT,
     use_yn          VARCHAR(1)      DEFAULT 'Y',
@@ -1952,8 +1952,8 @@ COMMENT ON COLUMN mb_member_group.upd_date   IS '수정일시';
 
 -- 회원-그룹 매핑
 CREATE TABLE IF NOT EXISTS mb_member_group_map (
-    group_id        VARCHAR(16)     NOT NULL,               -- mb_member_group.group_id
-    member_id       VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    group_id        VARCHAR(21)     NOT NULL,               -- mb_member_group.group_id
+    member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (group_id, member_id)
@@ -1970,8 +1970,8 @@ CREATE INDEX idx_mb_member_group_map_mem   ON mb_member_group_map (member_id);
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_member (
-    member_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     member_email    VARCHAR(100)    NOT NULL,
     member_password VARCHAR(255)    NOT NULL,
     member_nm       VARCHAR(50)     NOT NULL,
@@ -2035,9 +2035,9 @@ COMMENT ON COLUMN mb_member.upd_date       IS '수정일';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_member_addr (
-    addr_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    member_id       VARCHAR(16)     NOT NULL,              -- mb_member.member_id
+    addr_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    member_id       VARCHAR(21)     NOT NULL,              -- mb_member.member_id
     addr_nm         VARCHAR(50),                           -- 배송지명 (예: 집, 회사)
     recv_nm         VARCHAR(50)     NOT NULL,              -- 수령자명
     recv_phone      VARCHAR(20)     NOT NULL,              -- 수령자 연락처
@@ -2074,8 +2074,8 @@ CREATE INDEX idx_mb_member_addr_member ON mb_member_addr (member_id);
 -- log 예외: 단일 단어 컬럼 허용 (device_token, os_type, site_id 예외)
 CREATE TABLE IF NOT EXISTS mb_dvc_token (
     device_token    VARCHAR(200)    NOT NULL,               -- 앱 디바이스 토큰 값
-    site_id         VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    member_id       VARCHAR(16),                            -- mb_member.member_id
+    site_id         VARCHAR(21)     NOT NULL,               -- sy_site.site_id
+    member_id       VARCHAR(21),                            -- mb_member.member_id
     os_type         VARCHAR(10),                            -- ANDROID / IOS
     benefit_noti_yn VARCHAR(1)      DEFAULT 'Y',            -- 혜택 알림 수신 여부
     alim_read_date  TIMESTAMP,                              -- 알림 리스트 읽음 일시
@@ -2102,11 +2102,11 @@ CREATE INDEX idx_mb_dvc_token_site   ON mb_dvc_token (site_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_like (
-    like_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    like_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     target_type_cd  VARCHAR(20)     NOT NULL,               -- 코드: LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
-    target_id       VARCHAR(16)     NOT NULL,               -- 대상ID (pd_prod.prod_id 등)
+    target_id       VARCHAR(21)     NOT NULL,               -- 대상ID (pd_prod.prod_id 등)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -2136,8 +2136,8 @@ CREATE INDEX idx_mb_like_target        ON mb_like (target_type_cd, target_id);
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mb_sns_member (
-    sns_mem_id      VARCHAR(16)     NOT NULL,
-    member_id       VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    sns_mem_id      VARCHAR(21)     NOT NULL,
+    member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     sns_channel_cd  VARCHAR(20)     NOT NULL,               -- 코드: SNS_CHANNEL (KAKAO/NAVER/GOOGLE/APPLE)
     sns_user_id     VARCHAR(200)    NOT NULL,               -- SNS 플랫폼 사용자 ID
     reg_by          VARCHAR(16),
@@ -2164,9 +2164,9 @@ CREATE INDEX idx_mb_sns_member_channel ON mb_sns_member (sns_channel_cd);
 
 -- 로그인 이력
 CREATE TABLE IF NOT EXISTS mbh_member_login_hist (
-    login_hist_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16)     NOT NULL,
+    login_hist_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
     login_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ip              VARCHAR(50),
     device          VARCHAR(100),
@@ -2197,9 +2197,9 @@ COMMENT ON COLUMN mbh_member_login_hist.upd_date      IS '수정일';
 -- 보안 주의: access_token / refresh_token 은 SHA-256 해시값 저장 권장
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mbh_member_login_log (
-    log_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16),                           -- mb_member.member_id (실패 시 NULL 가능)
+    log_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    member_id           VARCHAR(21),                           -- mb_member.member_id (실패 시 NULL 가능)
     login_id            VARCHAR(100),                          -- 입력한 로그인ID (이메일)
     login_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     result_cd           VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: LOGIN_RESULT (SUCCESS/FAIL_PWD/FAIL_LOCKED/FAIL_NOT_FOUND)
@@ -2259,10 +2259,10 @@ CREATE INDEX idx_mbh_member_login_log_ip     ON mbh_member_login_log (ip);
 -- 보안 주의: token 컬럼은 SHA-256 해시값 저장 권장 (원문 저장 금지)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS mbh_member_token_log (
-    log_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,              -- mb_member.member_id
-    login_log_id        VARCHAR(16),                           -- mb_member_login_log. (최초 발급 시점 연결)
+    log_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    member_id           VARCHAR(21)     NOT NULL,              -- mb_member.member_id
+    login_log_id        VARCHAR(21),                           -- mb_member_login_log. (최초 발급 시점 연결)
     action_cd           VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_ACTION (ISSUE/REFRESH/REVOKE/EXPIRE)
     token_type_cd       VARCHAR(20)     NOT NULL,              -- 코드: TOKEN_TYPE (ACCESS/REFRESH)
     token               VARCHAR(512)    NOT NULL,              -- 토큰 (SHA-256 해시값 저장 권장)
@@ -2316,9 +2316,9 @@ CREATE INDEX idx_mbh_member_token_log_date      ON mbh_member_token_log (reg_dat
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_category (
-    category_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    parent_category_id       VARCHAR(16),
+    category_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    parent_category_id       VARCHAR(21),
     category_nm     VARCHAR(100)    NOT NULL,
     category_depth  SMALLINT        DEFAULT 1,              -- 1: 대, 2: 중, 3: 소
     sort_ord        INTEGER         DEFAULT 0,
@@ -2356,9 +2356,9 @@ COMMENT ON COLUMN pd_category.upd_date      IS '수정일';
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_dliv_tmplt (
-    dliv_tmplt_id       VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    vendor_id           VARCHAR(16),                            -- sy_vendor.vendor_id
+    dliv_tmplt_id       VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    vendor_id           VARCHAR(21),                            -- sy_vendor.vendor_id
     dliv_tmplt_nm       VARCHAR(100)    NOT NULL,
     dliv_method_cd      VARCHAR(20),                            -- 코드: DLIV_METHOD (COURIER/DIRECT/PICKUP)
     dliv_pay_type_cd    VARCHAR(20),                            -- 코드: DLIV_PAY_TYPE (PREPAY/COD)
@@ -2421,8 +2421,8 @@ CREATE INDEX idx_pd_dliv_tmplt_site   ON pd_dliv_tmplt (site_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_tag (
-    tag_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    tag_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     tag_nm          VARCHAR(100)    NOT NULL,
     tag_desc        VARCHAR(300),
     use_count       INTEGER         DEFAULT 0,              -- 사용 빈도
@@ -2456,12 +2456,12 @@ CREATE INDEX idx_pd_tag_nm ON pd_tag (tag_nm);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_prod (
-    prod_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    category_id     VARCHAR(16),
-    brand_id        VARCHAR(16),
-    vendor_id       VARCHAR(16),
-    md_user_id      VARCHAR(16),                            -- 담당MD (sy_user.user_id)
+    prod_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    category_id     VARCHAR(21),
+    brand_id        VARCHAR(21),
+    vendor_id       VARCHAR(21),
+    md_user_id      VARCHAR(21),                            -- 담당MD (sy_user.user_id)
     prod_nm         VARCHAR(200)    NOT NULL,
     prod_type_cd    VARCHAR(20)     DEFAULT 'SINGLE',           -- 코드: PRODUCT_TYPE (SINGLE/GROUP/SET)
     prod_code       VARCHAR(50),
@@ -2492,7 +2492,7 @@ CREATE TABLE IF NOT EXISTS pd_prod (
     adlt_yn         CHAR(1)         DEFAULT 'N',            -- 성인상품 여부 Y/N
     same_day_dliv_yn CHAR(1)        DEFAULT 'N',            -- 당일배송여부 Y/N
     sold_out_yn     CHAR(1)         DEFAULT 'N',            -- 품절여부 Y/N
-    dliv_tmplt_id   VARCHAR(16),                            -- 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+    dliv_tmplt_id   VARCHAR(21),                            -- 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
     -- 혜택 적용 여부
     coupon_use_yn   CHAR(1)         DEFAULT 'Y',            -- 쿠폰 사용 가능 여부 Y/N
     save_use_yn     CHAR(1)         DEFAULT 'Y',            -- 적립금 사용 가능 여부 Y/N
@@ -2566,12 +2566,12 @@ COMMENT ON COLUMN pd_prod.upd_date      IS '수정일';
 -- 둘 다 NULL이면 상품 대표(공통) 이미지
 -- attach_id: 파일 관리 시스템(sy_attach)과 연계 시 사용
 CREATE TABLE IF NOT EXISTS pd_prod_img (
-    prod_img_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,              -- FK: pd_prod.prod_id
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상-블랙)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈-M)
-    attach_id       VARCHAR(16),                            -- FK: sy_attach.attach_id (원본 파일 참조)
+    prod_img_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,              -- FK: pd_prod.prod_id
+    opt_item_id_1   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상-블랙)
+    opt_item_id_2   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈-M)
+    attach_id       VARCHAR(21),                            -- FK: sy_attach.attach_id (원본 파일 참조)
     cdn_host        VARCHAR(100),                           -- CDN 호스트명 (예: cdn.example.com)
     cdn_img_url     VARCHAR(500),                           -- CDN 원본 이미지 URL (상세 페이지용)
     cdn_thumb_url   VARCHAR(500),                           -- CDN 썸네일 이미지 URL (목록/검색/카테고리용)
@@ -2606,11 +2606,11 @@ COMMENT ON COLUMN pd_prod_img.upd_date       IS '수정일';
 CREATE INDEX idx_pd_prod_img_opt ON pd_prod_img (prod_id, opt_item_id_1, opt_item_id_2);
 
 CREATE TABLE IF NOT EXISTS pd_prod_sku (
-    sku_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (예: 색상-블랙)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (예: 사이즈-M)
+    sku_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,
+    opt_item_id_1   VARCHAR(21),                            -- 옵션1 값ID (예: 색상-블랙)
+    opt_item_id_2   VARCHAR(21),                            -- 옵션2 값ID (예: 사이즈-M)
     sku_code        VARCHAR(50),                            -- 자체 SKU 코드
     add_price       BIGINT          DEFAULT 0,              -- 옵션 추가금액
     prod_opt_stock  INTEGER         DEFAULT 0,              -- 옵션 조합별 재고
@@ -2662,9 +2662,9 @@ COMMENT ON COLUMN pd_prod_sku.upd_date       IS '수정일';
 --       └─ sku_id='SKU009', opt_item_id_2='ITEM006' (L), sku_code='TS-DNAVY-L',  stock=7
 
 CREATE TABLE IF NOT EXISTS pd_prod_opt (
-    opt_id            VARCHAR(16)     NOT NULL,
-    site_id           VARCHAR(16),                            -- sy_site.site_id
-    prod_id           VARCHAR(16)     NOT NULL,
+    opt_id            VARCHAR(21)     NOT NULL,
+    site_id           VARCHAR(21),                            -- sy_site.site_id
+    prod_id           VARCHAR(21)     NOT NULL,
     opt_grp_nm        VARCHAR(50)     NOT NULL,               -- 예: 색상, 사이즈
     opt_level         INTEGER         NOT NULL DEFAULT 1,     -- 옵션 차원 순서 (1=첫번째, 2=두번째)
     opt_type_cd       VARCHAR(20),                            -- 코드: OPT_TYPE (COLOR/SIZE/MATERIAL/CUSTOM)
@@ -2701,14 +2701,14 @@ COMMENT ON COLUMN pd_prod_opt.upd_date          IS '수정일';
 --   └─ opt_id='OPT002', opt_level=2, opt_type_cd='SIZE',  opt_grp_nm='사이즈', opt_input_type_cd='SELECT'
 
 CREATE TABLE IF NOT EXISTS pd_prod_opt_item (
-    opt_item_id         VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    opt_id              VARCHAR(16)     NOT NULL,               -- pd_prod_opt.opt_id
+    opt_item_id         VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    opt_id              VARCHAR(21)     NOT NULL,               -- pd_prod_opt.opt_id
     opt_type_cd         VARCHAR(20)     NOT NULL,               -- 코드: OPT_TYPE (COLOR/SIZE/MATERIAL/CUSTOM)
     opt_nm              VARCHAR(100)    NOT NULL,               -- 옵션값 표시명 (예: 빨강, M)
     opt_val             VARCHAR(50),                            -- 실제 저장값 (opt_val_code_id 선택 시 codeValue 자동 채움, 직접입력 가능)
     opt_val_code_id     VARCHAR(50),                            -- OPT_VAL 공통코드 참조ID (sy_code.code_id, NULL이면 직접입력)
-    parent_opt_item_id  VARCHAR(16),                            -- 상위 옵션값ID (2단 옵션에서 1단 값 참조, pd_prod_opt_item.opt_item_id)
+    parent_opt_item_id  VARCHAR(21),                            -- 상위 옵션값ID (2단 옵션에서 1단 값 참조, pd_prod_opt_item.opt_item_id)
     sort_ord            INTEGER         DEFAULT 0,
     use_yn              CHAR(1)         DEFAULT 'Y',
     reg_by              VARCHAR(16),
@@ -2769,9 +2769,9 @@ CREATE INDEX idx_pd_prod_opt_item_parent ON pd_prod_opt_item (parent_opt_item_id
 
 -- 상품 상세 컨텐츠 (HTML 에디터로 관리)
 CREATE TABLE IF NOT EXISTS pd_prod_content (
-    prod_content_id VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,              -- FK: pd_prod.prod_id
+    prod_content_id VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,              -- FK: pd_prod.prod_id
     content_type_cd VARCHAR(50)     NOT NULL,              -- 코드: PROD_CONTENT_TYPE (상세설명, 사용설명, 배송정보, AS정보, 반품정책 등)
     content_html    TEXT,                                   -- HTML 에디터 컨텐츠
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
@@ -2811,10 +2811,10 @@ CREATE INDEX idx_pd_prod_content_prod ON pd_prod_content (prod_id, content_type_
 
 -- 상품-태그 매핑
 CREATE TABLE IF NOT EXISTS pd_prod_tag (
-    prod_tag_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
-    tag_id          VARCHAR(16)     NOT NULL,               -- pd_tag.
+    prod_tag_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    prod_id         VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
+    tag_id          VARCHAR(21)     NOT NULL,               -- pd_tag.
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (prod_tag_id),
@@ -2839,9 +2839,9 @@ CREATE INDEX idx_pd_prod_tag_tag  ON pd_prod_tag (tag_id);
 -- ID 규칙   : YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_prod_rel (
-    prod_rel_id      VARCHAR(16)     NOT NULL,
-    prod_id          VARCHAR(16)     NOT NULL,                  -- 기준 상품 (pd_prod.prod_id)
-    rel_prod_id      VARCHAR(16)     NOT NULL,                  -- 연관 대상 상품 (pd_prod.prod_id)
+    prod_rel_id      VARCHAR(21)     NOT NULL,
+    prod_id          VARCHAR(21)     NOT NULL,                  -- 기준 상품 (pd_prod.prod_id)
+    rel_prod_id      VARCHAR(21)     NOT NULL,                  -- 연관 대상 상품 (pd_prod.prod_id)
     prod_rel_type_cd VARCHAR(20)     NOT NULL,                  -- 관계 유형 코드: PROD_REL_TYPE (REL_PROD / CODY_PROD)
     sort_ord         INTEGER         DEFAULT 0,                 -- 노출 정렬 순서 (낮을수록 우선)
     use_yn           CHAR(1)         DEFAULT 'Y',               -- 사용여부 Y/N
@@ -2888,11 +2888,11 @@ CREATE INDEX idx_pd_prod_rel_rel_prod_id  ON pd_prod_rel (rel_prod_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_prod_set_item (
-    set_item_id         VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    set_prod_id         VARCHAR(16)     NOT NULL,               -- 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
-    item_prod_id        VARCHAR(16),                            -- 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
-    item_sku_id         VARCHAR(16),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
+    set_item_id         VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    set_prod_id         VARCHAR(21)     NOT NULL,               -- 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
+    item_prod_id        VARCHAR(21),                            -- 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
+    item_sku_id         VARCHAR(21),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
     item_nm             VARCHAR(200)    NOT NULL,               -- 구성품 표시명 (예: 머그컵 1개)
     item_qty            INTEGER         DEFAULT 1,              -- 구성 수량
     item_desc           VARCHAR(300),                           -- 구성품 설명 (소재·용량 등 부가 안내)
@@ -2936,11 +2936,11 @@ CREATE INDEX idx_pd_prod_set_item_item ON pd_prod_set_item (item_prod_id) WHERE 
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_prod_bundle_item (
-    bundle_item_id      VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    bundle_prod_id      VARCHAR(16)     NOT NULL,               -- 묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)
-    item_prod_id        VARCHAR(16)     NOT NULL,               -- 구성품 상품ID (pd_prod.prod_id)
-    item_sku_id         VARCHAR(16),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
+    bundle_item_id      VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    bundle_prod_id      VARCHAR(21)     NOT NULL,               -- 묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)
+    item_prod_id        VARCHAR(21)     NOT NULL,               -- 구성품 상품ID (pd_prod.prod_id)
+    item_sku_id         VARCHAR(21),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
     item_qty            INTEGER         DEFAULT 1,              -- 구성 수량
     price_rate          DECIMAL(5,2)    NOT NULL,               -- 가격 안분율 (%) — 구성품 합계 100% 필수
     sort_ord            INTEGER         DEFAULT 0,              -- 노출 순서
@@ -2982,12 +2982,12 @@ CREATE INDEX idx_pd_prod_bundle_item_item    ON pd_prod_bundle_item (item_prod_i
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_prod_qna (
-    qna_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
-    sku_id          VARCHAR(16),                            -- pd_prod_sku.sku_id (특정 SKU 문의 시)
-    member_id       VARCHAR(16),                            -- mb_member.member_id
-    order_id        VARCHAR(16),                            -- od_order.order_id (주문 관련 문의 시)
+    qna_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
+    sku_id          VARCHAR(21),                            -- pd_prod_sku.sku_id (특정 SKU 문의 시)
+    member_id       VARCHAR(21),                            -- mb_member.member_id
+    order_id        VARCHAR(21),                            -- od_order.order_id (주문 관련 문의 시)
     qna_type_cd     VARCHAR(20),                            -- 코드: PROD_QNA_TYPE (SIZE/QUALITY/DLIV/ETC)
     qna_title       VARCHAR(200)    NOT NULL,
     qna_content     TEXT            NOT NULL,
@@ -2995,7 +2995,7 @@ CREATE TABLE IF NOT EXISTS pd_prod_qna (
     answ_yn         VARCHAR(1)      DEFAULT 'N',
     answ_content    TEXT,
     answ_date       TIMESTAMP,
-    answ_user_id    VARCHAR(16),                            -- 답변자 (sy_user.user_id)
+    answ_user_id    VARCHAR(21),                            -- 답변자 (sy_user.user_id)
     disp_yn         VARCHAR(1)      DEFAULT 'Y',            -- 노출 여부
     use_yn          VARCHAR(1)      DEFAULT 'Y',
     reg_by          VARCHAR(16),
@@ -3042,10 +3042,10 @@ CREATE INDEX idx_pd_prod_qna_site   ON pd_prod_qna (site_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_review (
-    review_id       VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,              -- pd_prod.prod_id
-    member_id       VARCHAR(16)     NOT NULL,              -- mb_member.member_id
+    review_id       VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,              -- pd_prod.prod_id
+    member_id       VARCHAR(21)     NOT NULL,              -- mb_member.member_id
     review_title    VARCHAR(200)    NOT NULL,
     review_content  TEXT            NOT NULL,
     rating          NUMERIC(3,1)    NOT NULL,              -- 1.0 ~ 5.0
@@ -3093,10 +3093,10 @@ CREATE INDEX idx_pd_review_date ON pd_review (review_date);
 -- attach_id → sy_attach.attach_id (파일 실체: url, file_nm, file_size 등은 sy_attach에서 조회)
 -- thumb_url은 동영상 썸네일처럼 별도 생성 파일이므로 유지
 CREATE TABLE IF NOT EXISTS pd_review_attach (
-    review_attach_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    review_id       VARCHAR(16)     NOT NULL,              -- pd_review.
-    attach_id       VARCHAR(16)     NOT NULL,              -- sy_attach.attach_id
+    review_attach_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    review_id       VARCHAR(21)     NOT NULL,              -- pd_review.
+    attach_id       VARCHAR(21)     NOT NULL,              -- sy_attach.attach_id
     media_type_cd   VARCHAR(20)     DEFAULT 'IMAGE',       -- 코드: MEDIA_TYPE (IMAGE/VIDEO)
     thumb_url       VARCHAR(500),                          -- 동영상 썸네일 URL (이미지는 sy_attach.url 사용)
     sort_ord        INTEGER         DEFAULT 0,
@@ -3131,12 +3131,12 @@ CREATE INDEX idx_pd_review_media_attach ON pd_review_attach (attach_id);
 -- [CODES] pd_review_attach.media_type_cd (미디어유형) : MEDIA_TYPE { IMAGE:이미지, VIDEO:동영상, DOCUMENT:문서 }
 
 CREATE TABLE IF NOT EXISTS pd_review_comment (
-    review_comment_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    review_id       VARCHAR(16)     NOT NULL,
-    parent_reply_id VARCHAR(16),                           -- 대댓글 시 상위 reply_id
+    review_comment_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    review_id       VARCHAR(21)     NOT NULL,
+    parent_reply_id VARCHAR(21),                           -- 대댓글 시 상위 reply_id
     writer_type_cd  VARCHAR(20)     DEFAULT 'MEMBER',      -- 코드: REVIEW_WRITER_TYPE (MEMBER/SELLER/ADMIN)
-    writer_id       VARCHAR(16),                           -- member_id 또는 user_id
+    writer_id       VARCHAR(21),                           -- member_id 또는 user_id
     writer_nm       VARCHAR(50),
     review_reply_content TEXT            NOT NULL,
     reply_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',      -- ACTIVE/HIDDEN/DELETED
@@ -3169,11 +3169,11 @@ COMMENT ON COLUMN pd_review_comment.upd_date      IS '수정일';
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_restock_noti (
-    restock_noti_id VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
-    sku_id          VARCHAR(16),                            -- pd_prod_sku.sku_id
-    member_id       VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    restock_noti_id VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
+    sku_id          VARCHAR(21),                            -- pd_prod_sku.sku_id
+    member_id       VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     noti_yn         VARCHAR(1)      DEFAULT 'N',            -- 알림 발송 여부
     noti_date       TIMESTAMP,                              -- 알림 발송 일시
     reg_by          VARCHAR(16),
@@ -3211,10 +3211,10 @@ CREATE INDEX idx_pd_restock_noti_noti   ON pd_restock_noti (noti_yn);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pd_category_prod (
-    category_prod_id        VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16),                                        -- sy_site.site_id
-    category_id             VARCHAR(16)     NOT NULL,                           -- pd_category.category_id
-    prod_id                 VARCHAR(16)     NOT NULL,                           -- pd_prod.prod_id
+    category_prod_id        VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21),                                        -- sy_site.site_id
+    category_id             VARCHAR(21)     NOT NULL,                           -- pd_category.category_id
+    prod_id                 VARCHAR(21)     NOT NULL,                           -- pd_prod.prod_id
     category_prod_type_cd   VARCHAR(20)     NOT NULL DEFAULT 'NORMAL',          -- 진열 유형
     sort_ord                INTEGER         DEFAULT 0,                          -- 동일 타입 내 표시 순서
     emphasis_cd             VARCHAR(200),                                       -- 강조옵션 (^BOLD^TEXT_COLOR^EMOTICON^MARQUEE^)
@@ -3247,14 +3247,14 @@ CREATE INDEX idx_pd_category_prod_prod ON pd_category_prod (prod_id, category_pr
 CREATE INDEX idx_pd_category_prod_cat  ON pd_category_prod (category_id, category_prod_type_cd, sort_ord);
 
 CREATE TABLE IF NOT EXISTS pdh_prod_chg_hist (
-    prod_chg_hist_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    prod_id         VARCHAR(16)     NOT NULL,
+    prod_chg_hist_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    prod_id         VARCHAR(21)     NOT NULL,
     chg_type_cd     VARCHAR(30),                            -- 변경유형코드 (PRICE / STOCK / STATUS)
     before_val      TEXT,
     after_val       TEXT,
     chg_reason      VARCHAR(200),
-    chg_user_id          VARCHAR(16),
+    chg_user_id          VARCHAR(21),
     chg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -3280,15 +3280,15 @@ COMMENT ON COLUMN pdh_prod_chg_hist.upd_date     IS '수정일';
 
 -- 상품 컨텐츠 변경 이력
 CREATE TABLE IF NOT EXISTS pdh_prod_content_chg_hist (
-    hist_id          VARCHAR(16)     NOT NULL,
-    site_id          VARCHAR(16),                            -- sy_site.site_id
-    prod_id          VARCHAR(16)     NOT NULL,              -- FK: pd_prod.prod_idprod_id
-    prod_content_id  VARCHAR(16)     NOT NULL,              -- FK: pd_prod_content.prod_content_id
+    hist_id          VARCHAR(21)     NOT NULL,
+    site_id          VARCHAR(21),                            -- sy_site.site_id
+    prod_id          VARCHAR(21)     NOT NULL,              -- FK: pd_prod.prod_idprod_id
+    prod_content_id  VARCHAR(21)     NOT NULL,              -- FK: pd_prod_content.prod_content_id
     content_type_cd  VARCHAR(50),                            -- 컨텐츠유형코드 (상세설명, 사용설명 등)
     content_before   TEXT,                                   -- 변경전 컨텐츠
     content_after    TEXT,                                   -- 변경후 컨텐츠
     chg_reason       VARCHAR(200),                           -- 변경사유
-    chg_user_id           VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id           VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP, -- 처리일시
     reg_by           VARCHAR(16),
     reg_date         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -3322,15 +3322,15 @@ CREATE INDEX idx_pdh_prod_content_chg_hist_prod ON pdh_prod_content_chg_hist (pr
 -- 가격 변경 → pdh_prod_sku_price_hist
 -- 재고 변경 → pdh_prod_sku_stock_hist
 CREATE TABLE IF NOT EXISTS pdh_prod_sku_chg_hist (
-    hist_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    sku_id          VARCHAR(16)     NOT NULL,               -- pd_prod_sku.sku_id
-    prod_id         VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
+    hist_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    sku_id          VARCHAR(21)     NOT NULL,               -- pd_prod_sku.sku_id
+    prod_id         VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
     chg_type_cd     VARCHAR(30)     NOT NULL,               -- 변경유형 (코드: SKU_CHG_TYPE — STATUS 등)
     before_val      VARCHAR(100),                           -- 변경 전 값
     after_val       VARCHAR(100),                           -- 변경 후 값
     chg_reason      VARCHAR(200),                           -- 변경사유
-    chg_by          VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_by          VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -3356,14 +3356,14 @@ CREATE INDEX idx_pdh_prod_sku_chg_hist_prod ON pdh_prod_sku_chg_hist (prod_id);
 
 -- SKU 가격 변경 이력
 CREATE TABLE IF NOT EXISTS pdh_prod_sku_price_hist (
-    hist_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    sku_id              VARCHAR(16)     NOT NULL,               -- pd_prod_sku.sku_id
-    prod_id             VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
+    hist_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    sku_id              VARCHAR(21)     NOT NULL,               -- pd_prod_sku.sku_id
+    prod_id             VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
     add_price_before    BIGINT          NOT NULL,               -- 변경 전 추가금액
     add_price_after     BIGINT          NOT NULL,               -- 변경 후 추가금액
     chg_reason          VARCHAR(200),                           -- 변경사유 (예: 가격인상, 프로모션 종료)
-    chg_by              VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_by              VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -3389,17 +3389,17 @@ CREATE INDEX idx_pdh_prod_sku_price_hist_date ON pdh_prod_sku_price_hist (chg_da
 
 -- SKU 재고 변경 이력
 CREATE TABLE IF NOT EXISTS pdh_prod_sku_stock_hist (
-    hist_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    sku_id              VARCHAR(16)     NOT NULL,               -- pd_prod_sku.sku_id
-    prod_id             VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
+    hist_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    sku_id              VARCHAR(21)     NOT NULL,               -- pd_prod_sku.sku_id
+    prod_id             VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
     stock_before        INTEGER         NOT NULL,               -- 변경 전 재고수량
     stock_after         INTEGER         NOT NULL,               -- 변경 후 재고수량
     chg_qty             INTEGER         NOT NULL,               -- 변동수량 (양수=입고, 음수=출고)
     chg_reason_cd       VARCHAR(20)     NOT NULL,               -- 코드: SKU_STOCK_CHG (변동사유)
     chg_reason          VARCHAR(200),                           -- 변동사유 상세
-    order_item_id       VARCHAR(16),                            -- 연관 주문상품ID (SALE/RETURN/EXCHANGE/CLAIM 시)
-    chg_by              VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    order_item_id       VARCHAR(21),                            -- 연관 주문상품ID (SALE/RETURN/EXCHANGE/CLAIM 시)
+    chg_by              VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -3444,13 +3444,13 @@ CREATE INDEX idx_pdh_prod_sku_stock_hist_order  ON pdh_prod_sku_stock_hist (orde
 -- ec_prod_status_hist : 상품 상태 이력 (status_cd 변경 추적)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pdh_prod_status_hist (
-    prod_status_hist_id  VARCHAR(16)     NOT NULL,
-    site_id              VARCHAR(16),                            -- sy_site.site_id
-    prod_id              VARCHAR(16)     NOT NULL,
+    prod_status_hist_id  VARCHAR(21)     NOT NULL,
+    site_id              VARCHAR(21),                            -- sy_site.site_id
+    prod_id              VARCHAR(21)     NOT NULL,
     before_status_cd     VARCHAR(20),                            -- 이전 상태 (코드: PRODUCT_STATUS)
     after_status_cd      VARCHAR(20)     NOT NULL,               -- 변경 상태
     memo                 VARCHAR(300),                           -- 처리 메모
-    proc_user_id              VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    proc_user_id              VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     proc_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by               VARCHAR(16),
     reg_date             TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -3488,12 +3488,12 @@ CREATE INDEX idx_pdh_prod_status_hist_date ON pdh_prod_status_hist (proc_date);
 -- 용도: 최근 본 상품, 인기 상품 집계, 개인화 추천 기반 데이터
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pdh_prod_view_log (
-    log_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    member_id       VARCHAR(16),                           -- 비회원 NULL
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    member_id       VARCHAR(21),                           -- 비회원 NULL
     session_key     VARCHAR(100),                          -- 비회원 세션키
-    prod_id       VARCHAR(16)     NOT NULL,              -- PROD
-    ref_id          VARCHAR(16),                           -- prod_id별 참조ID (prod_id, category_id 등)
+    prod_id       VARCHAR(21)     NOT NULL,              -- PROD
+    ref_id          VARCHAR(21),                           -- prod_id별 참조ID (prod_id, category_id 등)
     ref_nm          VARCHAR(200),                          -- 참조명 스냅샷 (상품명 등)
     search_kw       VARCHAR(200),                          -- prod_id=SEARCH 시 검색어
     ip              VARCHAR(50),
@@ -3539,14 +3539,14 @@ CREATE INDEX idx_ec_pvl_date   ON pdh_prod_view_log (view_date);
 -- 설계: 헤더 없이 행 단위로 관리. member_id + prod_id + 옵션 조합이 PK 역할.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS od_cart (
-    cart_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16),                           -- mb_member.member_id (비회원 NULL)
+    cart_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21),                           -- mb_member.member_id (비회원 NULL)
     session_key     VARCHAR(100),                          -- 비회원 세션키
-    prod_id         VARCHAR(16)     NOT NULL,              -- pd_prod.prod_id
-    sku_id          VARCHAR(16),                           -- pd_prod_sku.sku_id
-    opt_item_id_1   VARCHAR(16),                           -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상)
-    opt_item_id_2   VARCHAR(16),                           -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈)
+    prod_id         VARCHAR(21)     NOT NULL,              -- pd_prod.prod_id
+    sku_id          VARCHAR(21),                           -- pd_prod_sku.sku_id
+    opt_item_id_1   VARCHAR(21),                           -- 옵션1 값ID (pd_prod_opt_item.opt_item_id, 예: 색상)
+    opt_item_id_2   VARCHAR(21),                           -- 옵션2 값ID (pd_prod_opt_item.opt_item_id, 예: 사이즈)
     unit_price      BIGINT          DEFAULT 0,             -- 단가 (담을 시점)
     order_qty       INTEGER         DEFAULT 1,
     item_price      BIGINT          DEFAULT 0,             -- 소계 (unit_price × order_qty)
@@ -3582,9 +3582,9 @@ CREATE INDEX idx_od_cart_prod    ON od_cart (prod_id);
 
 -- 주문 마스터
 CREATE TABLE IF NOT EXISTS od_order (
-    order_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16)     NOT NULL,
+    order_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
     member_nm       VARCHAR(50),
     orderer_email   VARCHAR(100),                           -- 주문자 이메일 (주문 시점 스냅샷)
     order_grade_cd  VARCHAR(20),                            -- 주문 시점 회원등급 (코드: MEMBER_GRADE)
@@ -3623,7 +3623,7 @@ CREATE TABLE IF NOT EXISTS od_order (
     refund_account_no VARCHAR(50),
     refund_account_nm VARCHAR(50),
     -- ── 쿠폰/메모 ──
-    coupon_id       VARCHAR(16),
+    coupon_id       VARCHAR(21),
     memo            TEXT,
     -- ── 배송 요약 (최신 출고 기준 역정규화) ──
     dliv_courier_cd  VARCHAR(30),                           -- 최근 출고 택배사 (코드: COURIER)
@@ -3642,9 +3642,9 @@ CREATE TABLE IF NOT EXISTS od_order (
     appr_target_cd      VARCHAR(30),                        -- 코드: APPROVAL_TARGET (ORDER/PROD/DLIV/EXTRA)
     appr_target_nm      VARCHAR(200),
     appr_reason         VARCHAR(500),
-    appr_req_user_id    VARCHAR(16),
+    appr_req_user_id    VARCHAR(21),
     appr_req_date       TIMESTAMP,
-    appr_aprv_user_id   VARCHAR(16),
+    appr_aprv_user_id   VARCHAR(21),
     appr_aprv_date      TIMESTAMP,
     PRIMARY KEY (order_id)
 );
@@ -3726,17 +3726,17 @@ CREATE INDEX idx_od_order_channel  ON od_order (access_channel_cd);
 
 -- 주문 상품
 CREATE TABLE IF NOT EXISTS od_order_item (
-    order_item_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    order_id        VARCHAR(16)     NOT NULL,
-    prod_id         VARCHAR(16)     NOT NULL,
-    sku_id          VARCHAR(16),                            -- pd_prod_sku.sku_id
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
+    order_item_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    order_id        VARCHAR(21)     NOT NULL,
+    prod_id         VARCHAR(21)     NOT NULL,
+    sku_id          VARCHAR(21),                            -- pd_prod_sku.sku_id
+    opt_item_id_1   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
+    opt_item_id_2   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
     -- ── 상품 스냅샷 (주문 시점) ──
     prod_nm         VARCHAR(200),                           -- 상품명 스냅샷
     brand_nm        VARCHAR(100),                           -- 브랜드명 스냅샷
-    dliv_tmplt_id   VARCHAR(16),                            -- 배송비 템플릿ID 스냅샷
+    dliv_tmplt_id   VARCHAR(21),                            -- 배송비 템플릿ID 스냅샷
     -- ── 금액 (현재값) ──
     normal_price    BIGINT          DEFAULT 0,              -- 정상가 (할인 전 1ea)
     unit_price      BIGINT          DEFAULT 0,              -- 판매가 (단가, 옵션추가금 포함)
@@ -3772,7 +3772,7 @@ CREATE TABLE IF NOT EXISTS od_order_item (
     bundle_group_id     VARCHAR(36),                        -- 묶음 그룹 키 (동일 묶음 구성품 묶음, UUID)
     bundle_price_rate   DECIMAL(5,2),                       -- 묶음 가격 안분율 (%) — pd_prod_bundle.price_rate 스냅샷
     -- ── 사은품 ──
-    gift_id             VARCHAR(16),                        -- 발급 사은품ID (pm_gift.gift_id)
+    gift_id             VARCHAR(21),                        -- 발급 사은품ID (pm_gift.gift_id)
     -- ── 부분배송 시 배송정보 ──
     outbound_shipping_fee BIGINT        DEFAULT 0,
     dliv_courier_cd     VARCHAR(30),                        -- 코드: COURIER
@@ -3852,9 +3852,9 @@ CREATE INDEX idx_od_order_item_bundle   ON od_order_item (bundle_group_id) WHERE
 -- 환불 시 주문쿠폰 안분 계산 및 복원 기준 데이터
 -- ============================================================
 CREATE TABLE IF NOT EXISTS od_order_discnt (
-    order_discnt_id     VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id
+    order_discnt_id     VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id
     -- ── 할인/차감 구분 ──
     discnt_type_cd      VARCHAR(30)     NOT NULL,               -- 코드: ORDER_DISCNT_TYPE
                                                                 --   ORDER_COUPON : 주문쿠폰 할인
@@ -3863,8 +3863,8 @@ CREATE TABLE IF NOT EXISTS od_order_discnt (
                                                                 --   SHIP_DISCNT  : 배송비 할인
                                                                 --   PROMO_DISCNT : 프로모션 할인 (기타)
     -- ── 쿠폰 연결 (ORDER_COUPON인 경우) ──
-    coupon_id           VARCHAR(16),                            -- pm_coupon.coupon_id
-    coupon_issue_id     VARCHAR(16),                            -- pm_coupon_issue.coupon_issue_id
+    coupon_id           VARCHAR(21),                            -- pm_coupon.coupon_id
+    coupon_issue_id     VARCHAR(21),                            -- pm_coupon_issue.coupon_issue_id
     -- ── 금액 ──
     discnt_rate         DECIMAL(5,2),                           -- 할인율 (%) — 비율할인인 경우
     discnt_amt          BIGINT          DEFAULT 0,              -- 할인·차감 금액
@@ -3912,17 +3912,17 @@ CREATE INDEX idx_od_order_discnt_restore   ON od_order_discnt (restore_yn);
 -- 환불 시 개당 유효단가 계산의 기준 데이터
 -- ============================================================
 CREATE TABLE IF NOT EXISTS od_order_item_discnt (
-    item_discnt_id      VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id
-    order_item_id       VARCHAR(16)     NOT NULL,               -- od_order_item.order_item_id
+    item_discnt_id      VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id
+    order_item_id       VARCHAR(21)     NOT NULL,               -- od_order_item.order_item_id
     -- ── 할인 구분 ──
     discnt_type_cd      VARCHAR(30)     NOT NULL,               -- 코드: ORDER_ITEM_DISCNT_TYPE
                                                                 --   ITEM_DISCNT  : 즉시할인 (상품 판매가 기준 직접 할인)
                                                                 --   ITEM_COUPON  : 상품쿠폰 할인
     -- ── 쿠폰 연결 (ITEM_COUPON인 경우) ──
-    coupon_id           VARCHAR(16),                            -- pm_coupon.coupon_id
-    coupon_issue_id     VARCHAR(16),                            -- pm_coupon_issue.coupon_issue_id
+    coupon_id           VARCHAR(21),                            -- pm_coupon.coupon_id
+    coupon_issue_id     VARCHAR(21),                            -- pm_coupon_issue.coupon_issue_id
     -- ── 할인 금액 ──
     discnt_rate         DECIMAL(5,2),                           -- 할인율 (%) — 비율할인인 경우
     unit_discnt_amt     BIGINT          DEFAULT 0,              -- 1개당 할인금액
@@ -3966,10 +3966,10 @@ CREATE INDEX idx_od_item_discnt_coupon     ON od_order_item_discnt (coupon_id) W
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS od_pay (
-    pay_id              VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.
-    claim_id            VARCHAR(16),                            -- od_claim. (클레임 추가결제 시)
+    pay_id              VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.
+    claim_id            VARCHAR(21),                            -- od_claim. (클레임 추가결제 시)
     -- ── 결제 구분 ──
     pay_div_cd          VARCHAR(20),                            -- 주문/클레임 구분 (코드: PAY_DIV — ORDER/CLAIM)
     pay_dir_cd          VARCHAR(20),                            -- 입금/환불 방향 (코드: PAY_DIR — DEPOSIT/REFUND)
@@ -4087,8 +4087,8 @@ CREATE INDEX idx_od_pay_div           ON od_pay (pay_div_cd, pay_dir_cd);
 
 -- ============================================================
 CREATE TABLE IF NOT EXISTS od_pay_method (
-    pay_method_id              VARCHAR(16)     NOT NULL,
-    member_id               VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    pay_method_id              VARCHAR(21)     NOT NULL,
+    member_id               VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     pay_method_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: PAY_METHOD (CARD/BANK/KAKAO/NAVER/TOSS 등)
     pay_method_nm              VARCHAR(100)    NOT NULL,               -- 결제수단 이름 (예: 신한카드, 카카오페이)
     pay_method_alias           VARCHAR(100),                           -- 별칭 (사용자 설정)
@@ -4128,10 +4128,10 @@ CREATE INDEX idx_od_pay_method_type   ON od_pay_method (pay_method_type_cd);
 -- 환불 총액 및 상태 관리 — 수단별 내역은 od_refund_method
 -- ============================================================
 CREATE TABLE IF NOT EXISTS od_refund (
-    refund_id           VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id
-    claim_id            VARCHAR(16),                            -- od_claim.claim_id (클레임 환불 시)
+    refund_id           VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id
+    claim_id            VARCHAR(21),                            -- od_claim.claim_id (클레임 환불 시)
     -- ── 환불 구분 ──
     refund_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: REFUND_TYPE
                                                                 --   CANCEL   : 주문취소 환불
@@ -4208,10 +4208,10 @@ CREATE INDEX idx_od_refund_req_date  ON od_refund (refund_req_date);
 -- 우선순위: 카드(1) → 캐쉬(2) → 적립금(3)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS od_refund_method (
-    refund_method_id    VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    refund_id           VARCHAR(16)     NOT NULL,               -- od_refund.refund_id
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id (조회 편의)
+    refund_method_id    VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    refund_id           VARCHAR(21)     NOT NULL,               -- od_refund.refund_id
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id (조회 편의)
     -- ── 수단 정보 ──
     pay_method_cd       VARCHAR(20)     NOT NULL,               -- 코드: PAY_METHOD (BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
                                                                 --   CACHE : 캐쉬(충전금) 차감분 환불
@@ -4225,7 +4225,7 @@ CREATE TABLE IF NOT EXISTS od_refund_method (
     refund_status_cd_before VARCHAR(20),
     refund_date         TIMESTAMP,                              -- 해당 수단 환불 완료일시
     -- ── PG/내부 처리 참조 ──
-    pay_id              VARCHAR(16),                            -- od_pay.pay_id (원 결제 레코드 참조)
+    pay_id              VARCHAR(21),                            -- od_pay.pay_id (원 결제 레코드 참조)
     pg_refund_id        VARCHAR(100),                           -- PG 환불 거래ID
     pg_response         TEXT,                                   -- PG 환불 응답 JSON
     -- ── 기본 ──
@@ -4270,12 +4270,12 @@ CREATE INDEX idx_od_refund_method_prio    ON od_refund_method (refund_id, refund
 
 -- 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송)
 CREATE TABLE IF NOT EXISTS od_dliv (
-    dliv_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    order_id        VARCHAR(16)     NOT NULL,
-    claim_id        VARCHAR(16),                            -- od_claim. (클레임 배송일 때만)
-    vendor_id       VARCHAR(16),                            -- 분리출고 시 담당 업체
-    member_id       VARCHAR(16),
+    dliv_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    order_id        VARCHAR(21)     NOT NULL,
+    claim_id        VARCHAR(21),                            -- od_claim. (클레임 배송일 때만)
+    vendor_id       VARCHAR(21),                            -- 분리출고 시 담당 업체
+    member_id       VARCHAR(21),
     member_nm       VARCHAR(50),
     -- ── 수령지 ──
     recv_nm         VARCHAR(50),
@@ -4305,7 +4305,7 @@ CREATE TABLE IF NOT EXISTS od_dliv (
     shipping_discount_amt BIGINT     DEFAULT 0,             -- 배송비 쿠폰할인금액
     shipping_fee_type_cd VARCHAR(20),                       -- 코드: SHIPPING_FEE_TYPE (OUTBOUND/RETURN/INBOUND/EXCHANGE)
     -- ── 교환 참조 ──
-    parent_dliv_id  VARCHAR(16),                            -- 교환 시 원본 배송 참조
+    parent_dliv_id  VARCHAR(21),                            -- 교환 시 원본 배송 참조
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -4317,9 +4317,9 @@ CREATE TABLE IF NOT EXISTS od_dliv (
     appr_target_cd      VARCHAR(30),                        -- 코드: APPROVAL_TARGET
     appr_target_nm      VARCHAR(200),
     appr_reason         VARCHAR(500),
-    appr_req_user_id    VARCHAR(16),
+    appr_req_user_id    VARCHAR(21),
     appr_req_date       TIMESTAMP,
-    appr_aprv_user_id   VARCHAR(16),
+    appr_aprv_user_id   VARCHAR(21),
     appr_aprv_date      TIMESTAMP,
     PRIMARY KEY (dliv_id)
 );
@@ -4391,13 +4391,13 @@ CREATE INDEX idx_od_dliv_ship_date ON od_dliv (dliv_ship_date);
 -- 1 ec_dliv → N ec_dliv_item → 1 ec_order_item (1:1 참조)
 -- 부분출고 시 qty < order_item.qty 가능
 CREATE TABLE IF NOT EXISTS od_dliv_item (
-    dliv_item_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    dliv_id         VARCHAR(16)     NOT NULL,
-    order_item_id   VARCHAR(16)     NOT NULL,               -- 원 주문상품ID
-    prod_id         VARCHAR(16),
-    opt_item_id_1   VARCHAR(16),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
-    opt_item_id_2   VARCHAR(16),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
+    dliv_item_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    dliv_id         VARCHAR(21)     NOT NULL,
+    order_item_id   VARCHAR(21)     NOT NULL,               -- 원 주문상품ID
+    prod_id         VARCHAR(21),
+    opt_item_id_1   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt_item.opt_item_id)
+    opt_item_id_2   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt_item.opt_item_id)
     dliv_type_cd    VARCHAR(20)     DEFAULT 'OUT',           -- 입출고구분: OUT 출고 / IN 입고(반품)
     unit_price      BIGINT          DEFAULT 0,
     dliv_qty        INTEGER         DEFAULT 1,              -- 이 배송의 출고수량 (부분출고 시 < 주문수량)
@@ -4436,10 +4436,10 @@ COMMENT ON COLUMN od_dliv_item.upd_date      IS '수정일';
 
 -- 클레임 (취소/반품/교환)
 CREATE TABLE IF NOT EXISTS od_claim (
-    claim_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    order_id        VARCHAR(16)     NOT NULL,
-    member_id       VARCHAR(16),
+    claim_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    order_id        VARCHAR(21)     NOT NULL,
+    member_id       VARCHAR(21),
     member_nm       VARCHAR(50),
     claim_type_cd   VARCHAR(20)     NOT NULL,               -- 코드: CLAIM_TYPE (CANCEL/RETURN/EXCHANGE)
     claim_status_cd VARCHAR(20)     DEFAULT 'REQUESTED',    -- 코드: CLAIM_STATUS
@@ -4465,7 +4465,7 @@ CREATE TABLE IF NOT EXISTS od_claim (
     -- ── 처리 정보 ──
     request_date    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     proc_date       TIMESTAMP,
-    proc_user_id    VARCHAR(16),
+    proc_user_id    VARCHAR(21),
     memo            TEXT,
     -- ── 추가배송비 ──
     add_shipping_fee     BIGINT      DEFAULT 0,             -- 추가배송비 (교환=출고배송비, 반품/취소=무료배송조건 파괴 시)
@@ -4488,7 +4488,7 @@ CREATE TABLE IF NOT EXISTS od_claim (
     inbound_shipping_fee BIGINT      DEFAULT 0,             -- 반입배송료
     inbound_courier_cd   VARCHAR(30),                       -- 코드: COURIER
     inbound_tracking_no  VARCHAR(100),
-    inbound_dliv_id      VARCHAR(16),                       -- 반입 배송ID (od_dliv.)
+    inbound_dliv_id      VARCHAR(21),                       -- 반입 배송ID (od_dliv.)
     -- ── 교환 배송지 (원 주문 배송지와 다를 경우 별도 설정) ──
     exch_recv_nm         VARCHAR(50),                       -- 교환 수령자명
     exch_recv_phone      VARCHAR(20),
@@ -4500,7 +4500,7 @@ CREATE TABLE IF NOT EXISTS od_claim (
     exchange_shipping_fee BIGINT     DEFAULT 0,             -- 교환상품 발송배송료
     exchange_courier_cd   VARCHAR(30),                      -- 코드: COURIER
     exchange_tracking_no  VARCHAR(100),
-    outbound_dliv_id      VARCHAR(16),                      -- 교환상품 발송 배송ID (od_dliv.)
+    outbound_dliv_id      VARCHAR(21),                      -- 교환상품 발송 배송ID (od_dliv.)
     -- ── 배송료 정산 ──
     total_shipping_fee    BIGINT     DEFAULT 0,             -- 총 배송료 (수거+반입+발송)
     shipping_fee_paid_yn  CHAR(1)    DEFAULT 'N',
@@ -4517,9 +4517,9 @@ CREATE TABLE IF NOT EXISTS od_claim (
     appr_target_cd      VARCHAR(30),                        -- 코드: APPROVAL_TARGET
     appr_target_nm      VARCHAR(200),
     appr_reason         VARCHAR(500),
-    appr_req_user_id    VARCHAR(16),
+    appr_req_user_id    VARCHAR(21),
     appr_req_date       TIMESTAMP,
-    appr_aprv_user_id   VARCHAR(16),
+    appr_aprv_user_id   VARCHAR(21),
     appr_aprv_date      TIMESTAMP,
     PRIMARY KEY (claim_id)
 );
@@ -4624,11 +4624,11 @@ CREATE INDEX idx_od_claim_date     ON od_claim (request_date);
 
 -- 클레임 항목 (클레임 대상 주문상품 명세)
 CREATE TABLE IF NOT EXISTS od_claim_item (
-    claim_item_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    claim_id        VARCHAR(16)     NOT NULL,
-    order_item_id   VARCHAR(16)     NOT NULL,               -- 원 주문상품ID
-    prod_id         VARCHAR(16),
+    claim_item_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    claim_id        VARCHAR(21)     NOT NULL,
+    order_item_id   VARCHAR(21)     NOT NULL,               -- 원 주문상품ID
+    prod_id         VARCHAR(21),
     prod_nm         VARCHAR(200),                           -- 상품명 (주문시점 스냅샷)
     prod_option     VARCHAR(500),                           -- 옵션 (색상/사이즈 스냅샷)
     unit_price      BIGINT          DEFAULT 0,              -- 판매가 (단가)
@@ -4677,13 +4677,13 @@ COMMENT ON COLUMN od_claim_item.upd_date      IS '수정일';
 
 -- 주문 상태 이력
 CREATE TABLE IF NOT EXISTS odh_order_status_hist (
-    order_status_hist_id    VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16),                            -- sy_site.site_id
-    order_id                VARCHAR(16)     NOT NULL,               -- od_order.order_id
+    order_status_hist_id    VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21),                            -- sy_site.site_id
+    order_id                VARCHAR(21)     NOT NULL,               -- od_order.order_id
     order_status_cd_before  VARCHAR(20),                            -- 변경 전 주문상태 (코드: ORDER_STATUS)
     order_status_cd         VARCHAR(20),                            -- 변경 후 주문상태 (코드: ORDER_STATUS)
     status_reason           VARCHAR(300),                           -- 상태 변경 사유
-    chg_user_id             VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id             VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                    VARCHAR(300),
     reg_by                  VARCHAR(16),
@@ -4722,15 +4722,15 @@ CREATE INDEX idx_odh_order_status_hist_date  ON odh_order_status_hist (chg_date)
 --   chg_type 예: PAY_METHOD / RECV_INFO / AMOUNT / MEMO / COUPON / CACHE / APPROVAL
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_order_chg_hist (
-    order_chg_hist_id  VARCHAR(16)     NOT NULL,
-    site_id            VARCHAR(16),                            -- sy_site.site_id
-    order_id           VARCHAR(16)     NOT NULL,
+    order_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id            VARCHAR(21),                            -- sy_site.site_id
+    order_id           VARCHAR(21)     NOT NULL,
     chg_type_cd        VARCHAR(30)     NOT NULL,               -- 변경유형코드 (PAY_METHOD/RECV_INFO/AMOUNT/MEMO/COUPON/CACHE/APPROVAL)
     chg_field          VARCHAR(50),                            -- 변경 필드명 (예: pay_method_cd, recv_addr)
     before_val         TEXT,                                   -- 변경전값
     after_val          TEXT,                                   -- 변경후값
     chg_reason         VARCHAR(300),                           -- 변경사유
-    chg_user_id             VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id             VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by             VARCHAR(16),
     reg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -4761,14 +4761,14 @@ CREATE INDEX idx_odh_order_chg_hist_date  ON odh_order_chg_hist (chg_date);
 
 -- 주문상품 상태 이력
 CREATE TABLE IF NOT EXISTS odh_order_item_status_hist (
-    order_item_status_hist_id    VARCHAR(16)     NOT NULL,
-    site_id                      VARCHAR(16),                        -- sy_site.site_id
-    order_item_id                VARCHAR(16)     NOT NULL,           -- od_order_item.order_item_id
-    order_id                     VARCHAR(16),                        -- od_order.order_id (조회 편의)
+    order_item_status_hist_id    VARCHAR(21)     NOT NULL,
+    site_id                      VARCHAR(21),                        -- sy_site.site_id
+    order_item_id                VARCHAR(21)     NOT NULL,           -- od_order_item.order_item_id
+    order_id                     VARCHAR(21),                        -- od_order.order_id (조회 편의)
     order_item_status_cd_before  VARCHAR(20),                        -- 변경 전 주문상품상태 (코드: ORDER_ITEM_STATUS)
     order_item_status_cd         VARCHAR(20),                        -- 변경 후 주문상품상태 (코드: ORDER_ITEM_STATUS)
     status_reason                VARCHAR(300),                       -- 상태 변경 사유
-    chg_user_id                  VARCHAR(16),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id                  VARCHAR(21),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date                     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                         VARCHAR(300),
     reg_by                       VARCHAR(16),
@@ -4809,16 +4809,16 @@ CREATE INDEX idx_od_oi_status_hist_date  ON odh_order_item_status_hist (chg_date
 --   chg_type 예: QTY / PRICE / OPT / STATUS / AMOUNT / COUPON
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_order_item_chg_hist (
-    order_item_chg_hist_id  VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16),                            -- sy_site.site_id
-    order_id                VARCHAR(16)     NOT NULL,               -- od_order.
-    order_item_id           VARCHAR(16)     NOT NULL,               -- od_order_item.
+    order_item_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21),                            -- sy_site.site_id
+    order_id                VARCHAR(21)     NOT NULL,               -- od_order.
+    order_item_id           VARCHAR(21)     NOT NULL,               -- od_order_item.
     chg_type_cd             VARCHAR(30)     NOT NULL,               -- 변경유형코드 (QTY/PRICE/OPT/STATUS/AMOUNT/COUPON)
     chg_field               VARCHAR(50),                            -- 변경 필드명
     before_val              TEXT,                                   -- 변경전값
     after_val               TEXT,                                   -- 변경후값
     chg_reason              VARCHAR(300),                           -- 변경사유
-    chg_user_id                  VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id                  VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by                  VARCHAR(16),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -4855,14 +4855,14 @@ CREATE INDEX idx_odh_order_item_chg_hist_date  ON odh_order_item_chg_hist (chg_d
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_pay_status_hist (
-    pay_status_hist_id    VARCHAR(16)     NOT NULL,
-    site_id               VARCHAR(16),                        -- sy_site.site_id
-    pay_id                VARCHAR(16)     NOT NULL,           -- od_pay.
-    order_id              VARCHAR(16)     NOT NULL,           -- od_order.
+    pay_status_hist_id    VARCHAR(21)     NOT NULL,
+    site_id               VARCHAR(21),                        -- sy_site.site_id
+    pay_id                VARCHAR(21)     NOT NULL,           -- od_pay.
+    order_id              VARCHAR(21)     NOT NULL,           -- od_order.
     pay_status_cd_before  VARCHAR(20),                        -- 변경 전 결제상태 (코드: PAY_STATUS)
     pay_status_cd         VARCHAR(20),                        -- 변경 후 결제상태 (코드: PAY_STATUS)
     status_reason         VARCHAR(300),                       -- 상태 변경 사유
-    chg_user_id           VARCHAR(16),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id           VARCHAR(21),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date              TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                  VARCHAR(300),
     reg_by                VARCHAR(16),
@@ -4905,10 +4905,10 @@ CREATE INDEX idx_odh_pay_status_hist_date  ON odh_pay_status_hist (chg_date);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_pay_chg_hist (
-    pay_chg_hist_id     VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    pay_id              VARCHAR(16)     NOT NULL,               -- od_pay.
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.
+    pay_chg_hist_id     VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    pay_id              VARCHAR(21)     NOT NULL,               -- od_pay.
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.
     pay_status_cd_before VARCHAR(20),                           -- 변경 전 결제상태 (PAY_STATUS)
     pay_status_cd_after VARCHAR(20),                            -- 변경 후 결제상태 (PAY_STATUS)
     chg_type_cd         VARCHAR(30)     NOT NULL,               -- 코드: PAYMENT_CHG_TYPE
@@ -4918,7 +4918,7 @@ CREATE TABLE IF NOT EXISTS odh_pay_chg_hist (
     pg_response         TEXT,                                   -- PG 응답 데이터 (JSON)
     refund_amt          BIGINT,                                 -- 환불 금액 (환불 시만)
     refund_pg_tid       VARCHAR(100),                           -- 환불 거래 ID (환불 시만)
-    chg_user_id         VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id         VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                VARCHAR(300),
     reg_by              VARCHAR(16),
@@ -4961,14 +4961,14 @@ CREATE INDEX idx_odh_pay_chg_hist_date       ON odh_pay_chg_hist (chg_date);
 
 -- 배송 상태 이력
 CREATE TABLE IF NOT EXISTS odh_dliv_status_hist (
-    dliv_status_hist_id    VARCHAR(16)     NOT NULL,
-    site_id                VARCHAR(16),                            -- sy_site.site_id
-    dliv_id                VARCHAR(16)     NOT NULL,               -- od_dliv.dliv_id
-    order_id               VARCHAR(16),                            -- od_order.order_id (조회 편의)
+    dliv_status_hist_id    VARCHAR(21)     NOT NULL,
+    site_id                VARCHAR(21),                            -- sy_site.site_id
+    dliv_id                VARCHAR(21)     NOT NULL,               -- od_dliv.dliv_id
+    order_id               VARCHAR(21),                            -- od_order.order_id (조회 편의)
     dliv_status_cd_before  VARCHAR(20),                            -- 변경 전 배송상태 (코드: DLIV_STATUS)
     dliv_status_cd         VARCHAR(20),                            -- 변경 후 배송상태 (코드: DLIV_STATUS)
     status_reason          VARCHAR(300),                           -- 상태 변경 사유
-    chg_user_id            VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id            VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date               TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                   VARCHAR(300),
     reg_by                 VARCHAR(16),
@@ -5009,15 +5009,15 @@ CREATE INDEX idx_odh_dliv_status_hist_date  ON odh_dliv_status_hist (chg_date);
 --   chg_type 예: COURIER / TRACKING / RECV_INFO / MEMO / SPLIT / MERGE
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_dliv_chg_hist (
-    dliv_chg_hist_id  VARCHAR(16)     NOT NULL,
-    site_id           VARCHAR(16),                            -- sy_site.site_id
-    dliv_id           VARCHAR(16)     NOT NULL,
+    dliv_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id           VARCHAR(21),                            -- sy_site.site_id
+    dliv_id           VARCHAR(21)     NOT NULL,
     chg_type_cd       VARCHAR(30)     NOT NULL,               -- 변경유형코드 (COURIER/TRACKING/RECV_INFO/MEMO/SPLIT/MERGE)
     chg_field         VARCHAR(50),                            -- 변경 필드명 (예: courier_cd, tracking_no, recv_addr)
     before_val        TEXT,                                   -- 변경전값
     after_val         TEXT,                                   -- 변경후값
     chg_reason        VARCHAR(300),                           -- 변경사유
-    chg_user_id            VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id            VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by            VARCHAR(16),
     reg_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5051,16 +5051,16 @@ CREATE INDEX idx_odh_dliv_chg_hist_date ON odh_dliv_chg_hist (chg_date);
 --   chg_type 예: QTY / STATUS / CARRIER / TRACK_NO / RECV_INFO
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_dliv_item_chg_hist (
-    dliv_item_chg_hist_id  VARCHAR(16)     NOT NULL,
-    site_id                VARCHAR(16),                            -- sy_site.site_id
-    dliv_id                VARCHAR(16)     NOT NULL,               -- od_dliv.
-    dliv_item_id           VARCHAR(16)     NOT NULL,               -- od_dliv_item.
+    dliv_item_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id                VARCHAR(21),                            -- sy_site.site_id
+    dliv_id                VARCHAR(21)     NOT NULL,               -- od_dliv.
+    dliv_item_id           VARCHAR(21)     NOT NULL,               -- od_dliv_item.
     chg_type_cd            VARCHAR(30)     NOT NULL,               -- 변경유형코드 (QTY/STATUS/CARRIER/TRACK_NO/RECV_INFO)
     chg_field              VARCHAR(50),                            -- 변경 필드명
     before_val             TEXT,                                   -- 변경전값
     after_val              TEXT,                                   -- 변경후값
     chg_reason             VARCHAR(300),                           -- 변경사유
-    chg_user_id                 VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id                 VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date               TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by                 VARCHAR(16),
     reg_date               TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5093,14 +5093,14 @@ CREATE INDEX idx_odh_dliv_item_chg_hist_date ON odh_dliv_item_chg_hist (chg_date
 
 -- 클레임 상태 이력
 CREATE TABLE IF NOT EXISTS odh_claim_status_hist (
-    claim_status_hist_id    VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16),                            -- sy_site.site_id
-    claim_id                VARCHAR(16)     NOT NULL,               -- od_claim.claim_id
-    order_id                VARCHAR(16),                            -- od_order.order_id (조회 편의)
+    claim_status_hist_id    VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21),                            -- sy_site.site_id
+    claim_id                VARCHAR(21)     NOT NULL,               -- od_claim.claim_id
+    order_id                VARCHAR(21),                            -- od_order.order_id (조회 편의)
     claim_status_cd_before  VARCHAR(20),                            -- 변경 전 클레임상태 (코드: CLAIM_STATUS)
     claim_status_cd         VARCHAR(20),                            -- 변경 후 클레임상태 (코드: CLAIM_STATUS)
     status_reason           VARCHAR(300),                           -- 상태 변경 사유
-    chg_user_id             VARCHAR(16),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id             VARCHAR(21),                            -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                    VARCHAR(300),
     reg_by                  VARCHAR(16),
@@ -5141,15 +5141,15 @@ CREATE INDEX idx_odh_claim_status_hist_date  ON odh_claim_status_hist (chg_date)
 --   chg_type 예: CLAIM_TYPE / REASON / AMOUNT / APPROVAL / MEMO / REFUND
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_claim_chg_hist (
-    claim_chg_hist_id  VARCHAR(16)     NOT NULL,
-    site_id            VARCHAR(16),                            -- sy_site.site_id
-    claim_id           VARCHAR(16)     NOT NULL,               -- od_claim.
+    claim_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id            VARCHAR(21),                            -- sy_site.site_id
+    claim_id           VARCHAR(21)     NOT NULL,               -- od_claim.
     chg_type_cd        VARCHAR(30)     NOT NULL,               -- 변경유형코드 (CLAIM_TYPE/REASON/AMOUNT/APPROVAL/MEMO/REFUND)
     chg_field          VARCHAR(50),                            -- 변경 필드명
     before_val         TEXT,                                   -- 변경전값
     after_val          TEXT,                                   -- 변경후값
     chg_reason         VARCHAR(300),                           -- 변경사유
-    chg_user_id             VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id             VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by             VARCHAR(16),
     reg_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5180,15 +5180,15 @@ CREATE INDEX idx_odh_claim_chg_hist_date  ON odh_claim_chg_hist (chg_date);
 
 -- 클레임상품 상태 이력
 CREATE TABLE IF NOT EXISTS odh_claim_item_status_hist (
-    claim_item_status_hist_id    VARCHAR(16)     NOT NULL,
-    site_id                      VARCHAR(16),                        -- sy_site.site_id
-    claim_item_id                VARCHAR(16)     NOT NULL,           -- od_claim_item.claim_item_id
-    claim_id                     VARCHAR(16),                        -- od_claim.claim_id (조회 편의)
-    order_item_id                VARCHAR(16),                        -- od_order_item.order_item_id (조회 편의)
+    claim_item_status_hist_id    VARCHAR(21)     NOT NULL,
+    site_id                      VARCHAR(21),                        -- sy_site.site_id
+    claim_item_id                VARCHAR(21)     NOT NULL,           -- od_claim_item.claim_item_id
+    claim_id                     VARCHAR(21),                        -- od_claim.claim_id (조회 편의)
+    order_item_id                VARCHAR(21),                        -- od_order_item.order_item_id (조회 편의)
     claim_item_status_cd_before  VARCHAR(20),                        -- 변경 전 클레임상품상태 (코드: CLAIM_ITEM_STATUS)
     claim_item_status_cd         VARCHAR(20),                        -- 변경 후 클레임상품상태 (코드: CLAIM_ITEM_STATUS)
     status_reason                VARCHAR(300),                       -- 상태 변경 사유
-    chg_user_id                  VARCHAR(16),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
+    chg_user_id                  VARCHAR(21),                        -- 변경 담당자 (sy_user.user_id, mb_member.member_id)
     chg_date                     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     memo                         VARCHAR(300),
     reg_by                       VARCHAR(16),
@@ -5231,16 +5231,16 @@ CREATE INDEX idx_od_ci_status_hist_date     ON odh_claim_item_status_hist (chg_d
 --   chg_type 예: QTY / AMOUNT / REASON / STATUS / REFUND_AMT
 -- ============================================================
 CREATE TABLE IF NOT EXISTS odh_claim_item_chg_hist (
-    claim_item_chg_hist_id  VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16),                            -- sy_site.site_id
-    claim_id                VARCHAR(16)     NOT NULL,               -- od_claim.
-    claim_item_id           VARCHAR(16)     NOT NULL,               -- od_claim_item.
+    claim_item_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21),                            -- sy_site.site_id
+    claim_id                VARCHAR(21)     NOT NULL,               -- od_claim.
+    claim_item_id           VARCHAR(21)     NOT NULL,               -- od_claim_item.
     chg_type_cd             VARCHAR(30)     NOT NULL,               -- 변경유형코드 (QTY/AMOUNT/REASON/STATUS/REFUND_AMT)
     chg_field               VARCHAR(50),                            -- 변경 필드명
     before_val              TEXT,                                   -- 변경전값
     after_val               TEXT,                                   -- 변경후값
     chg_reason              VARCHAR(300),                           -- 변경사유
-    chg_user_id                  VARCHAR(16),                            -- 처리자 (sy_user.user_id)
+    chg_user_id                  VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by                  VARCHAR(16),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5280,8 +5280,8 @@ CREATE INDEX idx_odh_claim_item_chg_hist_date  ON odh_claim_item_chg_hist (chg_d
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_coupon (
-    coupon_id           VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    coupon_id           VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     coupon_cd           VARCHAR(50)     NOT NULL,               -- 쿠폰코드 (중복 방지)
     coupon_nm           VARCHAR(100)    NOT NULL,
     coupon_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_TYPE (RATE/FIXED)
@@ -5373,11 +5373,11 @@ CREATE INDEX idx_pm_coupon_grade  ON pm_coupon (mem_grade_cd);
 -- 항목이 없으면 전체 적용 (pm_coupon.target_type_cd=ALL)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_coupon_item (
-    coupon_item_id      VARCHAR(16)     NOT NULL,
-    coupon_id           VARCHAR(16)     NOT NULL,               -- pm_coupon.coupon_id
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    coupon_item_id      VARCHAR(21)     NOT NULL,
+    coupon_id           VARCHAR(21)     NOT NULL,               -- pm_coupon.coupon_id
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_ITEM_TARGET (PRODUCT/CATEGORY/VENDOR/BRAND)
-    target_id           VARCHAR(16)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
+    target_id           VARCHAR(21)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
 
@@ -5404,14 +5404,14 @@ CREATE INDEX idx_pm_coupon_item_target ON pm_coupon_item (target_type_cd, target
 
 -- 쿠폰 발급 (회원별 보유)
 CREATE TABLE IF NOT EXISTS pm_coupon_issue (
-    issue_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    coupon_id       VARCHAR(16)     NOT NULL,
-    member_id       VARCHAR(16)     NOT NULL,
+    issue_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    coupon_id       VARCHAR(21)     NOT NULL,
+    member_id       VARCHAR(21)     NOT NULL,
     issue_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     use_yn          CHAR(1)         DEFAULT 'N',
     use_date        TIMESTAMP,
-    order_id        VARCHAR(16),
+    order_id        VARCHAR(21),
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -5440,15 +5440,15 @@ COMMENT ON COLUMN pm_coupon_issue.upd_date   IS '수정일';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_coupon_usage (
-    usage_id            VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    coupon_id           VARCHAR(16)     NOT NULL,               -- pm_coupon.coupon_id
+    usage_id            VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    coupon_id           VARCHAR(21)     NOT NULL,               -- pm_coupon.coupon_id
     coupon_code         VARCHAR(50),                            -- 쿠폰코드 스냅샷
     coupon_nm           VARCHAR(100),                           -- 쿠폰명 스냅샷
-    member_id           VARCHAR(16),                            -- mb_member.member_id
-    order_id            VARCHAR(16),                            -- od_order.order_id
-    order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 쿠폰 적용 시)
-    prod_id             VARCHAR(16),                            -- pd_prod.prod_id (쿠폰 적용 상품)
+    member_id           VARCHAR(21),                            -- mb_member.member_id
+    order_id            VARCHAR(21),                            -- od_order.order_id
+    order_item_id       VARCHAR(21),                            -- od_order_item.order_item_id (상품별 쿠폰 적용 시)
+    prod_id             VARCHAR(21),                            -- pd_prod.prod_id (쿠폰 적용 상품)
     discount_type_cd    VARCHAR(20),                            -- 할인유형 (RATE/FIXED)
     discount_value      INTEGER         DEFAULT 0,              -- 할인값 (율 또는 금액)
     discount_amt        BIGINT          DEFAULT 0,              -- 실할인금액
@@ -5491,8 +5491,8 @@ CREATE INDEX idx_pm_coupon_usage_prod   ON pm_coupon_usage (prod_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_discnt (
-    discnt_id           VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    discnt_id           VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     discnt_nm           VARCHAR(100)    NOT NULL,               -- 할인명
     discnt_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: DISCNT_TYPE (RATE:정률/FIXED:정액/FREE_SHIP:무료배송)
     discnt_target_cd    VARCHAR(20)     DEFAULT 'ALL',          -- 코드: DISCNT_TARGET (ALL:전체/CATEGORY:카테고리/PRODUCT:상품/MEMBER_GRADE:등급)
@@ -5565,11 +5565,11 @@ CREATE INDEX idx_pm_discnt_grade  ON pm_discnt (mem_grade_cd);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_discnt_item (
-    discnt_item_id      VARCHAR(16)     NOT NULL,
-    discnt_id           VARCHAR(16)     NOT NULL,               -- pm_discnt.discnt_id
-    site_id             VARCHAR(16),
+    discnt_item_id      VARCHAR(21)     NOT NULL,
+    discnt_id           VARCHAR(21)     NOT NULL,               -- pm_discnt.discnt_id
+    site_id             VARCHAR(21),
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: DISCNT_ITEM_TARGET (CATEGORY/PRODUCT/MEMBER_GRADE)
-    target_id           VARCHAR(16)     NOT NULL,               -- category_id / prod_id / grade_cd
+    target_id           VARCHAR(21)     NOT NULL,               -- category_id / prod_id / grade_cd
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (discnt_item_id),
@@ -5599,14 +5599,14 @@ CREATE INDEX idx_pm_discnt_item_target ON pm_discnt_item (target_type_cd, target
 -- 주문 시 적용된 할인정책을 건별로 기록
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_discnt_usage (
-    discnt_usage_id     VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    discnt_id           VARCHAR(16)     NOT NULL,               -- pm_discnt.discnt_id
+    discnt_usage_id     VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    discnt_id           VARCHAR(21)     NOT NULL,               -- pm_discnt.discnt_id
     discnt_nm           VARCHAR(100),                           -- 할인명 스냅샷
-    member_id           VARCHAR(16),                            -- mb_member.member_id
-    order_id            VARCHAR(16),                            -- od_order.order_id
-    order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 할인 적용 시)
-    prod_id             VARCHAR(16),                            -- pd_prod.prod_id (할인 적용 상품)
+    member_id           VARCHAR(21),                            -- mb_member.member_id
+    order_id            VARCHAR(21),                            -- od_order.order_id
+    order_item_id       VARCHAR(21),                            -- od_order_item.order_item_id (상품별 할인 적용 시)
+    prod_id             VARCHAR(21),                            -- pd_prod.prod_id (할인 적용 상품)
     discnt_type_cd      VARCHAR(20),                            -- 할인유형 스냅샷 (RATE/FIXED/FREE_SHIP)
     discnt_value        NUMERIC(10,2)   DEFAULT 0,              -- 할인값 스냅샷 (율 또는 금액)
     discnt_amt          BIGINT          DEFAULT 0,              -- 실할인금액
@@ -5644,16 +5644,16 @@ CREATE INDEX idx_pm_discnt_usage_prod   ON pm_discnt_usage (prod_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_cache (
-    cache_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16)     NOT NULL,
+    cache_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
     member_nm       VARCHAR(50),
     cache_type_cd   VARCHAR(20)     NOT NULL,               -- 코드: CACHE_TYPE (EARN/USE/EXPIRE/ADMIN)
     cache_amt       BIGINT          DEFAULT 0,              -- 양수: 적립, 음수: 사용
     balance_amt     BIGINT          DEFAULT 0,              -- 처리 후 잔액
-    ref_id          VARCHAR(16),                            -- 참조ID (order_id 등)
+    ref_id          VARCHAR(21),                            -- 참조ID (order_id 등)
     cache_desc      VARCHAR(200),
-    proc_user_id         VARCHAR(16),
+    proc_user_id         VARCHAR(21),
     cache_date      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     expire_date     DATE,                                   -- 소멸예정일
     reg_by          VARCHAR(16),
@@ -5692,14 +5692,14 @@ COMMENT ON COLUMN pm_cache.upd_date      IS '수정일';
 -- 용도: 구매 시 자동 적립, 유효기간 소멸 있는 포인트
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_save (
-    save_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    save_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    member_id           VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     save_type_cd        VARCHAR(20)     NOT NULL,               -- 코드: SAVE_TYPE (EARN:구매적립/USE:사용/EXPIRE:소멸/CANCEL:적립취소/ADMIN:관리자조정)
     save_amt            BIGINT          NOT NULL,               -- 마일리지 변동액 (양수:적립/음수:차감)
     balance_amt         BIGINT          DEFAULT 0,              -- 처리 후 잔액
     ref_type_cd         VARCHAR(30),                            -- 연관유형 (ORDER/EVENT/ADMIN 등)
-    ref_id              VARCHAR(16),                            -- 연관ID (order_id 등)
+    ref_id              VARCHAR(21),                            -- 연관ID (order_id 등)
     expire_date         TIMESTAMP,                              -- 소멸예정일 (EARN 시 설정)
     save_memo           TEXT,                                   -- 메모
     reg_by              VARCHAR(16),
@@ -5737,17 +5737,17 @@ CREATE INDEX idx_pm_save_expire ON pm_save (expire_date);
 -- 지급 확정 후 pm_save 원장에 EARN 타입으로 반영
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_save_issue (
-    save_issue_id       VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
+    save_issue_id       VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    member_id           VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     save_issue_type_cd  VARCHAR(20)     NOT NULL,               -- 코드: SAVE_ISSUE_TYPE (ORDER:구매적립/EVENT:이벤트/REVIEW:리뷰/REFERRAL:추천/ADMIN:관리자)
     save_amt            BIGINT          NOT NULL,               -- 지급 적립금액
     save_rate           NUMERIC(5,2),                           -- 적립률 (%, 구매적립 시)
     ref_type_cd         VARCHAR(20),                            -- 참조유형 (ORDER/EVENT/REVIEW/ADMIN)
-    ref_id              VARCHAR(16),                            -- 참조ID (order_id / event_id 등)
-    order_id            VARCHAR(16),                            -- od_order.order_id (구매적립 시)
-    order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 적립 시)
-    prod_id             VARCHAR(16),                            -- pd_prod.prod_id (적립 기준 상품)
+    ref_id              VARCHAR(21),                            -- 참조ID (order_id / event_id 등)
+    order_id            VARCHAR(21),                            -- od_order.order_id (구매적립 시)
+    order_item_id       VARCHAR(21),                            -- od_order_item.order_item_id (상품별 적립 시)
+    prod_id             VARCHAR(21),                            -- pd_prod.prod_id (적립 기준 상품)
     expire_date         TIMESTAMP,                              -- 소멸예정일
     issue_status_cd     VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: SAVE_ISSUE_STATUS (PENDING:대기/CONFIRMED:확정/EXPIRED:소멸/CANCELED:취소)
     issue_status_cd_before VARCHAR(20),                         -- 변경 전 상태
@@ -5801,12 +5801,12 @@ CREATE INDEX idx_pm_save_issue_expire  ON pm_save_issue (expire_date);
 -- 사용 후 pm_save 원장에 USE 타입으로 반영
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_save_usage (
-    save_usage_id       VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),                            -- sy_site.site_id
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
-    order_id            VARCHAR(16),                            -- od_order.order_id
-    order_item_id       VARCHAR(16),                            -- od_order_item.order_item_id (상품별 사용 시)
-    prod_id             VARCHAR(16),                            -- pd_prod.prod_id (사용 상품)
+    save_usage_id       VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    member_id           VARCHAR(21)     NOT NULL,               -- mb_member.member_id
+    order_id            VARCHAR(21),                            -- od_order.order_id
+    order_item_id       VARCHAR(21),                            -- od_order_item.order_item_id (상품별 사용 시)
+    prod_id             VARCHAR(21),                            -- pd_prod.prod_id (사용 상품)
     use_amt             BIGINT          NOT NULL,               -- 사용 적립금액
     balance_amt         BIGINT          DEFAULT 0,              -- 사용 후 잔액
     used_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5839,8 +5839,8 @@ CREATE INDEX idx_pm_save_usage_prod   ON pm_save_usage (prod_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_event (
-    event_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    event_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     event_nm        VARCHAR(100)    NOT NULL,
     event_type_cd   VARCHAR(20),                            -- 코드: EVENT_TYPE (PROMOTION/FLASH/CAMPAIGN/COUPON)
     img_url         VARCHAR(500),                           -- 배너이미지
@@ -5907,11 +5907,11 @@ CREATE INDEX idx_pm_event_date ON pm_event (start_date, end_date);
 -- 항목이 없으면 전체 적용 (pm_event.target_type_cd 기준)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_event_item (
-    event_item_id       VARCHAR(16)     NOT NULL,
-    event_id            VARCHAR(16)     NOT NULL,               -- pm_event.event_id
-    site_id             VARCHAR(16),                            -- sy_site.site_id
+    event_item_id       VARCHAR(21)     NOT NULL,
+    event_id            VARCHAR(21)     NOT NULL,               -- pm_event.event_id
+    site_id             VARCHAR(21),                            -- sy_site.site_id
     target_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: EVENT_ITEM_TARGET (PRODUCT/CATEGORY/VENDOR/BRAND)
-    target_id           VARCHAR(16)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
+    target_id           VARCHAR(21)     NOT NULL,               -- prod_id / category_id / vendor_id / brand_id
     sort_no             INTEGER         DEFAULT 0,              -- 이벤트 내 노출 순서
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5940,14 +5940,14 @@ CREATE INDEX idx_pm_event_item_target ON pm_event_item (target_type_cd, target_i
 
 -- 이벤트 혜택 (쿠폰/적립 등 구체 혜택 항목)
 CREATE TABLE IF NOT EXISTS pm_event_benefit (
-    benefit_id      VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    event_id        VARCHAR(16)     NOT NULL,              -- pm_event.
+    benefit_id      VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    event_id        VARCHAR(21)     NOT NULL,              -- pm_event.
     benefit_nm      VARCHAR(100)    NOT NULL,
     benefit_type_cd VARCHAR(20),                            -- 코드: BENEFIT_TYPE (COUPON/POINT/DISCOUNT/GIFT)
     condition_desc  VARCHAR(200),                           -- 조건 설명 (예: 20만원 이상)
     benefit_value   VARCHAR(100),                           -- 혜택 값 (예: 10,000원, 10%)
-    coupon_id       VARCHAR(16),                            -- 연결 쿠폰ID (pm_coupon.)
+    coupon_id       VARCHAR(21),                            -- 연결 쿠폰ID (pm_coupon.)
     sort_ord        INTEGER         DEFAULT 0,
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5983,11 +5983,11 @@ CREATE INDEX idx_pm_event_benefit_event ON pm_event_benefit (event_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_gift (
-    gift_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),
+    gift_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),
     gift_nm             VARCHAR(100)    NOT NULL,               -- 사은품명
     gift_type_cd        VARCHAR(20)     DEFAULT 'PRODUCT',      -- 코드: GIFT_TYPE (PRODUCT:상품/SAMPLE:샘플/ETC:기타)
-    prod_id             VARCHAR(16),                            -- 연결 상품 (pd_prod.prod_id, 비상품이면 NULL)
+    prod_id             VARCHAR(21),                            -- 연결 상품 (pd_prod.prod_id, 비상품이면 NULL)
     gift_stock          INTEGER         DEFAULT 0,              -- 사은품 재고
     gift_desc           TEXT,                                   -- 사은품 설명
     start_date          TIMESTAMP,
@@ -6046,13 +6046,13 @@ CREATE INDEX idx_pm_gift_grade  ON pm_gift (mem_grade_cd);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_gift_cond (
-    gift_cond_id        VARCHAR(16)     NOT NULL,
-    gift_id             VARCHAR(16)     NOT NULL,               -- pm_gift.gift_id
-    site_id             VARCHAR(16),
+    gift_cond_id        VARCHAR(21)     NOT NULL,
+    gift_id             VARCHAR(21)     NOT NULL,               -- pm_gift.gift_id
+    site_id             VARCHAR(21),
     cond_type_cd        VARCHAR(20)     NOT NULL,               -- 코드: GIFT_COND_TYPE (ORDER_AMT:주문금액/PRODUCT:상품구매/MEMBER_GRADE:회원등급)
     min_order_amt       BIGINT          DEFAULT 0,              -- ORDER_AMT 조건: 최소주문금액
     target_type_cd      VARCHAR(20),                            -- PRODUCT/CATEGORY/MEMBER_GRADE
-    target_id           VARCHAR(16),                            -- prod_id / category_id / grade_cd
+    target_id           VARCHAR(21),                            -- prod_id / category_id / grade_cd
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (gift_cond_id)
@@ -6081,11 +6081,11 @@ CREATE INDEX idx_pm_gift_cond_gift ON pm_gift_cond (gift_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_gift_issue (
-    gift_issue_id       VARCHAR(16)     NOT NULL,
-    gift_id             VARCHAR(16)     NOT NULL,               -- pm_gift.gift_id
-    site_id             VARCHAR(16),
-    member_id           VARCHAR(16)     NOT NULL,               -- mb_member.member_id
-    order_id            VARCHAR(16),                            -- 발급 기준 주문 (od_order.order_id)
+    gift_issue_id       VARCHAR(21)     NOT NULL,
+    gift_id             VARCHAR(21)     NOT NULL,               -- pm_gift.gift_id
+    site_id             VARCHAR(21),
+    member_id           VARCHAR(21)     NOT NULL,               -- mb_member.member_id
+    order_id            VARCHAR(21),                            -- 발급 기준 주문 (od_order.order_id)
     issue_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     gift_issue_status_cd VARCHAR(20)    DEFAULT 'ISSUED',       -- 코드: GIFT_ISSUE_STATUS (ISSUED:발급/DELIVERED:배송완료/CANCELLED:취소)
     gift_issue_status_cd_before VARCHAR(20),
@@ -6126,8 +6126,8 @@ CREATE INDEX idx_pm_gift_issue_order  ON pm_gift_issue (order_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_plan (
-    plan_id             VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),
+    plan_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),
     plan_nm             VARCHAR(100)    NOT NULL,               -- 기획전명
     plan_title          VARCHAR(200)    NOT NULL,               -- 기획전 타이틀 (노출용)
     plan_type_cd        VARCHAR(20)     DEFAULT 'THEME',        -- 코드: PLAN_TYPE (SEASON:시즌/BRAND:브랜드/THEME:테마/COLLAB:협업)
@@ -6182,10 +6182,10 @@ CREATE INDEX idx_pm_plan_date   ON pm_plan (start_date, end_date);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_plan_item (
-    plan_item_id        VARCHAR(16)     NOT NULL,
-    plan_id             VARCHAR(16)     NOT NULL,               -- pm_plan.plan_id
-    site_id             VARCHAR(16),
-    prod_id             VARCHAR(16)     NOT NULL,               -- pd_prod.prod_id
+    plan_item_id        VARCHAR(21)     NOT NULL,
+    plan_id             VARCHAR(21)     NOT NULL,               -- pm_plan.plan_id
+    site_id             VARCHAR(21),
+    prod_id             VARCHAR(21)     NOT NULL,               -- pd_prod.prod_id
     sort_ord            INTEGER         DEFAULT 0,
     plan_item_memo      VARCHAR(500),                           -- 항목 메모 (특가/한정수량 등)
     reg_by              VARCHAR(16),
@@ -6216,8 +6216,8 @@ CREATE INDEX idx_pm_plan_item_prod ON pm_plan_item (prod_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_voucher (
-    voucher_id          VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16),
+    voucher_id          VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),
     voucher_nm          VARCHAR(100)    NOT NULL,               -- 상품권명
     voucher_type_cd     VARCHAR(20)     NOT NULL,               -- 코드: VOUCHER_TYPE (AMOUNT:금액권/RATE:정률권)
     voucher_value       NUMERIC(10,2)   NOT NULL,               -- 권면금액 (금액이면 원, 정률이면 %)
@@ -6267,15 +6267,15 @@ CREATE INDEX idx_pm_voucher_status ON pm_voucher (voucher_status_cd);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS pm_voucher_issue (
-    voucher_issue_id    VARCHAR(16)     NOT NULL,
-    voucher_id          VARCHAR(16)     NOT NULL,               -- pm_voucher.voucher_id
-    site_id             VARCHAR(16),
-    member_id           VARCHAR(16),                            -- 발급 대상 회원 (NULL이면 미할당)
+    voucher_issue_id    VARCHAR(21)     NOT NULL,
+    voucher_id          VARCHAR(21)     NOT NULL,               -- pm_voucher.voucher_id
+    site_id             VARCHAR(21),
+    member_id           VARCHAR(21),                            -- 발급 대상 회원 (NULL이면 미할당)
     voucher_code        VARCHAR(50)     NOT NULL,               -- 발급된 고유 코드
     issue_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     expire_date         TIMESTAMP,                              -- 만료일시
     use_date            TIMESTAMP,                              -- 사용일시
-    order_id            VARCHAR(16),                            -- 사용된 주문 (od_order.order_id)
+    order_id            VARCHAR(21),                            -- 사용된 주문 (od_order.order_id)
     use_amt             BIGINT,                                 -- 실제 사용 할인금액
     voucher_issue_status_cd VARCHAR(20) DEFAULT 'ISSUED',       -- 코드: VOUCHER_ISSUE_STATUS (ISSUED:발급/USED:사용/EXPIRED:만료/CANCELLED:취소)
     voucher_issue_status_cd_before VARCHAR(20),
@@ -6324,8 +6324,8 @@ CREATE INDEX idx_pm_voucher_issue_expire  ON pm_voucher_issue (expire_date);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_ui (
-    ui_id           VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    ui_id           VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     ui_cd           VARCHAR(50)     NOT NULL,               -- 예: MOBILE_MAIN, PC_MAIN, EVENT_PAGE
     ui_nm           VARCHAR(100)    NOT NULL,
     ui_desc         VARCHAR(300),
@@ -6374,9 +6374,9 @@ CREATE INDEX idx_dp_ui_use ON dp_ui (use_yn, use_start_date, use_end_date);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_area (
-    area_id         VARCHAR(16)     NOT NULL,
-    ui_id           VARCHAR(16)     NOT NULL,              -- FK: dp_ui.ui_id
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    area_id         VARCHAR(21)     NOT NULL,
+    ui_id           VARCHAR(21)     NOT NULL,              -- FK: dp_ui.ui_id
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     area_cd         VARCHAR(50)     NOT NULL,               -- 예: MAIN_TOP, MAIN_BANNER, SIDEBAR_MID
     area_nm         VARCHAR(100)    NOT NULL,
     area_type_cd    VARCHAR(30),                            -- FULL/SIDEBAR/POPUP 등
@@ -6425,9 +6425,9 @@ CREATE INDEX idx_dp_area_use ON dp_area (use_yn, use_start_date, use_end_date);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_ui_area (
-    ui_area_id          VARCHAR(16)     NOT NULL,
-    ui_id               VARCHAR(16)     NOT NULL,              -- FK: dp_ui.ui_id
-    area_id             VARCHAR(16)     NOT NULL,              -- FK: dp_area.area_id
+    ui_area_id          VARCHAR(21)     NOT NULL,
+    ui_id               VARCHAR(21)     NOT NULL,              -- FK: dp_ui.ui_id
+    area_id             VARCHAR(21)     NOT NULL,              -- FK: dp_area.area_id
     area_sort_ord       INTEGER         DEFAULT 0,              -- 영역정렬순서
     visibility_targets  VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
     disp_env            VARCHAR(50)     DEFAULT '^PROD^',       -- 전시 환경 (^PROD^DEV^TEST^ 형식)
@@ -6477,9 +6477,9 @@ CREATE INDEX idx_dp_ui_area_disp_date ON dp_ui_area (disp_start_date, disp_end_d
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_area_panel (
-    area_panel_id       VARCHAR(16)     NOT NULL,
-    area_id             VARCHAR(16)     NOT NULL,              -- FK: dp_area.area_id
-    panel_id            VARCHAR(16)     NOT NULL,              -- FK: dp_panel.panel_id
+    area_panel_id       VARCHAR(21)     NOT NULL,
+    area_id             VARCHAR(21)     NOT NULL,              -- FK: dp_area.area_id
+    panel_id            VARCHAR(21)     NOT NULL,              -- FK: dp_panel.panel_id
     panel_sort_ord      INTEGER         DEFAULT 0,              -- 패널정렬순서
     visibility_targets  VARCHAR(200),                           -- 공개대상 (^CODE^CODE^ 형식)
     disp_yn             CHAR(1)         DEFAULT 'Y',            -- 전시여부 Y/N
@@ -6530,8 +6530,8 @@ CREATE INDEX idx_dp_area_panel_disp_env ON dp_area_panel (disp_env);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_panel (
-    panel_id                    VARCHAR(16)     NOT NULL,
-    site_id                     VARCHAR(16),                            -- sy_site.site_id
+    panel_id                    VARCHAR(21)     NOT NULL,
+    site_id                     VARCHAR(21),                            -- sy_site.site_id
     panel_nm                    VARCHAR(100)    NOT NULL,
     panel_type_cd               VARCHAR(30),                            -- 코드: DISP_TYPE
     disp_path                   VARCHAR(200),                           -- 점(.) 구분 표시경로
@@ -6584,9 +6584,9 @@ CREATE INDEX idx_dp_panel_use ON dp_panel (use_yn, use_start_date, use_end_date)
 -- 참조 방식: dp_widget_lib 참조 OR 직접 콘텐츠 생성
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_panel_item (
-    panel_item_id           VARCHAR(16)     NOT NULL,
-    panel_id                VARCHAR(16)     NOT NULL,              -- FK: dp_panel.panel_id
-    widget_lib_id           VARCHAR(16),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
+    panel_item_id           VARCHAR(21)     NOT NULL,
+    panel_id                VARCHAR(21)     NOT NULL,              -- FK: dp_panel.panel_id
+    widget_lib_id           VARCHAR(21),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
     widget_type_cd          VARCHAR(30),                            -- 위젯유형 (코드: WIDGET_TYPE)
     widget_title            VARCHAR(200),                           -- 위젯 타이틀
     widget_content          TEXT,                                   -- 위젯 내용 (HTML 에디터)
@@ -6654,8 +6654,8 @@ CREATE INDEX idx_dp_panel_item_disp_env ON dp_panel_item (disp_env);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_widget_lib (
-    widget_lib_id   VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    widget_lib_id   VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     widget_code     VARCHAR(50)     NOT NULL,
     widget_nm       VARCHAR(100)    NOT NULL,
     widget_type_cd  VARCHAR(30)     NOT NULL,               -- 코드: WIDGET_TYPE (BANNER/PRODUCT/CATEGORY/HTML/SLIDER)
@@ -6704,9 +6704,9 @@ COMMENT ON COLUMN dp_widget_lib.disp_path IS '점(.) 구분 표시경로';
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dp_widget (
-    widget_id            VARCHAR(16)     NOT NULL,
-    widget_lib_id        VARCHAR(16),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
-    site_id              VARCHAR(16),                            -- sy_site.site_id
+    widget_id            VARCHAR(21)     NOT NULL,
+    widget_lib_id        VARCHAR(21),                            -- FK: dp_widget_lib.widget_lib_id (선택사항)
+    site_id              VARCHAR(21),                            -- sy_site.site_id
     widget_nm            VARCHAR(100)    NOT NULL,
     widget_type_cd       VARCHAR(30)     NOT NULL,              -- 코드: WIDGET_TYPE (image_banner/product_slider 등)
     widget_desc          VARCHAR(300),
@@ -6812,10 +6812,10 @@ CREATE INDEX idx_sy_path_parent ON cm_path (parent_path_id);
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS cm_bltn_cate (
-    blog_cate_id    VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
+    blog_cate_id    VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
     blog_cate_nm    VARCHAR(100)    NOT NULL,              -- 카테고리명
-    parent_blog_cate_id VARCHAR(16),                        -- 상위 카테고리ID (계층형)
+    parent_blog_cate_id VARCHAR(21),                        -- 상위 카테고리ID (계층형)
     sort_ord        INTEGER         DEFAULT 0,              -- 정렬순서
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 사용여부 Y/N
     reg_by          VARCHAR(16),
@@ -6843,14 +6843,14 @@ COMMENT ON COLUMN cm_bltn_cate.upd_date     IS '수정일';
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS cm_bltn (
-    blog_id         VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    blog_cate_id    VARCHAR(16),                            -- FK: cm_bltn_cate.blog_cate_idblog_cate_id
+    blog_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    blog_cate_id    VARCHAR(21),                            -- FK: cm_bltn_cate.blog_cate_idblog_cate_id
     blog_title      VARCHAR(200)    NOT NULL,              -- 제목
     blog_summary    VARCHAR(500),                           -- 요약 (미리보기용)
     blog_content    TEXT            NOT NULL,              -- 본문 (HTML)
     blog_author     VARCHAR(100),                           -- 작성자 이름
-    prod_id         VARCHAR(16),                            -- FK: pd_prod.prod_idprod_id (선택사항, 상품 관련 글)
+    prod_id         VARCHAR(21),                            -- FK: pd_prod.prod_idprod_id (선택사항, 상품 관련 글)
     view_count      INTEGER         DEFAULT 0,              -- 조회수
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 공개여부 Y/N
     is_notice       CHAR(1)         DEFAULT 'N',            -- 공지글 여부 Y/N (상단 고정)
@@ -6883,11 +6883,11 @@ CREATE INDEX idx_cm_bltn_prod ON cm_bltn (prod_id);
 CREATE INDEX idx_cm_bltn_date ON cm_bltn (reg_date DESC);
 
 CREATE TABLE IF NOT EXISTS cm_bltn_reply (
-    comment_id      VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    blog_id         VARCHAR(16)     NOT NULL,              -- cm_bltn.
-    parent_comment_id VARCHAR(16),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
-    writer_id       VARCHAR(16),                            -- 작성자ID (mb_member.member_id)
+    comment_id      VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    blog_id         VARCHAR(21)     NOT NULL,              -- cm_bltn.
+    parent_comment_id VARCHAR(21),                          -- 대댓글 (cm_bltn_reply.blog_comment_id)
+    writer_id       VARCHAR(21),                            -- 작성자ID (mb_member.member_id)
     writer_nm       VARCHAR(50),                            -- 작성자명 (스냅샷)
     blog_comment_content TEXT            NOT NULL,
     comment_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: COMMENT_STATUS (ACTIVE/HIDDEN/DELETED)
@@ -6928,8 +6928,8 @@ CREATE INDEX idx_cm_bltn_reply_parent ON cm_bltn_reply (parent_comment_id);
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS cm_bltn_file (
-    blog_img_id     VARCHAR(16)     NOT NULL,
-    blog_id         VARCHAR(16)     NOT NULL,              -- FK: cm_bltn.blog_id
+    blog_img_id     VARCHAR(21)     NOT NULL,
+    blog_id         VARCHAR(21)     NOT NULL,              -- FK: cm_bltn.blog_id
     img_url         VARCHAR(500)    NOT NULL,              -- 원본 이미지 URL
     thumb_url       VARCHAR(500),                           -- 썸네일 이미지 URL
     img_alt_text    VARCHAR(200),                           -- 대체텍스트
@@ -6953,9 +6953,9 @@ CREATE INDEX idx_cm_bltn_file_blog ON cm_bltn_file (blog_id);
 
 -- 블로그 태그
 CREATE TABLE IF NOT EXISTS cm_bltn_tag (
-    blog_tag_id     VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
-    blog_id         VARCHAR(16)     NOT NULL,              -- cm_bltn.
+    blog_tag_id     VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    blog_id         VARCHAR(21)     NOT NULL,              -- cm_bltn.
     tag_nm          VARCHAR(50)     NOT NULL,
     sort_ord        INTEGER         DEFAULT 0,
     reg_by          VARCHAR(16),
@@ -6986,9 +6986,9 @@ CREATE INDEX idx_cm_bltn_tag_blog ON cm_bltn_tag (blog_id);
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS cm_bltn_good (
-    like_id         VARCHAR(16)     NOT NULL,
-    blog_id         VARCHAR(16)     NOT NULL,              -- FK: cm_bltn.blog_id
-    user_id         VARCHAR(16)     NOT NULL,              -- FK: sy_member.user_id (회원만 가능)
+    like_id         VARCHAR(21)     NOT NULL,
+    blog_id         VARCHAR(21)     NOT NULL,              -- FK: cm_bltn.blog_id
+    user_id         VARCHAR(21)     NOT NULL,              -- FK: sy_member.user_id (회원만 가능)
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (like_id),
     UNIQUE (blog_id, user_id)                              -- 중복 방지
@@ -7008,11 +7008,11 @@ CREATE INDEX idx_cm_bltn_good_user ON cm_bltn_good (user_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS cm_chatt_room (
-    chatt_room_id        VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    member_id       VARCHAR(16)     NOT NULL,
+    chatt_room_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
     member_nm       VARCHAR(50),
-    admin_user_id   VARCHAR(16),                            -- 담당 관리자 (sy_user.user_id)
+    admin_user_id   VARCHAR(21),                            -- 담당 관리자 (sy_user.user_id)
     subject         VARCHAR(200),                           -- 채팅 주제
     chatt_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CHATT_STATUS (PENDING/ONGOING/CLOSED)
     chatt_status_cd_before VARCHAR(20),                     -- 변경 전 채팅상태
@@ -7060,13 +7060,13 @@ CREATE INDEX idx_od_chatt_status ON cm_chatt_room (chatt_status_cd);
 
 -- 채팅 메시지
 CREATE TABLE IF NOT EXISTS cm_chatt_msg (
-    msg_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),                            -- sy_site.site_id
-    chatt_id        VARCHAR(16)     NOT NULL,
+    msg_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    chatt_id        VARCHAR(21)     NOT NULL,
     sender_cd       VARCHAR(20)     NOT NULL,               -- MEMBER / ADMIN
     msg_text        TEXT,
     ref_type        VARCHAR(20),                            -- ORDER / PRODUCT / CLAIM
-    ref_id          VARCHAR(16),
+    ref_id          VARCHAR(21),
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     read_yn         CHAR(1)         DEFAULT 'N',
     reg_by          VARCHAR(16),
@@ -7097,11 +7097,11 @@ COMMENT ON COLUMN cm_chatt_msg.upd_date  IS '수정일';
 -- 용도: 이메일, SMS, 카카오 알림톡, 앱 푸시 통합 관리
 -- ============================================================
 CREATE TABLE IF NOT EXISTS cmh_push_log (
-    log_id          VARCHAR(16)     NOT NULL,
-    site_id         VARCHAR(16),
+    log_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
     channel_cd      VARCHAR(20)     NOT NULL,              -- 코드: PUSH_CHANNEL (EMAIL/SMS/KAKAO/APP)
-    template_id     VARCHAR(16),                           -- sy_template.template_id
-    member_id       VARCHAR(16),                           -- 대상 회원 (시스템 발송 시 NULL)
+    template_id     VARCHAR(21),                           -- sy_template.template_id
+    member_id       VARCHAR(21),                           -- 대상 회원 (시스템 발송 시 NULL)
     recv_addr       VARCHAR(200)    NOT NULL,              -- 수신처 (이메일, 전화번호, 토큰 등)
     push_log_title  VARCHAR(200),                          -- 발송 제목
     push_log_content TEXT,                                  -- 발송 내용
@@ -7109,7 +7109,7 @@ CREATE TABLE IF NOT EXISTS cmh_push_log (
     fail_reason     VARCHAR(500),                          -- 실패 사유
     send_date       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     ref_type_cd     VARCHAR(30),                           -- 연관유형코드 (ORDER/CLAIM/EVENT 등)
-    ref_id          VARCHAR(16),                           -- 연관ID (order_id 등)
+    ref_id          VARCHAR(21),                           -- 연관ID (order_id 등)
     reg_by          VARCHAR(16),
     reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by          VARCHAR(16),
@@ -7156,10 +7156,10 @@ CREATE INDEX idx_sy_push_log_channel ON cmh_push_log (channel_cd, result_cd);
 -- 우선순위: vendor_id+category_id > vendor_id > site_id(전체기준)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle_config (
-    settle_config_id    VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    vendor_id           VARCHAR(16),                            -- sy_vendor.vendor_id (NULL이면 전체)
-    category_id         VARCHAR(16),                            -- pd_category.category_id (NULL이면 전체)
+    settle_config_id    VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21)     NOT NULL,               -- sy_site.site_id
+    vendor_id           VARCHAR(21),                            -- sy_vendor.vendor_id (NULL이면 전체)
+    category_id         VARCHAR(21),                            -- pd_category.category_id (NULL이면 전체)
     settle_cycle_cd     VARCHAR(20)     DEFAULT 'MONTHLY',      -- 코드: SETTLE_CYCLE (DAILY/WEEKLY/MONTHLY)
     settle_day          INTEGER         DEFAULT 10,             -- 정산일 (월 N일)
     commission_rate     NUMERIC(5,2)    DEFAULT 0,              -- 수수료율 (%)
@@ -7203,13 +7203,13 @@ CREATE INDEX idx_st_settle_config_category ON st_settle_config (site_id, categor
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle_close (
-    settle_close_id     VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
+    settle_close_id     VARCHAR(21)     NOT NULL,
+    settle_id           VARCHAR(21)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(21),
     close_status_cd     VARCHAR(20)     NOT NULL,               -- 코드: SETTLE_CLOSE_STATUS (CLOSED:마감/REOPENED:재오픈)
     close_reason        VARCHAR(200),                           -- 마감/재오픈 사유
     final_settle_amt    BIGINT          DEFAULT 0,              -- 마감 시점 최종정산금액 스냅샷
-    close_by            VARCHAR(16)     NOT NULL,               -- 처리자 (sy_user.user_id)
+    close_by            VARCHAR(21)     NOT NULL,               -- 처리자 (sy_user.user_id)
     close_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -7241,9 +7241,9 @@ CREATE INDEX idx_st_settle_close_date   ON st_settle_close (close_date);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle (
-    settle_id           VARCHAR(16)     NOT NULL,
-    site_id             VARCHAR(16)     NOT NULL,
-    vendor_id           VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
+    settle_id           VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21)     NOT NULL,
+    vendor_id           VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
     settle_ym           CHAR(6)         NOT NULL,               -- 정산년월 (YYYYMM)
     settle_start_date   TIMESTAMP       NOT NULL,               -- 정산 기준시작일
     settle_end_date     TIMESTAMP       NOT NULL,               -- 정산 기준종료일
@@ -7307,13 +7307,13 @@ CREATE INDEX idx_st_settle_status ON st_settle (settle_status_cd);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle_item (
-    settle_item_id      VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
-    order_id            VARCHAR(16)     NOT NULL,               -- od_order.order_id
-    order_item_id       VARCHAR(16)     NOT NULL,               -- od_order_item.order_item_id
-    vendor_id           VARCHAR(16)     NOT NULL,
-    prod_id             VARCHAR(16),
+    settle_item_id      VARCHAR(21)     NOT NULL,
+    settle_id           VARCHAR(21)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(21),
+    order_id            VARCHAR(21)     NOT NULL,               -- od_order.order_id
+    order_item_id       VARCHAR(21)     NOT NULL,               -- od_order_item.order_item_id
+    vendor_id           VARCHAR(21)     NOT NULL,
+    prod_id             VARCHAR(21),
     settle_item_type_cd VARCHAR(20)     DEFAULT 'SALE',         -- 코드: SETTLE_ITEM_TYPE (SALE:판매/CANCEL:취소/RETURN:반품)
     order_date          TIMESTAMP,
     order_qty           INTEGER         DEFAULT 1,
@@ -7363,10 +7363,10 @@ CREATE INDEX idx_st_settle_item_vendor ON st_settle_item (vendor_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle_pay (
-    settle_pay_id       VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
-    vendor_id           VARCHAR(16)     NOT NULL,               -- sy_vendor.vendor_id
+    settle_pay_id       VARCHAR(21)     NOT NULL,
+    settle_id           VARCHAR(21)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(21),
+    vendor_id           VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
     pay_amt             BIGINT          NOT NULL,               -- 지급금액
     pay_method_cd       VARCHAR(20)     DEFAULT 'BANK_TRANSFER', -- 코드: PAY_METHOD_CD
     bank_nm             VARCHAR(50),                            -- 은행명
@@ -7375,7 +7375,7 @@ CREATE TABLE IF NOT EXISTS st_settle_pay (
     pay_status_cd       VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: SETTLE_PAY_STATUS (PENDING:지급대기/COMPLT:지급완료/FAILED:지급실패)
     pay_status_cd_before VARCHAR(20),
     pay_date            TIMESTAMP,                              -- 실지급 일시
-    pay_by              VARCHAR(16),                            -- 지급처리자 (sy_user.user_id)
+    pay_by              VARCHAR(21),                            -- 지급처리자 (sy_user.user_id)
     settle_pay_memo     TEXT,
     reg_by              VARCHAR(16),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -7419,9 +7419,9 @@ CREATE INDEX idx_st_settle_pay_status ON st_settle_pay (pay_status_cd);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle_adj (
-    settle_adj_id       VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
+    settle_adj_id       VARCHAR(21)     NOT NULL,
+    settle_id           VARCHAR(21)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(21),
     adj_type_cd         VARCHAR(20)     NOT NULL,               -- 코드: SETTLE_ADJ_TYPE (ADD:가산/DEDUCT:차감)
     adj_amt             BIGINT          NOT NULL,               -- 조정금액 (양수)
     adj_reason          VARCHAR(200)    NOT NULL,               -- 조정 사유
@@ -7458,9 +7458,9 @@ CREATE INDEX idx_st_settle_adj_settle ON st_settle_adj (settle_id);
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle_etc_adj (
-    settle_etc_adj_id   VARCHAR(16)     NOT NULL,
-    settle_id           VARCHAR(16)     NOT NULL,               -- st_settle.settle_id
-    site_id             VARCHAR(16),
+    settle_etc_adj_id   VARCHAR(21)     NOT NULL,
+    settle_id           VARCHAR(21)     NOT NULL,               -- st_settle.settle_id
+    site_id             VARCHAR(21),
     etc_adj_type_cd     VARCHAR(20)     NOT NULL,               -- 코드: SETTLE_ETC_ADJ_TYPE (SHIP:배송비/RETURN_SHIP:반품배송비/PENALTY:위약금/OTHER:기타)
     etc_adj_dir_cd      VARCHAR(10)     NOT NULL,               -- 코드: ADJ_DIR (ADD:가산/DEDUCT:차감)
     etc_adj_amt         BIGINT          NOT NULL,               -- 기타조정 금액
@@ -7504,8 +7504,8 @@ CREATE INDEX idx_st_settle_etc_adj_settle ON st_settle_etc_adj (settle_id);
 -- 통계·분석 쿼리의 기반 테이블 — od_order_item join 없이 독립 조회 가능해야 함
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_settle_raw (
-    settle_raw_id           VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16)     NOT NULL,               -- sy_site.site_id
+    settle_raw_id           VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21)     NOT NULL,               -- sy_site.site_id
 
     -- ── 수집 구분
     raw_type_cd             VARCHAR(20)     NOT NULL,               -- 코드: RAW_TYPE (ORDER:주문/CLAIM:클레임)
@@ -7513,37 +7513,37 @@ CREATE TABLE IF NOT EXISTS st_settle_raw (
     raw_status_cd_before    VARCHAR(20),                            -- 변경 전 상태
 
     -- ── 주문 원천
-    order_id                VARCHAR(16)     NOT NULL,               -- od_order.order_id
+    order_id                VARCHAR(21)     NOT NULL,               -- od_order.order_id
     order_no                VARCHAR(30),                            -- 주문번호 (스냅샷)
-    order_item_id           VARCHAR(16)     NOT NULL,               -- od_order_item.order_item_id
+    order_item_id           VARCHAR(21)     NOT NULL,               -- od_order_item.order_item_id
     order_date              TIMESTAMP,                              -- 주문일시 (스냅샷)
     order_item_status_cd    VARCHAR(20),                            -- 수집 시점 주문상태 (스냅샷, 코드: ORDER_ITEM_STATUS)
 
     -- ── 주문자
-    member_id               VARCHAR(16),                            -- 주문 회원ID 스냅샷 (mb_member.member_id)
+    member_id               VARCHAR(21),                            -- 주문 회원ID 스냅샷 (mb_member.member_id)
 
     -- ── 클레임 원천 (클레임 수집 시)
-    claim_id                VARCHAR(16),                            -- od_claim.claim_id
-    claim_item_id           VARCHAR(16),                            -- od_claim_item.claim_item_id
+    claim_id                VARCHAR(21),                            -- od_claim.claim_id
+    claim_item_id           VARCHAR(21),                            -- od_claim_item.claim_item_id
 
     -- ── 업체
-    vendor_id               VARCHAR(16),                            -- sy_vendor.vendor_id
+    vendor_id               VARCHAR(21),                            -- sy_vendor.vendor_id
     vendor_type_cd          VARCHAR(20),                            -- 코드: VENDOR_TYPE (SALE:판매/DLIV:배송/EXTERNAL:외부)
 
     -- ── 상품 · 옵션 · 브랜드 · 카테고리
-    prod_id                 VARCHAR(16),                            -- pd_prod.prod_id
+    prod_id                 VARCHAR(21),                            -- pd_prod.prod_id
     prod_nm                 VARCHAR(200),                           -- 상품명 (스냅샷)
-    brand_id                VARCHAR(16),                            -- 브랜드ID 스냅샷 (sy_brand.brand_id)
+    brand_id                VARCHAR(21),                            -- 브랜드ID 스냅샷 (sy_brand.brand_id)
     brand_nm                VARCHAR(100),                           -- 브랜드명 (스냅샷)
-    category_id_1           VARCHAR(16),                            -- 카테고리 1단계ID 스냅샷 (대분류, pd_category.category_id)
-    category_id_2           VARCHAR(16),                            -- 카테고리 2단계ID 스냅샷 (중분류, pd_category.category_id)
-    category_id_3           VARCHAR(16),                            -- 카테고리 3단계ID 스냅샷 (소분류, pd_category.category_id)
-    category_id_4           VARCHAR(16),                            -- 카테고리 4단계ID 스냅샷 (pd_category.category_id)
-    category_id_5           VARCHAR(16),                            -- 카테고리 5단계ID 스냅샷 (pd_category.category_id)
-    sku_id                  VARCHAR(16),                            -- pd_prod_sku.sku_id (스냅샷)
-    opt_item_id_1           VARCHAR(16),                            -- pd_prod_opt_item.opt_item_id (옵션1, 스냅샷)
-    opt_item_id_2           VARCHAR(16),                            -- pd_prod_opt_item.opt_item_id (옵션2, 스냅샷)
-    md_user_id              VARCHAR(16),                            -- 담당 MD (sy_user.user_id)
+    category_id_1           VARCHAR(21),                            -- 카테고리 1단계ID 스냅샷 (대분류, pd_category.category_id)
+    category_id_2           VARCHAR(21),                            -- 카테고리 2단계ID 스냅샷 (중분류, pd_category.category_id)
+    category_id_3           VARCHAR(21),                            -- 카테고리 3단계ID 스냅샷 (소분류, pd_category.category_id)
+    category_id_4           VARCHAR(21),                            -- 카테고리 4단계ID 스냅샷 (pd_category.category_id)
+    category_id_5           VARCHAR(21),                            -- 카테고리 5단계ID 스냅샷 (pd_category.category_id)
+    sku_id                  VARCHAR(21),                            -- pd_prod_sku.sku_id (스냅샷)
+    opt_item_id_1           VARCHAR(21),                            -- pd_prod_opt_item.opt_item_id (옵션1, 스냅샷)
+    opt_item_id_2           VARCHAR(21),                            -- pd_prod_opt_item.opt_item_id (옵션2, 스냅샷)
+    md_user_id              VARCHAR(21),                            -- 담당 MD (sy_user.user_id)
 
     -- ── 수량 · 가격
     normal_price            BIGINT          DEFAULT 0,              -- 정상가 (할인 전 1ea, 스냅샷)
@@ -7557,14 +7557,14 @@ CREATE TABLE IF NOT EXISTS st_settle_raw (
     promo_discnt_amt        BIGINT          DEFAULT 0,              -- 프로모션할인금액
 
     -- ── 프로모션 · 쿠폰 · 할인 참조
-    promo_id                VARCHAR(16),                            -- pm_event.event_id (프로모션)
-    coupon_id               VARCHAR(16),                            -- pm_coupon.coupon_id
-    coupon_issue_id         VARCHAR(16),                            -- pm_coupon_issue.coupon_issue_id
-    discnt_id               VARCHAR(16),                            -- pm_discnt.discnt_id
+    promo_id                VARCHAR(21),                            -- pm_event.event_id (프로모션)
+    coupon_id               VARCHAR(21),                            -- pm_coupon.coupon_id
+    coupon_issue_id         VARCHAR(21),                            -- pm_coupon_issue.coupon_issue_id
+    discnt_id               VARCHAR(21),                            -- pm_discnt.discnt_id
 
     -- ── 상품권
-    voucher_id              VARCHAR(16),                            -- pm_voucher.voucher_id
-    voucher_issue_id        VARCHAR(16),                            -- pm_voucher_issue.voucher_issue_id
+    voucher_id              VARCHAR(21),                            -- pm_voucher.voucher_id
+    voucher_issue_id        VARCHAR(21),                            -- pm_voucher_issue.voucher_issue_id
     voucher_use_amt         BIGINT          DEFAULT 0,              -- 상품권 사용금액
 
     -- ── 캐쉬 · 마일리지 · 적립
@@ -7573,7 +7573,7 @@ CREATE TABLE IF NOT EXISTS st_settle_raw (
     save_schd_amt           BIGINT          DEFAULT 0,              -- 적립 예정금액 (구매확정 전=예상, 확정 후=실적립)
 
     -- ── 사은품
-    gift_id                 VARCHAR(16),                            -- pm_gift.gift_id
+    gift_id                 VARCHAR(21),                            -- pm_gift.gift_id
     gift_amt                BIGINT          DEFAULT 0,              -- 사은품 원가금액 (정산 차감)
 
     -- ── 결제
@@ -7594,15 +7594,15 @@ CREATE TABLE IF NOT EXISTS st_settle_raw (
 
     -- ── 정산 집계 연결
     settle_period           VARCHAR(7),                             -- 정산기간 (YYYY-MM)
-    settle_id               VARCHAR(16),                            -- st_settle.settle_id (집계 후 연결)
+    settle_id               VARCHAR(21),                            -- st_settle.settle_id (집계 후 연결)
 
     -- ── 마감
     close_yn                CHAR(1)         DEFAULT 'N',            -- 정산마감 완료 여부 Y/N
     close_date              TIMESTAMP,                              -- 마감일시
-    settle_close_id         VARCHAR(16),                            -- st_settle_close.settle_close_id
+    settle_close_id         VARCHAR(21),                            -- st_settle_close.settle_close_id
 
     -- ── ERP 전표
-    erp_voucher_id          VARCHAR(16),                            -- st_erp_voucher.erp_voucher_id
+    erp_voucher_id          VARCHAR(21),                            -- st_erp_voucher.erp_voucher_id
     erp_voucher_line_no     INTEGER,                                -- 전표 라인번호 (st_erp_voucher_line.line_no)
     erp_send_yn             CHAR(1)         DEFAULT 'N',            -- ERP 전송 여부 Y/N
     erp_send_date           TIMESTAMP,                              -- ERP 전송일시
@@ -7726,9 +7726,9 @@ CREATE INDEX idx_st_settle_raw_erp_send     ON st_settle_raw (erp_send_yn);
 -- 주문·결제·클레임·업체 별 기대금액 vs 실제금액 차이 관리
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_recon (
-    recon_id                VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    vendor_id               VARCHAR(16),                            -- sy_vendor.vendor_id
+    recon_id                VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21)     NOT NULL,               -- sy_site.site_id
+    vendor_id               VARCHAR(21),                            -- sy_vendor.vendor_id
 
     -- ── 대사 구분
     recon_type_cd           VARCHAR(20)     NOT NULL,               -- 코드: RECON_TYPE (ORDER:주문/PAY:결제/CLAIM:클레임/VENDOR:업체)
@@ -7736,9 +7736,9 @@ CREATE TABLE IF NOT EXISTS st_recon (
     recon_status_cd_before  VARCHAR(20),                            -- 변경 전 대사상태
 
     -- ── 참조
-    settle_id               VARCHAR(16),                            -- st_settle.settle_id
-    settle_raw_id           VARCHAR(16),                            -- st_settle_raw.settle_raw_id
-    ref_id                  VARCHAR(16),                            -- 대사 참조ID (order_id / pay_id / claim_id 등)
+    settle_id               VARCHAR(21),                            -- st_settle.settle_id
+    settle_raw_id           VARCHAR(21),                            -- st_settle_raw.settle_raw_id
+    ref_id                  VARCHAR(21),                            -- 대사 참조ID (order_id / pay_id / claim_id 등)
     ref_no                  VARCHAR(50),                            -- 대사 참조번호 (스냅샷)
     settle_period           VARCHAR(7),                             -- 정산기간 (YYYY-MM)
 
@@ -7749,7 +7749,7 @@ CREATE TABLE IF NOT EXISTS st_recon (
 
     -- ── 해소
     recon_note              TEXT,                                   -- 대사 메모
-    resolved_by             VARCHAR(16),                            -- 해소 처리자 (sy_user.user_id)
+    resolved_by             VARCHAR(21),                            -- 해소 처리자 (sy_user.user_id)
     resolved_date           TIMESTAMP,                              -- 해소 일시
 
     reg_by                  VARCHAR(16),
@@ -7801,12 +7801,12 @@ CREATE INDEX idx_st_recon_ref        ON st_recon (ref_id);
 -- 정산 확정 후 ERP로 전송할 회계 전표를 생성·관리
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_erp_voucher (
-    erp_voucher_id          VARCHAR(16)     NOT NULL,
-    site_id                 VARCHAR(16)     NOT NULL,               -- sy_site.site_id
-    vendor_id               VARCHAR(16),                            -- sy_vendor.vendor_id
+    erp_voucher_id          VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21)     NOT NULL,               -- sy_site.site_id
+    vendor_id               VARCHAR(21),                            -- sy_vendor.vendor_id
 
     -- ── 정산 연결
-    settle_id               VARCHAR(16),                            -- st_settle.settle_id
+    settle_id               VARCHAR(21),                            -- st_settle.settle_id
     settle_ym               CHAR(6),                                -- 정산년월 (YYYYMM)
 
     -- ── 전표 기본
@@ -7872,8 +7872,8 @@ CREATE INDEX idx_st_erp_voucher_no      ON st_erp_voucher (erp_voucher_no);
 -- 전표 1건당 차변/대변 복수 라인 (대차 균형 필수)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS st_erp_voucher_line (
-    erp_voucher_line_id     VARCHAR(16)     NOT NULL,
-    erp_voucher_id          VARCHAR(16)     NOT NULL,               -- st_erp_voucher.erp_voucher_id
+    erp_voucher_line_id     VARCHAR(21)     NOT NULL,
+    erp_voucher_id          VARCHAR(21)     NOT NULL,               -- st_erp_voucher.erp_voucher_id
     line_no                 INTEGER         NOT NULL,               -- 라인 순번
 
     -- ── 계정 정보
@@ -7888,7 +7888,7 @@ CREATE TABLE IF NOT EXISTS st_erp_voucher_line (
 
     -- ── 참조
     ref_type_cd             VARCHAR(20),                            -- 참조유형 (SETTLE/ORDER/CLAIM/PAY/ADJ)
-    ref_id                  VARCHAR(16),                            -- 참조ID (settle_id / order_id 등)
+    ref_id                  VARCHAR(21),                            -- 참조ID (settle_id / order_id 등)
     line_memo               VARCHAR(300),                           -- 라인 적요
 
     reg_by                  VARCHAR(16),

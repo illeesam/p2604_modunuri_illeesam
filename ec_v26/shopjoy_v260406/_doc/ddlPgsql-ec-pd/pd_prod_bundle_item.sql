@@ -7,11 +7,11 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_prod_bundle_item (
-    bundle_item_id      VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    bundle_prod_id      VARCHAR(20)     NOT NULL,               -- 묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)
-    item_prod_id        VARCHAR(20)     NOT NULL,               -- 구성품 상품ID (pd_prod.prod_id)
-    item_sku_id         VARCHAR(20),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
+    bundle_item_id      VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    bundle_prod_id      VARCHAR(21)     NOT NULL,               -- 묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)
+    item_prod_id        VARCHAR(21)     NOT NULL,               -- 구성품 상품ID (pd_prod.prod_id)
+    item_sku_id         VARCHAR(21),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
     item_qty            INTEGER         DEFAULT 1,              -- 구성 수량
     price_rate          DECIMAL(5,2)    NOT NULL,               -- 가격 안분율 (%) — 구성품 합계 100% 필수
     sort_ord            INTEGER         DEFAULT 0,              -- 노출 순서

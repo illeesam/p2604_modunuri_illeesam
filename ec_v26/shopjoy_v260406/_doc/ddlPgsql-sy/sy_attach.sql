@@ -1,8 +1,8 @@
 -- 첨부파일
 CREATE TABLE sy_attach (
-    attach_id       VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    attach_grp_id   VARCHAR(20)     NOT NULL,
+    attach_id       VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    attach_grp_id   VARCHAR(21)     NOT NULL,
     file_nm         VARCHAR(300)    NOT NULL,
     file_size       BIGINT          DEFAULT 0,              -- bytes
     file_ext        VARCHAR(20),

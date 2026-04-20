@@ -8,11 +8,11 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_prod_set_item (
-    set_item_id         VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),                            -- sy_site.site_id
-    set_prod_id         VARCHAR(20)     NOT NULL,               -- 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
-    item_prod_id        VARCHAR(20),                            -- 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
-    item_sku_id         VARCHAR(20),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
+    set_item_id         VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),                            -- sy_site.site_id
+    set_prod_id         VARCHAR(21)     NOT NULL,               -- 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
+    item_prod_id        VARCHAR(21),                            -- 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
+    item_sku_id         VARCHAR(21),                            -- 구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU미지정)
     item_nm             VARCHAR(200)    NOT NULL,               -- 구성품 표시명 (예: 머그컵 1개)
     item_qty            INTEGER         DEFAULT 1,              -- 구성 수량
     item_desc           VARCHAR(300),                           -- 구성품 설명 (소재·용량 등 부가 안내)

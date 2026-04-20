@@ -4,14 +4,14 @@
 -- ============================================================
 
 CREATE TABLE cm_bltn (
-    blog_id         VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    blog_cate_id    VARCHAR(20),                            -- FK: cm_bltn_cate.blog_cate_idblog_cate_id
+    blog_id         VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    blog_cate_id    VARCHAR(21),                            -- FK: cm_bltn_cate.blog_cate_idblog_cate_id
     blog_title      VARCHAR(200)    NOT NULL,              -- 제목
     blog_summary    VARCHAR(500),                           -- 요약 (미리보기용)
     blog_content    TEXT            NOT NULL,              -- 본문 (HTML)
     blog_author     VARCHAR(100),                           -- 작성자 이름
-    prod_id         VARCHAR(20),                            -- FK: pd_prod.prod_idprod_id (선택사항, 상품 관련 글)
+    prod_id         VARCHAR(21),                            -- FK: pd_prod.prod_idprod_id (선택사항, 상품 관련 글)
     view_count      INTEGER         DEFAULT 0,              -- 조회수
     use_yn          CHAR(1)         DEFAULT 'Y',            -- 공개여부 Y/N
     is_notice       CHAR(1)         DEFAULT 'N',            -- 공지글 여부 Y/N (상단 고정)

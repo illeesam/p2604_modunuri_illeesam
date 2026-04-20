@@ -1,0 +1,125 @@
+(ruoyi.version) : ${ruoyi.version}
+(spring-boot.version) : ${spring-boot.version}
+(spring.profiles.active) : ${spring.profiles.active}
+
+ ▶▶▶▶▶▶▶ (Environment)env.getProperty("aaa.bbb.ccc")
+ ▶ os
+     (os.name) : ${os.name}
+     (os.arch) : ${os.arch}
+     (os.version) : ${os.version}
+     (user.home) : ${user.home}
+     (user.dir) : ${user.dir}
+     (user.country) : ${user.country}
+     (user.name) : ${user.name}
+     (user.language) : ${user.language}
+
+ ▶ java
+     (java.version) : ${java.version}
+     (java.vm.name) : ${java.vm.name}
+     (java.vm.version) : ${java.vm.version}
+     (java.home) : ${java.home}
+     (java.version) : ${java.version}
+     (sun.boot.library.path) : ${sun.boot.library.path}
+     (java.runtime.name) : ${java.runtime.name}
+     (java.library.path) : ${java.library.path}
+
+ ▶ Spring
+     (spring.profiles.active) : ${spring.profiles.active}
+
+ ▶ Spring Boot
+     (spring-boot.version) : ${spring-boot.version}
+     (file.encoding) : ${file.encoding}
+     (spring.messages.basename) : ${spring.messages.basename}
+     (servlet.multipart.max-file-size) 하나의문서크기 : ${multipart.max-file-size}
+     (servlet.multipart.max-request-size) 합계업로드크기 : ${servlet.multipart.max-request-size}
+     (spring.devtools.restart.enabled) 핫배포 : ${spring.devtools.restart.enabled}
+     (swagger.enabled) : ${swagger.enabled}
+     (swagger.pathMapping) : ${swagger.pathMapping}
+     (xss.enabled) : ${xss.enabled}
+     (xss.excludes) : ${xss.excludes}
+     (xss.urlPatterns) : ${xss.urlPatterns}
+     (logging.level.com.ruoyi) : ${logging.level.com.ruoyi}
+     (logging.level.org.springframework) : ${logging.level.org.springframework}
+     (spring.redis.host) : ${spring.redis.host}
+     (spring.redis.port) : ${spring.redis.port}
+
+ ▶ Application (ruoyi)
+     (ruoyi.name) : ${ruoyi.name}
+     (ruoyi.email) : ${ruoyi.email}
+     (ruoyi.phone) : ${ruoyi.phone}
+     (ruoyi.version) : ${ruoyi.version}
+     (ruoyi.copyrightYear) : ${ruoyi.copyrightYear}
+     (ruoyi.demoEnabled) : ${ruoyi.demoEnabled}
+     (ruoyi.profile) : ${ruoyi.profile}
+
+ ▶ datasource
+     (spring.datasource.type) : ${spring.datasource.type}
+     (spring.datasource.driverClassName) : ${spring.datasource.driverClassName}
+     (spring.datasource.druid.master.url) : ${spring.datasource.druid.master.url}
+     (spring.datasource.druid.master.username) : ${spring.datasource.druid.master.username}
+     (spring.datasource.druid.initialSize) 초기연결개수 : ${spring.datasource.druid.initialSize}
+     (spring.datasource.druid.minIdle) 연결풀의최소수 : ${spring.datasource.druid.minIdle}
+     (spring.datasource.druid.maxActive) 최대연결풀수 : ${spring.datasource.druid.maxActive}
+     (spring.datasource.druid.statViewServlet.login-username) : ${spring.datasource.druid.statViewServlet.login-username}
+     (spring.datasource.druid.statViewServlet.login-password) : ${spring.datasource.druid.statViewServlet.login-password}
+
+ ▶ mybatis
+     (mybatis.typeAliasesPackage) : ${mybatis.typeAliasesPackage}
+     (mybatis.mapperLocations) : ${mybatis.mapperLocations}
+     (mybatis.configLocation) : ${mybatis.configLocation}
+
+ ▶ http server
+     (server.tomcat.uri-encoding) : ${server.tomcat.uri-encoding}
+     (server.port) : ${server.port}
+     HTTP URL : http://localhost:${server.port}
+     SWAGGER : http://localhost:${server.port}/swagger-ui/index.html
+     블로그관리 : http://localhost:${server.port}/index
+     LOGIN : http://localhost:${server.port}/cmsLogin?redirect=%2Fhome
+     CMS : http://localhost:${server.port}/cms
+     BLOG : http://localhost:${server.port}/cms/main/cmsIndex
+
+     PORTAL
+     - 로그인 : http://localhost:${server.port}/viewer/login
+     - 메인 : http://localhost:${server.port}/mainFrame
+     - 메인 : http://localhost:${server.port}/view/login
+     - 메인 : http://localhost:${server.port}/view/mainFrame
+     - 화면 : http://localhost:${server.port}/viewer/index
+
+    genCodeFtl
+     - 화면 : http://localhost:${server.port}/gencodeftl/gc2201/main
+     - 실행 : http://localhost:${server.port}/gencodeftl/gc2201/genCode
+     - 확장 : http://localhost:${server.port}/gencodeftl/gc2209hwm/main
+
+    genui
+     - 화면 : http://localhost:${server.port}/genui/gu2201/main
+     - 실행 : http://localhost:${server.port}/genui/gu2201/genCode
+
+ ▶ URL
+     http://localhost:${server.port}/mainframe/index.html
+     http://localhost:${server.port}/ui/skin
+     http://localhost:${server.port}/demo/report/echarts
+     http://localhost:${server.port}/ui/demo/report/echarts
+     http://localhost:${server.port}/swagger-ui/index.html
+
+ ▶ 문제해결
+    오류 :: ~~~ c.a.d.p.DruidDataSource - [init,931] - init datasource error, url: jdbc:mysql:// ~~~
+        ㄴ Mysql에 create table 하면 해결 (대상파일 : ry_20210908.sql, quartz.sql)
+    오류 :: ~~~ UnsatisfiedDependencyException: Error creating bean with name 'captchaController': ~~~
+        ㄴ redis를 localhost 설치하면 정상 (REDIS 설치 ::: https://github.com/microsoftarchive/redis/releases :: Redis-x64-5.0.14.msi)
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+배너제작 : http://patorjk.com/software/taag/#p=display&f=Rectangles&t=Type%20Something%20 > Big Money-ne
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+           /$$                              /$$$$$                    
+          | $$                             |__  $$                    
+  /$$$$$$$| $$$$$$$   /$$$$$$   /$$$$$$       | $$  /$$$$$$  /$$   /$$
+ /$$_____/| $$__  $$ /$$__  $$ /$$__  $$      | $$ /$$__  $$| $$  | $$
+|  $$$$$$ | $$  \ $$| $$  \ $$| $$  \ $$ /$$  | $$| $$  \ $$| $$  | $$
+ \____  $$| $$  | $$| $$  | $$| $$  | $$| $$  | $$| $$  | $$| $$  | $$
+ /$$$$$$$/| $$  | $$|  $$$$$$/| $$$$$$$/|  $$$$$$/|  $$$$$$/|  $$$$$$$
+|_______/ |__/  |__/ \______/ | $$____/  \______/  \______/  \____  $$
+                              | $$                           /$$  | $$
+                              | $$                          |  $$$$$$/
+                              |__/                           \______/ 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

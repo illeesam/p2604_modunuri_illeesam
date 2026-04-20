@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Auto-download Gradle distribution (8.6) if not present, then run it.
+DIST=gradle-8.6
+ZIP=.gradle/wrapper/${DIST}-bin.zip
+EXTRACTDIR=.gradle/wrapper/${DIST}
+
+if [ -x "${EXTRACTDIR}/bin/gradle" ]; then
+  "${EXTRACTDIR}/bin/gradle" "$@"
+  exit $?
+fi
+
+echo "Gradle not found locally. Downloading ${DIST}..."
+mkdir -p .gradle/wrapper
+if command -v curl >/dev/null 2>&1; then
+  curl -L -o "${ZIP}" "https://services.gradle.org/distributions/${DIST}-bin.zip"
+elif command -v wget >/dev/null 2>&1; then
+  wget -O "${ZIP}" "https://services.gradle.org/distributions/${DIST}-bin.zip"
+else
+  echo "curl or wget required to download Gradle. Install one or install Gradle manually." >&2
+  exit 1
+fi
+
+if command -v unzip >/dev/null 2>&1; then
+  unzip -o "${ZIP}" -d .gradle/wrapper >/dev/null
+else
+  echo "unzip required to extract Gradle. Please install unzip or extract ${ZIP} manually." >&2
+  exit 1
+fi
+
+"${EXTRACTDIR}/bin/gradle" "$@"
+

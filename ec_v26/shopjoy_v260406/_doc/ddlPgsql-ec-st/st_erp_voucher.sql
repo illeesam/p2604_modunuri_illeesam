@@ -4,12 +4,12 @@
 -- 정산 확정 후 ERP로 전송할 회계 전표를 생성·관리
 -- ============================================================
 CREATE TABLE st_erp_voucher (
-    erp_voucher_id          VARCHAR(20)     NOT NULL,
-    site_id                 VARCHAR(20)     NOT NULL,               -- sy_site.site_id
-    vendor_id               VARCHAR(20),                            -- sy_vendor.vendor_id
+    erp_voucher_id          VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21)     NOT NULL,               -- sy_site.site_id
+    vendor_id               VARCHAR(21),                            -- sy_vendor.vendor_id
 
     -- ── 정산 연결
-    settle_id               VARCHAR(20),                            -- st_settle.settle_id
+    settle_id               VARCHAR(21),                            -- st_settle.settle_id
     settle_ym               CHAR(6),                                -- 정산년월 (YYYYMM)
 
     -- ── 전표 기본

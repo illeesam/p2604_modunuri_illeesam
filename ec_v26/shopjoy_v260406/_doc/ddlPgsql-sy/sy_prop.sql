@@ -5,7 +5,7 @@
 -- ============================================================
 CREATE TABLE sy_prop (
     prop_id         BIGSERIAL       NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id (NULL = 전역)
+    site_id         VARCHAR(21),                            -- sy_site.site_id (NULL = 전역)
     disp_path       VARCHAR(200)    NOT NULL,               -- 점 구분 표시경로 (aa.bb.cc)
     prop_key        VARCHAR(100)    NOT NULL,               -- 키 (코드 식별자, snake_case 권장)
     prop_value      TEXT,                                   -- 값 (JSON/문자열/숫자 등)

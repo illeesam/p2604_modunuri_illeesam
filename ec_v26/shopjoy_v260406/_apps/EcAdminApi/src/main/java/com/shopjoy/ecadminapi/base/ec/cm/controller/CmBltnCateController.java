@@ -1,11 +1,12 @@
 package com.shopjoy.ecadminapi.base.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.base.ec.cm.dto.CmBltnCateDto;
-import com.shopjoy.ecadminapi.base.ec.cm.dto.CmBltnCateReq;
-import com.shopjoy.ecadminapi.base.ec.cm.entity.CmBltnCate;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBltnCateDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.vo.CmBltnCateReq;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltnCate;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBltnCateService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +43,8 @@ public class CmBltnCateController {
             @RequestParam(required = false) String dateEnd,
             @RequestParam(required = false) String sort) {
         Map<String, Object> p = buildParam(siteId, kw, dateStart, dateEnd, sort);
-        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
+        List<CmBltnCateDto> result = service.getList(p);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 페이징 목록 ── */
@@ -56,21 +58,23 @@ public class CmBltnCateController {
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "20") int pageSize) {
         Map<String, Object> p = buildParam(siteId, kw, dateStart, dateEnd, sort);
-        return ResponseEntity.ok(ApiResponse.ok(service.getPageList(p, pageNo, pageSize)));
+        PageResult<CmBltnCateDto> result = service.getPageData(p, pageNo, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 단건 조회 ── */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBltnCateDto>> getById(@PathVariable String id) {
-        CmBltnCateDto dto = service.getById(id);
-        if (dto == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(dto));
+        CmBltnCateDto result = service.getById(id);
+        if (result == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 등록 (JPA) ── */
     @PostMapping
     public ResponseEntity<ApiResponse<CmBltnCate>> create(@RequestBody CmBltnCate entity) {
-        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
+        CmBltnCate result = service.create(entity);
+        return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     /* ── 전체 수정 (JPA) ── */
@@ -79,7 +83,8 @@ public class CmBltnCateController {
             @PathVariable String id,
             @RequestBody CmBltnCate entity) {
         entity.setBlogCateId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        CmBltnCate result = service.save(entity);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 선택 필드 수정 (MyBatis) ── */
@@ -88,7 +93,8 @@ public class CmBltnCateController {
             @PathVariable String id,
             @RequestBody CmBltnCate entity) {
         entity.setBlogCateId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.update(entity)));
+        int result = service.update(entity);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── 삭제 (JPA) ── */
@@ -100,14 +106,16 @@ public class CmBltnCateController {
 
     /* ── _row_status 단건 저장 ── */
     @PostMapping("/save")
-    public ResponseEntity<ApiResponse<CmBltnCate>> saveByRowStatus(@RequestBody CmBltnCateReq req) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveByRowStatus(req)));
+    public ResponseEntity<ApiResponse<CmBltnCate>> saveByRowStatus(@RequestBody @Valid CmBltnCateReq req) {
+        CmBltnCate result = service.saveByRowStatus(req);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /* ── _row_status 목록 저장 ── */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<List<CmBltnCate>>> saveListByRowStatus(@RequestBody List<CmBltnCateReq> list) {
-        return ResponseEntity.ok(ApiResponse.ok(service.saveListByRowStatus(list)));
+    public ResponseEntity<ApiResponse<List<CmBltnCate>>> saveListByRowStatus(@RequestBody @Valid List<CmBltnCateReq> list) {
+        List<CmBltnCate> result = service.saveListByRowStatus(list);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     private Map<String, Object> buildParam(String siteId, String kw,

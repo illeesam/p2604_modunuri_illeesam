@@ -1,7 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.cm.mapper;
 
-import com.shopjoy.ecadminapi.base.ec.cm.dto.CmBltnCateDto;
-import com.shopjoy.ecadminapi.base.ec.cm.entity.CmBltnCate;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBltnCateDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBltnCate;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

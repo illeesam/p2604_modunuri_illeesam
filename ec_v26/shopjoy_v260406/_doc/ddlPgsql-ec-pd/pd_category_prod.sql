@@ -8,10 +8,10 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pd_category_prod (
-    category_prod_id        VARCHAR(20)     NOT NULL,
-    site_id                 VARCHAR(20),                                        -- sy_site.site_id
-    category_id             VARCHAR(20)     NOT NULL,                           -- pd_category.category_id
-    prod_id                 VARCHAR(20)     NOT NULL,                           -- pd_prod.prod_id
+    category_prod_id        VARCHAR(21)     NOT NULL,
+    site_id                 VARCHAR(21),                                        -- sy_site.site_id
+    category_id             VARCHAR(21)     NOT NULL,                           -- pd_category.category_id
+    prod_id                 VARCHAR(21)     NOT NULL,                           -- pd_prod.prod_id
     category_prod_type_cd   VARCHAR(20)     NOT NULL DEFAULT 'NORMAL',          -- 진열 유형
     sort_ord                INTEGER         DEFAULT 0,                          -- 동일 타입 내 표시 순서
     emphasis_cd             VARCHAR(200),                                       -- 강조옵션 (^BOLD^TEXT_COLOR^EMOTICON^MARQUEE^)
@@ -20,6 +20,8 @@ CREATE TABLE pd_category_prod (
     disp_end_date           DATE            DEFAULT (CURRENT_DATE + INTERVAL '3 years' - EXTRACT(DOY FROM CURRENT_DATE) * INTERVAL '1 day' + INTERVAL '1 year' - INTERVAL '1 day'), -- 전시종료일 (기본: 3년 후 12월31일)
     reg_by                  VARCHAR(20),
     reg_date                TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    upd_by          VARCHAR(20),
+    upd_date        TIMESTAMP,
     PRIMARY KEY (category_prod_id),
     UNIQUE (category_id, prod_id, category_prod_type_cd)                       -- 동일 카테고리+상품+타입 중복 방지
 );
@@ -36,6 +38,8 @@ COMMENT ON COLUMN pd_category_prod.disp_start_date             IS '전시시작�
 COMMENT ON COLUMN pd_category_prod.disp_end_date               IS '전시종료일 (NULL=무기한, 기본 3년 후 12월31일)';
 COMMENT ON COLUMN pd_category_prod.reg_by                      IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN pd_category_prod.reg_date                    IS '등록일';
+COMMENT ON COLUMN pd_category_prod.upd_by   IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN pd_category_prod.upd_date IS '수정일';
 
 -- ============================================================
 -- 인덱스

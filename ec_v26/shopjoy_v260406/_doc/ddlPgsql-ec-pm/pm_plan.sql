@@ -3,8 +3,8 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE pm_plan (
-    plan_id             VARCHAR(20)     NOT NULL,
-    site_id             VARCHAR(20),
+    plan_id             VARCHAR(21)     NOT NULL,
+    site_id             VARCHAR(21),
     plan_nm             VARCHAR(100)    NOT NULL,               -- 기획전명
     plan_title          VARCHAR(200)    NOT NULL,               -- 기획전 타이틀 (노출용)
     plan_type_cd        VARCHAR(20)     DEFAULT 'THEME',        -- 코드: PLAN_TYPE (SEASON:시즌/BRAND:브랜드/THEME:테마/COLLAB:협업)

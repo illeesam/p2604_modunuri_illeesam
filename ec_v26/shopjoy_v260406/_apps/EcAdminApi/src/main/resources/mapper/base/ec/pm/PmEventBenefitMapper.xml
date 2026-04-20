@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pm.PmEventBenefitMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pm.mapper.PmEventBenefitMapper">
 
     <!-- 이벤트 혜택 조회 조건 -->
     <sql id="pmEventBenefitCond">
@@ -18,7 +18,7 @@
     </sql>
 
     <!-- 이벤트 혜택 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmEventBenefitDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto">
         SELECT
             b.*,
             ste.site_nm AS site_nm,
@@ -30,7 +30,7 @@
     </select>
 
     <!-- 이벤트 혜택 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmEventBenefitDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto">
         SELECT
             b.*,
             ste.site_nm AS site_nm,
@@ -52,7 +52,7 @@
     </select>
 
     <!-- 이벤트 혜택 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmEventBenefitDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto">
         SELECT
             b.*,
             ste.site_nm AS site_nm,
@@ -81,7 +81,7 @@
     </select>
 
     <!-- 이벤트 혜택 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pm.entity.PmEventBenefit">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit">
         UPDATE pm_event_benefit
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

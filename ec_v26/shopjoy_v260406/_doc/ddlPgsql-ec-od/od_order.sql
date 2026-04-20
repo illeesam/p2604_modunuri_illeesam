@@ -1,8 +1,8 @@
 -- 주문 마스터
 CREATE TABLE od_order (
-    order_id        VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    member_id       VARCHAR(20)     NOT NULL,
+    order_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
     member_nm       VARCHAR(50),
     orderer_email   VARCHAR(100),                           -- 주문자 이메일 (주문 시점 스냅샷)
     order_grade_cd  VARCHAR(20),                            -- 주문 시점 회원등급 (코드: MEMBER_GRADE)
@@ -41,7 +41,7 @@ CREATE TABLE od_order (
     refund_account_no VARCHAR(50),
     refund_account_nm VARCHAR(50),
     -- ── 쿠폰/메모 ──
-    coupon_id       VARCHAR(20),
+    coupon_id       VARCHAR(21),
     memo            TEXT,
     -- ── 배송 요약 (최신 출고 기준 역정규화) ──
     dliv_courier_cd  VARCHAR(30),                           -- 최근 출고 택배사 (코드: COURIER)
@@ -60,9 +60,9 @@ CREATE TABLE od_order (
     appr_target_cd      VARCHAR(30),                        -- 코드: APPROVAL_TARGET (ORDER/PROD/DLIV/EXTRA)
     appr_target_nm      VARCHAR(200),
     appr_reason         VARCHAR(500),
-    appr_req_user_id    VARCHAR(20),
+    appr_req_user_id    VARCHAR(21),
     appr_req_date       TIMESTAMP,
-    appr_aprv_user_id   VARCHAR(20),
+    appr_aprv_user_id   VARCHAR(21),
     appr_aprv_date      TIMESTAMP,
     PRIMARY KEY (order_id)
 );

@@ -4,7 +4,7 @@
 -- ============================================================
 
 CREATE TABLE sy_attach_grp (
-    attach_grp_id   VARCHAR(20)     NOT NULL,
+    attach_grp_id   VARCHAR(21)     NOT NULL,
     attach_grp_code VARCHAR(50)     NOT NULL,              -- 고유 코드 (PROD_IMG, MEMBER_DOC, INQUIRY_FILE 등)
     attach_grp_nm   VARCHAR(100)    NOT NULL,              -- 그룹명
     file_ext_allow  VARCHAR(200),                           -- 허용 확장자 (쉼표 구분: jpg,png,gif,pdf)

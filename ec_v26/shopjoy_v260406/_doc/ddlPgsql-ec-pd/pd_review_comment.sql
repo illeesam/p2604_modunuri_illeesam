@@ -1,10 +1,10 @@
 CREATE TABLE pd_review_comment (
-    review_comment_id        VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),
-    review_id       VARCHAR(20)     NOT NULL,
-    parent_reply_id VARCHAR(20),                           -- 대댓글 시 상위 reply_id
+    review_comment_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),
+    review_id       VARCHAR(21)     NOT NULL,
+    parent_reply_id VARCHAR(21),                           -- 대댓글 시 상위 reply_id
     writer_type_cd  VARCHAR(20)     DEFAULT 'MEMBER',      -- 코드: REVIEW_WRITER_TYPE (MEMBER/SELLER/ADMIN)
-    writer_id       VARCHAR(20),                           -- member_id 또는 user_id
+    writer_id       VARCHAR(21),                           -- member_id 또는 user_id
     writer_nm       VARCHAR(50),
     review_reply_content TEXT            NOT NULL,
     reply_status_cd VARCHAR(20)     DEFAULT 'ACTIVE',      -- ACTIVE/HIDDEN/DELETED

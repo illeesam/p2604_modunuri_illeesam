@@ -4,9 +4,9 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_vendor_content (
-    vendor_content_id VARCHAR(20)     NOT NULL,
-    site_id           VARCHAR(20),                            -- sy_site.site_id
-    vendor_id         VARCHAR(20)     NOT NULL,               -- sy_vendor.vendor_id
+    vendor_content_id VARCHAR(21)     NOT NULL,
+    site_id           VARCHAR(21),                            -- sy_site.site_id
+    vendor_id         VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
     content_type_cd   VARCHAR(30)     NOT NULL,               -- 코드: VENDOR_CONTENT_TYPE (INTRO/BANNER/TERMS/POLICY/NOTICE/FAQ/GUIDE)
     vendor_content_title VARCHAR(200),
     vendor_content_subtitle VARCHAR(300),
@@ -14,7 +14,7 @@ CREATE TABLE sy_vendor_content (
     thumb_url         VARCHAR(500),                           -- 썸네일 이미지
     image_url         VARCHAR(500),                           -- 대표 이미지
     link_url          VARCHAR(500),                           -- 링크 URL
-    attach_grp_id     VARCHAR(20),                            -- sy_attach_grp.attach_grp_id
+    attach_grp_id     VARCHAR(21),                            -- sy_attach_grp.attach_grp_id
     lang_cd           VARCHAR(10)     DEFAULT 'ko',           -- 다국어 (ko/en/ja 등)
     start_date        TIMESTAMP,                              -- 노출 시작
     end_date          TIMESTAMP,                              -- 노출 종료

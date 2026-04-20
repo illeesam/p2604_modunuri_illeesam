@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.pm.PmDiscntMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.pm.mapper.PmDiscntMapper">
 
     <!-- 할인 조회 조건 -->
     <sql id="pmDiscntCond">
@@ -19,7 +19,7 @@
     </sql>
 
     <!-- 할인 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmDiscntDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto">
         SELECT
             d.*,
             ste.site_nm AS site_nm,
@@ -37,7 +37,7 @@
     </select>
 
     <!-- 할인 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmDiscntDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto">
         SELECT
             d.*,
             ste.site_nm AS site_nm,
@@ -65,7 +65,7 @@
     </select>
 
     <!-- 할인 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pm.dto.PmDiscntDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto">
         SELECT
             d.*,
             ste.site_nm AS site_nm,
@@ -100,7 +100,7 @@
     </select>
 
     <!-- 할인 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pm.entity.PmDiscnt">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt">
         UPDATE pm_discnt
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>

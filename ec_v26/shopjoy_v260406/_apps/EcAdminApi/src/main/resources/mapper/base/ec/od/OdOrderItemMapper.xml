@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdOrderItemMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.od.mapper.OdOrderItemMapper">
 
     <!-- 원칙1: order_item_status_cd_nm, dliv_courier_cd_nm -->
     <!-- 원칙2: pd_prod, pd_prod_sku, pd_prod_opt_item(x2) -->
@@ -22,7 +22,7 @@
     </sql>
 
     <!-- 주문 아이템(상품) 상세 조회 -->
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
             oi.*,
             p.prod_nm AS prod_nm_current, p.thumbnail_url, p.sale_price,
@@ -41,7 +41,7 @@
     </select>
 
     <!-- 주문 아이템(상품) 목록 조회 -->
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
             oi.*,
             p.thumbnail_url,    p.sale_price,
@@ -73,7 +73,7 @@
     </select>
 
     <!-- 주문 아이템(상품) 페이징 목록 조회 -->
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
             oi.*,
             p.thumbnail_url,    p.sale_price,
@@ -111,7 +111,7 @@
     </select>
 
     <!-- 주문 아이템(상품) 선택 필드 수정 -->
-    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdOrderItem">
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem">
         UPDATE od_order_item
         <set>
             <if test="orderItemStatusCd != null">order_item_status_cd = #{orderItemStatusCd},</if>
@@ -131,7 +131,7 @@
          ================================================================ -->
 
     <!-- 주문번호로 주문 아이템 목록 조회 -->
-    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdOrderItemDto">
+    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
             oi.*,
             p.thumbnail_url,

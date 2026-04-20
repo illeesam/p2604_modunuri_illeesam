@@ -3,11 +3,11 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE cm_chatt_room (
-    chatt_room_id        VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    member_id       VARCHAR(20)     NOT NULL,
+    chatt_room_id        VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    member_id       VARCHAR(21)     NOT NULL,
     member_nm       VARCHAR(50),
-    admin_user_id   VARCHAR(20),                            -- 담당 관리자 (sy_user.user_id)
+    admin_user_id   VARCHAR(21),                            -- 담당 관리자 (sy_user.user_id)
     subject         VARCHAR(200),                           -- 채팅 주제
     chatt_status_cd VARCHAR(20)     DEFAULT 'PENDING',      -- 코드: CHATT_STATUS (PENDING/ONGOING/CLOSED)
     chatt_status_cd_before VARCHAR(20),                     -- 변경 전 채팅상태

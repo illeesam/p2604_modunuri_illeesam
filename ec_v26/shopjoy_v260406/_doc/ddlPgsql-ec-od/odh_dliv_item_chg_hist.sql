@@ -3,16 +3,16 @@
 --   chg_type 예: QTY / STATUS / CARRIER / TRACK_NO / RECV_INFO
 -- ============================================================
 CREATE TABLE odh_dliv_item_chg_hist (
-    dliv_item_chg_hist_id  VARCHAR(20)     NOT NULL,
-    site_id                VARCHAR(20),                            -- sy_site.site_id
-    dliv_id                VARCHAR(20)     NOT NULL,               -- od_dliv.
-    dliv_item_id           VARCHAR(20)     NOT NULL,               -- od_dliv_item.
+    dliv_item_chg_hist_id  VARCHAR(21)     NOT NULL,
+    site_id                VARCHAR(21),                            -- sy_site.site_id
+    dliv_id                VARCHAR(21)     NOT NULL,               -- od_dliv.
+    dliv_item_id           VARCHAR(21)     NOT NULL,               -- od_dliv_item.
     chg_type_cd            VARCHAR(30)     NOT NULL,               -- 변경유형코드 (QTY/STATUS/CARRIER/TRACK_NO/RECV_INFO)
     chg_field              VARCHAR(50),                            -- 변경 필드명
     before_val             TEXT,                                   -- 변경전값
     after_val              TEXT,                                   -- 변경후값
     chg_reason             VARCHAR(300),                           -- 변경사유
-    chg_user_id                 VARCHAR(20),                            -- 처리자 (sy_user.user_id)
+    chg_user_id                 VARCHAR(21),                            -- 처리자 (sy_user.user_id)
     chg_date               TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     reg_by                 VARCHAR(20),
     reg_date               TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,

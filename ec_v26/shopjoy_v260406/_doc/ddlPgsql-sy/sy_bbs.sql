@@ -3,15 +3,15 @@
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(20)
 -- ============================================================
 CREATE TABLE sy_bbs (
-    bbs_id          VARCHAR(20)     NOT NULL,
-    site_id         VARCHAR(20),                            -- sy_site.site_id
-    bbm_id          VARCHAR(20)     NOT NULL,
-    parent_bbs_id   VARCHAR(20),                            -- 답글 시 부모글 ID
-    member_id       VARCHAR(20),
+    bbs_id          VARCHAR(21)     NOT NULL,
+    site_id         VARCHAR(21),                            -- sy_site.site_id
+    bbm_id          VARCHAR(21)     NOT NULL,
+    parent_bbs_id   VARCHAR(21),                            -- 답글 시 부모글 ID
+    member_id       VARCHAR(21),
     author_nm          VARCHAR(50),
     bbs_title       VARCHAR(200)    NOT NULL,
     content_html    TEXT,
-    attach_grp_id   VARCHAR(20),
+    attach_grp_id   VARCHAR(21),
     view_count      INTEGER         DEFAULT 0,
     like_count      INTEGER         DEFAULT 0,
     comment_count   INTEGER         DEFAULT 0,

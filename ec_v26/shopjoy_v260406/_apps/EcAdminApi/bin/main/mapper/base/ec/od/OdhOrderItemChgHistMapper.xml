@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdhOrderItemChgHistMapper">
+<mapper namespace="com.shopjoy.ecadminapi.base.ec.od.mapper.OdhOrderItemChgHistMapper">
 
     <sql id="odhOrderItemChgHistCond">
         <where>
@@ -13,7 +13,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdhOrderItemChgHistDto">
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,
@@ -24,7 +24,7 @@
         WHERE h.order_item_chg_hist_id = #{id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdhOrderItemChgHistDto">
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,
@@ -43,7 +43,7 @@
         <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdhOrderItemChgHistDto">
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto">
         SELECT
             h.*,
             ste.site_nm AS site_nm,
