@@ -3,7 +3,7 @@ window.Prod01List = {
   name: 'Prod01List',
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   setup(props) {
-    const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
+    const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
     /* ── 상품 이미지 자동 할당 ── */
     const IMG_BASE = 'assets/cdn/prod/img/shop/product';

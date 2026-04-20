@@ -56,6 +56,16 @@ class SampleDataInsertTest {
                 "node _doc/generate_sample_sql_pm.js");
         runSqlFile(docDir.resolve("sample_data_od.sql"),
                 "node _doc/generate_sample_sql_od.js");
+        runSqlFile(docDir.resolve("sample_data_sy.sql"),
+                "node _doc/generate_sample_sql_sy.js");
+        runSqlFile(docDir.resolve("sample_data_i18n.sql"),
+                "node _doc/generate_sample_sql_i18n.js");
+        runSqlFile(docDir.resolve("sample_data_tmpl.sql"),
+                "node _doc/generate_sample_sql_tmpl.js");
+        runSqlFile(docDir.resolve("sample_data_tmpl_update.sql"),
+                "수동 작성 — 브랜드명 치환");
+        runSqlFile(docDir.resolve("sample_data_st.sql"),
+                "node _doc/generate_sample_sql_st.js");
     }
 
     private void runSqlFile(Path sqlFile, String hint) throws Exception {
