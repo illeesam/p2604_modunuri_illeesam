@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyhSendMsgLogMapper">
+
+    <sql id="syhSendMsgLogCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND l.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND l.ref_type_cd = #{p.typeCd}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND l.send_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND l.send_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyhSendMsgLogDto">
+        SELECT
+            l.*,
+            ste.site_nm AS site_nm,
+            tpl.template_nm AS template_nm,
+            usr.user_nm AS user_nm,
+            cd_mc.code_label AS channel_cd_nm,
+            cd_sr.code_label AS result_cd_nm
+        FROM syh_send_msg_log l
+            LEFT JOIN sy_site ste ON ste.site_id = l.site_id
+            LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
+            LEFT JOIN sy_user usr ON usr.user_id = l.user_id
+            LEFT JOIN sy_code cd_mc ON cd_mc.code_grp = 'MSG_CHANNEL' AND cd_mc.code_value = l.channel_cd
+            LEFT JOIN sy_code cd_sr ON cd_sr.code_grp = 'SEND_RESULT' AND cd_sr.code_value = l.result_cd
+        WHERE l.log_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyhSendMsgLogDto">
+        SELECT
+            l.*,
+            ste.site_nm AS site_nm,
+            tpl.template_nm AS template_nm,
+            usr.user_nm AS user_nm,
+            cd_mc.code_label AS channel_cd_nm,
+            cd_sr.code_label AS result_cd_nm
+        FROM syh_send_msg_log l
+            LEFT JOIN sy_site ste ON ste.site_id = l.site_id
+            LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
+            LEFT JOIN sy_user usr ON usr.user_id = l.user_id
+            LEFT JOIN sy_code cd_mc ON cd_mc.code_grp = 'MSG_CHANNEL' AND cd_mc.code_value = l.channel_cd
+            LEFT JOIN sy_code cd_sr ON cd_sr.code_grp = 'SEND_RESULT' AND cd_sr.code_value = l.result_cd
+            <include refid="syhSendMsgLogCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY l.log_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY l.log_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY l.send_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY l.send_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyhSendMsgLogDto">
+        SELECT
+            l.*,
+            ste.site_nm AS site_nm,
+            tpl.template_nm AS template_nm,
+            usr.user_nm AS user_nm,
+            cd_mc.code_label AS channel_cd_nm,
+            cd_sr.code_label AS result_cd_nm
+        FROM syh_send_msg_log l
+            LEFT JOIN sy_site ste ON ste.site_id = l.site_id
+            LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
+            LEFT JOIN sy_user usr ON usr.user_id = l.user_id
+            LEFT JOIN sy_code cd_mc ON cd_mc.code_grp = 'MSG_CHANNEL' AND cd_mc.code_value = l.channel_cd
+            LEFT JOIN sy_code cd_sr ON cd_sr.code_grp = 'SEND_RESULT' AND cd_sr.code_value = l.result_cd
+            <include refid="syhSendMsgLogCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY l.log_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY l.log_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY l.send_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY l.send_date DESC</when>
+            <otherwise>ORDER BY l.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM syh_send_msg_log l
+            <include refid="syhSendMsgLogCond"/>
+    </select>
+
+</mapper>

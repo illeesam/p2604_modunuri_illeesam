@@ -2,7 +2,7 @@
 정책명: 관리자(Back Office) 인증 정책
 정책번호: base-인증-admin
 관리자: 개발팀
-최종수정: 2026-04-19
+최종수정: 2026-04-20
 ---
 
 # 관리자(Back Office) 인증 정책
@@ -129,6 +129,77 @@ window.addEventListener('storage', e => {
 - `api/base/admin-users.json` 에서 loginId + password 매칭
 - accessToken: `'sjt_adm_' + Date.now().toString(36)` 형식 로컬 생성
 - refreshToken 재발급은 mock 응답으로 처리
+
+---
+
+---
+
+## 10. JWT 클레임 구조 및 AuthPrincipal 설계 (2026-04-20 적용)
+
+### 10.1 JWT 클레임 필드
+
+| 클레임 | 타입 | 값 예시 | 설명 |
+|---|---|---|---|
+| `sub` | String | `"usr_240101..."` | 사용자 ID (userId) |
+| `loginId` | String | `"admin01"` | 로그인 아이디 (access token만) |
+| `roles` | List\<String\> | `["ROLE_ADMIN"]` | 권한 목록 (access token만) |
+| `type` | String | `"access"` \| `"refresh"` | 토큰 종류 구분 |
+| `userType` | String | `"USER"` \| `"MEMBER"` | 사용자 테이블 구분 |
+
+### 10.2 userType 도입 이유
+
+이 시스템에는 두 개의 사용자 테이블이 존재한다:
+- `sy_user` — 관리자(Back Office). `userType = "USER"`
+- `ec_member` — 고객(Front Office). `userType = "MEMBER"`
+
+기존 Spring Security의 `UserDetailsService`는 단일 사용자 저장소를 전제하므로, 두 테이블을 구분하려면 매 요청마다 DB를 조회하거나 별도 필터가 필요하다. JWT 클레임에 `userType`을 심어두면:
+1. **필터에서 DB 조회 없이** `AuthPrincipal`을 복원할 수 있다.
+2. **단일 필터(`JwtAuthFilter`)**로 두 사용자 타입을 모두 처리할 수 있다.
+3. Service 어디서든 `SecurityUtil`로 사용자 타입을 확인할 수 있다.
+
+### 10.3 인증 흐름 (필터 기준)
+
+```
+HTTP 요청 (Authorization: Bearer <token>)
+  └─ JwtAuthFilter
+       ├─ JWT 검증 (서명, 만료)
+       ├─ 클레임 추출: userId, userType, roles
+       ├─ AuthPrincipal(userId, userType) 생성
+       ├─ SimpleGrantedAuthority 목록 구성 (roles 클레임 기반)
+       └─ SecurityContextHolder에 Authentication 저장
+             ← DB 조회 없음
+```
+
+### 10.4 SecurityUtil 사용법
+
+```java
+// Controller, Service 어디서든 (파라미터 주입 불필요)
+SecurityUtil.currentUserId()    // → "usr_240101..."
+SecurityUtil.currentUserType()  // → "USER" 또는 "MEMBER"
+SecurityUtil.isUser()           // → true: 관리자
+SecurityUtil.isMember()         // → true: 고객
+
+// 타입별 분기 예시
+if (SecurityUtil.isUser()) {
+    // 관리자 전용 로직
+} else if (SecurityUtil.isMember()) {
+    // 고객 전용 로직
+}
+```
+
+### 10.5 ec_member 로그인 확장 시 추가 사항
+
+고객 로그인 엔드포인트(`POST /auth/member/login`) 구현 시:
+```java
+// AuthPrincipal.MEMBER("MEMBER")를 전달하면 기존 필터·유틸을 그대로 사용
+jwtProvider.createAccessToken(member.getMemberId(), member.getLoginId(), roles, AuthPrincipal.MEMBER);
+jwtProvider.createRefreshToken(member.getMemberId(), AuthPrincipal.MEMBER);
+```
+
+### 10.6 주의 사항
+
+- `@Async` 비동기 처리 시 SecurityContext가 전파되지 않음 → `SecurityContextHolder.MODE_INHERITABLETHREADLOCAL` 또는 별도 userId 파라미터 전달 필요
+- refresh 엔드포인트에서 `userType`을 refresh token 클레임에서 읽으므로 DB 재조회 없이 동일 타입으로 재발급됨
 
 ---
 

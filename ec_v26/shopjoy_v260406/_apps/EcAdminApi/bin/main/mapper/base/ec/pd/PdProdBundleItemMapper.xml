@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.pd.PdProdBundleItemMapper">
+
+    <!-- 묶음상품 구성 조회 조건 -->
+    <sql id="pdProdBundleItemCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND i.site_id = #{p.siteId}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND i.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND i.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 묶음상품 구성 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdBundleItemDto">
+        SELECT
+            i.*,
+            ste.site_nm AS site_nm,
+            prd.prod_nm AS bundle_prod_nm,
+            prd2.prod_nm AS item_prod_nm
+        FROM pd_prod_bundle_item i
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = i.bundle_prod_id
+            LEFT JOIN pd_prod prd2 ON prd2.prod_id = i.item_prod_id
+        WHERE i.bundle_item_id = #{id}
+    </select>
+
+    <!-- 묶음상품 구성 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdBundleItemDto">
+        SELECT
+            i.*,
+            ste.site_nm AS site_nm,
+            prd.prod_nm AS bundle_prod_nm,
+            prd2.prod_nm AS item_prod_nm
+        FROM pd_prod_bundle_item i
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = i.bundle_prod_id
+            LEFT JOIN pd_prod prd2 ON prd2.prod_id = i.item_prod_id
+            <include refid="pdProdBundleItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY i.bundle_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY i.bundle_item_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 묶음상품 구성 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.pd.dto.PdProdBundleItemDto">
+        SELECT
+            i.*,
+            ste.site_nm AS site_nm,
+            prd.prod_nm AS bundle_prod_nm,
+            prd2.prod_nm AS item_prod_nm
+        FROM pd_prod_bundle_item i
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = i.bundle_prod_id
+            LEFT JOIN pd_prod prd2 ON prd2.prod_id = i.item_prod_id
+            <include refid="pdProdBundleItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY i.bundle_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY i.bundle_item_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY i.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY i.reg_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 묶음상품 구성 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM pd_prod_bundle_item i
+            <include refid="pdProdBundleItemCond"/>
+    </select>
+
+    <!-- 묶음상품 구성 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.pd.entity.PdProdBundleItem">
+        UPDATE pd_prod_bundle_item
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="bundleProdId != null">bundle_prod_id = #{bundleProdId},</if>
+            <if test="itemProdId != null">item_prod_id = #{itemProdId},</if>
+            <if test="itemSkuId != null">item_sku_id = #{itemSkuId},</if>
+            <if test="itemQty != null">item_qty = #{itemQty},</if>
+            <if test="priceRate != null">price_rate = #{priceRate},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE bundle_item_id = #{bundleItemId}
+    </update>
+
+</mapper>

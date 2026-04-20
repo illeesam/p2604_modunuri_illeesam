@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.dp.DpWidgetMapper">
+
+    <!-- 전시 위젯 조회 조건 -->
+    <sql id="dpWidgetCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND w.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND w.widget_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (w.widget_nm ILIKE '%' || #{p.kw} || '%'
+                  OR w.widget_title ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND w.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND w.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 전시 위젯 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpWidgetDto">
+        SELECT
+            w.*,
+            lib.widget_nm AS widget_lib_nm,
+            ste.site_nm AS site_nm,
+            cd_wt.code_label AS widget_type_cd_nm
+        FROM dp_widget w
+            LEFT JOIN dp_widget_lib lib ON lib.widget_lib_id = w.widget_lib_id
+            LEFT JOIN sy_site ste ON ste.site_id = w.site_id
+            LEFT JOIN sy_code cd_wt ON cd_wt.code_grp = 'WIDGET_TYPE' AND cd_wt.code_value = w.widget_type_cd
+        WHERE w.widget_id = #{id}
+    </select>
+
+    <!-- 전시 위젯 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpWidgetDto">
+        SELECT
+            w.*,
+            lib.widget_nm AS widget_lib_nm,
+            ste.site_nm AS site_nm,
+            cd_wt.code_label AS widget_type_cd_nm
+        FROM dp_widget w
+            LEFT JOIN dp_widget_lib lib ON lib.widget_lib_id = w.widget_lib_id
+            LEFT JOIN sy_site ste ON ste.site_id = w.site_id
+            LEFT JOIN sy_code cd_wt ON cd_wt.code_grp = 'WIDGET_TYPE' AND cd_wt.code_value = w.widget_type_cd
+            <include refid="dpWidgetCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY w.widget_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY w.widget_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY w.widget_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY w.widget_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY w.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY w.reg_date DESC</when>
+            <otherwise>ORDER BY w.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 전시 위젯 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.dp.dto.DpWidgetDto">
+        SELECT
+            w.*,
+            lib.widget_nm AS widget_lib_nm,
+            ste.site_nm AS site_nm,
+            cd_wt.code_label AS widget_type_cd_nm
+        FROM dp_widget w
+            LEFT JOIN dp_widget_lib lib ON lib.widget_lib_id = w.widget_lib_id
+            LEFT JOIN sy_site ste ON ste.site_id = w.site_id
+            LEFT JOIN sy_code cd_wt ON cd_wt.code_grp = 'WIDGET_TYPE' AND cd_wt.code_value = w.widget_type_cd
+            <include refid="dpWidgetCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY w.widget_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY w.widget_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY w.widget_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY w.widget_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY w.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY w.reg_date DESC</when>
+            <otherwise>ORDER BY w.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 전시 위젯 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM dp_widget w
+            <include refid="dpWidgetCond"/>
+    </select>
+
+    <!-- 전시 위젯 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.dp.entity.DpWidget">
+        UPDATE dp_widget
+        <set>
+            <if test="widgetLibId != null">widget_lib_id = #{widgetLibId},</if>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="widgetNm != null">widget_nm = #{widgetNm},</if>
+            <if test="widgetTypeCd != null">widget_type_cd = #{widgetTypeCd},</if>
+            <if test="widgetDesc != null">widget_desc = #{widgetDesc},</if>
+            <if test="widgetTitle != null">widget_title = #{widgetTitle},</if>
+            <if test="widgetContent != null">widget_content = #{widgetContent},</if>
+            <if test="titleShowYn != null">title_show_yn = #{titleShowYn},</if>
+            <if test="widgetLibRefYn != null">widget_lib_ref_yn = #{widgetLibRefYn},</if>
+            <if test="widgetConfigJson != null">widget_config_json = #{widgetConfigJson},</if>
+            <if test="previewImgUrl != null">preview_img_url = #{previewImgUrl},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="dispEnv != null">disp_env = #{dispEnv},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE widget_id = #{widgetId}
+    </update>
+
+</mapper>

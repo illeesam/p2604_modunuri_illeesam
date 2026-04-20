@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.auth;
 
-import com.shopjoy.ecadminapi.base.domain.sy.entity.SyUser;
+import com.shopjoy.ecadminapi.base.sy.entity.SyUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;

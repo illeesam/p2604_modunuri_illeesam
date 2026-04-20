@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.autorest.AutoRestMapper">
+<mapper namespace="com.shopjoy.ecadminapi.autorest.mapper.AutoRestMapper">
 
     <!-- ============================================================
          공통 WHERE 절 (keyword, 날짜범위, siteId, status, 커스텀 filters)

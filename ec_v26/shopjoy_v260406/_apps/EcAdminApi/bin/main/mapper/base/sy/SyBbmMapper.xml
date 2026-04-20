@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyBbmMapper">
+
+    <!-- 게시판 마스터 조회 조건 -->
+    <sql id="syBbmCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND b.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND b.bbm_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (b.bbm_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND b.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND b.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 게시판 마스터 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbmDto">
+        SELECT
+            b.*,
+            ste.site_nm AS site_nm,
+            cd_bt.code_label AS bbm_type_cd_nm,
+            cd_bct.code_label AS content_type_cd_nm,
+            cd_bst.code_label AS scope_type_cd_nm
+        FROM sy_bbm b
+            LEFT JOIN sy_site ste ON ste.site_id = b.site_id
+            LEFT JOIN sy_code cd_bt ON cd_bt.code_grp = 'BBM_TYPE' AND cd_bt.code_value = b.bbm_type_cd
+            LEFT JOIN sy_code cd_bct ON cd_bct.code_grp = 'BBM_CONTENT_TYPE' AND cd_bct.code_value = b.content_type_cd
+            LEFT JOIN sy_code cd_bst ON cd_bst.code_grp = 'BBM_SCOPE_TYPE' AND cd_bst.code_value = b.scope_type_cd
+        WHERE b.bbm_id = #{id}
+    </select>
+
+    <!-- 게시판 마스터 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbmDto">
+        SELECT
+            b.*,
+            ste.site_nm AS site_nm,
+            cd_bt.code_label AS bbm_type_cd_nm,
+            cd_bct.code_label AS content_type_cd_nm,
+            cd_bst.code_label AS scope_type_cd_nm
+        FROM sy_bbm b
+            LEFT JOIN sy_site ste ON ste.site_id = b.site_id
+            LEFT JOIN sy_code cd_bt ON cd_bt.code_grp = 'BBM_TYPE' AND cd_bt.code_value = b.bbm_type_cd
+            LEFT JOIN sy_code cd_bct ON cd_bct.code_grp = 'BBM_CONTENT_TYPE' AND cd_bct.code_value = b.content_type_cd
+            LEFT JOIN sy_code cd_bst ON cd_bst.code_grp = 'BBM_SCOPE_TYPE' AND cd_bst.code_value = b.scope_type_cd
+            <include refid="syBbmCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY b.bbm_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY b.bbm_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY b.bbm_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY b.bbm_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
+            <otherwise>ORDER BY b.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 게시판 마스터 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyBbmDto">
+        SELECT
+            b.*,
+            ste.site_nm AS site_nm,
+            cd_bt.code_label AS bbm_type_cd_nm,
+            cd_bct.code_label AS content_type_cd_nm,
+            cd_bst.code_label AS scope_type_cd_nm
+        FROM sy_bbm b
+            LEFT JOIN sy_site ste ON ste.site_id = b.site_id
+            LEFT JOIN sy_code cd_bt ON cd_bt.code_grp = 'BBM_TYPE' AND cd_bt.code_value = b.bbm_type_cd
+            LEFT JOIN sy_code cd_bct ON cd_bct.code_grp = 'BBM_CONTENT_TYPE' AND cd_bct.code_value = b.content_type_cd
+            LEFT JOIN sy_code cd_bst ON cd_bst.code_grp = 'BBM_SCOPE_TYPE' AND cd_bst.code_value = b.scope_type_cd
+            <include refid="syBbmCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY b.bbm_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY b.bbm_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY b.bbm_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY b.bbm_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY b.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY b.reg_date DESC</when>
+            <otherwise>ORDER BY b.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 게시판 마스터 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_bbm b
+            <include refid="syBbmCond"/>
+    </select>
+
+    <!-- 게시판 마스터 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyBbm">
+        UPDATE sy_bbm
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="bbmCode != null">bbm_code = #{bbmCode},</if>
+            <if test="bbmNm != null">bbm_nm = #{bbmNm},</if>
+            <if test="dispPath != null">disp_path = #{dispPath},</if>
+            <if test="bbmTypeCd != null">bbm_type_cd = #{bbmTypeCd},</if>
+            <if test="allowComment != null">allow_comment = #{allowComment},</if>
+            <if test="allowAttach != null">allow_attach = #{allowAttach},</if>
+            <if test="allowLike != null">allow_like = #{allowLike},</if>
+            <if test="contentTypeCd != null">content_type_cd = #{contentTypeCd},</if>
+            <if test="scopeTypeCd != null">scope_type_cd = #{scopeTypeCd},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="bbmRemark != null">bbm_remark = #{bbmRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE bbm_id = #{bbmId}
+    </update>
+
+</mapper>

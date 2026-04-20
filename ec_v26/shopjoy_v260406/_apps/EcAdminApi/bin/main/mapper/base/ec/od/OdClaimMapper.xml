@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.od.OdClaimMapper">
+
+    <!-- 원칙1: claim_type_cd_nm, claim_status_cd_nm, refund_method_cd_nm, return/exchange courier_cd_nm -->
+    <!-- 원칙2: od_order, mb_member -->
+
+    <!-- 클레임(취소/반품/교환) 조회 조건 -->
+    <sql id="odClaimCond">
+<where>
+            <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND c.claim_status_cd = #{p.status}</if>
+            <if test="p.claimType != null and p.claimType != ''">AND c.claim_type_cd = #{p.claimType}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (c.order_id::TEXT  ILIKE '%' || #{p.kw} || '%'
+                  OR c.member_nm       ILIKE '%' || #{p.kw} || '%'
+                  OR c.prod_nm         ILIKE '%' || #{p.kw} || '%'
+                  OR m.member_email    ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND c.request_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND c.request_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 클레임(취소/반품/교환) 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdClaimDto">
+        SELECT
+            c.*,
+            o.order_date,       o.order_status_cd,  o.pay_method_cd,
+            o.recv_nm,          o.recv_phone,        o.recv_addr,
+            m.member_email,     m.member_phone       AS member_phone_origin,
+            cd_ct.code_label AS claim_type_cd_nm,
+            cd_cs.code_label AS claim_status_cd_nm,
+            cd_rm.code_label AS refund_method_cd_nm,
+            cd_rb.code_label AS refund_bank_cd_nm,
+            cd_rc.code_label AS return_courier_cd_nm,
+            cd_rs.code_label AS return_status_cd_nm,
+            cd_ic.code_label AS inbound_courier_cd_nm,
+            cd_ec.code_label AS exchange_courier_cd_nm,
+            cd_ap.code_label AS appr_status_cd_nm,
+            cd_at.code_label AS appr_target_cd_nm
+        FROM od_claim c
+            LEFT JOIN od_order  o ON o.order_id   = c.order_id
+            LEFT JOIN mb_member m ON m.member_id  = c.member_id
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'CLAIM_TYPE'      AND cd_ct.code_value = c.claim_type_cd
+            LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'CLAIM_STATUS'    AND cd_cs.code_value = c.claim_status_cd
+            LEFT JOIN sy_code cd_rm ON cd_rm.code_grp = 'REFUND_METHOD'   AND cd_rm.code_value = c.refund_method_cd
+            LEFT JOIN sy_code cd_rb ON cd_rb.code_grp = 'BANK_CODE'       AND cd_rb.code_value = c.refund_bank_cd
+            LEFT JOIN sy_code cd_rc ON cd_rc.code_grp = 'COURIER'         AND cd_rc.code_value = c.return_courier_cd
+            LEFT JOIN sy_code cd_rs ON cd_rs.code_grp = 'DLIV_STATUS'     AND cd_rs.code_value = c.return_status_cd
+            LEFT JOIN sy_code cd_ic ON cd_ic.code_grp = 'COURIER'         AND cd_ic.code_value = c.inbound_courier_cd
+            LEFT JOIN sy_code cd_ec ON cd_ec.code_grp = 'COURIER'         AND cd_ec.code_value = c.exchange_courier_cd
+            LEFT JOIN sy_code cd_ap ON cd_ap.code_grp = 'APPROVAL_STATUS' AND cd_ap.code_value = c.appr_status_cd
+            LEFT JOIN sy_code cd_at ON cd_at.code_grp = 'APPROVAL_TARGET' AND cd_at.code_value = c.appr_target_cd
+        WHERE c.claim_id = #{id}
+    </select>
+
+    <!-- 클레임(취소/반품/교환) 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdClaimDto">
+        SELECT
+            c.*,
+            o.order_date,       o.order_status_cd,
+            m.member_email,
+            cd_ct.code_label AS claim_type_cd_nm,
+            cd_cs.code_label AS claim_status_cd_nm,
+            cd_rm.code_label AS refund_method_cd_nm,
+            cd_rc.code_label AS return_courier_cd_nm,
+            cd_ec.code_label AS exchange_courier_cd_nm
+        FROM od_claim c
+            LEFT JOIN od_order  o ON o.order_id   = c.order_id
+            LEFT JOIN mb_member m ON m.member_id  = c.member_id
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'CLAIM_TYPE'      AND cd_ct.code_value = c.claim_type_cd
+            LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'CLAIM_STATUS'    AND cd_cs.code_value = c.claim_status_cd
+            LEFT JOIN sy_code cd_rm ON cd_rm.code_grp = 'REFUND_METHOD'   AND cd_rm.code_value = c.refund_method_cd
+            LEFT JOIN sy_code cd_rc ON cd_rc.code_grp = 'COURIER'         AND cd_rc.code_value = c.return_courier_cd
+            LEFT JOIN sy_code cd_ec ON cd_ec.code_grp = 'COURIER'         AND cd_ec.code_value = c.exchange_courier_cd
+                <include refid="odClaimCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.claim_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.claim_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.member_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.member_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.request_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 클레임(취소/반품/교환) 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdClaimDto">
+        SELECT
+            c.*,
+            o.order_date,       o.order_status_cd,
+            m.member_email,
+            cd_ct.code_label AS claim_type_cd_nm,
+            cd_cs.code_label AS claim_status_cd_nm,
+            cd_rm.code_label AS refund_method_cd_nm,
+            cd_rc.code_label AS return_courier_cd_nm,
+            cd_ec.code_label AS exchange_courier_cd_nm
+        FROM od_claim c
+            LEFT JOIN od_order  o ON o.order_id   = c.order_id
+            LEFT JOIN mb_member m ON m.member_id  = c.member_id
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'CLAIM_TYPE'      AND cd_ct.code_value = c.claim_type_cd
+            LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'CLAIM_STATUS'    AND cd_cs.code_value = c.claim_status_cd
+            LEFT JOIN sy_code cd_rm ON cd_rm.code_grp = 'REFUND_METHOD'   AND cd_rm.code_value = c.refund_method_cd
+            LEFT JOIN sy_code cd_rc ON cd_rc.code_grp = 'COURIER'         AND cd_rc.code_value = c.return_courier_cd
+            LEFT JOIN sy_code cd_ec ON cd_ec.code_grp = 'COURIER'         AND cd_ec.code_value = c.exchange_courier_cd
+                <include refid="odClaimCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.claim_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.claim_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.member_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.member_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.request_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 클레임(취소/반품/교환) 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM od_claim c
+            LEFT JOIN mb_member m ON m.member_id = c.member_id
+                <include refid="odClaimCond"/>
+    </select>
+
+    <!-- 클레임(취소/반품/교환) 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.od.entity.OdClaim">
+        UPDATE od_claim
+        <set>
+            <if test="claimStatusCd != null">claim_status_cd = #{claimStatusCd},</if>
+            <if test="claimStatusCdBefore != null">claim_status_cd_before = #{claimStatusCdBefore},</if>
+            <if test="refundMethodCd != null">refund_method_cd = #{refundMethodCd},</if>
+            <if test="refundAmt != null">refund_amt = #{refundAmt},</if>
+            <if test="refundProdAmt != null">refund_prod_amt = #{refundProdAmt},</if>
+            <if test="refundShippingAmt != null">refund_shipping_amt = #{refundShippingAmt},</if>
+            <if test="procDate != null">proc_date = #{procDate},</if>
+            <if test="procUserId != null">proc_user_id = #{procUserId},</if>
+            <if test="returnCourierCd != null">return_courier_cd = #{returnCourierCd},</if>
+            <if test="returnTrackingNo != null">return_tracking_no = #{returnTrackingNo},</if>
+            <if test="returnStatusCd != null">return_status_cd = #{returnStatusCd},</if>
+            <if test="exchangeCourierCd != null">exchange_courier_cd = #{exchangeCourierCd},</if>
+            <if test="exchangeTrackingNo != null">exchange_tracking_no = #{exchangeTrackingNo},</if>
+            <if test="memo != null">memo = #{memo},</if>
+            <if test="apprStatusCd != null">appr_status_cd = #{apprStatusCd},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE claim_id = #{claimId}
+    </update>
+
+    <!-- ================================================================
+         확장 쿼리 (연관관계 조회 등)
+         ================================================================ -->
+
+    <!-- 주문번호로 클레임 목록 조회 -->
+    <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.domain.od.dto.OdClaimDto">
+        SELECT
+            c.*,
+            cd_ct.code_label AS claim_type_cd_nm,
+            cd_cs.code_label AS claim_status_cd_nm,
+            cd_rm.code_label AS refund_method_cd_nm
+        FROM od_claim c
+            LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'CLAIM_TYPE'    AND cd_ct.code_value = c.claim_type_cd
+            LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'CLAIM_STATUS'  AND cd_cs.code_value = c.claim_status_cd
+            LEFT JOIN sy_code cd_rm ON cd_rm.code_grp = 'REFUND_METHOD' AND cd_rm.code_value = c.refund_method_cd
+        WHERE c.order_id = #{orderId}
+        ORDER BY c.request_date ASC
+    </select>
+
+</mapper>
+

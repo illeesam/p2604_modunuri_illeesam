@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.mb.MbMemberMapper">
+
+    <!-- 원칙1: grade_cd_nm, member_status_cd_nm -->
+    <!-- 원칙2: sy_site -->
+
+    <!-- 회원 조회 조건 -->
+    <sql id="mbMemberCond">
+<where>
+            <if test="p.siteId != null and p.siteId != ''">AND m.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND m.member_status_cd = #{p.status}</if>
+            <if test="p.grade != null and p.grade != ''">AND m.grade_cd = #{p.grade}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (m.member_nm    ILIKE '%' || #{p.kw} || '%'
+                  OR m.member_email ILIKE '%' || #{p.kw} || '%'
+                  OR m.member_phone ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND m.join_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND m.join_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 회원 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.mb.dto.MbMemberDto">
+        SELECT
+            m.*,
+            s.site_nm,
+            cd_gr.code_label AS grade_cd_nm,
+            cd_ms.code_label AS member_status_cd_nm
+        FROM mb_member m
+            LEFT JOIN sy_site  s    ON s.site_id    = m.site_id
+            LEFT JOIN sy_code cd_gr ON cd_gr.code_grp = 'MEMBER_GRADE'  AND cd_gr.code_value = m.grade_cd
+            LEFT JOIN sy_code cd_ms ON cd_ms.code_grp = 'MEMBER_STATUS' AND cd_ms.code_value = m.member_status_cd
+        WHERE m.member_id = #{id}
+    </select>
+
+    <!-- 회원 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.mb.dto.MbMemberDto">
+        SELECT
+            m.*,
+            s.site_nm,
+            cd_gr.code_label AS grade_cd_nm,
+            cd_ms.code_label AS member_status_cd_nm
+        FROM mb_member m
+            LEFT JOIN sy_site  s    ON s.site_id    = m.site_id
+            LEFT JOIN sy_code cd_gr ON cd_gr.code_grp = 'MEMBER_GRADE'  AND cd_gr.code_value = m.grade_cd
+            LEFT JOIN sy_code cd_ms ON cd_ms.code_grp = 'MEMBER_STATUS' AND cd_ms.code_value = m.member_status_cd
+                <include refid="mbMemberCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.member_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.member_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY m.member_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY m.member_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.join_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.join_date DESC</when>
+            <otherwise>ORDER BY m.join_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 회원 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.mb.dto.MbMemberDto">
+        SELECT
+            m.*,
+            s.site_nm,
+            cd_gr.code_label AS grade_cd_nm,
+            cd_ms.code_label AS member_status_cd_nm
+        FROM mb_member m
+            LEFT JOIN sy_site  s    ON s.site_id    = m.site_id
+            LEFT JOIN sy_code cd_gr ON cd_gr.code_grp = 'MEMBER_GRADE'  AND cd_gr.code_value = m.grade_cd
+            LEFT JOIN sy_code cd_ms ON cd_ms.code_grp = 'MEMBER_STATUS' AND cd_ms.code_value = m.member_status_cd
+                <include refid="mbMemberCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.member_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.member_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY m.member_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY m.member_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.join_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.join_date DESC</when>
+            <otherwise>ORDER BY m.join_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 회원 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*) FROM mb_member m
+                <include refid="mbMemberCond"/>
+    </select>
+
+    <!-- 회원 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.mb.entity.MbMember">
+        UPDATE mb_member
+        <set>
+            <if test="memberStatusCd != null">member_status_cd = #{memberStatusCd},</if>
+            <if test="memberStatusCdBefore != null">member_status_cd_before = #{memberStatusCdBefore},</if>
+            <if test="gradeCd != null">grade_cd = #{gradeCd},</if>
+            <if test="memberNm != null">member_nm = #{memberNm},</if>
+            <if test="memberPhone != null">member_phone = #{memberPhone},</if>
+            <if test="memberMemo != null">member_memo = #{memberMemo},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- ================================================================
+         확장 쿼리 (연관관계 조회 등)
+         ================================================================ -->
+
+    <!-- 회원ID별 주소 목록 조회 -->
+    <select id="selectAddrsByMemberId" resultType="com.shopjoy.ecadminapi.domain.mb.dto.MbMemberAddrDto">
+        SELECT * FROM mb_member_addr
+        WHERE member_id = #{memberId}
+        ORDER BY default_yn DESC, reg_date ASC
+    </select>
+
+</mapper>
+

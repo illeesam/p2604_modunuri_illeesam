@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyMenuMapper">
+
+    <!-- 메뉴 조회 조건 -->
+    <sql id="syMenuCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND m.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND m.menu_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (m.menu_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND m.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND m.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 메뉴 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyMenuDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm,
+            cd_mt.code_label AS menu_type_cd_nm
+        FROM sy_menu m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MENU_TYPE' AND cd_mt.code_value = m.menu_type_cd
+        WHERE m.menu_id = #{id}
+    </select>
+
+    <!-- 메뉴 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyMenuDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm,
+            cd_mt.code_label AS menu_type_cd_nm
+        FROM sy_menu m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MENU_TYPE' AND cd_mt.code_value = m.menu_type_cd
+            <include refid="syMenuCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.menu_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.menu_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY m.menu_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY m.menu_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 메뉴 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyMenuDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm,
+            cd_mt.code_label AS menu_type_cd_nm
+        FROM sy_menu m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            LEFT JOIN sy_code cd_mt ON cd_mt.code_grp = 'MENU_TYPE' AND cd_mt.code_value = m.menu_type_cd
+            <include refid="syMenuCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.menu_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.menu_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY m.menu_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY m.menu_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 메뉴 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_menu m
+            <include refid="syMenuCond"/>
+    </select>
+
+    <!-- 메뉴 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyMenu">
+        UPDATE sy_menu
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="menuCode != null">menu_code = #{menuCode},</if>
+            <if test="menuNm != null">menu_nm = #{menuNm},</if>
+            <if test="parentMenuId != null">parent_menu_id = #{parentMenuId},</if>
+            <if test="menuUrl != null">menu_url = #{menuUrl},</if>
+            <if test="menuTypeCd != null">menu_type_cd = #{menuTypeCd},</if>
+            <if test="iconClass != null">icon_class = #{iconClass},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="menuRemark != null">menu_remark = #{menuRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE menu_id = #{menuId}
+    </update>
+
+</mapper>

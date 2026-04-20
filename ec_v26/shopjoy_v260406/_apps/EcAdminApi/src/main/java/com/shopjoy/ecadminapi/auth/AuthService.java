@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.auth.dto.LoginRequest;
 import com.shopjoy.ecadminapi.auth.dto.LoginResponse;
 import com.shopjoy.ecadminapi.auth.dto.TokenPair;
 import com.shopjoy.ecadminapi.common.exception.BusinessException;
-import com.shopjoy.ecadminapi.base.domain.sy.entity.SyUser;
+import com.shopjoy.ecadminapi.base.sy.entity.SyUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -52,8 +52,8 @@ public class AuthService {
         user.setLastLoginDate(LocalDateTime.now());
 
         List<String> roles = List.of("ROLE_ADMIN");
-        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getLoginId(), roles);
-        String refreshToken = jwtProvider.createRefreshToken(user.getUserId());
+        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getLoginId(), roles, AuthPrincipal.USER, user.getRoleId());
+        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), AuthPrincipal.USER);
 
         return LoginResponse.builder()
             .accessToken(accessToken)
@@ -83,7 +83,8 @@ public class AuthService {
             throw new BusinessException("refreshToken이 아닙니다.");
         }
 
-        String userId = jwtProvider.getUserId(refreshToken);
+        String userId   = jwtProvider.getUserId(refreshToken);
+        String userType = jwtProvider.getUserType(refreshToken);
         SyUser user = em.find(SyUser.class, userId);
         if (user == null) {
             throw new BusinessException("사용자를 찾을 수 없습니다.");
@@ -93,8 +94,8 @@ public class AuthService {
         revokedTokens.add(refreshToken);
 
         List<String> roles = List.of("ROLE_ADMIN");
-        String newAccessToken = jwtProvider.createAccessToken(userId, user.getLoginId(), roles);
-        String newRefreshToken = jwtProvider.createRefreshToken(userId);
+        String newAccessToken = jwtProvider.createAccessToken(userId, user.getLoginId(), roles, userType, user.getRoleId());
+        String newRefreshToken = jwtProvider.createRefreshToken(userId, userType);
 
         return new TokenPair(newAccessToken, newRefreshToken);
     }

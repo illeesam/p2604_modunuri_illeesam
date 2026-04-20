@@ -28,7 +28,17 @@ public class JwtProvider {
         this.refreshExpiry = refreshExpiry;
     }
 
-    public String createAccessToken(String userId, String loginId, List<String> roles) {
+    /**
+     * Access Token 생성.
+     * userType을 클레임에 포함시켜 JwtAuthFilter에서 DB 없이 AuthPrincipal을 복원할 수 있게 한다.
+     * 클레임 구조: sub=userId, loginId, roles, type="access", userType
+     */
+    /**
+     * Access Token 생성.
+     * userType을 클레임에 포함시켜 JwtAuthFilter에서 DB 없이 AuthPrincipal을 복원할 수 있게 한다.
+     * 클레임 구조: sub=userId, loginId, roles, type="access", userType, roleId
+     */
+    public String createAccessToken(String userId, String loginId, List<String> roles, String userType, String roleId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessExpiry);
 
@@ -37,19 +47,27 @@ public class JwtProvider {
             .claim("loginId", loginId)
             .claim("roles", roles)
             .claim("type", "access")
+            .claim("userType", userType)
+            .claim("roleId", roleId)
             .issuedAt(now)
             .expiration(expiry)
             .signWith(secretKey)
             .compact();
     }
 
-    public String createRefreshToken(String userId) {
+    /**
+     * Refresh Token 생성.
+     * userType을 포함시켜 재발급 시 원래 사용자 타입을 유지한다.
+     * 재발급 엔드포인트에서 DB로 userType을 재조회하지 않아도 되도록 설계.
+     */
+    public String createRefreshToken(String userId, String userType) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + refreshExpiry);
 
         return Jwts.builder()
             .subject(userId)
             .claim("type", "refresh")
+            .claim("userType", userType)
             .issuedAt(now)
             .expiration(expiry)
             .signWith(secretKey)
@@ -87,6 +105,14 @@ public class JwtProvider {
 
     public String getTokenType(String token) {
         return getClaims(token).get("type", String.class);
+    }
+
+    public String getUserType(String token) {
+        return getClaims(token).get("userType", String.class);
+    }
+
+    public String getRoleId(String token) {
+        return getClaims(token).get("roleId", String.class);
     }
 
     @SuppressWarnings("unchecked")

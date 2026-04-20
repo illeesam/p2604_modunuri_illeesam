@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyRoleMenuMapper">
+
+    <sql id="syRoleMenuCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND m.site_id = #{p.siteId}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND m.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND m.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleMenuDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm
+        FROM sy_role_menu m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+        WHERE m.role_menu_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleMenuDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm
+        FROM sy_role_menu m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            <include refid="syRoleMenuCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.role_menu_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.role_menu_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleMenuDto">
+        SELECT
+            m.*,
+            ste.site_nm AS site_nm
+        FROM sy_role_menu m
+            LEFT JOIN sy_site ste ON ste.site_id = m.site_id
+            <include refid="syRoleMenuCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY m.role_menu_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY m.role_menu_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY m.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY m.reg_date DESC</when>
+            <otherwise>ORDER BY m.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_role_menu m
+            <include refid="syRoleMenuCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyRoleMenu">
+        UPDATE sy_role_menu
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="menuId != null">menu_id = #{menuId},</if>
+            <if test="permLevel != null">perm_level = #{permLevel},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE role_menu_id = #{roleMenuId}
+    </update>
+
+</mapper>

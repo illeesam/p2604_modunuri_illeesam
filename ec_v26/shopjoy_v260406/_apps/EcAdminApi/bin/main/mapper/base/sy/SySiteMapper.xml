@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SySiteMapper">
+
+    <!-- 사이트 조회 조건 -->
+    <sql id="sySiteCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND s.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND s.site_status_cd = #{p.status}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND s.site_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (s.site_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND s.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND s.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 사이트 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SySiteDto">
+        SELECT
+            s.*,
+            cd_st.code_label AS site_type_cd_nm,
+            cd_ss.code_label AS site_status_cd_nm
+        FROM sy_site s
+            LEFT JOIN sy_code cd_st ON cd_st.code_grp = 'SITE_TYPE' AND cd_st.code_value = s.site_type_cd
+            LEFT JOIN sy_code cd_ss ON cd_ss.code_grp = 'SITE_STATUS' AND cd_ss.code_value = s.site_status_cd
+        WHERE s.site_id = #{id}
+    </select>
+
+    <!-- 사이트 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SySiteDto">
+        SELECT
+            s.*,
+            cd_st.code_label AS site_type_cd_nm,
+            cd_ss.code_label AS site_status_cd_nm
+        FROM sy_site s
+            LEFT JOIN sy_code cd_st ON cd_st.code_grp = 'SITE_TYPE' AND cd_st.code_value = s.site_type_cd
+            LEFT JOIN sy_code cd_ss ON cd_ss.code_grp = 'SITE_STATUS' AND cd_ss.code_value = s.site_status_cd
+            <include refid="sySiteCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY s.site_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY s.site_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY s.site_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY s.site_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY s.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY s.reg_date DESC</when>
+            <otherwise>ORDER BY s.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 사이트 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SySiteDto">
+        SELECT
+            s.*,
+            cd_st.code_label AS site_type_cd_nm,
+            cd_ss.code_label AS site_status_cd_nm
+        FROM sy_site s
+            LEFT JOIN sy_code cd_st ON cd_st.code_grp = 'SITE_TYPE' AND cd_st.code_value = s.site_type_cd
+            LEFT JOIN sy_code cd_ss ON cd_ss.code_grp = 'SITE_STATUS' AND cd_ss.code_value = s.site_status_cd
+            <include refid="sySiteCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY s.site_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY s.site_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY s.site_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY s.site_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY s.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY s.reg_date DESC</when>
+            <otherwise>ORDER BY s.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 사이트 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_site s
+            <include refid="sySiteCond"/>
+    </select>
+
+    <!-- 사이트 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SySite">
+        UPDATE sy_site
+        <set>
+            <if test="siteCode != null">site_code = #{siteCode},</if>
+            <if test="siteTypeCd != null">site_type_cd = #{siteTypeCd},</if>
+            <if test="siteNm != null">site_nm = #{siteNm},</if>
+            <if test="siteDomain != null">site_domain = #{siteDomain},</if>
+            <if test="logoUrl != null">logo_url = #{logoUrl},</if>
+            <if test="faviconUrl != null">favicon_url = #{faviconUrl},</if>
+            <if test="siteDesc != null">site_desc = #{siteDesc},</if>
+            <if test="siteEmail != null">site_email = #{siteEmail},</if>
+            <if test="sitePhone != null">site_phone = #{sitePhone},</if>
+            <if test="siteZipCode != null">site_zip_code = #{siteZipCode},</if>
+            <if test="siteAddress != null">site_address = #{siteAddress},</if>
+            <if test="siteBusinessNo != null">site_business_no = #{siteBusinessNo},</if>
+            <if test="siteCeo != null">site_ceo = #{siteCeo},</if>
+            <if test="siteStatusCd != null">site_status_cd = #{siteStatusCd},</if>
+            <if test="configJson != null">config_json = #{configJson},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+            <if test="dispPath != null">disp_path = #{dispPath},</if>
+        </set>
+        WHERE site_id = #{siteId}
+    </update>
+
+</mapper>
