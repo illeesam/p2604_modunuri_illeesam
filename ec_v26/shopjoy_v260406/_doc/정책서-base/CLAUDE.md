@@ -5,8 +5,9 @@
 - `base.UX-front.md` — 사용자 페이스 UX/UI 가이드라인
 - `base.권한-admin.md` — 관리자 권한 체계 (RBAC, 역할별 접근 정책)
 - `base.권한-front.md` — 사용자 권한 체계 (공개/회원/VIP 노출 정책)
-- `base.기술-admin.md` — 관리자 페이스 기술 스택 및 아키텍처 기준
-- `base.기술-front.md` — 사용자 페이스 기술 스택 및 아키텍처 기준
+- `base.기술-admin.md` — 관리자 페이스 기술 스택 및 아키텍처 기준 (Vue 프론트엔드)
+- `base.기술-front.md` — 사용자 페이스 기술 스택 및 아키텍처 기준 (Vue 프론트엔드)
+- `base.기술-api.md` — 백엔드 API 기술 스택 및 패키지 구조 기준 (Spring Boot EcAdminApi)
 - `base.인증-admin.md` — 관리자 로그인/세션/토큰 인증 정책
 - `base.인증-front.md` — 사용자 로그인/세션/토큰 인증 정책
 

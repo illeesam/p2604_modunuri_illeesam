@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.auth.dto.LoginRequest;
 import com.shopjoy.ecadminapi.auth.dto.LoginResponse;
 import com.shopjoy.ecadminapi.auth.dto.TokenPair;
 import com.shopjoy.ecadminapi.common.exception.BusinessException;
-import com.shopjoy.ecadminapi.domain.sy.entity.SyUser;
+import com.shopjoy.ecadminapi.base.domain.sy.entity.SyUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.st.StSettleItemMapper">
+
+    <!-- 정산 항목 조회 조건 -->
+    <sql id="stSettleItemCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND i.site_id = #{p.siteId}</if>
+            <if test="p.vendorId != null and p.vendorId != ''">AND i.vendor_id = #{p.vendorId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND i.settle_item_type_cd = #{p.typeCd}</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND i.order_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND i.order_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <!-- 정산 항목 상세 조회 -->
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleItemDto">
+        SELECT
+            i.*,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            ste.site_nm AS site_nm,
+            cd_sit.code_label AS settle_item_type_cd_nm
+        FROM st_settle_item i
+            LEFT JOIN od_order ord ON ord.order_id = i.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = i.order_item_id
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN sy_code cd_sit ON cd_sit.code_grp = 'SETTLE_ITEM_TYPE' AND cd_sit.code_value = i.settle_item_type_cd
+        WHERE i.settle_item_id = #{id}
+    </select>
+
+    <!-- 정산 항목 목록 조회 -->
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleItemDto">
+        SELECT
+            i.*,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            ste.site_nm AS site_nm,
+            cd_sit.code_label AS settle_item_type_cd_nm
+        FROM st_settle_item i
+            LEFT JOIN od_order ord ON ord.order_id = i.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = i.order_item_id
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN sy_code cd_sit ON cd_sit.code_grp = 'SETTLE_ITEM_TYPE' AND cd_sit.code_value = i.settle_item_type_cd
+            <include refid="stSettleItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY i.settle_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY i.settle_item_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY i.order_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY i.order_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <!-- 정산 항목 페이징 목록 조회 -->
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.st.dto.StSettleItemDto">
+        SELECT
+            i.*,
+            ord.member_nm AS order_nm,
+            ite.prod_nm AS order_item_nm,
+            ste.site_nm AS site_nm,
+            cd_sit.code_label AS settle_item_type_cd_nm
+        FROM st_settle_item i
+            LEFT JOIN od_order ord ON ord.order_id = i.order_id
+            LEFT JOIN od_order_item ite ON ite.order_item_id = i.order_item_id
+            LEFT JOIN sy_site ste ON ste.site_id = i.site_id
+            LEFT JOIN sy_code cd_sit ON cd_sit.code_grp = 'SETTLE_ITEM_TYPE' AND cd_sit.code_value = i.settle_item_type_cd
+            <include refid="stSettleItemCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY i.settle_item_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY i.settle_item_id DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY i.order_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY i.order_date DESC</when>
+            <otherwise>ORDER BY i.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <!-- 정산 항목 전체 건수 조회 -->
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM st_settle_item i
+            <include refid="stSettleItemCond"/>
+    </select>
+
+    <!-- 정산 항목 선택 필드 수정 -->
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.st.entity.StSettleItem">
+        UPDATE st_settle_item
+        <set>
+            <if test="settleId != null">settle_id = #{settleId},</if>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="orderItemId != null">order_item_id = #{orderItemId},</if>
+            <if test="vendorId != null">vendor_id = #{vendorId},</if>
+            <if test="prodId != null">prod_id = #{prodId},</if>
+            <if test="settleItemTypeCd != null">settle_item_type_cd = #{settleItemTypeCd},</if>
+            <if test="orderDate != null">order_date = #{orderDate},</if>
+            <if test="orderQty != null">order_qty = #{orderQty},</if>
+            <if test="unitPrice != null">unit_price = #{unitPrice},</if>
+            <if test="itemPrice != null">item_price = #{itemPrice},</if>
+            <if test="discntAmt != null">discnt_amt = #{discntAmt},</if>
+            <if test="commissionRate != null">commission_rate = #{commissionRate},</if>
+            <if test="commissionAmt != null">commission_amt = #{commissionAmt},</if>
+            <if test="settleItemAmt != null">settle_item_amt = #{settleItemAmt},</if>
+        </set>
+        WHERE settle_item_id = #{settleItemId}
+    </update>
+
+</mapper>

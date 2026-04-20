@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyRoleMapper">
+
+    <sql id="syRoleCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND r.site_id = #{p.siteId}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND r.role_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (r.role_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND r.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND r.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleDto">
+        SELECT
+            r.*,
+            ste.site_nm AS site_nm,
+            cd_rt.code_label AS role_type_cd_nm
+        FROM sy_role r
+            LEFT JOIN sy_site ste ON ste.site_id = r.site_id
+            LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'ROLE_TYPE' AND cd_rt.code_value = r.role_type_cd
+        WHERE r.role_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleDto">
+        SELECT
+            r.*,
+            ste.site_nm AS site_nm,
+            cd_rt.code_label AS role_type_cd_nm
+        FROM sy_role r
+            LEFT JOIN sy_site ste ON ste.site_id = r.site_id
+            LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'ROLE_TYPE' AND cd_rt.code_value = r.role_type_cd
+            <include refid="syRoleCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY r.role_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY r.role_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY r.role_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY r.role_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyRoleDto">
+        SELECT
+            r.*,
+            ste.site_nm AS site_nm,
+            cd_rt.code_label AS role_type_cd_nm
+        FROM sy_role r
+            LEFT JOIN sy_site ste ON ste.site_id = r.site_id
+            LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'ROLE_TYPE' AND cd_rt.code_value = r.role_type_cd
+            <include refid="syRoleCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY r.role_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY r.role_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY r.role_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY r.role_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY r.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY r.reg_date DESC</when>
+            <otherwise>ORDER BY r.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_role r
+            <include refid="syRoleCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyRole">
+        UPDATE sy_role
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="roleCode != null">role_code = #{roleCode},</if>
+            <if test="roleNm != null">role_nm = #{roleNm},</if>
+            <if test="parentRoleId != null">parent_role_id = #{parentRoleId},</if>
+            <if test="roleTypeCd != null">role_type_cd = #{roleTypeCd},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="restrictPerm != null">restrict_perm = #{restrictPerm},</if>
+            <if test="roleRemark != null">role_remark = #{roleRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+            <if test="dispPath != null">disp_path = #{dispPath},</if>
+        </set>
+        WHERE role_id = #{roleId}
+    </update>
+
+</mapper>

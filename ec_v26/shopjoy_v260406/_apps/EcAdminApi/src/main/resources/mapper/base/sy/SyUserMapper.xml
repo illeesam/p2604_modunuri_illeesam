@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyUserMapper">
+
+    <sql id="syUserCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND u.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND u.user_status_cd = #{p.status}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (u.user_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND u.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND u.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyUserDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            dpt.dept_nm AS dept_nm,
+            rol.role_nm AS role_nm,
+            cd_us.code_label AS user_status_cd_nm,
+            cd_am.code_label AS auth_method_cd_nm
+        FROM sy_user u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
+            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
+            LEFT JOIN sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
+        WHERE u.user_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyUserDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            dpt.dept_nm AS dept_nm,
+            rol.role_nm AS role_nm,
+            cd_us.code_label AS user_status_cd_nm,
+            cd_am.code_label AS auth_method_cd_nm
+        FROM sy_user u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
+            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
+            LEFT JOIN sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
+            <include refid="syUserCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY u.user_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY u.user_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY u.user_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY u.user_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
+            <otherwise>ORDER BY u.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyUserDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            dpt.dept_nm AS dept_nm,
+            rol.role_nm AS role_nm,
+            cd_us.code_label AS user_status_cd_nm,
+            cd_am.code_label AS auth_method_cd_nm
+        FROM sy_user u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
+            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
+            LEFT JOIN sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
+            <include refid="syUserCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY u.user_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY u.user_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY u.user_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY u.user_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
+            <otherwise>ORDER BY u.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_user u
+            <include refid="syUserCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyUser">
+        UPDATE sy_user
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="loginId != null">login_id = #{loginId},</if>
+            <if test="userPassword != null">user_password = #{userPassword},</if>
+            <if test="userNm != null">user_nm = #{userNm},</if>
+            <if test="userEmail != null">user_email = #{userEmail},</if>
+            <if test="userPhone != null">user_phone = #{userPhone},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="userStatusCd != null">user_status_cd = #{userStatusCd},</if>
+            <if test="lastLogin != null">last_login = #{lastLogin},</if>
+            <if test="loginFailCnt != null">login_fail_cnt = #{loginFailCnt},</if>
+            <if test="userMemo != null">user_memo = #{userMemo},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+            <if test="authMethodCd != null">auth_method_cd = #{authMethodCd},</if>
+            <if test="lastLoginDate != null">last_login_date = #{lastLoginDate},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

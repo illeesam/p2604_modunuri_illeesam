@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyVendorContentMapper">
+
+    <sql id="syVendorContentCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
+            <if test="p.vendorId != null and p.vendorId != ''">AND c.vendor_id = #{p.vendorId}</if>
+            <if test="p.status != null and p.status != ''">AND c.vendor_content_status_cd = #{p.status}</if>
+            <if test="p.typeCd != null and p.typeCd != ''">AND c.content_type_cd = #{p.typeCd}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (c.vendor_content_title ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND c.reg_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND c.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorContentDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            vnd.vendor_nm AS vendor_nm,
+            atg.attach_grp_nm AS attach_grp_nm,
+            cd_vct.code_label AS content_type_cd_nm,
+            cd_vcs.code_label AS vendor_content_status_cd_nm
+        FROM sy_vendor_content c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = c.vendor_id
+            LEFT JOIN sy_attach_grp atg ON atg.attach_grp_id = c.attach_grp_id
+            LEFT JOIN sy_code cd_vct ON cd_vct.code_grp = 'VENDOR_CONTENT_TYPE' AND cd_vct.code_value = c.content_type_cd
+            LEFT JOIN sy_code cd_vcs ON cd_vcs.code_grp = 'VENDOR_CONTENT_STATUS' AND cd_vcs.code_value = c.vendor_content_status_cd
+        WHERE c.vendor_content_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorContentDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            vnd.vendor_nm AS vendor_nm,
+            atg.attach_grp_nm AS attach_grp_nm,
+            cd_vct.code_label AS content_type_cd_nm,
+            cd_vcs.code_label AS vendor_content_status_cd_nm
+        FROM sy_vendor_content c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = c.vendor_id
+            LEFT JOIN sy_attach_grp atg ON atg.attach_grp_id = c.attach_grp_id
+            LEFT JOIN sy_code cd_vct ON cd_vct.code_grp = 'VENDOR_CONTENT_TYPE' AND cd_vct.code_value = c.content_type_cd
+            LEFT JOIN sy_code cd_vcs ON cd_vcs.code_grp = 'VENDOR_CONTENT_STATUS' AND cd_vcs.code_value = c.vendor_content_status_cd
+            <include refid="syVendorContentCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.vendor_content_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.vendor_content_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.vendor_content_title ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.vendor_content_title DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorContentDto">
+        SELECT
+            c.*,
+            ste.site_nm AS site_nm,
+            vnd.vendor_nm AS vendor_nm,
+            atg.attach_grp_nm AS attach_grp_nm,
+            cd_vct.code_label AS content_type_cd_nm,
+            cd_vcs.code_label AS vendor_content_status_cd_nm
+        FROM sy_vendor_content c
+            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = c.vendor_id
+            LEFT JOIN sy_attach_grp atg ON atg.attach_grp_id = c.attach_grp_id
+            LEFT JOIN sy_code cd_vct ON cd_vct.code_grp = 'VENDOR_CONTENT_TYPE' AND cd_vct.code_value = c.content_type_cd
+            LEFT JOIN sy_code cd_vcs ON cd_vcs.code_grp = 'VENDOR_CONTENT_STATUS' AND cd_vcs.code_value = c.vendor_content_status_cd
+            <include refid="syVendorContentCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY c.vendor_content_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY c.vendor_content_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY c.vendor_content_title ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY c.vendor_content_title DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <otherwise>ORDER BY c.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_vendor_content c
+            <include refid="syVendorContentCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyVendorContent">
+        UPDATE sy_vendor_content
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="vendorId != null">vendor_id = #{vendorId},</if>
+            <if test="contentTypeCd != null">content_type_cd = #{contentTypeCd},</if>
+            <if test="vendorContentTitle != null">vendor_content_title = #{vendorContentTitle},</if>
+            <if test="vendorContentSubtitle != null">vendor_content_subtitle = #{vendorContentSubtitle},</if>
+            <if test="contentHtml != null">content_html = #{contentHtml},</if>
+            <if test="thumbUrl != null">thumb_url = #{thumbUrl},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="linkUrl != null">link_url = #{linkUrl},</if>
+            <if test="attachGrpId != null">attach_grp_id = #{attachGrpId},</if>
+            <if test="langCd != null">lang_cd = #{langCd},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
+            <if test="vendorContentStatusCd != null">vendor_content_status_cd = #{vendorContentStatusCd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="viewCount != null">view_count = #{viewCount},</if>
+            <if test="vendorContentRemark != null">vendor_content_remark = #{vendorContentRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE vendor_content_id = #{vendorContentId}
+    </update>
+
+</mapper>
