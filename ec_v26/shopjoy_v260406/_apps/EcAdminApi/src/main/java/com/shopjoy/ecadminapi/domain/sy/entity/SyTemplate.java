@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_template", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 템플릿 엔티티
 public class SyTemplate {
 
     @Id

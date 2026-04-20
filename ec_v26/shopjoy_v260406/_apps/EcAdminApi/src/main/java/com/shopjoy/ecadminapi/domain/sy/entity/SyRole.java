@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_role", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 역할(권한) 엔티티
 public class SyRole {
 
     @Id

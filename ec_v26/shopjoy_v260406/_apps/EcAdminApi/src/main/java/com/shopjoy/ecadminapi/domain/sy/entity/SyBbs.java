@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_bbs", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 게시판 게시물 엔티티
 public class SyBbs {
 
     @Id

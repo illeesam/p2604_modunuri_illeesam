@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "syh_batch_log", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 배치 로그 엔티티
 public class SyhBatchLog {
 
     @Id

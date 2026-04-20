@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "sy_vendor", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 업체(판매자) 엔티티
 public class SyVendor {
 
     @Id

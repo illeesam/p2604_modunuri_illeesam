@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "odh_claim_item_status_hist", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 클레임 아이템 상태 이력 엔티티
 public class OdhClaimItemStatusHist {
 
     @Id

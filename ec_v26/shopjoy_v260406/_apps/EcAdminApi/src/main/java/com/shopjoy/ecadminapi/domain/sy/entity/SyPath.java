@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_path", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 경로 엔티티
 public class SyPath {
 
     @Id

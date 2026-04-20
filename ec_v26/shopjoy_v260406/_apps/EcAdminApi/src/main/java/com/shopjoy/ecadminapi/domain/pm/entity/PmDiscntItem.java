@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pm_discnt_item", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 할인 대상 상품 엔티티
 public class PmDiscntItem {
 
     @Id

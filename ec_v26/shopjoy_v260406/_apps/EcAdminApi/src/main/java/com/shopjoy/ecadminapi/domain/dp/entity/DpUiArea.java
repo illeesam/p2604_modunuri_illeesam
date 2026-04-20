@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "dp_ui_area", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 전시 UI-영역 매핑 엔티티
 public class DpUiArea {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "cm_bltn_reply", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 게시물 댓글 엔티티
 public class CmBltnReply {
 
     @Id

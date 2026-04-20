@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 클레임(취소/반품/교환) DTO
 public class OdClaimDto {
 
     // ── od_claim ─────────────────────────────────────────────────
@@ -45,7 +46,7 @@ public class OdClaimDto {
     private String collectPhone;
     private String collectZip;
     private String collectAddr;
-    private String collectAddrDetail;
+    private String collectAddrDetail;  
     private String collectReqMemo;
     private LocalDateTime collectSchdDate;
     private Long   returnShippingFee;

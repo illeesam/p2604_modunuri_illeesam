@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "mb_member_grade", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 회원 등급 엔티티
 public class MbMemberGrade {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_review_attach", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 리뷰 첨부파일 엔티티
 public class PdReviewAttach {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "mb_sns_member", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// SNS 연동 회원 엔티티
 public class MbSnsMember {
 
     @Id

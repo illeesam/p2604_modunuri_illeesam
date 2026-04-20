@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "cm_chatt_room", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 채팅방 엔티티
 public class CmChattRoom {
 
     @Id

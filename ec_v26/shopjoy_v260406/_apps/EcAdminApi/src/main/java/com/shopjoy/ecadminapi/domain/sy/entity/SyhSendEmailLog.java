@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "syh_send_email_log", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 이메일 발송 로그 엔티티
 public class SyhSendEmailLog {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "mb_dvc_token", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 디바이스 토큰 엔티티
 public class MbDvcToken {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "od_claim", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 클레임(취소/반품/교환) 엔티티
 public class OdClaim {
 
     @Id

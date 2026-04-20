@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_menu", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 메뉴 엔티티
 public class SyMenu {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_dliv_tmplt", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 배송 템플릿 엔티티
 public class PdDlivTmplt {
 
     @Id

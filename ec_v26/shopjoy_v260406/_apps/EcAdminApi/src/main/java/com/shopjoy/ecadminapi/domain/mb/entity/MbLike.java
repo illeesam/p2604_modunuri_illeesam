@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "mb_like", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 좋아요(찜) 엔티티
 public class MbLike {
 
     @Id

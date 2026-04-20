@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_restock_noti", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 재입고 알림 엔티티
 public class PdRestockNoti {
 
     @Id

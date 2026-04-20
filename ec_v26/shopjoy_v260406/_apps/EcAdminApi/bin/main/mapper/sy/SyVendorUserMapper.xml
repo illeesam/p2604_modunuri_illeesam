@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.mapper.sy.SyVendorUserMapper">
+
+    <sql id="syVendorUserCond">
+        <where>
+            <if test="p.siteId != null and p.siteId != ''">AND u.site_id = #{p.siteId}</if>
+            <if test="p.vendorId != null and p.vendorId != ''">AND u.vendor_id = #{p.vendorId}</if>
+            <if test="p.status != null and p.status != ''">AND u.vendor_user_status_cd = #{p.status}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (u.member_nm ILIKE '%' || #{p.kw} || '%'
+                  OR u.vendor_user_dept_nm ILIKE '%' || #{p.kw} || '%')
+            </if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND u.join_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND u.join_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorUserDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            vnd.vendor_nm AS vendor_nm,
+            usr.user_nm AS user_nm,
+            rol.role_nm AS role_nm,
+            cd_p.code_label AS position_cd_nm,
+            cd_vms.code_label AS vendor_user_status_cd_nm
+        FROM sy_vendor_user u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
+            LEFT JOIN sy_user usr ON usr.user_id = u.user_id
+            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN sy_code cd_p ON cd_p.code_grp = 'POSITION' AND cd_p.code_value = u.position_cd
+            LEFT JOIN sy_code cd_vms ON cd_vms.code_grp = 'VENDOR_MEMBER_STATUS' AND cd_vms.code_value = u.vendor_user_status_cd
+        WHERE u.vendor_user_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorUserDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            vnd.vendor_nm AS vendor_nm,
+            usr.user_nm AS user_nm,
+            rol.role_nm AS role_nm,
+            cd_p.code_label AS position_cd_nm,
+            cd_vms.code_label AS vendor_user_status_cd_nm
+        FROM sy_vendor_user u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
+            LEFT JOIN sy_user usr ON usr.user_id = u.user_id
+            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN sy_code cd_p ON cd_p.code_grp = 'POSITION' AND cd_p.code_value = u.position_cd
+            LEFT JOIN sy_code cd_vms ON cd_vms.code_grp = 'VENDOR_MEMBER_STATUS' AND cd_vms.code_value = u.vendor_user_status_cd
+            <include refid="syVendorUserCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY u.vendor_user_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY u.vendor_user_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY u.member_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY u.member_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY u.join_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY u.join_date DESC</when>
+            <otherwise>ORDER BY u.reg_date DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.domain.sy.dto.SyVendorUserDto">
+        SELECT
+            u.*,
+            ste.site_nm AS site_nm,
+            vnd.vendor_nm AS vendor_nm,
+            usr.user_nm AS user_nm,
+            rol.role_nm AS role_nm,
+            cd_p.code_label AS position_cd_nm,
+            cd_vms.code_label AS vendor_user_status_cd_nm
+        FROM sy_vendor_user u
+            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
+            LEFT JOIN sy_user usr ON usr.user_id = u.user_id
+            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN sy_code cd_p ON cd_p.code_grp = 'POSITION' AND cd_p.code_value = u.position_cd
+            LEFT JOIN sy_code cd_vms ON cd_vms.code_grp = 'VENDOR_MEMBER_STATUS' AND cd_vms.code_value = u.vendor_user_status_cd
+            <include refid="syVendorUserCond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY u.vendor_user_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY u.vendor_user_id DESC</when>
+            <when test="p.sort == 'nm_asc'">ORDER BY u.member_nm ASC</when>
+            <when test="p.sort == 'nm_desc'">ORDER BY u.member_nm DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY u.join_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY u.join_date DESC</when>
+            <otherwise>ORDER BY u.reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)
+        FROM sy_vendor_user u
+            <include refid="syVendorUserCond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.domain.sy.entity.SyVendorUser">
+        UPDATE sy_vendor_user
+        <set>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="vendorId != null">vendor_id = #{vendorId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="memberNm != null">member_nm = #{memberNm},</if>
+            <if test="positionCd != null">position_cd = #{positionCd},</if>
+            <if test="vendorUserDeptNm != null">vendor_user_dept_nm = #{vendorUserDeptNm},</if>
+            <if test="vendorUserPhone != null">vendor_user_phone = #{vendorUserPhone},</if>
+            <if test="vendorUserMobile != null">vendor_user_mobile = #{vendorUserMobile},</if>
+            <if test="vendorUserEmail != null">vendor_user_email = #{vendorUserEmail},</if>
+            <if test="birthDate != null">birth_date = #{birthDate},</if>
+            <if test="isMain != null">is_main = #{isMain},</if>
+            <if test="authYn != null">auth_yn = #{authYn},</if>
+            <if test="joinDate != null">join_date = #{joinDate},</if>
+            <if test="leaveDate != null">leave_date = #{leaveDate},</if>
+            <if test="vendorUserStatusCd != null">vendor_user_status_cd = #{vendorUserStatusCd},</if>
+            <if test="vendorUserRemark != null">vendor_user_remark = #{vendorUserRemark},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE vendor_user_id = #{vendorUserId}
+    </update>
+
+</mapper>

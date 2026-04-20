@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "pm_voucher", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 바우처(상품권) 엔티티
 public class PmVoucher {
 
     @Id

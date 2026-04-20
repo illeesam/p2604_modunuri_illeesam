@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pm_plan", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 프로모션 플랜 엔티티
 public class PmPlan {
 
     @Id

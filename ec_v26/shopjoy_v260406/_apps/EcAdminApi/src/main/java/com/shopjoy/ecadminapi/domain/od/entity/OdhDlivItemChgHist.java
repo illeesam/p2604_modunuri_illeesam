@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "odh_dliv_item_chg_hist", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 배송 아이템 변경 이력 엔티티
 public class OdhDlivItemChgHist {
 
     @Id

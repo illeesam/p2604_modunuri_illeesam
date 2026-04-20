@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pdh_prod_sku_stock_hist", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 상품 SKU 재고 이력 엔티티
 public class PdhProdSkuStockHist {
 
     @Id

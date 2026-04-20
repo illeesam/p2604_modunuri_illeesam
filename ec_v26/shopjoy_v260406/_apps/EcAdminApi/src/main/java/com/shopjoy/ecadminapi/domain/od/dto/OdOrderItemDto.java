@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 주문 아이템(상품) DTO
 public class OdOrderItemDto {
 
     // ── od_order_item ────────────────────────────────────────────

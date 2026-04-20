@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_prod_img", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 상품 이미지 엔티티
 public class PdProdImg {
 
     @Id

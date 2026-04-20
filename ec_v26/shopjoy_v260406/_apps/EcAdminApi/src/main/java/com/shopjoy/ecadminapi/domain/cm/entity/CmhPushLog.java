@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "cmh_push_log", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 푸시 발송 이력 엔티티
 public class CmhPushLog {
 
     @Id

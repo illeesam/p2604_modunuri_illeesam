@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "od_order", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 주문 엔티티
 public class OdOrder {
 
     @Id

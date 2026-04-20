@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_prod_content", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 상품 상세 콘텐츠 엔티티
 public class PdProdContent {
 
     @Id

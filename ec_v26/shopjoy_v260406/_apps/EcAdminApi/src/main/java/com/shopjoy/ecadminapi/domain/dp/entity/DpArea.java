@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "dp_area", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 전시 영역 엔티티
 public class DpArea {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pm_gift_issue", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 사은품 발행 이력 엔티티
 public class PmGiftIssue {
 
     @Id

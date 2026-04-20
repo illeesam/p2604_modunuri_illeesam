@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_i18n_msg", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 다국어 메시지 엔티티
 public class SyI18nMsg {
 
     @Id

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_role_menu", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 역할별 메뉴 권한 엔티티
 public class SyRoleMenu {
 
     @Id

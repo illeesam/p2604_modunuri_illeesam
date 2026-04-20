@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "st_settle_pay", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 정산 지급 엔티티
 public class StSettlePay {
 
     @Id

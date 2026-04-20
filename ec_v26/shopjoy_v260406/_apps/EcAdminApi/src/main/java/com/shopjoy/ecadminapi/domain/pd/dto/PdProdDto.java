@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 상품 DTO
 public class PdProdDto {
 
     // ── pd_prod ──────────────────────────────────────────────────

@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "pm_cache", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 캐시(충전금) 엔티티
 public class PmCache {
 
     @Id

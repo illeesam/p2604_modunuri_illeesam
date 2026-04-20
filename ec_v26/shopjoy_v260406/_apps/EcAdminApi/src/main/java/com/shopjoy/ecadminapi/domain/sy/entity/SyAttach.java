@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_attach", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 첨부파일 엔티티
 public class SyAttach {
 
     @Id

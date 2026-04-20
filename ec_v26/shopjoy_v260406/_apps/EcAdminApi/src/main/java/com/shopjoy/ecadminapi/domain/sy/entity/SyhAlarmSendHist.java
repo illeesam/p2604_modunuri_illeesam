@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "syh_alarm_send_hist", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 알람 발송 이력 엔티티
 public class SyhAlarmSendHist {
 
     @Id

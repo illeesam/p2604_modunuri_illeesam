@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "cm_path", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 경로(메뉴/URL) 엔티티
 public class CmPath {
 
     @Id

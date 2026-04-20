@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 결제 DTO
 public class OdPayDto {
 
     // ── od_pay ───────────────────────────────────────────────────

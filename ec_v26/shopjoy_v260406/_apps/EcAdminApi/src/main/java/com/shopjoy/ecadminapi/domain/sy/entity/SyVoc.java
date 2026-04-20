@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_voc", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 고객의 소리(VOC) 엔티티
 public class SyVoc {
 
     @Id

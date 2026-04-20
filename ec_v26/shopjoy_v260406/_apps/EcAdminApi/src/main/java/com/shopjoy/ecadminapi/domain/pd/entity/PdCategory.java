@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_category", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 상품 카테고리 엔티티
 public class PdCategory {
 
     @Id

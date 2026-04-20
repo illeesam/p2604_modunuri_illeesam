@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "syh_user_login_log", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 사용자 로그인 로그 엔티티
 public class SyhUserLoginLog {
 
     @Id

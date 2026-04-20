@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "od_refund_method", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 환불수단 엔티티
 public class OdRefundMethod {
 
     @Id

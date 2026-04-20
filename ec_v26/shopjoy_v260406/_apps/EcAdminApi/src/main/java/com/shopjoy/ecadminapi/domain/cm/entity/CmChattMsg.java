@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "cm_chatt_msg", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 채팅 메시지 엔티티
 public class CmChattMsg {
 
     @Id

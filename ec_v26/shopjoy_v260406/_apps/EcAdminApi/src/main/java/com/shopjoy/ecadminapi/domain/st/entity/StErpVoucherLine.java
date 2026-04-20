@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "st_erp_voucher_line", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// ERP 전표 상세 엔티티
 public class StErpVoucherLine {
 
     @Id

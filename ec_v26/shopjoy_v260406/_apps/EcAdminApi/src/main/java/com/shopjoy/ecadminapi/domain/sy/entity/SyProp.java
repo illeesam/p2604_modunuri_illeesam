@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_prop", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 시스템 속성 엔티티
 public class SyProp {
 
     @Id

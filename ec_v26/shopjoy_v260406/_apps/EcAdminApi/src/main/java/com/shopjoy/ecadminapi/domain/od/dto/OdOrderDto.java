@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 주문 DTO
 public class OdOrderDto {
 
     // ── od_order ─────────────────────────────────────────────────

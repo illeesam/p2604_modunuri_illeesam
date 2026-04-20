@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 회원 DTO
 public class MbMemberDto {
 
     // ── mb_member ────────────────────────────────────────────────

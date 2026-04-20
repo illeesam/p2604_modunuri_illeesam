@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_brand", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 브랜드 엔티티
 public class SyBrand {
 
     @Id

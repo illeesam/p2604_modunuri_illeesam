@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_review_comment", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 리뷰 댓글 엔티티
 public class PdReviewComment {
 
     @Id

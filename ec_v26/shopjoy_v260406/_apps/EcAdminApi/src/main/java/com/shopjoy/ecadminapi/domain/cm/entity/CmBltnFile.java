@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "cm_bltn_file", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 게시물 첨부파일 엔티티
 public class CmBltnFile {
 
     @Id

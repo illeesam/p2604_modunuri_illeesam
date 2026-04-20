@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "dp_widget_lib", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 전시 위젯 라이브러리 엔티티
 public class DpWidgetLib {
 
     @Id

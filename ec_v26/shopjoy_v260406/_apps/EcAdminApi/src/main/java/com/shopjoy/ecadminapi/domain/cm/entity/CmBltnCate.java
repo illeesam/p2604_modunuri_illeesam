@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "cm_bltn_cate", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 게시판 카테고리 엔티티
 public class CmBltnCate {
 
     @Id

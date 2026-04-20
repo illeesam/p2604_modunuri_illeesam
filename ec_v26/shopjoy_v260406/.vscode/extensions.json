@@ -1,0 +1,26 @@
+{
+    "recommendations": [
+        "melnykdanyil.best-white-theme",
+        "anthropic.claude-code",
+        "vscjava.vscode-java-debug",
+        "jamesmaj.easy-icons",
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-gradle",
+        "ms-ceintl.vscode-language-pack-ko",
+        "redhat.java",
+        "ritwickdey.liveserver",
+        "bierner.markdown-mermaid",
+        "ms-vscode.theme-markdownkit",
+        "vscjava.vscode-maven",
+        "erralb.mermaid-js-erd-to-sql",
+        "cweijan.vscode-office",
+        "vscjava.vscode-java-dependency",
+        "ms-python.vscode-pylance",
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.vscode-python-envs",
+        "humao.rest-client",
+        "vscjava.vscode-java-test",
+        "matt-meyers.vscode-dbml"
+    ]
+}

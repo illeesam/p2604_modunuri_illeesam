@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pd_prod_tag", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 상품 태그 엔티티
 public class PdProdTag {
 
     @Id

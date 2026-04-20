@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "od_pay", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 결제 엔티티
 public class OdPay {
 
     @Id

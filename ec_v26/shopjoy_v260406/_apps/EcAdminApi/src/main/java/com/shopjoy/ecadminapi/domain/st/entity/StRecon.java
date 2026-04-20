@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "st_recon", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 정산 대사(Reconciliation) 엔티티
 public class StRecon {
 
     @Id

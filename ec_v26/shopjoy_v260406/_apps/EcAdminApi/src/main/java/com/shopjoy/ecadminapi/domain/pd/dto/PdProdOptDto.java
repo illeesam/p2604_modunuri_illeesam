@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 상품 옵션 DTO
 public class PdProdOptDto {
 
     // ── pd_prod_opt ──────────────────────────────────────────────

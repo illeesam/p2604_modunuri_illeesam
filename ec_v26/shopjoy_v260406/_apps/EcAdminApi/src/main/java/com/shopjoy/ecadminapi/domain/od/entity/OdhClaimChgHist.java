@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "odh_claim_chg_hist", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 클레임 변경 이력 엔티티
 public class OdhClaimChgHist {
 
     @Id

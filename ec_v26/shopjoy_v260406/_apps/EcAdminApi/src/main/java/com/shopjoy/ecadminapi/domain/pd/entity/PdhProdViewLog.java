@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pdh_prod_view_log", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 상품 조회 로그 엔티티
 public class PdhProdViewLog {
 
     @Id

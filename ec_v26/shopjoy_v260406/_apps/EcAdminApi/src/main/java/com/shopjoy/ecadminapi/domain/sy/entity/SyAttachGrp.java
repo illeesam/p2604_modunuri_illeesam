@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "sy_attach_grp", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 첨부파일 그룹 엔티티
 public class SyAttachGrp {
 
     @Id

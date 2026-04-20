@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "pm_gift_cond", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+// 사은품 지급 조건 엔티티
 public class PmGiftCond {
 
     @Id

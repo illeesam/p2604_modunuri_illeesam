@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
+// 쿠폰 발행 DTO
 public class PmCouponIssueDto {
 
     // ── pm_coupon_issue ──────────────────────────────────────────
