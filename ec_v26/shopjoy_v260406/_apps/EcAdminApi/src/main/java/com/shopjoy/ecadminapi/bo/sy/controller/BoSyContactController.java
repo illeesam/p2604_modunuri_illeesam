@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyContactService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 문의 API — /api/bo/sy/contact
@@ -25,29 +27,17 @@ public class BoSyContactController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyContactDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd) {
-        List<SyContactDto> result = service.getList(siteId, kw, dateStart, dateEnd);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<SyContactDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyContactDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<SyContactDto> result = service.getPageData(siteId, kw, dateStart, dateEnd, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyContactDto>> getById(@PathVariable String id) {
-        SyContactDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<SyContactDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

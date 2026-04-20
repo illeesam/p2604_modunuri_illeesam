@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBbmService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO BBM(푸시/문자발송) API — /api/bo/sy/bbm
@@ -25,25 +27,17 @@ public class BoSyBbmController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyBbmDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw) {
-        List<SyBbmDto> result = service.getList(siteId, kw);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<SyBbmDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyBbmDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<SyBbmDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbmDto>> getById(@PathVariable String id) {
-        SyBbmDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<SyBbmDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

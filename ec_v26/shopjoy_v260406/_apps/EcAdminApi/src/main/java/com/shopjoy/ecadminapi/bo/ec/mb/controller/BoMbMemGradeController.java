@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemGradeService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 회원등급 API
@@ -32,25 +34,17 @@ public class BoMbMemGradeController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberGradeDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw) {
-        List<MbMemberGradeDto> result = service.getList(siteId, kw);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<MbMemberGradeDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbMemberGradeDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<MbMemberGradeDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGradeDto>> getById(@PathVariable String id) {
-        MbMemberGradeDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<MbMemberGradeDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

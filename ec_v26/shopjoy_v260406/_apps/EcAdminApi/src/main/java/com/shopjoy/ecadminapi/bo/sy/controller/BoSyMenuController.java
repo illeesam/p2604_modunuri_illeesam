@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyMenuService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 메뉴 API — /api/bo/sy/menu
@@ -25,25 +27,17 @@ public class BoSyMenuController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyMenuDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw) {
-        List<SyMenuDto> result = service.getList(siteId, kw);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<SyMenuDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyMenuDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<SyMenuDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyMenuDto>> getById(@PathVariable String id) {
-        SyMenuDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<SyMenuDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

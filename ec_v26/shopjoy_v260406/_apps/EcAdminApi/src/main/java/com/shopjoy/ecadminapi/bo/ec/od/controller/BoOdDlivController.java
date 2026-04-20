@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdDlivService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -34,31 +35,17 @@ public class BoOdDlivController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OdDlivDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd) {
-        List<OdDlivDto> result = service.getList(siteId, kw, status, dateStart, dateEnd);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<OdDlivDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<OdDlivDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<OdDlivDto> result = service.getPageData(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdDlivDto>> getById(@PathVariable String id) {
-        OdDlivDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<OdDlivDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

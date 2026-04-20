@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdReviewService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 리뷰 API
@@ -32,29 +34,17 @@ public class BoPdReviewController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdReviewDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd) {
-        List<PdReviewDto> result = service.getList(siteId, kw, dateStart, dateEnd);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<PdReviewDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdReviewDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<PdReviewDto> result = service.getPageData(siteId, kw, dateStart, dateEnd, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewDto>> getById(@PathVariable String id) {
-        PdReviewDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<PdReviewDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

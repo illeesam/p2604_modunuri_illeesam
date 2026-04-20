@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmVoucherService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -26,31 +27,17 @@ public class BoPmVoucherController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmVoucherDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd) {
-        List<PmVoucherDto> result = service.getList(siteId, kw, status, dateStart, dateEnd);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<PmVoucherDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmVoucherDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String dateStart,
-            @RequestParam(required = false) String dateEnd,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<PmVoucherDto> result = service.getPageData(siteId, kw, status, dateStart, dateEnd, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucherDto>> getById(@PathVariable String id) {
-        PmVoucherDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<PmVoucherDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

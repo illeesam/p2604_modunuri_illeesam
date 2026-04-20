@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 시스템 사용자 API — /api/bo/sy/user
@@ -25,25 +27,17 @@ public class BoSyUserController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyUserDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw) {
-        List<SyUserDto> result = service.getList(siteId, kw);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<SyUserDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyUserDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<SyUserDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyUserDto>> getById(@PathVariable String id) {
-        SyUserDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<SyUserDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

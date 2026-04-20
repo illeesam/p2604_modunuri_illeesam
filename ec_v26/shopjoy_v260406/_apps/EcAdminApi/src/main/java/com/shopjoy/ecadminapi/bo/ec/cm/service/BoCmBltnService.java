@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBltnMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBltnRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,17 +25,15 @@ public class BoCmBltnService {
     private final CmBltnRepository repository;
 
     @Transactional(readOnly = true)
-    public List<CmBltnDto> getList(String siteId, String kw, String dateStart, String dateEnd) {
-        Map<String, Object> p = buildParams(siteId, kw, dateStart, dateEnd);
+    public List<CmBltnDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<CmBltnDto> getPageData(String siteId, String kw, String dateStart, String dateEnd, int pageNo, int pageSize) {
-        Map<String, Object> p = buildParams(siteId, kw, dateStart, dateEnd);
-        p.put("limit", pageSize);
-        p.put("offset", (pageNo - 1) * pageSize);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), pageNo, pageSize, p);
+    public PageResult<CmBltnDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
@@ -66,14 +64,5 @@ public class BoCmBltnService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
-    }
-
-    private Map<String, Object> buildParams(String siteId, String kw, String dateStart, String dateEnd) {
-        Map<String, Object> p = new HashMap<>();
-        if (siteId != null && !siteId.isBlank()) p.put("siteId", siteId);
-        if (kw != null && !kw.isBlank()) p.put("kw", kw);
-        if (dateStart != null && !dateStart.isBlank()) p.put("dateStart", dateStart);
-        if (dateEnd != null && !dateEnd.isBlank()) p.put("dateEnd", dateEnd);
-        return p;
     }
 }

@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.auth.annotation.UserOnly;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpUiService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 전시 UI API
@@ -32,25 +34,17 @@ public class BoDpUiController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<DpUiDto>>> list(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw) {
-        List<DpUiDto> result = service.getList(siteId, kw);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        List<DpUiDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<DpUiDto>>> page(
-            @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String kw,
-            @RequestParam(defaultValue = "1")  int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        PageResult<DpUiDto> result = service.getPageData(siteId, kw, pageNo, pageSize);
-        return ResponseEntity.ok(ApiResponse.ok(result));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpUiDto>> getById(@PathVariable String id) {
-        DpUiDto result = service.getById(id);
+            @RequestParam Map<String, Object> p) {
+        CmUtil.require(p, "siteId");
+        PageResult<DpUiDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

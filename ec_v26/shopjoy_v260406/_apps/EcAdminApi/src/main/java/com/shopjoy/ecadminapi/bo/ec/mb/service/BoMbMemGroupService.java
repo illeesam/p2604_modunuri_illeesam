@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberGroupMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGroupRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,17 +25,15 @@ public class BoMbMemGroupService {
     private final MbMemberGroupRepository repository;
 
     @Transactional(readOnly = true)
-    public List<MbMemberGroupDto> getList(String siteId, String kw) {
-        Map<String, Object> p = buildParams(siteId, kw);
+    public List<MbMemberGroupDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<MbMemberGroupDto> getPageData(String siteId, String kw, int pageNo, int pageSize) {
-        Map<String, Object> p = buildParams(siteId, kw);
-        p.put("limit", pageSize);
-        p.put("offset", (pageNo - 1) * pageSize);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), pageNo, pageSize, p);
+    public PageResult<MbMemberGroupDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
@@ -66,12 +64,5 @@ public class BoMbMemGroupService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
-    }
-
-    private Map<String, Object> buildParams(String siteId, String kw) {
-        Map<String, Object> p = new HashMap<>();
-        if (siteId != null && !siteId.isBlank()) p.put("siteId", siteId);
-        if (kw != null && !kw.isBlank()) p.put("kw", kw);
-        return p;
     }
 }

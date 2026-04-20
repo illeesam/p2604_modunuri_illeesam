@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.base.sy.mapper.SySiteMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,19 +25,15 @@ public class BoSySiteService {
     private final SySiteRepository repository;
 
     @Transactional(readOnly = true)
-    public List<SySiteDto> getList(String kw) {
-        Map<String, Object> p = new HashMap<>();
-        if (kw != null && !kw.isBlank()) p.put("kw", kw);
+    public List<SySiteDto> getList(Map<String, Object> p) {
+        if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<SySiteDto> getPageData(String kw, int pageNo, int pageSize) {
-        Map<String, Object> p = new HashMap<>();
-        if (kw != null && !kw.isBlank()) p.put("kw", kw);
-        p.put("limit", pageSize);
-        p.put("offset", (pageNo - 1) * pageSize);
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), pageNo, pageSize, p);
+    public PageResult<SySiteDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
