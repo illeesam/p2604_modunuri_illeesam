@@ -21,7 +21,13 @@
       "Bash(netstat -ano)",
       "Bash(powershell -command \"Stop-Process -Id 14844 -Force; Start-Sleep 2; Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue\")",
       "Bash(powershell -command \"Stop-Process -Id 9172 -Force\")",
-      "Bash(./gradlew test *)"
+      "Bash(./gradlew test *)",
+      "Bash(./gradlew dependencies *)",
+      "Bash(./gradlew cleanTest test --tests \"com.shopjoy.ecadminapi.SampleDataInsertTest\")",
+      "Bash(node -e ' *)",
+      "Bash(node _doc/generate_sample_sql.js)",
+      "Bash(node _doc/generate_sample_sql_ec.js)",
+      "Bash(node _doc/generate_sample_sql_prod.js)"
     ],
     "additionalDirectories": [
       "C:\\Users\\illee\\.claude\\projects\\c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406\\memory"

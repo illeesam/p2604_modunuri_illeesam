@@ -30,6 +30,7 @@ Thumbs.db
 desktop.ini
 
 # ── Java ────────────────────────────────────────────────
+bin/
 *.class
 *.jar
 *.war

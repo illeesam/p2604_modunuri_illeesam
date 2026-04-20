@@ -29,7 +29,7 @@ mybatis:
   type-aliases-package: com.shopjoy.ecadminapi.domain
 
 server:
-  port: 8080
+  port: 8091
   servlet:
     context-path: /api
 

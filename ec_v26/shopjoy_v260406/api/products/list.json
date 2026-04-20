@@ -1,56 +1,3634 @@
 [
-  {"productId":1,"prodNm":"오버사이즈 코튼 티셔츠","categoryId":"tops","price":29900,"originalPrice":39900,"desc":"부드러운 100% 코튼 소재의 여유로운 오버핏 티셔츠. 데일리룩으로 완벽한 베이직 아이템.","emoji":"👕","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"화이트","hex":"#f5f0eb"},{"name":"네이비","hex":"#1e3a5f"},{"name":"베이지","hex":"#d4b896"}],"sizes":["XS","S","M","L","XL"],"tags":["코튼","오버핏","베이직"]},
-  {"productId":2,"prodNm":"스트라이프 린넨 셔츠","categoryId":"tops","price":45000,"desc":"시원한 린넨 소재에 클래식한 스트라이프 패턴. 여름철 가볍고 시원하게 입을 수 있는 셔츠.","emoji":"👔","badge":"","colors":[{"name":"화이트네이비","hex":"#e8eef5"},{"name":"베이지브라운","hex":"#e8ddd0"},{"name":"화이트블랙","hex":"#f0f0f0"}],"sizes":["S","M","L","XL","XXL"],"tags":["린넨","스트라이프","여름"]},
-  {"productId":3,"prodNm":"케이블 니트 스웨터","categoryId":"tops","price":49000,"originalPrice":62000,"desc":"포근한 케이블 니트 패턴의 스웨터. 가을·겨울 필수 아이템으로 다양한 하의와 코디하기 좋습니다.","emoji":"🧶","badge":"","colors":[{"name":"아이보리","hex":"#f5f0e0"},{"name":"카멜","hex":"#c19a6b"},{"name":"그레이","hex":"#8a8a8a"},{"name":"버건디","hex":"#7a1a2a"},{"name":"네이비","hex":"#1e3a5f"}],"sizes":["XS","S","M","L","XL"],"tags":["니트","케이블","가을겨울"]},
-  {"productId":4,"prodNm":"크롭 후디 스웨트셔츠","categoryId":"tops","price":55000,"originalPrice":69000,"desc":"트렌디한 크롭 기장의 후드 스웨트셔츠. 하이웨이스트 하의와 매칭하면 세련된 룩을 완성합니다.","emoji":"🧥","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"그레이","hex":"#8a8a8a"},{"name":"핑크","hex":"#e8a0b4"},{"name":"민트","hex":"#7ed8c4"}],"sizes":["S","M","L","XL"],"tags":["크롭","후디","캐주얼"]},
-  {"productId":5,"prodNm":"체크 플란넬 셔츠","categoryId":"tops","price":52000,"originalPrice":65000,"desc":"따뜻한 플란넬 소재의 체크 패턴 셔츠. 캐주얼하게 오픈해 입거나 레이어드로 활용하기 좋습니다.","emoji":"👔","badge":"인기","colors":[{"name":"레드체크","hex":"#c84040"},{"name":"블루체크","hex":"#4070b0"},{"name":"그린체크","hex":"#4a7050"}],"sizes":["S","M","L","XL","XXL"],"tags":["플란넬","체크","레이어드"]},
-  {"productId":6,"prodNm":"V넥 슬림 티셔츠","categoryId":"tops","price":19900,"desc":"깔끔한 V넥 디자인의 슬림핏 기본 티셔츠. 다양한 컬러로 매일 다른 코디를 즐기세요.","emoji":"👕","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"화이트","hex":"#f5f0eb"},{"name":"그레이","hex":"#8a8a8a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"와인","hex":"#722f37"}],"sizes":["XS","S","M","L","XL"],"tags":["슬림핏","베이직","V넥"]},
-  {"productId":7,"prodNm":"오픈칼라 반팔 셔츠","categoryId":"tops","price":58000,"originalPrice":72000,"desc":"세련된 오픈칼라 디자인의 반팔 셔츠. 여름 나들이나 캐주얼한 자리에 어울리는 감각적인 아이템.","emoji":"👔","badge":"인기","colors":[{"name":"화이트","hex":"#f5f0eb"},{"name":"베이지","hex":"#d4b896"},{"name":"스카이","hex":"#87ceeb"},{"name":"민트","hex":"#7ed8c4"}],"sizes":["S","M","L","XL"],"tags":["오픈칼라","여름셔츠","트렌디"]},
-  {"productId":8,"prodNm":"레이어드 롱슬리브 티","categoryId":"tops","price":32000,"desc":"안에 입기 좋은 롱슬리브 기본 티셔츠. 레이어드 스타일링에 완벽한 필수 베이직 아이템.","emoji":"👕","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"그레이","hex":"#8a8a8a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"베이지","hex":"#d4b896"}],"sizes":["XS","S","M","L","XL"],"tags":["롱슬리브","레이어드","베이직"]},
-  {"productId":9,"prodNm":"후드 집업 스웨트셔츠","categoryId":"tops","price":69000,"desc":"편안한 착용감의 후드 집업 스웨트셔츠. 어떤 하의와도 잘 어울리는 데일리 아이템.","emoji":"🧥","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"그레이","hex":"#8a8a8a"},{"name":"차콜","hex":"#3a3a3a"},{"name":"올리브","hex":"#5a6a3a"}],"sizes":["S","M","L","XL","XXL"],"tags":["후드","집업","캐주얼"]},
-  {"productId":10,"prodNm":"오가닉 루즈핏 맨투맨","categoryId":"tops","price":42000,"originalPrice":52000,"desc":"친환경 오가닉 코튼으로 제작한 루즈핏 맨투맨. 편안하고 부드러운 착용감이 특징입니다.","emoji":"👕","badge":"","colors":[{"name":"크림","hex":"#f5f0e8"},{"name":"그레이","hex":"#8a8a8a"},{"name":"블랙","hex":"#1a1a1a"},{"name":"핑크","hex":"#e8a0b4"}],"sizes":["S","M","L","XL"],"tags":["오가닉","루즈핏","맨투맨"]},
-
-  {"productId":11,"prodNm":"슬림핏 데님 진","categoryId":"bottoms","price":59900,"originalPrice":75000,"desc":"클래식한 슬림핏 데님. 신축성 있는 소재로 활동성이 뛰어나며 어떤 상의와도 잘 어울립니다.","emoji":"👖","badge":"인기","colors":[{"name":"라이트블루","hex":"#7bafd4"},{"name":"미드블루","hex":"#3f6fa8"},{"name":"다크블루","hex":"#1a3560"},{"name":"블랙","hex":"#1a1a1a"}],"sizes":["XS","S","M","L","XL","XXL"],"tags":["데님","슬림핏","스트레치"]},
-  {"productId":12,"prodNm":"카고 와이드 팬츠","categoryId":"bottoms","price":55000,"originalPrice":65000,"desc":"트렌디한 카고 디테일의 와이드 팬츠. 넉넉한 핏으로 편안하면서도 스타일리시한 룩을 완성합니다.","emoji":"🩳","badge":"","colors":[{"name":"카키","hex":"#6b7c4a"},{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"그레이","hex":"#8a8a8a"}],"sizes":["XS","S","M","L","XL"],"tags":["카고","와이드핏","트렌디"]},
-  {"productId":13,"prodNm":"와이드 린넨 슬랙스","categoryId":"bottoms","price":52000,"desc":"고급스러운 린넨 소재의 와이드 슬랙스. 오피스룩부터 캐주얼룩까지 다양하게 활용 가능합니다.","emoji":"👖","badge":"","colors":[{"name":"베이지","hex":"#d4b896"},{"name":"화이트","hex":"#f5f0eb"},{"name":"그레이","hex":"#8a8a8a"},{"name":"네이비","hex":"#1e3a5f"}],"sizes":["S","M","L","XL"],"tags":["린넨","와이드","슬랙스"]},
-  {"productId":14,"prodNm":"조거 스웻 팬츠","categoryId":"bottoms","price":38000,"originalPrice":48000,"desc":"편안한 조거핏의 스웻 팬츠. 홈웨어부터 캐주얼 외출까지 다목적으로 활용 가능합니다.","emoji":"🩳","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"그레이","hex":"#8a8a8a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"베이지","hex":"#d4b896"}],"sizes":["S","M","L","XL","XXL"],"tags":["조거","스웻","편안"]},
-  {"productId":15,"prodNm":"하이웨이스트 숏팬츠","categoryId":"bottoms","price":29900,"desc":"다리를 길어 보이게 해주는 하이웨이스트 숏팬츠. 여름 나들이에 완벽한 아이템입니다.","emoji":"🩳","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"화이트","hex":"#f5f0eb"},{"name":"데님","hex":"#4078a0"},{"name":"카키","hex":"#6b7c4a"}],"sizes":["XS","S","M","L"],"tags":["하이웨이스트","숏팬츠","여름"]},
-  {"productId":16,"prodNm":"미니 플리츠 스커트","categoryId":"bottoms","price":35000,"originalPrice":44000,"desc":"사랑스러운 플리츠 디테일의 미니 스커트. 다양한 상의와 매칭하기 좋은 트렌디한 아이템.","emoji":"👗","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"화이트","hex":"#f5f0eb"},{"name":"핑크","hex":"#e8a0b4"},{"name":"베이지","hex":"#d4b896"}],"sizes":["XS","S","M","L"],"tags":["플리츠","미니","스커트"]},
-  {"productId":17,"prodNm":"맥시 롱스커트","categoryId":"bottoms","price":48000,"originalPrice":60000,"desc":"우아한 실루엣의 맥시 롱스커트. 계절에 관계없이 여성스러운 룩을 완성해주는 아이템.","emoji":"👗","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"카키","hex":"#6b7c4a"},{"name":"와인","hex":"#722f37"}],"sizes":["XS","S","M","L","XL"],"tags":["맥시","롱스커트","우아함"]},
-  {"productId":18,"prodNm":"체크 플리츠 스커트","categoryId":"bottoms","price":42000,"desc":"클래식한 체크 패턴의 플리츠 스커트. 학원룩, 오피스룩 모두 잘 어울리는 만능 아이템.","emoji":"👗","badge":"인기","colors":[{"name":"블랙체크","hex":"#2a2a2a"},{"name":"브라운체크","hex":"#8b6040"},{"name":"그린체크","hex":"#4a7050"}],"sizes":["XS","S","M","L"],"tags":["체크","플리츠","스커트"]},
-  {"productId":19,"prodNm":"벨벳 와이드 팬츠","categoryId":"bottoms","price":65000,"originalPrice":82000,"desc":"고급스러운 벨벳 소재의 와이드 팬츠. 특별한 날이나 파티룩으로 안성맞춤인 럭셔리 아이템.","emoji":"👖","badge":"","colors":[{"name":"와인","hex":"#722f37"},{"name":"블랙","hex":"#1a1a1a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"모카","hex":"#795548"}],"sizes":["S","M","L","XL"],"tags":["벨벳","와이드","럭셔리"]},
-  {"productId":20,"prodNm":"스트레이트 코튼 팬츠","categoryId":"bottoms","price":46000,"desc":"깔끔한 스트레이트 핏의 코튼 팬츠. 오피스룩과 캐주얼룩 모두 완성해주는 기본 아이템.","emoji":"👖","badge":"","colors":[{"name":"베이지","hex":"#d4b896"},{"name":"블랙","hex":"#1a1a1a"},{"name":"그레이","hex":"#8a8a8a"},{"name":"카키","hex":"#6b7c4a"}],"sizes":["S","M","L","XL","XXL"],"tags":["스트레이트","코튼","오피스"]},
-
-  {"productId":21,"prodNm":"울 블렌드 롱코트","categoryId":"outer","price":119000,"desc":"고급 울 혼방 소재로 제작한 클래식 롱코트. 세련된 실루엣으로 어떤 코디에도 품격을 더합니다.","emoji":"🧥","badge":"","colors":[{"name":"카멜","hex":"#c19a6b"},{"name":"블랙","hex":"#1a1a1a"},{"name":"차콜","hex":"#3a3a3a"},{"name":"크림","hex":"#f5f0e8"}],"sizes":["S","M","L","XL"],"tags":["울","롱코트","클래식"]},
-  {"productId":22,"prodNm":"퀼티드 숏 점퍼","categoryId":"outer","price":89000,"originalPrice":115000,"desc":"보온성이 뛰어난 퀼티드 숏 점퍼. 캐주얼하면서도 세련된 디자인으로 데일리 아우터로 활용하세요.","emoji":"🧥","badge":"인기","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"올리브","hex":"#5a6a3a"},{"name":"버건디","hex":"#7a1a2a"},{"name":"크림","hex":"#f5f0e8"}],"sizes":["S","M","L","XL"],"tags":["퀼티드","숏점퍼","보온"]},
-  {"productId":23,"prodNm":"오버사이즈 후드 집업","categoryId":"outer","price":72000,"originalPrice":89000,"desc":"넉넉한 오버사이즈 핏의 후드 집업. 캐주얼한 스트리트 감성을 물씬 풍기는 아우터.","emoji":"🧥","badge":"","colors":[{"name":"그레이","hex":"#8a8a8a"},{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"올리브","hex":"#5a6a3a"}],"sizes":["S","M","L","XL","XXL"],"tags":["오버사이즈","후드","스트리트"]},
-  {"productId":24,"prodNm":"레더룩 라이더 재킷","categoryId":"outer","price":139000,"desc":"고급스러운 레더룩 소재의 라이더 재킷. 어떤 코디에도 포인트가 되는 트렌디한 아우터.","emoji":"🧥","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"브라운","hex":"#8b5a2b"},{"name":"와인","hex":"#722f37"}],"sizes":["S","M","L","XL"],"tags":["레더","라이더","트렌디"]},
-  {"productId":25,"prodNm":"리넨 오버핏 블레이저","categoryId":"outer","price":95000,"originalPrice":120000,"desc":"편안한 오버핏 실루엣의 린넨 블레이저. 오피스룩부터 캐주얼룩까지 폭넓게 활용 가능합니다.","emoji":"🧥","badge":"인기","colors":[{"name":"베이지","hex":"#d4b896"},{"name":"블랙","hex":"#1a1a1a"},{"name":"그레이","hex":"#8a8a8a"},{"name":"네이비","hex":"#1e3a5f"}],"sizes":["S","M","L","XL"],"tags":["블레이저","린넨","오피스"]},
-  {"productId":26,"prodNm":"항공점퍼 MA-1","categoryId":"outer","price":109000,"desc":"클래식한 MA-1 스타일의 항공점퍼. 시즌리스로 활용 가능한 데일리 아우터 아이템.","emoji":"🧥","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"카키","hex":"#6b7c4a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"오렌지","hex":"#f5a05a"}],"sizes":["S","M","L","XL","XXL"],"tags":["MA-1","항공점퍼","클래식"]},
-  {"productId":27,"prodNm":"더블 브레스트 코트","categoryId":"outer","price":158000,"originalPrice":199000,"desc":"우아한 더블 브레스트 디자인의 클래식 코트. 포멀한 자리부터 데일리까지 완벽한 아우터.","emoji":"🧥","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"카멜","hex":"#c19a6b"},{"name":"그레이","hex":"#8a8a8a"}],"sizes":["S","M","L","XL"],"tags":["더블브레스트","클래식","포멀"]},
-  {"productId":28,"prodNm":"데님 재킷","categoryId":"outer","price":68000,"originalPrice":85000,"desc":"어디서나 잘 어울리는 클래식 데님 재킷. 캐주얼 코디의 완성을 책임지는 필수 아우터.","emoji":"🧥","badge":"","colors":[{"name":"라이트블루","hex":"#7bafd4"},{"name":"미드블루","hex":"#3f6fa8"},{"name":"블랙","hex":"#1a1a1a"}],"sizes":["S","M","L","XL","XXL"],"tags":["데님재킷","클래식","캐주얼"]},
-  {"productId":29,"prodNm":"경량 패딩 조끼","categoryId":"outer","price":55000,"desc":"가볍고 따뜻한 경량 패딩 조끼. 다양한 상의 위에 레이어드해서 입기 좋은 실용적인 아이템.","emoji":"🧥","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"카키","hex":"#6b7c4a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"그레이","hex":"#8a8a8a"}],"sizes":["S","M","L","XL","XXL"],"tags":["패딩조끼","경량","레이어드"]},
-  {"productId":30,"prodNm":"롱 가디건","categoryId":"outer","price":62000,"originalPrice":78000,"desc":"부드럽고 포근한 니트 소재의 롱 가디건. 오버사이즈 핏으로 여유롭게 걸쳐 입기 좋습니다.","emoji":"🧶","badge":"","colors":[{"name":"아이보리","hex":"#f5f0e0"},{"name":"베이지","hex":"#d4b896"},{"name":"그레이","hex":"#8a8a8a"},{"name":"블랙","hex":"#1a1a1a"},{"name":"와인","hex":"#722f37"}],"sizes":["S","M","L","XL"],"tags":["가디건","니트","롱"]},
-
-  {"productId":31,"prodNm":"플로럴 미디 드레스","categoryId":"dress","price":79000,"originalPrice":95000,"desc":"화사한 플로럴 패턴의 미디 기장 드레스. 봄·여름 나들이 및 특별한 날에 어울리는 로맨틱한 아이템.","emoji":"👗","badge":"NEW","colors":[{"name":"핑크플로럴","hex":"#e8a0b4"},{"name":"블루플로럴","hex":"#a0b8e8"},{"name":"화이트플로럴","hex":"#f5f5f0"}],"sizes":["XS","S","M","L"],"tags":["플로럴","미디","로맨틱"]},
-  {"productId":32,"prodNm":"미니 플리츠 드레스","categoryId":"dress","price":59000,"desc":"사랑스러운 플리츠 디테일의 미니 드레스. 날렵하고 경쾌한 실루엣으로 여름 코디를 완성해드립니다.","emoji":"👗","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"화이트","hex":"#f5f0eb"},{"name":"핑크","hex":"#e8a0b4"},{"name":"네이비","hex":"#1e3a5f"}],"sizes":["XS","S","M","L"],"tags":["플리츠","미니드레스","여름"]},
-  {"productId":33,"prodNm":"맥시 롱 원피스","categoryId":"dress","price":88000,"originalPrice":110000,"desc":"우아하게 흘러내리는 맥시 기장의 롱 원피스. 특별한 날이나 리조트 룩으로 완벽한 아이템입니다.","emoji":"👗","badge":"인기","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"화이트","hex":"#f5f0eb"},{"name":"와인","hex":"#722f37"}],"sizes":["XS","S","M","L","XL"],"tags":["맥시","롱원피스","우아함"]},
-  {"productId":34,"prodNm":"오프숄더 드레스","categoryId":"dress","price":69000,"originalPrice":85000,"desc":"어깨를 드러내는 세련된 오프숄더 드레스. 여름 파티나 특별한 자리에 어울리는 섹시한 아이템.","emoji":"👗","badge":"NEW","colors":[{"name":"화이트","hex":"#f5f0eb"},{"name":"핑크","hex":"#e8a0b4"},{"name":"스카이","hex":"#87ceeb"},{"name":"민트","hex":"#7ed8c4"}],"sizes":["XS","S","M","L"],"tags":["오프숄더","여름","파티룩"]},
-  {"productId":35,"prodNm":"니트 미디 원피스","categoryId":"dress","price":72000,"desc":"부드럽고 포근한 니트 소재의 미디 원피스. 가을·겨울 감성을 담은 여성스러운 아이템.","emoji":"👗","badge":"","colors":[{"name":"아이보리","hex":"#f5f0e0"},{"name":"그레이","hex":"#8a8a8a"},{"name":"블랙","hex":"#1a1a1a"},{"name":"카멜","hex":"#c19a6b"}],"sizes":["S","M","L","XL"],"tags":["니트","미디","원피스"]},
-  {"productId":36,"prodNm":"셔츠 미니 원피스","categoryId":"dress","price":55000,"originalPrice":68000,"desc":"클래식한 셔츠 디자인을 원피스로. 캐주얼하면서도 세련된 데일리 원피스 아이템.","emoji":"👗","badge":"","colors":[{"name":"화이트","hex":"#f5f0eb"},{"name":"베이지","hex":"#d4b896"},{"name":"스카이","hex":"#87ceeb"}],"sizes":["XS","S","M","L","XL"],"tags":["셔츠원피스","미니","캐주얼"]},
-  {"productId":37,"prodNm":"슬립 드레스","categoryId":"dress","price":62000,"desc":"실크감의 소재로 제작된 감각적인 슬립 드레스. 단독으로도, 레이어드로도 스타일리시하게 활용 가능.","emoji":"👗","badge":"인기","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"와인","hex":"#722f37"},{"name":"그린","hex":"#4a8a4a"}],"sizes":["XS","S","M","L"],"tags":["슬립드레스","실크감","레이어드"]},
-  {"productId":38,"prodNm":"타이다이 썸머 드레스","categoryId":"dress","price":48000,"originalPrice":60000,"desc":"트렌디한 타이다이 패턴의 썸머 드레스. 여름 휴가나 페스티벌룩으로 완벽한 개성 있는 아이템.","emoji":"👗","badge":"NEW","colors":[{"name":"블루타이다이","hex":"#7bafd4"},{"name":"핑크타이다이","hex":"#e8a0b4"},{"name":"그린타이다이","hex":"#7ed8c4"}],"sizes":["XS","S","M","L","XL"],"tags":["타이다이","여름","페스티벌"]},
-  {"productId":39,"prodNm":"자수 블라우스 원피스","categoryId":"dress","price":82000,"desc":"정교한 자수 디테일이 돋보이는 블라우스 원피스. 우아하고 고급스러운 분위기를 연출합니다.","emoji":"👗","badge":"","colors":[{"name":"화이트","hex":"#f5f0eb"},{"name":"크림","hex":"#f5f0e8"},{"name":"핑크","hex":"#e8a0b4"}],"sizes":["S","M","L","XL"],"tags":["자수","블라우스","우아함"]},
-  {"productId":40,"prodNm":"랩 스타일 드레스","categoryId":"dress","price":66000,"originalPrice":79000,"desc":"여성스러운 랩 스타일의 드레스. 날씬해 보이는 실루엣으로 다양한 체형에 잘 어울립니다.","emoji":"👗","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"와인","hex":"#722f37"}],"sizes":["XS","S","M","L"],"tags":["랩드레스","여성스러움","슬림"]},
-
-  {"productId":41,"prodNm":"캔버스 토트백","categoryId":"acc","price":35000,"originalPrice":45000,"desc":"심플한 캔버스 소재의 대용량 토트백. 데일리부터 쇼핑백까지 다목적으로 활용 가능합니다.","emoji":"👜","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"화이트","hex":"#f5f0eb"},{"name":"네이비","hex":"#1e3a5f"}],"sizes":["FREE"],"tags":["토트백","캔버스","데일리"]},
-  {"productId":42,"prodNm":"버킷햇","categoryId":"acc","price":22000,"desc":"트렌디한 버킷햇. 야외 활동 시 자외선 차단과 함께 스타일리시한 룩을 완성해줍니다.","emoji":"🎩","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"카키","hex":"#6b7c4a"},{"name":"화이트","hex":"#f5f0eb"}],"sizes":["FREE"],"tags":["버킷햇","모자","야외활동"]},
-  {"productId":43,"prodNm":"울 머플러","categoryId":"acc","price":28000,"originalPrice":35000,"desc":"부드러운 울 소재의 클래식 머플러. 겨울철 목을 따뜻하게 감싸줄 실용적인 패션 아이템.","emoji":"🧣","badge":"","colors":[{"name":"그레이","hex":"#8a8a8a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"버건디","hex":"#7a1a2a"},{"name":"아이보리","hex":"#f5f0e0"},{"name":"블랙","hex":"#1a1a1a"}],"sizes":["FREE"],"tags":["머플러","울","겨울"]},
-  {"productId":44,"prodNm":"가죽 벨트","categoryId":"acc","price":32000,"desc":"클래식한 디자인의 가죽 벨트. 데님부터 슬랙스까지 어떤 하의에도 잘 어울리는 필수 아이템.","emoji":"🧷","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"브라운","hex":"#8b5a2b"},{"name":"카멜","hex":"#c19a6b"}],"sizes":["S","M","L"],"tags":["벨트","가죽","클래식"]},
-  {"productId":45,"prodNm":"볼캡 스냅백","categoryId":"acc","price":25000,"originalPrice":32000,"desc":"캐주얼한 스트리트 감성의 볼캡 스냅백. 다양한 로고 디자인으로 개성 있는 스타일을 연출하세요.","emoji":"🧢","badge":"인기","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"화이트","hex":"#f5f0eb"},{"name":"네이비","hex":"#1e3a5f"},{"name":"카키","hex":"#6b7c4a"}],"sizes":["FREE"],"tags":["볼캡","스냅백","스트리트"]},
-  {"productId":46,"prodNm":"선글라스","categoryId":"acc","price":42000,"desc":"세련된 디자인의 UV차단 선글라스. 야외 활동 시 눈을 보호하면서 스타일까지 완성해드립니다.","emoji":"🕶️","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"브라운","hex":"#8b5a2b"},{"name":"골드","hex":"#c9a227"},{"name":"실버","hex":"#c0c0c0"}],"sizes":["FREE"],"tags":["선글라스","UV차단","스타일"]},
-  {"productId":47,"prodNm":"미니 크로스백","categoryId":"acc","price":55000,"originalPrice":68000,"desc":"컴팩트한 사이즈의 미니 크로스백. 가볍게 들기 좋으며 데일리룩에 포인트를 더해줍니다.","emoji":"👛","badge":"NEW","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"브라운","hex":"#8b5a2b"},{"name":"화이트","hex":"#f5f0eb"},{"name":"베이지","hex":"#d4b896"}],"sizes":["FREE"],"tags":["크로스백","미니백","데일리"]},
-  {"productId":48,"prodNm":"니트 비니","categoryId":"acc","price":18000,"desc":"포근한 니트 소재의 비니. 겨울철 머리를 따뜻하게 보호하면서 캐주얼한 룩을 완성해줍니다.","emoji":"🎿","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"그레이","hex":"#8a8a8a"},{"name":"네이비","hex":"#1e3a5f"},{"name":"버건디","hex":"#7a1a2a"},{"name":"아이보리","hex":"#f5f0e0"}],"sizes":["FREE"],"tags":["비니","니트","겨울"]},
-  {"productId":49,"prodNm":"캔버스 숄더백","categoryId":"acc","price":48000,"originalPrice":59000,"desc":"넉넉한 수납공간의 캔버스 숄더백. 일상에서 학교, 쇼핑까지 다목적으로 활용 가능한 아이템.","emoji":"👜","badge":"인기","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"베이지","hex":"#d4b896"},{"name":"카키","hex":"#6b7c4a"}],"sizes":["FREE"],"tags":["숄더백","캔버스","데일리"]},
-  {"productId":50,"prodNm":"가죽 장갑","categoryId":"acc","price":38000,"desc":"부드러운 인조 가죽 소재의 방한 장갑. 겨울철 손을 따뜻하게 보호하면서 스타일리시한 룩을 연출합니다.","emoji":"🧤","badge":"","colors":[{"name":"블랙","hex":"#1a1a1a"},{"name":"브라운","hex":"#8b5a2b"},{"name":"네이비","hex":"#1e3a5f"}],"sizes":["S","M","L"],"tags":["장갑","가죽","겨울"]}
+  {
+    "productId": 1,
+    "prodNm": "오버사이즈 코튼 티셔츠",
+    "categoryId": "tops",
+    "price": 29900,
+    "originalPrice": 39900,
+    "desc": "부드러운 100% 코튼 소재의 여유로운 오버핏 티셔츠. 데일리룩으로 완벽한 베이직 아이템.",
+    "emoji": "👕",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "코튼",
+      "오버핏",
+      "베이직"
+    ]
+  },
+  {
+    "productId": 2,
+    "prodNm": "스트라이프 린넨 셔츠",
+    "categoryId": "tops",
+    "price": 45000,
+    "desc": "시원한 린넨 소재에 클래식한 스트라이프 패턴. 여름철 가볍고 시원하게 입을 수 있는 셔츠.",
+    "emoji": "👔",
+    "badge": "",
+    "colors": [
+      {
+        "name": "화이트네이비",
+        "hex": "#e8eef5"
+      },
+      {
+        "name": "베이지브라운",
+        "hex": "#e8ddd0"
+      },
+      {
+        "name": "화이트블랙",
+        "hex": "#f0f0f0"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "린넨",
+      "스트라이프",
+      "여름"
+    ]
+  },
+  {
+    "productId": 3,
+    "prodNm": "케이블 니트 스웨터",
+    "categoryId": "tops",
+    "price": 49000,
+    "originalPrice": 62000,
+    "desc": "포근한 케이블 니트 패턴의 스웨터. 가을·겨울 필수 아이템으로 다양한 하의와 코디하기 좋습니다.",
+    "emoji": "🧶",
+    "badge": "",
+    "colors": [
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "버건디",
+        "hex": "#7a1a2a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "니트",
+      "케이블",
+      "가을겨울"
+    ]
+  },
+  {
+    "productId": 4,
+    "prodNm": "크롭 후디 스웨트셔츠",
+    "categoryId": "tops",
+    "price": 55000,
+    "originalPrice": 69000,
+    "desc": "트렌디한 크롭 기장의 후드 스웨트셔츠. 하이웨이스트 하의와 매칭하면 세련된 룩을 완성합니다.",
+    "emoji": "🧥",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "민트",
+        "hex": "#7ed8c4"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "크롭",
+      "후디",
+      "캐주얼"
+    ]
+  },
+  {
+    "productId": 5,
+    "prodNm": "체크 플란넬 셔츠",
+    "categoryId": "tops",
+    "price": 52000,
+    "originalPrice": 65000,
+    "desc": "따뜻한 플란넬 소재의 체크 패턴 셔츠. 캐주얼하게 오픈해 입거나 레이어드로 활용하기 좋습니다.",
+    "emoji": "👔",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "레드체크",
+        "hex": "#c84040"
+      },
+      {
+        "name": "블루체크",
+        "hex": "#4070b0"
+      },
+      {
+        "name": "그린체크",
+        "hex": "#4a7050"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "플란넬",
+      "체크",
+      "레이어드"
+    ]
+  },
+  {
+    "productId": 6,
+    "prodNm": "V넥 슬림 티셔츠",
+    "categoryId": "tops",
+    "price": 19900,
+    "desc": "깔끔한 V넥 디자인의 슬림핏 기본 티셔츠. 다양한 컬러로 매일 다른 코디를 즐기세요.",
+    "emoji": "👕",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "슬림핏",
+      "베이직",
+      "V넥"
+    ]
+  },
+  {
+    "productId": 7,
+    "prodNm": "오픈칼라 반팔 셔츠",
+    "categoryId": "tops",
+    "price": 58000,
+    "originalPrice": 72000,
+    "desc": "세련된 오픈칼라 디자인의 반팔 셔츠. 여름 나들이나 캐주얼한 자리에 어울리는 감각적인 아이템.",
+    "emoji": "👔",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "스카이",
+        "hex": "#87ceeb"
+      },
+      {
+        "name": "민트",
+        "hex": "#7ed8c4"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "오픈칼라",
+      "여름셔츠",
+      "트렌디"
+    ]
+  },
+  {
+    "productId": 8,
+    "prodNm": "레이어드 롱슬리브 티",
+    "categoryId": "tops",
+    "price": 32000,
+    "desc": "안에 입기 좋은 롱슬리브 기본 티셔츠. 레이어드 스타일링에 완벽한 필수 베이직 아이템.",
+    "emoji": "👕",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "롱슬리브",
+      "레이어드",
+      "베이직"
+    ]
+  },
+  {
+    "productId": 9,
+    "prodNm": "후드 집업 스웨트셔츠",
+    "categoryId": "tops",
+    "price": 69000,
+    "desc": "편안한 착용감의 후드 집업 스웨트셔츠. 어떤 하의와도 잘 어울리는 데일리 아이템.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "차콜",
+        "hex": "#3a3a3a"
+      },
+      {
+        "name": "올리브",
+        "hex": "#5a6a3a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "후드",
+      "집업",
+      "캐주얼"
+    ]
+  },
+  {
+    "productId": 10,
+    "prodNm": "오가닉 루즈핏 맨투맨",
+    "categoryId": "tops",
+    "price": 42000,
+    "originalPrice": 52000,
+    "desc": "친환경 오가닉 코튼으로 제작한 루즈핏 맨투맨. 편안하고 부드러운 착용감이 특징입니다.",
+    "emoji": "👕",
+    "badge": "",
+    "colors": [
+      {
+        "name": "크림",
+        "hex": "#f5f0e8"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "오가닉",
+      "루즈핏",
+      "맨투맨"
+    ]
+  },
+  {
+    "productId": 11,
+    "prodNm": "슬림핏 데님 진",
+    "categoryId": "bottoms",
+    "price": 59900,
+    "originalPrice": 75000,
+    "desc": "클래식한 슬림핏 데님. 신축성 있는 소재로 활동성이 뛰어나며 어떤 상의와도 잘 어울립니다.",
+    "emoji": "👖",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "라이트블루",
+        "hex": "#7bafd4"
+      },
+      {
+        "name": "미드블루",
+        "hex": "#3f6fa8"
+      },
+      {
+        "name": "다크블루",
+        "hex": "#1a3560"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "데님",
+      "슬림핏",
+      "스트레치"
+    ]
+  },
+  {
+    "productId": 12,
+    "prodNm": "카고 와이드 팬츠",
+    "categoryId": "bottoms",
+    "price": 55000,
+    "originalPrice": 65000,
+    "desc": "트렌디한 카고 디테일의 와이드 팬츠. 넉넉한 핏으로 편안하면서도 스타일리시한 룩을 완성합니다.",
+    "emoji": "🩳",
+    "badge": "",
+    "colors": [
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "카고",
+      "와이드핏",
+      "트렌디"
+    ]
+  },
+  {
+    "productId": 13,
+    "prodNm": "와이드 린넨 슬랙스",
+    "categoryId": "bottoms",
+    "price": 52000,
+    "desc": "고급스러운 린넨 소재의 와이드 슬랙스. 오피스룩부터 캐주얼룩까지 다양하게 활용 가능합니다.",
+    "emoji": "👖",
+    "badge": "",
+    "colors": [
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "린넨",
+      "와이드",
+      "슬랙스"
+    ]
+  },
+  {
+    "productId": 14,
+    "prodNm": "조거 스웻 팬츠",
+    "categoryId": "bottoms",
+    "price": 38000,
+    "originalPrice": 48000,
+    "desc": "편안한 조거핏의 스웻 팬츠. 홈웨어부터 캐주얼 외출까지 다목적으로 활용 가능합니다.",
+    "emoji": "🩳",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "조거",
+      "스웻",
+      "편안"
+    ]
+  },
+  {
+    "productId": 15,
+    "prodNm": "하이웨이스트 숏팬츠",
+    "categoryId": "bottoms",
+    "price": 29900,
+    "desc": "다리를 길어 보이게 해주는 하이웨이스트 숏팬츠. 여름 나들이에 완벽한 아이템입니다.",
+    "emoji": "🩳",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "데님",
+        "hex": "#4078a0"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "하이웨이스트",
+      "숏팬츠",
+      "여름"
+    ]
+  },
+  {
+    "productId": 16,
+    "prodNm": "미니 플리츠 스커트",
+    "categoryId": "bottoms",
+    "price": 35000,
+    "originalPrice": 44000,
+    "desc": "사랑스러운 플리츠 디테일의 미니 스커트. 다양한 상의와 매칭하기 좋은 트렌디한 아이템.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "플리츠",
+      "미니",
+      "스커트"
+    ]
+  },
+  {
+    "productId": 17,
+    "prodNm": "맥시 롱스커트",
+    "categoryId": "bottoms",
+    "price": 48000,
+    "originalPrice": 60000,
+    "desc": "우아한 실루엣의 맥시 롱스커트. 계절에 관계없이 여성스러운 룩을 완성해주는 아이템.",
+    "emoji": "👗",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "맥시",
+      "롱스커트",
+      "우아함"
+    ]
+  },
+  {
+    "productId": 18,
+    "prodNm": "체크 플리츠 스커트",
+    "categoryId": "bottoms",
+    "price": 42000,
+    "desc": "클래식한 체크 패턴의 플리츠 스커트. 학원룩, 오피스룩 모두 잘 어울리는 만능 아이템.",
+    "emoji": "👗",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙체크",
+        "hex": "#2a2a2a"
+      },
+      {
+        "name": "브라운체크",
+        "hex": "#8b6040"
+      },
+      {
+        "name": "그린체크",
+        "hex": "#4a7050"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "체크",
+      "플리츠",
+      "스커트"
+    ]
+  },
+  {
+    "productId": 19,
+    "prodNm": "벨벳 와이드 팬츠",
+    "categoryId": "bottoms",
+    "price": 65000,
+    "originalPrice": 82000,
+    "desc": "고급스러운 벨벳 소재의 와이드 팬츠. 특별한 날이나 파티룩으로 안성맞춤인 럭셔리 아이템.",
+    "emoji": "👖",
+    "badge": "",
+    "colors": [
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "모카",
+        "hex": "#795548"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "벨벳",
+      "와이드",
+      "럭셔리"
+    ]
+  },
+  {
+    "productId": 20,
+    "prodNm": "스트레이트 코튼 팬츠",
+    "categoryId": "bottoms",
+    "price": 46000,
+    "desc": "깔끔한 스트레이트 핏의 코튼 팬츠. 오피스룩과 캐주얼룩 모두 완성해주는 기본 아이템.",
+    "emoji": "👖",
+    "badge": "",
+    "colors": [
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "스트레이트",
+      "코튼",
+      "오피스"
+    ]
+  },
+  {
+    "productId": 21,
+    "prodNm": "울 블렌드 롱코트",
+    "categoryId": "outer",
+    "price": 119000,
+    "desc": "고급 울 혼방 소재로 제작한 클래식 롱코트. 세련된 실루엣으로 어떤 코디에도 품격을 더합니다.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "차콜",
+        "hex": "#3a3a3a"
+      },
+      {
+        "name": "크림",
+        "hex": "#f5f0e8"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "울",
+      "롱코트",
+      "클래식"
+    ]
+  },
+  {
+    "productId": 22,
+    "prodNm": "퀼티드 숏 점퍼",
+    "categoryId": "outer",
+    "price": 89000,
+    "originalPrice": 115000,
+    "desc": "보온성이 뛰어난 퀼티드 숏 점퍼. 캐주얼하면서도 세련된 디자인으로 데일리 아우터로 활용하세요.",
+    "emoji": "🧥",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "올리브",
+        "hex": "#5a6a3a"
+      },
+      {
+        "name": "버건디",
+        "hex": "#7a1a2a"
+      },
+      {
+        "name": "크림",
+        "hex": "#f5f0e8"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "퀼티드",
+      "숏점퍼",
+      "보온"
+    ]
+  },
+  {
+    "productId": 23,
+    "prodNm": "오버사이즈 후드 집업",
+    "categoryId": "outer",
+    "price": 72000,
+    "originalPrice": 89000,
+    "desc": "넉넉한 오버사이즈 핏의 후드 집업. 캐주얼한 스트리트 감성을 물씬 풍기는 아우터.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "올리브",
+        "hex": "#5a6a3a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "오버사이즈",
+      "후드",
+      "스트리트"
+    ]
+  },
+  {
+    "productId": 24,
+    "prodNm": "레더룩 라이더 재킷",
+    "categoryId": "outer",
+    "price": 139000,
+    "desc": "고급스러운 레더룩 소재의 라이더 재킷. 어떤 코디에도 포인트가 되는 트렌디한 아우터.",
+    "emoji": "🧥",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "레더",
+      "라이더",
+      "트렌디"
+    ]
+  },
+  {
+    "productId": 25,
+    "prodNm": "리넨 오버핏 블레이저",
+    "categoryId": "outer",
+    "price": 95000,
+    "originalPrice": 120000,
+    "desc": "편안한 오버핏 실루엣의 린넨 블레이저. 오피스룩부터 캐주얼룩까지 폭넓게 활용 가능합니다.",
+    "emoji": "🧥",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "블레이저",
+      "린넨",
+      "오피스"
+    ]
+  },
+  {
+    "productId": 26,
+    "prodNm": "항공점퍼 MA-1",
+    "categoryId": "outer",
+    "price": 109000,
+    "desc": "클래식한 MA-1 스타일의 항공점퍼. 시즌리스로 활용 가능한 데일리 아우터 아이템.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "오렌지",
+        "hex": "#f5a05a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "MA-1",
+      "항공점퍼",
+      "클래식"
+    ]
+  },
+  {
+    "productId": 27,
+    "prodNm": "더블 브레스트 코트",
+    "categoryId": "outer",
+    "price": 158000,
+    "originalPrice": 199000,
+    "desc": "우아한 더블 브레스트 디자인의 클래식 코트. 포멀한 자리부터 데일리까지 완벽한 아우터.",
+    "emoji": "🧥",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "더블브레스트",
+      "클래식",
+      "포멀"
+    ]
+  },
+  {
+    "productId": 28,
+    "prodNm": "데님 재킷",
+    "categoryId": "outer",
+    "price": 68000,
+    "originalPrice": 85000,
+    "desc": "어디서나 잘 어울리는 클래식 데님 재킷. 캐주얼 코디의 완성을 책임지는 필수 아우터.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "라이트블루",
+        "hex": "#7bafd4"
+      },
+      {
+        "name": "미드블루",
+        "hex": "#3f6fa8"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "데님재킷",
+      "클래식",
+      "캐주얼"
+    ]
+  },
+  {
+    "productId": 29,
+    "prodNm": "경량 패딩 조끼",
+    "categoryId": "outer",
+    "price": 55000,
+    "desc": "가볍고 따뜻한 경량 패딩 조끼. 다양한 상의 위에 레이어드해서 입기 좋은 실용적인 아이템.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "패딩조끼",
+      "경량",
+      "레이어드"
+    ]
+  },
+  {
+    "productId": 30,
+    "prodNm": "롱 가디건",
+    "categoryId": "outer",
+    "price": 62000,
+    "originalPrice": 78000,
+    "desc": "부드럽고 포근한 니트 소재의 롱 가디건. 오버사이즈 핏으로 여유롭게 걸쳐 입기 좋습니다.",
+    "emoji": "🧶",
+    "badge": "",
+    "colors": [
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "가디건",
+      "니트",
+      "롱"
+    ]
+  },
+  {
+    "productId": 31,
+    "prodNm": "플로럴 미디 드레스",
+    "categoryId": "dress",
+    "price": 79000,
+    "originalPrice": 95000,
+    "desc": "화사한 플로럴 패턴의 미디 기장 드레스. 봄·여름 나들이 및 특별한 날에 어울리는 로맨틱한 아이템.",
+    "emoji": "👗",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "핑크플로럴",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "블루플로럴",
+        "hex": "#a0b8e8"
+      },
+      {
+        "name": "화이트플로럴",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "플로럴",
+      "미디",
+      "로맨틱"
+    ]
+  },
+  {
+    "productId": 32,
+    "prodNm": "미니 플리츠 드레스",
+    "categoryId": "dress",
+    "price": 59000,
+    "desc": "사랑스러운 플리츠 디테일의 미니 드레스. 날렵하고 경쾌한 실루엣으로 여름 코디를 완성해드립니다.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "플리츠",
+      "미니드레스",
+      "여름"
+    ]
+  },
+  {
+    "productId": 33,
+    "prodNm": "맥시 롱 원피스",
+    "categoryId": "dress",
+    "price": 88000,
+    "originalPrice": 110000,
+    "desc": "우아하게 흘러내리는 맥시 기장의 롱 원피스. 특별한 날이나 리조트 룩으로 완벽한 아이템입니다.",
+    "emoji": "👗",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "맥시",
+      "롱원피스",
+      "우아함"
+    ]
+  },
+  {
+    "productId": 34,
+    "prodNm": "오프숄더 드레스",
+    "categoryId": "dress",
+    "price": 69000,
+    "originalPrice": 85000,
+    "desc": "어깨를 드러내는 세련된 오프숄더 드레스. 여름 파티나 특별한 자리에 어울리는 섹시한 아이템.",
+    "emoji": "👗",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "스카이",
+        "hex": "#87ceeb"
+      },
+      {
+        "name": "민트",
+        "hex": "#7ed8c4"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "오프숄더",
+      "여름",
+      "파티룩"
+    ]
+  },
+  {
+    "productId": 35,
+    "prodNm": "니트 미디 원피스",
+    "categoryId": "dress",
+    "price": 72000,
+    "desc": "부드럽고 포근한 니트 소재의 미디 원피스. 가을·겨울 감성을 담은 여성스러운 아이템.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "니트",
+      "미디",
+      "원피스"
+    ]
+  },
+  {
+    "productId": 36,
+    "prodNm": "셔츠 미니 원피스",
+    "categoryId": "dress",
+    "price": 55000,
+    "originalPrice": 68000,
+    "desc": "클래식한 셔츠 디자인을 원피스로. 캐주얼하면서도 세련된 데일리 원피스 아이템.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "스카이",
+        "hex": "#87ceeb"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "셔츠원피스",
+      "미니",
+      "캐주얼"
+    ]
+  },
+  {
+    "productId": 37,
+    "prodNm": "슬립 드레스",
+    "categoryId": "dress",
+    "price": 62000,
+    "desc": "실크감의 소재로 제작된 감각적인 슬립 드레스. 단독으로도, 레이어드로도 스타일리시하게 활용 가능.",
+    "emoji": "👗",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      },
+      {
+        "name": "그린",
+        "hex": "#4a8a4a"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "슬립드레스",
+      "실크감",
+      "레이어드"
+    ]
+  },
+  {
+    "productId": 38,
+    "prodNm": "타이다이 썸머 드레스",
+    "categoryId": "dress",
+    "price": 48000,
+    "originalPrice": 60000,
+    "desc": "트렌디한 타이다이 패턴의 썸머 드레스. 여름 휴가나 페스티벌룩으로 완벽한 개성 있는 아이템.",
+    "emoji": "👗",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블루타이다이",
+        "hex": "#7bafd4"
+      },
+      {
+        "name": "핑크타이다이",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "그린타이다이",
+        "hex": "#7ed8c4"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "타이다이",
+      "여름",
+      "페스티벌"
+    ]
+  },
+  {
+    "productId": 39,
+    "prodNm": "자수 블라우스 원피스",
+    "categoryId": "dress",
+    "price": 82000,
+    "desc": "정교한 자수 디테일이 돋보이는 블라우스 원피스. 우아하고 고급스러운 분위기를 연출합니다.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "크림",
+        "hex": "#f5f0e8"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "자수",
+      "블라우스",
+      "우아함"
+    ]
+  },
+  {
+    "productId": 40,
+    "prodNm": "랩 스타일 드레스",
+    "categoryId": "dress",
+    "price": 66000,
+    "originalPrice": 79000,
+    "desc": "여성스러운 랩 스타일의 드레스. 날씬해 보이는 실루엣으로 다양한 체형에 잘 어울립니다.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "랩드레스",
+      "여성스러움",
+      "슬림"
+    ]
+  },
+  {
+    "productId": 41,
+    "prodNm": "캔버스 토트백",
+    "categoryId": "acc",
+    "price": 35000,
+    "originalPrice": 45000,
+    "desc": "심플한 캔버스 소재의 대용량 토트백. 데일리부터 쇼핑백까지 다목적으로 활용 가능합니다.",
+    "emoji": "👜",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "토트백",
+      "캔버스",
+      "데일리"
+    ]
+  },
+  {
+    "productId": 42,
+    "prodNm": "버킷햇",
+    "categoryId": "acc",
+    "price": 22000,
+    "desc": "트렌디한 버킷햇. 야외 활동 시 자외선 차단과 함께 스타일리시한 룩을 완성해줍니다.",
+    "emoji": "🎩",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "버킷햇",
+      "모자",
+      "야외활동"
+    ]
+  },
+  {
+    "productId": 43,
+    "prodNm": "울 머플러",
+    "categoryId": "acc",
+    "price": 28000,
+    "originalPrice": 35000,
+    "desc": "부드러운 울 소재의 클래식 머플러. 겨울철 목을 따뜻하게 감싸줄 실용적인 패션 아이템.",
+    "emoji": "🧣",
+    "badge": "",
+    "colors": [
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "버건디",
+        "hex": "#7a1a2a"
+      },
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "머플러",
+      "울",
+      "겨울"
+    ]
+  },
+  {
+    "productId": 44,
+    "prodNm": "가죽 벨트",
+    "categoryId": "acc",
+    "price": 32000,
+    "desc": "클래식한 디자인의 가죽 벨트. 데님부터 슬랙스까지 어떤 하의에도 잘 어울리는 필수 아이템.",
+    "emoji": "🧷",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "벨트",
+      "가죽",
+      "클래식"
+    ]
+  },
+  {
+    "productId": 45,
+    "prodNm": "볼캡 스냅백",
+    "categoryId": "acc",
+    "price": 25000,
+    "originalPrice": 32000,
+    "desc": "캐주얼한 스트리트 감성의 볼캡 스냅백. 다양한 로고 디자인으로 개성 있는 스타일을 연출하세요.",
+    "emoji": "🧢",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "볼캡",
+      "스냅백",
+      "스트리트"
+    ]
+  },
+  {
+    "productId": 46,
+    "prodNm": "선글라스",
+    "categoryId": "acc",
+    "price": 42000,
+    "desc": "세련된 디자인의 UV차단 선글라스. 야외 활동 시 눈을 보호하면서 스타일까지 완성해드립니다.",
+    "emoji": "🕶️",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "골드",
+        "hex": "#c9a227"
+      },
+      {
+        "name": "실버",
+        "hex": "#c0c0c0"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "선글라스",
+      "UV차단",
+      "스타일"
+    ]
+  },
+  {
+    "productId": 47,
+    "prodNm": "미니 크로스백",
+    "categoryId": "acc",
+    "price": 55000,
+    "originalPrice": 68000,
+    "desc": "컴팩트한 사이즈의 미니 크로스백. 가볍게 들기 좋으며 데일리룩에 포인트를 더해줍니다.",
+    "emoji": "👛",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "크로스백",
+      "미니백",
+      "데일리"
+    ]
+  },
+  {
+    "productId": 48,
+    "prodNm": "니트 비니",
+    "categoryId": "acc",
+    "price": 18000,
+    "desc": "포근한 니트 소재의 비니. 겨울철 머리를 따뜻하게 보호하면서 캐주얼한 룩을 완성해줍니다.",
+    "emoji": "🎿",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "버건디",
+        "hex": "#7a1a2a"
+      },
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "비니",
+      "니트",
+      "겨울"
+    ]
+  },
+  {
+    "productId": 49,
+    "prodNm": "캔버스 숄더백",
+    "categoryId": "acc",
+    "price": 48000,
+    "originalPrice": 59000,
+    "desc": "넉넉한 수납공간의 캔버스 숄더백. 일상에서 학교, 쇼핑까지 다목적으로 활용 가능한 아이템.",
+    "emoji": "👜",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "숄더백",
+      "캔버스",
+      "데일리"
+    ]
+  },
+  {
+    "productId": 50,
+    "prodNm": "가죽 장갑",
+    "categoryId": "acc",
+    "price": 38000,
+    "desc": "부드러운 인조 가죽 소재의 방한 장갑. 겨울철 손을 따뜻하게 보호하면서 스타일리시한 룩을 연출합니다.",
+    "emoji": "🧤",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "장갑",
+      "가죽",
+      "겨울"
+    ]
+  },
+  {
+    "productId": 51,
+    "prodNm": "스트라이프 오버핏 티셔츠",
+    "categoryId": "tops",
+    "price": 32000,
+    "originalPrice": 42000,
+    "desc": "트렌디한 스트라이프 패턴의 오버핏 티. 여유로운 핏으로 편안하게 입을 수 있는 베이직 아이템.",
+    "emoji": "👕",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블루스트라이프",
+        "hex": "#a0b8d8"
+      },
+      {
+        "name": "그린스트라이프",
+        "hex": "#a0c8a0"
+      },
+      {
+        "name": "블랙스트라이프",
+        "hex": "#2a2a2a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "스트라이프",
+      "오버핏",
+      "베이직"
+    ]
+  },
+  {
+    "productId": 52,
+    "prodNm": "컬러블록 니트 탑",
+    "categoryId": "tops",
+    "price": 38000,
+    "desc": "세련된 컬러블록 디자인의 크롭 니트 탑. 하이웨이스트 하의와 매칭하면 완벽한 룩을 완성합니다.",
+    "emoji": "🧶",
+    "badge": "",
+    "colors": [
+      {
+        "name": "크림블랙",
+        "hex": "#f0efe8"
+      },
+      {
+        "name": "핑크네이비",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "화이트레드",
+        "hex": "#f5f0eb"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "컬러블록",
+      "니트",
+      "크롭"
+    ]
+  },
+  {
+    "productId": 53,
+    "prodNm": "린넨 루즈핏 셔츠",
+    "categoryId": "tops",
+    "price": 48000,
+    "originalPrice": 60000,
+    "desc": "고급 린넨 소재의 루즈핏 셔츠. 통기성이 뛰어나 여름철 시원하게 입을 수 있습니다.",
+    "emoji": "👔",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "블루",
+        "hex": "#5a8abf"
+      },
+      {
+        "name": "그린",
+        "hex": "#5a8a5a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "린넨",
+      "루즈핏",
+      "여름"
+    ]
+  },
+  {
+    "productId": 54,
+    "prodNm": "스퀘어넥 리브 탑",
+    "categoryId": "tops",
+    "price": 22000,
+    "desc": "여성스러운 스퀘어넥 디자인의 리브 탑. 다양한 아우터와 레이어드하기 좋은 베이직 아이템.",
+    "emoji": "👕",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "라벤더",
+        "hex": "#c8b0d8"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "스퀘어넥",
+      "리브",
+      "베이직"
+    ]
+  },
+  {
+    "productId": 55,
+    "prodNm": "집업 후드 티셔츠",
+    "categoryId": "tops",
+    "price": 55000,
+    "originalPrice": 70000,
+    "desc": "가볍고 편안한 집업 후드 티셔츠. 스포티한 감성과 캐주얼함을 동시에 연출할 수 있습니다.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "집업",
+      "후드",
+      "스포티"
+    ]
+  },
+  {
+    "productId": 56,
+    "prodNm": "프린트 그래픽 티셔츠",
+    "categoryId": "tops",
+    "price": 28000,
+    "desc": "트렌디한 그래픽 프린트의 반팔 티셔츠. 독특한 디자인으로 개성 있는 스타일을 연출하세요.",
+    "emoji": "👕",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "그래픽",
+      "프린트",
+      "캐주얼"
+    ]
+  },
+  {
+    "productId": 57,
+    "prodNm": "오프숄더 니트 탑",
+    "categoryId": "tops",
+    "price": 42000,
+    "originalPrice": 55000,
+    "desc": "어깨를 살짝 드러낸 오프숄더 니트 탑. 여성스러운 실루엣으로 특별한 날에 어울립니다.",
+    "emoji": "🧶",
+    "badge": "",
+    "colors": [
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "오프숄더",
+      "니트",
+      "여성스러움"
+    ]
+  },
+  {
+    "productId": 58,
+    "prodNm": "터틀넥 슬림 스웨터",
+    "categoryId": "tops",
+    "price": 52000,
+    "desc": "목을 따뜻하게 감싸주는 터틀넥 스웨터. 슬림한 핏으로 날씬한 실루엣을 완성합니다.",
+    "emoji": "🧶",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "터틀넥",
+      "슬림핏",
+      "겨울"
+    ]
+  },
+  {
+    "productId": 59,
+    "prodNm": "레이스 트림 블라우스",
+    "categoryId": "tops",
+    "price": 45000,
+    "originalPrice": 58000,
+    "desc": "섬세한 레이스 트림 디테일의 여성스러운 블라우스. 오피스룩과 데이트룩으로 모두 완벽합니다.",
+    "emoji": "👔",
+    "badge": "",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "크림",
+        "hex": "#f5f0e8"
+      },
+      {
+        "name": "라이트블루",
+        "hex": "#b0c8e0"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "레이스",
+      "블라우스",
+      "여성스러움"
+    ]
+  },
+  {
+    "productId": 60,
+    "prodNm": "보더 스트라이프 티",
+    "categoryId": "tops",
+    "price": 24000,
+    "desc": "클래식한 보더 스트라이프 패턴의 반팔 티셔츠. 심플하면서도 스타일리시한 데일리 아이템.",
+    "emoji": "👕",
+    "badge": "",
+    "colors": [
+      {
+        "name": "화이트네이비",
+        "hex": "#e8eef5"
+      },
+      {
+        "name": "화이트레드",
+        "hex": "#f0e0e0"
+      },
+      {
+        "name": "화이트블랙",
+        "hex": "#f0f0f0"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "보더",
+      "스트라이프",
+      "데일리"
+    ]
+  },
+  {
+    "productId": 61,
+    "prodNm": "크롭 데님 재킷 셔츠",
+    "categoryId": "tops",
+    "price": 68000,
+    "originalPrice": 85000,
+    "desc": "데님 소재로 제작된 크롭 길이의 재킷형 셔츠. 다양한 하의와 매칭하기 좋은 트렌디 아이템.",
+    "emoji": "👔",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "라이트데님",
+        "hex": "#7bafd4"
+      },
+      {
+        "name": "미드데님",
+        "hex": "#3f6fa8"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "데님",
+      "크롭",
+      "재킷"
+    ]
+  },
+  {
+    "productId": 62,
+    "prodNm": "슬리브리스 니트 베스트",
+    "categoryId": "tops",
+    "price": 35000,
+    "desc": "트렌디한 슬리브리스 니트 베스트. 셔츠나 블라우스 위에 레이어드해서 스타일리시하게 활용하세요.",
+    "emoji": "🧶",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "슬리브리스",
+      "베스트",
+      "레이어드"
+    ]
+  },
+  {
+    "productId": 63,
+    "prodNm": "와이드 데님 진",
+    "categoryId": "bottoms",
+    "price": 65000,
+    "originalPrice": 82000,
+    "desc": "트렌디한 와이드 핏 데님 진. 넉넉하고 편안한 착용감으로 일상에서 활용도가 높습니다.",
+    "emoji": "👖",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "라이트블루",
+        "hex": "#7bafd4"
+      },
+      {
+        "name": "미드블루",
+        "hex": "#3f6fa8"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "와이드",
+      "데님",
+      "편안함"
+    ]
+  },
+  {
+    "productId": 64,
+    "prodNm": "테이퍼드 슬랙스",
+    "categoryId": "bottoms",
+    "price": 55000,
+    "desc": "스마트한 테이퍼드 핏의 오피스 슬랙스. 세련된 실루엣으로 다양한 상의와 잘 어울립니다.",
+    "emoji": "👖",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "차콜",
+        "hex": "#3a3a3a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "테이퍼드",
+      "슬랙스",
+      "오피스"
+    ]
+  },
+  {
+    "productId": 65,
+    "prodNm": "미디 A라인 스커트",
+    "categoryId": "bottoms",
+    "price": 42000,
+    "originalPrice": 54000,
+    "desc": "우아한 A라인 실루엣의 미디 스커트. 다양한 체형에 잘 어울리며 여성스러운 룩을 완성합니다.",
+    "emoji": "👗",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "A라인",
+      "미디",
+      "스커트"
+    ]
+  },
+  {
+    "productId": 66,
+    "prodNm": "핀턱 와이드 팬츠",
+    "categoryId": "bottoms",
+    "price": 58000,
+    "desc": "고급스러운 핀턱 디테일의 와이드 팬츠. 드레시하면서도 편안한 착용감이 특징입니다.",
+    "emoji": "👖",
+    "badge": "",
+    "colors": [
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "핀턱",
+      "와이드",
+      "드레시"
+    ]
+  },
+  {
+    "productId": 67,
+    "prodNm": "레이스 롱 스커트",
+    "categoryId": "bottoms",
+    "price": 52000,
+    "originalPrice": 65000,
+    "desc": "섬세한 레이스 소재의 로맨틱 롱 스커트. 여성스러운 실루엣으로 특별한 날 더 빛납니다.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "레이스",
+      "롱스커트",
+      "로맨틱"
+    ]
+  },
+  {
+    "productId": 68,
+    "prodNm": "데님 미니 스커트",
+    "categoryId": "bottoms",
+    "price": 35000,
+    "desc": "클래식한 데님 소재의 미니 스커트. 캐주얼하면서도 세련된 데일리 룩을 완성해드립니다.",
+    "emoji": "👗",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "라이트블루",
+        "hex": "#7bafd4"
+      },
+      {
+        "name": "미드블루",
+        "hex": "#3f6fa8"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "데님",
+      "미니",
+      "캐주얼"
+    ]
+  },
+  {
+    "productId": 69,
+    "prodNm": "코르셋 웨이스트 팬츠",
+    "categoryId": "bottoms",
+    "price": 62000,
+    "originalPrice": 78000,
+    "desc": "허리를 강조하는 코르셋 디테일의 팬츠. 페미닌한 실루엣으로 특별한 룩을 연출합니다.",
+    "emoji": "👖",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "코르셋",
+      "웨이스트",
+      "페미닌"
+    ]
+  },
+  {
+    "productId": 70,
+    "prodNm": "플로럴 롱 스커트",
+    "categoryId": "bottoms",
+    "price": 48000,
+    "desc": "화사한 플로럴 패턴의 로맨틱 롱 스커트. 봄여름 나들이에 완벽한 여성스러운 아이템.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "핑크플로럴",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "블루플로럴",
+        "hex": "#a0b8e8"
+      },
+      {
+        "name": "화이트플로럴",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "플로럴",
+      "롱스커트",
+      "봄"
+    ]
+  },
+  {
+    "productId": 71,
+    "prodNm": "버뮤다 쇼츠",
+    "categoryId": "bottoms",
+    "price": 38000,
+    "originalPrice": 48000,
+    "desc": "무릎 위 기장의 버뮤다 쇼츠. 캐주얼하면서도 시크한 여름 하의 필수 아이템입니다.",
+    "emoji": "🩳",
+    "badge": "",
+    "colors": [
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "버뮤다",
+      "쇼츠",
+      "여름"
+    ]
+  },
+  {
+    "productId": 72,
+    "prodNm": "실크 와이드 팬츠",
+    "categoryId": "bottoms",
+    "price": 78000,
+    "desc": "고급스러운 실크 감촉의 와이드 팬츠. 드레시하면서도 편안한 착용감으로 특별한 자리에 어울립니다.",
+    "emoji": "👖",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "샴페인",
+        "hex": "#f0e8d0"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "실크",
+      "와이드",
+      "드레시"
+    ]
+  },
+  {
+    "productId": 73,
+    "prodNm": "싱글 버튼 롱코트",
+    "categoryId": "outer",
+    "price": 149000,
+    "originalPrice": 189000,
+    "desc": "클래식한 싱글 버튼 디자인의 미들 롱코트. 세련된 실루엣으로 가을겨울 코디를 완성합니다.",
+    "emoji": "🧥",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "롱코트",
+      "싱글버튼",
+      "클래식"
+    ]
+  },
+  {
+    "productId": 74,
+    "prodNm": "오버사이즈 트렌치코트",
+    "categoryId": "outer",
+    "price": 135000,
+    "desc": "여유로운 오버사이즈 핏의 클래식 트렌치코트. 어떤 코디에도 완성도를 높여주는 시즌리스 아우터.",
+    "emoji": "🧥",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "트렌치코트",
+      "오버사이즈",
+      "시즌리스"
+    ]
+  },
+  {
+    "productId": 75,
+    "prodNm": "숏 울 코트",
+    "categoryId": "outer",
+    "price": 125000,
+    "originalPrice": 158000,
+    "desc": "고급 울 소재의 숏 기장 코트. 깔끔한 디자인으로 캐주얼부터 오피스룩까지 활용 가능합니다.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "울코트",
+      "숏",
+      "겨울"
+    ]
+  },
+  {
+    "productId": 76,
+    "prodNm": "스타디움 점퍼",
+    "categoryId": "outer",
+    "price": 92000,
+    "desc": "클래식한 스타디움 점퍼. 스포티한 감성과 캐주얼한 스타일을 동시에 연출하는 트렌디 아우터.",
+    "emoji": "🧥",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙화이트",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "네이비화이트",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "버건디화이트",
+        "hex": "#7a1a2a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "스타디움",
+      "점퍼",
+      "스포티"
+    ]
+  },
+  {
+    "productId": 77,
+    "prodNm": "벨트 미들 코트",
+    "categoryId": "outer",
+    "price": 168000,
+    "originalPrice": 210000,
+    "desc": "우아한 벨트 디테일의 미들 기장 코트. 허리를 강조하는 실루엣으로 날씬하고 세련된 룩을 완성합니다.",
+    "emoji": "🧥",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "벨트코트",
+      "미들",
+      "우아함"
+    ]
+  },
+  {
+    "productId": 78,
+    "prodNm": "청 오버핏 재킷",
+    "categoryId": "outer",
+    "price": 75000,
+    "originalPrice": 95000,
+    "desc": "트렌디한 오버핏 청 재킷. 다양한 코디에 포인트가 되는 데일리 아우터 필수 아이템.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "라이트블루",
+        "hex": "#7bafd4"
+      },
+      {
+        "name": "미드블루",
+        "hex": "#3f6fa8"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tags": [
+      "청재킷",
+      "오버핏",
+      "데일리"
+    ]
+  },
+  {
+    "productId": 79,
+    "prodNm": "패딩 더플 코트",
+    "categoryId": "outer",
+    "price": 185000,
+    "desc": "따뜻하고 실용적인 패딩 더플 코트. 클래식한 토글 버튼 디자인으로 개성 있는 겨울 룩을 완성합니다.",
+    "emoji": "🧥",
+    "badge": "",
+    "colors": [
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "더플코트",
+      "패딩",
+      "겨울"
+    ]
+  },
+  {
+    "productId": 80,
+    "prodNm": "숏 가죽 재킷",
+    "categoryId": "outer",
+    "price": 158000,
+    "originalPrice": 198000,
+    "desc": "세련된 숏 기장의 인조 가죽 재킷. 강렬한 인상을 주는 트렌디한 아우터로 다양한 코디에 활용하세요.",
+    "emoji": "🧥",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "가죽재킷",
+      "숏",
+      "트렌디"
+    ]
+  },
+  {
+    "productId": 81,
+    "prodNm": "스모크 맥시 드레스",
+    "categoryId": "dress",
+    "price": 89000,
+    "originalPrice": 115000,
+    "desc": "낭만적인 스모크 디테일의 맥시 기장 드레스. 여름 리조트룩이나 야외 파티에 완벽한 아이템.",
+    "emoji": "👗",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "블루",
+        "hex": "#87b8d8"
+      },
+      {
+        "name": "로즈",
+        "hex": "#d8a0a8"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "스모크",
+      "맥시",
+      "로맨틱"
+    ]
+  },
+  {
+    "productId": 82,
+    "prodNm": "A라인 미니 드레스",
+    "categoryId": "dress",
+    "price": 62000,
+    "desc": "사랑스러운 A라인 실루엣의 미니 드레스. 귀엽고 발랄한 룩을 완성해주는 여름 필수 아이템.",
+    "emoji": "👗",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "민트",
+        "hex": "#7ed8c4"
+      },
+      {
+        "name": "블루",
+        "hex": "#87ceeb"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "A라인",
+      "미니드레스",
+      "발랄함"
+    ]
+  },
+  {
+    "productId": 83,
+    "prodNm": "리넨 셔츠 드레스",
+    "categoryId": "dress",
+    "price": 75000,
+    "originalPrice": 92000,
+    "desc": "시원한 리넨 소재의 셔츠 드레스. 캐주얼하면서도 세련된 여름 데이트룩으로 완벽합니다.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "스트라이프",
+        "hex": "#e8eef5"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "린넨",
+      "셔츠드레스",
+      "캐주얼"
+    ]
+  },
+  {
+    "productId": 84,
+    "prodNm": "벨벳 이브닝 드레스",
+    "categoryId": "dress",
+    "price": 135000,
+    "desc": "고급스러운 벨벳 소재의 이브닝 드레스. 파티나 특별한 행사에 화려하고 우아한 룩을 완성합니다.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "벨벳",
+      "이브닝",
+      "파티룩"
+    ]
+  },
+  {
+    "productId": 85,
+    "prodNm": "자카드 미디 드레스",
+    "categoryId": "dress",
+    "price": 98000,
+    "originalPrice": 125000,
+    "desc": "화려한 자카드 패턴의 미디 기장 드레스. 고급스러운 소재감으로 특별한 날 완벽한 선택입니다.",
+    "emoji": "👗",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "와인",
+        "hex": "#722f37"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "자카드",
+      "미디",
+      "고급스러움"
+    ]
+  },
+  {
+    "productId": 86,
+    "prodNm": "레이어드 튤 드레스",
+    "categoryId": "dress",
+    "price": 88000,
+    "desc": "몽환적인 튤 레이어드 디자인의 드레스. 파티나 특별한 날을 더욱 빛나게 해주는 로맨틱 아이템.",
+    "emoji": "👗",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "라벤더",
+        "hex": "#c8b0d8"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "튤",
+      "레이어드",
+      "로맨틱"
+    ]
+  },
+  {
+    "productId": 87,
+    "prodNm": "집업 니트 드레스",
+    "categoryId": "dress",
+    "price": 69000,
+    "originalPrice": 88000,
+    "desc": "실용적인 집업 디테일의 니트 드레스. 편안하면서도 스타일리시한 가을겨울 원피스 아이템.",
+    "emoji": "👗",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "카멜",
+        "hex": "#c19a6b"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "tags": [
+      "집업",
+      "니트드레스",
+      "가을겨울"
+    ]
+  },
+  {
+    "productId": 88,
+    "prodNm": "도트 프릴 드레스",
+    "categoryId": "dress",
+    "price": 72000,
+    "desc": "러블리한 도트 패턴과 프릴 디테일의 미니 드레스. 귀엽고 사랑스러운 룩을 완성해드립니다.",
+    "emoji": "👗",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙도트",
+        "hex": "#2a2a2a"
+      },
+      {
+        "name": "핑크도트",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "네이비도트",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "tags": [
+      "도트",
+      "프릴",
+      "러블리"
+    ]
+  },
+  {
+    "productId": 89,
+    "prodNm": "레더 숄더백",
+    "categoryId": "acc",
+    "price": 89000,
+    "originalPrice": 112000,
+    "desc": "클래식한 디자인의 인조 레더 숄더백. 넉넉한 수납공간과 실용적인 구조로 데일리 백으로 최적입니다.",
+    "emoji": "👜",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "레더",
+      "숄더백",
+      "데일리"
+    ]
+  },
+  {
+    "productId": 90,
+    "prodNm": "캐주얼 백팩",
+    "categoryId": "acc",
+    "price": 65000,
+    "desc": "가볍고 실용적인 캐주얼 백팩. 넉넉한 수납 공간과 내구성 있는 소재로 일상에서 활용하기 좋습니다.",
+    "emoji": "🎒",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "그레이",
+        "hex": "#8a8a8a"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "백팩",
+      "캐주얼",
+      "실용적"
+    ]
+  },
+  {
+    "productId": 91,
+    "prodNm": "이브닝 클러치백",
+    "categoryId": "acc",
+    "price": 45000,
+    "originalPrice": 58000,
+    "desc": "세련된 디자인의 이브닝 클러치백. 파티나 특별한 자리에 완벽하게 어울리는 액세서리 백.",
+    "emoji": "👛",
+    "badge": "",
+    "colors": [
+      {
+        "name": "골드",
+        "hex": "#c9a227"
+      },
+      {
+        "name": "실버",
+        "hex": "#c0c0c0"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "클러치",
+      "이브닝",
+      "파티"
+    ]
+  },
+  {
+    "productId": 92,
+    "prodNm": "버킷백",
+    "categoryId": "acc",
+    "price": 72000,
+    "desc": "트렌디한 버킷 형태의 패션백. 넉넉한 수납과 스타일리시한 디자인으로 코디 포인트를 더합니다.",
+    "emoji": "👜",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "카키",
+        "hex": "#6b7c4a"
+      },
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "버킷백",
+      "트렌디",
+      "패션"
+    ]
+  },
+  {
+    "productId": 93,
+    "prodNm": "체인 미니백",
+    "categoryId": "acc",
+    "price": 55000,
+    "originalPrice": 69000,
+    "desc": "체인 스트랩이 포인트인 미니 크로스백. 컴팩트한 사이즈로 가볍게 들기 좋으며 코디 완성도를 높입니다.",
+    "emoji": "👛",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "화이트",
+        "hex": "#f5f0eb"
+      },
+      {
+        "name": "골드",
+        "hex": "#c9a227"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "체인백",
+      "미니백",
+      "크로스"
+    ]
+  },
+  {
+    "productId": 94,
+    "prodNm": "링 이어링 세트",
+    "categoryId": "acc",
+    "price": 18000,
+    "desc": "다양한 크기의 링 이어링 3쌍 세트. 레이어드해서 착용하기 좋은 트렌디한 귀걸이 세트.",
+    "emoji": "💍",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "골드",
+        "hex": "#c9a227"
+      },
+      {
+        "name": "실버",
+        "hex": "#c0c0c0"
+      },
+      {
+        "name": "로즈골드",
+        "hex": "#e8b4b8"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "이어링",
+      "링",
+      "레이어드"
+    ]
+  },
+  {
+    "productId": 95,
+    "prodNm": "스카프",
+    "categoryId": "acc",
+    "price": 32000,
+    "originalPrice": 42000,
+    "desc": "부드러운 소재의 다용도 스카프. 목에 두르거나 헤어밴드로 활용하는 등 다양하게 코디할 수 있습니다.",
+    "emoji": "🧣",
+    "badge": "",
+    "colors": [
+      {
+        "name": "플로럴핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "체크베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "스트라이프블루",
+        "hex": "#7bafd4"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "스카프",
+      "다용도",
+      "코디"
+    ]
+  },
+  {
+    "productId": 96,
+    "prodNm": "페도라 햇",
+    "categoryId": "acc",
+    "price": 38000,
+    "desc": "클래식한 페도라 햇. 다양한 패션 스타일에 포인트를 더해주는 트렌디한 모자 아이템.",
+    "emoji": "🎩",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "베이지",
+        "hex": "#d4b896"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "페도라",
+      "햇",
+      "포인트"
+    ]
+  },
+  {
+    "productId": 97,
+    "prodNm": "체인 목걸이",
+    "categoryId": "acc",
+    "price": 22000,
+    "originalPrice": 29000,
+    "desc": "심플하면서도 세련된 체인 목걸이. 어떤 의상과도 잘 어울리는 기본 주얼리 아이템.",
+    "emoji": "📿",
+    "badge": "",
+    "colors": [
+      {
+        "name": "골드",
+        "hex": "#c9a227"
+      },
+      {
+        "name": "실버",
+        "hex": "#c0c0c0"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "목걸이",
+      "체인",
+      "주얼리"
+    ]
+  },
+  {
+    "productId": 98,
+    "prodNm": "레더 카드 홀더",
+    "categoryId": "acc",
+    "price": 25000,
+    "desc": "슬림하고 실용적인 인조 레더 카드 홀더. 카드 4~6장을 수납할 수 있어 미니멀한 생활에 완벽합니다.",
+    "emoji": "🧳",
+    "badge": "NEW",
+    "colors": [
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "브라운",
+        "hex": "#8b5a2b"
+      },
+      {
+        "name": "네이비",
+        "hex": "#1e3a5f"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "카드홀더",
+      "레더",
+      "미니멀"
+    ]
+  },
+  {
+    "productId": 99,
+    "prodNm": "헤어밴드 세트",
+    "categoryId": "acc",
+    "price": 15000,
+    "originalPrice": 20000,
+    "desc": "다양한 디자인의 헤어밴드 3개 세트. 매일 다른 스타일로 헤어를 꾸밀 수 있는 실용적인 아이템.",
+    "emoji": "🎀",
+    "badge": "",
+    "colors": [
+      {
+        "name": "블랙세트",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "파스텔세트",
+        "hex": "#e8d8f0"
+      },
+      {
+        "name": "베이지세트",
+        "hex": "#d4b896"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "헤어밴드",
+      "세트",
+      "헤어액세서리"
+    ]
+  },
+  {
+    "productId": 100,
+    "prodNm": "니트 핸드폰 케이스",
+    "categoryId": "acc",
+    "price": 19000,
+    "desc": "트렌디한 니트 텍스처의 핸드폰 케이스. 다양한 기종에 맞는 사이즈로 개성 있는 스타일을 연출하세요.",
+    "emoji": "📱",
+    "badge": "인기",
+    "colors": [
+      {
+        "name": "아이보리",
+        "hex": "#f5f0e0"
+      },
+      {
+        "name": "블랙",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "핑크",
+        "hex": "#e8a0b4"
+      },
+      {
+        "name": "민트",
+        "hex": "#7ed8c4"
+      }
+    ],
+    "sizes": [
+      "FREE"
+    ],
+    "tags": [
+      "핸드폰케이스",
+      "니트",
+      "트렌디"
+    ]
+  }
 ]
