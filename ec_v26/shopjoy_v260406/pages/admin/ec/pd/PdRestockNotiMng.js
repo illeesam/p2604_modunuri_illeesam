@@ -3,6 +3,9 @@ window.PdRestockNotiMng = {
   name: 'PdRestockNotiMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const data = window.adminData || {};
+    const products = ref(data.products || []);
+    const members = ref(data.members || []);
     const { ref, reactive, computed, onMounted } = Vue;
     const restockNotis = ref([]);
     const loading = ref(false);

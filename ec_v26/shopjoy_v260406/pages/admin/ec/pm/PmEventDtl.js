@@ -4,6 +4,8 @@ window.PmEventDtl = {
   name: 'PmEventDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const data = window.adminData || {};
+    const products = ref(data.products || []);
     const events = ref([]);
     const loading = ref(false);
     const error = ref(null);

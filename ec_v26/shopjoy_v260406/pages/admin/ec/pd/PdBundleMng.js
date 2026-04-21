@@ -4,6 +4,11 @@ window.PdBundleMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const data = window.adminData || {};
+    const categories = ref(data.categories || []);
+    const products = ref(data.products || []);
+    const brands = ref(data.brands || []);
+    const categoryProds = ref(data.categoryProds || []);
     const bundles = ref([]);
     const loading = ref(false);
     const error = ref(null);
@@ -317,10 +322,11 @@ window.PdBundleMng = {
     const descOpen = ref(false);
 
     return {
-      descOpen,
+      descOpen, bundles, loading, error, bundleList,
       searchNm, pager, pageNums, totalPages, setPage, totalCnt, pageList,
       onSearch, onReset, rateSum, rateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,
+      categories, products, brands, categoryProds,
       dtlCategories, catPickerOpen, catPickerSearch, catPickerList,
       addCategory, removeCategory, catDragIdx, catDragoverIdx, onCatDragStart, onCatDragOver, onCatDrop,
       dtlMode, editBundleId, newForm, newErrors,

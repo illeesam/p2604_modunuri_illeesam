@@ -3,6 +3,10 @@ window.PdSetMng = {
   name: 'PdSetMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const data = window.adminData || {};
+    const products = ref(data.products || []);
+    const brands = ref(data.brands || []);
+    const categoryProds = ref(data.categoryProds || []);
     const { ref, reactive, computed, onMounted } = Vue;
     const sets = ref([]);
     const loading = ref(false);

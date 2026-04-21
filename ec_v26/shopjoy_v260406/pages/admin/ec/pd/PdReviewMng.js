@@ -3,6 +3,9 @@ window.PdReviewMng = {
   name: 'PdReviewMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const data = window.adminData || {};
+    const products = ref(data.products || []);
+    const members = ref(data.members || []);
     const { ref, reactive, computed, onMounted } = Vue;
     const reviews = ref([]);
     const loading = ref(false);
