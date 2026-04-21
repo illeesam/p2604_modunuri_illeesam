@@ -21,10 +21,10 @@
     <!-- 바우처(상품권) 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto">
         SELECT
-            v.*,
-            ste.site_nm AS site_nm,
-            cd_vt.code_label AS voucher_type_cd_nm,
-            cd_vs.code_label AS voucher_status_cd_nm
+              v.*
+            , ste.site_nm AS site_nm
+            , cd_vt.code_label AS voucher_type_cd_nm
+            , cd_vs.code_label AS voucher_status_cd_nm
         FROM pm_voucher v
             LEFT JOIN sy_site ste ON ste.site_id = v.site_id
             LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VOUCHER_TYPE' AND cd_vt.code_value = v.voucher_type_cd
@@ -35,10 +35,10 @@
     <!-- 바우처(상품권) 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto">
         SELECT
-            v.*,
-            ste.site_nm AS site_nm,
-            cd_vt.code_label AS voucher_type_cd_nm,
-            cd_vs.code_label AS voucher_status_cd_nm
+              v.*
+            , ste.site_nm AS site_nm
+            , cd_vt.code_label AS voucher_type_cd_nm
+            , cd_vs.code_label AS voucher_status_cd_nm
         FROM pm_voucher v
             LEFT JOIN sy_site ste ON ste.site_id = v.site_id
             LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VOUCHER_TYPE' AND cd_vt.code_value = v.voucher_type_cd
@@ -59,10 +59,10 @@
     <!-- 바우처(상품권) 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto">
         SELECT
-            v.*,
-            ste.site_nm AS site_nm,
-            cd_vt.code_label AS voucher_type_cd_nm,
-            cd_vs.code_label AS voucher_status_cd_nm
+              v.*
+            , ste.site_nm AS site_nm
+            , cd_vt.code_label AS voucher_type_cd_nm
+            , cd_vs.code_label AS voucher_status_cd_nm
         FROM pm_voucher v
             LEFT JOIN sy_site ste ON ste.site_id = v.site_id
             LEFT JOIN sy_code cd_vt ON cd_vt.code_grp = 'VOUCHER_TYPE' AND cd_vt.code_value = v.voucher_type_cd

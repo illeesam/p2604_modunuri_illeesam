@@ -21,9 +21,9 @@
     <!-- 사이트 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
         SELECT
-            s.*,
-            cd_st.code_label AS site_type_cd_nm,
-            cd_ss.code_label AS site_status_cd_nm
+              s.*
+            , cd_st.code_label AS site_type_cd_nm
+            , cd_ss.code_label AS site_status_cd_nm
         FROM sy_site s
             LEFT JOIN sy_code cd_st ON cd_st.code_grp = 'SITE_TYPE' AND cd_st.code_value = s.site_type_cd
             LEFT JOIN sy_code cd_ss ON cd_ss.code_grp = 'SITE_STATUS' AND cd_ss.code_value = s.site_status_cd
@@ -33,9 +33,9 @@
     <!-- 사이트 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
         SELECT
-            s.*,
-            cd_st.code_label AS site_type_cd_nm,
-            cd_ss.code_label AS site_status_cd_nm
+              s.*
+            , cd_st.code_label AS site_type_cd_nm
+            , cd_ss.code_label AS site_status_cd_nm
         FROM sy_site s
             LEFT JOIN sy_code cd_st ON cd_st.code_grp = 'SITE_TYPE' AND cd_st.code_value = s.site_type_cd
             LEFT JOIN sy_code cd_ss ON cd_ss.code_grp = 'SITE_STATUS' AND cd_ss.code_value = s.site_status_cd
@@ -55,9 +55,9 @@
     <!-- 사이트 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
         SELECT
-            s.*,
-            cd_st.code_label AS site_type_cd_nm,
-            cd_ss.code_label AS site_status_cd_nm
+              s.*
+            , cd_st.code_label AS site_type_cd_nm
+            , cd_ss.code_label AS site_status_cd_nm
         FROM sy_site s
             LEFT JOIN sy_code cd_st ON cd_st.code_grp = 'SITE_TYPE' AND cd_st.code_value = s.site_type_cd
             LEFT JOIN sy_code cd_ss ON cd_ss.code_grp = 'SITE_STATUS' AND cd_ss.code_value = s.site_status_cd

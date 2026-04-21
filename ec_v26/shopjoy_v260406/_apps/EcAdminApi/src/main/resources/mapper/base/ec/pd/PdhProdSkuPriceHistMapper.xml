@@ -16,9 +16,9 @@
     <!-- 상품 SKU 가격 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuPriceHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
         FROM pdh_prod_sku_price_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = h.prod_id
@@ -28,9 +28,9 @@
     <!-- 상품 SKU 가격 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuPriceHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
         FROM pdh_prod_sku_price_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = h.prod_id
@@ -48,9 +48,9 @@
     <!-- 상품 SKU 가격 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuPriceHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
         FROM pdh_prod_sku_price_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = h.prod_id

@@ -24,11 +24,11 @@
     <!-- 쿠폰 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto">
         SELECT
-            c.*,
-            cd_ct.code_label AS coupon_type_cd_nm,
-            cd_cs.code_label AS coupon_status_cd_nm,
-            cd_tt.code_label AS target_type_cd_nm,
-            cd_mg.code_label AS mem_grade_cd_nm
+              c.*
+            , cd_ct.code_label AS coupon_type_cd_nm
+            , cd_cs.code_label AS coupon_status_cd_nm
+            , cd_tt.code_label AS target_type_cd_nm
+            , cd_mg.code_label AS mem_grade_cd_nm
         FROM pm_coupon c
             LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'COUPON_TYPE'   AND cd_ct.code_value = c.coupon_type_cd
             LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'COUPON_STATUS' AND cd_cs.code_value = c.coupon_status_cd
@@ -40,10 +40,10 @@
     <!-- 쿠폰 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto">
         SELECT
-            c.*,
-            cd_ct.code_label AS coupon_type_cd_nm,
-            cd_cs.code_label AS coupon_status_cd_nm,
-            cd_mg.code_label AS mem_grade_cd_nm
+              c.*
+            , cd_ct.code_label AS coupon_type_cd_nm
+            , cd_cs.code_label AS coupon_status_cd_nm
+            , cd_mg.code_label AS mem_grade_cd_nm
         FROM pm_coupon c
             LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'COUPON_TYPE'   AND cd_ct.code_value = c.coupon_type_cd
             LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'COUPON_STATUS' AND cd_cs.code_value = c.coupon_status_cd
@@ -64,10 +64,10 @@
     <!-- 쿠폰 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto">
         SELECT
-            c.*,
-            cd_ct.code_label AS coupon_type_cd_nm,
-            cd_cs.code_label AS coupon_status_cd_nm,
-            cd_mg.code_label AS mem_grade_cd_nm
+              c.*
+            , cd_ct.code_label AS coupon_type_cd_nm
+            , cd_cs.code_label AS coupon_status_cd_nm
+            , cd_mg.code_label AS mem_grade_cd_nm
         FROM pm_coupon c
             LEFT JOIN sy_code cd_ct ON cd_ct.code_grp = 'COUPON_TYPE'   AND cd_ct.code_value = c.coupon_type_cd
             LEFT JOIN sy_code cd_cs ON cd_cs.code_grp = 'COUPON_STATUS' AND cd_cs.code_value = c.coupon_status_cd
@@ -116,8 +116,8 @@
     <!-- 쿠폰 ID로 발행 이력 조회 -->
     <select id="selectIssuesByCouponId" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto">
         SELECT
-            ci.*,
-            m.member_nm,    m.member_email
+              ci.*
+            , m.member_nm,    m.member_email
         FROM pm_coupon_issue ci
             LEFT JOIN mb_member m ON m.member_id = ci.member_id
         WHERE ci.coupon_id = #{couponId}

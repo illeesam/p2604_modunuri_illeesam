@@ -17,8 +17,8 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm
+              l.*
+            , ste.site_nm AS site_nm
         FROM pdh_prod_view_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
         WHERE l.log_id = #{id}
@@ -26,8 +26,8 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm
+              l.*
+            , ste.site_nm AS site_nm
         FROM pdh_prod_view_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             <include refid="pdhProdViewLogCond"/>
@@ -45,8 +45,8 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm
+              l.*
+            , ste.site_nm AS site_nm
         FROM pdh_prod_view_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             <include refid="pdhProdViewLogCond"/>

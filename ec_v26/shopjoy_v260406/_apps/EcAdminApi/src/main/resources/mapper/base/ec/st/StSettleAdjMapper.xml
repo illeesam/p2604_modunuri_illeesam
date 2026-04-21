@@ -17,9 +17,9 @@
     <!-- 정산 조정 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto">
         SELECT
-            a.*,
-            ste.site_nm AS site_nm,
-            cd_sat.code_label AS adj_type_cd_nm
+              a.*
+            , ste.site_nm AS site_nm
+            , cd_sat.code_label AS adj_type_cd_nm
         FROM st_settle_adj a
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
             LEFT JOIN sy_code cd_sat ON cd_sat.code_grp = 'SETTLE_ADJ_TYPE' AND cd_sat.code_value = a.adj_type_cd
@@ -29,9 +29,9 @@
     <!-- 정산 조정 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto">
         SELECT
-            a.*,
-            ste.site_nm AS site_nm,
-            cd_sat.code_label AS adj_type_cd_nm
+              a.*
+            , ste.site_nm AS site_nm
+            , cd_sat.code_label AS adj_type_cd_nm
         FROM st_settle_adj a
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
             LEFT JOIN sy_code cd_sat ON cd_sat.code_grp = 'SETTLE_ADJ_TYPE' AND cd_sat.code_value = a.adj_type_cd
@@ -49,9 +49,9 @@
     <!-- 정산 조정 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto">
         SELECT
-            a.*,
-            ste.site_nm AS site_nm,
-            cd_sat.code_label AS adj_type_cd_nm
+              a.*
+            , ste.site_nm AS site_nm
+            , cd_sat.code_label AS adj_type_cd_nm
         FROM st_settle_adj a
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
             LEFT JOIN sy_code cd_sat ON cd_sat.code_grp = 'SETTLE_ADJ_TYPE' AND cd_sat.code_value = a.adj_type_cd

@@ -26,10 +26,10 @@
     <!-- 회원 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto">
         SELECT
-            m.*,
-            s.site_nm,
-            cd_gr.code_label AS grade_cd_nm,
-            cd_ms.code_label AS member_status_cd_nm
+              m.*
+            , s.site_nm
+            , cd_gr.code_label AS grade_cd_nm
+            , cd_ms.code_label AS member_status_cd_nm
         FROM mb_member m
             LEFT JOIN sy_site  s    ON s.site_id    = m.site_id
             LEFT JOIN sy_code cd_gr ON cd_gr.code_grp = 'MEMBER_GRADE'  AND cd_gr.code_value = m.grade_cd
@@ -40,10 +40,10 @@
     <!-- 회원 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto">
         SELECT
-            m.*,
-            s.site_nm,
-            cd_gr.code_label AS grade_cd_nm,
-            cd_ms.code_label AS member_status_cd_nm
+              m.*
+            , s.site_nm
+            , cd_gr.code_label AS grade_cd_nm
+            , cd_ms.code_label AS member_status_cd_nm
         FROM mb_member m
             LEFT JOIN sy_site  s    ON s.site_id    = m.site_id
             LEFT JOIN sy_code cd_gr ON cd_gr.code_grp = 'MEMBER_GRADE'  AND cd_gr.code_value = m.grade_cd
@@ -64,10 +64,10 @@
     <!-- 회원 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto">
         SELECT
-            m.*,
-            s.site_nm,
-            cd_gr.code_label AS grade_cd_nm,
-            cd_ms.code_label AS member_status_cd_nm
+              m.*
+            , s.site_nm
+            , cd_gr.code_label AS grade_cd_nm
+            , cd_ms.code_label AS member_status_cd_nm
         FROM mb_member m
             LEFT JOIN sy_site  s    ON s.site_id    = m.site_id
             LEFT JOIN sy_code cd_gr ON cd_gr.code_grp = 'MEMBER_GRADE'  AND cd_gr.code_value = m.grade_cd

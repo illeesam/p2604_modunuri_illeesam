@@ -17,10 +17,10 @@
     <!-- 카테고리-상품 매핑 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto">
         SELECT
-            p.*,
-            ste.site_nm AS site_nm,
-            cat.category_nm AS category_nm,
-            prd.prod_nm AS prod_nm
+              p.*
+            , ste.site_nm AS site_nm
+            , cat.category_nm AS category_nm
+            , prd.prod_nm AS prod_nm
         FROM pd_category_prod p
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
             LEFT JOIN pd_category cat ON cat.category_id = p.category_id
@@ -31,10 +31,10 @@
     <!-- 카테고리-상품 매핑 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto">
         SELECT
-            p.*,
-            ste.site_nm AS site_nm,
-            cat.category_nm AS category_nm,
-            prd.prod_nm AS prod_nm
+              p.*
+            , ste.site_nm AS site_nm
+            , cat.category_nm AS category_nm
+            , prd.prod_nm AS prod_nm
         FROM pd_category_prod p
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
             LEFT JOIN pd_category cat ON cat.category_id = p.category_id
@@ -53,10 +53,10 @@
     <!-- 카테고리-상품 매핑 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto">
         SELECT
-            p.*,
-            ste.site_nm AS site_nm,
-            cat.category_nm AS category_nm,
-            prd.prod_nm AS prod_nm
+              p.*
+            , ste.site_nm AS site_nm
+            , cat.category_nm AS category_nm
+            , prd.prod_nm AS prod_nm
         FROM pd_category_prod p
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
             LEFT JOIN pd_category cat ON cat.category_id = p.category_id

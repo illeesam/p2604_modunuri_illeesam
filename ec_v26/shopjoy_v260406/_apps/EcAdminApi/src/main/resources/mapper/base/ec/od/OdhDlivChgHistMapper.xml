@@ -16,9 +16,9 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivChgHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS chg_user_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS chg_user_nm
         FROM odh_dliv_chg_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id
@@ -27,9 +27,9 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivChgHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS chg_user_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS chg_user_nm
         FROM odh_dliv_chg_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id
@@ -46,9 +46,9 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivChgHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS chg_user_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS chg_user_nm
         FROM odh_dliv_chg_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id

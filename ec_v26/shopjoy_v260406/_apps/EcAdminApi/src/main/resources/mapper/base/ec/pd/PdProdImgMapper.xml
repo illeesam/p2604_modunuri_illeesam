@@ -16,10 +16,10 @@
     <!-- 상품 이미지 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdImgDto">
         SELECT
-            i.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            att.file_nm AS attach_nm
+              i.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , att.file_nm AS attach_nm
         FROM pd_prod_img i
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = i.prod_id
@@ -30,10 +30,10 @@
     <!-- 상품 이미지 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdImgDto">
         SELECT
-            i.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            att.file_nm AS attach_nm
+              i.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , att.file_nm AS attach_nm
         FROM pd_prod_img i
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = i.prod_id
@@ -52,10 +52,10 @@
     <!-- 상품 이미지 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdImgDto">
         SELECT
-            i.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            att.file_nm AS attach_nm
+              i.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , att.file_nm AS attach_nm
         FROM pd_prod_img i
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = i.prod_id

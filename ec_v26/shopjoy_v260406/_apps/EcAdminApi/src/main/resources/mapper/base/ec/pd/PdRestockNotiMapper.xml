@@ -16,10 +16,10 @@
     <!-- 재입고 알림 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto">
         SELECT
-            n.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            mem.member_nm AS member_nm
+              n.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , mem.member_nm AS member_nm
         FROM pd_restock_noti n
             LEFT JOIN sy_site ste ON ste.site_id = n.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = n.prod_id
@@ -30,10 +30,10 @@
     <!-- 재입고 알림 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto">
         SELECT
-            n.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            mem.member_nm AS member_nm
+              n.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , mem.member_nm AS member_nm
         FROM pd_restock_noti n
             LEFT JOIN sy_site ste ON ste.site_id = n.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = n.prod_id
@@ -52,10 +52,10 @@
     <!-- 재입고 알림 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto">
         SELECT
-            n.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            mem.member_nm AS member_nm
+              n.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , mem.member_nm AS member_nm
         FROM pd_restock_noti n
             LEFT JOIN sy_site ste ON ste.site_id = n.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = n.prod_id

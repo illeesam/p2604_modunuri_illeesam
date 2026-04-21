@@ -17,10 +17,10 @@
     <!-- 상품 상세 콘텐츠 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto">
         SELECT
-            c.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            cd_pct.code_label AS content_type_cd_nm
+              c.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , cd_pct.code_label AS content_type_cd_nm
         FROM pd_prod_content c
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
@@ -31,10 +31,10 @@
     <!-- 상품 상세 콘텐츠 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto">
         SELECT
-            c.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            cd_pct.code_label AS content_type_cd_nm
+              c.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , cd_pct.code_label AS content_type_cd_nm
         FROM pd_prod_content c
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
@@ -53,10 +53,10 @@
     <!-- 상품 상세 콘텐츠 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto">
         SELECT
-            c.*,
-            ste.site_nm AS site_nm,
-            prd.prod_nm AS prod_nm,
-            cd_pct.code_label AS content_type_cd_nm
+              c.*
+            , ste.site_nm AS site_nm
+            , prd.prod_nm AS prod_nm
+            , cd_pct.code_label AS content_type_cd_nm
         FROM pd_prod_content c
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id

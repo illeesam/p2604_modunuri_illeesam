@@ -20,10 +20,10 @@
     <!-- 배치 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            cd_bc.code_label AS batch_cycle_cd_nm,
-            cd_bs.code_label AS batch_status_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , cd_bc.code_label AS batch_cycle_cd_nm
+            , cd_bs.code_label AS batch_status_cd_nm
         FROM sy_batch b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_code cd_bc ON cd_bc.code_grp = 'BATCH_CYCLE' AND cd_bc.code_value = b.batch_cycle_cd
@@ -34,10 +34,10 @@
     <!-- 배치 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            cd_bc.code_label AS batch_cycle_cd_nm,
-            cd_bs.code_label AS batch_status_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , cd_bc.code_label AS batch_cycle_cd_nm
+            , cd_bs.code_label AS batch_status_cd_nm
         FROM sy_batch b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_code cd_bc ON cd_bc.code_grp = 'BATCH_CYCLE' AND cd_bc.code_value = b.batch_cycle_cd
@@ -58,10 +58,10 @@
     <!-- 배치 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            cd_bc.code_label AS batch_cycle_cd_nm,
-            cd_bs.code_label AS batch_status_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , cd_bc.code_label AS batch_cycle_cd_nm
+            , cd_bs.code_label AS batch_status_cd_nm
         FROM sy_batch b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_code cd_bc ON cd_bc.code_grp = 'BATCH_CYCLE' AND cd_bc.code_value = b.batch_cycle_cd

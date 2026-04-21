@@ -15,11 +15,11 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorBrandDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            brd.brand_nm AS brand_nm,
-            cd_vbc.code_label AS contract_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , brd.brand_nm AS brand_nm
+            , cd_vbc.code_label AS contract_cd_nm
         FROM sy_vendor_brand b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = b.vendor_id
@@ -30,11 +30,11 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorBrandDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            brd.brand_nm AS brand_nm,
-            cd_vbc.code_label AS contract_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , brd.brand_nm AS brand_nm
+            , cd_vbc.code_label AS contract_cd_nm
         FROM sy_vendor_brand b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = b.vendor_id
@@ -53,11 +53,11 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorBrandDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            brd.brand_nm AS brand_nm,
-            cd_vbc.code_label AS contract_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , brd.brand_nm AS brand_nm
+            , cd_vbc.code_label AS contract_cd_nm
         FROM sy_vendor_brand b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = b.vendor_id

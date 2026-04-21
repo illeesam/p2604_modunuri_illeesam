@@ -17,10 +17,10 @@
     <!-- 이벤트 대상 상품 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto">
         SELECT
-            i.*,
-            evt.event_nm AS event_nm,
-            ste.site_nm AS site_nm,
-            cd_eit.code_label AS target_type_cd_nm
+              i.*
+            , evt.event_nm AS event_nm
+            , ste.site_nm AS site_nm
+            , cd_eit.code_label AS target_type_cd_nm
         FROM pm_event_item i
             LEFT JOIN pm_event evt ON evt.event_id = i.event_id
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
@@ -31,10 +31,10 @@
     <!-- 이벤트 대상 상품 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto">
         SELECT
-            i.*,
-            evt.event_nm AS event_nm,
-            ste.site_nm AS site_nm,
-            cd_eit.code_label AS target_type_cd_nm
+              i.*
+            , evt.event_nm AS event_nm
+            , ste.site_nm AS site_nm
+            , cd_eit.code_label AS target_type_cd_nm
         FROM pm_event_item i
             LEFT JOIN pm_event evt ON evt.event_id = i.event_id
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
@@ -53,10 +53,10 @@
     <!-- 이벤트 대상 상품 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto">
         SELECT
-            i.*,
-            evt.event_nm AS event_nm,
-            ste.site_nm AS site_nm,
-            cd_eit.code_label AS target_type_cd_nm
+              i.*
+            , evt.event_nm AS event_nm
+            , ste.site_nm AS site_nm
+            , cd_eit.code_label AS target_type_cd_nm
         FROM pm_event_item i
             LEFT JOIN pm_event evt ON evt.event_id = i.event_id
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id

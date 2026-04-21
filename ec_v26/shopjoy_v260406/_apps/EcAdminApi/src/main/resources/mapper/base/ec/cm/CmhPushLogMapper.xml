@@ -20,11 +20,11 @@
     <!-- 푸시 발송 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto">
         SELECT
-            l.*,
-            tpl.template_nm AS template_nm,
-            ste.site_nm AS site_nm,
-            cd_pc.code_label AS channel_cd_nm,
-            cd_pr.code_label AS result_cd_nm
+              l.*
+            , tpl.template_nm AS template_nm
+            , ste.site_nm AS site_nm
+            , cd_pc.code_label AS channel_cd_nm
+            , cd_pr.code_label AS result_cd_nm
         FROM cmh_push_log l
             LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
@@ -36,11 +36,11 @@
     <!-- 푸시 발송 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto">
         SELECT
-            l.*,
-            tpl.template_nm AS template_nm,
-            ste.site_nm AS site_nm,
-            cd_pc.code_label AS channel_cd_nm,
-            cd_pr.code_label AS result_cd_nm
+              l.*
+            , tpl.template_nm AS template_nm
+            , ste.site_nm AS site_nm
+            , cd_pc.code_label AS channel_cd_nm
+            , cd_pr.code_label AS result_cd_nm
         FROM cmh_push_log l
             LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
@@ -62,11 +62,11 @@
     <!-- 푸시 발송 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto">
         SELECT
-            l.*,
-            tpl.template_nm AS template_nm,
-            ste.site_nm AS site_nm,
-            cd_pc.code_label AS channel_cd_nm,
-            cd_pr.code_label AS result_cd_nm
+              l.*
+            , tpl.template_nm AS template_nm
+            , ste.site_nm AS site_nm
+            , cd_pc.code_label AS channel_cd_nm
+            , cd_pr.code_label AS result_cd_nm
         FROM cmh_push_log l
             LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id

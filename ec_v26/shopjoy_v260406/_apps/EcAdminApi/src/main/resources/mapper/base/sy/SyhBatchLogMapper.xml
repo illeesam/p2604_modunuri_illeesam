@@ -17,8 +17,8 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm
+              l.*
+            , ste.site_nm AS site_nm
         FROM syh_batch_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
         WHERE l.batch_log_id = #{id}
@@ -26,8 +26,8 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm
+              l.*
+            , ste.site_nm AS site_nm
         FROM syh_batch_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             <include refid="syhBatchLogCond"/>
@@ -45,8 +45,8 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm
+              l.*
+            , ste.site_nm AS site_nm
         FROM syh_batch_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             <include refid="syhBatchLogCond"/>

@@ -21,11 +21,11 @@
     <!-- 배송 템플릿 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto">
         SELECT
-            t.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            cd_dm.code_label AS dliv_method_cd_nm,
-            cd_dpt.code_label AS dliv_pay_type_cd_nm
+              t.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , cd_dm.code_label AS dliv_method_cd_nm
+            , cd_dpt.code_label AS dliv_pay_type_cd_nm
         FROM pd_dliv_tmplt t
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = t.vendor_id
@@ -37,11 +37,11 @@
     <!-- 배송 템플릿 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto">
         SELECT
-            t.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            cd_dm.code_label AS dliv_method_cd_nm,
-            cd_dpt.code_label AS dliv_pay_type_cd_nm
+              t.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , cd_dm.code_label AS dliv_method_cd_nm
+            , cd_dpt.code_label AS dliv_pay_type_cd_nm
         FROM pd_dliv_tmplt t
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = t.vendor_id
@@ -63,11 +63,11 @@
     <!-- 배송 템플릿 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto">
         SELECT
-            t.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            cd_dm.code_label AS dliv_method_cd_nm,
-            cd_dpt.code_label AS dliv_pay_type_cd_nm
+              t.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , cd_dm.code_label AS dliv_method_cd_nm
+            , cd_dpt.code_label AS dliv_pay_type_cd_nm
         FROM pd_dliv_tmplt t
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = t.vendor_id

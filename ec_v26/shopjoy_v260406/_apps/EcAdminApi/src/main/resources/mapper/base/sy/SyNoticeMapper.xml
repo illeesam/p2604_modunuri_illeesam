@@ -21,9 +21,9 @@
     <!-- 공지사항 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto">
         SELECT
-            n.*,
-            ste.site_nm AS site_nm,
-            cd_nt.code_label AS notice_type_cd_nm
+              n.*
+            , ste.site_nm AS site_nm
+            , cd_nt.code_label AS notice_type_cd_nm
         FROM sy_notice n
             LEFT JOIN sy_site ste ON ste.site_id = n.site_id
             LEFT JOIN sy_code cd_nt ON cd_nt.code_grp = 'NOTICE_TYPE' AND cd_nt.code_value = n.notice_type_cd
@@ -33,9 +33,9 @@
     <!-- 공지사항 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto">
         SELECT
-            n.*,
-            ste.site_nm AS site_nm,
-            cd_nt.code_label AS notice_type_cd_nm
+              n.*
+            , ste.site_nm AS site_nm
+            , cd_nt.code_label AS notice_type_cd_nm
         FROM sy_notice n
             LEFT JOIN sy_site ste ON ste.site_id = n.site_id
             LEFT JOIN sy_code cd_nt ON cd_nt.code_grp = 'NOTICE_TYPE' AND cd_nt.code_value = n.notice_type_cd
@@ -55,9 +55,9 @@
     <!-- 공지사항 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto">
         SELECT
-            n.*,
-            ste.site_nm AS site_nm,
-            cd_nt.code_label AS notice_type_cd_nm
+              n.*
+            , ste.site_nm AS site_nm
+            , cd_nt.code_label AS notice_type_cd_nm
         FROM sy_notice n
             LEFT JOIN sy_site ste ON ste.site_id = n.site_id
             LEFT JOIN sy_code cd_nt ON cd_nt.code_grp = 'NOTICE_TYPE' AND cd_nt.code_value = n.notice_type_cd

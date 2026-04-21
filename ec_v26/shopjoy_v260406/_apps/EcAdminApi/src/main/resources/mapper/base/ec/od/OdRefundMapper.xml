@@ -18,13 +18,13 @@
     <!-- 환불 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            cla.member_nm AS claim_nm,
-            cd_rt.code_label AS refund_type_cd_nm,
-            cd_rs.code_label AS refund_status_cd_nm,
-            cd_cf.code_label AS fault_type_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , cla.member_nm AS claim_nm
+            , cd_rt.code_label AS refund_type_cd_nm
+            , cd_rs.code_label AS refund_status_cd_nm
+            , cd_cf.code_label AS fault_type_cd_nm
         FROM od_refund r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN od_order ord ON ord.order_id = r.order_id
@@ -38,13 +38,13 @@
     <!-- 환불 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            cla.member_nm AS claim_nm,
-            cd_rt.code_label AS refund_type_cd_nm,
-            cd_rs.code_label AS refund_status_cd_nm,
-            cd_cf.code_label AS fault_type_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , cla.member_nm AS claim_nm
+            , cd_rt.code_label AS refund_type_cd_nm
+            , cd_rs.code_label AS refund_status_cd_nm
+            , cd_cf.code_label AS fault_type_cd_nm
         FROM od_refund r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN od_order ord ON ord.order_id = r.order_id
@@ -66,13 +66,13 @@
     <!-- 환불 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            cla.member_nm AS claim_nm,
-            cd_rt.code_label AS refund_type_cd_nm,
-            cd_rs.code_label AS refund_status_cd_nm,
-            cd_cf.code_label AS fault_type_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , cla.member_nm AS claim_nm
+            , cd_rt.code_label AS refund_type_cd_nm
+            , cd_rs.code_label AS refund_status_cd_nm
+            , cd_cf.code_label AS fault_type_cd_nm
         FROM od_refund r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN od_order ord ON ord.order_id = r.order_id

@@ -20,13 +20,13 @@
     <!-- 할인 사용 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            dis.discnt_nm AS discnt_id_nm,
-            mem.member_nm AS member_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            prd.prod_nm AS prod_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , dis.discnt_nm AS discnt_id_nm
+            , mem.member_nm AS member_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , prd.prod_nm AS prod_nm
         FROM pm_discnt_usage u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN pm_discnt dis ON dis.discnt_id = u.discnt_id
@@ -40,13 +40,13 @@
     <!-- 할인 사용 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            dis.discnt_nm AS discnt_id_nm,
-            mem.member_nm AS member_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            prd.prod_nm AS prod_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , dis.discnt_nm AS discnt_id_nm
+            , mem.member_nm AS member_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , prd.prod_nm AS prod_nm
         FROM pm_discnt_usage u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN pm_discnt dis ON dis.discnt_id = u.discnt_id
@@ -70,13 +70,13 @@
     <!-- 할인 사용 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            dis.discnt_nm AS discnt_id_nm,
-            mem.member_nm AS member_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            prd.prod_nm AS prod_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , dis.discnt_nm AS discnt_id_nm
+            , mem.member_nm AS member_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , prd.prod_nm AS prod_nm
         FROM pm_discnt_usage u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN pm_discnt dis ON dis.discnt_id = u.discnt_id

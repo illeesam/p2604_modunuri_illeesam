@@ -23,27 +23,27 @@
     <!-- 정산 원천 데이터 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            mem.member_nm AS member_nm,
-            cla.member_nm AS claim_nm,
-            ite2.prod_nm AS claim_item_nm,
-            vnd.vendor_nm AS vendor_nm,
-            prd.prod_nm AS prod_id_nm,
-            brd.brand_nm AS brand_id_nm,
-            usr.user_nm AS md_user_nm,
-            evt.event_nm AS promo_nm,
-            cpn.coupon_nm AS coupon_nm,
-            dis.discnt_nm AS discnt_nm,
-            vou.voucher_nm AS voucher_nm,
-            gif.gift_nm AS gift_nm,
-            cd_rt.code_label AS raw_type_cd_nm,
-            cd_rs.code_label AS raw_status_cd_nm,
-            cd_ois.code_label AS order_item_status_cd_nm,
-            cd_vt.code_label AS vendor_type_cd_nm,
-            cd_pmc.code_label AS pay_method_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , mem.member_nm AS member_nm
+            , cla.member_nm AS claim_nm
+            , ite2.prod_nm AS claim_item_nm
+            , vnd.vendor_nm AS vendor_nm
+            , prd.prod_nm AS prod_id_nm
+            , brd.brand_nm AS brand_id_nm
+            , usr.user_nm AS md_user_nm
+            , evt.event_nm AS promo_nm
+            , cpn.coupon_nm AS coupon_nm
+            , dis.discnt_nm AS discnt_nm
+            , vou.voucher_nm AS voucher_nm
+            , gif.gift_nm AS gift_nm
+            , cd_rt.code_label AS raw_type_cd_nm
+            , cd_rs.code_label AS raw_status_cd_nm
+            , cd_ois.code_label AS order_item_status_cd_nm
+            , cd_vt.code_label AS vendor_type_cd_nm
+            , cd_pmc.code_label AS pay_method_cd_nm
         FROM st_settle_raw r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN od_order ord ON ord.order_id = r.order_id
@@ -71,27 +71,27 @@
     <!-- 정산 원천 데이터 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            mem.member_nm AS member_nm,
-            cla.member_nm AS claim_nm,
-            ite2.prod_nm AS claim_item_nm,
-            vnd.vendor_nm AS vendor_nm,
-            prd.prod_nm AS prod_id_nm,
-            brd.brand_nm AS brand_id_nm,
-            usr.user_nm AS md_user_nm,
-            evt.event_nm AS promo_nm,
-            cpn.coupon_nm AS coupon_nm,
-            dis.discnt_nm AS discnt_nm,
-            vou.voucher_nm AS voucher_nm,
-            gif.gift_nm AS gift_nm,
-            cd_rt.code_label AS raw_type_cd_nm,
-            cd_rs.code_label AS raw_status_cd_nm,
-            cd_ois.code_label AS order_item_status_cd_nm,
-            cd_vt.code_label AS vendor_type_cd_nm,
-            cd_pmc.code_label AS pay_method_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , mem.member_nm AS member_nm
+            , cla.member_nm AS claim_nm
+            , ite2.prod_nm AS claim_item_nm
+            , vnd.vendor_nm AS vendor_nm
+            , prd.prod_nm AS prod_id_nm
+            , brd.brand_nm AS brand_id_nm
+            , usr.user_nm AS md_user_nm
+            , evt.event_nm AS promo_nm
+            , cpn.coupon_nm AS coupon_nm
+            , dis.discnt_nm AS discnt_nm
+            , vou.voucher_nm AS voucher_nm
+            , gif.gift_nm AS gift_nm
+            , cd_rt.code_label AS raw_type_cd_nm
+            , cd_rs.code_label AS raw_status_cd_nm
+            , cd_ois.code_label AS order_item_status_cd_nm
+            , cd_vt.code_label AS vendor_type_cd_nm
+            , cd_pmc.code_label AS pay_method_cd_nm
         FROM st_settle_raw r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN od_order ord ON ord.order_id = r.order_id
@@ -129,27 +129,27 @@
     <!-- 정산 원천 데이터 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            mem.member_nm AS member_nm,
-            cla.member_nm AS claim_nm,
-            ite2.prod_nm AS claim_item_nm,
-            vnd.vendor_nm AS vendor_nm,
-            prd.prod_nm AS prod_id_nm,
-            brd.brand_nm AS brand_id_nm,
-            usr.user_nm AS md_user_nm,
-            evt.event_nm AS promo_nm,
-            cpn.coupon_nm AS coupon_nm,
-            dis.discnt_nm AS discnt_nm,
-            vou.voucher_nm AS voucher_nm,
-            gif.gift_nm AS gift_nm,
-            cd_rt.code_label AS raw_type_cd_nm,
-            cd_rs.code_label AS raw_status_cd_nm,
-            cd_ois.code_label AS order_item_status_cd_nm,
-            cd_vt.code_label AS vendor_type_cd_nm,
-            cd_pmc.code_label AS pay_method_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , mem.member_nm AS member_nm
+            , cla.member_nm AS claim_nm
+            , ite2.prod_nm AS claim_item_nm
+            , vnd.vendor_nm AS vendor_nm
+            , prd.prod_nm AS prod_id_nm
+            , brd.brand_nm AS brand_id_nm
+            , usr.user_nm AS md_user_nm
+            , evt.event_nm AS promo_nm
+            , cpn.coupon_nm AS coupon_nm
+            , dis.discnt_nm AS discnt_nm
+            , vou.voucher_nm AS voucher_nm
+            , gif.gift_nm AS gift_nm
+            , cd_rt.code_label AS raw_type_cd_nm
+            , cd_rs.code_label AS raw_status_cd_nm
+            , cd_ois.code_label AS order_item_status_cd_nm
+            , cd_vt.code_label AS vendor_type_cd_nm
+            , cd_pmc.code_label AS pay_method_cd_nm
         FROM st_settle_raw r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN od_order ord ON ord.order_id = r.order_id

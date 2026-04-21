@@ -20,11 +20,11 @@
     <!-- 게시물 댓글 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto">
         SELECT
-            r.*,
-            rep.writer_nm AS parent_comment_nm,
-            mem.member_nm AS writer_id_nm,
-            ste.site_nm AS site_nm,
-            cd_cs.code_label AS comment_status_cd_nm
+              r.*
+            , rep.writer_nm AS parent_comment_nm
+            , mem.member_nm AS writer_id_nm
+            , ste.site_nm AS site_nm
+            , cd_cs.code_label AS comment_status_cd_nm
         FROM cm_blog_reply r
             LEFT JOIN cm_blog_reply rep ON rep.comment_id = r.parent_comment_id
             LEFT JOIN mb_member mem ON mem.member_id = r.writer_id
@@ -36,11 +36,11 @@
     <!-- 게시물 댓글 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto">
         SELECT
-            r.*,
-            rep.writer_nm AS parent_comment_nm,
-            mem.member_nm AS writer_id_nm,
-            ste.site_nm AS site_nm,
-            cd_cs.code_label AS comment_status_cd_nm
+              r.*
+            , rep.writer_nm AS parent_comment_nm
+            , mem.member_nm AS writer_id_nm
+            , ste.site_nm AS site_nm
+            , cd_cs.code_label AS comment_status_cd_nm
         FROM cm_blog_reply r
             LEFT JOIN cm_blog_reply rep ON rep.comment_id = r.parent_comment_id
             LEFT JOIN mb_member mem ON mem.member_id = r.writer_id
@@ -62,11 +62,11 @@
     <!-- 게시물 댓글 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto">
         SELECT
-            r.*,
-            rep.writer_nm AS parent_comment_nm,
-            mem.member_nm AS writer_id_nm,
-            ste.site_nm AS site_nm,
-            cd_cs.code_label AS comment_status_cd_nm
+              r.*
+            , rep.writer_nm AS parent_comment_nm
+            , mem.member_nm AS writer_id_nm
+            , ste.site_nm AS site_nm
+            , cd_cs.code_label AS comment_status_cd_nm
         FROM cm_blog_reply r
             LEFT JOIN cm_blog_reply rep ON rep.comment_id = r.parent_comment_id
             LEFT JOIN mb_member mem ON mem.member_id = r.writer_id

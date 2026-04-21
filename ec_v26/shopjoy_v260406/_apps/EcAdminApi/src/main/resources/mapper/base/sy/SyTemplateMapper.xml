@@ -18,9 +18,9 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
         SELECT
-            t.*,
-            ste.site_nm AS site_nm,
-            cd_tt.code_label AS template_type_cd_nm
+              t.*
+            , ste.site_nm AS site_nm
+            , cd_tt.code_label AS template_type_cd_nm
         FROM sy_template t
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TEMPLATE_TYPE' AND cd_tt.code_value = t.template_type_cd
@@ -29,9 +29,9 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
         SELECT
-            t.*,
-            ste.site_nm AS site_nm,
-            cd_tt.code_label AS template_type_cd_nm
+              t.*
+            , ste.site_nm AS site_nm
+            , cd_tt.code_label AS template_type_cd_nm
         FROM sy_template t
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TEMPLATE_TYPE' AND cd_tt.code_value = t.template_type_cd
@@ -50,9 +50,9 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
         SELECT
-            t.*,
-            ste.site_nm AS site_nm,
-            cd_tt.code_label AS template_type_cd_nm
+              t.*
+            , ste.site_nm AS site_nm
+            , cd_tt.code_label AS template_type_cd_nm
         FROM sy_template t
             LEFT JOIN sy_site ste ON ste.site_id = t.site_id
             LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TEMPLATE_TYPE' AND cd_tt.code_value = t.template_type_cd

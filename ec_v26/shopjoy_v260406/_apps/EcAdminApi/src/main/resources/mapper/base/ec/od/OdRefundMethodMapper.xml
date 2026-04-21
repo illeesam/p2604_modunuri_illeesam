@@ -17,12 +17,12 @@
     <!-- 환불수단 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundMethodDto">
         SELECT
-            m.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            pay.vbank_bank_nm AS pay_nm,
-            cd_pm.code_label AS pay_method_cd_nm,
-            cd_rs.code_label AS refund_status_cd_nm
+              m.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , pay.vbank_bank_nm AS pay_nm
+            , cd_pm.code_label AS pay_method_cd_nm
+            , cd_rs.code_label AS refund_status_cd_nm
         FROM od_refund_method m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             LEFT JOIN od_order ord ON ord.order_id = m.order_id
@@ -35,12 +35,12 @@
     <!-- 환불수단 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundMethodDto">
         SELECT
-            m.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            pay.vbank_bank_nm AS pay_nm,
-            cd_pm.code_label AS pay_method_cd_nm,
-            cd_rs.code_label AS refund_status_cd_nm
+              m.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , pay.vbank_bank_nm AS pay_nm
+            , cd_pm.code_label AS pay_method_cd_nm
+            , cd_rs.code_label AS refund_status_cd_nm
         FROM od_refund_method m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             LEFT JOIN od_order ord ON ord.order_id = m.order_id
@@ -61,12 +61,12 @@
     <!-- 환불수단 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundMethodDto">
         SELECT
-            m.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            pay.vbank_bank_nm AS pay_nm,
-            cd_pm.code_label AS pay_method_cd_nm,
-            cd_rs.code_label AS refund_status_cd_nm
+              m.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , pay.vbank_bank_nm AS pay_nm
+            , cd_pm.code_label AS pay_method_cd_nm
+            , cd_rs.code_label AS refund_status_cd_nm
         FROM od_refund_method m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             LEFT JOIN od_order ord ON ord.order_id = m.order_id

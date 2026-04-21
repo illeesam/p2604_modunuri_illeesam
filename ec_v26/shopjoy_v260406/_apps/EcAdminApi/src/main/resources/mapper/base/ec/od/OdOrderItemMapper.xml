@@ -24,12 +24,12 @@
     <!-- 주문 아이템(상품) 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
-            oi.*,
-            p.prod_nm AS prod_nm_current, p.thumbnail_url, p.sale_price,
-            sk.sku_code,
-            oi1.opt_item_nm AS opt_item_nm_1,
-            oi2.opt_item_nm AS opt_item_nm_2,
-            cd_is.code_label AS order_item_status_cd_nm
+              oi.*
+            , p.prod_nm AS prod_nm_current, p.thumbnail_url, p.sale_price
+            , sk.sku_code
+            , oi1.opt_item_nm AS opt_item_nm_1
+            , oi2.opt_item_nm AS opt_item_nm_2
+            , cd_is.code_label AS order_item_status_cd_nm
         FROM od_order_item oi
             LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
             LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id
@@ -43,13 +43,13 @@
     <!-- 주문 아이템(상품) 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
-            oi.*,
-            p.thumbnail_url,    p.sale_price,
-            sk.sku_code,
-            oi1.opt_item_nm     AS opt_item_nm_1,
-            oi2.opt_item_nm     AS opt_item_nm_2,
-            cd_is.code_label    AS order_item_status_cd_nm,
-            cd_dc.code_label    AS dliv_courier_cd_nm
+              oi.*
+            , p.thumbnail_url,    p.sale_price
+            , sk.sku_code
+            , oi1.opt_item_nm     AS opt_item_nm_1
+            , oi2.opt_item_nm     AS opt_item_nm_2
+            , cd_is.code_label    AS order_item_status_cd_nm
+            , cd_dc.code_label    AS dliv_courier_cd_nm
         FROM od_order_item oi
             LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
             LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id
@@ -75,13 +75,13 @@
     <!-- 주문 아이템(상품) 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
-            oi.*,
-            p.thumbnail_url,    p.sale_price,
-            sk.sku_code,
-            oi1.opt_item_nm     AS opt_item_nm_1,
-            oi2.opt_item_nm     AS opt_item_nm_2,
-            cd_is.code_label    AS order_item_status_cd_nm,
-            cd_dc.code_label    AS dliv_courier_cd_nm
+              oi.*
+            , p.thumbnail_url,    p.sale_price
+            , sk.sku_code
+            , oi1.opt_item_nm     AS opt_item_nm_1
+            , oi2.opt_item_nm     AS opt_item_nm_2
+            , cd_is.code_label    AS order_item_status_cd_nm
+            , cd_dc.code_label    AS dliv_courier_cd_nm
         FROM od_order_item oi
             LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
             LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id
@@ -133,12 +133,12 @@
     <!-- 주문번호로 주문 아이템 목록 조회 -->
     <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto">
         SELECT
-            oi.*,
-            p.thumbnail_url,
-            sk.sku_code,
-            oi1.opt_item_nm AS opt_item_nm_1,
-            oi2.opt_item_nm AS opt_item_nm_2,
-            cd_is.code_label AS order_item_status_cd_nm
+              oi.*
+            , p.thumbnail_url
+            , sk.sku_code
+            , oi1.opt_item_nm AS opt_item_nm_1
+            , oi2.opt_item_nm AS opt_item_nm_2
+            , cd_is.code_label AS order_item_status_cd_nm
         FROM od_order_item oi
             LEFT JOIN pd_prod          p   ON p.prod_id       = oi.prod_id
             LEFT JOIN pd_prod_sku      sk  ON sk.sku_id       = oi.sku_id

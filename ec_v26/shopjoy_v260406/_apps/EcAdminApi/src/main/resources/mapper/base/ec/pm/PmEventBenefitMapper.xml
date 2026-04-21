@@ -20,9 +20,9 @@
     <!-- 이벤트 혜택 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            cd_bt.code_label AS benefit_type_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , cd_bt.code_label AS benefit_type_cd_nm
         FROM pm_event_benefit b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_code cd_bt ON cd_bt.code_grp = 'BENEFIT_TYPE' AND cd_bt.code_value = b.benefit_type_cd
@@ -32,9 +32,9 @@
     <!-- 이벤트 혜택 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            cd_bt.code_label AS benefit_type_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , cd_bt.code_label AS benefit_type_cd_nm
         FROM pm_event_benefit b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_code cd_bt ON cd_bt.code_grp = 'BENEFIT_TYPE' AND cd_bt.code_value = b.benefit_type_cd
@@ -54,9 +54,9 @@
     <!-- 이벤트 혜택 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto">
         SELECT
-            b.*,
-            ste.site_nm AS site_nm,
-            cd_bt.code_label AS benefit_type_cd_nm
+              b.*
+            , ste.site_nm AS site_nm
+            , cd_bt.code_label AS benefit_type_cd_nm
         FROM pm_event_benefit b
             LEFT JOIN sy_site ste ON ste.site_id = b.site_id
             LEFT JOIN sy_code cd_bt ON cd_bt.code_grp = 'BENEFIT_TYPE' AND cd_bt.code_value = b.benefit_type_cd

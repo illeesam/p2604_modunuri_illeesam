@@ -18,9 +18,9 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            cd_rt.code_label AS role_type_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , cd_rt.code_label AS role_type_cd_nm
         FROM sy_role r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'ROLE_TYPE' AND cd_rt.code_value = r.role_type_cd
@@ -29,9 +29,9 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            cd_rt.code_label AS role_type_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , cd_rt.code_label AS role_type_cd_nm
         FROM sy_role r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'ROLE_TYPE' AND cd_rt.code_value = r.role_type_cd
@@ -50,9 +50,9 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            cd_rt.code_label AS role_type_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , cd_rt.code_label AS role_type_cd_nm
         FROM sy_role r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_code cd_rt ON cd_rt.code_grp = 'ROLE_TYPE' AND cd_rt.code_value = r.role_type_cd

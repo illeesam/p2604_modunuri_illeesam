@@ -20,13 +20,13 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            usr.user_nm AS user_nm,
-            rol.role_nm AS role_nm,
-            cd_p.code_label AS position_cd_nm,
-            cd_vms.code_label AS vendor_user_status_cd_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , usr.user_nm AS user_nm
+            , rol.role_nm AS role_nm
+            , cd_p.code_label AS position_cd_nm
+            , cd_vms.code_label AS vendor_user_status_cd_nm
         FROM sy_vendor_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
@@ -39,13 +39,13 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            usr.user_nm AS user_nm,
-            rol.role_nm AS role_nm,
-            cd_p.code_label AS position_cd_nm,
-            cd_vms.code_label AS vendor_user_status_cd_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , usr.user_nm AS user_nm
+            , rol.role_nm AS role_nm
+            , cd_p.code_label AS position_cd_nm
+            , cd_vms.code_label AS vendor_user_status_cd_nm
         FROM sy_vendor_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
@@ -68,13 +68,13 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            usr.user_nm AS user_nm,
-            rol.role_nm AS role_nm,
-            cd_p.code_label AS position_cd_nm,
-            cd_vms.code_label AS vendor_user_status_cd_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , usr.user_nm AS user_nm
+            , rol.role_nm AS role_nm
+            , cd_p.code_label AS position_cd_nm
+            , cd_vms.code_label AS vendor_user_status_cd_nm
         FROM sy_vendor_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id

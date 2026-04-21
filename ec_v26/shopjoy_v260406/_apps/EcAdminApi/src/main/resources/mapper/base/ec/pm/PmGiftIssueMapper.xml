@@ -17,12 +17,12 @@
     <!-- 사은품 발행 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftIssueDto">
         SELECT
-            i.*,
-            gif.gift_nm AS gift_nm,
-            mem.member_nm AS member_nm,
-            ord.member_nm AS order_nm,
-            ste.site_nm AS site_nm,
-            cd_gis.code_label AS gift_issue_status_cd_nm
+              i.*
+            , gif.gift_nm AS gift_nm
+            , mem.member_nm AS member_nm
+            , ord.member_nm AS order_nm
+            , ste.site_nm AS site_nm
+            , cd_gis.code_label AS gift_issue_status_cd_nm
         FROM pm_gift_issue i
             LEFT JOIN pm_gift gif ON gif.gift_id = i.gift_id
             LEFT JOIN mb_member mem ON mem.member_id = i.member_id
@@ -35,12 +35,12 @@
     <!-- 사은품 발행 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftIssueDto">
         SELECT
-            i.*,
-            gif.gift_nm AS gift_nm,
-            mem.member_nm AS member_nm,
-            ord.member_nm AS order_nm,
-            ste.site_nm AS site_nm,
-            cd_gis.code_label AS gift_issue_status_cd_nm
+              i.*
+            , gif.gift_nm AS gift_nm
+            , mem.member_nm AS member_nm
+            , ord.member_nm AS order_nm
+            , ste.site_nm AS site_nm
+            , cd_gis.code_label AS gift_issue_status_cd_nm
         FROM pm_gift_issue i
             LEFT JOIN pm_gift gif ON gif.gift_id = i.gift_id
             LEFT JOIN mb_member mem ON mem.member_id = i.member_id
@@ -61,12 +61,12 @@
     <!-- 사은품 발행 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftIssueDto">
         SELECT
-            i.*,
-            gif.gift_nm AS gift_nm,
-            mem.member_nm AS member_nm,
-            ord.member_nm AS order_nm,
-            ste.site_nm AS site_nm,
-            cd_gis.code_label AS gift_issue_status_cd_nm
+              i.*
+            , gif.gift_nm AS gift_nm
+            , mem.member_nm AS member_nm
+            , ord.member_nm AS order_nm
+            , ste.site_nm AS site_nm
+            , cd_gis.code_label AS gift_issue_status_cd_nm
         FROM pm_gift_issue i
             LEFT JOIN pm_gift gif ON gif.gift_id = i.gift_id
             LEFT JOIN mb_member mem ON mem.member_id = i.member_id

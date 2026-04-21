@@ -20,10 +20,10 @@
     <!-- 부서 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS manager_nm,
-            cd_dt.code_label AS dept_type_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS manager_nm
+            , cd_dt.code_label AS dept_type_cd_nm
         FROM sy_dept d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
@@ -34,10 +34,10 @@
     <!-- 부서 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS manager_nm,
-            cd_dt.code_label AS dept_type_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS manager_nm
+            , cd_dt.code_label AS dept_type_cd_nm
         FROM sy_dept d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
@@ -58,10 +58,10 @@
     <!-- 부서 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS manager_nm,
-            cd_dt.code_label AS dept_type_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS manager_nm
+            , cd_dt.code_label AS dept_type_cd_nm
         FROM sy_dept d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN sy_user usr ON usr.user_id = d.manager_id

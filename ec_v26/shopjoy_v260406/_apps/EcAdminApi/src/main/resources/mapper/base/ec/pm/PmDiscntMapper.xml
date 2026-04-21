@@ -21,12 +21,12 @@
     <!-- 할인 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            cd_dt.code_label AS discnt_type_cd_nm,
-            cd_dt2.code_label AS discnt_target_cd_nm,
-            cd_ds.code_label AS discnt_status_cd_nm,
-            cd_mg.code_label AS mem_grade_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , cd_dt.code_label AS discnt_type_cd_nm
+            , cd_dt2.code_label AS discnt_target_cd_nm
+            , cd_ds.code_label AS discnt_status_cd_nm
+            , cd_mg.code_label AS mem_grade_cd_nm
         FROM pm_discnt d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISCNT_TYPE' AND cd_dt.code_value = d.discnt_type_cd
@@ -39,12 +39,12 @@
     <!-- 할인 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            cd_dt.code_label AS discnt_type_cd_nm,
-            cd_dt2.code_label AS discnt_target_cd_nm,
-            cd_ds.code_label AS discnt_status_cd_nm,
-            cd_mg.code_label AS mem_grade_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , cd_dt.code_label AS discnt_type_cd_nm
+            , cd_dt2.code_label AS discnt_target_cd_nm
+            , cd_ds.code_label AS discnt_status_cd_nm
+            , cd_mg.code_label AS mem_grade_cd_nm
         FROM pm_discnt d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISCNT_TYPE' AND cd_dt.code_value = d.discnt_type_cd
@@ -67,12 +67,12 @@
     <!-- 할인 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            cd_dt.code_label AS discnt_type_cd_nm,
-            cd_dt2.code_label AS discnt_target_cd_nm,
-            cd_ds.code_label AS discnt_status_cd_nm,
-            cd_mg.code_label AS mem_grade_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , cd_dt.code_label AS discnt_type_cd_nm
+            , cd_dt2.code_label AS discnt_target_cd_nm
+            , cd_ds.code_label AS discnt_status_cd_nm
+            , cd_mg.code_label AS mem_grade_cd_nm
         FROM pm_discnt d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISCNT_TYPE' AND cd_dt.code_value = d.discnt_type_cd

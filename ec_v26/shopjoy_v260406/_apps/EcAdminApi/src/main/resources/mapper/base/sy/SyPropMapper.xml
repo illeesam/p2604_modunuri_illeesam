@@ -15,9 +15,9 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
         SELECT
-            p.*,
-            ste.site_nm AS site_nm,
-            cd_pt.code_label AS prop_type_cd_nm
+              p.*
+            , ste.site_nm AS site_nm
+            , cd_pt.code_label AS prop_type_cd_nm
         FROM sy_prop p
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
             LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
@@ -26,9 +26,9 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
         SELECT
-            p.*,
-            ste.site_nm AS site_nm,
-            cd_pt.code_label AS prop_type_cd_nm
+              p.*
+            , ste.site_nm AS site_nm
+            , cd_pt.code_label AS prop_type_cd_nm
         FROM sy_prop p
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
             LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
@@ -45,9 +45,9 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
         SELECT
-            p.*,
-            ste.site_nm AS site_nm,
-            cd_pt.code_label AS prop_type_cd_nm
+              p.*
+            , ste.site_nm AS site_nm
+            , cd_pt.code_label AS prop_type_cd_nm
         FROM sy_prop p
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
             LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd

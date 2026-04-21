@@ -18,12 +18,12 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            dpt.dept_nm AS dept_nm,
-            rol.role_nm AS role_nm,
-            cd_us.code_label AS user_status_cd_nm,
-            cd_am.code_label AS auth_method_cd_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , dpt.dept_nm AS dept_nm
+            , rol.role_nm AS role_nm
+            , cd_us.code_label AS user_status_cd_nm
+            , cd_am.code_label AS auth_method_cd_nm
         FROM sy_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
@@ -35,12 +35,12 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            dpt.dept_nm AS dept_nm,
-            rol.role_nm AS role_nm,
-            cd_us.code_label AS user_status_cd_nm,
-            cd_am.code_label AS auth_method_cd_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , dpt.dept_nm AS dept_nm
+            , rol.role_nm AS role_nm
+            , cd_us.code_label AS user_status_cd_nm
+            , cd_am.code_label AS auth_method_cd_nm
         FROM sy_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
@@ -62,12 +62,12 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto">
         SELECT
-            u.*,
-            ste.site_nm AS site_nm,
-            dpt.dept_nm AS dept_nm,
-            rol.role_nm AS role_nm,
-            cd_us.code_label AS user_status_cd_nm,
-            cd_am.code_label AS auth_method_cd_nm
+              u.*
+            , ste.site_nm AS site_nm
+            , dpt.dept_nm AS dept_nm
+            , rol.role_nm AS role_nm
+            , cd_us.code_label AS user_status_cd_nm
+            , cd_am.code_label AS auth_method_cd_nm
         FROM sy_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id

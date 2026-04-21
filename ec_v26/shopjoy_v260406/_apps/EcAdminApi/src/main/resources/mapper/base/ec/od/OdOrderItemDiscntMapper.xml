@@ -17,12 +17,12 @@
     <!-- 주문 아이템 할인 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDiscntDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            cpn.coupon_nm AS coupon_nm,
-            cd_oidt.code_label AS discnt_type_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , cpn.coupon_nm AS coupon_nm
+            , cd_oidt.code_label AS discnt_type_cd_nm
         FROM od_order_item_discnt d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN od_order ord ON ord.order_id = d.order_id
@@ -35,12 +35,12 @@
     <!-- 주문 아이템 할인 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDiscntDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            cpn.coupon_nm AS coupon_nm,
-            cd_oidt.code_label AS discnt_type_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , cpn.coupon_nm AS coupon_nm
+            , cd_oidt.code_label AS discnt_type_cd_nm
         FROM od_order_item_discnt d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN od_order ord ON ord.order_id = d.order_id
@@ -61,12 +61,12 @@
     <!-- 주문 아이템 할인 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDiscntDto">
         SELECT
-            d.*,
-            ste.site_nm AS site_nm,
-            ord.member_nm AS order_nm,
-            ite.prod_nm AS order_item_nm,
-            cpn.coupon_nm AS coupon_nm,
-            cd_oidt.code_label AS discnt_type_cd_nm
+              d.*
+            , ste.site_nm AS site_nm
+            , ord.member_nm AS order_nm
+            , ite.prod_nm AS order_item_nm
+            , cpn.coupon_nm AS coupon_nm
+            , cd_oidt.code_label AS discnt_type_cd_nm
         FROM od_order_item_discnt d
             LEFT JOIN sy_site ste ON ste.site_id = d.site_id
             LEFT JOIN od_order ord ON ord.order_id = d.order_id

@@ -14,8 +14,8 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto">
         SELECT
-            m.*,
-            ste.site_nm AS site_nm
+              m.*
+            , ste.site_nm AS site_nm
         FROM sy_role_menu m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
         WHERE m.role_menu_id = #{id}
@@ -23,8 +23,8 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto">
         SELECT
-            m.*,
-            ste.site_nm AS site_nm
+              m.*
+            , ste.site_nm AS site_nm
         FROM sy_role_menu m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             <include refid="syRoleMenuCond"/>
@@ -40,8 +40,8 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto">
         SELECT
-            m.*,
-            ste.site_nm AS site_nm
+              m.*
+            , ste.site_nm AS site_nm
         FROM sy_role_menu m
             LEFT JOIN sy_site ste ON ste.site_id = m.site_id
             <include refid="syRoleMenuCond"/>

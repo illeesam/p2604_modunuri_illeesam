@@ -21,11 +21,11 @@
     <!-- 정산 지급 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto">
         SELECT
-            p.*,
-            vnd.vendor_nm AS vendor_nm,
-            ste.site_nm AS site_nm,
-            cd_pmc.code_label AS pay_method_cd_nm,
-            cd_sps.code_label AS pay_status_cd_nm
+              p.*
+            , vnd.vendor_nm AS vendor_nm
+            , ste.site_nm AS site_nm
+            , cd_pmc.code_label AS pay_method_cd_nm
+            , cd_sps.code_label AS pay_status_cd_nm
         FROM st_settle_pay p
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = p.vendor_id
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
@@ -37,11 +37,11 @@
     <!-- 정산 지급 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto">
         SELECT
-            p.*,
-            vnd.vendor_nm AS vendor_nm,
-            ste.site_nm AS site_nm,
-            cd_pmc.code_label AS pay_method_cd_nm,
-            cd_sps.code_label AS pay_status_cd_nm
+              p.*
+            , vnd.vendor_nm AS vendor_nm
+            , ste.site_nm AS site_nm
+            , cd_pmc.code_label AS pay_method_cd_nm
+            , cd_sps.code_label AS pay_status_cd_nm
         FROM st_settle_pay p
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = p.vendor_id
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id
@@ -63,11 +63,11 @@
     <!-- 정산 지급 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto">
         SELECT
-            p.*,
-            vnd.vendor_nm AS vendor_nm,
-            ste.site_nm AS site_nm,
-            cd_pmc.code_label AS pay_method_cd_nm,
-            cd_sps.code_label AS pay_status_cd_nm
+              p.*
+            , vnd.vendor_nm AS vendor_nm
+            , ste.site_nm AS site_nm
+            , cd_pmc.code_label AS pay_method_cd_nm
+            , cd_sps.code_label AS pay_status_cd_nm
         FROM st_settle_pay p
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = p.vendor_id
             LEFT JOIN sy_site ste ON ste.site_id = p.site_id

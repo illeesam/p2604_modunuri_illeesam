@@ -27,14 +27,14 @@
     <!-- 배송 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
         SELECT
-            d.*,
-            o.member_nm, o.order_date, o.pay_method_cd,
-            v.vendor_nm, v.vendor_tel,
-            cd_ds.code_label AS dliv_status_cd_nm,
-            cd_dt.code_label AS dliv_type_cd_nm,
-            cd_dd.code_label AS dliv_div_cd_nm,
-            cd_oc.code_label AS outbound_courier_cd_nm,
-            cd_ic.code_label AS inbound_courier_cd_nm
+              d.*
+            , o.member_nm, o.order_date, o.pay_method_cd
+            , v.vendor_nm, v.vendor_tel
+            , cd_ds.code_label AS dliv_status_cd_nm
+            , cd_dt.code_label AS dliv_type_cd_nm
+            , cd_dd.code_label AS dliv_div_cd_nm
+            , cd_oc.code_label AS outbound_courier_cd_nm
+            , cd_ic.code_label AS inbound_courier_cd_nm
         FROM od_dliv d
             LEFT JOIN od_order  o ON o.order_id  = d.order_id
             LEFT JOIN sy_vendor v ON v.vendor_id = d.vendor_id
@@ -49,14 +49,14 @@
     <!-- 배송 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
         SELECT
-            d.*,
-            o.member_nm,    o.order_date,   o.order_status_cd,
-            v.vendor_nm,
-            cd_ds.code_label AS dliv_status_cd_nm,
-            cd_dt.code_label AS dliv_type_cd_nm,
-            cd_dd.code_label AS dliv_div_cd_nm,
-            cd_oc.code_label AS outbound_courier_cd_nm,
-            cd_ic.code_label AS inbound_courier_cd_nm
+              d.*
+            , o.member_nm,    o.order_date,   o.order_status_cd
+            , v.vendor_nm
+            , cd_ds.code_label AS dliv_status_cd_nm
+            , cd_dt.code_label AS dliv_type_cd_nm
+            , cd_dd.code_label AS dliv_div_cd_nm
+            , cd_oc.code_label AS outbound_courier_cd_nm
+            , cd_ic.code_label AS inbound_courier_cd_nm
         FROM od_dliv d
             LEFT JOIN od_order  o ON o.order_id   = d.order_id
             LEFT JOIN sy_vendor v ON v.vendor_id  = d.vendor_id
@@ -81,14 +81,14 @@
     <!-- 배송 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
         SELECT
-            d.*,
-            o.member_nm,    o.order_date,   o.order_status_cd,
-            v.vendor_nm,
-            cd_ds.code_label AS dliv_status_cd_nm,
-            cd_dt.code_label AS dliv_type_cd_nm,
-            cd_dd.code_label AS dliv_div_cd_nm,
-            cd_oc.code_label AS outbound_courier_cd_nm,
-            cd_ic.code_label AS inbound_courier_cd_nm
+              d.*
+            , o.member_nm,    o.order_date,   o.order_status_cd
+            , v.vendor_nm
+            , cd_ds.code_label AS dliv_status_cd_nm
+            , cd_dt.code_label AS dliv_type_cd_nm
+            , cd_dd.code_label AS dliv_div_cd_nm
+            , cd_oc.code_label AS outbound_courier_cd_nm
+            , cd_ic.code_label AS inbound_courier_cd_nm
         FROM od_dliv d
             LEFT JOIN od_order  o ON o.order_id   = d.order_id
             LEFT JOIN sy_vendor v ON v.vendor_id  = d.vendor_id
@@ -142,10 +142,10 @@
     <!-- 주문번호로 배송 목록 조회 -->
     <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
         SELECT
-            d.*,
-            cd_ds.code_label AS dliv_status_cd_nm,
-            cd_dt.code_label AS dliv_type_cd_nm,
-            cd_oc.code_label AS outbound_courier_cd_nm
+              d.*
+            , cd_ds.code_label AS dliv_status_cd_nm
+            , cd_dt.code_label AS dliv_type_cd_nm
+            , cd_oc.code_label AS outbound_courier_cd_nm
         FROM od_dliv d
             LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DLIV_STATUS' AND cd_ds.code_value = d.dliv_status_cd
             LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DLIV_TYPE'   AND cd_dt.code_value = d.dliv_type_cd

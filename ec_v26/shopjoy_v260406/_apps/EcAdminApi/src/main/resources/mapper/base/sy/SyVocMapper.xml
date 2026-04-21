@@ -17,10 +17,10 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
         SELECT
-            v.*,
-            ste.site_nm AS site_nm,
-            cd_vm.code_label AS voc_master_cd_nm,
-            cd_vd.code_label AS voc_detail_cd_nm
+              v.*
+            , ste.site_nm AS site_nm
+            , cd_vm.code_label AS voc_master_cd_nm
+            , cd_vd.code_label AS voc_detail_cd_nm
         FROM sy_voc v
             LEFT JOIN sy_site ste ON ste.site_id = v.site_id
             LEFT JOIN sy_code cd_vm ON cd_vm.code_grp = 'VOC_MASTER' AND cd_vm.code_value = v.voc_master_cd
@@ -30,10 +30,10 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
         SELECT
-            v.*,
-            ste.site_nm AS site_nm,
-            cd_vm.code_label AS voc_master_cd_nm,
-            cd_vd.code_label AS voc_detail_cd_nm
+              v.*
+            , ste.site_nm AS site_nm
+            , cd_vm.code_label AS voc_master_cd_nm
+            , cd_vd.code_label AS voc_detail_cd_nm
         FROM sy_voc v
             LEFT JOIN sy_site ste ON ste.site_id = v.site_id
             LEFT JOIN sy_code cd_vm ON cd_vm.code_grp = 'VOC_MASTER' AND cd_vm.code_value = v.voc_master_cd
@@ -53,10 +53,10 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
         SELECT
-            v.*,
-            ste.site_nm AS site_nm,
-            cd_vm.code_label AS voc_master_cd_nm,
-            cd_vd.code_label AS voc_detail_cd_nm
+              v.*
+            , ste.site_nm AS site_nm
+            , cd_vm.code_label AS voc_master_cd_nm
+            , cd_vd.code_label AS voc_detail_cd_nm
         FROM sy_voc v
             LEFT JOIN sy_site ste ON ste.site_id = v.site_id
             LEFT JOIN sy_code cd_vm ON cd_vm.code_grp = 'VOC_MASTER' AND cd_vm.code_value = v.voc_master_cd

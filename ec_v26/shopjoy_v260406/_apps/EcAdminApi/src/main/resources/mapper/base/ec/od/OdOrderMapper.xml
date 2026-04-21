@@ -30,17 +30,17 @@
     <!-- 주문 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
-            o.*,
-            m.member_email,  m.member_phone   AS member_phone_origin,
-            m.grade_cd,      m.total_purchase_amt,
-            s.site_nm,
-            cou.coupon_nm,   cou.coupon_type_cd,
-            cd_os.code_label AS order_status_cd_nm,
-            cd_pm.code_label AS pay_method_cd_nm,
-            cd_ds.code_label AS dliv_status_cd_nm,
-            cd_rb.code_label AS refund_bank_cd_nm,
-            cd_ap.code_label AS appr_status_cd_nm,
-            cd_at.code_label AS appr_target_cd_nm
+              o.*
+            , m.member_email,  m.member_phone   AS member_phone_origin
+            , m.grade_cd,      m.total_purchase_amt
+            , s.site_nm
+            , cou.coupon_nm,   cou.coupon_type_cd
+            , cd_os.code_label AS order_status_cd_nm
+            , cd_pm.code_label AS pay_method_cd_nm
+            , cd_ds.code_label AS dliv_status_cd_nm
+            , cd_rb.code_label AS refund_bank_cd_nm
+            , cd_ap.code_label AS appr_status_cd_nm
+            , cd_at.code_label AS appr_target_cd_nm
         FROM od_order o
             LEFT JOIN mb_member  m   ON m.member_id   = o.member_id
             LEFT JOIN sy_site    s   ON s.site_id     = o.site_id
@@ -63,15 +63,15 @@
     <!-- 주문 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
-            o.*,
-            m.member_email,
-            s.site_nm,
-            cou.coupon_nm,
-            cd_os.code_label    AS order_status_cd_nm,
-            cd_pm.code_label    AS pay_method_cd_nm,
-            cd_ds.code_label    AS dliv_status_cd_nm,
-            cd_ac.code_label    AS access_channel_cd_nm,
-            cd_ap.code_label    AS appr_status_cd_nm
+              o.*
+            , m.member_email
+            , s.site_nm
+            , cou.coupon_nm
+            , cd_os.code_label    AS order_status_cd_nm
+            , cd_pm.code_label    AS pay_method_cd_nm
+            , cd_ds.code_label    AS dliv_status_cd_nm
+            , cd_ac.code_label    AS access_channel_cd_nm
+            , cd_ap.code_label    AS appr_status_cd_nm
         FROM od_order o
             LEFT JOIN mb_member  m   ON m.member_id   = o.member_id
             LEFT JOIN sy_site    s   ON s.site_id     = o.site_id
@@ -102,15 +102,15 @@
     <!-- 주문 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
-            o.*,
-            m.member_email,
-            s.site_nm,
-            cou.coupon_nm,
-            cd_os.code_label    AS order_status_cd_nm,
-            cd_pm.code_label    AS pay_method_cd_nm,
-            cd_ds.code_label    AS dliv_status_cd_nm,
-            cd_ac.code_label    AS access_channel_cd_nm,
-            cd_ap.code_label    AS appr_status_cd_nm
+              o.*
+            , m.member_email
+            , s.site_nm
+            , cou.coupon_nm
+            , cd_os.code_label    AS order_status_cd_nm
+            , cd_pm.code_label    AS pay_method_cd_nm
+            , cd_ds.code_label    AS dliv_status_cd_nm
+            , cd_ac.code_label    AS access_channel_cd_nm
+            , cd_ap.code_label    AS appr_status_cd_nm
         FROM od_order o
             LEFT JOIN mb_member  m   ON m.member_id   = o.member_id
             LEFT JOIN sy_site    s   ON s.site_id     = o.site_id
@@ -169,13 +169,13 @@
     <!-- 주문번호로 주문 아이템 목록 조회 -->
     <select id="selectItemsByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT
-            oi.*,
-            p.thumbnail_url,
-            sk.sku_code,
-            oi1.opt_item_nm  AS opt_item_nm_1,
-            oi2.opt_item_nm  AS opt_item_nm_2,
-            cd_is.code_label AS order_item_status_cd_nm,
-            cd_dc.code_label AS dliv_courier_cd_nm
+              oi.*
+            , p.thumbnail_url
+            , sk.sku_code
+            , oi1.opt_item_nm  AS opt_item_nm_1
+            , oi2.opt_item_nm  AS opt_item_nm_2
+            , cd_is.code_label AS order_item_status_cd_nm
+            , cd_dc.code_label AS dliv_courier_cd_nm
         FROM od_order_item oi
             LEFT JOIN pd_prod          p   ON p.prod_id      = oi.prod_id
             LEFT JOIN pd_prod_sku      sk  ON sk.sku_id      = oi.sku_id

@@ -17,12 +17,12 @@
     <!-- 클레임 상태 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            cla.member_nm AS claim_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_cs.code_label AS claim_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , cla.member_nm AS claim_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_cs.code_label AS claim_status_cd_nm
         FROM odh_claim_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_claim cla ON cla.claim_id = h.claim_id
@@ -35,12 +35,12 @@
     <!-- 클레임 상태 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            cla.member_nm AS claim_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_cs.code_label AS claim_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , cla.member_nm AS claim_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_cs.code_label AS claim_status_cd_nm
         FROM odh_claim_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_claim cla ON cla.claim_id = h.claim_id
@@ -61,12 +61,12 @@
     <!-- 클레임 상태 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            cla.member_nm AS claim_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_cs.code_label AS claim_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , cla.member_nm AS claim_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_cs.code_label AS claim_status_cd_nm
         FROM odh_claim_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_claim cla ON cla.claim_id = h.claim_id

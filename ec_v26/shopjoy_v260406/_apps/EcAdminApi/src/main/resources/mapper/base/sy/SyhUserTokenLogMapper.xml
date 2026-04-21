@@ -15,11 +15,11 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS user_nm,
-            cd_ta.code_label AS action_cd_nm,
-            cd_tt.code_label AS token_type_cd_nm
+              l.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS user_nm
+            , cd_ta.code_label AS action_cd_nm
+            , cd_tt.code_label AS token_type_cd_nm
         FROM syh_user_token_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             LEFT JOIN sy_user usr ON usr.user_id = l.user_id
@@ -30,11 +30,11 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS user_nm,
-            cd_ta.code_label AS action_cd_nm,
-            cd_tt.code_label AS token_type_cd_nm
+              l.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS user_nm
+            , cd_ta.code_label AS action_cd_nm
+            , cd_tt.code_label AS token_type_cd_nm
         FROM syh_user_token_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             LEFT JOIN sy_user usr ON usr.user_id = l.user_id
@@ -53,11 +53,11 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS user_nm,
-            cd_ta.code_label AS action_cd_nm,
-            cd_tt.code_label AS token_type_cd_nm
+              l.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS user_nm
+            , cd_ta.code_label AS action_cd_nm
+            , cd_tt.code_label AS token_type_cd_nm
         FROM syh_user_token_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             LEFT JOIN sy_user usr ON usr.user_id = l.user_id

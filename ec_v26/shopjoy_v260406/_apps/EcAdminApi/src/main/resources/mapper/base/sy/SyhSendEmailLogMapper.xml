@@ -15,11 +15,11 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm,
-            tpl.template_nm AS template_nm,
-            usr.user_nm AS user_nm,
-            cd_sr.code_label AS result_cd_nm
+              l.*
+            , ste.site_nm AS site_nm
+            , tpl.template_nm AS template_nm
+            , usr.user_nm AS user_nm
+            , cd_sr.code_label AS result_cd_nm
         FROM syh_send_email_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
@@ -30,11 +30,11 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm,
-            tpl.template_nm AS template_nm,
-            usr.user_nm AS user_nm,
-            cd_sr.code_label AS result_cd_nm
+              l.*
+            , ste.site_nm AS site_nm
+            , tpl.template_nm AS template_nm
+            , usr.user_nm AS user_nm
+            , cd_sr.code_label AS result_cd_nm
         FROM syh_send_email_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id
@@ -53,11 +53,11 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto">
         SELECT
-            l.*,
-            ste.site_nm AS site_nm,
-            tpl.template_nm AS template_nm,
-            usr.user_nm AS user_nm,
-            cd_sr.code_label AS result_cd_nm
+              l.*
+            , ste.site_nm AS site_nm
+            , tpl.template_nm AS template_nm
+            , usr.user_nm AS user_nm
+            , cd_sr.code_label AS result_cd_nm
         FROM syh_send_email_log l
             LEFT JOIN sy_site ste ON ste.site_id = l.site_id
             LEFT JOIN sy_template tpl ON tpl.template_id = l.template_id

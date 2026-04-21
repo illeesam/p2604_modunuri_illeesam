@@ -15,8 +15,8 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
         SELECT
-            t.*,
-            mem.member_nm AS member_nm
+              t.*
+            , mem.member_nm AS member_nm
         FROM mb_device_token t
             LEFT JOIN mb_member mem ON mem.member_id = t.member_id
         WHERE t.device_token_id = #{id}
@@ -24,8 +24,8 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
         SELECT
-            t.*,
-            mem.member_nm AS member_nm
+              t.*
+            , mem.member_nm AS member_nm
         FROM mb_device_token t
             LEFT JOIN mb_member mem ON mem.member_id = t.member_id
             <include refid="mbDeviceTokenCond"/>
@@ -41,8 +41,8 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
         SELECT
-            t.*,
-            mem.member_nm AS member_nm
+              t.*
+            , mem.member_nm AS member_nm
         FROM mb_device_token t
             LEFT JOIN mb_member mem ON mem.member_id = t.member_id
             <include refid="mbDeviceTokenCond"/>

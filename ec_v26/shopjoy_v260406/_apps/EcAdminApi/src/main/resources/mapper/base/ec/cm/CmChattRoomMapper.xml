@@ -20,10 +20,10 @@
     <!-- 채팅방 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS admin_user_nm,
-            cd_cs.code_label AS chatt_status_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS admin_user_nm
+            , cd_cs.code_label AS chatt_status_cd_nm
         FROM cm_chatt_room r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_user usr ON usr.user_id = r.admin_user_id
@@ -34,10 +34,10 @@
     <!-- 채팅방 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS admin_user_nm,
-            cd_cs.code_label AS chatt_status_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS admin_user_nm
+            , cd_cs.code_label AS chatt_status_cd_nm
         FROM cm_chatt_room r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_user usr ON usr.user_id = r.admin_user_id
@@ -58,10 +58,10 @@
     <!-- 채팅방 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS admin_user_nm,
-            cd_cs.code_label AS chatt_status_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS admin_user_nm
+            , cd_cs.code_label AS chatt_status_cd_nm
         FROM cm_chatt_room r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_user usr ON usr.user_id = r.admin_user_id

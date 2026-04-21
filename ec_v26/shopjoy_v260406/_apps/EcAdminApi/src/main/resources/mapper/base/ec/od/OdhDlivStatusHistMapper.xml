@@ -15,12 +15,12 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            dli.member_nm AS dliv_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ds.code_label AS dliv_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , dli.member_nm AS dliv_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ds.code_label AS dliv_status_cd_nm
         FROM odh_dliv_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_dliv dli ON dli.dliv_id = h.dliv_id
@@ -32,12 +32,12 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            dli.member_nm AS dliv_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ds.code_label AS dliv_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , dli.member_nm AS dliv_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ds.code_label AS dliv_status_cd_nm
         FROM odh_dliv_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_dliv dli ON dli.dliv_id = h.dliv_id
@@ -57,12 +57,12 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            dli.member_nm AS dliv_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ds.code_label AS dliv_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , dli.member_nm AS dliv_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ds.code_label AS dliv_status_cd_nm
         FROM odh_dliv_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_dliv dli ON dli.dliv_id = h.dliv_id

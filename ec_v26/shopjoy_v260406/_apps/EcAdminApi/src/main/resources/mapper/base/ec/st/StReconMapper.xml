@@ -19,12 +19,12 @@
     <!-- 정산 대사 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            raw.prod_nm AS settle_raw_nm,
-            cd_rt.code_label AS recon_type_cd_nm,
-            cd_rs.code_label AS recon_status_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , raw.prod_nm AS settle_raw_nm
+            , cd_rt.code_label AS recon_type_cd_nm
+            , cd_rs.code_label AS recon_status_cd_nm
         FROM st_recon r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = r.vendor_id
@@ -37,12 +37,12 @@
     <!-- 정산 대사 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            raw.prod_nm AS settle_raw_nm,
-            cd_rt.code_label AS recon_type_cd_nm,
-            cd_rs.code_label AS recon_status_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , raw.prod_nm AS settle_raw_nm
+            , cd_rt.code_label AS recon_type_cd_nm
+            , cd_rs.code_label AS recon_status_cd_nm
         FROM st_recon r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = r.vendor_id
@@ -63,12 +63,12 @@
     <!-- 정산 대사 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto">
         SELECT
-            r.*,
-            ste.site_nm AS site_nm,
-            vnd.vendor_nm AS vendor_nm,
-            raw.prod_nm AS settle_raw_nm,
-            cd_rt.code_label AS recon_type_cd_nm,
-            cd_rs.code_label AS recon_status_cd_nm
+              r.*
+            , ste.site_nm AS site_nm
+            , vnd.vendor_nm AS vendor_nm
+            , raw.prod_nm AS settle_raw_nm
+            , cd_rt.code_label AS recon_type_cd_nm
+            , cd_rs.code_label AS recon_status_cd_nm
         FROM st_recon r
             LEFT JOIN sy_site ste ON ste.site_id = r.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = r.vendor_id

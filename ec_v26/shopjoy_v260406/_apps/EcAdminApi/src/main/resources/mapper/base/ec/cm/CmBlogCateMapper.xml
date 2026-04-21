@@ -19,8 +19,8 @@
     <!-- 게시판 카테고리 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto">
         SELECT
-            c.*,
-            ste.site_nm AS site_nm
+              c.*
+            , ste.site_nm AS site_nm
         FROM cm_blog_cate c
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
         WHERE c.blog_cate_id = #{id}
@@ -29,8 +29,8 @@
     <!-- 게시판 카테고리 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto">
         SELECT
-            c.*,
-            ste.site_nm AS site_nm
+              c.*
+            , ste.site_nm AS site_nm
         FROM cm_blog_cate c
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             <include refid="cmBlogCateCond"/>
@@ -49,8 +49,8 @@
     <!-- 게시판 카테고리 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto">
         SELECT
-            c.*,
-            ste.site_nm AS site_nm
+              c.*
+            , ste.site_nm AS site_nm
         FROM cm_blog_cate c
             LEFT JOIN sy_site ste ON ste.site_id = c.site_id
             <include refid="cmBlogCateCond"/>

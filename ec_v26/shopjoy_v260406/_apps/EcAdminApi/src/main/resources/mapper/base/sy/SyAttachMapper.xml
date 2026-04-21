@@ -21,8 +21,8 @@
     <!-- 첨부파일 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto">
         SELECT
-            a.*,
-            ste.site_nm AS site_nm
+              a.*
+            , ste.site_nm AS site_nm
         FROM sy_attach a
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
         WHERE a.attach_id = #{id}
@@ -31,8 +31,8 @@
     <!-- 첨부파일 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto">
         SELECT
-            a.*,
-            ste.site_nm AS site_nm
+              a.*
+            , ste.site_nm AS site_nm
         FROM sy_attach a
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
             <include refid="syAttachCond"/>
@@ -51,8 +51,8 @@
     <!-- 첨부파일 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto">
         SELECT
-            a.*,
-            ste.site_nm AS site_nm
+              a.*
+            , ste.site_nm AS site_nm
         FROM sy_attach a
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
             <include refid="syAttachCond"/>

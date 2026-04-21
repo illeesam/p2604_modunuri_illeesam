@@ -15,10 +15,10 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhPayStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ps.code_label AS pay_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ps.code_label AS pay_status_cd_nm
         FROM odh_pay_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id
@@ -28,10 +28,10 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhPayStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ps.code_label AS pay_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ps.code_label AS pay_status_cd_nm
         FROM odh_pay_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id
@@ -49,10 +49,10 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhPayStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ps.code_label AS pay_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ps.code_label AS pay_status_cd_nm
         FROM odh_pay_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN sy_user usr ON usr.user_id = h.chg_user_id

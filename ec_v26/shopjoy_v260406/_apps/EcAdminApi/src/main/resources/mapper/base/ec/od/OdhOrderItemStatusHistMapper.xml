@@ -15,12 +15,12 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            ite.prod_nm AS order_item_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ois.code_label AS order_item_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , ite.prod_nm AS order_item_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ois.code_label AS order_item_status_cd_nm
         FROM odh_order_item_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_order_item ite ON ite.order_item_id = h.order_item_id
@@ -32,12 +32,12 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            ite.prod_nm AS order_item_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ois.code_label AS order_item_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , ite.prod_nm AS order_item_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ois.code_label AS order_item_status_cd_nm
         FROM odh_order_item_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_order_item ite ON ite.order_item_id = h.order_item_id
@@ -57,12 +57,12 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemStatusHistDto">
         SELECT
-            h.*,
-            ste.site_nm AS site_nm,
-            ite.prod_nm AS order_item_nm,
-            ord.member_nm AS order_nm,
-            usr.user_nm AS chg_user_nm,
-            cd_ois.code_label AS order_item_status_cd_nm
+              h.*
+            , ste.site_nm AS site_nm
+            , ite.prod_nm AS order_item_nm
+            , ord.member_nm AS order_nm
+            , usr.user_nm AS chg_user_nm
+            , cd_ois.code_label AS order_item_status_cd_nm
         FROM odh_order_item_status_hist h
             LEFT JOIN sy_site ste ON ste.site_id = h.site_id
             LEFT JOIN od_order_item ite ON ite.order_item_id = h.order_item_id

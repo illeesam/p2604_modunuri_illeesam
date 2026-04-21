@@ -13,10 +13,10 @@
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
         SELECT
-            r.*,
-            usr.user_nm AS user_nm,
-            rol.role_nm AS role_nm,
-            usr2.user_nm AS grant_user_nm
+              r.*
+            , usr.user_nm AS user_nm
+            , rol.role_nm AS role_nm
+            , usr2.user_nm AS grant_user_nm
         FROM sy_user_role r
             LEFT JOIN sy_user usr ON usr.user_id = r.user_id
             LEFT JOIN sy_role rol ON rol.role_id = r.role_id
@@ -26,10 +26,10 @@
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
         SELECT
-            r.*,
-            usr.user_nm AS user_nm,
-            rol.role_nm AS role_nm,
-            usr2.user_nm AS grant_user_nm
+              r.*
+            , usr.user_nm AS user_nm
+            , rol.role_nm AS role_nm
+            , usr2.user_nm AS grant_user_nm
         FROM sy_user_role r
             LEFT JOIN sy_user usr ON usr.user_id = r.user_id
             LEFT JOIN sy_role rol ON rol.role_id = r.role_id
@@ -47,10 +47,10 @@
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
         SELECT
-            r.*,
-            usr.user_nm AS user_nm,
-            rol.role_nm AS role_nm,
-            usr2.user_nm AS grant_user_nm
+              r.*
+            , usr.user_nm AS user_nm
+            , rol.role_nm AS role_nm
+            , usr2.user_nm AS grant_user_nm
         FROM sy_user_role r
             LEFT JOIN sy_user usr ON usr.user_id = r.user_id
             LEFT JOIN sy_role rol ON rol.role_id = r.role_id

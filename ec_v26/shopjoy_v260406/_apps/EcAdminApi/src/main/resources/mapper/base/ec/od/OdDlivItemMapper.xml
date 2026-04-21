@@ -18,9 +18,9 @@
     <!-- 배송 아이템 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto">
         SELECT
-            i.*,
-            ste.site_nm AS site_nm,
-            cd_ds.code_label AS dliv_item_status_cd_nm
+              i.*
+            , ste.site_nm AS site_nm
+            , cd_ds.code_label AS dliv_item_status_cd_nm
         FROM od_dliv_item i
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DLIV_STATUS' AND cd_ds.code_value = i.dliv_item_status_cd
@@ -30,9 +30,9 @@
     <!-- 배송 아이템 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto">
         SELECT
-            i.*,
-            ste.site_nm AS site_nm,
-            cd_ds.code_label AS dliv_item_status_cd_nm
+              i.*
+            , ste.site_nm AS site_nm
+            , cd_ds.code_label AS dliv_item_status_cd_nm
         FROM od_dliv_item i
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DLIV_STATUS' AND cd_ds.code_value = i.dliv_item_status_cd
@@ -50,9 +50,9 @@
     <!-- 배송 아이템 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto">
         SELECT
-            i.*,
-            ste.site_nm AS site_nm,
-            cd_ds.code_label AS dliv_item_status_cd_nm
+              i.*
+            , ste.site_nm AS site_nm
+            , cd_ds.code_label AS dliv_item_status_cd_nm
         FROM od_dliv_item i
             LEFT JOIN sy_site ste ON ste.site_id = i.site_id
             LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DLIV_STATUS' AND cd_ds.code_value = i.dliv_item_status_cd
