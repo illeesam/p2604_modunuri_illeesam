@@ -34,11 +34,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> errors = new HashMap<>();
+        StringBuilder msgBuilder = new StringBuilder();
         for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
             errors.put(fe.getField(), fe.getDefaultMessage());
+            if (msgBuilder.length() > 0) msgBuilder.append(", ");
+            msgBuilder.append(fe.getField()).append(": ").append(fe.getDefaultMessage());
         }
+        String message = msgBuilder.length() > 0 ? msgBuilder.toString() : "입력 내용을 확인해주세요.";
         return ResponseEntity.badRequest()
-            .body(ApiResponse.error(400, "입력 내용을 확인해주세요.", errors)
+            .body(ApiResponse.error(400, message, errors)
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
