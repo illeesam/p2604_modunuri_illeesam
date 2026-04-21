@@ -3029,7 +3029,7 @@
       { i18nId: 'I005', siteId: null, i18nKey: 'error.FORBIDDEN',    i18nDesc: '403 오류',     i18nScopeCd: 'COMMON', i18nCategory: 'error',  sortOrd: 2, useYn: 'Y' },
       { i18nId: 'I006', siteId: null, i18nKey: 'fo.cart.add',        i18nDesc: '장바구니 추가',i18nScopeCd: 'FO',     i18nCategory: 'fo',     sortOrd: 1, useYn: 'Y' },
       { i18nId: 'I007', siteId: null, i18nKey: 'fo.order.complete',  i18nDesc: '주문 완료',    i18nScopeCd: 'FO',     i18nCategory: 'fo',     sortOrd: 2, useYn: 'Y' },
-      { i18nId: 'I008', siteId: null, i18nKey: 'bo.admin.dashboard', i18nDesc: '관리자 대시보드',i18nScopeCd:'BO',    i18nCategory: 'bo',     sortOrd: 1, useYn: 'Y' },
+      { i18nId: 'I008', siteId: null, i18nKey: 'bo.dashboard', i18nDesc: '관리자 대시보드',i18nScopeCd:'BO',    i18nCategory: 'bo',     sortOrd: 1, useYn: 'Y' },
     ],
     i18nMsgs: [
       { i18nMsgId: 'IM001', i18nId: 'I001', langCd: 'ko', i18nMsg: '저장' },

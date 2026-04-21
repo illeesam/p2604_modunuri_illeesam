@@ -133,7 +133,7 @@ window.PdProdHist = {
           <td><span class="tag">{{ h.field }}</span></td>
           <td style="color:#888;">{{ h.before }}</td>
           <td style="font-weight:600;color:#e8587a;">{{ h.after }}</td>
-          <td>{{ h.admin }}</td>
+          <td>{{ h.bo }}</td>
         </tr>
       </tbody>
     </table>
@@ -150,7 +150,7 @@ window.PdProdHist = {
           <td>{{ h.date }}</td>
           <td><span class="badge badge-gray">{{ h.before }}</span></td>
           <td><span class="badge badge-blue">{{ h.after }}</span></td>
-          <td>{{ h.admin }}</td>
+          <td>{{ h.bo }}</td>
         </tr>
       </tbody>
     </table>
@@ -168,7 +168,7 @@ window.PdProdHist = {
           <td><span class="tag">{{ h.field }}</span></td>
           <td style="color:#888;">{{ h.before }}</td>
           <td style="font-weight:500;">{{ h.after }}</td>
-          <td>{{ h.admin }}</td>
+          <td>{{ h.bo }}</td>
         </tr>
       </tbody>
     </table>

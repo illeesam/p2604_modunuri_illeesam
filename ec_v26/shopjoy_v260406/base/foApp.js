@@ -384,9 +384,9 @@
 
     /* FO_SITE_NO 기준 동적 컴포넌트 참조 */
     const _N = window.FO_SITE_NO;
-    const frontHomeComp     = window['Home' + _N];
-    const frontProdListComp = window['Prod' + _N + 'List'];
-    const frontProdViewComp = window['Prod' + _N + 'View'];
+    const foHomeComp     = window['Home' + _N];
+    const foProdListComp = window['Prod' + _N + 'List'];
+    const foProdViewComp = window['Prod' + _N + 'View'];
 
     return {
       theme, toggleTheme,
@@ -400,7 +400,7 @@
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, showLogin, onShowLogin, onLogout,
-      frontHomeComp, frontProdListComp, frontProdViewComp,
+      foHomeComp, foProdListComp, foProdViewComp,
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
       }),
@@ -427,17 +427,17 @@
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
 
     <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
-      <component :is="frontHomeComp"
+      <component :is="foHomeComp"
         v-if="page === 'home'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
-      <component :is="frontProdListComp"
+      <component :is="foProdListComp"
         v-else-if="page === 'prodList'"
         :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
         :toggle-like="toggleLike" :is-liked="isLiked"
       />
-      <component :is="frontProdViewComp"
+      <component :is="foProdViewComp"
         v-else-if="page === 'prodView'"
         :navigate="navigate" :config="config" :product="selectedProduct"
         :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
