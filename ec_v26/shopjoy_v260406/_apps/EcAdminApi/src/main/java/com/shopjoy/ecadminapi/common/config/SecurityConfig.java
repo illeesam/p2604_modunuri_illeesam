@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.common.config;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -53,6 +54,7 @@ import java.util.List;
  *
  * 필터 순서: JwtAuthFilter → UsernamePasswordAuthenticationFilter
  */
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity          // @BoOnly / @BoOrFo 어노테이션 활성화
@@ -125,7 +127,9 @@ public class SecurityConfig {
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+        SecurityFilterChain chain = http.build();
+        log.info("[SecurityConfig] SecurityFilterChain 등록 완료 — JWT Stateless, JwtAuthFilter 활성");
+        return chain;
     }
 
     @Bean

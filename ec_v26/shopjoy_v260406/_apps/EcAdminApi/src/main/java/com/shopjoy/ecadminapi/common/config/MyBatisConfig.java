@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.common.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Profile;
  * - autorest 패키지 하위 @Mapper 인터페이스를 자동 스캔
  * - local/dev 프로파일에서만 쿼리 로깅 인터셉터 활성화 (운영 성능 영향 없음)
  */
+@Slf4j
 @Configuration
 @MapperScan("com.shopjoy.ecadminapi.autorest")
 public class MyBatisConfig {
@@ -19,6 +21,7 @@ public class MyBatisConfig {
     @Bean
     @Profile({"local", "dev"})
     public ConfigurationCustomizer myBatisQueryLoggingCustomizer() {
+        log.info("[MyBatisConfig] MyBatisQueryInterceptor 등록 완료 — 쿼리 로깅 활성 (local/dev only)");
         return configuration -> configuration.addInterceptor(new MyBatisQueryInterceptor());
     }
 }
