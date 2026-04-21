@@ -16,7 +16,7 @@ window.foAppFooter = {
         if (target && typeof window.navigate === 'function') window.navigate(target);
       } else if (root === 'backOffice') {
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');
-      } else if (root === 'dispFrontUi') {
+      } else if (root === 'dispFoUi') {
         window.open((window.pageUrl ? window.pageUrl('disp-fo-ui.html') : 'disp-fo-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispBoUi') {
         window.open((window.pageUrl ? window.pageUrl('disp-bo-ui.html') : 'disp-bo-ui.html') + (target ? '#page=' + target : ''), '_blank');
@@ -175,7 +175,7 @@ window.foAppFooter = {
             </div>
           </div>
 
-          <!-- 나머지: Front 사이트번호 + dispUi -->
+          <!-- 나머지: FO 사이트번호 + dispUi -->
           <div style="display:flex;flex-direction:column;gap:14px;">
             <!-- _SITE_NO (FO / BO 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
@@ -215,7 +215,7 @@ window.foAppFooter = {
                   style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
                   <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
                   <span style="flex:1;font-size:12.5px;color:#333;">{{ m.label }}</span>
-                  <button type="button" @click="goItem('dispFrontUi', m.id); closeMenu();"
+                  <button type="button" @click="goItem('dispFoUi', m.id); closeMenu();"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
                     title="사용자 미리보기">사용자 ↗</button>
                   <button type="button" @click="goItem('dispBoUi', m.id); closeMenu();"

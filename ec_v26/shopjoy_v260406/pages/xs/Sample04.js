@@ -146,7 +146,7 @@ window.XsSample04 = {
 
     /* ── BaseModal 카탈로그 — 3그룹 분류 ── */
 
-    /* ① Front + Admin 공통 (3종)
+    /*/* ① FO + BO 공통 (3종)
          show prop 방식, boData 의존성 없음 → 양쪽 모두 사용 */
     const CATALOG2_COMMON = [
       { id: 'orderDetail',   icon: '📦', name: '주문상세 모달',    desc: 'OrderDetailModal — 상품/결제/배송',   color: '#2563eb' },
@@ -154,7 +154,7 @@ window.XsSample04 = {
       { id: 'customerModal', icon: '👤', name: '주문자 정보 모달',  desc: 'CustomerModal — 주문자/결제 정보',     color: '#0891b2' },
     ];
 
-    /* ② Front 전용 (1종)
+    /*/* ② FO 전용 (1종)
          window.boData.categories 직접 참조, 사용자 카테고리 필터용 */
     const CATALOG2_FO = [
       { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: 'CategorySelectModal — 트리+멀티체크', color: '#7e22ce' },
@@ -252,10 +252,10 @@ window.XsSample04 = {
       </div>
     </div>
 
-    <!-- ① Front + Admin 공통 (3종) -->
+    <!--/* ① FO + BO 공통 (3종) -->
     <div style="border:1px solid #dbeafe;border-radius:10px;padding:14px 16px;background:#f0f7ff;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:800;background:#2563eb;color:#fff;padding:2px 10px;border-radius:20px;">Front + Admin 공통</span>
+        <span style="font-size:11px;font-weight:800;background:#2563eb;color:#fff;padding:2px 10px;border-radius:20px;">FO + BO 공통</span>
         <span style="font-size:11px;color:#2563eb;font-weight:600;">3종</span>
         <span style="font-size:11px;color:#93c5fd;">— show prop 방식, boData 의존성 없음</span>
       </div>
@@ -276,10 +276,10 @@ window.XsSample04 = {
       </div>
     </div>
 
-    <!-- ② Front 전용 (1종) -->
+    <!--/* ② FO 전용 (1종) -->
     <div style="border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;background:#f0fdf4;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:800;background:#16a34a;color:#fff;padding:2px 10px;border-radius:20px;">Front 전용</span>
+        <span style="font-size:11px;font-weight:800;background:#16a34a;color:#fff;padding:2px 10px;border-radius:20px;">FO 전용</span>
         <span style="font-size:11px;color:#16a34a;font-weight:600;">1종</span>
         <span style="font-size:11px;color:#86efac;">— window.boData.categories 직접 참조, 사용자 카테고리 필터</span>
       </div>
@@ -303,7 +303,7 @@ window.XsSample04 = {
     <!-- ③ Admin 전용 (13종) -->
     <div style="border:1px solid #fecaca;border-radius:10px;padding:14px 16px;background:#fff7f7;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:800;background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;">Admin 전용</span>
+        <span style="font-size:11px;font-weight:800;background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;">BO 전용</span>
         <span style="font-size:11px;color:#dc2626;font-weight:600;">13종</span>
         <span style="font-size:11px;color:#fca5a5;">— boData prop 필수, 관리 기능 전용</span>
       </div>

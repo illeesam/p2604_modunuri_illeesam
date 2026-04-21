@@ -1,4 +1,4 @@
-/* Minimal Yup-compatible shim for ShopJoy Admin (no CDN required) */
+/* Minimal Yup-compatible shim for ShopJoy BO (no CDN required) */
 window.yup = (() => {
   class ValidationError extends Error {
     constructor(errors) {

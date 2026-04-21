@@ -1,5 +1,5 @@
 /**
- * BO Admin 데이터 스토어 (Pinia)
+ * BO 데이터 스토어 (Pinia)
  * - 실제 사용 state만 유지
  * - 로그인 후 /bo/* API에서 로드
  */
