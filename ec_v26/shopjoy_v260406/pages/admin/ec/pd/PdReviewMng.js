@@ -86,10 +86,10 @@ window.PdReviewMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">리뷰제목</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="리뷰 제목 검색">
+        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
         <label class="search-label">상태</label>
         <select class="form-control" v-model="searchStatus">
-          <option value="">전체</option><option v-for="s in STATUS_LIST" :key="s" :value="s">{{ STATUS_LABEL[s] }}</option>
+          <option value="">전체</option><option v-for="s in STATUS_LIST" :key="Math.random()" :value="s">{{ STATUS_LABEL[s] }}</option>
         </select>
         <label class="search-label">평점</label>
         <select class="form-control" v-model="searchRating">
@@ -117,7 +117,7 @@ window.PdReviewMng = {
           <th style="width:80px;text-align:center">상태변경</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in pageList" :key="row?.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.reviewTitle }}</span></td>
             <td style="font-size:12px;color:#666">{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
@@ -127,7 +127,7 @@ window.PdReviewMng = {
             <td style="font-size:12px">{{ row.reviewDate }}</td>
             <td style="text-align:center" @click.stop>
               <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="changeStatus(row,$event.target.value)">
-                <option v-for="s in STATUS_LIST" :key="s" :value="s">{{ STATUS_LABEL[s] }}</option>
+                <option v-for="s in STATUS_LIST" :key="Math.random()" :value="s">{{ STATUS_LABEL[s] }}</option>
               </select>
             </td>
           </tr>
@@ -139,13 +139,13 @@ window.PdReviewMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

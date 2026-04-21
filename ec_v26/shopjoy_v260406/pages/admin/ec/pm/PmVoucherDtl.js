@@ -205,7 +205,7 @@ window.PmVoucherDtl = {
 
   <!-- 탭 네비게이션 -->
   <div class="tab-nav">
-    <button v-for="t in ['info','detail','issueHist','useHist','preview']" :key="t"
+    <button v-for="t in ['info','detail','issueHist','useHist','preview']" :key="Math.random()"
       :class="['tab-btn', {active:tab===t}]"
       @click="onTabChange(t)">
       {{ {info:'기본정보',detail:'상세정보',issueHist:'발급내역',useHist:'사용내역',preview:'미리보기'}[t] }}
@@ -294,7 +294,7 @@ window.PmVoucherDtl = {
           <span class="modal-close" @click="showVendorModal=false">×</span>
         </div>
         <div style="padding:0;max-height:400px;overflow-y:auto;">
-          <div v-for="v in ([] || [])" :key="v.vendorId"
+          <div v-for="v in ([] || [])" :key="v?.vendorId"
             style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
             :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
             @click="selectVendor(v.vendorId, v.vendorNm)">
@@ -427,7 +427,7 @@ window.PmVoucherDtl = {
       <thead><tr><th>발급번호</th><th>회원명</th><th>발급일</th><th>발급가격</th><th>만료일</th><th>상태</th></tr></thead>
       <tbody>
         <tr v-if="issuedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">발급내역이 없습니다.</td></tr>
-        <tr v-for="item in issuedList" :key="item.issueNo">
+        <tr v-for="item in issuedList" :key="item?.issueNo">
           <td>{{ item.issueNo }}</td>
           <td>{{ item.memberNm }}</td>
           <td>{{ item.issueDate }}</td>
@@ -446,7 +446,7 @@ window.PmVoucherDtl = {
       <thead><tr><th>사용번호</th><th>발급번호</th><th>회원명</th><th>주문ID</th><th>사용금액</th><th>사용일시</th></tr></thead>
       <tbody>
         <tr v-if="usedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">사용내역이 없습니다.</td></tr>
-        <tr v-for="item in usedList" :key="item.usageNo">
+        <tr v-for="item in usedList" :key="item?.usageNo">
           <td>{{ item.usageNo }}</td>
           <td>{{ item.issueNo }}</td>
           <td>{{ item.memberNm }}</td>

@@ -109,10 +109,10 @@ window.PdDlivTmpltMng = {
   <div class="card">
       <div class="search-bar">
         <label class="search-label">템플릿명</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="템플릿명 검색">
+        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
         <label class="search-label">배송방법</label>
         <select class="form-control" v-model="searchMethod">
-          <option value="">전체</option><option v-for="m in DLIV_METHODS" :key="m" :value="m">{{ m }}</option>
+          <option value="">전체</option><option v-for="m in DLIV_METHODS" :key="Math.random()" :value="m">{{ m }}</option>
         </select>
         <label class="search-label">사용여부</label>
         <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
@@ -140,7 +140,7 @@ window.PdDlivTmpltMng = {
           <th style="width:60px;text-align:center">사용</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row.dlivTmpltId" :class="{active:selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in pageList" :key="row?.dlivTmpltId" :class="{active:selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.dlivTmpltNm }}</span></td>
             <td><span :class="['badge',methodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>
             <td><span class="badge badge-gray">{{ row.dlivPayTypeCd }}</span></td>
@@ -158,13 +158,13 @@ window.PdDlivTmpltMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -182,13 +182,13 @@ window.PdDlivTmpltMng = {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
         <div class="form-group"><label class="form-label">템플릿명 <span style="color:red">*</span></label><input class="form-control" v-model="form.dlivTmpltNm"></div>
         <div class="form-group"><label class="form-label">배송방법</label>
-          <select class="form-control" v-model="form.dlivMethodCd"><option v-for="m in DLIV_METHODS" :key="m" :value="m">{{ m }}</option></select>
+          <select class="form-control" v-model="form.dlivMethodCd"><option v-for="m in DLIV_METHODS" :key="Math.random()" :value="m">{{ m }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">배송비 결제유형</label>
-          <select class="form-control" v-model="form.dlivPayTypeCd"><option v-for="p in DLIV_PAY_TYPES" :key="p" :value="p">{{ p }}</option></select>
+          <select class="form-control" v-model="form.dlivPayTypeCd"><option v-for="p in DLIV_PAY_TYPES" :key="Math.random()" :value="p">{{ p }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">배송 택배사</label>
-          <select class="form-control" v-model="form.dlivCourierCd"><option value="">없음</option><option v-for="c in COURIERS" :key="c" :value="c">{{ c }}</option></select>
+          <select class="form-control" v-model="form.dlivCourierCd"><option value="">없음</option><option v-for="c in COURIERS" :key="Math.random()" :value="c">{{ c }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">기본 배송비 (원)</label><input class="form-control" type="number" v-model.number="form.dlivCost"></div>
         <div class="form-group"><label class="form-label">무료배송 최소금액 (원)</label><input class="form-control" type="number" v-model.number="form.freeDlivMinAmt"></div>
@@ -196,7 +196,7 @@ window.PdDlivTmpltMng = {
         <div class="form-group"><label class="form-label">반품배송비 편도 (원)</label><input class="form-control" type="number" v-model.number="form.returnCost"></div>
         <div class="form-group"><label class="form-label">교환배송비 왕복 (원)</label><input class="form-control" type="number" v-model.number="form.exchangeCost"></div>
         <div class="form-group"><label class="form-label">반품 택배사</label>
-          <select class="form-control" v-model="form.returnCourierCd"><option value="">없음</option><option v-for="c in COURIERS" :key="c" :value="c">{{ c }}</option></select>
+          <select class="form-control" v-model="form.returnCourierCd"><option value="">없음</option><option v-for="c in COURIERS" :key="Math.random()" :value="c">{{ c }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">반품지 우편번호</label><input class="form-control" v-model="form.returnAddrZip"></div>
         <div class="form-group"><label class="form-label">반품지 전화번호</label><input class="form-control" v-model="form.returnTelNo"></div>

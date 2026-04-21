@@ -324,7 +324,7 @@ window.PdCategoryMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">카테고리명</label>
-      <input class="form-control" v-model="searchKw" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="onSearch">
+      <input class="form-control" v-model="searchKw" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
       <label class="search-label">단계</label>
       <select class="form-control" v-model="searchDepth" style="width:120px">
         <option value="">전체</option>
@@ -359,7 +359,7 @@ window.PdCategoryMng = {
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
       </div>
       <div style="max-height:60vh;overflow-y:auto">
-        <div v-for="cat in catTreeFlat" :key="cat.categoryId"
+        <div v-for="cat in catTreeFlat" :key="cat?.categoryId"
              :style="{ paddingLeft: (cat._depth * 14 + 6) + 'px', cursor:'pointer', padding:'5px 8px',
                        borderRadius:'4px', paddingLeft: (cat._depth * 14 + 6) + 'px',
                        background: selectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
@@ -432,7 +432,7 @@ window.PdCategoryMng = {
               {{ selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-for="(row, idx) in pagedRows" :key="row.categoryId"
+          <tr v-for="(row, idx) in pagedRows" :key="row?.categoryId"
               :class="[focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
               draggable="true"
               @dragstart="onRowDragStart(getRealIdx(idx))"
@@ -526,13 +526,13 @@ window.PdCategoryMng = {
         <div class="pager">
           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-          <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+          <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
           </select>
         </div>
       </div>
@@ -552,7 +552,7 @@ window.PdCategoryMng = {
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
                @click="onParentSelect(null)">최상위 (상위없음)</div>
-          <div v-for="c in catPickerList" :key="c.categoryId"
+          <div v-for="c in catPickerList" :key="c?.categoryId"
                style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px"
                :style="{ paddingLeft: (c.depth * 14 + 12) + 'px' }"
                @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''"

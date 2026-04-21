@@ -126,7 +126,7 @@ window.DpDispRelationMng = {
   <div class="card" style="padding:12px;">
     <div v-if="!treeData.length" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</div>
 
-    <div v-for="ui in treeData" :key="ui.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
+    <div v-for="ui in treeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
       <!-- UI 행 -->
       <div @click="toggleNode('ui_'+ui.id)"
         style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">
@@ -142,7 +142,7 @@ window.DpDispRelationMng = {
 
       <!-- 영역들 -->
       <div v-if="isNodeExpanded('ui_'+ui.id)" style="background:#fafafa;">
-        <div v-for="area in ui.children" :key="area.id" style="border-top:1px solid #f0f0f0;">
+        <div v-for="area in ui.children" :key="area?.id" style="border-top:1px solid #f0f0f0;">
           <div @click="toggleNode('area_'+area.id)"
             style="display:flex;align-items:center;gap:8px;padding:8px 12px 8px 40px;cursor:pointer;user-select:none;background:#fff;">
             <span style="font-size:12px;color:#999;width:20px;text-align:center;">{{ isNodeExpanded('area_'+area.id) ? '▼' : '▶' }}</span>
@@ -157,7 +157,7 @@ window.DpDispRelationMng = {
 
           <!-- 패널들 -->
           <div v-if="isNodeExpanded('area_'+area.id)" style="background:#fff;">
-            <div v-for="panel in area.children" :key="panel.id"
+            <div v-for="panel in area.children" :key="panel?.id"
               style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 68px;border-top:1px solid #f5f5f5;font-size:11px;">
               <span :style="{background: getBadgeColor('panel').bg, color: getBadgeColor('panel').color, fontSize:'9px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">패널</span>
               <span style="color:#333;flex:1;">{{ panel.name }}</span>

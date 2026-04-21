@@ -273,7 +273,7 @@ window.StStatusMng = {
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
@@ -289,7 +289,7 @@ window.StStatusMng = {
   <!-- 탭 -->
   <div class="tab-bar-row" style="margin-bottom:0">
     <div class="tab-nav">
-      <button v-for="t in TABS" :key="t.id" class="tab-btn" :class="{active: activeTab===t.id}" @click="activeTab=t.id">{{ t.label }}</button>
+      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: activeTab===t.id}" @click="activeTab=t.id">{{ t.label }}</button>
     </div>
   </div>
 
@@ -316,7 +316,7 @@ window.StStatusMng = {
     </div>
     <!-- 검색 -->
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="vendorSearchKw" placeholder="업체명 검색" style="width:200px" @keyup.enter="onSearch" />
+      <input v-model="vendorSearchKw" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
     </div>
     <!-- 테이블 -->
     <div class="toolbar"><span class="list-count">총 {{ vendorTotal }}개 업체</span></div>
@@ -325,7 +325,7 @@ window.StStatusMng = {
         <th>업체명</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>정산예정액</th>
       </tr></thead>
       <tbody>
-        <tr v-for="r in vendorPageList" :key="r.vendorId">
+        <tr v-for="r in vendorPageList" :key="r?.vendorId">
           <td><strong>{{ r.vendorNm }}</strong></td>
           <td>{{ r.orderCnt }}건</td>
           <td>{{ fmtW(r.sales) }}</td>
@@ -342,13 +342,13 @@ window.StStatusMng = {
          <div class="pager">
            <button :disabled="vendorPager.page===1" @click="setVendorPage(1)">«</button>
            <button :disabled="vendorPager.page===1" @click="setVendorPage(vendorPager.page-1)">‹</button>
-           <button v-for="n in pageNums(vendorPager.page,vendorPages)" :key="n" :class="{active:vendorPager.page===n}" @click="setVendorPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums(vendorPager.page,vendorPages)" :key="Math.random()" :class="{active:vendorPager.page===n}" @click="setVendorPage(n)">{{ n }}</button>
            <button :disabled="vendorPager.page===vendorPages" @click="setVendorPage(vendorPager.page+1)">›</button>
            <button :disabled="vendorPager.page===vendorPages" @click="setVendorPage(vendorPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="vendorPager.size" @change="onVendorSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -375,7 +375,7 @@ window.StStatusMng = {
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="orderSearchKw" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="onSearch" />
+      <input v-model="orderSearchKw" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
       <select v-model="orderSearchStatus" style="width:130px">
         <option value="">상태 전체</option>
         <option>주문완료</option><option>결제완료</option><option>배송준비중</option>
@@ -388,7 +388,7 @@ window.StStatusMng = {
         <th>주문ID</th><th>주문일시</th><th>고객명</th><th>업체</th><th>상품명</th><th>결제금액</th><th>수수료</th><th>정산액</th><th>상태</th>
       </tr></thead>
       <tbody>
-        <tr v-for="r in orderPageList" :key="r.orderId" :style="r.isCancelled ? 'color:#bbb' : ''">
+        <tr v-for="r in orderPageList" :key="r?.orderId" :style="r.isCancelled ? 'color:#bbb' : ''">
           <td>{{ r.orderId }}</td>
           <td>{{ r.orderDate }}</td>
           <td>{{ r.userNm }}</td>
@@ -407,13 +407,13 @@ window.StStatusMng = {
          <div class="pager">
            <button :disabled="orderPager.page===1" @click="setOrderPage(1)">«</button>
            <button :disabled="orderPager.page===1" @click="setOrderPage(orderPager.page-1)">‹</button>
-           <button v-for="n in pageNums(orderPager.page,orderPages)" :key="n" :class="{active:orderPager.page===n}" @click="setOrderPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums(orderPager.page,orderPages)" :key="Math.random()" :class="{active:orderPager.page===n}" @click="setOrderPage(n)">{{ n }}</button>
            <button :disabled="orderPager.page===orderPages" @click="setOrderPage(orderPager.page+1)">›</button>
            <button :disabled="orderPager.page===orderPages" @click="setOrderPage(orderPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="orderPager.size" @change="onOrderSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -457,7 +457,7 @@ window.StStatusMng = {
         <th>클레임ID</th><th>요청일시</th><th>고객명</th><th>주문ID</th><th>상품명</th><th>유형</th><th>사유</th><th>환불액</th><th>정산차감</th><th>상태</th>
       </tr></thead>
       <tbody>
-        <tr v-for="r in claimPageList" :key="r.claimId">
+        <tr v-for="r in claimPageList" :key="r?.claimId">
           <td>{{ r.claimId }}</td>
           <td>{{ r.requestDate }}</td>
           <td>{{ r.userNm }}</td>
@@ -477,13 +477,13 @@ window.StStatusMng = {
          <div class="pager">
            <button :disabled="claimPager.page===1" @click="setClaimPage(1)">«</button>
            <button :disabled="claimPager.page===1" @click="setClaimPage(claimPager.page-1)">‹</button>
-           <button v-for="n in pageNums(claimPager.page,claimPages)" :key="n" :class="{active:claimPager.page===n}" @click="setClaimPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums(claimPager.page,claimPages)" :key="Math.random()" :class="{active:claimPager.page===n}" @click="setClaimPage(n)">{{ n }}</button>
            <button :disabled="claimPager.page===claimPages" @click="setClaimPage(claimPager.page+1)">›</button>
            <button :disabled="claimPager.page===claimPages" @click="setClaimPage(claimPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="claimPager.size" @change="onClaimSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -511,7 +511,7 @@ window.StStatusMng = {
         <option>쿠폰</option>
         <option>캐쉬</option>
       </select>
-      <input v-model="promoSearchKw" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="onSearch" />
+      <input v-model="promoSearchKw" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>
     <div class="toolbar"><span class="list-count">총 {{ promoTotal }}개</span></div>
     <table class="admin-table">
@@ -519,7 +519,7 @@ window.StStatusMng = {
         <th>ID</th><th>유형</th><th>프로모션명</th><th>발급/충전수</th><th>사용건수</th><th>할인/지원액</th><th>기간</th><th>상태</th>
       </tr></thead>
       <tbody>
-        <tr v-for="r in promoPageList" :key="r.promoId">
+        <tr v-for="r in promoPageList" :key="r?.promoId">
           <td>{{ r.promoId }}</td>
           <td><span class="badge badge-blue">{{ r.promoType }}</span></td>
           <td>{{ r.promoNm }}</td>
@@ -537,13 +537,13 @@ window.StStatusMng = {
          <div class="pager">
            <button :disabled="promoPager.page===1" @click="setPromoPage(1)">«</button>
            <button :disabled="promoPager.page===1" @click="setPromoPage(promoPager.page-1)">‹</button>
-           <button v-for="n in pageNums(promoPager.page,promoPages)" :key="n" :class="{active:promoPager.page===n}" @click="setPromoPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums(promoPager.page,promoPages)" :key="Math.random()" :class="{active:promoPager.page===n}" @click="setPromoPage(n)">{{ n }}</button>
            <button :disabled="promoPager.page===promoPages" @click="setPromoPage(promoPager.page+1)">›</button>
            <button :disabled="promoPager.page===promoPages" @click="setPromoPage(promoPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="promoPager.size" @change="onPromoSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -570,7 +570,7 @@ window.StStatusMng = {
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="onSearch" />
+      <input v-model="settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>
     <div class="toolbar"><span class="list-count">총 {{ settleTotal }}개월</span></div>
     <table class="admin-table">
@@ -578,7 +578,7 @@ window.StStatusMng = {
         <th>정산월</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>프로모션비(3%)</th><th>순정산액</th><th>상태</th>
       </tr></thead>
       <tbody>
-        <tr v-for="r in settlePageList" :key="r.month">
+        <tr v-for="r in settlePageList" :key="r?.month">
           <td><strong>{{ r.month }}</strong></td>
           <td>{{ r.orderCnt }}건</td>
           <td>{{ fmtW(r.sales) }}</td>
@@ -597,13 +597,13 @@ window.StStatusMng = {
          <div class="pager">
            <button :disabled="settlePager.page===1" @click="setSettlePage(1)">«</button>
            <button :disabled="settlePager.page===1" @click="setSettlePage(settlePager.page-1)">‹</button>
-           <button v-for="n in pageNums(settlePager.page,settlePages)" :key="n" :class="{active:settlePager.page===n}" @click="setSettlePage(n)">{{ n }}</button>
+           <button v-for="n in pageNums(settlePager.page,settlePages)" :key="Math.random()" :class="{active:settlePager.page===n}" @click="setSettlePage(n)">{{ n }}</button>
            <button :disabled="settlePager.page===settlePages" @click="setSettlePage(settlePager.page+1)">›</button>
            <button :disabled="settlePager.page===settlePages" @click="setSettlePage(settlePages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="settlePager.size" @change="onSettleSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

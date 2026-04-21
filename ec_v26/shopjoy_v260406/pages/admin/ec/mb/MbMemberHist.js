@@ -60,7 +60,7 @@ window.MbMemberHist = {
     <table class="admin-table" v-if="memberOrders.length">
       <thead><tr><th>주문ID</th><th>주문일</th><th>상품</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="o in memberOrders" :key="o.orderId">
+        <tr v-for="o in memberOrders" :key="o?.orderId">
           <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
           <td>{{ o.orderDate }}</td>
           <td>{{ o.prodNm }}</td>
@@ -79,7 +79,7 @@ window.MbMemberHist = {
     <table class="admin-table" v-if="memberClaims.length">
       <thead><tr><th>클레임ID</th><th>주문ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="c in memberClaims" :key="c.claimId">
+        <tr v-for="c in memberClaims" :key="c?.claimId">
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('order', c.orderId)">{{ c.orderId }}</span></td>
           <td>{{ c.type }}</td>

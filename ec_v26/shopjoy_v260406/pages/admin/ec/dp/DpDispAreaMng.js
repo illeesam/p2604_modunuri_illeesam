@@ -270,7 +270,7 @@ window.DpDispAreaMng = {
       <input v-model="searchKw" placeholder="영역코드 / 영역명 / 설명 검색" style="min-width:260px;" />
       <select v-model="searchAreaType">
         <option value="">영역유형 전체</option>
-        <option v-for="o in AREA_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in AREA_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <select v-model="searchUseYn">
         <option value="">사용여부 전체</option>
@@ -283,7 +283,7 @@ window.DpDispAreaMng = {
       <input type="date" v-model="searchDateEnd" class="date-range-input" />
       <select v-model="searchDateRange" @change="onDateRangeChange">
         <option value="">옵션선택</option>
-        <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
@@ -316,7 +316,7 @@ window.DpDispAreaMng = {
       <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
     </div>
     <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-      <div v-for="node in areaTree" :key="node.label">
+      <div v-for="node in areaTree" :key="node?.label">
         <div @click="selectTree(node.label)"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -330,7 +330,7 @@ window.DpDispAreaMng = {
           <span @click.stop="selectTree(node.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
         </div>
         <div v-if="isTreeOpen('grp_'+node.label)" style="padding-left:16px;">
-          <div v-for="child in node.children" :key="child.codeId"
+          <div v-for="child in node.children" :key="child?.codeId"
             @click.stop="selectTree(child.codeValue)"
             :style="{
               display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -375,7 +375,7 @@ window.DpDispAreaMng = {
         <tr v-if="pageList.length===0">
           <td colspan="4" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <template v-for="(a, pageIdx) in pageList" :key="a.codeId">
+        <template v-for="(a, pageIdx) in pageList" :key="a?.codeId">
           <tr draggable="true"
             @dragstart="onDragStart($event, pageIdx)"
             @dragover="onDragOver($event, pageIdx)"
@@ -437,7 +437,7 @@ window.DpDispAreaMng = {
               </div>
               <div v-if="panelsOfArea(a.codeValue).length===0" style="color:#bbb;font-size:11px;padding:8px 0;">패널이 없습니다.</div>
               <div v-else style="display:grid;gap:8px;">
-                <div v-for="p in panelsOfArea(a.codeValue)" :key="p.dispId"
+                <div v-for="p in panelsOfArea(a.codeValue)" :key="p?.dispId"
                   style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
                   <span style="font-size:10px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 8px;font-weight:600;white-space:nowrap;">패널</span>
                   <span style="font-size:12px;color:#333;font-weight:600;flex:1;">{{ p.name }}</span>
@@ -462,13 +462,13 @@ window.DpDispAreaMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

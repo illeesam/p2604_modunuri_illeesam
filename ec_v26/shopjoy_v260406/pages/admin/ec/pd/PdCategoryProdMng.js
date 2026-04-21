@@ -291,7 +291,7 @@ window.PdCategoryProdMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">상품명</label>
-      <input class="form-control" v-model="searchProdNm" @keyup.enter="onSearch"
+      <input class="form-control" v-model="searchProdNm" @keyup.enter="() => onSearch?.()"
              placeholder="상품명 검색" style="max-width:280px">
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
@@ -314,7 +314,7 @@ window.PdCategoryProdMng = {
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
       </div>
       <div style="max-height:65vh;overflow-y:auto">
-        <div v-for="cat in catTreeFlat" :key="cat.categoryId"
+        <div v-for="cat in catTreeFlat" :key="cat?.categoryId"
              style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:5px 6px"
              :style="{ paddingLeft: (cat._depth * 14 + 6) + 'px',
                        background: selectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
@@ -366,7 +366,7 @@ window.PdCategoryProdMng = {
         <!-- 탭바 + 뷰모드 버튼 -->
         <div class="tab-bar-row" style="margin:12px 0 0">
           <div class="tab-nav" style="flex:1;flex-wrap:wrap">
-            <button v-for="tab in TYPE_TABS" :key="tab.cd"
+            <button v-for="tab in TYPE_TABS" :key="tab?.cd"
                     class="tab-btn" :class="{ active: activeTypeCd===tab.cd }"
                     @click="activeTypeCd=tab.cd">
               {{ tab.nm }}
@@ -402,7 +402,7 @@ window.PdCategoryProdMng = {
             <th style="width:40px;text-align:center">삭제</th>
           </tr></thead>
           <tbody>
-            <tr v-for="(row, idx) in filteredRows" :key="row._id"
+            <tr v-for="(row, idx) in filteredRows" :key="row?._id"
                 draggable="true"
                 @dragstart="onDragStart(idx)"
                 @dragover.prevent="onDragOver(idx)"
@@ -417,7 +417,7 @@ window.PdCategoryProdMng = {
                   <span style="font-weight:500">{{ getProdNm(row.prodId) }}</span>
                 </div>
                 <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
-                  <button v-for="opt in EMPHASIS_OPTS" :key="opt.cd"
+                  <button v-for="opt in EMPHASIS_OPTS" :key="opt?.cd"
                           @click="toggleEmphasis(row, opt.cd)"
                           style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
                           :style="hasEmphasis(row.emphasisCd, opt.cd)
@@ -478,7 +478,7 @@ window.PdCategoryProdMng = {
                gridTemplateColumns: viewMode==='2col' ? 'repeat(2,1fr)' : viewMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
                gap:'10px',
              }">
-          <div v-for="(row, idx) in filteredRows" :key="row._id"
+          <div v-for="(row, idx) in filteredRows" :key="row?._id"
                draggable="true"
                @dragstart="onDragStart(idx)"
                @dragover.prevent="onDragOver(idx)"
@@ -519,7 +519,7 @@ window.PdCategoryProdMng = {
             </div>
             <!-- 강조옵션 chips -->
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
-              <button v-for="opt in EMPHASIS_OPTS" :key="opt.cd"
+              <button v-for="opt in EMPHASIS_OPTS" :key="opt?.cd"
                       @click="toggleEmphasis(row, opt.cd)"
                       style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
                       :style="hasEmphasis(row.emphasisCd, opt.cd)
@@ -584,7 +584,7 @@ window.PdCategoryProdMng = {
               <th style="width:56px;text-align:center">추가</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in pickerList" :key="p.productId">
+              <tr v-for="p in pickerList" :key="p?.productId">
                 <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
                 <td>{{ p.prodNm || p.productName }}</td>
                 <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>

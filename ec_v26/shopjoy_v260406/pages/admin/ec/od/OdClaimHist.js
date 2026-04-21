@@ -124,7 +124,7 @@ window.OdClaimHist = {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, idx) in claimItems" :key="item._id">
+          <tr v-for="(item, idx) in claimItems" :key="item?._id">
             <td style="border:1px solid #e0e0e0;padding:6px;text-align:center;color:#aaa;">{{ idx + 1 }}</td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#f8fbff;">
               <input class="form-control" v-model="item.bfProdNm" style="font-size:12px;background:transparent;border-color:#91caff;" />
@@ -149,7 +149,7 @@ window.OdClaimHist = {
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#fff5fb;">
               <select class="form-control" v-model="item.afStatus" style="font-size:12px;background:transparent;border-color:#ffadd2;">
-                <option v-for="s in statusOptions" :key="s">{{ s }}</option>
+                <option v-for="s in statusOptions" :key="Math.random()">{{ s }}</option>
               </select>
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#fff5fb;">

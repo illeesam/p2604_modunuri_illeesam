@@ -32,7 +32,7 @@ const _WP_DispPanelPreview = {
   <template v-else-if="lib.widgetType==='product_slider'||lib.widgetType==='product'">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:7px;">{{ lib.name }}</div>
     <div style="display:flex;gap:6px;overflow-x:auto;">
-      <div v-for="i in 4" :key="i" style="flex-shrink:0;width:64px;text-align:center;">
+      <div v-for="i in 4" :key="Math.random()" style="flex-shrink:0;width:64px;text-align:center;">
         <div style="height:56px;background:#f5f5f5;border-radius:5px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;font-size:16px;">👗</div>
         <div style="font-size:10px;color:#888;">상품{{ i }}</div>
       </div>
@@ -43,7 +43,7 @@ const _WP_DispPanelPreview = {
   <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
     <div v-if="chartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
-      <div v-for="(bar,i) in chartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div v-for="(bar,i) in chartBars" :key="`chartBars_${i}`" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
         <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}"></div>
         <div style="font-size:9px;color:#aaa;">{{ bar.label }}</div>
       </div>
@@ -574,14 +574,14 @@ window.DpDispPanelPreview = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
         <select v-model="filterVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
-          <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
         <select v-model="filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
-          <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
+          <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
         </select>
       </div>
       <input v-model="searchKw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
@@ -626,7 +626,7 @@ window.DpDispPanelPreview = {
           </span>
         </div>
         <div v-if="isOpen('__root__')" style="padding-left:8px;">
-        <div v-for="node in tree" :key="node.label">
+        <div v-for="node in tree" :key="node?.label">
           <div @click="toggleNode(node.label)"
             draggable="true"
             @dragstart="onNodeDragStart($event, node.children.flatMap(c => c.libs))"
@@ -654,7 +654,7 @@ window.DpDispPanelPreview = {
                 <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 5px;">{{ sub.libs.length }}</span>
               </div>
               <template v-if="isOpen(node.label+'_'+sub.label)">
-                <div v-for="lib in sub.libs" :key="lib.libId"
+                <div v-for="lib in sub.libs" :key="lib?.libId"
                   draggable="true"
                   @dragstart="onItemDragStart($event, lib)"
                   @dragend="onItemDragEnd"
@@ -681,7 +681,7 @@ window.DpDispPanelPreview = {
       <!-- 탭바 + 뷰포트 토글 + 배치수 -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">
-          <button v-for="tab in GRID_TABS" :key="tab.id" @click="previewGrid=tab.id"
+          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="previewGrid=tab.id"
             style="padding:5px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:-1px;"
             :style="previewGrid===tab.id
               ? 'background:#fff;border-color:#e8e8e8;border-bottom-color:#fff;color:#1d4ed8;z-index:1;'
@@ -697,7 +697,7 @@ window.DpDispPanelPreview = {
             {{ showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="key" @click="viewportMode=key"
+          <button v-for="(vp, key) in VIEWPORT" :key="`VIEWPORT_${key}`" @click="viewportMode=key"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="viewportMode===key
               ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -738,7 +738,7 @@ window.DpDispPanelPreview = {
               gridTemplateColumns: autoGridCols,
               gap: '10px',
             }">
-              <template v-for="(slot, idx) in currentSlots" :key="idx">
+              <template v-for="(slot, idx) in currentSlots" :key="`currentSlots_${idx}`">
               <div v-if="!showRealContent || slot"
                 @dragover="onDragOver($event, idx)"
                 @dragleave="onDragLeave"
@@ -859,7 +859,7 @@ window.DpDispPanelPreview = {
           </div>
 
           <!-- 배치된 아이템 -->
-          <div v-for="item in dashItems" :key="item.id"
+          <div v-for="item in dashItems" :key="item?.id"
             :style="{
               position:'absolute',
               left: item.x+'px',

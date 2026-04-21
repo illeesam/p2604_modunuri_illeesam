@@ -272,7 +272,7 @@ window.PmEventDtl = {
       <div style="margin-top:14px;">
         <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">🔒 공개 대상 (하나라도 해당하면 노출)</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+          <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
             :style="{
               display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 10px',borderRadius:'14px',
               border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
@@ -312,7 +312,7 @@ window.PmEventDtl = {
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in ([] || [])" :key="v.vendorId"
+            <div v-for="v in ([] || [])" :key="v?.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
@@ -345,14 +345,14 @@ window.PmEventDtl = {
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 이벤트 내용</div>
       <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
-        <button v-for="n in 5" :key="n" class="btn btn-sm"
+        <button v-for="n in 5" :key="Math.random()" class="btn btn-sm"
           :class="activeContentTab===n ? 'btn-primary' : 'btn-secondary'"
           @click="activeContentTab=n">
           내용 {{ n }}
           <span v-if="form.authRequired && n >= 3" class="tab-count" style="background:#fde8ee;color:#e8587a;">인증</span>
         </button>
       </div>
-      <div v-for="n in 5" :key="n" v-show="activeContentTab===n">
+      <div v-for="n in 5" :key="Math.random()" v-show="activeContentTab===n">
         <div v-if="form.authRequired && n >= 3" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;">
           <span class="badge badge-orange">인증 후 표시</span>
           <span style="font-size:12px;color:#888;">로그인 회원에게만 표시됩니다</span>
@@ -384,7 +384,7 @@ window.PmEventDtl = {
       <table class="admin-table" v-if="selectedProducts.length">
         <thead><tr><th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>상태</th><th>제거</th></tr></thead>
         <tbody>
-          <tr v-for="p in selectedProducts" :key="p.productId">
+          <tr v-for="p in selectedProducts" :key="p?.productId">
             <td>{{ p.productId }}</td>
             <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.prodNm }}</span></td>
             <td>{{ p.category }}</td>
@@ -430,7 +430,7 @@ window.PmEventDtl = {
         <div v-if="selectedProducts.length > 0" style="margin-top:20px;padding-top:20px;border-top:1px solid #e0e0e0;">
           <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:12px;">🎯 대상 상품 ({{ selectedProducts.length }}개)</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
-            <div v-for="p in selectedProducts" :key="p.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
+            <div v-for="p in selectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
               <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">📦</div>
               <div style="padding:8px;font-size:11px;">
                 <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.prodNm }}</div>
@@ -455,7 +455,7 @@ window.PmEventDtl = {
         <input class="form-control" v-model="prodSearch" placeholder="상품명 검색" />
       </div>
       <div class="popup-prod-list">
-        <label v-for="p in filteredProds" :key="p.productId" class="popup-prod-item">
+        <label v-for="p in filteredProds" :key="p?.productId" class="popup-prod-item">
           <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
           <span>{{ p.prodNm }}</span>
           <span style="font-size:12px;color:#888;margin-left:auto;">{{ p.price.toLocaleString() }}원</span>

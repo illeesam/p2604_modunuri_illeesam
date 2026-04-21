@@ -227,7 +227,7 @@ window.StRawMng = {
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
@@ -242,7 +242,7 @@ window.StRawMng = {
         <option value="SETTLED">정산완료</option>
         <option value="PENDING">대기</option>
       </select>
-      <input v-model="searchKw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="onSearch" />
+      <input v-model="searchKw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
     </div>
     <!-- 2행: 추가 필터 -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
@@ -366,7 +366,7 @@ window.StRawMng = {
         </tr>
       </thead>
       <tbody>
-        <template v-for="r in pageList" :key="r.rawId">
+        <template v-for="r in pageList" :key="r?.rawId">
           <!-- 기본 행 -->
           <tr :style="isExpanded(r.rawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.rawId)">
             <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
@@ -471,13 +471,13 @@ window.StRawMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

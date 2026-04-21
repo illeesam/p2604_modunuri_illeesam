@@ -259,7 +259,7 @@ window.OdOrderMng = {
         <option>입금대기</option><option>결제완료</option><option>상품준비중</option>
         <option>배송중</option><option>배송완료</option><option>구매확정</option><option>취소</option><option>자동취소</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -284,7 +284,7 @@ window.OdOrderMng = {
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="o in pageList" :key="o.orderId"
+        <tr v-for="o in pageList" :key="o?.orderId"
           :style="(selectedId===o.orderId?'background:#fff8f9;':'') + (isChecked(o.orderId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(o.orderId)" @change="toggleCheck(o.orderId)" /></td>
           <td><span class="title-link" @click="loadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -333,13 +333,13 @@ window.OdOrderMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>
@@ -368,7 +368,7 @@ window.OdOrderMng = {
         <button class="btn btn-secondary btn-sm" @click="bulkOpen=false">✕</button>
       </div>
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
-        <button v-for="t in [{id:'status',label:'주문상태'},{id:'payMethod',label:'결제수단'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t.id"
+        <button v-for="t in [{id:'status',label:'주문상태'},{id:'payMethod',label:'결제수단'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
           @click="bulkTab=t.id"
           :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: bulkTab===t.id?800:600,background: bulkTab===t.id?'#fff':'transparent',color: bulkTab===t.id?'#e8587a':'#888',borderBottom: bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
       </div>
@@ -377,14 +377,14 @@ window.OdOrderMng = {
           <label class="form-label">변경할 주문상태</label>
           <select class="form-control" v-model="bulkForm.status">
             <option value="">선택하세요</option>
-            <option v-for="s in ORDER_STATUS_OPTIONS" :key="s" :value="s">{{ s }}</option>
+            <option v-for="s in ORDER_STATUS_OPTIONS" :key="Math.random()" :value="s">{{ s }}</option>
           </select>
         </div>
         <div v-if="bulkTab==='payMethod'">
           <label class="form-label">변경할 결제수단</label>
           <select class="form-control" v-model="bulkForm.payMethod">
             <option value="">선택하세요</option>
-            <option v-for="p in PAY_METHOD_OPTIONS" :key="p" :value="p">{{ p }}</option>
+            <option v-for="p in PAY_METHOD_OPTIONS" :key="Math.random()" :value="p">{{ p }}</option>
           </select>
         </div>
         <div v-if="bulkTab==='approval'">
@@ -392,7 +392,7 @@ window.OdOrderMng = {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in APPROVAL_ACTIONS" :key="a" :value="a">{{ a }}</option>
+              <option v-for="a in APPROVAL_ACTIONS" :key="Math.random()" :value="a">{{ a }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -405,7 +405,7 @@ window.OdOrderMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in members" :key="m.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m?.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
             </select>
           </div>
           <div class="form-row">
@@ -422,7 +422,7 @@ window.OdOrderMng = {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in REQ_TARGETS" :key="t" :value="t">{{ t }}</option>
+                <option v-for="t in REQ_TARGETS" :key="Math.random()" :value="t">{{ t }}</option>
               </select>
             </div>
             <div class="form-group">

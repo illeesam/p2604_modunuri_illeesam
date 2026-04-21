@@ -92,7 +92,7 @@ window.PdQnaMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">문의제목</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="문의 제목 검색">
+        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="문의 제목 검색">
         <label class="search-label">답변여부</label>
         <select class="form-control" v-model="searchAnsw">
           <option value="">전체</option><option value="Y">답변완료</option><option value="N">미답변</option>
@@ -117,7 +117,7 @@ window.PdQnaMng = {
           <th style="width:140px">등록일</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row.qnaId" :class="{active:selectedId===row.qnaId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in pageList" :key="row?.qnaId" :class="{active:selectedId===row.qnaId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.scrtYn==='Y' ? '🔒 비밀글' : row.qnaTitle }}</span></td>
             <td style="font-size:12px;color:#666">{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
@@ -134,13 +134,13 @@ window.PdQnaMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

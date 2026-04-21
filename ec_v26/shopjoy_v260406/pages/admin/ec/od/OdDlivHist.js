@@ -67,7 +67,7 @@ window.OdDlivHist = {
     <table class="admin-table" v-if="relatedClaims.length">
       <thead><tr><th>클레임ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="c in relatedClaims" :key="c.claimId">
+        <tr v-for="c in relatedClaims" :key="c?.claimId">
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
           <td>{{ c.type }}</td><td>{{ c.statusCd }}</td><td>{{ c.reasonCd }}</td>
           <td>{{ c.requestDate.slice(0,10) }}</td>

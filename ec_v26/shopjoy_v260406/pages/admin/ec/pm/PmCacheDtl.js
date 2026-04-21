@@ -206,7 +206,7 @@ window.PmCacheDtl = {
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in ([] || [])" :key="v.vendorId"
+            <div v-for="v in ([] || [])" :key="v?.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
@@ -247,7 +247,7 @@ window.PmCacheDtl = {
       <table class="admin-table" v-if="memberCacheHistory.length">
         <thead><tr><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th></tr></thead>
         <tbody>
-          <tr v-for="c in memberCacheHistory" :key="c.cacheId">
+          <tr v-for="c in memberCacheHistory" :key="c?.cacheId">
             <td>{{ c.date }}</td>
             <td><span class="badge" :class="typeBadge(c.type)">{{ c.type }}</span></td>
             <td :style="c.amount>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">

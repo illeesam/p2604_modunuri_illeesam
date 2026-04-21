@@ -89,7 +89,7 @@ window.PdProdHist = {
     <table class="admin-table" v-if="relatedOrders.length">
       <thead><tr><th>주문ID</th><th>회원</th><th>주문일</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="o in relatedOrders" :key="o.orderId">
+        <tr v-for="o in relatedOrders" :key="o?.orderId">
           <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userNm }}</span></td>
           <td>{{ o.orderDate.slice(0,10) }}</td>
@@ -108,7 +108,7 @@ window.PdProdHist = {
     <table class="admin-table" v-if="stockHistory.length">
       <thead><tr><th>일시</th><th>유형</th><th>수량</th><th>처리 후 재고</th><th>메모</th></tr></thead>
       <tbody>
-        <tr v-for="(h, i) in stockHistory" :key="i">
+        <tr v-for="(h, i) in stockHistory" :key="`stockHistory_${i}`">
           <td>{{ h.date }}</td>
           <td><span class="badge" :class="h.type==='입고'?'badge-green':h.type==='출고'?'badge-orange':'badge-gray'">{{ h.type }}</span></td>
           <td :style="h.qty>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
@@ -128,7 +128,7 @@ window.PdProdHist = {
     <table class="admin-table" v-if="priceHistory.length">
       <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
-        <tr v-for="(h, i) in priceHistory" :key="i">
+        <tr v-for="(h, i) in priceHistory" :key="`priceHistory_${i}`">
           <td>{{ h.date }}</td>
           <td><span class="tag">{{ h.field }}</span></td>
           <td style="color:#888;">{{ h.before }}</td>
@@ -146,7 +146,7 @@ window.PdProdHist = {
     <table class="admin-table" v-if="statusHistory.length">
       <thead><tr><th>일시</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
-        <tr v-for="(h, i) in statusHistory" :key="i">
+        <tr v-for="(h, i) in statusHistory" :key="`statusHistory_${i}`">
           <td>{{ h.date }}</td>
           <td><span class="badge badge-gray">{{ h.before }}</span></td>
           <td><span class="badge badge-blue">{{ h.after }}</span></td>
@@ -163,7 +163,7 @@ window.PdProdHist = {
     <table class="admin-table" v-if="changeHistory.length">
       <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
-        <tr v-for="(h, i) in changeHistory" :key="i">
+        <tr v-for="(h, i) in changeHistory" :key="`changeHistory_${i}`">
           <td>{{ h.date }}</td>
           <td><span class="tag">{{ h.field }}</span></td>
           <td style="color:#888;">{{ h.before }}</td>

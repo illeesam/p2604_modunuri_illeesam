@@ -837,7 +837,7 @@ window.DpDispUiSimul = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
         <select v-model="searchVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
-          <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
@@ -880,7 +880,7 @@ window.DpDispUiSimul = {
             <button @click.stop="clearAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
             <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">{{ selectedAreas.size }}/{{ allAreaListRaw.length }}</span>
           </div>
-          <div v-for="area in allAreaListRaw" :key="area.codeValue" @click.stop="toggleArea(area.codeValue)"
+          <div v-for="area in allAreaListRaw" :key="area?.codeValue" @click.stop="toggleArea(area.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
             :style="selectedAreas.has(area.codeValue) ? 'background:#fff8f8;' : ''">
             <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -954,7 +954,7 @@ window.DpDispUiSimul = {
               <button @click.stop="dispUiClearAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
               <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">{{ dispUiForm.areas.length }}/{{ allAreaListRaw.length }}</span>
             </div>
-            <div v-for="area in allAreaListRaw" :key="area.codeValue" @click.stop="dispUiToggleArea(area.codeValue)"
+            <div v-for="area in allAreaListRaw" :key="area?.codeValue" @click.stop="dispUiToggleArea(area.codeValue)"
               style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
               :style="dispUiForm.areas.includes(area.codeValue) ? 'background:#fff8f8;' : ''">
               <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -994,7 +994,7 @@ window.DpDispUiSimul = {
         <span class="search-label" style="font-size:11px;">공개대상</span>
         <select v-model="dispUiForm.visibility"
           style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
 
@@ -1080,7 +1080,7 @@ window.DpDispUiSimul = {
           <div v-if="otherMenuOpen" @click.stop
             style="position:absolute;top:calc(100% + 4px);right:0;z-index:5000;background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.15);min-width:320px;padding:6px;max-height:400px;overflow-y:auto;">
             <div style="font-size:10px;color:#888;padding:6px 10px;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">오픈할 페이지를 선택하세요</div>
-            <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="u"
+            <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="Math.random()"
               @click="pickOtherPage(u)"
               style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:11px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-family:monospace;color:#333;"
               @mouseenter="$event.currentTarget.style.background='#e3f2fd'"
@@ -1120,7 +1120,7 @@ window.DpDispUiSimul = {
       <!-- 목록 -->
       <div style="overflow-y:auto;flex:1;padding:6px 0;">
         <div v-if="dispUiSiteList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
-        <div v-for="site in dispUiSiteList" :key="site.siteId"
+        <div v-for="site in dispUiSiteList" :key="site?.siteId"
           @click="selectDispUiSite(site)"
           style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
@@ -1157,7 +1157,7 @@ window.DpDispUiSimul = {
       <!-- 목록 -->
       <div style="overflow-y:auto;flex:1;padding:6px 0;">
         <div v-if="dispUiMemberList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
-        <div v-for="m in dispUiMemberList" :key="m.userId"
+        <div v-for="m in dispUiMemberList" :key="m?.userId"
           @click="selectDispUiMember(m)"
           style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
@@ -1206,7 +1206,7 @@ window.DpDispUiSimul = {
   <div v-if="mainTab==='preview'">
     <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">기준 날짜를 선택해주세요.</div>
     <div v-else>
-      <div v-for="area in areaList" :key="area.codeValue" style="margin-bottom:4px;">
+      <div v-for="area in areaList" :key="area?.codeValue" style="margin-bottom:4px;">
         <disp-x02-area
           :params="filterParams"
           :disp-opt="dispOpt"
@@ -1241,7 +1241,7 @@ window.DpDispUiSimul = {
         <!-- 트리 -->
         <div v-if="structAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">등록된 영역이 없습니다.</div>
 
-        <div v-for="area in structAreaList" :key="area.codeValue" class="card" style="padding:0;margin-bottom:8px;overflow:hidden;">
+        <div v-for="area in structAreaList" :key="area?.codeValue" class="card" style="padding:0;margin-bottom:8px;overflow:hidden;">
           <!-- 영역 헤더 -->
           <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:grab;user-select:none;"
             draggable="true"
@@ -1275,7 +1275,7 @@ window.DpDispUiSimul = {
           <div v-show="expandedAreas.has(area.codeValue)">
             <div v-if="area.panels.length===0" style="padding:14px 20px;font-size:12px;color:#bbb;">해당 날짜 활성 패널 없음</div>
 
-            <div v-for="(p, pi) in area.panels" :key="p.dispId"
+            <div v-for="(p, pi) in area.panels" :key="p?.dispId"
               draggable="true"
               @dragstart="onPanelDragStart($event, p, area.codeLabel)"
               @dragend="onAreaDragEnd"
@@ -1343,7 +1343,7 @@ window.DpDispUiSimul = {
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
             <span style="font-size:11px;color:#6b7280;font-weight:600;">열수</span>
             <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-              <button v-for="n in [1,2,3,4]" :key="n" @click="structColCount=n; resetStructGrid()"
+              <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="structColCount=n; resetStructGrid()"
                 style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                 :style="[n===1?'border-left:none;':'', structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
                 {{ n }}
@@ -1361,7 +1361,7 @@ window.DpDispUiSimul = {
             </button>
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
             <!-- 뷰포트 -->
-            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="key" @click="structViewport=key"
+            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="`STRUCT_VIEWPORT_${key}`" @click="structViewport=key"
               style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
               {{ vp.label }}
@@ -1393,7 +1393,7 @@ window.DpDispUiSimul = {
               <div v-if="structDashDragOver && !structDashItems.length"
                 style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">▼ 여기에 배치</div>
               <!-- 배치된 아이템 -->
-              <div v-for="item in structDashItems" :key="item.id"
+              <div v-for="item in structDashItems" :key="item?.id"
                 :style="{ position:'absolute', left:item.x+'px', top:item.y+'px', width:item.w+'px', minHeight:item.h+'px',
                   border:'1px solid #e5e7eb', borderRadius:'8px', background:'#fff',
                   boxShadow:'0 2px 10px rgba(0,0,0,.1)', userSelect:'none', zIndex:1 }">
@@ -1423,7 +1423,7 @@ window.DpDispUiSimul = {
           </div>
           <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
           <div :style="{ display:'grid', gridTemplateColumns:structGridCols, gap:'10px' }">
-            <template v-for="(slot, idx) in structCurrentSlots" :key="idx">
+            <template v-for="(slot, idx) in structCurrentSlots" :key="`structCurrentSlots_${idx}`">
             <div v-if="!structShowReal || slot"
               @dragover="onStructDragOver($event, idx)"
               @dragleave="onStructDragLeave"
@@ -1506,7 +1506,7 @@ window.DpDispUiSimul = {
                   </div>
                   <div v-else-if="slot.widgetType==='product_slider'||slot.widgetType==='product'">
                     <div style="display:flex;gap:5px;overflow:hidden;">
-                      <div v-for="n in 4" :key="n" style="flex:0 0 60px;border:1px solid #eee;border-radius:6px;overflow:hidden;">
+                      <div v-for="n in 4" :key="Math.random()" style="flex:0 0 60px;border:1px solid #eee;border-radius:6px;overflow:hidden;">
                         <div style="height:50px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:18px;">📦</div>
                         <div style="padding:4px;font-size:9px;color:#888;text-align:center;">상품{{ n }}</div>
                       </div>
@@ -1596,7 +1596,7 @@ window.DpDispUiSimul = {
       <div style="background:#1e1e2e;padding:16px 20px;overflow-x:auto;min-height:400px;max-height:70vh;overflow-y:auto;">
         <div v-if="sourceLines.length===0" style="color:#718096;font-size:13px;text-align:center;padding:40px;">영역 또는 패널 데이터가 없습니다.</div>
         <div v-else style="font-family:monospace;font-size:12px;line-height:1.9;">
-          <div v-for="(line, i) in sourceLines" :key="i"
+          <div v-for="(line, i) in sourceLines" :key="`sourceLines_${i}`"
             :style="line.type==='blank'
               ? 'height:0.4em;'
               : 'white-space:nowrap;overflow-x:visible;padding-left:' + (line.level||0)*20 + 'px;'">
@@ -1652,7 +1652,7 @@ window.DpDispUiSimul = {
             <!-- <DispX02Area attr="val" ...> -->
             <template v-else-if="line.type==='area-open'">
               <span style="color:#63b3ed;font-weight:700;">&lt;DispX02Area</span>
-              <template v-for="a in line.attrs" :key="a.key">
+              <template v-for="a in line.attrs" :key="a?.key">
                 <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
               </template>
               <span style="color:#63b3ed;font-weight:700;">&gt;</span>
@@ -1676,7 +1676,7 @@ window.DpDispUiSimul = {
             <!-- <DispX03Panel attr="val" ...> -->
             <template v-else-if="line.type==='panel-open'">
               <span style="color:#68d391;font-weight:700;">&lt;DispX03Panel</span>
-              <template v-for="a in line.attrs" :key="a.key">
+              <template v-for="a in line.attrs" :key="a?.key">
                 <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
               </template>
               <span style="color:#68d391;font-weight:700;">&gt;</span>
@@ -1685,7 +1685,7 @@ window.DpDispUiSimul = {
             <!-- <DispX04Widget attr="val" .../> -->
             <template v-else-if="line.type==='widget'">
               <span style="color:#f6ad55;font-weight:700;">&lt;DispX04Widget</span>
-              <template v-for="a in line.attrs" :key="a.key">
+              <template v-for="a in line.attrs" :key="a?.key">
                 <span style="color:#9cdcfe;"> {{ a.key }}</span><span style="color:#cdd9e5;">="</span><span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span><span style="color:#cdd9e5;">"</span>
               </template>
               <span style="color:#f6ad55;font-weight:700;"> /&gt;</span>

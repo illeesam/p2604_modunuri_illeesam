@@ -105,7 +105,7 @@ window.PdTagMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">태그명</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="태그명 검색">
+        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="태그명 검색">
         <label class="search-label">사용여부</label>
         <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
         <div class="search-actions">
@@ -132,7 +132,7 @@ window.PdTagMng = {
           <th style="width:60px;text-align:center">삭제</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row,idx) in gridRows" :key="row.tagId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
+          <tr v-for="(row,idx) in gridRows" :key="row?.tagId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
             <td><input v-if="row._row_status" class="form-control" v-model="row.tagNm" @input="onCellChange(idx)"><span v-else><span class="badge badge-blue">#</span> {{ row.tagNm }}</span></td>
             <td><input v-if="row._row_status" class="form-control" v-model="row.tagDesc" @input="onCellChange(idx)"><span v-else style="color:#888;font-size:12px">{{ row.tagDesc }}</span></td>
             <td style="text-align:right">{{ (row.useCount||0) }}</td>
@@ -151,13 +151,13 @@ window.PdTagMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

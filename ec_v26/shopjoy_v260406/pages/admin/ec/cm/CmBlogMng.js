@@ -126,7 +126,7 @@ window.CmBlogMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">제목/작성자</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="제목 또는 작성자 검색">
+        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="제목 또는 작성자 검색">
         <label class="search-label">공개여부</label>
         <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">공개</option><option value="N">비공개</option></select>
         <label class="search-label">공지여부</label>
@@ -153,7 +153,7 @@ window.CmBlogMng = {
           <th style="width:80px;text-align:center">공개전환</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in pageList" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
             <td>
               <span v-if="row.isNotice==='Y'" class="badge badge-orange" style="margin-right:4px;font-size:10px">공지</span>
               <span class="title-link">{{ row.blogTitle }}</span>
@@ -176,13 +176,13 @@ window.CmBlogMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

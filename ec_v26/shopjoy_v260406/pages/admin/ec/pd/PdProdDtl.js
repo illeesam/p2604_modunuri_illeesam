@@ -585,7 +585,7 @@ window.PdProdDtl = {
         <label class="form-label">카테고리</label>
         <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
           <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
-          <div v-for="(cat,idx) in prodCategories" :key="cat.categoryId"
+          <div v-for="(cat,idx) in prodCategories" :key="cat?.categoryId"
                draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
                :style="catDragoverIdx===idx?'opacity:0.5;':''"
                style="display:flex;align-items:center;gap:4px;padding:2px 0;">
@@ -669,7 +669,7 @@ window.PdProdDtl = {
         <label class="form-label">배송템플릿 (dliv_tmplt_id)</label>
         <select class="form-control" v-model="form.dlvTmpltId">
           <option value="">-- 선택 --</option>
-          <option v-for="t in ([]||[])" :key="t.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
+          <option v-for="t in ([]||[])" :key="t?.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
         </select>
       </div>
     </div>
@@ -696,7 +696,7 @@ window.PdProdDtl = {
                 <tr><th>이름</th><th>부서</th><th>역할</th></tr>
               </thead>
               <tbody>
-                <tr v-for="u in mdUserListFiltered" :key="u.adminUserId"
+                <tr v-for="u in mdUserListFiltered" :key="u?.adminUserId"
                   style="cursor:pointer;"
                   :style="form.mdUserId===u.adminUserId ? 'background:#fff0f4;font-weight:700;' : ''"
                   @click="selectMdUser(u)">
@@ -763,7 +763,7 @@ window.PdProdDtl = {
         <label class="form-label">사이즈 (size_info_cd)</label>
         <select class="form-control" v-model="form.sizeInfoCd">
           <option value="">-- 선택 --</option>
-          <option v-for="s in ['FREE','XS','S','M','L','XL','XXL']" :key="s" :value="s">{{ s }}</option>
+          <option v-for="s in ['FREE','XS','S','M','L','XL','XXL']" :key="Math.random()" :value="s">{{ s }}</option>
         </select>
       </div>
     </div>
@@ -820,7 +820,7 @@ window.PdProdDtl = {
             style="width:170px;font-size:12px;"
             @change="onCategoryChange">
             <option value="">-- OPT_TYPE 1레벨 선택 --</option>
-            <option v-for="c in optTypeLevel1Codes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            <option v-for="c in optTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
 
@@ -833,7 +833,7 @@ window.PdProdDtl = {
             <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
               @change="grp.iwindow.safeArrayUtils.safeForEach(tems, i=>{i.val='';i.valCodeId='';})"
               <option value="">-- OPT_TYPE 2레벨 --</option>
-              <option v-for="c in optTypeCodes" :key="c.codeId" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
+              <option v-for="c in optTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
             </select>
             <span v-if="grp.typeCd" style="font-size:11px;color:#1677ff;">{{ getOptValCodes(grp.typeCd).length }}개 프리셋</span>
           </div>
@@ -862,7 +862,7 @@ window.PdProdDtl = {
       </div>
 
       <!-- 차원별 블록 -->
-      <div v-for="(grp, gi) in optGroups" :key="grp._id"
+      <div v-for="(grp, gi) in optGroups" :key="grp?._id"
         style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:16px;background:#fafafa;">
 
         <!-- 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) -->
@@ -872,7 +872,7 @@ window.PdProdDtl = {
           <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
             style="flex:1;min-width:100px;font-size:13px;" />
           <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
-            <option v-for="c in optInputTypeCodes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            <option v-for="c in optInputTypeCodes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
           <button class="btn btn-xs btn-danger" @click="removeOptGroup(gi)">삭제</button>
         </div>
@@ -899,7 +899,7 @@ window.PdProdDtl = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, ii) in grp.items" :key="item._id"
+            <tr v-for="(item, ii) in grp.items" :key="item?._id"
               draggable="true"
               @dragstart="onOptItemDragStart(grp, ii)"
               @dragover.prevent="onOptItemDragOver(grp, ii)"
@@ -919,7 +919,7 @@ window.PdProdDtl = {
                 <select v-model="item.parentOptItemId"
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
                   <option value="">전체 공통</option>
-                  <option v-for="p1 in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="p1._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
+                  <option v-for="p1 in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="p1?._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
                 </select>
               </td>
 
@@ -936,7 +936,7 @@ window.PdProdDtl = {
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;"
                   @change="() => { const found = getOptValCodes(grp.typeCd).find(c => c.codeValue === item.valCodeId); if (found) { item.val = found.codeValue; if (!item.nm) item.nm = found.codeLabel; generateSkus(); } else { item.val = ''; } }">
                   <option value="">-- 직접입력 --</option>
-                  <option v-for="c in getOptValCodes(grp.typeCd)" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
+                  <option v-for="c in getOptValCodes(grp.typeCd)" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
                 </select>
               </td>
 
@@ -1005,7 +1005,7 @@ window.PdProdDtl = {
         </div>
 
         <!-- 블록 리스트 -->
-        <div v-for="(block, bi) in contentBlocks" :key="block._id"
+        <div v-for="(block, bi) in contentBlocks" :key="block?._id"
           draggable="true"
           @dragstart="onBlockDragStart(bi)"
           @dragover.prevent="onBlockDragOver(bi)"
@@ -1086,7 +1086,7 @@ window.PdProdDtl = {
             overflowX: 'hidden',
           }">
             <div v-if="contentBlocks.length===0" style="color:#bbb;text-align:center;padding:40px;font-size:13px;">블록을 추가하면 여기에 미리보기가 표시됩니다.</div>
-            <template v-for="block in contentBlocks" :key="block._id">
+            <template v-for="block in contentBlocks" :key="block?._id">
               <div v-if="block.type==='file'||block.type==='url'" style="margin-bottom:12px;">
                 <img v-if="block.content" :src="block.content" style="max-width:100%;height:auto;display:block;border-radius:4px;" />
               </div>
@@ -1188,7 +1188,7 @@ window.PdProdDtl = {
     <div v-if="images.length===0"
       style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
       @click="triggerFileInput">클릭하거나 파일을 끌어다 놓으세요</div>
-    <div v-for="(img, idx) in images" :key="img.id"
+    <div v-for="(img, idx) in images" :key="img?.id"
       draggable="true"
       @dragstart="onImgDragStart(idx)"
       @dragover.prevent="onImgDragOver(idx)"
@@ -1219,7 +1219,7 @@ window.PdProdDtl = {
             <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
               <option value="">-- 공통 (NULL) --</option>
               <option v-if="!window.safeArrayUtils.safeFirst(optGroups)||window.safeArrayUtils.safeFirst(optGroups).items.length===0" disabled value="">옵션설정 탭에서 1단 옵션을 먼저 추가하세요</option>
-              <option v-for="item in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="item._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
+              <option v-for="item in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
             </select>
           </div>
           <!-- opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) -->
@@ -1228,7 +1228,7 @@ window.PdProdDtl = {
             <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="!img.optItemId1&&optGroups.length<2">
               <option value="">-- 공통 (NULL) --</option>
               <option v-if="!optGroups[1]||optGroups[1].items.length===0" disabled value="">2단 옵션 없음</option>
-              <option v-for="item in (optGroups[1]?.items||[])" :key="item._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
+              <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
             </select>
           </div>
         </div>
@@ -1277,7 +1277,7 @@ window.PdProdDtl = {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(p, idx) in relProds" :key="p._id"
+          <tr v-for="(p, idx) in relProds" :key="p?._id"
             draggable="true"
             @dragstart="onRelDragStart(idx)"
             @dragover.prevent="onRelDragOver(idx)"
@@ -1327,7 +1327,7 @@ window.PdProdDtl = {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(p, idx) in codeProds" :key="p._id"
+          <tr v-for="(p, idx) in codeProds" :key="p?._id"
             draggable="true"
             @dragstart="onCodeDragStart(idx)"
             @dragover.prevent="onCodeDragOver(idx)"
@@ -1379,7 +1379,7 @@ window.PdProdDtl = {
                 <tr><th style="width:46px;">ID</th><th>상품명</th><th style="width:80px;">카테고리</th><th style="width:90px;">가격</th><th style="width:60px;">재고</th><th style="width:60px;">상태</th></tr>
               </thead>
               <tbody>
-                <tr v-for="p in prodPickerList" :key="p.productId"
+                <tr v-for="p in prodPickerList" :key="p?.productId"
                   style="cursor:pointer;"
                   @mouseenter="$event.currentTarget.style.background='#f9f9f9'"
                   @mouseleave="$event.currentTarget.style.background=''"
@@ -1429,7 +1429,7 @@ window.PdProdDtl = {
             <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
               @change="skuFilter2=''">
               <option value="">전체</option>
-              <option v-for="v in skuFilter1Options" :key="v" :value="v">{{ v }}</option>
+              <option v-for="v in skuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
             </select>
           </div>
           <!-- 2단 필터 (2단 옵션 있을 때만) -->
@@ -1437,7 +1437,7 @@ window.PdProdDtl = {
             <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ optGroups[1]?.grpNm||'2단' }}</span>
             <select v-model="skuFilter2" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
               <option value="">전체</option>
-              <option v-for="v in skuFilter2Options" :key="v" :value="v">{{ v }}</option>
+              <option v-for="v in skuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
             </select>
           </div>
           <!-- 재고 필터 -->
@@ -1472,7 +1472,7 @@ window.PdProdDtl = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="sku in skusFiltered" :key="sku._id"
+            <tr v-for="sku in skusFiltered" :key="sku?._id"
               :style="sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':'')">
               <td><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
               <td v-if="optGroups.length>1">
@@ -1621,7 +1621,7 @@ window.PdProdDtl = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(row, idx) in planVisible" :key="row._id" :style="planRowStyle(row._row_status)">
+            <tr v-for="(row, idx) in planVisible" :key="row?._id" :style="planRowStyle(row._row_status)">
               <td style="text-align:center;"><input type="checkbox" v-model="row._checked" /></td>
               <td>
                 <div style="display:flex;gap:2px;">

@@ -447,7 +447,7 @@ window.DpDispAreaDtl = {
         <span>📋 <b>영역기본정보</b></span>
       </div>
       <!-- 패널 리스트 -->
-      <div v-for="(p, i) in relatedPanels" :key="p.dispId"
+      <div v-for="(p, i) in relatedPanels" :key="p?.dispId"
         @click="selectTab('panel_'+p.dispId)"
         :style="{
           display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -513,7 +513,7 @@ window.DpDispAreaDtl = {
             <div class="form-group">
               <label class="form-label">영역유형</label>
               <select class="form-control" v-model="form.areaType">
-                <option v-for="o in AREA_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+                <option v-for="o in AREA_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
               </select>
             </div>
           </div>
@@ -522,7 +522,7 @@ window.DpDispAreaDtl = {
             <div class="form-group" style="flex:0 0 auto;">
               <label class="form-label">표시방식</label>
               <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
-                <button v-for="o in LAYOUT_TYPE_OPTS" :key="o.value"
+                <button v-for="o in LAYOUT_TYPE_OPTS" :key="o?.value"
                   @click="form.layoutType = o.value"
                   type="button"
                   style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
@@ -535,7 +535,7 @@ window.DpDispAreaDtl = {
               <label class="form-label">열수 <span style="font-size:10px;color:#aaa;">(위젯 배치 열 개수)</span></label>
               <div style="display:flex;align-items:center;gap:6px;">
                 <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-                  <button v-for="n in [1,2,3,4]" :key="n" type="button"
+                  <button v-for="n in [1,2,3,4]" :key="Math.random()" type="button"
                     @click="form.gridCols = n"
                     style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                     :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
@@ -675,7 +675,7 @@ window.DpDispAreaDtl = {
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <label v-for="opt in areaDispEnvOptions" :key="opt.code"
+            <label v-for="opt in areaDispEnvOptions" :key="opt?.code"
               :style="{
                 display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
                 border:'1px solid '+(hasAreaDispEnv(opt.code)?'#7c3aed':'#ddd'),
@@ -692,7 +692,7 @@ window.DpDispAreaDtl = {
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+            <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
               :style="{
                 display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
                 border:'1px solid '+(hasPanelVisibility(opt.codeValue)?'#1565c0':'#ddd'),
@@ -760,7 +760,7 @@ window.DpDispAreaDtl = {
       </div>
       <!-- 디바이스 모드 버튼 -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
-        <button v-for="m in PREVIEW_MODES" :key="m.value"
+        <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="previewMode = m.value"
           :style="{
             flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',

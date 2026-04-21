@@ -290,7 +290,7 @@ window.OdDlivMng = {
       <select v-model="searchStatus">
         <option value="">상태 전체</option><option>준비중</option><option>출고완료</option><option>배송중</option><option>배송완료</option><option>배송실패</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -315,7 +315,7 @@ window.OdDlivMng = {
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="d in pageList" :key="d.dlivId"
+        <tr v-for="d in pageList" :key="d?.dlivId"
           :style="(selectedId===d.dlivId?'background:#fff8f9;':'') + (isChecked(d.dlivId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(d.dlivId)" @change="toggleCheck(d.dlivId)" /></td>
           <td>
@@ -343,13 +343,13 @@ window.OdDlivMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>
@@ -378,7 +378,7 @@ window.OdDlivMng = {
         <button class="btn btn-secondary btn-sm" @click="bulkOpen=false">✕</button>
       </div>
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
-        <button v-for="t in [{id:'status',label:'배송상태'},{id:'courier',label:'택배사·운송장'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t.id"
+        <button v-for="t in [{id:'status',label:'배송상태'},{id:'courier',label:'택배사·운송장'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
           @click="bulkTab=t.id"
           :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: bulkTab===t.id?800:600,background: bulkTab===t.id?'#fff':'transparent',color: bulkTab===t.id?'#e8587a':'#888',borderBottom: bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
       </div>
@@ -387,7 +387,7 @@ window.OdDlivMng = {
           <label class="form-label">변경할 배송상태</label>
           <select class="form-control" v-model="bulkForm.status">
             <option value="">선택하세요</option>
-            <option v-for="s in DLIV_STATUS_OPTIONS" :key="s" :value="s">{{ s }}</option>
+            <option v-for="s in DLIV_STATUS_OPTIONS" :key="Math.random()" :value="s">{{ s }}</option>
           </select>
         </div>
         <div v-if="bulkTab==='courier'">
@@ -395,7 +395,7 @@ window.OdDlivMng = {
             <label class="form-label">택배사</label>
             <select class="form-control" v-model="bulkForm.courier">
               <option value="">선택하세요</option>
-              <option v-for="c in COURIER_OPTIONS" :key="c" :value="c">{{ c }}</option>
+              <option v-for="c in COURIER_OPTIONS" :key="Math.random()" :value="c">{{ c }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -408,7 +408,7 @@ window.OdDlivMng = {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in APPROVAL_ACTIONS" :key="a" :value="a">{{ a }}</option>
+              <option v-for="a in APPROVAL_ACTIONS" :key="Math.random()" :value="a">{{ a }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -421,7 +421,7 @@ window.OdDlivMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in members" :key="m.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m?.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
             </select>
           </div>
           <div class="form-row">
@@ -438,7 +438,7 @@ window.OdDlivMng = {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in REQ_TARGETS" :key="t" :value="t">{{ t }}</option>
+                <option v-for="t in REQ_TARGETS" :key="Math.random()" :value="t">{{ t }}</option>
               </select>
             </div>
             <div class="form-group">

@@ -99,7 +99,7 @@ window.PdCategoryDtl = {
         <label class="form-label">상위카테고리</label>
         <select class="form-control" v-model="form.parentId" @change="onParentChange">
           <option :value="null">없음 (최상위)</option>
-          <option v-for="c in parentOptions" :key="c.categoryId" :value="c.categoryId">{{ '　'.repeat(c.depth-1) }}{{ c.categoryNm }} (depth {{ c.depth }})</option>
+          <option v-for="c in parentOptions" :key="c?.categoryId" :value="c.categoryId">{{ '　'.repeat(c.depth-1) }}{{ c.categoryNm }} (depth {{ c.depth }})</option>
         </select>
       </div>
       <div class="form-group">

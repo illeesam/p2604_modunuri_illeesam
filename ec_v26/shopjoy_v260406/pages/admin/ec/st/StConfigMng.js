@@ -97,7 +97,7 @@ window.StConfigMng = {
     <table class="admin-table">
       <thead><tr><th>사이트</th><th>업체유형</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>세금계산서</th><th>자동마감</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="c in configs" :key="c.configId" :class="{selected: selectedId===c.configId}">
+        <tr v-for="c in configs" :key="c?.configId" :class="{selected: selectedId===c.configId}">
           <td>{{ c.siteNm }}</td>
           <td><strong>{{ c.vendorType }}</strong></td>
           <td><strong>{{ c.commRate }}%</strong></td>

@@ -90,7 +90,7 @@ window.StErpGenMng = {
       <table class="admin-table">
         <thead><tr><th>차변계정</th><th>대변계정</th><th>차변금액</th><th>대변금액</th><th>적요</th></tr></thead>
         <tbody>
-          <tr v-for="(r, idx) in previewRows" :key="idx">
+          <tr v-for="(r, idx) in previewRows" :key="`previewRows_${idx}`">
             <td>{{ r.debit }}</td><td>{{ r.credit }}</td>
             <td style="font-weight:700;color:#3498db">{{ fmtW(r.debitAmt) }}</td>
             <td style="font-weight:700;color:#27ae60">{{ fmtW(r.creditAmt) }}</td>
@@ -108,7 +108,7 @@ window.StErpGenMng = {
     <table class="admin-table">
       <thead><tr><th>생성ID</th><th>정산월</th><th>전표유형</th><th>전표수</th><th>총금액</th><th>생성일</th><th>상태</th><th>담당자</th></tr></thead>
       <tbody>
-        <tr v-for="r in genHistory" :key="r.genId">
+        <tr v-for="r in genHistory" :key="r?.genId">
           <td>{{ r.genId }}</td><td><strong>{{ r.genMon }}</strong></td>
           <td><span class="badge badge-blue">{{ r.slipType }}</span></td>
           <td>{{ r.slipCnt }}건</td>

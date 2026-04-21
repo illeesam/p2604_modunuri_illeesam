@@ -250,13 +250,13 @@ window.DpDispWidgetLibMng = {
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
-        <input v-model="searchKw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="doSearch" style="margin:0;" />
+        <input v-model="searchKw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => doSearch?.()" style="margin:0;" />
       </div>
       <div class="form-group" style="margin:0;width:160px;">
         <label class="form-label">위젯 유형</label>
         <select v-model="searchType" class="form-control" style="margin:0;">
           <option value="">전체</option>
-          <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
+          <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
         </select>
       </div>
       <div class="form-group" style="margin:0;width:110px;">
@@ -308,7 +308,7 @@ window.DpDispWidgetLibMng = {
     </div>
     <!-- 트리 노드 (root 하위로 들여쓰기) -->
     <div v-if="isOpen('__root__')" style="padding-left:12px;">
-      <div v-for="node in tree" :key="node.label">
+      <div v-for="node in tree" :key="node?.label">
         <div @click="toggleNode(node.label); selectTree(node.label)"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -321,7 +321,7 @@ window.DpDispWidgetLibMng = {
           <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
         </div>
         <div v-if="isOpen(node.label)" style="padding-left:16px;">
-          <div v-for="sub in node.children" :key="sub.label"
+          <div v-for="sub in node.children" :key="sub?.label"
             @click.stop="selectTree(node.label+'>'+sub.label)"
             :style="{
               display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -362,7 +362,7 @@ window.DpDispWidgetLibMng = {
         <tr v-if="pageList.length===0">
           <td colspan="3" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
         </tr>
-        <tr v-for="(d, idx) in pageList" :key="d.libId"
+        <tr v-for="(d, idx) in pageList" :key="d?.libId"
           :style="selectedId===d.libId ? 'background:#fff8f8;' : ''">
           <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
           <td style="padding:10px 12px;">
@@ -412,13 +412,13 @@ window.DpDispWidgetLibMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNumbers" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNumbers" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

@@ -85,7 +85,7 @@ window.PdRestockNotiMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">상품명</label>
-        <input class="form-control" v-model="searchProd" @keyup.enter="onSearch" placeholder="상품명 검색">
+        <input class="form-control" v-model="searchProd" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
         <label class="search-label">알림발송</label>
         <select class="form-control" v-model="searchNoti">
           <option value="">전체</option><option value="N">미발송</option><option value="Y">발송완료</option>
@@ -113,7 +113,7 @@ window.PdRestockNotiMng = {
           <th style="width:140px">신청일</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row.restockNotiId">
+          <tr v-for="row in pageList" :key="row?.restockNotiId">
             <td><input type="checkbox" :checked="checkedIds.has(row.restockNotiId)" @change="toggleOne(row.restockNotiId)"></td>
             <td>{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px;color:#888">{{ row.skuId || '-' }}</td>
@@ -130,13 +130,13 @@ window.PdRestockNotiMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

@@ -70,7 +70,7 @@ window.StReconPayMng = {
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
       <select v-model="searchDiff" style="width:120px">
@@ -93,7 +93,7 @@ window.StReconPayMng = {
     <table class="admin-table">
       <thead><tr><th>주문ID</th><th>거래일</th><th>결제수단</th><th>주문금액</th><th>PG정산액</th><th>정산기준액</th><th>차이금액</th><th>대사결과</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r.orderId">
+        <tr v-for="r in pageList" :key="r?.orderId">
           <td>{{ r.orderId }}</td><td>{{ r.txDate }}</td>
           <td><span class="badge" :class="payBadge(r.payMethod)">{{ r.payMethod }}</span></td>
           <td>{{ fmtW(r.payAmt) }}</td>
@@ -110,13 +110,13 @@ window.StReconPayMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

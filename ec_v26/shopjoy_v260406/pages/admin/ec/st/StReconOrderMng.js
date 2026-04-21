@@ -74,13 +74,13 @@ window.StReconOrderMng = {
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
       <select v-model="searchDiff" style="width:110px">
         <option value="">대사결과 전체</option><option>일치</option><option>정산과다</option><option>정산부족</option>
       </select>
-      <input v-model="searchKw" placeholder="주문ID / 고객명" style="width:180px" @keyup.enter="onSearch" />
+      <input v-model="searchKw" placeholder="주문ID / 고객명" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>
@@ -98,7 +98,7 @@ window.StReconOrderMng = {
     <table class="admin-table">
       <thead><tr><th>주문ID</th><th>주문일</th><th>업체</th><th>주문금액</th><th>정산기준액</th><th>실정산액</th><th>차이금액</th><th>대사결과</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r.orderId">
+        <tr v-for="r in pageList" :key="r?.orderId">
           <td>{{ r.orderId }}</td><td>{{ r.orderDate }}</td><td>{{ r.vendorNm }}</td>
           <td>{{ fmtW(r.orderAmt) }}</td>
           <td>{{ fmtW(r.settleAmt) }}</td>
@@ -114,13 +114,13 @@ window.StReconOrderMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

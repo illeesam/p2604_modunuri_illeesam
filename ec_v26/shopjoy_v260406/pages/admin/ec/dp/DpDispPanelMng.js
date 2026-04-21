@@ -406,10 +406,10 @@ window.DpDispPanelMng = {
       <span class="search-label">화면영역</span>
       <select v-model="searchArea" style="min-width:160px;">
         <option value="">전체 영역</option>
-        <option v-for="a in areas" :key="a.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
+        <option v-for="a in areas" :key="a?.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
       </select>
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -424,13 +424,13 @@ window.DpDispPanelMng = {
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">공개대상</span>
       <select v-model="searchVisibility" style="min-width:100px;">
-        <option v-for="o in VISIBILITY_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">표시방식</span>
       <select v-model="searchLayoutType" style="min-width:100px;">
         <option value="">전체</option>
-        <option v-for="o in LAYOUT_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in LAYOUT_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
     </div>
   </div>
@@ -459,7 +459,7 @@ window.DpDispPanelMng = {
       <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
     </div>
     <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-      <template v-for="node in panelTree" :key="node.label">
+      <template v-for="node in panelTree" :key="node?.label">
         <div @click="selectTree(node.label)"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -491,7 +491,7 @@ window.DpDispPanelMng = {
             </div>
             <!-- 패널 아이템들 -->
             <div v-if="isTreeOpen(node.label+'_'+sub.label)" style="padding-left:12px;border-left:1px solid #e0e0e0;margin-left:6px;margin-bottom:4px;">
-              <div v-for="panel in sub.panels" :key="panel.panelId"
+              <div v-for="panel in sub.panels" :key="panel?.panelId"
                 @click.stop="selectTree('panel_'+panel.panelId)"
                 :style="{
                   display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -537,7 +537,7 @@ window.DpDispPanelMng = {
       </thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <template v-for="(d, pageIdx) in pageList" :key="d.dispId">
+        <template v-for="(d, pageIdx) in pageList" :key="d?.dispId">
           <tr draggable="true"
             @dragstart="onPanelDragStart($event, pageIdx)"
             @dragover="onPanelDragOver($event, pageIdx)"
@@ -671,13 +671,13 @@ window.DpDispPanelMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>
@@ -741,7 +741,7 @@ window.DpDispPanelMng = {
         <div style="border-top:1px solid #f0f0f0;padding-top:14px;">
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;">📐 전시항목 구성</div>
           <template v-if="cardPreviewItem.rows && cardPreviewItem.rows.length">
-            <div v-for="(r, i) in cardPreviewItem.rows" :key="i"
+            <div v-for="(r, i) in cardPreviewItem.rows" :key="Math.random()"
               style="display:flex;align-items:center;gap:10px;padding:9px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:6px;background:#fafafa;">
               <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">{{ r.sortOrder || i+1 }}</span>
               <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ wLabel(r.widgetType) }}</span>

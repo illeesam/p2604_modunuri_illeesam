@@ -122,7 +122,7 @@ window.PmCouponMng = {
     <div class="search-bar">
       <input v-model="searchKw" placeholder="쿠폰명 / 코드 검색" />
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>만료</option><option>비활성</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -147,7 +147,7 @@ window.PmCouponMng = {
       <thead><tr><th>ID</th><th>쿠폰명</th><th>코드</th><th>할인</th><th>최소주문</th><th>발급대상</th><th>발급/사용</th><th>만료일</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in pageList" :key="c.couponId" :style="selectedId===c.couponId?'background:#fff8f9;':''">
+        <tr v-for="c in pageList" :key="c?.couponId" :style="selectedId===c.couponId?'background:#fff8f9;':''">
           <td>{{ c.couponId }}</td>
           <td><span class="title-link" @click="loadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.name }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.code }}</code></td>
@@ -169,7 +169,7 @@ window.PmCouponMng = {
     <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="pageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
-      <div v-for="c in pageList" :key="c.couponId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="c in pageList" :key="c?.couponId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===c.couponId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="loadDetail(c.couponId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
@@ -197,13 +197,13 @@ window.PmCouponMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

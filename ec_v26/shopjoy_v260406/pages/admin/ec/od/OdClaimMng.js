@@ -308,7 +308,7 @@ window.OdClaimMng = {
         <option>신청</option><option>승인</option><option>수거중</option>
         <option>처리중</option><option>환불대기</option><option>완료</option><option>거부</option><option>철회</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -333,7 +333,7 @@ window.OdClaimMng = {
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in pageList" :key="c.claimId"
+        <tr v-for="c in pageList" :key="c?.claimId"
           :style="(selectedId===c.claimId?'background:#fff8f9;':'') + (isChecked(c.claimId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(c.claimId)" @change="toggleCheck(c.claimId)" /></td>
           <td><span class="title-link" @click="loadDetail(c.claimId)" :style="selectedId===c.claimId?'color:#e8587a;font-weight:700;':''">{{ c.claimId }}<span v-if="selectedId===c.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -364,13 +364,13 @@ window.OdClaimMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>
@@ -399,13 +399,13 @@ window.OdClaimMng = {
         <button class="btn btn-secondary btn-sm" @click="bulkOpen=false">✕</button>
       </div>
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
-        <button v-for="t in [{id:'status',label:'클레임상태'},{id:'type',label:'클레임유형'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t.id"
+        <button v-for="t in [{id:'status',label:'클레임상태'},{id:'type',label:'클레임유형'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
           @click="bulkTab=t.id"
           :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: bulkTab===t.id?800:600,background: bulkTab===t.id?'#fff':'transparent',color: bulkTab===t.id?'#e8587a':'#888',borderBottom: bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
       </div>
       <div style="padding:20px 18px;">
         <div v-if="bulkTab==='status'">
-          <div v-for="t in CLAIM_TYPE_OPTIONS" :key="t" class="form-group" :style="{opacity: checkedByType[t].length ? 1 : 0.4}">
+          <div v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" class="form-group" :style="{opacity: checkedByType[t].length ? 1 : 0.4}">
             <label class="form-label">
               <span :style="{display:'inline-block',fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,marginRight:'6px',background: t==='취소'?'#ef4444':t==='반품'?'#FFBB00':'#3b82f6'}">{{ t }}</span>
               상태
@@ -413,7 +413,7 @@ window.OdClaimMng = {
             </label>
             <select class="form-control" v-model="bulkForm.statusByType[t]" :disabled="!checkedByType[t].length">
               <option value="">{{ checkedByType[t].length ? '선택하세요 (미선택시 변경안함)' : '선택된 항목 없음' }}</option>
-              <option v-for="s in CLAIM_STATUS_BY_TYPE[t]" :key="s" :value="s">{{ s }}</option>
+              <option v-for="s in CLAIM_STATUS_BY_TYPE[t]" :key="Math.random()" :value="s">{{ s }}</option>
             </select>
           </div>
         </div>
@@ -421,7 +421,7 @@ window.OdClaimMng = {
           <label class="form-label">변경할 클레임유형</label>
           <select class="form-control" v-model="bulkForm.type">
             <option value="">선택하세요</option>
-            <option v-for="t in CLAIM_TYPE_OPTIONS" :key="t" :value="t">{{ t }}</option>
+            <option v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" :value="t">{{ t }}</option>
           </select>
         </div>
         <div v-if="bulkTab==='approval'">
@@ -429,7 +429,7 @@ window.OdClaimMng = {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in APPROVAL_ACTIONS" :key="a" :value="a">{{ a }}</option>
+              <option v-for="a in APPROVAL_ACTIONS" :key="Math.random()" :value="a">{{ a }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -442,7 +442,7 @@ window.OdClaimMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in members" :key="m.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m?.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
             </select>
           </div>
           <div class="form-row">
@@ -459,7 +459,7 @@ window.OdClaimMng = {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in REQ_TARGETS" :key="t" :value="t">{{ t }}</option>
+                <option v-for="t in REQ_TARGETS" :key="Math.random()" :value="t">{{ t }}</option>
               </select>
             </div>
             <div class="form-group">

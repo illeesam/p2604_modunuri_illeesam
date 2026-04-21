@@ -250,7 +250,7 @@ window.OdOrderDtl = {
   <!-- 탭 -->
   <div v-if="!isNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="t in tabs" :key="t.id"
+      <button v-for="t in tabs" :key="t?.id"
         @click="activeTab=t.id"
         :disabled="viewMode2!=='tab'"
         :style="{
@@ -274,7 +274,7 @@ window.OdOrderDtl = {
       </button>
     </div>
     <div style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v.id"
+      <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v?.id"
         @click="viewMode2=v.id" :title="v.label+'로 보기'"
         :style="{
           padding:'8px 12px', border:'none', cursor:'pointer', fontSize:'13px', borderRadius:'8px',
@@ -437,7 +437,7 @@ window.OdOrderDtl = {
       <div class="form-group">
         <label class="form-label">결제상태</label>
         <select class="form-control" v-model="form.payStatusCd" :disabled="viewMode">
-          <option v-for="s in PAY_STATUS_OPTIONS" :key="s">{{ s }}</option>
+          <option v-for="s in PAY_STATUS_OPTIONS" :key="Math.random()">{{ s }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -496,7 +496,7 @@ window.OdOrderDtl = {
         <th style="width:140px;">교환정보</th>
       </tr></thead>
       <tbody>
-        <template v-for="(it,i) in orderItems" :key="i">
+        <template v-for="(it,i) in orderItems" :key="`orderItems_${i}`">
         <tr>
           <td style="text-align:center;color:#aaa;">
             <span v-if="relatedClaim && relatedClaim.type==='교환'" @click="toggleExpand(i)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;" :title="isExpanded(i)?'교환품 숨기기':'교환품 보기'">
@@ -572,7 +572,7 @@ window.OdOrderDtl = {
         <th>결제일시</th><th>승인번호</th><th>카드사/계좌</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(p,i) in paymentList" :key="i">
+        <tr v-for="(p,i) in paymentList" :key="`paymentList_${i}`">
           <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
           <td>{{ p.payMethod }}</td>
           <td><span class="badge" :class="payStatusBadge(p.payStatus)">{{ p.payStatus }}</span></td>
@@ -600,7 +600,7 @@ window.OdOrderDtl = {
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(h,i) in editHistList" :key="i">
+        <tr v-for="(h,i) in editHistList" :key="`editHistList_${i}`">
           <td>{{ h.date }}</td><td>{{ h.user }}</td><td>{{ h.field }}</td>
           <td style="color:#888;">{{ h.before }}</td>
           <td style="color:#e8587a;font-weight:600;">{{ h.after }}</td>

@@ -124,7 +124,7 @@ window.StSettleEtcAdjMng = {
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
       <select v-model="searchType" style="width:120px">
@@ -133,7 +133,7 @@ window.StSettleEtcAdjMng = {
       <select v-model="searchStatus" style="width:100px">
         <option value="">상태 전체</option><option>대기</option><option>승인</option><option>반려</option>
       </select>
-      <input v-model="searchKw" placeholder="ID / 업체명 / 사유" style="width:180px" @keyup.enter="onSearch" />
+      <input v-model="searchKw" placeholder="ID / 업체명 / 사유" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>
@@ -148,7 +148,7 @@ window.StSettleEtcAdjMng = {
     <table class="admin-table">
       <thead><tr><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r.adjId" :class="{selected: selectedId===r.adjId}">
+        <tr v-for="r in pageList" :key="r?.adjId" :class="{selected: selectedId===r.adjId}">
           <td>{{ r.adjId }}</td><td>{{ r.adjDate }}</td><td>{{ r.vendorNm }}</td>
           <td><span class="badge" :class="typeBadge(r.adjType)">{{ r.adjType }}</span></td>
           <td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td>
@@ -168,13 +168,13 @@ window.StSettleEtcAdjMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -186,7 +186,7 @@ window.StSettleEtcAdjMng = {
         <label class="form-label">업체 <span style="color:red">*</span></label>
         <select class="form-control" :class="{'is-invalid':errors.vendorId}" v-model.number="form.vendorId">
           <option value="">선택</option>
-          <option v-for="v in vendors" :key="v.vendorId" :value="v.vendorId">{{ v.vendorNm }}</option>
+          <option v-for="v in vendors" :key="v?.vendorId" :value="v.vendorId">{{ v.vendorNm }}</option>
         </select>
         <div v-if="errors.vendorId" class="field-error">{{ errors.vendorId }}</div>
       </div>

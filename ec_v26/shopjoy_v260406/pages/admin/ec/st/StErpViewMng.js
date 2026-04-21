@@ -86,7 +86,7 @@ window.StErpViewMng = {
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
       <select v-model="searchType" style="width:120px">
@@ -95,7 +95,7 @@ window.StErpViewMng = {
       <select v-model="searchStatus" style="width:110px">
         <option value="">상태 전체</option><option>전송완료</option><option>전송대기</option><option>오류</option>
       </select>
-      <input v-model="searchKw" placeholder="전표ID / 적요 검색" style="width:180px" @keyup.enter="onSearch" />
+      <input v-model="searchKw" placeholder="전표ID / 적요 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>
@@ -107,7 +107,7 @@ window.StErpViewMng = {
     <table class="admin-table">
       <thead><tr><th>전표ID</th><th>전표일자</th><th>유형</th><th>차변계정</th><th>대변계정</th><th>금액</th><th>적요</th><th>ERP전표번호</th><th>전송상태</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r.slipId">
+        <tr v-for="r in pageList" :key="r?.slipId">
           <td style="font-size:11px">{{ r.slipId }}</td>
           <td>{{ r.slipDate }}</td>
           <td><span class="badge" :class="typeBadge(r.slipType)">{{ r.slipType }}</span></td>
@@ -129,13 +129,13 @@ window.StErpViewMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

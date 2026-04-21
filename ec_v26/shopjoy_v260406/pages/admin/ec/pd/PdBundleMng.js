@@ -383,7 +383,7 @@ window.PdBundleMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">묶음상품명</label>
-      <input class="form-control" v-model="searchNm" @keyup.enter="onSearch"
+      <input class="form-control" v-model="searchNm" @keyup.enter="() => onSearch?.()"
              placeholder="묶음상품명 검색" style="max-width:320px">
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
@@ -411,7 +411,7 @@ window.PdBundleMng = {
         <th style="width:110px;text-align:center">관리</th>
       </tr></thead>
       <tbody>
-        <template v-for="g in pageList" :key="g.bundleProdId">
+        <template v-for="g in pageList" :key="g?.bundleProdId">
           <tr :style="(dtlMode==='edit' && editBundleId===g.bundleProdId) ? 'background:#e6f4ff' : ''">
             <td>
               <div style="display:flex;align-items:flex-start;gap:6px">
@@ -462,13 +462,13 @@ window.PdBundleMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -538,7 +538,7 @@ window.PdBundleMng = {
           <label class="form-label">브랜드</label>
           <select class="form-control" v-model="newForm.brandId">
             <option value="">선택</option>
-            <option v-for="b in ([]||[])" :key="b.brandId" :value="b.brandId">
+            <option v-for="b in ([]||[])" :key="b?.brandId" :value="b.brandId">
               {{ b.brandNm || b.brandName }}
             </option>
           </select>
@@ -547,7 +547,7 @@ window.PdBundleMng = {
           <label class="form-label">판매업체</label>
           <select class="form-control" v-model="newForm.vendorId">
             <option value="">선택</option>
-            <option v-for="v in ([]||[])" :key="v.vendorId" :value="v.vendorId">
+            <option v-for="v in ([]||[])" :key="v?.vendorId" :value="v.vendorId">
               {{ v.vendorNm || v.vendorName }}
             </option>
           </select>
@@ -562,7 +562,7 @@ window.PdBundleMng = {
         <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
         <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
           <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
-          <div v-for="(cat,idx) in dtlCategories" :key="cat.categoryId"
+          <div v-for="(cat,idx) in dtlCategories" :key="cat?.categoryId"
                draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
                :style="catDragoverIdx===idx?'opacity:0.5;':''"
                style="display:flex;align-items:center;gap:4px;padding:2px 0;">
@@ -595,7 +595,7 @@ window.PdBundleMng = {
         <th style="width:50px;text-align:center">삭제</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(item, idx) in dtlItems" :key="item._id"
+        <tr v-for="(item, idx) in dtlItems" :key="item?._id"
             draggable="true"
             @dragstart="onDragStart(idx)"
             @dragover.prevent="onDragOver(idx)"
@@ -685,7 +685,7 @@ window.PdBundleMng = {
               <th style="width:56px;text-align:center">선택</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in pickerList" :key="p.productId">
+              <tr v-for="p in pickerList" :key="p?.productId">
                 <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
                 <td>{{ p.prodNm || p.productName }}</td>
                 <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>
@@ -717,7 +717,7 @@ window.PdBundleMng = {
         </div>
         <div style="overflow-y:auto;flex:1;padding:0 8px 12px;">
           <div v-if="catPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
-          <div v-for="cat in catPickerList" :key="cat.categoryId"
+          <div v-for="cat in catPickerList" :key="cat?.categoryId"
                @click="addCategory(cat)"
                style="padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;"
                onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background=''">

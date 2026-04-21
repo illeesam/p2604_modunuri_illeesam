@@ -118,7 +118,7 @@ window.MbMemGradeMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">등급명/코드</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="등급명 또는 코드 검색">
+        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="등급명 또는 코드 검색">
         <label class="search-label">사용여부</label>
         <select class="form-control" v-model="searchUse">
           <option value="">전체</option><option value="Y">Y</option><option value="N">N</option>
@@ -149,11 +149,11 @@ window.MbMemGradeMng = {
           <th style="width:60px;text-align:center">삭제</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row,idx) in gridRows" :key="row.gradeId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}" @click="focusedIdx=idx">
+          <tr v-for="(row,idx) in gridRows" :key="row?.gradeId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}" @click="focusedIdx=idx">
             <td>
               <select v-if="row._row_status" class="form-control" v-model="row.gradeCd" @change="onCellChange(idx)">
                 <option value="">선택</option>
-                <option v-for="c in GRADE_CODES" :key="c" :value="c">{{ c }}</option>
+                <option v-for="c in GRADE_CODES" :key="Math.random()" :value="c">{{ c }}</option>
               </select>
               <span v-else>{{ row.gradeCd }}</span>
             </td>
@@ -175,13 +175,13 @@ window.MbMemGradeMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

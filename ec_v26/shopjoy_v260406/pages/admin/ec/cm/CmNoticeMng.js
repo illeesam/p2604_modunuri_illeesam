@@ -104,7 +104,7 @@ window.CmNoticeMng = {
       <select v-model="searchStatus"><option value="">상태 전체</option><option>게시</option><option>예약</option><option>종료</option><option>임시</option></select>
       <span class="search-label">등록일</span>
       <input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -123,7 +123,7 @@ window.CmNoticeMng = {
       <thead><tr><th>ID</th><th>유형</th><th>제목</th><th>고정</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="n in pageList" :key="n.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
+        <tr v-for="n in pageList" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
           <td>{{ n.noticeId }}</td>
           <td><span class="badge" :class="typeBadge(n.noticeType)">{{ n.noticeType }}</span></td>
           <td><span class="title-link" @click="loadDetail(n.noticeId)" :style="selectedId===n.noticeId?'color:#e8587a;font-weight:700;':''">{{ n.title }}<span v-if="n.isFixed" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span><span v-if="selectedId===n.noticeId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -145,13 +145,13 @@ window.CmNoticeMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

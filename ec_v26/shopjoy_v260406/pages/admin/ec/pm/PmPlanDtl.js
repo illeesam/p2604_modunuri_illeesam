@@ -268,7 +268,7 @@ window.PmPlanDtl = {
         <div class="form-group">
           <label class="form-label">카테고리 <span class="req">*</span></label>
           <select class="form-control" v-model="form.category" :class="errors.category ? 'is-invalid' : ''">
-            <option v-for="c in CATEGORIES" :key="c.value" :value="c.value">{{ c.label }}</option>
+            <option v-for="c in CATEGORIES" :key="c?.value" :value="c.value">{{ c.label }}</option>
           </select>
           <span v-if="errors.category" class="field-error">{{ errors.category }}</span>
         </div>
@@ -281,13 +281,13 @@ window.PmPlanDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.status">
-            <option v-for="s in STATUS_OPTIONS" :key="s.value" :value="s.value">{{ s.label }}</option>
+            <option v-for="s in STATUS_OPTIONS" :key="s?.value" :value="s.value">{{ s.label }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">공개대상</label>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px 0;">
-            <label v-for="opt in VISIBILITY_OPTIONS" :key="opt.value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+            <label v-for="opt in VISIBILITY_OPTIONS" :key="opt?.value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
               <input type="checkbox" :checked="hasVisibility(opt.value)" @change="toggleVisibility(opt.value)" />
               <span>{{ opt.label }}</span>
             </label>
@@ -333,7 +333,7 @@ window.PmPlanDtl = {
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in ([] || [])" :key="v.vendorId"
+            <div v-for="v in ([] || [])" :key="v?.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
@@ -361,7 +361,7 @@ window.PmPlanDtl = {
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 내용입력</div>
       <div style="margin-bottom:12px;">
         <div style="display:flex;gap:2px;margin-bottom:12px;">
-          <button v-for="i in 3" :key="i" @click="activeContentTab=i"
+          <button v-for="i in 3" :key="Math.random()" @click="activeContentTab=i"
             class="tab-btn" :class="{active:activeContentTab===i}"
             style="font-size:12px;padding:6px 14px;">
             {{ i===1 ? '🎯 주요내용' : (i===2 ? '✨ 특징' : '🎁 혜택') }}
@@ -394,7 +394,7 @@ window.PmPlanDtl = {
       </div>
 
       <div v-if="selectedProducts.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">
-        <div v-for="p in selectedProducts" :key="p.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
+        <div v-for="p in selectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
           <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">📦</div>
           <div style="padding:8px;font-size:11px;">
             <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.prodNm }}</div>
@@ -452,7 +452,7 @@ window.PmPlanDtl = {
           <div v-if="selectedProducts.length > 0" style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
             <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🛍 대상상품 ({{ selectedProducts.length }}개)</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
-              <div v-for="p in selectedProducts" :key="p.productId" style="text-align:center;padding:10px;background:#f9f9f9;border-radius:6px;">
+              <div v-for="p in selectedProducts" :key="p?.productId" style="text-align:center;padding:10px;background:#f9f9f9;border-radius:6px;">
                 <div style="font-size:32px;margin-bottom:4px;">📦</div>
                 <div style="font-size:11px;font-weight:600;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.prodNm }}</div>
                 <div style="font-size:12px;color:#e8587a;font-weight:700;margin-top:4px;">{{ (p.price||0).toLocaleString() }}원</div>
@@ -483,7 +483,7 @@ window.PmPlanDtl = {
     </div>
     <div style="flex:1;overflow-y:auto;">
       <div v-if="filteredProds.length === 0" style="text-align:center;color:#999;padding:40px;">상품이 없습니다.</div>
-      <div v-for="p in filteredProds" :key="p.productId"
+      <div v-for="p in filteredProds" :key="p?.productId"
         @click="toggleProduct(p.productId)"
         style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
         :style="isSelected(p.productId) ? 'background:#ede7f6;' : ''"

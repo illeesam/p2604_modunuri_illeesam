@@ -180,7 +180,7 @@ window.PmDiscntDtl = {
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in ([] || [])" :key="v.vendorId"
+            <div v-for="v in ([] || [])" :key="v?.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
@@ -212,7 +212,7 @@ window.PmDiscntDtl = {
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">🔒 공개대상</h3>
         <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">하나라도 해당하면 노출</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+          <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
             :style="{display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 10px',borderRadius:'14px',border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',color:hasVisibility(opt.codeValue)?'#1565c0':'#666',fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,cursor:'pointer'}">
             <input type="checkbox" :checked="hasVisibility(opt.codeValue)" @change="toggleVisibility(opt.codeValue)" style="accent-color:#1565c0;" />
             {{ opt.codeLabel }}

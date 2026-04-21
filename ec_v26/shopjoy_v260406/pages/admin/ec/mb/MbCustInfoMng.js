@@ -230,7 +230,7 @@
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:14px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <!-- 모드 세그먼트 -->
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;flex-shrink:0;">
-      <button v-for="m in SEARCH_MODES" :key="m.id"
+      <button v-for="m in SEARCH_MODES" :key="m?.id"
         @click="searchMode=m.id;searchInput=''"
         :style="searchMode===m.id
           ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;'
@@ -254,7 +254,7 @@
         <input type="text" v-model="searchInput"
           :placeholder="searchMode==='order'?'주문번호  ex) ORD-2026-025':'클레임번호  ex) CLM-2026-013'"
           style="border:none;background:transparent;padding:8px 14px;font-size:13px;outline:none;flex:1;min-width:0;"
-          @keyup.enter="doSearch" />
+          @keyup.enter="() => doSearch?.()" />
         <button @click="doSearch"
           style="background:#1976d2;color:#fff;border:none;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
           조회
@@ -273,7 +273,7 @@
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:12px;color:#888;font-weight:500;white-space:nowrap;">조회기간</span>
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
-      <button v-for="p in PERIOD_OPTS" :key="p.id"
+      <button v-for="p in PERIOD_OPTS" :key="p?.id"
         @click="period=p.id"
         :style="period===p.id
           ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;'
@@ -388,7 +388,7 @@
               <tr v-if="!custOrders.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">주문 내역이 없습니다.</td>
               </tr>
-              <tr v-for="o in custOrders" :key="o.orderId">
+              <tr v-for="o in custOrders" :key="o?.orderId">
                 <td><a href="#" @click.prevent="showRefModal('order',o.orderId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ o.orderId }}</a></td>
                 <td style="color:#888;white-space:nowrap;">{{ o.orderDate }}</td>
                 <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="o.prodNm">{{ o.prodNm }}</td>
@@ -416,7 +416,7 @@
               <tr v-if="!custClaims.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">클레임 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custClaims" :key="c.claimId">
+              <tr v-for="c in custClaims" :key="c?.claimId">
                 <td><a href="#" @click.prevent="showRefModal('claim',c.claimId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ c.claimId }}</a></td>
                 <td>{{ c.type }}</td>
                 <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="c.prodNm">{{ c.prodNm }}</td>
@@ -444,7 +444,7 @@
               <tr v-if="!custDeliveries.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">배송 내역이 없습니다.</td>
               </tr>
-              <tr v-for="d in custDeliveries" :key="d.dlivId">
+              <tr v-for="d in custDeliveries" :key="d?.dlivId">
                 <td style="font-weight:500;">{{ d.dlivId }}</td>
                 <td>{{ d.orderId }}</td>
                 <td>{{ d.courier || '-' }}</td>
@@ -473,7 +473,7 @@
               <tr v-if="!custCache.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">캐쉬 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custCache" :key="c.cacheId">
+              <tr v-for="c in custCache" :key="c?.cacheId">
                 <td style="color:#888;white-space:nowrap;">{{ c.date }}</td>
                 <td><span :class="'badge '+(c.type==='충전'?'badge-blue':'badge-orange')">{{ c.type }}</span></td>
                 <td style="text-align:right;font-weight:600;" :style="c.amount>0?'color:#1565c0;':'color:#c62828;'">{{ c.amount > 0 ? '+' : '' }}{{ c.amount.toLocaleString() }}원</td>
@@ -501,7 +501,7 @@
               <tr v-if="!custContacts.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">문의 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custContacts" :key="c.inquiryId">
+              <tr v-for="c in custContacts" :key="c?.inquiryId">
                 <td style="color:#888;white-space:nowrap;">{{ c.date ? c.date.slice(0,10) : '' }}</td>
                 <td style="white-space:nowrap;">{{ c.category }}</td>
                 <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="c.title">{{ c.title }}</td>
@@ -528,7 +528,7 @@
               <tr v-if="!custChats.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">채팅 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custChats" :key="c.chatId">
+              <tr v-for="c in custChats" :key="c?.chatId">
                 <td style="color:#888;white-space:nowrap;">{{ c.date ? c.date.slice(0,10) : '' }}</td>
                 <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="c.subject">{{ c.subject }}</td>
                 <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;" :title="c.lastMsg">{{ c.lastMsg }}</td>
@@ -555,7 +555,7 @@
               <tr v-if="!custLoginHist.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">로그인 내역이 없습니다.</td>
               </tr>
-              <tr v-for="l in custLoginHist" :key="l.loginId">
+              <tr v-for="l in custLoginHist" :key="l?.loginId">
                 <td style="color:#888;white-space:nowrap;">{{ l.loginDate }}</td>
                 <td style="color:#666;font-family:monospace;">{{ l.ip }}</td>
                 <td style="color:#555;">{{ l.device }}</td>
@@ -582,7 +582,7 @@
               <tr v-if="!custCouponUsage.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">쿠폰 사용 내역이 없습니다.</td>
               </tr>
-              <tr v-for="u in custCouponUsage" :key="u.usageId">
+              <tr v-for="u in custCouponUsage" :key="u?.usageId">
                 <td style="color:#888;white-space:nowrap;">{{ u.usedDate }}</td>
                 <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="u.couponNm">{{ u.couponNm }}</td>
                 <td style="font-family:monospace;color:#666;font-size:11px;">{{ u.couponCode }}</td>
@@ -610,7 +610,7 @@
               <tr v-if="!custSendHist.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">발송 내역이 없습니다.</td>
               </tr>
-              <tr v-for="s in custSendHist" :key="s.sendId">
+              <tr v-for="s in custSendHist" :key="s?.sendId">
                 <td style="color:#888;white-space:nowrap;">{{ s.sendDate }}</td>
                 <td><span :class="'badge '+channelCls(s.channelCd)">{{ s.channelCd }}</span></td>
                 <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;" :title="s.title">{{ s.title }}</td>
@@ -634,7 +634,7 @@
       <div style="flex:1;overflow:auto;padding:0 4px;">
         <div style="display:flex;gap:6px;margin-bottom:14px;">
           <input type="text" class="form-control" v-model="memberModal.keyword"
-            placeholder="이름 · 이메일 · 전화번호로 검색" @keyup.enter="searchMemberModal"
+            placeholder="이름 · 이메일 · 전화번호로 검색" @keyup.enter="() => searchMemberModal?.()"
             style="flex:1;font-size:13px;" />
           <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
         </div>
@@ -652,7 +652,7 @@
             <tr v-if="!memberModal.list.length">
               <td colspan="7" style="text-align:center;color:#bbb;padding:28px;font-size:13px;">검색 결과가 없습니다.</td>
             </tr>
-            <tr v-for="m in memberModal.list" :key="m.userId" style="cursor:pointer;" @click="selectMember(m)">
+            <tr v-for="m in memberModal.list" :key="m?.userId" style="cursor:pointer;" @click="selectMember(m)">
               <td style="text-align:center;color:#aaa;">{{ m.userId }}</td>
               <td style="font-weight:600;color:#1a1a2e;">{{ m.memberNm }}</td>
               <td style="color:#555;">{{ m.email }}</td>

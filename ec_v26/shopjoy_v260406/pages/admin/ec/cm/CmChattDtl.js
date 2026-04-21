@@ -208,7 +208,7 @@ window.CmChattDtl = {
         <!-- 답변 입력 -->
         <div v-if="chat.status==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
           <textarea class="form-control" v-model="replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
-            @keydown.enter.exact.prevent="sendReply"></textarea>
+            @keydown.enter.exact.prevent="() => sendReply?.()"></textarea>
           <button class="btn btn-primary" @click="sendReply" style="white-space:nowrap;">전송</button>
         </div>
         <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">종료된 채팅입니다.</div>
@@ -231,7 +231,7 @@ window.CmChattDtl = {
       <table class="admin-table" v-if="memberChats.length">
         <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>관리</th></tr></thead>
         <tbody>
-          <tr v-for="c in memberChats" :key="c.chatId">
+          <tr v-for="c in memberChats" :key="c?.chatId">
             <td>{{ c.subject }}</td>
             <td><span class="badge" :class="c.status==='진행중'?'badge-green':'badge-gray'">{{ c.status }}</span></td>
             <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsg || '-' }}</td>
@@ -305,7 +305,7 @@ window.CmChattDtl = {
           <table class="admin-table" v-if="userChats.length">
             <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>보기</th></tr></thead>
             <tbody>
-              <tr v-for="c in userChats" :key="c.chatId">
+              <tr v-for="c in userChats" :key="c?.chatId">
                 <td>{{ c.subject }}</td>
                 <td><span class="badge" :class="c.status==='진행중'?'badge-green':'badge-gray'">{{ c.status }}</span></td>
                 <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.lastMsg || '-' }}</td>

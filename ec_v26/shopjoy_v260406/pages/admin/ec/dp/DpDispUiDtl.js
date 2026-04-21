@@ -380,7 +380,7 @@ window.DpDispUiDtl = {
         }">
         <span>📋 UI <b>기본정보</b></span>
       </div>
-      <div v-for="(a, i) in relatedAreas" :key="a.codeId"
+      <div v-for="(a, i) in relatedAreas" :key="a?.codeId"
         @click="selectTab('area_'+a.codeId)"
         :style="{
           display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -435,7 +435,7 @@ window.DpDispUiDtl = {
             <div class="form-group">
               <label class="form-label">UI유형</label>
               <select class="form-control" v-model="form.uiType">
-                <option v-for="o in UI_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+                <option v-for="o in UI_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
               </select>
             </div>
           </div>
@@ -560,7 +560,7 @@ window.DpDispUiDtl = {
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <label v-for="opt in uiDispEnvOptions" :key="opt.code"
+            <label v-for="opt in uiDispEnvOptions" :key="opt?.code"
               :style="{
                 display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
                 border:'1px solid '+(hasUiDispEnv(opt.code)?'#7c3aed':'#ddd'),
@@ -577,7 +577,7 @@ window.DpDispUiDtl = {
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-            <label v-for="opt in visibilityOptions" :key="opt.codeValue"
+            <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
               :style="{
                 display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
                 border:'1px solid '+(hasAreaVisibility(opt.codeValue)?'#1565c0':'#ddd'),
@@ -645,7 +645,7 @@ window.DpDispUiDtl = {
       </div>
       <!-- 디바이스 모드 -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
-        <button v-for="m in PREVIEW_MODES" :key="m.value"
+        <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="previewMode = m.value"
           :style="{
             flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
@@ -665,7 +665,7 @@ window.DpDispUiDtl = {
           <div v-if="!relatedAreas.length" style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">
             연결된 영역이 없습니다.
           </div>
-          <div v-for="a in relatedAreas" :key="a.codeId">
+          <div v-for="a in relatedAreas" :key="a?.codeId">
             <div style="font-size:10px;background:#222;color:#fff;padding:3px 8px;border-radius:4px 4px 0 0;display:flex;justify-content:space-between;">
               <code style="background:transparent;color:#fff;">{{ a.codeValue }}</code>
               <span>{{ a.codeLabel }} · {{ panelsOfArea(a.codeValue).length }}패널</span>

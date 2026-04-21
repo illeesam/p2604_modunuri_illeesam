@@ -249,7 +249,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">쿠폰 타입</label>
           <select class="form-control" v-model="form.couponType">
-            <option v-for="t in COUPON_TYPES" :key="t">{{ t }}</option>
+            <option v-for="t in COUPON_TYPES" :key="Math.random()">{{ t }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -275,7 +275,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">할인 유형</label>
           <select class="form-control" v-model="form.discountType">
-            <option v-for="o in DISCOUNT_TYPES" :key="o.value" :value="o.value">{{ o.label }}</option>
+            <option v-for="o in DISCOUNT_TYPES" :key="o?.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -346,7 +346,7 @@ window.PmCouponDtl = {
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in ([] || [])" :key="v.vendorId"
+            <div v-for="v in ([] || [])" :key="v?.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
@@ -480,7 +480,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">발급 대상 종류</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <label v-for="t in ISSUE_TARGETS" :key="t" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.issueTo===t?'#e3f2fd':'#fff';">
+            <label v-for="t in ISSUE_TARGETS" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.issueTo===t?'#e3f2fd':'#fff';">
               <input type="radio" :value="t" v-model="form.issueTo" />
               {{ t }}
             </label>
@@ -523,7 +523,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">적용 회원 등급</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="g" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;cursor:pointer;">
+            <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="Math.random()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;cursor:pointer;">
               <input type="checkbox" :value="g" v-model="form.issueGrades" />
               {{ g }}
             </label>

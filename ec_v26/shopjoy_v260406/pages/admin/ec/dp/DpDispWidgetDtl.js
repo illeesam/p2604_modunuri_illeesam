@@ -587,7 +587,7 @@ window.DpDispWidgetDtl = {
         </div>
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-          <label v-for="opt in dispEnvOptions" :key="opt.code"
+          <label v-for="opt in dispEnvOptions" :key="opt?.code"
             :style="{
               display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
               border:'1px solid '+(hasDispEnv(opt.code)?'#7c3aed':'#ddd'),
@@ -646,7 +646,7 @@ window.DpDispWidgetDtl = {
             <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
             <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
               style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
-              <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
+              <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
             </select>
           </span>
         </div>
@@ -674,7 +674,7 @@ window.DpDispWidgetDtl = {
 
         <!-- 공통 동적 행 -->
         <div v-if="displayRows.length" style="display:flex;flex-direction:column;gap:10px;">
-          <div v-for="row in displayRows" :key="row.key" class="form-group" style="margin:0;">
+          <div v-for="row in displayRows" :key="row?.key" class="form-group" style="margin:0;">
             <label class="form-label">{{ row.label }}</label>
             <input  v-if="row.type==='input'"    v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
             <input  v-else-if="row.type==='number'"  v-model.number="form[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
@@ -682,7 +682,7 @@ window.DpDispWidgetDtl = {
             <textarea v-else-if="row.type==='textarea'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="3" style="margin:0;"></textarea>
             <textarea v-else-if="row.type==='code'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;"></textarea>
             <select v-else-if="row.type==='select'" v-model="form[row.key]" class="form-control" style="margin:0;">
-              <option v-for="o in row.options" :key="o.v" :value="o.v">{{ o.l }}</option>
+              <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
             </select>
           </div>
         </div>
@@ -706,7 +706,7 @@ window.DpDispWidgetDtl = {
 
         <!-- 파일목록 -->
         <div v-else-if="isFileList">
-          <div v-for="(item, idx) in fileListItems" :key="idx"
+          <div v-for="(item, idx) in fileListItems" :key="`fileListItems_${idx}`"
             style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
             <input :value="item.name" @input="updateFileItem(idx,'name',$event.target.value)"
               class="form-control" placeholder="파일명" style="margin:0;flex:1;" />
@@ -740,7 +740,7 @@ window.DpDispWidgetDtl = {
       </div>
       <!-- 디바이스 모드 버튼 -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
-        <button v-for="m in PREVIEW_MODES" :key="m.value"
+        <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="previewMode = m.value"
           :style="{
             flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',

@@ -208,7 +208,7 @@ window.DpDispUiMng = {
       <input v-model="searchKw" placeholder="UI코드 / UI명 / 설명 검색" style="min-width:260px;" />
       <select v-model="searchUiType">
         <option value="">UI유형 전체</option>
-        <option v-for="o in UI_TYPE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in UI_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <select v-model="searchUseYn">
         <option value="">사용여부 전체</option>
@@ -221,7 +221,7 @@ window.DpDispUiMng = {
       <input type="date" v-model="searchDateEnd" class="date-range-input" />
       <select v-model="searchDateRange" @change="onDateRangeChange">
         <option value="">옵션선택</option>
-        <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
@@ -254,7 +254,7 @@ window.DpDispUiMng = {
         <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
       </div>
       <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-        <template v-for="node in uiTree" :key="node.label">
+        <template v-for="node in uiTree" :key="node?.label">
           <div @click="selectTree(node.label)"
             :style="{
               display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -270,7 +270,7 @@ window.DpDispUiMng = {
           </div>
           <!-- 그룹별 UI 아이템들 -->
           <div v-if="isTreeOpen('grp_'+node.label)" style="padding-left:12px;border-left:1px solid #e0e0e0;margin-left:6px;margin-bottom:4px;">
-            <div v-for="u in node.items" :key="u.codeId"
+            <div v-for="u in node.items" :key="u?.codeId"
               @click="selectTree(u.codeValue)"
               :style="{
                 display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -315,7 +315,7 @@ window.DpDispUiMng = {
           <tr v-if="pageList.length===0">
             <td colspan="3" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
-          <template v-for="u in pageList" :key="u.codeId">
+          <template v-for="u in pageList" :key="u?.codeId">
             <tr :style="selectedId===u.codeId?'background:#fff8f9;':''">
               <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">
                 <button @click="toggleExpandUI(u.codeId)" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;margin-right:4px;"
@@ -363,7 +363,7 @@ window.DpDispUiMng = {
                 </div>
                 <div v-if="areasOfUi(u.codeValue).length===0" style="color:#bbb;font-size:11px;padding:8px 0;">영역이 없습니다.</div>
                 <div v-else style="display:grid;gap:8px;">
-                  <div v-for="a in areasOfUi(u.codeValue)" :key="a.codeId"
+                  <div v-for="a in areasOfUi(u.codeValue)" :key="a?.codeId"
                     style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
                     <span style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;font-weight:600;white-space:nowrap;">영역</span>
                     <span style="font-size:12px;color:#333;font-weight:600;flex:1;">{{ a.codeLabel }}</span>
@@ -385,13 +385,13 @@ window.DpDispUiMng = {
         <div class="pager">
           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-          <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+          <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
           </select>
         </div>
       </div>

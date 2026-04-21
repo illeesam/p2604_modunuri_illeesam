@@ -122,7 +122,7 @@ window.PmSaveMng = {
       <input v-model="searchKw" placeholder="마일리지명 / ID 검색" />
       <select v-model="searchType"><option value="">유형 전체</option><option>구매적립</option><option>회원가입</option><option>리뷰적립</option><option>출석체크</option></select>
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option><option>종료</option></select>
-      <span class="search-label">시작일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">시작일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">검색</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -147,7 +147,7 @@ window.PmSaveMng = {
       <thead><tr><th>ID</th><th>마일리지명</th><th>유형</th><th>적립값</th><th>단위</th><th>유효기간</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="s in pageList" :key="s.saveId" :style="selectedId===s.saveId?'background:#fff8f9;':''">
+        <tr v-for="s in pageList" :key="s?.saveId" :style="selectedId===s.saveId?'background:#fff8f9;':''">
           <td>{{ s.saveId }}</td>
           <td><span class="title-link" @click="loadDetail(s.saveId)" :style="selectedId===s.saveId?'color:#e8587a;font-weight:700;':''">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="typeBadge(s.saveType)">{{ s.saveType }}</span></td>
@@ -169,7 +169,7 @@ window.PmSaveMng = {
     <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="pageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
-      <div v-for="s in pageList" :key="s.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="s in pageList" :key="s?.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===s.saveId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="loadDetail(s.saveId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
@@ -198,13 +198,13 @@ window.PmSaveMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
         <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

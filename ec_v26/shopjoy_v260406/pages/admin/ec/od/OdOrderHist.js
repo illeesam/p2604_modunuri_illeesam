@@ -72,7 +72,7 @@ window.OdOrderHist = {
     <table class="admin-table" v-if="orderItems.length">
       <thead><tr><th>No</th><th>상품명</th><th>옵션</th><th>수량</th><th>단가</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="item in orderItems" :key="item.no">
+        <tr v-for="item in orderItems" :key="item?.no">
           <td>{{ item.no }}</td>
           <td>{{ item.prodNm }}</td>
           <td>{{ item.optionNm }}</td>
@@ -102,7 +102,7 @@ window.OdOrderHist = {
       <table class="admin-table" v-if="dlivHistory.length">
         <thead><tr><th>일시</th><th>상태</th><th>위치</th><th>메모</th></tr></thead>
         <tbody>
-          <tr v-for="(h, i) in dlivHistory" :key="i">
+          <tr v-for="(h, i) in dlivHistory" :key="`dlivHistory_${i}`">
             <td>{{ h.date }}</td>
             <td><span class="badge badge-blue">{{ h.status }}</span></td>
             <td>{{ h.location }}</td>
@@ -121,7 +121,7 @@ window.OdOrderHist = {
     <table class="admin-table" v-if="relatedClaims.length">
       <thead><tr><th>클레임ID</th><th>회원</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="c in relatedClaims" :key="c.claimId">
+        <tr v-for="c in relatedClaims" :key="c?.claimId">
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td>{{ c.type }}</td>
