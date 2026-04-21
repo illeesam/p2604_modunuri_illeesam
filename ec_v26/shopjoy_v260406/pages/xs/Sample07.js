@@ -109,8 +109,8 @@ window.XsSample07 = {
     /* ===== App Filter ===== */
     const appFilter = reactive({ fo: true, bo: true, samples: true });
     const APP_META  = {
-      fo:   { label: 'Front',   color: '#1a73e8' },
-      bo:   { label: 'Admin',   color: '#e8587a' },
+      fo:   { label: 'FO',   color: '#1a73e8' },
+      bo:   { label: 'BO',   color: '#e8587a' },
       samples: { label: 'Samples', color: '#34a853' },
     };
 

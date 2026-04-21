@@ -6,7 +6,7 @@
   /* BO_SITE_NO 기준으로 상단 메뉴 필터링
      - 02: 고객센터 제외
      - 03: 프로모션 제외 */
-  const _ADMIN_NO = window.BO_SITE_NO || '01';
+  const _BO_SITE_NO = window.BO_SITE_NO || '01';
   const _ALL_TOP_MENUS = [
     { id: 'member',    label: '회원관리' },
     { id: 'product',   label: '상품관리' },
@@ -18,8 +18,8 @@
     { id: 'system',     label: '시스템' },
   ];
   const TOP_MENUS = _ALL_TOP_MENUS.filter(m => {
-    if (_ADMIN_NO === '02' && m.id === 'customer')  return false;
-    if (_ADMIN_NO === '03' && m.id === 'promotion') return false;
+    if (_BO_SITE_NO === '02' && m.id === 'customer')  return false;
+    if (_BO_SITE_NO === '03' && m.id === 'promotion') return false;
     return true;
   });
 
