@@ -281,7 +281,7 @@
         const idx = openTabs.findIndex(t => t.id === ctxMenu.tabId);
         if (idx > 0) {
           openTabs.splice(0, idx);
-          if (!openTabs.find(t => t.id === activeTabId.value)) navigate(openTabs[0].id);
+          if (!openTabs.find(t => t.id === activeTabId.value) && openTabs.length > 0) navigate(openTabs[0]?.id);
         }
         closeCtxMenu();
       };
@@ -852,7 +852,7 @@
           style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentUserRoles[0]) }}</span>
         <span class="user-name-label">{{ currentUser.name }}</span>
         <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentUser.email">
-          {{ currentUser.name[0] }}
+          {{ (currentUser?.name || '')[0] || '?' }}
         </button>
         <div v-if="userMenuShow" class="user-dropdown">
           <div class="user-dropdown-header">
@@ -1321,7 +1321,7 @@
         <span class="modal-close" @click="profileModal.show=false">✕</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
-        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ currentUser?.name[0] }}</div>
+        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (currentUser?.name || '')[0] || '?' }}</div>
         <div>
           <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentUser?.name }}</div>
           <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentUser?.role }}</div>
