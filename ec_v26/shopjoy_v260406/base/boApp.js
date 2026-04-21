@@ -1256,7 +1256,7 @@
   <site-select-modal v-if="selectModal.show && selectModal.type==='site'"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
   <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
   <vendor-select-modal v-if="selectModal.show && selectModal.type==='dlivVendor'"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
-  <bo-user-select-modal v-if="selectModal.show && selectModal.type==='adminUser'"  @select="onSelectItem('adminUser', $event)" @close="closeSelectModal" />
+  <bo-user-select-modal v-if="selectModal.show && selectModal.type==='boUser'"  @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
   <member-select-modal v-if="selectModal.show && selectModal.type==='member'"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
   <order-select-modal v-if="selectModal.show && selectModal.type==='order'"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
