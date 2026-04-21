@@ -4,10 +4,11 @@ window.OdDlivDtl = {
   name: 'OdDlivDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const deliveries = reactive([]);
     const loading = ref(false);
     const error = ref(null);
+    const claims = ref((window.adminData?.claims || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -48,7 +49,7 @@ window.OdDlivDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const d = deliveries.window.safeArrayUtils.safeFind(value, x => x.dlivId === props.editId);
+        const d = window.safeArrayUtils.safeFind(deliveries, x => x.dlivId === props.editId);
         if (d) {
           Object.assign(form, { ...d });
           if (!form.dlivId) form.dlivId = props.editId;
@@ -70,10 +71,10 @@ window.OdDlivDtl = {
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
-    const relatedOrder  = computed(() => getOrder.value(form.orderId));
-    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === form.orderId));
+    const relatedOrder  = computed(() => window.safeArrayUtils.safeFind((window.adminData?.orders || []), o => o.orderId === form.orderId) || null);
+    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims.value || [], c => c.orderId === form.orderId));
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
-    const firstClaim = computed(() => relatedClaims.window.safeArrayUtils.safeGet(value, 0) || null);
+    const firstClaim = computed(() => window.safeArrayUtils.safeGet(relatedClaims.value || [], 0) || null);
 
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -176,7 +177,7 @@ window.OdDlivDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },
     ]);
-    return { isNew, tab, form, errors, save, memoEl, dlivItems, fmt, DLIV_STEPS, currentStepIdx, tabs, editHistList, paymentList, statusHistList, openTracking, relatedOrder, firstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab };
+    return { isNew, tab, form, errors, save, memoEl, dlivItems, fmt, DLIV_STEPS, currentStepIdx, tabs, editHistList, paymentList, statusHistList, openTracking, relatedOrder, firstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, claims, relatedClaims };
   },
   template: /* html */`
 <div>

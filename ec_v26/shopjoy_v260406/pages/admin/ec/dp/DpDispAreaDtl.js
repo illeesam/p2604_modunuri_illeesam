@@ -237,11 +237,11 @@ window.DpDispAreaDtl = {
       if (!ok) return;
       const codesData = codes.value;
       if (isNewArea) {
-        const nextId = nextId.value(codesData, 'codeId');
-        codes.push({ ...form, codeId: nextId });
+        const newId = window.adminUtil.nextId(codesData, 'codeId');
+        codesData.push({ ...form, codeId: newId });
       } else {
-        const idx = codes.findIndex(c => c.codeId === form.codeId);
-        if (idx !== -1) Object.assign(codes[idx], form);
+        const idx = codesData.findIndex(c => c.codeId === form.codeId);
+        if (idx !== -1) Object.assign(codesData[idx], form);
       }
       try {
         const res = await (isNewArea ? window.adminApi.post('disp-areas', { ...form }) : window.adminApi.put(`/bo/ec/dp/area/${form.codeId}`, { ...form }));

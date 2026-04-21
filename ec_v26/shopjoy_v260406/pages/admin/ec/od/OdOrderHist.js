@@ -4,10 +4,12 @@ window.OdOrderHist = {
   name: 'OdOrderHist',
   props: ['navigate', 'showRefModal', 'showToast', 'orderId'],
   setup(props) {
-    const { ref, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const orders = reactive([]);
     const loading = ref(false);
     const error = ref(null);
+    const claims = ref((window.adminData?.claims || []));
+    const deliveries = ref((window.adminData?.deliveries || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -33,7 +35,7 @@ window.OdOrderHist = {
 
     const orderItems = reactive([]);
     onMounted(() => {
-      const o = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === props.orderId);
+      const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,
           { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
@@ -41,18 +43,18 @@ window.OdOrderHist = {
       }
     });
 
-    const relatedDliv   = computed(() => deliveries.window.safeArrayUtils.safeFind(value, d => d.orderId === props.orderId) || null);
-    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
+    const relatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries.value || [], d => d.orderId === props.orderId) || null);
+    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims.value || [], c => c.orderId === props.orderId));
     const dlivHistory   = computed(() => {
       if (!relatedDliv.value) return [];
-      const o = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === props.orderId);
+      const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       return [
         { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '상품준비중', location: '물류센터', memo: '상품 포장 완료' },
         { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courierCd || '-', memo: '출고 완료' },
       ].filter(h => h.date !== '-');
     });
 
-    return { orders, loading, error, botTab, orderItems, relatedDliv, relatedClaims, dlivHistory, viewMode2, showTab };
+    return { orders, loading, error, botTab, orderItems, relatedDliv, relatedClaims, dlivHistory, viewMode2, showTab, claims, deliveries };
   },
   template: /* html */`
 <div>

@@ -274,11 +274,11 @@ window.DpDispUiDtl = {
       if (!ok) return;
       const codesData = codes.value;
       if (isNewUi) {
-        const nextId = nextId.value(codesData, 'codeId');
-        codes.push({ ...form, codeId: nextId });
+        const newId = window.adminUtil.nextId(codesData, 'codeId');
+        codesData.push({ ...form, codeId: newId });
       } else {
-        const idx = codes.findIndex(c => c.codeId === form.codeId);
-        if (idx !== -1) Object.assign(codes[idx], form);
+        const idx = codesData.findIndex(c => c.codeId === form.codeId);
+        if (idx !== -1) Object.assign(codesData[idx], form);
       }
       try {
         const res = await (isNewUi ? window.adminApi.post('disp-uis', { ...form }) : window.adminApi.put(`/bo/ec/dp/ui/${form.codeId}`, { ...form }));

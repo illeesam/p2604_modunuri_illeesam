@@ -103,9 +103,9 @@ window.PdCategoryMng = {
 
     loadGrid();
 
-    const total      = computed(() => window.safeArrayUtils.safeFilter(gridRows, r => r._row_status !== 'D').length);
-    const pagedRows  = computed(() => gridRows.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const total      = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
+    const pagedRows  = computed(() => (gridRows || []).slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const totalPages = computed(() => Math.max(1, Math.ceil((gridRows || []).length / pager.size)));
     const pageNums   = computed(() => {
       const c = pager.page, l = totalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
