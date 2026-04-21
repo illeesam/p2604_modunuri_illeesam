@@ -2,8 +2,8 @@
 (function () {
   const { reactive } = Vue;
 
-  /* ── 공통 필터 전역 상태 (window.adminCommonFilter) ── */
-  window.adminCommonFilter = reactive({
+  /* ── 공통 필터 전역 상태 (window.boCommonFilter) ── */
+  window.boCommonFilter = reactive({
     siteId:   null,   // sy_site.siteId
     vendorId: null,   // sy_vendor.vendorId (판매업체)
     dlivVendorId: null, // sy_vendor.vendorId (배송업체)
@@ -14,7 +14,7 @@
 
   /* 기본값: 첫 번째 사이트(ShopJoy)로 초기화 */
   if (window.boData && window.boData.sites && window.boData.sites.length) {
-    window.adminCommonFilter.siteId = window.boData.sites[0]?.siteId ?? null;
+    window.boCommonFilter.siteId = window.boData.sites[0]?.siteId ?? null;
   }
 
   /* ── 등록기간 옵션 ── */
@@ -126,8 +126,8 @@
   };
 
   window.boCmUtil.getSiteNm = function() {
-    if (!window.adminCommonFilter.siteId) return 'ShopJoy';
-    const site = window.boData?.sites?.find(s => s.siteId === window.adminCommonFilter.siteId);
+    if (!window.boCommonFilter.siteId) return 'ShopJoy';
+    const site = window.boData?.sites?.find(s => s.siteId === window.boCommonFilter.siteId);
     return site?.siteNm || 'ShopJoy';
   };
 

@@ -635,7 +635,7 @@ window.DpDispUiSimul = {
         dispUiForm.time         = previewTime.value;
         dispUiForm.status       = searchStatus.value;
         dispUiForm.visibility   = searchVisibility.value;
-        const cf   = window.adminCommonFilter || {};
+        const cf   = window.boCommonFilter || {};
         const site = (sites.value || []).find(s => s.siteId === cf.siteId);
         dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
         dispUiForm.siteNm   = site?.siteNm || '';

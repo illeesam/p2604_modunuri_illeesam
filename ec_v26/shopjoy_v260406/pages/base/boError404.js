@@ -1,6 +1,6 @@
-/* Admin - 404 Not Found */
-window.adminError404 = {
-  name: 'AdminError404',
+/* BO - 404 Not Found */
+window.boError404 = {
+  name: 'BoError404',
   props: ['navigate', 'pageId'],
   template: /* html */`
 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">

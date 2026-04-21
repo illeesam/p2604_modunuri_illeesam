@@ -1,6 +1,6 @@
-/* Front - 401 Unauthorized */
-window.frontError401 = {
-  name: 'FrontError401',
+/* FO - 401 Unauthorized */
+window.foError401 = {
+  name: 'FoError401',
   props: ['navigate'],
   methods: {
     openLogin() {

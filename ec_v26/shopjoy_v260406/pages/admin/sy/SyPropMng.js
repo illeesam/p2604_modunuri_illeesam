@@ -35,7 +35,7 @@ window.SyPropMng = {
     reload();
 
     /* ── 사이트 필터 (공통필터 사이트와 동기화) ── */
-    const siteId = computed(() => window.adminCommonFilter?.siteId || null);
+    const siteId = computed(() => window.boCommonFilter?.siteId || null);
     const filteredBySite = computed(() => {
       const sid = siteId.value;
       if (!sid) return rows;

@@ -1,6 +1,6 @@
-/* Admin - 401 Unauthorized */
-window.adminError401 = {
-  name: 'AdminError401',
+/* BO - 401 Unauthorized */
+window.boError401 = {
+  name: 'BoError401',
   props: ['navigate'],
   methods: {
     reloadPage() { location.reload(); },

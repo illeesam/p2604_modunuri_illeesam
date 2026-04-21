@@ -1,6 +1,6 @@
-/* Front - 500 Server Error */
-window.frontError500 = {
-  name: 'FrontError500',
+/* FO - 500 Server Error */
+window.foError500 = {
+  name: 'FoError500',
   props: ['navigate', 'message'],
   template: /* html */`
 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">

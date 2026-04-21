@@ -428,7 +428,7 @@
 
       /* ── 공통 필터 & 선택 모달 ── */
       const rightPanelOpen = ref(true);
-      const commonFilter   = window.adminCommonFilter;
+      const commonFilter   = window.boCommonFilter;
       const selectModal    = reactive({ type: '', show: false });
       const openSelectModal  = (type) => { selectModal.type = type; selectModal.show = true; };
       const closeSelectModal = () => { selectModal.show = false; selectModal.type = ''; };
@@ -1494,9 +1494,9 @@
 `,
   })
   /* ── pages/base/ ── */
-  .component('AdminError404',        window.adminError404)
-  .component('AdminError401',        window.adminError401)
-  .component('AdminError500',        window.adminError500)
+  .component('AdminError404',        window.boError404)
+  .component('AdminError401',        window.boError401)
+  .component('AdminError500',        window.boError500)
   /* ── components/disp/ (전시 핵심 컴포넌트) ── */
   .component('DispX01Ui',        window.DispX01Ui)
   .component('DispX02Area',      window.DispX02Area)
