@@ -68,7 +68,7 @@ window.XsSample07 = {
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
     let _acSeq = 0;
     const buildAutoCrudNodes = () => makeNode({
-      id: 'ac_root', appId: 'samples', label: 'adminAutoCrud-method', type: 'app', open: false,
+      id: 'ac_root', appId: 'samples', label: 'boAutoCrud-method', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
         id: `ac_${domain}_${sub}`, label, type: 'folder', open: false,
         children: tables.map(tbl => {
@@ -89,7 +89,7 @@ window.XsSample07 = {
     });
     let _arSeq = 0;
     const buildAutoCrudRestNodes = () => makeNode({
-      id: 'ar_root', appId: 'samples', label: 'adminAutoCrud-rest', type: 'app', open: false,
+      id: 'ar_root', appId: 'samples', label: 'boAutoCrud-rest', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
         id: `ar_${domain}_${sub}`, label, type: 'folder', open: false,
         children: tables.map(tbl => ({

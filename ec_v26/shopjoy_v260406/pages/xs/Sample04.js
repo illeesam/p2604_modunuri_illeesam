@@ -96,7 +96,7 @@ window.XsSample04 = {
       /* 샘플 데이터: 빈 상태로 시작 */
     });
 
-    /* ── adminUtil mock (index.html 미포함 → 가드) ── */
+    /* ── boCmUtil mock (index.html 미포함 → 가드) ── */
     if (!window.boCmUtil) {
       window.boCmUtil = {
         getSiteNm: () => 'ShopJoy', DATE_RANGE_OPTIONS: [],
@@ -147,7 +147,7 @@ window.XsSample04 = {
     /* ── BaseModal 카탈로그 — 3그룹 분류 ── */
 
     /* ① Front + Admin 공통 (3종)
-         show prop 방식, adminData 의존성 없음 → 양쪽 모두 사용 */
+         show prop 방식, boData 의존성 없음 → 양쪽 모두 사용 */
     const CATALOG2_COMMON = [
       { id: 'orderDetail',   icon: '📦', name: '주문상세 모달',    desc: 'OrderDetailModal — 상품/결제/배송',   color: '#2563eb' },
       { id: 'productModal',  icon: '🛍',  name: '상품상세 모달',    desc: 'ProductModal — 색상/사이즈/태그',      color: '#7c3aed' },
@@ -183,7 +183,7 @@ window.XsSample04 = {
       openModal, closeModal, doConfirm, loadingDemo, submitForm, openEditConfirm,
       GRADE_BADGE, STATUS_BADGE, ALERT_META,
       /* BaseModal */
-      adminData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
+      boData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
       demoOrder, demoProduct, demoUser, demoTmpl, demoSampleParams, catSelIds,
       CATALOG2_COMMON, CATALOG2_FO, CATALOG2_BO,
     };
@@ -257,7 +257,7 @@ window.XsSample04 = {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;background:#2563eb;color:#fff;padding:2px 10px;border-radius:20px;">Front + Admin 공통</span>
         <span style="font-size:11px;color:#2563eb;font-weight:600;">3종</span>
-        <span style="font-size:11px;color:#93c5fd;">— show prop 방식, adminData 의존성 없음</span>
+        <span style="font-size:11px;color:#93c5fd;">— show prop 방식, boData 의존성 없음</span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
         <div v-for="item in CATALOG2_COMMON" :key="item.id"
@@ -305,7 +305,7 @@ window.XsSample04 = {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;">Admin 전용</span>
         <span style="font-size:11px;color:#dc2626;font-weight:600;">13종</span>
-        <span style="font-size:11px;color:#fca5a5;">— adminData prop 필수, 관리 기능 전용</span>
+        <span style="font-size:11px;color:#fca5a5;">— boData prop 필수, 관리 기능 전용</span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
         <div v-for="item in CATALOG2_BO" :key="item.id"
