@@ -19,7 +19,7 @@ window.MyChatt = {
     return { myStore, chats, expandedChat, chatPager, paginate, dateFilteredChats, onDateSearch };
   },
   template: /* html */ `
-<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
+<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
 
   <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredChats.length" :pager="chatPager" />

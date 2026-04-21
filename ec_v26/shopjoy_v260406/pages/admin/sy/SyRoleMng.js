@@ -706,7 +706,7 @@ window.SyRoleMng = {
   </div>
 
   <!-- 사용자 선택 모달 -->
-  <admin-user-select-modal v-if="userSelectOpen" @select="onUserSelect"
+  <bo-user-select-modal v-if="userSelectOpen" @select="onUserSelect"
     @close="userSelectOpen=false" />
 
   <!-- 상위역할 선택 모달 -->

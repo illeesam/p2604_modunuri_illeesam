@@ -42,7 +42,7 @@ window.MyCache = {
     };
   },
   template: /* html */ `
-<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
+<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
 
   <MyDateFilter @search="onDateSearch" />
 

@@ -30,7 +30,7 @@ window.MyContact = {
     };
   },
   template: /* html */ `
-<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
+<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
 
   <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredInquiries.length" :pager="inquiryPager" />

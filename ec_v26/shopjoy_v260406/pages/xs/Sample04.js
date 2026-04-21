@@ -704,7 +704,7 @@ window.XsSample04 = {
     <vendor-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='adminUserSelect'">
-    <admin-user-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
+    <bo-user-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='memberSelect'">
     <member-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />

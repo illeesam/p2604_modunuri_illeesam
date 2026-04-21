@@ -186,7 +186,7 @@ window.MyOrder = {
     };
   },
   template: /* html */ `
-<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
+<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
 
   <MyDateFilter @search="onDateSearch" @reset="flowStatusFilter.splice(0)" />
 

@@ -1165,9 +1165,9 @@
         <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-user-login-hist   v-else-if="page==='syUserLoginHist'"   :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-postman           v-else-if="page==='syPostman'"         :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
-        <admin-error-401 v-else-if="page==='error401'" :navigate="navigate" />
-        <admin-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
-        <admin-error-404 v-else :navigate="navigate" :page-id="page" />
+        <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
+        <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
+        <bo-error-404 v-else :navigate="navigate" :page-id="page" />
         </div><!-- /비고정 탭 래퍼 -->
       </div>
     </div>
@@ -1256,12 +1256,12 @@
   <site-select-modal v-if="selectModal.show && selectModal.type==='site'"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
   <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
   <vendor-select-modal v-if="selectModal.show && selectModal.type==='dlivVendor'"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
-  <admin-user-select-modal v-if="selectModal.show && selectModal.type==='adminUser'"  @select="onSelectItem('adminUser', $event)" @close="closeSelectModal" />
+  <bo-user-select-modal v-if="selectModal.show && selectModal.type==='adminUser'"  @select="onSelectItem('adminUser', $event)" @close="closeSelectModal" />
   <member-select-modal v-if="selectModal.show && selectModal.type==='member'"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
   <order-select-modal v-if="selectModal.show && selectModal.type==='order'"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
-  <admin-ref-modal v-if="refModal && refModal.show" :state="refModal"  @close="closeRefModal" />
+  <bo-ref-modal v-if="refModal && refModal.show" :state="refModal"  @close="closeRefModal" />
 
   <!-- Confirm -->
   <div v-if="confirmState && confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">

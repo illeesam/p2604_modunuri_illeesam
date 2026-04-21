@@ -54,7 +54,7 @@ window.MyCoupon = {
     };
   },
   template: /* html */ `
-<FrontMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
+<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
 
   <MyDateFilter @search="onDateSearch" />
 

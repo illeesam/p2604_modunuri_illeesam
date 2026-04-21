@@ -411,7 +411,7 @@
   template: /* html */ `
 <div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
 
-  <front-app-header
+  <fo-app-header
     :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
     :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cartCount" :like-count="likeCount"
     :auth="auth" :on-show-login="onShowLogin" :on-logout="onLogout"
@@ -419,7 +419,7 @@
   />
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
-    <front-app-sidebar
+    <fo-app-sidebar
       :page="page" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
       :config="config" :navigate="navigate" :cart-count="cartCount" :auth="auth"
       @toggle-sidebar="sidebarOpen=!sidebarOpen" @close-mobile="closeMobileMenu"
@@ -550,11 +550,11 @@
       <xs-sample23 v-else-if="page==='sample23'" />
 
       <!-- Error Pages -->
-      <front-error-401 v-else-if="page==='error401'" :navigate="navigate" />
-      <front-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
-      <front-error-404 v-else-if="page==='notFound' || page==='error404'" :navigate="navigate" :page-id="notFoundPageId" />
+      <fo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
+      <fo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
+      <fo-error-404 v-else-if="page==='notFound' || page==='error404'" :navigate="navigate" :page-id="notFoundPageId" />
 
-      <front-app-footer :config="config" :navigate="navigate" />
+      <fo-app-footer :config="config" :navigate="navigate" />
     </main>
   </div>
 
