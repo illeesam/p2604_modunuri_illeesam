@@ -27,11 +27,11 @@ spring:
 # 파일 업로드 정책 및 스토리지 설정
 #
 # 저장 경로 정책:
-#   /static/cdn/{businessCode}/YYYY/YYYYMM/YYYYMMDD/
+#   /cdn/{businessCode}/YYYY/YYYYMM/YYYYMMDD/
 #
 # 파일명 정책:
-#   YYYYMMDDhhmmss + random(4) + 순서번호 + 확장자
-#   예: 202604211430450145801.jpg
+#   YYYYMMDD + "_" + hhmmss + "_" + 순서번호 + "_" + random(4) + 확장자
+#   예: 20260421_143045_01_1234.jpg
 #
 # sy_attach_grp: 파일 그룹 (다중 첨부 시 사용, sy_attach_grp_id 참조)
 # sy_attach: 실제 파일 정보 저장 (file_nm, stored_nm, attach_url, cdn_host, cdn_img_url 등)
@@ -40,7 +40,7 @@ app:
   file:
     # ── 기본 검증 ──────────────────────────────────────────────
     # 허용 확장자 (쉼표 구분)
-    allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip
+    allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
     # 파일당 최대 용량 (바이트)
     max-file-size: 10485760
     # 요청당 최대 용량 (바이트)
@@ -49,6 +49,8 @@ app:
     max-image-size: 5242880
     # 문서 최대 용량 (바이트, 기본: 20MB)
     max-document-size: 20971520
+    # 동영상 최대 용량 (바이트, 기본: 100MB)
+    max-video-size: 104857600
 
     # ── 스토리지 설정 ────────────────────────────────────────────
     # 스토리지 타입 (LOCAL / AWS_S3 / NCP_OBS)

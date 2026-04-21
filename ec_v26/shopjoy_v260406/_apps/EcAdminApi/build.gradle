@@ -52,6 +52,9 @@ dependencies {
     // 이미지 처리 (썸네일 생성)
     implementation 'net.coobird:thumbnailator:0.4.20'
 
+    // FFmpeg 동영상 처리 (시스템 FFmpeg 활용, 설치 필요)
+    // FFmpeg 설치: apt install ffmpeg (Linux) / brew install ffmpeg (Mac) / choco install ffmpeg (Windows)
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 }

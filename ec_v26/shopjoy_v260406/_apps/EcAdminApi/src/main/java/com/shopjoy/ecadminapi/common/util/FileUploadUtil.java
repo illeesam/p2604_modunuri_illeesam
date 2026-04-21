@@ -18,7 +18,7 @@ import java.util.Set;
 @Component
 public class FileUploadUtil {
 
-    @Value("${app.file.allowed-extensions:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip}")
+    @Value("${app.file.allowed-extensions:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v}")
     private String allowedExtensionsStr;
 
     @Value("${app.file.max-file-size:10485760}")
@@ -30,10 +30,15 @@ public class FileUploadUtil {
     @Value("${app.file.max-document-size:20971520}")
     private long maxDocumentSize;
 
+    @Value("${app.file.max-video-size:104857600}")
+    private long maxVideoSize;
+
     private static final Set<String> IMAGE_EXTENSIONS = new HashSet<>(
             Arrays.asList("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"));
     private static final Set<String> DOCUMENT_EXTENSIONS = new HashSet<>(
             Arrays.asList("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv"));
+    private static final Set<String> VIDEO_EXTENSIONS = new HashSet<>(
+            Arrays.asList("mp4", "avi", "mov", "mkv", "webm", "flv", "wmv", "m4v"));
     private static final Set<String> BLOCKED_EXTENSIONS = new HashSet<>(
             Arrays.asList("exe", "bat", "cmd", "com", "dll", "sys", "scr", "vbs", "js", "jar", "zip", "rar", "7z", "iso"));
 
@@ -133,25 +138,28 @@ public class FileUploadUtil {
         DateTimeFormatter yyyymm = DateTimeFormatter.ofPattern("yyyyMM");
         DateTimeFormatter yyyymmdd = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-        return String.format("static/cdn/%s/%s/%s/%s",
+        return String.format("/cdn/%s/%s/%s/%s",
                 businessCode,
                 now.format(yyyy),
                 now.format(yyyymm),
                 now.format(yyyymmdd));
     }
 
-    /// 파일명 생성 (정책: YYYYMMDDhhmmss + random(4) + 순서번호 + 확장자)
+    /// 파일명 생성 (정책: YYYYMMDD + "_" + hhmmss + "_" + 순서번호 + "_" + random(4) + 확장자)
     public String generateFileName(String ext, int fileSequence) {
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        String timestamp = now.format(fmt);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HHmmss");
+
+        String date = now.format(dateFormatter);
+        String time = now.format(timeFormatter);
 
         int random = new Random().nextInt(10000);
         String randomStr = String.format("%04d", random);
 
         String sequence = String.format("%02d", fileSequence);
 
-        return timestamp + randomStr + sequence + "." + ext;
+        return date + "_" + time + "_" + sequence + "_" + randomStr + "." + ext;
     }
 
     /// 썸네일 파일명 생성 (_thumb 추가)
@@ -168,5 +176,22 @@ public class FileUploadUtil {
     /// 섬네일 생성 가능 확장자 여부
     public boolean canGenerateThumbnail(String ext) {
         return IMAGE_EXTENSIONS.contains(ext.toLowerCase());
+    }
+
+    /// 동영상 파일 여부
+    public boolean isVideo(String ext) {
+        return VIDEO_EXTENSIONS.contains(ext.toLowerCase());
+    }
+
+    /// 동영상 용량 검증
+    public void validateVideoSize(long fileSize) {
+        if (fileSize > maxVideoSize) {
+            throw new CmBizException(String.format("동영상은 %dMB 이하여야 합니다.", maxVideoSize / 1024 / 1024));
+        }
+    }
+
+    /// 동영상 썸네일 생성 가능 여부
+    public boolean canGenerateVideoThumbnail(String ext) {
+        return VIDEO_EXTENSIONS.contains(ext.toLowerCase());
     }
 }

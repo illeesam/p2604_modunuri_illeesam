@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.base.cm.controller;
 
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +24,39 @@ import java.nio.file.Paths;
 public class CmDownloadController {
 
     /// 파일 다운로드 (경로 기반)
+    ///
+    /// 파라미터 예제:
+    ///   GET /api/cm/download/cdn/review/2026/202604/20260421/20260421_143045_01_1234.jpg
+    ///   또는
+    ///   GET /api/cm/download/cdn/common/2026/202604/20260421/20260421_143045_02_5678.pdf
+    ///
+    /// 응답 예제 (200 OK):
+    ///   HTTP/1.1 200 OK
+    ///   Content-Type: application/octet-stream
+    ///   Content-Length: 2097152
+    ///   Content-Disposition: attachment; filename="%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg"
+    ///   [파일 바이너리 데이터]
+    ///
+    /// 클라이언트 사용 예:
+    ///   - 브라우저: <a href="/api/cm/download/...">다운로드</a>
+    ///   - JavaScript: window.open('/api/cm/download/...')
+    ///   - curl: curl -O http://localhost:8080/api/cm/download/...
+    ///   - Python: requests.get(url).content
+    ///
+    /// 파일명 인코딩:
+    ///   - 한글 파일명 자동 URL 인코딩 (UTF-8)
+    ///   - 브라우저에서 자동으로 디코딩되어 원본 파일명으로 다운로드
+    ///
+    /// 보안:
+    ///   - 상대 경로만 허용 ("../" 경로 검사로 디렉토리 순회 공격 방지)
+    ///   - 파일 존재 및 파일 유형 검증
+    @Operation(summary = "파일 다운로드 (경로 기반)",
+               description = "저장된 파일 경로를 통해 파일을 다운로드합니다. 이미지, 문서, 동영상 등 모든 파일 지원. 한글 파일명 자동 인코딩.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "파일 다운로드 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 파일 경로 또는 파일 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @GetMapping("/{filePath}")
     public ResponseEntity<?> download(@PathVariable String filePath) {
 
@@ -68,6 +103,48 @@ public class CmDownloadController {
     }
 
     /// 파일 다운로드 (UUID 기반, 보안 강화)
+    ///
+    /// 파라미터 예제:
+    ///   GET /api/cm/download/secure/ATT20260421143045012301
+    ///   또는
+    ///   GET /api/cm/download/secure/ATT20260421143045010101
+    ///
+    /// 응답 예제 (200 OK):
+    ///   HTTP/1.1 200 OK
+    ///   Content-Type: application/octet-stream
+    ///   Content-Length: 2097152
+    ///   Content-Disposition: attachment; filename="%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg"
+    ///   [파일 바이너리 데이터]
+    ///
+    /// 에러 응답 예제 (404 Not Found):
+    ///   HTTP/1.1 404 Not Found
+    ///   {
+    ///     "success": false,
+    ///     "error": "해당 파일 정보가 없습니다. DB에서 조회 구현 필요."
+    ///   }
+    ///
+    /// 클라이언트 사용 예:
+    ///   - 장바구니/주문에 첨부된 파일 다운로드
+    ///   - 회원 인증 필수 파일 다운로드
+    ///   - 예: <a href="/api/cm/download/secure/ATT20260421143045012301">영수증 다운로드</a>
+    ///
+    /// DB 구현 필요:
+    ///   SELECT file_path, file_nm FROM sy_attach
+    ///   WHERE attach_id = ? AND user_id = ? (접근 권한 검증)
+    ///
+    /// 보안:
+    ///   - 파일 ID(UUID) 기반 조회로 경로 노출 방지
+    ///   - DB에서 사용자 접근 권한 검증 필수
+    ///   - 인증된 사용자만 접근 가능하도록 @PreAuthorize 추가 권장
+    @Operation(summary = "파일 다운로드 (UUID 기반, 보안)",
+               description = "파일 ID를 통해 안전하게 파일을 다운로드합니다. DB 연동으로 사용자 접근 권한 검증. (구현 필요)")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "파일 다운로드 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "접근 권한 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "파일 정보 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @GetMapping("/secure/{fileId}")
     public ResponseEntity<?> downloadSecure(@PathVariable String fileId) {
 
