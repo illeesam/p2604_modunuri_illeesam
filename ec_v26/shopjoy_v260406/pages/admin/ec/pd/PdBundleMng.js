@@ -132,7 +132,7 @@ window.PdBundleMng = {
             .filter(b => b.bundleProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod  = getProd(id);
-          return { bundles, loading, error, bundleProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
+          return { bundleProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
         })
         .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
     });
