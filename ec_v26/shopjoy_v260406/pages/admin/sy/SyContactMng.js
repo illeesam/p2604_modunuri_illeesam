@@ -82,7 +82,7 @@ window.SyContactMng = {
       if (idx !== -1) props.adminData.contacts.splice(idx, 1);
       if (selectedId.value === c.inquiryId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`contacts/${c.inquiryId}`);
+        const res = await window.adminApi.delete(`/bo/sy/contact/${c.inquiryId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

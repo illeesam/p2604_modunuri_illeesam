@@ -61,7 +61,7 @@ window.MbMemberDtl = {
         if (idx !== -1) Object.assign(props.adminData.members[idx], { ...form });
       }
       try {
-        const res = await (isNewMember ? window.adminApi.post(`members/${form.userId}`, { ...form }) : window.adminApi.put(`members/${form.userId}`, { ...form }));
+        const res = await (isNewMember ? window.adminApi.post(`/bo/ec/mb/member/${form.userId}`, { ...form }) : window.adminApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewMember ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('mbMemberMng');

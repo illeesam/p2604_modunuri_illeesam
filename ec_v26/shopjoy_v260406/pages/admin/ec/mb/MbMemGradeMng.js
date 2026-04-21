@@ -50,7 +50,7 @@ window.MbMemGradeMng = {
       if (si !== -1) src.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
-        const res = await window.adminApi.delete(`mem/grades/${row.gradeId}`);
+        const res = await window.adminApi.delete(`/bo/ec/mb/member-grade/${row.gradeId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -72,7 +72,7 @@ window.MbMemGradeMng = {
         else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? window.adminApi.post(`mem/grades/${row.gradeId}`, { ...row }) : window.adminApi.put(`mem/grades/${row.gradeId}`, { ...row }));
+          const res = await (isNewRow ? window.adminApi.post(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }) : window.adminApi.put(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

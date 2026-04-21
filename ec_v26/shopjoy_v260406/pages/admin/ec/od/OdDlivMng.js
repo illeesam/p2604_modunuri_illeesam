@@ -88,7 +88,7 @@ window.OdDlivMng = {
       if (idx !== -1) props.adminData.deliveries.splice(idx, 1);
       if (selectedId.value === d.dlivId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`deliveries/${d.dlivId}`);
+        const res = await window.adminApi.delete(`/bo/ec/od/dliv/${d.dlivId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

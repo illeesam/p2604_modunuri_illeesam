@@ -105,7 +105,7 @@ window.CmChattDtl = {
         subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
       });
       try {
-        const res = await window.adminApi.post(`chatts/${form.chatId}`, { ...form });
+        const res = await window.adminApi.post(`/bo/ec/cm/chatt/${form.chatId}`, { ...form });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng');

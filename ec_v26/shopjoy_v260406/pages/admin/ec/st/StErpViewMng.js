@@ -51,7 +51,7 @@ window.StErpViewMng = {
       if (!ok) return;
       r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
       try {
-        const res = await window.adminApi.post(`st/erp/resend/${r.slipId}`, {});
+        const res = await window.adminApi.post(`/bo/ec/st/erp/resend/${r.slipId}`, {});
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('재전송이 완료되었습니다.', 'success');
       } catch (err) {

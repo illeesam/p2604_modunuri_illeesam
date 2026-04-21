@@ -51,7 +51,7 @@ window.SyBbmDtl = {
         if (idx !== -1) Object.assign(props.adminData.bbms[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`bbm/${form.bbmId}`, { ...form }) : window.adminApi.put(`bbm/${form.bbmId}`, { ...form }));
+        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }) : window.adminApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbmMng');

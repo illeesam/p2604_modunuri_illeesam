@@ -54,7 +54,7 @@ window.StErpReconMng = {
       if (!ok) return;
       r.erpAmt = r.sysAmt; r.diff = 0; r.diffStatus = '일치'; r.remark = '조정처리 완료';
       try {
-        const res = await window.adminApi.put(`st/erp/recon/${r.reconId}/fix`, {});
+        const res = await window.adminApi.put(`/bo/ec/st/erp/recon/${r.reconId}/fix`, {});
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('조정처리 되었습니다.', 'success');
       } catch (err) {

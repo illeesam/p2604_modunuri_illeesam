@@ -40,7 +40,7 @@ window.MbMemGroupMng = {
       if (si !== -1) props.adminData.memGroups.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
-        const res = await window.adminApi.delete(`mem/groups/${row.groupId}`);
+        const res = await window.adminApi.delete(`/bo/ec/mb/member-group/${row.groupId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -62,7 +62,7 @@ window.MbMemGroupMng = {
         else { const si = src.findIndex(g => g.groupId === row.groupId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? window.adminApi.post(`mem/groups/${row.groupId}`, { ...row }) : window.adminApi.put(`mem/groups/${row.groupId}`, { ...row }));
+          const res = await (isNewRow ? window.adminApi.post(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }) : window.adminApi.put(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

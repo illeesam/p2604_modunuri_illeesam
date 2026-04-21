@@ -47,7 +47,7 @@ window.PdQnaMng = {
       selectedRow.value.answYn = 'Y';
       selectedRow.value.answDate = new Date().toLocaleString('sv').replace('T', ' ');
       try {
-        const res = await window.adminApi.put(`pd/qnas/${selectedRow.value.qnaId}/answer`, { answContent: answForm.content });
+        const res = await window.adminApi.put(`/bo/ec/pd/qna/${selectedRow.value.qnaId}/answer`, { answContent: answForm.content });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

@@ -482,7 +482,7 @@ window.PdProdDtl = {
         props.adminData.categoryProds.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
       try {
-        const res = await (isNew.value ? window.adminApi.post(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.adminApi.put(`products/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
+        const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.adminApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng');

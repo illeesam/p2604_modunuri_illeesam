@@ -58,7 +58,7 @@ window.StSettlePayMng = {
       if (!ok) return;
       r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
       try {
-        const res = await window.adminApi.put(`st/pay/${r.payId}/pay`, { payAmt: r.settleAmt });
+        const res = await window.adminApi.put(`/bo/ec/st/pay/${r.payId}/pay`, { payAmt: r.settleAmt });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('지급처리가 완료되었습니다.', 'success');
       } catch (err) {

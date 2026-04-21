@@ -74,7 +74,7 @@ window.StSettleEtcAdjMng = {
       else { const idx = etcAdjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(etcAdjList[idx], { ...form }); }
       closeForm();
       try {
-        const res = await (isNew.value ? window.adminApi.post('st/etc-adj', { ...form }) : window.adminApi.put(`st/etc-adj/${form.adjId}`, { ...form }));
+        const res = await (isNew.value ? window.adminApi.post('st/etc-adj', { ...form }) : window.adminApi.put(`/bo/ec/st/etc-adj/${form.adjId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -89,7 +89,7 @@ window.StSettleEtcAdjMng = {
       if (!ok) return;
       const idx = etcAdjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) etcAdjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm();
       try {
-        const res = await window.adminApi.delete(`st/etc-adj/${r.adjId}`);
+        const res = await window.adminApi.delete(`/bo/ec/st/etc-adj/${r.adjId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

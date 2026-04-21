@@ -87,7 +87,7 @@ window.OdOrderDtl = {
         if (idx !== -1) Object.assign(props.adminData.orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
       }
       try {
-        const res = await (isNewOrder ? window.adminApi.post(`orders/${form.orderId}`, { ...form }) : window.adminApi.put(`orders/${form.orderId}`, { ...form }));
+        const res = await (isNewOrder ? window.adminApi.post(`/bo/ec/od/order/${form.orderId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odOrderMng');

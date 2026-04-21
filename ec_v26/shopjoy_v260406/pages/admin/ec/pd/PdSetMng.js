@@ -254,7 +254,7 @@ window.PdSetMng = {
       });
       if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
       try {
-        const res = await (isNew ? window.adminApi.post('set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.adminApi.put(`set/${setProdId}/items`, { items: dtlItems }));
+        const res = await (isNew ? window.adminApi.post('set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.adminApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
@@ -271,7 +271,7 @@ window.PdSetMng = {
       props.adminData.setItems = (props.adminData.setItems || []).filter(s => s.setProdId !== setProdId);
       if (editSetId.value === setProdId) closeDtl();
       try {
-        const res = await window.adminApi.delete(`set/${setProdId}`);
+        const res = await window.adminApi.delete(`/bo/ec/pd/prod-set/${setProdId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

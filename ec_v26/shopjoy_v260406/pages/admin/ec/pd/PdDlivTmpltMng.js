@@ -57,7 +57,7 @@ window.PdDlivTmpltMng = {
       if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); selectedId.value = form.dlivTmpltId; isNew.value = false; }
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
-        const res = await (isNewTmplt ? window.adminApi.post(`pd/dliv-tmplts/${form.dlivTmpltId||''}`, { ...form }) : window.adminApi.put(`pd/dliv-tmplts/${form.dlivTmpltId||''}`, { ...form }));
+        const res = await (isNewTmplt ? window.adminApi.post(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }) : window.adminApi.put(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -71,7 +71,7 @@ window.PdDlivTmpltMng = {
       if (!ok) return;
       const si = props.adminData.dlivTmplts.findIndex(t => t.dlivTmpltId === selectedRow.value.dlivTmpltId); if (si !== -1) props.adminData.dlivTmplts.splice(si, 1); closeDetail();
       try {
-        const res = await window.adminApi.delete(`pd/dliv-tmplts/${selectedRow.value.dlivTmpltId}`);
+        const res = await window.adminApi.delete(`/bo/ec/pd/dliv-tmplt/${selectedRow.value.dlivTmpltId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

@@ -66,7 +66,7 @@ window.PmCacheDtl = {
         if (idx !== -1) Object.assign(props.adminData.cacheList[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`cache/${form.cacheId}`, { ...form }) : window.adminApi.put(`cache/${form.cacheId}`, { ...form }));
+        const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }) : window.adminApi.put(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmCacheMng');

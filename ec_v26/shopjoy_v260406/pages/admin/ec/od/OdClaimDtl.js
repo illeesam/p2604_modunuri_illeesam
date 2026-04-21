@@ -61,7 +61,7 @@ window.OdClaimDtl = {
         if (idx !== -1) Object.assign(props.adminData.claims[idx], { ...form, refundAmount: Number(form.refundAmount) });
       }
       try {
-        const res = await (isNewClaim ? window.adminApi.post(`claims/${form.claimId}`, { ...form }) : window.adminApi.put(`claims/${form.claimId}`, { ...form }));
+        const res = await (isNewClaim ? window.adminApi.post(`/bo/ec/od/claim/${form.claimId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odClaimMng');

@@ -94,7 +94,7 @@ window.PdProdMng = {
       if (idx !== -1) props.dispDataset.products.splice(idx, 1);
       if (selectedId.value === p.productId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`products/${p.productId}`);
+        const res = await window.adminApi.delete(`/bo/ec/pd/prod/${p.productId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

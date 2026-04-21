@@ -184,7 +184,7 @@ window.PmCouponDtl = {
         if (idx !== -1) Object.assign(props.adminData.coupons[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`coupons/${form.couponId}`, { ...form }) : window.adminApi.put(`coupons/${form.couponId}`, { ...form }));
+        const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }) : window.adminApi.put(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmCouponMng');

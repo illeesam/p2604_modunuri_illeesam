@@ -267,7 +267,7 @@ window.PdBundleMng = {
       });
       if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
       try {
-        const res = await (isNew ? window.adminApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.adminApi.put(`bundle/${bundleProdId}/items`, { items: dtlItems }));
+        const res = await (isNew ? window.adminApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.adminApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
@@ -284,7 +284,7 @@ window.PdBundleMng = {
       props.adminData.bundles = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
       if (editBundleId.value === bundleProdId) closeDtl();
       try {
-        const res = await window.adminApi.delete(`bundle/${bundleProdId}`);
+        const res = await window.adminApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

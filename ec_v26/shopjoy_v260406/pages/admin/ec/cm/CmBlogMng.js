@@ -49,7 +49,7 @@ window.CmBlogMng = {
       if (isNewPost) { form.blogId = 'BL' + String(Date.now()).slice(-6); form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...form }); selectedId.value = form.blogId; isNew.value = false; }
       else { const si = src.findIndex(p => p.blogId === form.blogId); if (si !== -1) Object.assign(src[si], form); }
       try {
-        const res = await (isNewPost ? window.adminApi.post(`cm/bltn/${form.blogId}`, { ...form }) : window.adminApi.put(`cm/bltn/${form.blogId}`, { ...form }));
+        const res = await (isNewPost ? window.adminApi.post(`/bo/ec/cm/blog/${form.blogId}`, { ...form }) : window.adminApi.put(`/bo/ec/cm/blog/${form.blogId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -66,7 +66,7 @@ window.CmBlogMng = {
       if (si !== -1) props.adminData.bltnPosts.splice(si, 1);
       closeDetail();
       try {
-        const res = await window.adminApi.delete(`cm/bltn/${selectedRow.value.blogId}`);
+        const res = await window.adminApi.delete(`/bo/ec/cm/blog/${selectedRow.value.blogId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -82,7 +82,7 @@ window.CmBlogMng = {
       row.useYn = newYn;
       if (form.blogId === row.blogId) form.useYn = newYn;
       try {
-        const res = await window.adminApi.put(`cm/bltn/${row.blogId}/use`, { useYn: newYn });
+        const res = await window.adminApi.put(`/bo/ec/cm/blog/${row.blogId}/use`, { useYn: newYn });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('처리되었습니다.', 'success');
       } catch (err) {

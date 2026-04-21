@@ -416,7 +416,7 @@ window.DpDispWidgetDtl = {
         if (idx >= 0) Object.assign(list[idx], { ...form });
       }
       try {
-        const res = await (isNewWidget ? window.adminApi.post('widget-libs', { ...form }) : window.adminApi.put(`widget-libs/${form.libId}`, { ...form }));
+        const res = await (isNewWidget ? window.adminApi.post('widget-libs', { ...form }) : window.adminApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispWidgetLibMng');
@@ -436,7 +436,7 @@ window.DpDispWidgetDtl = {
       const idx  = list.findIndex(d => d.libId == form.libId);
       if (idx >= 0) list.splice(idx, 1);
       try {
-        const res = await window.adminApi.delete(`widget-libs/${form.libId}`);
+        const res = await window.adminApi.delete(`/bo/ec/dp/widget-lib/${form.libId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

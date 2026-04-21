@@ -74,7 +74,7 @@ window.OdDlivDtl = {
         if (idx !== -1) Object.assign(props.adminData.deliveries[idx], { ...form });
       }
       try {
-        const res = await (isNewDliv ? window.adminApi.post(`deliveries/${form.dlivId}`, { ...form }) : window.adminApi.put(`deliveries/${form.dlivId}`, { ...form }));
+        const res = await (isNewDliv ? window.adminApi.post(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odDlivMng');

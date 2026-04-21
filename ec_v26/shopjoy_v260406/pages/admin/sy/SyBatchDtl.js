@@ -52,7 +52,7 @@ window.SyBatchDtl = {
         if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`batches/${form.batchId}`, { ...form }) : window.adminApi.put(`batches/${form.batchId}`, { ...form }));
+        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }) : window.adminApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBatchMng');

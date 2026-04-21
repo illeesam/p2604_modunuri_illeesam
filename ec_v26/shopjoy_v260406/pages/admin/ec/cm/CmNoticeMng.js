@@ -61,7 +61,7 @@ window.CmNoticeMng = {
       if (idx !== -1) props.adminData.notices.splice(idx, 1);
       if (selectedId.value === n.noticeId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`notices/${n.noticeId}`);
+        const res = await window.adminApi.delete(`/bo/ec/cm/notice/${n.noticeId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

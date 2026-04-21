@@ -54,7 +54,7 @@ window.StSettleCloseMng = {
       if (!ok) return;
       r.status = '마감취소';
       try {
-        const res = await window.adminApi.put(`st/close/${r.closeId}/reopen`, {});
+        const res = await window.adminApi.put(`/bo/ec/st/close/${r.closeId}/reopen`, {});
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('마감이 취소되었습니다.', 'success');
       } catch (err) {

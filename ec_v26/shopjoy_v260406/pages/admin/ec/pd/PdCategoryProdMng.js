@@ -250,7 +250,7 @@ window.PdCategoryProdMng = {
       ];
       loadAllRows();
       try {
-        const res = await window.adminApi.put(`category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: tabRows.value });
+        const res = await window.adminApi.put(`/bo/ec/pd/category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: tabRows.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
