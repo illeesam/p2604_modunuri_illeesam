@@ -4,6 +4,7 @@ window.DpDispAreaDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const codes = ref((window.adminData?.codes || []));
     const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -234,9 +235,9 @@ window.DpDispAreaDtl = {
       const isNewArea = isNew.value;
       const ok = await props.showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
       if (!ok) return;
-      const codes = codes.value;
+      const codesData = codes.value;
       if (isNewArea) {
-        const nextId = nextId.value(codes, 'codeId');
+        const nextId = nextId.value(codesData, 'codeId');
         codes.push({ ...form, codeId: nextId });
       } else {
         const idx = codes.findIndex(c => c.codeId === form.codeId);
@@ -377,7 +378,7 @@ window.DpDispAreaDtl = {
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    return { areas, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { codes, areas, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, isNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
       save, doCancel, relatedPanels,
       pickOpen, pickKw, pickSel, availablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,

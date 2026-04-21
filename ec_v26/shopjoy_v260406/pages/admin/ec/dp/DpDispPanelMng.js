@@ -7,6 +7,8 @@ window.DpDispPanelMng = {
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
+    const displays = ref((window.adminData?.displays || []));
+    const codes = ref((window.adminData?.codes || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -133,9 +135,9 @@ window.DpDispPanelMng = {
           if (d.dispId !== k.slice(6)) return false;
         } else {
           // top-level prefix or sub-group
-          const codes = codes.value || [];
+          const codesData = codes.value || [];
           const areaNm = (code) => {
-            const c = window.safeArrayUtils.safeFind(codes, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
+            const c = window.safeArrayUtils.safeFind(codesData, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
             return c ? c.codeLabel : code;
           };
 
@@ -339,11 +341,11 @@ window.DpDispPanelMng = {
       if (widgetDragPanel.value !== dispId) return;
       const src = widgetDragSrcWi.value;
       if (src === null || src === wi) { widgetDragPanel.value = null; widgetDragSrcWi.value = null; return; }
-      const panel = displays.window.safeArrayUtils.safeFind(value, x => x.dispId === dispId);
+      const panel = window.safeArrayUtils.safeFind(displays.value, x => x.dispId === dispId);
       if (!panel?.rows) return;
       const moved = panel.rows.splice(src, 1)[0];
       panel.rows.splice(wi, 0, moved);
-      panel.rwindow.safeArrayUtils.safeForEach(ows, (r, i) => { r.sortOrder = i + 1; });
+      window.safeArrayUtils.safeForEach(panel.rows, (r, i) => { r.sortOrder = i + 1; });
       widgetDragPanel.value = null; widgetDragSrcWi.value = null;
     };
     const onWidgetDragEnd = () => { widgetDragPanel.value = null; widgetDragSrcWi.value = null; widgetDragOverWi.value = null; };
@@ -356,18 +358,18 @@ window.DpDispPanelMng = {
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const expandAll  = () => {
       treeOpen.value.add('__root__');
-      window.safeArrayUtils.safeForEach(panelTree, n => {
+      window.safeArrayUtils.safeForEach(panelTree.value, n => {
         treeOpen.value.add('grp_'+n.label);
-        n.cwindow.safeArrayUtils.safeForEach(hildren, c => treeOpen.value.add(n.label+'_'+c.label));
+        window.safeArrayUtils.safeForEach(n.children, c => treeOpen.value.add(n.label+'_'+c.label));
       });
     };
     const collapseAll= () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
 
     /* 패널 목록 (영역별 그룹) */
     const panelTree = computed(() => {
-      const codes = codes.value || [];
+      const codesData = codes.value || [];
       const areaNm = (code) => {
-        const c = window.safeArrayUtils.safeFind(codes, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
+        const c = window.safeArrayUtils.safeFind(codesData, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;
       };
       const map = {};
@@ -394,7 +396,7 @@ window.DpDispPanelMng = {
       }));
     });
 
-    return { panels, loading, error, pathLabel,
+    return { panels, loading, error, pathLabel, displays, codes,
       panelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
@@ -505,7 +507,7 @@ window.DpDispPanelMng = {
                   <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ panel.label }}</span>
                 </span>
                 <span style="font-size:9px;background:#e8f0fe;color:#0277bd;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;margin-left:4px;white-space:nowrap;">
-                  {{ ([]||[]).find(d => d.dispId===panel.panelId)?.rows?.length||0 }}
+                  {{ (displays||[]).find(d => d.dispId===panel.panelId)?.rows?.length||0 }}
                 </span>
               </div>
             </div>
