@@ -649,10 +649,19 @@
         loginError.value = '';
         if (!loginForm.loginName || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
         try {
-          const authStore = window.useAuthStore();
-          const configStore = window.useConfigStore();
+          const authStore = window.useAuthStore?.();
+          const configStore = window.useConfigStore?.();
+
+          if (!authStore || !configStore) {
+            loginError.value = '스토어 초기화 실패';
+            return;
+          }
+
           const user = await authStore.login(loginForm.loginName, loginForm.loginPwd, loginForm.authMethod);
-          currentUser.value = user || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          currentUser.value = (user && typeof user === 'object')
+            ? user
+            : { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+
           await configStore.loadCodes();
           await configStore.loadUserInfo();
           openTabs.splice(0);
@@ -667,10 +676,16 @@
 
       const doLogout = async () => {
         try {
-          const authStore = window.useAuthStore();
-          const configStore = window.useConfigStore();
-          await authStore.logout();
-          configStore.reset();
+          const authStore = window.useAuthStore?.();
+          const configStore = window.useConfigStore?.();
+
+          if (authStore) {
+            await authStore.logout();
+          }
+          if (configStore) {
+            configStore.reset();
+          }
+
           currentUser.value = { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
           userMenuShow.value = false;
           openTabs.splice(0);

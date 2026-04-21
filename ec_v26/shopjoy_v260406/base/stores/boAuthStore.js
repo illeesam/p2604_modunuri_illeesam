@@ -1,5 +1,5 @@
 /**
- * BO Admin 인증 Pinia 스토어
+ * BO Admin 인증 Pinia 스토어 + 함수형 유틸리티
  * - 토큰 관리
  * - 로그인 사용자 정보
  * - 로그인/로그아웃
@@ -21,8 +21,8 @@
 
     getters: {
       isLoggedIn: (state) => !!state.user && !!state.token,
-      currentUser: (state) => state.user,
-      authHeader: (state) => state.token ? { Authorization: `Bearer ${state.token}` } : {},
+      currentUser: (state) => state.user || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' },
+      authHeader: (state) => (state.token ? { Authorization: `Bearer ${state.token}` } : {}),
     },
 
     actions: {
@@ -35,18 +35,18 @@
             authMethod,
           });
 
-          this.user = res.data;
-          this.token = res.data.accessToken;
-          this.refreshToken = res.data.refreshToken;
+          this.user = res.data || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          this.token = res.data?.accessToken || '';
+          this.refreshToken = res.data?.refreshToken || '';
 
           // localStorage 저장
           try {
-            localStorage.setItem('modu-admin-token', this.token);
-            localStorage.setItem('modu-admin-refresh', this.refreshToken);
-            localStorage.setItem('modu-admin-user', JSON.stringify(this.user));
+            if (this.token) localStorage.setItem('modu-admin-token', this.token);
+            if (this.refreshToken) localStorage.setItem('modu-admin-refresh', this.refreshToken);
+            if (this.user) localStorage.setItem('modu-admin-user', JSON.stringify(this.user));
           } catch (_) {}
 
-          return res.data;
+          return this.user || {};
         } catch (err) {
           this.reset();
           throw err;
@@ -65,12 +65,12 @@
             refreshToken: this.refreshToken,
           });
 
-          this.token = res.data.accessToken;
-          this.refreshToken = res.data.refreshToken;
+          this.token = res.data?.accessToken || '';
+          this.refreshToken = res.data?.refreshToken || '';
 
           try {
-            localStorage.setItem('modu-admin-token', this.token);
-            localStorage.setItem('modu-admin-refresh', this.refreshToken);
+            if (this.token) localStorage.setItem('modu-admin-token', this.token);
+            if (this.refreshToken) localStorage.setItem('modu-admin-refresh', this.refreshToken);
           } catch (_) {}
 
           return true;
@@ -113,9 +113,9 @@
           const userJson = localStorage.getItem('modu-admin-user');
 
           if (token && userJson) {
-            this.token = token;
-            this.refreshToken = refreshToken;
-            this.user = JSON.parse(userJson);
+            this.token = token || '';
+            this.refreshToken = refreshToken || '';
+            this.user = JSON.parse(userJson) || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
             return true;
           }
         } catch (_) {}
@@ -123,4 +123,59 @@
       },
     },
   });
+
+  // 함수형 유틸리티 제공
+  window.getAuthStore = () => {
+    try {
+      const store = window.useAuthStore?.();
+      return store || {
+        user: null,
+        token: null,
+        refreshToken: null,
+        isLoggedIn: false,
+        currentUser: { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' },
+        authHeader: {},
+      };
+    } catch (e) {
+      console.error('getAuthStore error:', e);
+      return {
+        user: null,
+        token: null,
+        refreshToken: null,
+        isLoggedIn: false,
+        currentUser: { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' },
+        authHeader: {},
+      };
+    }
+  };
+
+  window.getAuthUser = () => {
+    try {
+      const store = window.useAuthStore?.();
+      return store?.user || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+    } catch (e) {
+      console.error('getAuthUser error:', e);
+      return { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+    }
+  };
+
+  window.getAuthToken = () => {
+    try {
+      const store = window.useAuthStore?.();
+      return store?.token || '';
+    } catch (e) {
+      console.error('getAuthToken error:', e);
+      return '';
+    }
+  };
+
+  window.isAuthLoggedIn = () => {
+    try {
+      const store = window.useAuthStore?.();
+      return !!(store?.user && store?.token);
+    } catch (e) {
+      console.error('isAuthLoggedIn error:', e);
+      return false;
+    }
+  };
 })();
