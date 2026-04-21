@@ -173,7 +173,7 @@ window.MyCoupon = {
 
   <Pagination :total="dateFilteredCoupons.length" :pager="couponPager" />
 
-</FrontMyLayout>
+</fo-my-layout>
   `,
   components: {
     FoMyLayout:    window.foMyLayout,

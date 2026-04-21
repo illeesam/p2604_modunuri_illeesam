@@ -1,7 +1,7 @@
 /**
  * FO axios 클라이언트 (window.foApi)
  * - Bearer 토큰 자동 주입 (modu-fo-token)
- * - 401 → /auth/front/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
+ * - 401 → /auth/fo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
  * 선행: assets/cdn/pkg/axios/1.7.9/axios.min.js
@@ -10,7 +10,7 @@
   'use strict';
   if (!global.axios) throw new Error('foAxios: load axios first');
 
-  /* ── URL 헬퍼 (admin/front 공통) ──────────────────────────────── */
+  /* ── URL 헬퍼 (bo/fo 공통) ──────────────────────────────── */
   function appBase() {
     var m = global.location.pathname.match(/^(.*shopjoy[^/]*)\//i);
     return m ? m[1] : '';
@@ -30,10 +30,10 @@
   global.apiUrl  = global.apiUrl  || apiUrl;
 
   /* ── 설정 ────────────────────────────────────────────────────── */
-  var TAG         = '[front]';
+  var TAG         = '[fo]';
   var TOKEN_KEY   = 'modu-fo-token';
   var REFRESH_KEY = 'modu-fo-refresh';
-  var REFRESH_URL = 'auth/front/refresh';
+  var REFRESH_URL = 'auth/fo/refresh';
   var TIMEOUT     = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });
@@ -117,8 +117,8 @@
             localStorage.removeItem(REFRESH_KEY);
             localStorage.removeItem('modu-fo-user');
           } catch (_) {}
-          if (global.frontAuth && typeof global.frontAuth.logout === 'function') {
-            try { global.frontAuth.logout(); } catch (_) {}
+          if (global.foAuth && typeof global.foAuth.logout === 'function') {
+            try { global.foAuth.logout(); } catch (_) {}
           }
           try {
             global.dispatchEvent(new CustomEvent('api-error', {

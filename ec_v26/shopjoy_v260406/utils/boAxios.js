@@ -1,7 +1,7 @@
 /**
  * BO axios 클라이언트 (window.boApi)
  * - Bearer 토큰 자동 주입 (modu-bo-token)
- * - 401 → /auth/admin/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
+ * - 401 → /auth/bo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
  * 선행: assets/cdn/pkg/axios/1.7.9/axios.min.js
@@ -10,7 +10,7 @@
   'use strict';
   if (!global.axios) throw new Error('boAxios: load axios first');
 
-  /* ── URL 헬퍼 (admin/front 공통) ──────────────────────────────── */
+  /* ── URL 헬퍼 (bo/fo 공통) ──────────────────────────────── */
   function appBase() {
     var m = global.location.pathname.match(/^(.*shopjoy[^/]*)\//i);
     return m ? m[1] : '';
@@ -30,10 +30,10 @@
   global.apiUrl  = global.apiUrl  || apiUrl;
 
   /* ── 설정 ────────────────────────────────────────────────────── */
-  var TAG         = '[admin]';
+  var TAG         = '[bo]';
   var TOKEN_KEY   = 'modu-bo-token';
   var REFRESH_KEY = 'modu-bo-refresh';
-  var REFRESH_URL = 'auth/admin/refresh';
+  var REFRESH_URL = 'auth/bo/refresh';
   var TIMEOUT     = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });

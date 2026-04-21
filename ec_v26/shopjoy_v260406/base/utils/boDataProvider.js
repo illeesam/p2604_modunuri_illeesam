@@ -1,17 +1,17 @@
 /**
  * BO 공통 데이터 제공자 (함수형)
- * - 모든 adminData 접근을 함수로 통합
+ * - 모든 boData 접근을 함수로 통합
  * - undefined/null은 절대 반환하지 않음
  * - 항상 안전한 기본값 보장
  */
 
 window.boDataProvider = (() => {
-  const getBoData = () => window.boData || {};
+  const getAdminData = () => window.boData || {};
 
   return {
     // ==================== 회원 ====================
     getMembers() {
-      return (getBoData().members || []);
+      return (getAdminData().members || []);
     },
 
     getMemberById(userId) {
@@ -21,7 +21,7 @@ window.boDataProvider = (() => {
 
     // ==================== 상품 ====================
     getProducts() {
-      return (getBoData().products || []);
+      return (getAdminData().products || []);
     },
 
     getProductById(productId) {
@@ -31,7 +31,7 @@ window.boDataProvider = (() => {
 
     // ==================== 주문 ====================
     getOrders() {
-      return (getBoData().orders || []);
+      return (getAdminData().orders || []);
     },
 
     getOrderById(orderId) {
@@ -41,7 +41,7 @@ window.boDataProvider = (() => {
 
     // ==================== 클레임 ====================
     getClaims() {
-      return (getBoData().claims || []);
+      return (getAdminData().claims || []);
     },
 
     getClaimById(claimId) {
@@ -51,7 +51,7 @@ window.boDataProvider = (() => {
 
     // ==================== 배송 ====================
     getDeliveries() {
-      return (getBoData().deliveries || []);
+      return (getAdminData().deliveries || []);
     },
 
     getDeliveryById(dlivId) {
@@ -61,7 +61,7 @@ window.boDataProvider = (() => {
 
     // ==================== 브랜드 ====================
     getBrands() {
-      return (getBoData().brands || []);
+      return (getAdminData().brands || []);
     },
 
     getBrandById(brandId) {
@@ -71,7 +71,7 @@ window.boDataProvider = (() => {
 
     // ==================== 카테고리 ====================
     getCategories() {
-      return (getBoData().categories || []);
+      return (getAdminData().categories || []);
     },
 
     getCategoryById(categoryId) {
@@ -81,7 +81,7 @@ window.boDataProvider = (() => {
 
     // ==================== 역할 ====================
     getRoles() {
-      return (getBoData().roles || []);
+      return (getAdminData().roles || []);
     },
 
     getRoleById(roleId) {
@@ -90,18 +90,18 @@ window.boDataProvider = (() => {
     },
 
     // ==================== 사용자 역할 ====================
-    getBoUserRoles() {
-      return (getBoData().userRoles || []);
+    getUserRoles() {
+      return (getAdminData().userRoles || []);
     },
 
-    getBoUserRolesByUserId(boUserId) {
-      const boUserRoles = this.getBoUserRoles();
-      return boUserRoles.filter(ur => ur?.boUserId === boUserId) || [];
+    getUserRolesByUserId(boUserId) {
+      const userRoles = this.getUserRoles();
+      return userRoles.filter(ur => ur?.boUserId === boUserId) || [];
     },
 
     // ==================== 코드 ====================
     getCodes() {
-      return (getBoData().codes || []);
+      return (getAdminData().codes || []);
     },
 
     getCodesByGroup(codeGrp) {
@@ -117,7 +117,7 @@ window.boDataProvider = (() => {
 
     // ==================== 사이트 ====================
     getSites() {
-      return (getBoData().sites || []);
+      return (getAdminData().sites || []);
     },
 
     getSiteById(siteId) {
@@ -127,7 +127,7 @@ window.boDataProvider = (() => {
 
     // ==================== 부서 ====================
     getDepts() {
-      return (getBoData().depts || []);
+      return (getAdminData().depts || []);
     },
 
     getDeptById(deptId) {
@@ -137,7 +137,7 @@ window.boDataProvider = (() => {
 
     // ==================== 메뉴 ====================
     getMenus() {
-      return (getBoData().menus || []);
+      return (getAdminData().menus || []);
     },
 
     getMenuById(menuId) {
@@ -145,9 +145,9 @@ window.boDataProvider = (() => {
       return menus.find(m => m?.menuId === menuId) || { menuId: 0, menuNm: '', parentId: 0, url: '', status: '' };
     },
 
-    // ==================== BO 사용자 ====================
+    // ==================== 관리자 사용자 ====================
     getBoUsers() {
-      return (getBoData().boUsers || []);
+      return (getAdminData().boUsers || []);
     },
 
     getBoUserById(boUserId) {
@@ -157,7 +157,7 @@ window.boDataProvider = (() => {
 
     // ==================== 쿠폰 ====================
     getCoupons() {
-      return (getBoData().coupons || []);
+      return (getAdminData().coupons || []);
     },
 
     getCouponById(couponId) {
@@ -167,7 +167,7 @@ window.boDataProvider = (() => {
 
     // ==================== 캐시 ====================
     getCaches() {
-      return (getBoData().caches || []);
+      return (getAdminData().caches || []);
     },
 
     getCacheById(cacheId) {
@@ -177,7 +177,7 @@ window.boDataProvider = (() => {
 
     // ==================== 이벤트 ====================
     getEvents() {
-      return (getBoData().events || []);
+      return (getAdminData().events || []);
     },
 
     getEventById(eventId) {
@@ -187,7 +187,7 @@ window.boDataProvider = (() => {
 
     // ==================== 디스플레이 ====================
     getDisplays() {
-      return (getBoData().displays || []);
+      return (getAdminData().displays || []);
     },
 
     getDisplayById(displayId) {
@@ -197,7 +197,7 @@ window.boDataProvider = (() => {
 
     // ==================== 업체 ====================
     getVendors() {
-      return (getBoData().vendors || []);
+      return (getAdminData().vendors || []);
     },
 
     getVendorById(vendorId) {
@@ -216,7 +216,7 @@ window.boDataProvider = (() => {
         brands: this.getBrands(),
         categories: this.getCategories(),
         roles: this.getRoles(),
-        boUserRoles: this.getBoUserRoles(),
+        userRoles: this.getUserRoles(),
         codes: this.getCodes(),
         sites: this.getSites(),
         depts: this.getDepts(),

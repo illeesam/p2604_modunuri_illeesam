@@ -156,13 +156,13 @@ window.XsSample04 = {
 
     /* ② Front 전용 (1종)
          window.boData.categories 직접 참조, 사용자 카테고리 필터용 */
-    const CATALOG2_FRONT = [
+    const CATALOG2_FO = [
       { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: 'CategorySelectModal — 트리+멀티체크', color: '#7e22ce' },
     ];
 
-    /* ③ Admin 전용 (13종)
-         adminData prop 필수, 관리 기능 전용 */
-    const CATALOG2_ADMIN = [
+    /* ③ BO 전용 (13종)
+         boData prop 필수, 관리 기능 전용 */
+    const CATALOG2_BO = [
       { id: 'siteSelect',      icon: '🌐', name: '사이트 선택',       desc: 'SiteSelectModal — 검색+선택',          color: '#0f766e' },
       { id: 'vendorSelect',    icon: '🏢', name: '판매업체 선택',     desc: 'VendorSelectModal — 검색+선택',        color: '#b45309' },
       { id: 'boUserSelect', icon: '👥', name: '사용자 선택',       desc: 'BoUserSelectModal — 부서트리+멀티', color: '#1e40af' },
@@ -185,7 +185,7 @@ window.XsSample04 = {
       /* BaseModal */
       adminData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
       demoOrder, demoProduct, demoUser, demoTmpl, demoSampleParams, catSelIds,
-      CATALOG2_COMMON, CATALOG2_FRONT, CATALOG2_ADMIN,
+      CATALOG2_COMMON, CATALOG2_FO, CATALOG2_BO,
     };
   },
 
@@ -284,7 +284,7 @@ window.XsSample04 = {
         <span style="font-size:11px;color:#86efac;">— window.boData.categories 직접 참조, 사용자 카테고리 필터</span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
-        <div v-for="item in CATALOG2_FRONT" :key="item.id"
+        <div v-for="item in CATALOG2_FO" :key="item.id"
           style="background:#fff;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:20px;flex-shrink:0;line-height:1;">{{ item.icon }}</span>
@@ -308,7 +308,7 @@ window.XsSample04 = {
         <span style="font-size:11px;color:#fca5a5;">— adminData prop 필수, 관리 기능 전용</span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
-        <div v-for="item in CATALOG2_ADMIN" :key="item.id"
+        <div v-for="item in CATALOG2_BO" :key="item.id"
           style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:20px;flex-shrink:0;line-height:1;">{{ item.icon }}</span>

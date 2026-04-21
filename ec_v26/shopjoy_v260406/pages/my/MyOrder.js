@@ -730,7 +730,7 @@ window.MyOrder = {
   <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
 
   </Teleport>
-</FrontMyLayout>
+</fo-my-layout>
   `,
   components: {
     FoMyLayout:         window.foMyLayout,

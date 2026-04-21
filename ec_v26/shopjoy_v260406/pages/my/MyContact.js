@@ -62,7 +62,7 @@ window.MyContact = {
 
   <Pagination :total="inquiries.length" :pager="inquiryPager" />
 
-</FrontMyLayout>
+</fo-my-layout>
   `,
   components: {
     FoMyLayout:    window.foMyLayout,
