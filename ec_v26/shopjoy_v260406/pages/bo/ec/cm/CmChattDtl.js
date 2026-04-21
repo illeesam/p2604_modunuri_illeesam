@@ -228,7 +228,7 @@ window.CmChattDtl = {
           <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userNm }}</span> 의 다른 채팅
         </span>
       </div>
-      <table class="admin-table" v-if="memberChats.length">
+      <table class="bo-table" v-if="memberChats.length">
         <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>관리</th></tr></thead>
         <tbody>
           <tr v-for="c in memberChats" :key="c?.chatId">
@@ -302,7 +302,7 @@ window.CmChattDtl = {
           <div style="margin-bottom:10px;padding:10px 14px;background:#f9f9f9;border-radius:8px;font-size:13px;">
             <b>{{ searchUser.name }}</b> ({{ searchUser.email }}) · {{ searchUser.grade }} · {{ searchUser.status }}
           </div>
-          <table class="admin-table" v-if="userChats.length">
+          <table class="bo-table" v-if="userChats.length">
             <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>보기</th></tr></thead>
             <tbody>
               <tr v-for="c in userChats" :key="c?.chatId">

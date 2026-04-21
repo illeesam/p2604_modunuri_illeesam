@@ -247,7 +247,7 @@ window.SyContactDtl = {
     <!-- 회원 문의 이력 -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력 <span class="tab-count">{{ memberContacts.length }}</span></div>
-      <table class="admin-table" v-if="memberContacts.length">
+      <table class="bo-table" v-if="memberContacts.length">
         <thead><tr><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
         <tbody>
           <tr v-for="c in memberContacts" :key="c.inquiryId">

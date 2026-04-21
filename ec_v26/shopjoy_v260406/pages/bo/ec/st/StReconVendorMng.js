@@ -83,7 +83,7 @@ window.StReconVendorMng = {
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">업체과다</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ summary.under }}건</div></div>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ total }}개 업체</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>업체명</th><th>주문건수</th><th>시스템 정산액</th><th>업체 청구액</th><th>차이금액</th><th>대사결과</th></tr></thead>
       <tbody>
         <tr v-for="r in pageList" :key="r?.vendorId">

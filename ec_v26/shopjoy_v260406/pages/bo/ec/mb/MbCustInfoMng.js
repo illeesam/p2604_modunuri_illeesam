@@ -380,7 +380,7 @@
           <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custOrders.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>주문번호</th><th>일시</th><th>상품명</th><th style="text-align:right;">금액</th><th>상태</th>
             </tr></thead>
@@ -408,7 +408,7 @@
           <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custClaims.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>클레임번호</th><th>유형</th><th>상품명</th><th>상태</th><th>신청일</th>
             </tr></thead>
@@ -436,7 +436,7 @@
           <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custDeliveries.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>배송번호</th><th>주문번호</th><th>택배사</th><th>운송장번호</th><th>상태</th>
             </tr></thead>
@@ -465,7 +465,7 @@
           <span style="margin-left:auto;font-size:12px;color:#7b1fa2;font-weight:600;">잔액 {{ fmtPrice(custCacheBalance) }}</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>일시</th><th>구분</th><th style="text-align:right;">금액</th><th style="text-align:right;">잔액</th><th>사유</th>
             </tr></thead>
@@ -493,7 +493,7 @@
           <span style="margin-left:2px;background:#e8eaf6;color:#283593;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custContacts.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>접수일</th><th>분류</th><th>제목</th><th>상태</th>
             </tr></thead>
@@ -520,7 +520,7 @@
           <span style="margin-left:2px;background:#e0f2f1;color:#004d40;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custChats.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>일시</th><th>제목</th><th>마지막 메시지</th><th>상태</th>
             </tr></thead>
@@ -547,7 +547,7 @@
           <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custLoginHist.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>일시</th><th>IP</th><th>기기/브라우저</th><th>결과</th>
             </tr></thead>
@@ -574,7 +574,7 @@
           <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custCouponUsage.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>사용일</th><th>쿠폰명</th><th>코드</th><th>주문번호</th><th style="text-align:right;">할인금액</th>
             </tr></thead>
@@ -602,7 +602,7 @@
           <span style="margin-left:2px;background:#fbe9e7;color:#bf360c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custSendHist.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <table class="admin-table" style="font-size:12px;">
+          <table class="bo-table" style="font-size:12px;">
             <thead><tr>
               <th>발송일시</th><th>채널</th><th>제목/내용</th><th>결과</th>
             </tr></thead>
@@ -638,7 +638,7 @@
             style="flex:1;font-size:13px;" />
           <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
         </div>
-        <table class="admin-table" style="font-size:12.5px;">
+        <table class="bo-table" style="font-size:12.5px;">
           <thead><tr>
             <th style="width:50px;text-align:center;">ID</th>
             <th style="width:90px;">이름</th>

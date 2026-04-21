@@ -197,7 +197,7 @@
         else keptTabIds.add(tabId);
       };
       const PAGE_COMP_MAP = {
-        'dashboard':'dashboard-admin-ec'+(window.BO_SITE_NO||'01'), 'mbMemberMng':'mb-member-mng', 'mbMemberDtl':'mb-member-dtl',
+        'dashboard':'dashboard-bo-ec'+(window.BO_SITE_NO||'01'), 'mbMemberMng':'mb-member-mng', 'mbMemberDtl':'mb-member-dtl',
         'mbMemGradeMng':'mb-mem-grade-mng', 'mbMemGroupMng':'mb-mem-group-mng',
         'pdProdMng':'pd-prod-mng', 'pdProdDtl':'pd-prod-dtl',
         'pdDlivTmpltMng':'pd-dliv-tmplt-mng', 'pdBundleMng':'pd-bundle-mng', 'pdSetMng':'pd-set-mng',
@@ -831,11 +831,11 @@
     template: /* html */`
 <div @click="onRootClick">
   <!-- ① TOP NAV -->
-  <nav class="admin-top-nav">
+  <nav class="bo-top-nav">
     <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" title="사이드바">☰</button>
     <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
       ShopJoy
-      <span class="front-site-badge"
+      <span class="fo-site-badge"
         :title="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-') + ' — 클릭: 연관사이트'"
         :data-tip="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-')"
         style="display:inline-flex;gap:4px;font-family:monospace;font-size:11px;cursor:pointer;"
@@ -887,11 +887,11 @@
   </nav>
 
   <!-- ② TAB BAR -->
-  <div class="admin-tab-bar-wrap">
+  <div class="bo-tab-bar-wrap">
     <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
-    <div class="admin-tab-bar" ref="tabBarRef">
+    <div class="bo-tab-bar" ref="tabBarRef">
       <div v-for="tab in openTabs" :key="tab.id"
-        class="admin-tab" :class="{active: activeTabId===tab.id}"
+        class="bo-tab" :class="{active: activeTabId===tab.id}"
         @click="navigate(tab.id)"
         @contextmenu.prevent="showCtxMenu($event, tab.id)">
         <span @click.stop="toggleKeep(tab.id)"
@@ -906,10 +906,10 @@
   </div>
 
   <!-- ③ BODY -->
-  <div class="admin-body">
+  <div class="bo-body">
 
     <!-- Left Sidebar -->
-    <nav class="admin-left-nav" :class="{closed: !leftMenuOpen}">
+    <nav class="bo-left-nav" :class="{closed: !leftMenuOpen}">
       <div class="left-nav-top">
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
         <template v-for="item in (LEFT_MENUS[activeTop] || [])" :key="item?.group || item?.id">
@@ -1049,8 +1049,8 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="admin-main">
-      <div class="admin-wrap">
+    <div class="bo-main">
+      <div class="bo-wrap">
         <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
         <component
           v-for="keptId in keptTabIds" :key="'kept_' + keptId"
@@ -1173,7 +1173,7 @@
     </div>
 
     <!-- Right Panel: 공통 필터 -->
-    <div class="admin-right-panel" :class="{collapsed: !rightPanelOpen}">
+    <div class="bo-right-panel" :class="{collapsed: !rightPanelOpen}">
       <div class="right-panel-header" @click="rightPanelOpen=!rightPanelOpen">
         <span class="right-panel-title">공통 필터</span>
         <span style="font-size:11px;color:#bbb;">{{ rightPanelOpen ? '▶' : '◀' }}</span>

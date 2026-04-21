@@ -86,7 +86,7 @@ window.PdProdHist = {
   <!-- 연관 주문 -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
-    <table class="admin-table" v-if="relatedOrders.length">
+    <table class="bo-table" v-if="relatedOrders.length">
       <thead><tr><th>주문ID</th><th>회원</th><th>주문일</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
         <tr v-for="o in relatedOrders" :key="o?.orderId">
@@ -105,7 +105,7 @@ window.PdProdHist = {
   <!-- 재고 이력 -->
   <div class="card" v-show="showTab('stock')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
-    <table class="admin-table" v-if="stockHistory.length">
+    <table class="bo-table" v-if="stockHistory.length">
       <thead><tr><th>일시</th><th>유형</th><th>수량</th><th>처리 후 재고</th><th>메모</th></tr></thead>
       <tbody>
         <tr v-for="(h, i) in stockHistory" :key="Math.random()">
@@ -125,7 +125,7 @@ window.PdProdHist = {
   <!-- 가격변경이력 -->
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
-    <table class="admin-table" v-if="priceHistory.length">
+    <table class="bo-table" v-if="priceHistory.length">
       <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
         <tr v-for="(h, i) in priceHistory" :key="Math.random()">
@@ -143,7 +143,7 @@ window.PdProdHist = {
   <!-- 상품상태 이력 -->
   <div class="card" v-show="showTab('status')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
-    <table class="admin-table" v-if="statusHistory.length">
+    <table class="bo-table" v-if="statusHistory.length">
       <thead><tr><th>일시</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
         <tr v-for="(h, i) in statusHistory" :key="Math.random()">
@@ -160,7 +160,7 @@ window.PdProdHist = {
   <!-- 상품정보 변경이력 -->
   <div class="card" v-show="showTab('changes')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
-    <table class="admin-table" v-if="changeHistory.length">
+    <table class="bo-table" v-if="changeHistory.length">
       <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
         <tr v-for="(h, i) in changeHistory" :key="Math.random()">

@@ -107,7 +107,7 @@ window.PdReviewMng = {
         <span class="list-title">상품리뷰 목록</span>
         <span class="list-count">총 {{ total }}건</span>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th>리뷰 제목</th><th style="width:120px">상품</th><th style="width:80px">작성자</th>
           <th style="width:90px;text-align:center">평점</th>

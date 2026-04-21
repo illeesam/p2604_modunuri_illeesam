@@ -574,7 +574,7 @@ window.SyCodeMng = {
           <button class="btn btn-primary btn-sm" @click="saveGrp" :disabled="!grpDirty">저장 <span v-if="grpDirty">({{ grpDirty }})</span></button>
         </div>
       </div>
-      <table class="admin-table crud-grid">
+      <table class="bo-table crud-grid">
         <thead>
           <tr>
             <th class="col-status">상태</th>
@@ -685,7 +685,7 @@ window.SyCodeMng = {
     </div>
 
     <!-- 일반 탭: 테이블 -->
-    <table v-if="activeCodeTab==='일반'" class="admin-table crud-grid">
+    <table v-if="activeCodeTab==='일반'" class="bo-table crud-grid">
       <thead>
         <tr>
           <th class="col-drag"></th>
@@ -780,7 +780,7 @@ window.SyCodeMng = {
           <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
         </div>
       </div>
-      <table class="admin-table crud-grid" style="margin-top:0;">
+      <table class="bo-table crud-grid" style="margin-top:0;">
         <thead>
           <tr>
             <th class="col-status">상태</th>

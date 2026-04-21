@@ -281,7 +281,7 @@
     },
 
     template: /* html */`
-<div :class="(viewMode==='3col'||viewMode==='4col') ? 'dash-wide' : 'admin-wrap'">
+<div :class="(viewMode==='3col'||viewMode==='4col') ? 'dash-wide' : 'bo-wrap'">
   <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>

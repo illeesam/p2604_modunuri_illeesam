@@ -401,7 +401,7 @@ window.PdBundleMng = {
         <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>묶음상품</th>
         <th style="width:70px;text-align:center">구성품수</th>
@@ -583,7 +583,7 @@ window.PdBundleMng = {
       구성품 목록 (pd_prod_bundle_item)
       <span style="font-weight:400;color:#aaa;margin-left:6px">※ 안분율 합계 = 100% 필수</span>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th style="width:28px"></th>
         <th>구성품 상품 (item_prod_id)</th>
@@ -676,7 +676,7 @@ window.PdBundleMng = {
         <input class="form-control" v-model="pickerSearch"
                placeholder="상품명 / ID 검색" style="margin-bottom:12px">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <table class="admin-table" style="margin:0">
+          <table class="bo-table" style="margin:0">
             <thead><tr>
               <th style="width:44px">ID</th>
               <th>상품명</th>

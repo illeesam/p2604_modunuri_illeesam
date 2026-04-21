@@ -556,7 +556,7 @@ window.PmCouponDtl = {
     <div class="card" v-show="showTab('issued')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ issuedList.length }}</span></div>
       <div v-if="issuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
-      <table v-else class="admin-table" style="font-size:12px;">
+      <table v-else class="bo-table" style="font-size:12px;">
         <thead><tr><th>쿠폰코드</th><th>발급대상</th><th>발급일시</th><th>유효기간</th><th>상태</th></tr></thead>
         <tbody>
           <tr v-for="(item, idx) in issuedList.slice(0, 10)" :key="idx">
@@ -574,7 +574,7 @@ window.PmCouponDtl = {
     <div class="card" v-show="showTab('used')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ usedList.length }}</span></div>
       <div v-if="usedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
-      <table v-else class="admin-table" style="font-size:12px;">
+      <table v-else class="bo-table" style="font-size:12px;">
         <thead><tr><th>쿠폰코드</th><th>사용자</th><th>주문ID</th><th>주문금액</th><th>할인액</th><th>사용일시</th></tr></thead>
         <tbody>
           <tr v-for="(item, idx) in usedList.slice(0, 10)" :key="idx">

@@ -95,7 +95,7 @@ window.StReconOrderMng = {
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(summary.diffAmt) }}</div></div>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>주문ID</th><th>주문일</th><th>업체</th><th>주문금액</th><th>정산기준액</th><th>실정산액</th><th>차이금액</th><th>대사결과</th></tr></thead>
       <tbody>
         <tr v-for="r in pageList" :key="r?.orderId">

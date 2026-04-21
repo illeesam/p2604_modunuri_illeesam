@@ -145,7 +145,7 @@ window.StSettleEtcAdjMng = {
       <span class="list-count">총 {{ total }}건</span>
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기타조정 추가</button></div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
       <tbody>
         <tr v-for="r in pageList" :key="r?.adjId" :class="{selected: selectedId===r.adjId}">

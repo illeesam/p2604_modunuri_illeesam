@@ -143,7 +143,7 @@ window.CmBlogMng = {
         <span class="list-count">총 {{ total }}건</span>
         <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th>제목</th><th style="width:80px">작성자</th>
           <th style="width:80px;text-align:right">조회수</th>

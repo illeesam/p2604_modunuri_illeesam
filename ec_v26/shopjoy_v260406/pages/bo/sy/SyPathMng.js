@@ -217,7 +217,7 @@ window.SyPathMng = {
   },
 
   template: /* html */`
-<div class="admin-wrap">
+<div class="bo-wrap">
   <div class="page-title">표시경로</div>
 
   <!-- 검색 -->
@@ -273,7 +273,7 @@ window.SyPathMng = {
           </button>
         </div>
       </div>
-      <table class="admin-table crud-grid">
+      <table class="bo-table crud-grid">
         <thead>
           <tr>
             <th class="col-status">상태</th>

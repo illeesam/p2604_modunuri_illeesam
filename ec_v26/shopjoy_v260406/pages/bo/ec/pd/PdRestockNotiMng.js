@@ -104,7 +104,7 @@ window.PdRestockNotiMng = {
           📣 알림발송 ({{ checkedCount }}건)
         </button>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th style="width:36px"><input type="checkbox" :checked="allChecked" @change="toggleAll"></th>
           <th>상품명</th><th style="width:100px">SKU</th><th style="width:100px">신청회원</th>

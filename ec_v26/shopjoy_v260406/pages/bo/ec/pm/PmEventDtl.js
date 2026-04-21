@@ -381,7 +381,7 @@ window.PmEventDtl = {
         <button v-if="!viewMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
-      <table class="admin-table" v-if="selectedProducts.length">
+      <table class="bo-table" v-if="selectedProducts.length">
         <thead><tr><th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>상태</th><th>제거</th></tr></thead>
         <tbody>
           <tr v-for="p in selectedProducts" :key="p?.productId">

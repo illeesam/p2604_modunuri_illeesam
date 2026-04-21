@@ -104,7 +104,7 @@ window.StErpViewMng = {
   </div>
   <div class="card" style="margin-top:12px">
     <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>전표ID</th><th>전표일자</th><th>유형</th><th>차변계정</th><th>대변계정</th><th>금액</th><th>적요</th><th>ERP전표번호</th><th>전송상태</th><th>액션</th></tr></thead>
       <tbody>
         <tr v-for="r in pageList" :key="r?.slipId">

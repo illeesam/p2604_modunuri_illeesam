@@ -107,7 +107,7 @@ window.SyI18nMng = {
         <span class="list-title">다국어 키 목록</span>
         <span class="list-count">총 {{ total }}건</span>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th>키 (i18n_key)</th><th>설명</th>
           <th style="width:80px;text-align:center">범위</th>

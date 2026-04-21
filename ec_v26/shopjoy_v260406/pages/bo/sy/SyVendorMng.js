@@ -191,7 +191,7 @@ window.SyVendorMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
           <th style="min-width:140px;">표시경로</th>
         <th>ID</th><th>업체유형</th><th>업체명</th><th>대표자</th><th>사업자번호</th><th>전화번호</th><th>이메일</th><th>계약일</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>

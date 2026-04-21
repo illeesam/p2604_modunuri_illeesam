@@ -121,7 +121,7 @@ window.StSettlePayMng = {
       </div>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>지급ID</th><th>지급일</th><th>업체명</th><th>정산월</th><th>정산액</th><th>지급액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
       <tbody>
         <tr v-for="r in pageList" :key="r?.payId">

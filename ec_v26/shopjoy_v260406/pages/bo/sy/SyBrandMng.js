@@ -347,7 +347,7 @@ window.SyBrandMng = {
       </div>
     </div>
 
-    <table class="admin-table crud-grid">
+    <table class="bo-table crud-grid">
       <thead>
         <tr>
           <th class="col-drag"></th>

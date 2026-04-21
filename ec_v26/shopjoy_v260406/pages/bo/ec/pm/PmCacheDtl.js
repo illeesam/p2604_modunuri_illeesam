@@ -244,7 +244,7 @@ window.PmCacheDtl = {
         </span>
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ totalBalance.toLocaleString() }}원</span>
       </div>
-      <table class="admin-table" v-if="memberCacheHistory.length">
+      <table class="bo-table" v-if="memberCacheHistory.length">
         <thead><tr><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th></tr></thead>
         <tbody>
           <tr v-for="c in memberCacheHistory" :key="c?.cacheId">

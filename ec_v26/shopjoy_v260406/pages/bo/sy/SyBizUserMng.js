@@ -358,7 +358,7 @@ window.SyBizUserMng = {
     };
   },
   template: /* html */`
-<div class="admin-wrap">
+<div class="bo-wrap">
   <div class="page-title">업체사용자</div>
 
   <div class="card">
@@ -398,7 +398,7 @@ window.SyBizUserMng = {
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ bizList.length }}건</span></span>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>업체유형</th><th>역할구분</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>전화</th><th>상태</th><th style="text-align:right;">선택</th>
       </tr></thead>
@@ -464,7 +464,7 @@ window.SyBizUserMng = {
           </div>
         </div>
         <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;min-height:0;">
-        <table class="admin-table">
+        <table class="bo-table">
           <thead><tr>
             <th>표시경로</th><th>업체유형</th><th>역할구분</th><th>업체</th><th>이름</th><th>직위</th><th>역할</th><th>부서</th><th>휴대전화</th><th>상태</th><th style="text-align:right;">관리</th>
           </tr></thead>

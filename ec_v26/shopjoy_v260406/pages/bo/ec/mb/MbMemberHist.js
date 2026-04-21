@@ -57,7 +57,7 @@ window.MbMemberHist = {
   <!-- 연관 주문 -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ memberOrders.length }}</span></div>
-    <table class="admin-table" v-if="memberOrders.length">
+    <table class="bo-table" v-if="memberOrders.length">
       <thead><tr><th>주문ID</th><th>주문일</th><th>상품</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
         <tr v-for="o in memberOrders" :key="o?.orderId">
@@ -76,7 +76,7 @@ window.MbMemberHist = {
   <!-- 연관 클레임 -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ memberClaims.length }}</span></div>
-    <table class="admin-table" v-if="memberClaims.length">
+    <table class="bo-table" v-if="memberClaims.length">
       <thead><tr><th>클레임ID</th><th>주문ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
         <tr v-for="c in memberClaims" :key="c?.claimId">

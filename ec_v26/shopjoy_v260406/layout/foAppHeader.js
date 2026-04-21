@@ -182,7 +182,7 @@ window.foAppHeader = {
       <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.3px;">{{ config.name }}</span>
       <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">
         {{ config.tagline }}
-        <span class="front-site-badge"
+        <span class="fo-site-badge"
           :title="'FO_SITE_NO=' + (foSiteNo || '-') + ' BO_SITE_NO=' + (boSiteNo || '-') + ' — 클릭: 메뉴 바로가기'"
           :data-tip="'FO_SITE_NO=' + (foSiteNo || '-') + ' BO_SITE_NO=' + (boSiteNo || '-')"
           style="cursor:pointer;"

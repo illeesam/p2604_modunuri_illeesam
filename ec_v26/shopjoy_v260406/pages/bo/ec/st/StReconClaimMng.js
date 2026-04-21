@@ -88,7 +88,7 @@ window.StReconClaimMng = {
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">조정부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ summary.under }}건</div></div>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>클레임ID</th><th>요청일</th><th>유형</th><th>환불액</th><th>정산조정기준</th><th>실반영액</th><th>차이</th><th>처리상태</th><th>대사결과</th></tr></thead>
       <tbody>
         <tr v-for="r in pageList" :key="r?.claimId">

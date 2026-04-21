@@ -119,7 +119,7 @@ window.StSettleCloseMng = {
   <!-- 마감 이력 -->
   <div class="card" style="margin-top:12px">
     <div class="toolbar"><span class="list-title">정산마감 이력</span><span class="list-count">총 {{ closeList.length }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>마감ID</th><th>정산월</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료</th><th>프로모션비</th><th>정산액</th><th>마감일</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
       <tbody>
         <tr v-for="r in closeList" :key="r?.closeId">

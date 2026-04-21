@@ -2294,7 +2294,7 @@ window.RowPickModal = {
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 복사</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
-          <table class="admin-table" style="margin:0;">
+          <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
                 <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
@@ -2484,7 +2484,7 @@ window.AreaPickModal = {
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
-          <table class="admin-table" style="margin:0;">
+          <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
                 <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
@@ -2682,7 +2682,7 @@ window.PanelPickModal = {
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
-          <table class="admin-table" style="margin:0;">
+          <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
                 <th style="width:36px;text-align:center;">
@@ -2878,7 +2878,7 @@ window.WidgetLibPickModal = {
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">총 <b>{{ total }}</b>건</div>
         <div style="flex:1;overflow-y:auto;">
-          <table class="admin-table" style="margin:0;">
+          <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
                 <th style="width:56px;">ID</th>
@@ -3256,7 +3256,7 @@ window.BizPickModal = {
       </div>
       <!-- 우측 사업자 목록 -->
       <div style="overflow:auto;">
-        <table class="admin-table" style="background:#fff;">
+        <table class="bo-table" style="background:#fff;">
           <thead><tr>
             <th>업체유형</th><th>사업자번호</th><th>상호</th><th>대표자</th><th></th>
           </tr></thead>
@@ -3316,7 +3316,7 @@ window.SimpleUserPickModal = {
       <input class="form-control" v-model="kw" placeholder="이름 / 로그인ID / 이메일 검색" style="margin-top:12px;height:32px;font-size:12px;" />
     </div>
     <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
-      <table class="admin-table" style="background:#fff;">
+      <table class="bo-table" style="background:#fff;">
         <thead><tr><th>이름</th><th>로그인ID</th><th>이메일</th><th>부서</th><th></th></tr></thead>
         <tbody>
           <tr v-if="filtered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">결과가 없습니다.</td></tr>

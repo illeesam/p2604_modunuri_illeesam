@@ -123,7 +123,7 @@ window.PdTagMng = {
           <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
         </div>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th>태그명</th><th>설명</th>
           <th style="width:80px;text-align:right">사용수</th>

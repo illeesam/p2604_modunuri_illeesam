@@ -94,7 +94,7 @@ window.StConfigMng = {
       <span class="list-count">총 {{ configs.length }}건</span>
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기준 추가</button></div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>사이트</th><th>업체유형</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>세금계산서</th><th>자동마감</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
         <tr v-for="c in configs" :key="c?.configId" :class="{selected: selectedId===c.configId}">

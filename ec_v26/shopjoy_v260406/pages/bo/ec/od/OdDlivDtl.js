@@ -345,7 +345,7 @@ window.OdDlivDtl = {
       <a v-else-if="form.courier==='롯데택배' && form.trackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.trackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
       <a v-else-if="form.courier==='한진택배' && form.trackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.trackingNo" target="_blank" style="color:#1565c0;">조회 →</a>
     </div>
-    <table class="admin-table" v-if="dlivItems.length">
+    <table class="bo-table" v-if="dlivItems.length">
       <thead><tr>
         <th style="width:36px;text-align:center;">No.</th>
         <th>상품명</th>
@@ -412,7 +412,7 @@ window.OdDlivDtl = {
   <!-- 결제정보 탭 -->
   <div v-if="!isNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ paymentList.length }}</span></div>
-    <table class="admin-table" v-if="paymentList.length">
+    <table class="bo-table" v-if="paymentList.length">
       <thead><tr>
         <th style="width:40px;text-align:center;">No.</th>
         <th>주문ID</th><th style="text-align:right;">배송비</th><th>결제수단</th><th>결제상태</th><th>결제일시</th>
@@ -440,7 +440,7 @@ window.OdDlivDtl = {
   <!-- 정보수정이력 탭 -->
   <div v-if="!isNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ editHistList.length }}</span></div>
-    <table class="admin-table" v-if="editHistList.length">
+    <table class="bo-table" v-if="editHistList.length">
       <thead><tr>
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>
       </tr></thead>

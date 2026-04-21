@@ -399,7 +399,7 @@ window.PdCategoryMng = {
         </div>
       </div>
 
-      <table class="admin-table" style="table-layout:fixed">
+      <table class="bo-table" style="table-layout:fixed">
         <colgroup>
           <col style="width:28px"><!-- 드래그 핸들 -->
           <col style="width:36px"><!-- 상태 -->

@@ -138,7 +138,7 @@ window.MbMemGradeMng = {
           <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
         </div>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th style="width:120px">등급코드</th>
           <th>등급명</th>

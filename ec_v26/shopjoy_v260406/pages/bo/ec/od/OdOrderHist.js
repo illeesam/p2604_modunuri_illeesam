@@ -71,7 +71,7 @@ window.OdOrderHist = {
   <!-- 구성 상품 -->
   <div class="card" v-show="showTab('products')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
-    <table class="admin-table" v-if="orderItems.length">
+    <table class="bo-table" v-if="orderItems.length">
       <thead><tr><th>No</th><th>상품명</th><th>옵션</th><th>수량</th><th>단가</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
         <tr v-for="item in orderItems" :key="item?.no">
@@ -101,7 +101,7 @@ window.OdOrderHist = {
         </div>
         <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:relatedDliv.dlivId})">배송 수정</button>
       </div>
-      <table class="admin-table" v-if="dlivHistory.length">
+      <table class="bo-table" v-if="dlivHistory.length">
         <thead><tr><th>일시</th><th>상태</th><th>위치</th><th>메모</th></tr></thead>
         <tbody>
           <tr v-for="(h, i) in dlivHistory" :key="Math.random()">
@@ -120,7 +120,7 @@ window.OdOrderHist = {
   <!-- 연관 클레임 -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span></div>
-    <table class="admin-table" v-if="relatedClaims.length">
+    <table class="bo-table" v-if="relatedClaims.length">
       <thead><tr><th>클레임ID</th><th>회원</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
         <tr v-for="c in relatedClaims" :key="c?.claimId">

@@ -1151,7 +1151,7 @@ window.DpDispPanelDtl = {
                 </div>
               </div>
               <div v-else>
-                <table class="admin-table" style="margin-bottom:8px;">
+                <table class="bo-table" style="margin-bottom:8px;">
                   <thead>
                     <tr>
                       <th style="width:36px;text-align:center;">#</th>
@@ -1196,7 +1196,7 @@ window.DpDispPanelDtl = {
             <div v-else-if="displayRows.length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">
               위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.
             </div>
-            <table v-else class="admin-table" style="margin-bottom:20px;">
+            <table v-else class="bo-table" style="margin-bottom:20px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
               <tbody>
                 <tr v-for="row in displayRows" :key="row?.key">
@@ -1252,7 +1252,7 @@ window.DpDispPanelDtl = {
 
             <!-- 클릭동작 -->
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
-            <table class="admin-table" style="margin-bottom:8px;">
+            <table class="bo-table" style="margin-bottom:8px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
               <tbody>
                 <tr>
@@ -1529,7 +1529,7 @@ window.DpDispPanelDtl = {
                 </div>
               </div>
               <div v-else>
-                <table class="admin-table" style="margin-bottom:8px;">
+                <table class="bo-table" style="margin-bottom:8px;">
                   <thead><tr><th style="width:36px;text-align:center;">#</th><th style="width:200px;">파일명</th><th>URL / 경로</th><th style="width:36px;"></th></tr></thead>
                   <tbody>
                     <tr v-if="getFileListItems(r).length===0"><td colspan="4" style="text-align:center;color:#bbb;padding:16px;font-size:13px;">첨부파일이 없습니다.</td></tr>
@@ -1546,7 +1546,7 @@ window.DpDispPanelDtl = {
             </div>
             <!-- 일반 표현 설정 -->
             <div v-else-if="getDisplayRows(r).length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.</div>
-            <table v-else class="admin-table" style="margin-bottom:20px;">
+            <table v-else class="bo-table" style="margin-bottom:20px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
               <tbody>
                 <tr v-for="drow in getDisplayRows(r)" :key="drow?.key">
@@ -1601,7 +1601,7 @@ window.DpDispPanelDtl = {
             </table>
 
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">👆 클릭 동작</div>
-            <table class="admin-table" style="margin-bottom:20px;">
+            <table class="bo-table" style="margin-bottom:20px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
               <tbody>
                 <tr>

@@ -193,7 +193,7 @@ window.SyPropMng = {
   },
 
   template: /* html */`
-<div class="admin-wrap">
+<div class="bo-wrap">
   <div class="page-title">프로퍼티관리</div>
 
   <!-- 검색 바 -->
@@ -247,7 +247,7 @@ window.SyPropMng = {
           </button>
         </div>
       </div>
-      <table class="admin-table crud-grid">
+      <table class="bo-table crud-grid">
         <thead>
           <tr>
             <th class="col-status">상태</th>

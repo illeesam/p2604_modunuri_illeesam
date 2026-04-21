@@ -263,7 +263,7 @@ window.SyUserLoginHist = {
 
     <!-- ── 로그인 로그 탭 ── -->
     <div v-if="activeTab==='log'">
-      <table class="admin-table">
+      <table class="bo-table">
         <thead>
           <tr>
             <th style="width:24px"></th><th>로그ID</th><th>로그인일시</th><th>사용자</th><th>부서/역할</th>
@@ -333,7 +333,7 @@ window.SyUserLoginHist = {
 
     <!-- ── 로그인 이력 탭 ── -->
     <div v-if="activeTab==='hist'">
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr><th>이력ID</th><th>로그인일시</th><th>사용자</th><th>부서</th><th>IP</th><th>디바이스</th><th>결과</th></tr></thead>
         <tbody>
           <tr v-for="r in pageList" :key="r.histId">
@@ -352,7 +352,7 @@ window.SyUserLoginHist = {
 
     <!-- ── 토큰 이력 탭 ── -->
     <div v-if="activeTab==='token'">
-      <table class="admin-table">
+      <table class="bo-table">
         <thead>
           <tr>
             <th style="width:24px"></th><th>토큰로그ID</th><th>일시</th><th>사용자</th>

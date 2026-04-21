@@ -346,7 +346,7 @@ window.StRawMng = {
         <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead>
         <tr>
           <th style="width:30px"></th>

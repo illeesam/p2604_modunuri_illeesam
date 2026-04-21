@@ -304,7 +304,7 @@ window.DpDispUiMng = {
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
         </div>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead>
           <tr>
             <th style="width:44px;">ID</th>

@@ -277,7 +277,7 @@ window.SyAttachMng = {
           </div>
         </div>
 
-        <table class="admin-table">
+        <table class="bo-table">
           <thead><tr>
             <th>ID</th><th>그룹</th><th>파일명</th><th>크기</th><th>확장자</th><th>참조ID</th><th>메모</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
           </tr></thead>

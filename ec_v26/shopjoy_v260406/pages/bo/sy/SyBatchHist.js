@@ -96,7 +96,7 @@ window.SyBatchHist = {
     </div>
   </div>
 
-  <table class="admin-table" style="font-size:12px;">
+  <table class="bo-table" style="font-size:12px;">
     <thead>
       <tr>
         <th style="width:46px;">로그ID</th>

@@ -152,7 +152,7 @@ window.SyBbmMng = {
             <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
           </div>
         </div>
-        <table class="admin-table">
+        <table class="bo-table">
           <thead><tr>
             <th style="min-width:130px;">표시경로</th><th>ID</th><th>게시판코드</th><th>게시판명</th><th>유형</th><th>댓글허용</th><th>첨부허용</th><th>내용입력</th><th>공개범위</th><th>좋아요</th><th>게시글수</th><th>정렬순서</th><th>사용여부</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th>
           </tr></thead>

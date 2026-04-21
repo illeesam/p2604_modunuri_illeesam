@@ -121,7 +121,7 @@ window.SyBizMng = {
     };
   },
   template: /* html */`
-<div class="admin-wrap">
+<div class="bo-wrap">
   <div class="page-title">업체</div>
 
   <div class="card">
@@ -162,7 +162,7 @@ window.SyBizMng = {
             <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
           </div>
         </div>
-        <table class="admin-table">
+        <table class="bo-table">
           <thead><tr>
             <th style="min-width:120px;">표시경로</th>
             <th>업체유형</th><th>역할구분</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>구분</th><th>업태/종목</th><th>전화</th><th>상태</th><th>등록일</th><th style="text-align:right;">관리</th>

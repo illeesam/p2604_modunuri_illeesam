@@ -320,7 +320,7 @@ window.StStatusMng = {
     </div>
     <!-- 테이블 -->
     <div class="toolbar"><span class="list-count">총 {{ vendorTotal }}개 업체</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>업체명</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>정산예정액</th>
       </tr></thead>
@@ -383,7 +383,7 @@ window.StStatusMng = {
       </select>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ orderTotal }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>주문ID</th><th>주문일시</th><th>고객명</th><th>업체</th><th>상품명</th><th>결제금액</th><th>수수료</th><th>정산액</th><th>상태</th>
       </tr></thead>
@@ -452,7 +452,7 @@ window.StStatusMng = {
       </select>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ claimTotal }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>클레임ID</th><th>요청일시</th><th>고객명</th><th>주문ID</th><th>상품명</th><th>유형</th><th>사유</th><th>환불액</th><th>정산차감</th><th>상태</th>
       </tr></thead>
@@ -514,7 +514,7 @@ window.StStatusMng = {
       <input v-model="promoSearchKw" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>
     <div class="toolbar"><span class="list-count">총 {{ promoTotal }}개</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>ID</th><th>유형</th><th>프로모션명</th><th>발급/충전수</th><th>사용건수</th><th>할인/지원액</th><th>기간</th><th>상태</th>
       </tr></thead>
@@ -573,7 +573,7 @@ window.StStatusMng = {
       <input v-model="settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>
     <div class="toolbar"><span class="list-count">총 {{ settleTotal }}개월</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>정산월</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>프로모션비(3%)</th><th>순정산액</th><th>상태</th>
       </tr></thead>

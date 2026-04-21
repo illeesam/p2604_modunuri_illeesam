@@ -124,7 +124,7 @@ window.SyUserMng = {
       if (idx !== -1) boUsers.value.splice(idx, 1);
       if (selectedId.value === u.boUserId) selectedId.value = null;
       try {
-        const res = await window.boApi.delete(`admin-users/${u.boUserId}`);
+        const res = await window.boApi.delete(`bo-users/${u.boUserId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -179,7 +179,7 @@ window.SyUserMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>ID</th><th>로그인ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>권한</th><th>부서</th><th>상태</th><th>최근로그인</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>

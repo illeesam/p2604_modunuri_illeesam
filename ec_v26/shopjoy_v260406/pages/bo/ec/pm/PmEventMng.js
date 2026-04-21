@@ -142,7 +142,7 @@ window.PmEventMng = {
       </div>
     </div>
     <!-- 리스트 뷰 -->
-    <table class="admin-table" v-if="viewMode==='list'">
+    <table class="bo-table" v-if="viewMode==='list'">
       <thead><tr><th>ID</th><th>이벤트 제목</th><th>대상상품</th><th>인증필요</th><th>시작일</th><th>종료일</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>

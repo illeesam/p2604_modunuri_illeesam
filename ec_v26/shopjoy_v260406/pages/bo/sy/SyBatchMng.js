@@ -436,7 +436,7 @@ window.SyBatchMng = {
     </div>
 
     <div style="overflow-x:auto;">
-    <table class="admin-table crud-grid" style="min-width:1000px;">
+    <table class="bo-table crud-grid" style="min-width:1000px;">
       <thead>
         <tr>
           <th style="min-width:140px;">표시경로</th>

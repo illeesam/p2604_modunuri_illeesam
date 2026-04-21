@@ -87,7 +87,7 @@ window.StErpGenMng = {
     <!-- 미리보기 -->
     <div v-if="previewRows.length" style="margin-top:16px">
       <div style="font-weight:600;margin-bottom:8px;color:#555">전표 미리보기 ({{ previewRows.length }}건)</div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr><th>차변계정</th><th>대변계정</th><th>차변금액</th><th>대변금액</th><th>적요</th></tr></thead>
         <tbody>
           <tr v-for="(r, idx) in previewRows" :key="Math.random()">
@@ -105,7 +105,7 @@ window.StErpGenMng = {
   <!-- 생성 이력 -->
   <div class="card" style="margin-top:12px">
     <div class="toolbar"><span class="list-title">전표생성 이력</span><span class="list-count">총 {{ genHistory.length }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>생성ID</th><th>정산월</th><th>전표유형</th><th>전표수</th><th>총금액</th><th>생성일</th><th>상태</th><th>담당자</th></tr></thead>
       <tbody>
         <tr v-for="r in genHistory" :key="r?.genId">

@@ -112,7 +112,7 @@ window.StErpReconMng = {
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(summary.diffAmt) }}</div></div>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr><th>대사ID</th><th>대사일자</th><th>전표ID</th><th>유형</th><th>시스템금액</th><th>ERP금액</th><th>차이금액</th><th>대사결과</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
         <tr v-for="r in pageList" :key="r?.reconId">

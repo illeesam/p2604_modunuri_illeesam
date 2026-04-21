@@ -423,7 +423,7 @@ window.PmVoucherDtl = {
   <!-- 발급내역 탭 -->
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
-    <table class="admin-table" style="margin:0;">
+    <table class="bo-table" style="margin:0;">
       <thead><tr><th>발급번호</th><th>회원명</th><th>발급일</th><th>발급가격</th><th>만료일</th><th>상태</th></tr></thead>
       <tbody>
         <tr v-if="issuedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">발급내역이 없습니다.</td></tr>
@@ -442,7 +442,7 @@ window.PmVoucherDtl = {
   <!-- 사용내역 탭 -->
   <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
-    <table class="admin-table" style="margin:0;">
+    <table class="bo-table" style="margin:0;">
       <thead><tr><th>사용번호</th><th>발급번호</th><th>회원명</th><th>주문ID</th><th>사용금액</th><th>사용일시</th></tr></thead>
       <tbody>
         <tr v-if="usedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">사용내역이 없습니다.</td></tr>

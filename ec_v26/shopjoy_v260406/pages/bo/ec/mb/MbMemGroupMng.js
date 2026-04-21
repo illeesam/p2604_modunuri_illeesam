@@ -126,7 +126,7 @@ window.MbMemGroupMng = {
           <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
         </div>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th>그룹명</th><th>메모</th>
           <th style="width:80px;text-align:right">회원수</th>

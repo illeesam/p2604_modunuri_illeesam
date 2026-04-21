@@ -209,7 +209,7 @@ window.SyTemplateMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
           <th style="min-width:140px;">표시경로</th>
         <th>ID</th><th>템플릿유형</th><th>템플릿코드</th><th>템플릿명</th><th>제목(Subject)</th><th>사용여부</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>

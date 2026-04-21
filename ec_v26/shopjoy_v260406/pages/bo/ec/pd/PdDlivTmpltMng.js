@@ -128,7 +128,7 @@ window.PdDlivTmpltMng = {
         <span class="list-count">총 {{ total }}건</span>
         <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
       </div>
-      <table class="admin-table">
+      <table class="bo-table">
         <thead><tr>
           <th>템플릿명</th>
           <th style="width:90px">배송방법</th>

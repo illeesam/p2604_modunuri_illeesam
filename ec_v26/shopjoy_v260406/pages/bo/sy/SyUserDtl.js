@@ -112,7 +112,7 @@ window.SyUserDtl = {
         }
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`admin-users/${form.boUserId}`, { ...form }) : window.boApi.put(`admin-users/${form.boUserId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`bo-users/${form.boUserId}`, { ...form }) : window.boApi.put(`bo-users/${form.boUserId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syUserMng');
@@ -237,7 +237,7 @@ window.SyUserDtl = {
       style="text-align:center;color:#bbb;padding:24px;font-size:13px;">
       배정된 역할이 없습니다.
     </div>
-    <table v-else class="admin-table">
+    <table v-else class="bo-table">
       <thead>
         <tr>
           <th style="width:50px;">ID</th>

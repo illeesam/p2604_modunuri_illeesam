@@ -387,7 +387,7 @@ window.PdCategoryProdMng = {
         </div>
 
         <!-- TABLE 뷰 (tab / 1col) -->
-        <table v-if="viewMode==='tab'||viewMode==='1col'" class="admin-table">
+        <table v-if="viewMode==='tab'||viewMode==='1col'" class="bo-table">
           <thead><tr>
             <th style="width:28px"></th>
             <th style="width:36px;text-align:center">순서</th>
@@ -574,7 +574,7 @@ window.PdCategoryProdMng = {
         <input class="form-control" v-model="pickerSearch"
                placeholder="상품명 / ID / 카테고리 검색" style="margin-bottom:12px">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <table class="admin-table" style="margin:0">
+          <table class="bo-table" style="margin:0">
             <thead><tr>
               <th style="width:44px">ID</th>
               <th>상품명</th>

@@ -64,7 +64,7 @@ window.OdDlivHist = {
   <!-- 연관 클레임 -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span></div>
-    <table class="admin-table" v-if="relatedClaims.length">
+    <table class="bo-table" v-if="relatedClaims.length">
       <thead><tr><th>클레임ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
         <tr v-for="c in relatedClaims" :key="c?.claimId">

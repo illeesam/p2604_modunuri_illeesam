@@ -691,7 +691,7 @@ window.PdProdDtl = {
           </div>
           <!-- 목록 -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-            <table class="admin-table" style="font-size:13px;">
+            <table class="bo-table" style="font-size:13px;">
               <thead>
                 <tr><th>이름</th><th>부서</th><th>역할</th></tr>
               </thead>
@@ -1263,7 +1263,7 @@ window.PdProdDtl = {
         <button class="btn btn-sm btn-secondary" @click="openProdPicker('rel')">+ 추가</button>
       </div>
 
-      <table class="admin-table" style="font-size:12px;">
+      <table class="bo-table" style="font-size:12px;">
         <thead>
           <tr>
             <th style="width:24px;"></th>
@@ -1313,7 +1313,7 @@ window.PdProdDtl = {
         <button class="btn btn-sm btn-secondary" @click="openProdPicker('code')">+ 추가</button>
       </div>
 
-      <table class="admin-table" style="font-size:12px;">
+      <table class="bo-table" style="font-size:12px;">
         <thead>
           <tr>
             <th style="width:24px;"></th>
@@ -1374,7 +1374,7 @@ window.PdProdDtl = {
           </div>
           <!-- 목록 -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-            <table class="admin-table" style="font-size:12px;">
+            <table class="bo-table" style="font-size:12px;">
               <thead>
                 <tr><th style="width:46px;">ID</th><th>상품명</th><th style="width:80px;">카테고리</th><th style="width:90px;">가격</th><th style="width:60px;">재고</th><th style="width:60px;">상태</th></tr>
               </thead>
@@ -1457,7 +1457,7 @@ window.PdProdDtl = {
         </div>
       </div>
       <div style="overflow-x:auto;margin-bottom:20px;">
-        <table class="admin-table" style="font-size:12px;">
+        <table class="bo-table" style="font-size:12px;">
           <thead>
             <tr>
               <th>1단<span v-if="window.safeArrayUtils.safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ window.safeArrayUtils.safeFirst(optGroups).grpNm }})</span></th>
@@ -1608,7 +1608,7 @@ window.PdProdDtl = {
         </div>
       </div>
       <div style="overflow-x:auto;">
-        <table class="admin-table" style="min-width:860px;font-size:12px;">
+        <table class="bo-table" style="min-width:860px;font-size:12px;">
           <thead>
             <tr>
               <th style="width:36px;"><input type="checkbox" :checked="planAllChecked" @change="e=>planAllChecked=e.target.checked" /></th>

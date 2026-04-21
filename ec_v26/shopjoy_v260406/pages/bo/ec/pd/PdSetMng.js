@@ -357,7 +357,7 @@ window.PdSetMng = {
         <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>세트상품</th>
         <th style="width:70px;text-align:center">구성품수</th>
@@ -538,7 +538,7 @@ window.PdSetMng = {
         표시 목적 · 재고 개별 차감 없음 · 안분율 없음
       </span>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th style="width:28px"></th>
         <th style="width:180px">표시명 (item_nm) <span style="color:#f5222d">*</span></th>
@@ -622,7 +622,7 @@ window.PdSetMng = {
         <input class="form-control" v-model="pickerSearch"
                placeholder="상품명 / ID 검색" style="margin-bottom:12px">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <table class="admin-table" style="margin:0">
+          <table class="bo-table" style="margin:0">
             <thead><tr>
               <th style="width:44px">ID</th>
               <th>상품명</th>

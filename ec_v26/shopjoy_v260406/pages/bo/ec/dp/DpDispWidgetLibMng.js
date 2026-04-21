@@ -350,7 +350,7 @@ window.DpDispWidgetLibMng = {
       <span style="font-size:13px;color:#555;">총 <b>{{ totalCount }}</b>건</span>
     </div>
 
-    <table class="admin-table">
+    <table class="bo-table">
       <thead>
         <tr>
           <th style="width:56px;">ID</th>
