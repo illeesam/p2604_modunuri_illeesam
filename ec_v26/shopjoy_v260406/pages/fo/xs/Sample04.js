@@ -106,7 +106,7 @@ window.XsSample04 = {
     }
 
     /* ── BaseModal 데모 상태 ── */
-    const adminData   = window.boData || { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
+    const boData   = window.boData || { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
     const bModal      = reactive({ type: null });
     const openBModal  = (type) => { bModal.type = type; };
     const closeBModal = () => { bModal.type = null; };
