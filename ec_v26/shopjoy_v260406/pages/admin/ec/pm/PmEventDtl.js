@@ -3,7 +3,8 @@ window._ecEventDtlState = window._ecEventDtlState || { tab: 'info', viewMode: 't
 window.PmEventDtl = {
   name: 'PmEventDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const events = ref([]);
+  setup(props) {
+    const events = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

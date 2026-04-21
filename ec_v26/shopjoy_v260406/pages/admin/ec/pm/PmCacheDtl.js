@@ -3,7 +3,8 @@ window._pmCacheDtlState = window._pmCacheDtlState || { tab: 'info', viewMode: 't
 window.PmCacheDtl = {
   name: 'PmCacheDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const caches = ref([]);
+  setup(props) {
+    const caches = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

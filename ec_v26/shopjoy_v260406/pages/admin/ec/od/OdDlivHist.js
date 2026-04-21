@@ -3,7 +3,9 @@ window._ecDlivHistState = window._ecDlivHistState || { tab: 'order', viewMode: '
 window.OdDlivHist = {
   name: 'OdDlivHist',
   props: ['navigate', 'showRefModal', 'orderId'],
-  setup(props) {    const deliveries = ref([]);
+  setup(props) {
+    const { ref, computed } = Vue;
+    const deliveries = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,7 +25,6 @@ window.OdDlivHist = {
         loading.value = false;
       }
     });
-    const { ref, computed } = Vue;
     const botTab = ref(window._ecDlivHistState.tab || 'order');
     Vue.watch(botTab, v => { window._ecDlivHistState.tab = v; });
     const viewMode2 = ref('tab');

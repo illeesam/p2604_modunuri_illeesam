@@ -2,7 +2,9 @@
 window.PmVoucherMng = {
   name: 'PmVoucherMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const vouchers = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const vouchers = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +24,6 @@ window.PmVoucherMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;

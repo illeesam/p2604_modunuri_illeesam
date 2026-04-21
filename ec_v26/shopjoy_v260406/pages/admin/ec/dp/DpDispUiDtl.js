@@ -2,7 +2,8 @@
 window.DpDispUiDtl = {
   name: 'DpDispUiDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
-  setup(props) {    const displays = ref([]);
+  setup(props) {
+    const displays = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

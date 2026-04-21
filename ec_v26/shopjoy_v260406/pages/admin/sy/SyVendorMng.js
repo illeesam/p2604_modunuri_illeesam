@@ -3,6 +3,7 @@ window.SyVendorMng = {
   name: 'SyVendorMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {    const vendors = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,7 +24,7 @@ window.SyVendorMng = {
       }
     });
     /* ── 표시경로 선택 모달 (sy_path) ── */
-    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => {
@@ -37,20 +38,19 @@ window.SyVendorMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = Vue.ref(null);
-    const expanded = Vue.reactive(new Set(['']));
+    const selectedPath = ref(null);
+    const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_vendor'));
+    const tree = computed(() => window.adminUtil.buildPathTree('sy_vendor'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;

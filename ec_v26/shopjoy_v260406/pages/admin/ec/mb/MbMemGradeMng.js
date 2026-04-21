@@ -2,7 +2,9 @@
 window.MbMemGradeMng = {
   name: 'MbMemGradeMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const grades = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const grades = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +24,6 @@ window.MbMemGradeMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const GRADE_CODES = ['BASIC','SILVER','GOLD','VIP','VVIP','PLATINUM'];
 

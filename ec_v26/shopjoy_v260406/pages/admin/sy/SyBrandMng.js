@@ -3,6 +3,7 @@ window.SyBrandMng = {
   name: 'SyBrandMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {    const brands = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,7 +24,7 @@ window.SyBrandMng = {
       }
     });
     /* ── 표시경로 선택 모달 (sy_path) ── */
-    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => {
@@ -35,7 +36,6 @@ window.SyBrandMng = {
     };
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed, onMounted } = Vue;
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
     const selectedPath = ref(null);

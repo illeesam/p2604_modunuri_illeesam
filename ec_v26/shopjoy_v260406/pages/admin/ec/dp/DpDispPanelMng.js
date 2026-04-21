@@ -2,7 +2,9 @@
 window.DpDispPanelMng = {
   name: 'DpDispPanelMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const panels = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const panels = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -24,7 +26,6 @@ window.DpDispPanelMng = {
     });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;

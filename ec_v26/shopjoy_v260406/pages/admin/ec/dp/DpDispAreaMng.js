@@ -2,7 +2,9 @@
 window.DpDispAreaMng = {
   name: 'DpDispAreaMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const areas = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const areas = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -24,7 +26,6 @@ window.DpDispAreaMng = {
     });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed, onMounted } = Vue;
 
     const AREA_TYPE_OPTS = [
       { value: 'FULL',    label: '전체폭' },

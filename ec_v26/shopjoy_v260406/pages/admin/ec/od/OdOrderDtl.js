@@ -3,7 +3,8 @@ window._odOrderDtlState = window._odOrderDtlState || { activeTab: 'info', viewMo
 window.OdOrderDtl = {
   name: 'OdOrderDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const orders = ref([]);
+  setup(props) {
+    const orders = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

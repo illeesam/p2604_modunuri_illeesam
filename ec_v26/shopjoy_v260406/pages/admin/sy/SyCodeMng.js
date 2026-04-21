@@ -3,6 +3,7 @@ window.SyCodeMng = {
   name: 'SyCodeMng',
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {    const codes = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +23,6 @@ window.SyCodeMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
 
     /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
     const selectedGrp = ref('');

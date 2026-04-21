@@ -3,6 +3,7 @@ window.SyBbmMng = {
   name: 'SyBbmMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {    const bbms = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,24 +24,23 @@ window.SyBbmMng = {
       }
     });
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
-    const selectedPath = Vue.ref(null);
-    const expanded = Vue.reactive(new Set([null]));
+    const selectedPath = ref(null);
+    const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPath.value = id; };
-    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_bbm'));
+    const tree = computed(() => window.adminUtil.buildPathTree('sy_bbm'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* _expand3: 기본 3레벨 펼침 */
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-    const { ref, reactive, computed, onMounted } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });

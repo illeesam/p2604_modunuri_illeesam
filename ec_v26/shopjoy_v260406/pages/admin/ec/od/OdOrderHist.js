@@ -3,7 +3,9 @@ window._ecOrderHistState = window._ecOrderHistState || { tab: 'products', viewMo
 window.OdOrderHist = {
   name: 'OdOrderHist',
   props: ['navigate', 'showRefModal', 'showToast', 'orderId'],
-  setup(props) {    const orders = ref([]);
+  setup(props) {
+    const { ref, computed, onMounted } = Vue;
+    const orders = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,7 +25,6 @@ window.OdOrderHist = {
         loading.value = false;
       }
     });
-    const { ref, computed, onMounted } = Vue;
     const botTab = ref(window._ecOrderHistState.tab || 'products');
     Vue.watch(botTab, v => { window._ecOrderHistState.tab = v; });
     const viewMode2 = ref('tab');

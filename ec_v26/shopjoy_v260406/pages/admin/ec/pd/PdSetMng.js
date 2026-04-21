@@ -2,7 +2,9 @@
 window.PdSetMng = {
   name: 'PdSetMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const sets = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const sets = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +24,6 @@ window.PdSetMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* ── 검색 ── */

@@ -3,7 +3,8 @@ window.MbMemberMng = {
   name: 'MbMemberMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;    const members = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
+    const members = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

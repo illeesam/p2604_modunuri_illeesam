@@ -2,7 +2,9 @@
 window.DpDispWidgetLibMng = {
   name: 'DpDispWidgetLibMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const widgetLibs = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const widgetLibs = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -24,7 +26,6 @@ window.DpDispWidgetLibMng = {
     });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed, onMounted } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const WIDGET_TYPES = [

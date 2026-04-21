@@ -3,6 +3,7 @@ window.SyBizUserMng = {
   name: 'SyBizUserMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {    const bizUsers = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +23,6 @@ window.SyBizUserMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const ad = null;
 
     /* 좌측 사용자역할 트리 (sy_path biz_cd = 'sy_biz#'+bizId) — 검색 선택된 사업자별 동적 */

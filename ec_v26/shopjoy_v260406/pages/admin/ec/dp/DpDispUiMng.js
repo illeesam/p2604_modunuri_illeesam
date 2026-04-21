@@ -4,7 +4,9 @@
 window.DpDispUiMng = {
   name: 'DpDispUiMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const displays = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const displays = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -26,7 +28,6 @@ window.DpDispUiMng = {
     });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed, onMounted } = Vue;
 
     const UI_TYPE_OPTS = [
       { value: 'FRONT',  label: '프론트' },

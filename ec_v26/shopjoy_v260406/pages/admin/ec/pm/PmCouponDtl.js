@@ -3,7 +3,8 @@ window._pmCouponDtlState = window._pmCouponDtlState || { tab: 'info', viewMode: 
 window.PmCouponDtl = {
   name: 'PmCouponDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const coupons = ref([]);
+  setup(props) {
+    const coupons = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

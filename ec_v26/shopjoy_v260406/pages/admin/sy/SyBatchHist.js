@@ -3,6 +3,7 @@ window.SyBatchHist = {
   name: 'SyBatchHist',
   props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'batchCode'],
   setup(props) {    const batches = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +23,6 @@ window.SyBatchHist = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
 
     const searchBatchId = ref('');
     const searchStatus  = ref('');

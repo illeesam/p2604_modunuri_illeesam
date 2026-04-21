@@ -2,7 +2,8 @@
 window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const members = ref([]);
+  setup(props) {
+    const members = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

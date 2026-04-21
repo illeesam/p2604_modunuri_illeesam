@@ -64,7 +64,8 @@
   window.MbCustInfoMng = {
     name: 'MbCustInfoMng',
     props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-    setup(props) {    const custInfos = ref([]);
+    setup(props) {
+    const custInfos = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

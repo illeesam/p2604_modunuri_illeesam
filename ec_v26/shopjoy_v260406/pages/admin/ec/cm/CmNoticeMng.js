@@ -2,7 +2,9 @@
 window.CmNoticeMng = {
   name: 'CmNoticeMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const notices = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const notices = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +24,6 @@ window.CmNoticeMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');

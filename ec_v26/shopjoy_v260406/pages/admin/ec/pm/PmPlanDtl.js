@@ -3,7 +3,8 @@ window._ecPlanDtlState = window._ecPlanDtlState || { tab: 'info', viewMode: 'tab
 window.PmPlanDtl = {
   name: 'PmPlanDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const plans = ref([]);
+  setup(props) {
+    const plans = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

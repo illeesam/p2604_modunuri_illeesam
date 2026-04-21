@@ -3,6 +3,7 @@ window.SyMenuMng = {
   name: 'SyMenuMng',
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {    const menus = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,24 +24,23 @@ window.SyMenuMng = {
       }
     });
     /* 좌측 메뉴 트리 */
-    const selectedTreeId = Vue.ref(null);
-    const expanded = Vue.reactive(new Set([null]));
+    const selectedTreeId = ref(null);
+    const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedTreeId.value = id; };
-    const tree = Vue.computed(() => window.adminUtil.buildMenuTree());
+    const tree = computed(() => window.adminUtil.buildMenuTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const allowedTreeIds = Vue.computed(() => {
+    const allowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
       return window.adminUtil.collectDescendantIds(menus.value, 'menuId', 'parentId', selectedTreeId.value);
     });
-    Vue.watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
-    const { ref, reactive, computed, onMounted } = Vue;
 
     /* ── 검색 ── */
     const searchKw     = ref('');

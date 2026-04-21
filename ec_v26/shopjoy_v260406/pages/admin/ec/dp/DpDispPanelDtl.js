@@ -2,7 +2,8 @@
 window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const panels = ref([]);
+  setup(props) {
+    const panels = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

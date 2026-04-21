@@ -2,7 +2,8 @@
 window.PdCategoryDtl = {
   name: 'PdCategoryDtl',
   props: ['navigate', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
-  setup(props) {    const categories = ref([]);
+  setup(props) {
+    const categories = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

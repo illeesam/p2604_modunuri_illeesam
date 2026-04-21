@@ -3,7 +3,8 @@ window._pdProdDtlState = window._pdProdDtlState || { tab: 'info', viewMode: 'tab
 window.PdProdDtl = {
   name: 'PdProdDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const products = ref([]);
+  setup(props) {
+    const products = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

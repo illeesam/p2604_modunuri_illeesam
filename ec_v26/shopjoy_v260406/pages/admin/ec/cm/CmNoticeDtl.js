@@ -2,7 +2,8 @@
 window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
-  setup(props) {    const notices = ref([]);
+  setup(props) {
+    const notices = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

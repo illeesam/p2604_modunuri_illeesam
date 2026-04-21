@@ -2,7 +2,9 @@
 window.PdRestockNotiMng = {
   name: 'PdRestockNotiMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const restockNotis = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const restockNotis = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +24,6 @@ window.PdRestockNotiMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchProd = ref('');
     const searchNoti = ref('');

@@ -3,7 +3,8 @@ window._odClaimDtlState = window._odClaimDtlState || { activeTab: 'info', viewMo
 window.OdClaimDtl = {
   name: 'OdClaimDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const claims = ref([]);
+  setup(props) {
+    const claims = ref([]);
     const orders = ref([]);
     const loading = ref(false);
     const error = ref(null);

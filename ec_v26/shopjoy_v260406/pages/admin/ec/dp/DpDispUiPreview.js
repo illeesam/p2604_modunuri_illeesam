@@ -5,8 +5,9 @@ const _WP_DispUiPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
+    const { ref, reactive, computed } = Vue;
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
-    const chartBars = Vue.computed(() => {
+    const chartBars = computed(() => {
       const w = props.lib;
       if (!w || !w.chartValues) return [];
       const values = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
@@ -138,7 +139,6 @@ window.DpDispUiPreview = {
   name: 'DpDispUiPreview',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);

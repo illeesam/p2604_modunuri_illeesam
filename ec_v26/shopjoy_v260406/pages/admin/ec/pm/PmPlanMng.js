@@ -2,7 +2,9 @@
 window.PmPlanMng = {
   name: 'PmPlanMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const plans = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const plans = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +24,6 @@ window.PmPlanMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchCategory = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');

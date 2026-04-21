@@ -3,7 +3,8 @@ window._pmDiscntDtlState = window._pmDiscntDtlState || { tab: 'info', viewMode: 
 window.PmDiscntDtl = {
   name: 'PmDiscntDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const discounts = ref([]);
+  setup(props) {
+    const discounts = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

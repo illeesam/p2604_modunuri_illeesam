@@ -2,7 +2,8 @@
 window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
-  setup(props) {    const areas = ref([]);
+  setup(props) {
+    const areas = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

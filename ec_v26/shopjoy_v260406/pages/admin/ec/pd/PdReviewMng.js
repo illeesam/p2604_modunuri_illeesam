@@ -2,7 +2,9 @@
 window.PdReviewMng = {
   name: 'PdReviewMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const reviews = ref([]);
+  setup(props) {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const reviews = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +24,6 @@ window.PdReviewMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchStatus = ref('');

@@ -3,7 +3,8 @@ window._pmVoucherDtlState = window._pmVoucherDtlState || { tab: 'info', viewMode
 window.PmVoucherDtl = {
   name: 'PmVoucherDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const vouchers = ref([]);
+  setup(props) {
+    const vouchers = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

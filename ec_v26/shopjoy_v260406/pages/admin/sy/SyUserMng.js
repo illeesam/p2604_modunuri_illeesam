@@ -3,6 +3,7 @@ window.SyUserMng = {
   name: 'SyUserMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {    const users = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,26 +24,25 @@ window.SyUserMng = {
       }
     });
     /* 좌측 부서 트리 */
-    const selectedDeptId = Vue.ref(null);
-    const expanded = Vue.reactive(new Set([null]));
+    const selectedDeptId = ref(null);
+    const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedDeptId.value = id; };
-    const tree = Vue.computed(() => window.adminUtil.buildDeptTree());
+    const tree = computed(() => window.adminUtil.buildDeptTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     /* 선택 부서 + 자손의 dept 이름 Set */
-    const allowedDeptNms = Vue.computed(() => {
+    const allowedDeptNms = computed(() => {
       if (selectedDeptId.value == null) return null;
       const desc = window.adminUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedDeptId.value);
       if (!desc) return null;
       return new Set((depts.value || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
 
-    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;

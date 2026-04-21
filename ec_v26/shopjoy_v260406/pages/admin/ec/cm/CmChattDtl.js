@@ -3,7 +3,8 @@ window._cmChattDtlState = window._cmChattDtlState || { tab: 'chat', viewMode: 't
 window.CmChattDtl = {
   name: 'CmChattDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const chatts = ref([]);
+  setup(props) {
+    const chatts = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

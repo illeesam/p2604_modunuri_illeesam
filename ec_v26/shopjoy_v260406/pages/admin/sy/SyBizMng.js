@@ -3,6 +3,7 @@ window.SyBizMng = {
   name: 'SyBizMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {    const bizs = ref([]);
+    const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +23,6 @@ window.SyBizMng = {
         loading.value = false;
       }
     });
-    const { ref, reactive, computed, onMounted } = Vue;
     const ad = null;
 
     /* 좌측 표시경로 트리 */

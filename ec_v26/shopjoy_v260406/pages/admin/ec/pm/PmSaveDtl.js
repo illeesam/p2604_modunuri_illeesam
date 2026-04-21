@@ -3,7 +3,8 @@ window._pmSaveDtlState = window._pmSaveDtlState || { tab: 'info', viewMode: 'tab
 window.PmSaveDtl = {
   name: 'PmSaveDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const saves = ref([]);
+  setup(props) {
+    const saves = ref([]);
     const loading = ref(false);
     const error = ref(null);
 

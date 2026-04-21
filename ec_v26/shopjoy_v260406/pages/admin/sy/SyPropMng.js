@@ -4,8 +4,9 @@ window.SyPropMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
 
   setup(props) {
+    const { ref, reactive, computed, watch } = Vue;
     /* ── 표시경로 선택 모달 (sy_path) ── */
-    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => {
@@ -17,7 +18,6 @@ window.SyPropMng = {
     };
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed, watch } = Vue;
     const ad = null;
 
     /* ── 검색 ── */

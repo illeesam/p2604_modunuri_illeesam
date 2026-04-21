@@ -3,7 +3,9 @@ window._ecMemberHistState = window._ecMemberHistState || { tab: 'orders', viewMo
 window.MbMemberHist = {
   name: 'MbMemberHist',
   props: ['navigate', 'showRefModal', 'memberId'],
-  setup(props) {    const members = ref([]);
+  setup(props) {
+    const { ref, computed } = Vue;
+    const members = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,7 +25,6 @@ window.MbMemberHist = {
         loading.value = false;
       }
     });
-    const { ref, computed } = Vue;
     const tab = ref(window._ecMemberHistState.tab || 'orders');
     Vue.watch(tab, v => { window._ecMemberHistState.tab = v; });
     const viewMode2 = ref(window._ecMemberHistState.viewMode || 'tab');

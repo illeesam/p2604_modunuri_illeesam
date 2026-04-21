@@ -3,7 +3,8 @@ window._pmGiftDtlState = window._pmGiftDtlState || { tab: 'info', viewMode: 'tab
 window.PmGiftDtl = {
   name: 'PmGiftDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {    const gifts = ref([]);
+  setup(props) {
+    const gifts = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
