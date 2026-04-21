@@ -1,3 +1,90 @@
 spring:
   profiles:
     active: dev
+
+# ════════════════════════════════════════════════════════════════
+# 로깅 공통 설정  (logback-spring.xml 위임)
+#
+#   프로파일별 레벨/appender 는 logback-spring.xml <springProfile> 에서 제어
+#   local / dev : DEBUG  + console(색상+IntelliJ클릭링크) + file + error-file
+#   prod        : INFO   + console(심플) + file + error-file
+#
+#   파일 위치 (logging.file.path 기준)
+#     일반 : logs/ecadminapi.log
+#     에러 : logs/ecadminapi-error.log
+#     압축 : logs/archived/ecadminapi.yyyy-MM-dd.N.log.gz
+#             logs/archived/ecadminapi-error.yyyy-MM-dd.N.log.gz
+# ════════════════════════════════════════════════════════════════
+logging:
+  config: classpath:logback-spring.xml
+  file:
+    path: logs
+
+# ════════════════════════════════════════════════════════════════
+# 커스텀 앱 속성 레퍼런스
+#   실제 값은 각 프로파일 yml(local/dev/prod)에서 관리
+#   여기서는 모든 속성의 의미·허용값·기본값을 설명
+# ════════════════════════════════════════════════════════════════
+
+# ── app.scheduler ───────────────────────────────────────────────
+# app:
+#   scheduler:
+#     enabled: true
+#       동적 배치 스케줄러 활성 여부.
+#       false → 앱 기동 시 sy_batch 조회·등록 생략. API 수동 실행도 불가.
+#
+#     jenkins:
+#       enabled: false
+#         Jenkins 연동 스케줄러 사용 여부 (현재 미구현 예약 항목).
+#
+#     allowed-ips: ""
+#       스케줄러 API(/sch/batch/*) 를 허용할 클라이언트 IP.
+#       ""  또는 미설정 → 전체 허용
+#       "*"             → 전체 허용 (명시적)
+#       "127.0.0.1^10.0.0.1" → "^" 구분 IP 화이트리스트
+
+# ── app.error-log ────────────────────────────────────────────────
+# app:
+#   error-log:
+#     db-save: true
+#       ERROR 레벨 로그를 syh_access_error_log 테이블에 저장할지 여부.
+#       false → Logback 파일 기록은 유지, DB 저장만 건너뜀 (테스트/디버그 용)
+#
+#     queue-size: 100
+#       비동기 큐 최대 크기(건수). 초과 요청은 즉시 드롭(non-blocking).
+#       드롭 발생 시 100건마다 System.err 경고 출력.
+#       워커 스레드(err-log-worker)가 2초 poll 루프로 소비 → DB INSERT.
+#       앱 종료 시 잔여 최대 50건 flush.
+
+# ── app.access-log ───────────────────────────────────────────────
+# app:
+#   access-log:
+#     db-save: true
+#       필터 조건에 매칭된 요청을 syh_access_log 테이블에 저장할지 여부.
+#       false → 필터는 동작하지만 DB 저장 생략 (filter 설정 테스트 시 유용).
+#
+#     queue-size: 100
+#       비동기 큐 최대 크기(건수). 초과 요청은 즉시 드롭(non-blocking).
+#       워커 스레드(access-log-worker)가 2초 poll 루프로 소비 → DB INSERT.
+#       앱 종료 시 잔여 최대 50건 flush.
+#
+#     filter: "*"
+#       기록 대상 선택 필터. "^" 구분 토큰 목록.
+#       토큰 종류:
+#         userType 코드 : BO / FO / EXT / USER / MEMBER  → 해당 유형 전체 기록
+#         특정 userId   : 위 코드 이외의 값 → 해당 ID 정확 일치 시 기록
+#       예시:
+#         "*"                       → 전체 기록 (기본값, 빈값도 동일)
+#         "BO"                      → BO 관리자 전체
+#         "FO"                      → FO 회원 전체
+#         "BO^FO^EXT"               → 인증된 모든 userType
+#         "admin01"                 → userId 가 admin01 인 사용자만
+#         "admin01^member123"       → 특정 userId 두 명
+#         "admin01^BO"              → 특정 userId + BO 전체
+#         "admin01^member123^BO"    → 특정 userId 두 명 + BO 전체
+#
+#     max-body-size: 2000
+#       요청/응답 바디 최대 저장 크기(bytes).
+#       0  → 바디 미수집 (ContentCachingWrapper 자체를 생략 → 성능 최적)
+#       >0 → 해당 크기까지만 잘라 저장. 초과분 무시.
+#       prod 환경은 보안/성능 고려 0 권장.
