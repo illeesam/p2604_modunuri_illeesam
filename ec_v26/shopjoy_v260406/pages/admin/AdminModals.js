@@ -8,28 +8,27 @@ window.AdminRefModal = {
 
     const close = () => emit('close');
     const s = props.state;
-    const data = window.adminData || {};
 
     /* ── 각 타입별 데이터 ── */
     const memberData = computed(() => {
       if (s.type !== 'member' || !s.id) return null;
-      return (data.members || []).find(m => m.userId === s.id);
+      return window.adminDataProvider?.getMemberById?.(s.id) || null;
     });
     const productData = computed(() => {
       if (s.type !== 'product' || !s.id) return null;
-      return (data.products || []).find(p => p.productId === s.id);
+      return window.adminDataProvider?.getProductById?.(s.id) || null;
     });
     const orderData = computed(() => {
       if (s.type !== 'order' || !s.id) return null;
-      return (data.orders || []).find(o => o.orderId === s.id);
+      return window.adminDataProvider?.getOrderById?.(s.id) || null;
     });
     const claimData = computed(() => {
       if (s.type !== 'claim' || !s.id) return null;
-      return (data.claims || []).find(c => c.claimId === s.id);
+      return window.adminDataProvider?.getClaimById?.(s.id) || null;
     });
     const couponData = computed(() => {
       if (s.type !== 'coupon' || !s.id) return null;
-      return (data.coupons || []).find(c => c.couponId === s.id);
+      return window.adminDataProvider?.getCouponById?.(s.id) || null;
     });
 
     const badgeCls = (status) => {

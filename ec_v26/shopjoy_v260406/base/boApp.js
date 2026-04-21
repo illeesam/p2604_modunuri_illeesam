@@ -482,16 +482,11 @@
       const activeRoleId = ref(null);
       const currentUserRoles = computed(() => {
         try {
-          const data = window.adminData || {};
           const user = currentUser.value || { adminUserId: 0 };
-          const userRoles = (data.userRoles || []);
-          const ids = userRoles
-            .filter(ru => ru?.adminUserId === user?.adminUserId)
-            .map(ru => ru?.roleId)
-            .filter(Boolean);
-          const roles = (data.roles || []);
+          const userRoles = window.adminDataProvider?.getUserRolesByUserId(user.adminUserId) || [];
+          const roles = window.adminDataProvider?.getRoles() || [];
           const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
-          const result = ids.map(id => roleMap[id]).filter(Boolean);
+          const result = (userRoles || []).map(ur => roleMap[ur?.roleId]).filter(Boolean);
           return result && result.length ? result : [];
         } catch (e) {
           console.error('currentUserRoles error:', e);
@@ -501,8 +496,7 @@
       const rolePath = (r, uid) => {
         try {
           if (!r) return '';
-          const data = window.adminData || {};
-          const roles = (data.roles || []);
+          const roles = window.adminDataProvider?.getRoles() || [];
           const m = Object.fromEntries((roles || []).map(x => [x?.roleId, x]));
           const seg = []; let cur = r; let root = r;
           while (cur) {
@@ -518,8 +512,8 @@
             const targetUid = uid != null ? uid : (currentUser.value?.adminUserId || 0);
             let names = [];
             if (targetUid != null && targetUid > 0) {
-              const userBizs = (data.userBizs || []);
-              const bizs = (data.bizs || []);
+              const userBizs = (window.adminData?.userBizs || []);
+              const bizs = (window.adminData?.bizs || []);
               const bus = (userBizs || []).filter(b => b?.adminUserId === targetUid);
               const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
               names = (bus || []).map(bu => bm[bu?.bizId]).filter(b => b && b?.vendorTypeCd === wantType).map(b => b?.bizNm || '');
@@ -536,12 +530,10 @@
       const onRoleChange = () => { location.reload(); };
       const rolesOfUser = (uid) => {
         try {
-          const data = window.adminData || {};
-          const userRoles = (data.userRoles || []);
-          const roles = (data.roles || []);
-          const ids = (userRoles || []).filter(ru => ru?.adminUserId === uid).map(ru => ru?.roleId).filter(Boolean);
+          const userRoles = window.adminDataProvider?.getUserRolesByUserId(uid) || [];
+          const roles = window.adminDataProvider?.getRoles() || [];
           const m = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
-          const result = (ids || []).map(id => m[id]).filter(Boolean);
+          const result = (userRoles || []).map(ur => m[ur?.roleId]).filter(Boolean);
           return result || [];
         } catch (e) {
           console.error('rolesOfUser error:', e);
@@ -550,10 +542,9 @@
       };
       const bizInfoOfUser = (uid) => {
         try {
-          const data = window.adminData || {};
-          const users = (data.adminUsers || []);
-          const bizs = (data.bizs || []);
-          const bus = (users || []).filter(b => b?.adminUserId === uid);
+          const adminUsers = window.adminDataProvider?.getAdminUsers() || [];
+          const bizs = (window.adminData?.bizs || []);
+          const bus = (adminUsers || []).filter(b => b?.adminUserId === uid);
           const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
           const typeLabel = { SALES:'판매업체', DELIVERY:'배송업체', PARTNER:'제휴사', INTERNAL:'내부법인' };
           return (bus || []).map(bu => {
@@ -1429,7 +1420,7 @@
         <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;">
           <div style="font-weight:700;margin-bottom:6px;color:#555;">테스트 계정 <span style="font-weight:400;color:#aaa;">(클릭 시 자동 로그인)</span></div>
           <div style="display:flex;flex-direction:column;gap:4px;max-height:420px;overflow:auto;">
-            <button v-for="u in (window.adminData?.adminUsers || [])" :key="u?.adminUserId" type="button" @click="quickLogin(u?.email)"
+            <button v-for="u in (window.adminDataProvider?.getAdminUsers() || [])" :key="u?.adminUserId" type="button" @click="quickLogin(u?.email)"
               style="display:grid;grid-template-columns:200px 32px 1fr;align-items:center;gap:10px;padding:7px 10px;font-size:12px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
               onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';"
               onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';">

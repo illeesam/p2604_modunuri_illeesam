@@ -3,10 +3,9 @@ window.PdQnaMng = {
   name: 'PdQnaMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const data = window.adminData || {};
-    const products = ref(data.products || []);
-    const members = ref(data.members || []);
     const { ref, reactive, computed, onMounted } = Vue;
+    const products = ref(window.adminDataProvider?.getProducts?.() || []);
+    const members = ref(window.adminDataProvider?.getMembers?.() || []);
     const qnas = ref([]);
     const loading = ref(false);
     const error = ref(null);

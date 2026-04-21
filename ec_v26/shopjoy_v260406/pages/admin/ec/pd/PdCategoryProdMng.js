@@ -3,10 +3,9 @@ window.PdCategoryProdMng = {
   name: 'PdCategoryProdMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const data = window.adminData || {};
-    const products = ref(data.products || []);
-    const categoryProds = ref(data.categoryProds || []);
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const products = ref(window.adminDataProvider?.getProducts?.() || []);
+    const categoryProds = ref((window.adminData?.categoryProds) || []);
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
