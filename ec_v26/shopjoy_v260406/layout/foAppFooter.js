@@ -145,9 +145,9 @@ window.foAppFooter = {
 
         <!-- 3열 본문 -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:18px;overflow:auto;">
-          <!-- frontOffice -->
+          <!-- foOffice -->
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-            <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">🛍 frontOffice</div>
+            <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">🛍 foOffice</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in FO_MENU" :key="m.id" type="button"
                 @click="goItem('foOffice', m.id)"
@@ -160,9 +160,9 @@ window.foAppFooter = {
             </div>
           </div>
 
-          <!-- backOffice -->
+          <!-- boOffice -->
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 backOffice (bo)</div>
+            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 boOffice</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in BO_MENU" :key="m.id" type="button"
                 @click="goItem('boOffice', m.id)"
