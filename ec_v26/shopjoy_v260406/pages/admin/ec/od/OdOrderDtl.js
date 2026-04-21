@@ -496,7 +496,7 @@ window.OdOrderDtl = {
         <th style="width:140px;">교환정보</th>
       </tr></thead>
       <tbody>
-        <template v-for="(it,i) in orderItems" :key="`orderItems_${i}`">
+        <template v-for="(it,i) in orderItems" :key="Math.random()">
         <tr>
           <td style="text-align:center;color:#aaa;">
             <span v-if="relatedClaim && relatedClaim.type==='교환'" @click="toggleExpand(i)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;" :title="isExpanded(i)?'교환품 숨기기':'교환품 보기'">
@@ -572,7 +572,7 @@ window.OdOrderDtl = {
         <th>결제일시</th><th>승인번호</th><th>카드사/계좌</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(p,i) in paymentList" :key="`paymentList_${i}`">
+        <tr v-for="(p,i) in paymentList" :key="Math.random()">
           <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
           <td>{{ p.payMethod }}</td>
           <td><span class="badge" :class="payStatusBadge(p.payStatus)">{{ p.payStatus }}</span></td>
@@ -600,7 +600,7 @@ window.OdOrderDtl = {
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(h,i) in editHistList" :key="`editHistList_${i}`">
+        <tr v-for="(h,i) in editHistList" :key="Math.random()">
           <td>{{ h.date }}</td><td>{{ h.user }}</td><td>{{ h.field }}</td>
           <td style="color:#888;">{{ h.before }}</td>
           <td style="color:#e8587a;font-weight:600;">{{ h.after }}</td>

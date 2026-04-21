@@ -1140,7 +1140,7 @@ window.DpDispPanelDtl = {
             <div v-else-if="isFileList" style="margin-bottom:20px;">
               <div v-if="viewMode">
                 <div v-if="fileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
-                <div v-for="(f, i) in fileListItems" :key="`fileListItems_${i}`"
+                <div v-for="(f, i) in fileListItems" :key="Math.random()"
                   style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
                   <span style="font-size:16px;">📎</span>
                   <a v-if="f.url" :href="f.url" target="_blank"
@@ -1166,7 +1166,7 @@ window.DpDispPanelDtl = {
                         첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요.
                       </td>
                     </tr>
-                    <tr v-for="(f, i) in fileListItems" :key="`fileListItems_${i}`">
+                    <tr v-for="(f, i) in fileListItems" :key="Math.random()">
                       <td style="text-align:center;color:#aaa;font-size:12px;">{{ i+1 }}</td>
                       <td style="padding:4px 6px;">
                         <input class="form-control" :value="f.name"
@@ -1685,7 +1685,7 @@ window.DpDispPanelDtl = {
         <!-- 위젯 구성 -->
         <div style="border-top:1px solid #f0f0f0;padding-top:14px;">
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;">📐 위젯 구성</div>
-          <div v-for="(r, i) in rows" :key="`rows_${i}`"
+          <div v-for="(r, i) in rows" :key="Math.random()"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:6px;background:#fafafa;">
             <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">{{ i+1 }}</span>
             <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ wLabel(r.widgetType) }}</span>

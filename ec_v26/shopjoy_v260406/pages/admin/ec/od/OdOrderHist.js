@@ -102,7 +102,7 @@ window.OdOrderHist = {
       <table class="admin-table" v-if="dlivHistory.length">
         <thead><tr><th>일시</th><th>상태</th><th>위치</th><th>메모</th></tr></thead>
         <tbody>
-          <tr v-for="(h, i) in dlivHistory" :key="`dlivHistory_${i}`">
+          <tr v-for="(h, i) in dlivHistory" :key="Math.random()">
             <td>{{ h.date }}</td>
             <td><span class="badge badge-blue">{{ h.status }}</span></td>
             <td>{{ h.location }}</td>

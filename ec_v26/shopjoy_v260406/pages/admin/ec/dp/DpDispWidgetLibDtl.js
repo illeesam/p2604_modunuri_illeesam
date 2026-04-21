@@ -635,7 +635,7 @@ window.DpDispWidgetLibDtl = {
 
         <!-- 파일목록 -->
         <div v-else-if="isFileList">
-          <div v-for="(item, idx) in fileListItems" :key="`fileListItems_${idx}`"
+          <div v-for="(item, idx) in fileListItems" :key="Math.random()"
             style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
             <input :value="item.name" @input="updateFileItem(idx,'name',$event.target.value)"
               class="form-control" placeholder="파일명" style="margin:0;flex:1;" />

@@ -43,7 +43,7 @@ const _WP_DispWidgetPreview = {
   <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
     <div v-if="chartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
-      <div v-for="(bar,i) in chartBars" :key="`chartBars_${i}`" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div v-for="(bar,i) in chartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
         <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}"></div>
         <div style="font-size:9px;color:#aaa;">{{ bar.label }}</div>
       </div>
@@ -694,7 +694,7 @@ window.DpDispWidgetPreview = {
             {{ showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="`VIEWPORT_${key}`" @click="viewportMode=key"
+          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="viewportMode=key"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="viewportMode===key
               ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -735,7 +735,7 @@ window.DpDispWidgetPreview = {
               gridTemplateColumns: autoGridCols,
               gap: '10px',
             }">
-              <template v-for="(slot, idx) in currentSlots" :key="`currentSlots_${idx}`">
+              <template v-for="(slot, idx) in currentSlots" :key="Math.random()">
               <div v-if="!showRealContent || slot"
                 @dragover="onDragOver($event, idx)"
                 @dragleave="onDragLeave"

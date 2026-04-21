@@ -1361,7 +1361,7 @@ window.DpDispUiSimul = {
             </button>
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
             <!-- 뷰포트 -->
-            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="`STRUCT_VIEWPORT_${key}`" @click="structViewport=key"
+            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="structViewport=key"
               style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
               {{ vp.label }}
@@ -1423,7 +1423,7 @@ window.DpDispUiSimul = {
           </div>
           <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
           <div :style="{ display:'grid', gridTemplateColumns:structGridCols, gap:'10px' }">
-            <template v-for="(slot, idx) in structCurrentSlots" :key="`structCurrentSlots_${idx}`">
+            <template v-for="(slot, idx) in structCurrentSlots" :key="Math.random()">
             <div v-if="!structShowReal || slot"
               @dragover="onStructDragOver($event, idx)"
               @dragleave="onStructDragLeave"
@@ -1596,7 +1596,7 @@ window.DpDispUiSimul = {
       <div style="background:#1e1e2e;padding:16px 20px;overflow-x:auto;min-height:400px;max-height:70vh;overflow-y:auto;">
         <div v-if="sourceLines.length===0" style="color:#718096;font-size:13px;text-align:center;padding:40px;">영역 또는 패널 데이터가 없습니다.</div>
         <div v-else style="font-family:monospace;font-size:12px;line-height:1.9;">
-          <div v-for="(line, i) in sourceLines" :key="`sourceLines_${i}`"
+          <div v-for="(line, i) in sourceLines" :key="Math.random()"
             :style="line.type==='blank'
               ? 'height:0.4em;'
               : 'white-space:nowrap;overflow-x:visible;padding-left:' + (line.level||0)*20 + 'px;'">

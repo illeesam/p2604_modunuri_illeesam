@@ -90,7 +90,7 @@ window.StErpGenMng = {
       <table class="admin-table">
         <thead><tr><th>차변계정</th><th>대변계정</th><th>차변금액</th><th>대변금액</th><th>적요</th></tr></thead>
         <tbody>
-          <tr v-for="(r, idx) in previewRows" :key="`previewRows_${idx}`">
+          <tr v-for="(r, idx) in previewRows" :key="Math.random()">
             <td>{{ r.debit }}</td><td>{{ r.credit }}</td>
             <td style="font-weight:700;color:#3498db">{{ fmtW(r.debitAmt) }}</td>
             <td style="font-weight:700;color:#27ae60">{{ fmtW(r.creditAmt) }}</td>

@@ -360,7 +360,7 @@ window.OdDlivDtl = {
         <th style="width:140px;">교환정보</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(it,i) in dlivItems" :key="`dlivItems_${i}`">
+        <tr v-for="(it,i) in dlivItems" :key="Math.random()">
           <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
           <td><span style="font-size:18px;margin-right:6px;">{{ it.emoji || '🛍' }}</span>{{ it.prodNm }}</td>
           <td>{{ it.color || '-' }}</td>
@@ -417,7 +417,7 @@ window.OdDlivDtl = {
         <th>주문ID</th><th style="text-align:right;">배송비</th><th>결제수단</th><th>결제상태</th><th>결제일시</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(p,i) in paymentList" :key="`paymentList_${i}`">
+        <tr v-for="(p,i) in paymentList" :key="Math.random()">
           <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
           <td><span class="ref-link" @click="showRefModal('order', p.orderId)">{{ p.orderId }}</span></td>
           <td style="text-align:right;font-weight:700;">{{ fmt(p.dlivFee) }}</td>
@@ -444,7 +444,7 @@ window.OdDlivDtl = {
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(h,i) in editHistList" :key="`editHistList_${i}`">
+        <tr v-for="(h,i) in editHistList" :key="Math.random()">
           <td>{{ h.date }}</td><td>{{ h.user }}</td><td>{{ h.field }}</td>
           <td style="color:#888;">{{ h.before }}</td>
           <td style="color:#e8587a;font-weight:600;">{{ h.after }}</td>
