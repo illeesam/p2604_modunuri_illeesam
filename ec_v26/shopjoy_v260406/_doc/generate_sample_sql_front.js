@@ -29,7 +29,7 @@ const path = require('path');
 global.Vue    = { reactive: (x) => x };
 global.window = {};
 require(path.resolve(__dirname, '../pages/admin/AdminData.js'));
-const D = global.window.adminData;
+const D = global.window.boData;
 
 // ── 상수 ────────────────────────────────────────────────────────
 const SCHEMA   = 'shopjoy_2604';

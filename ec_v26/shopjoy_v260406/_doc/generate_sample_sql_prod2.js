@@ -28,7 +28,7 @@ const path = require('path');
 global.Vue    = { reactive: (x) => x };
 global.window = {};
 require(path.resolve(__dirname, '../pages/admin/AdminData.js'));
-const D = global.window.adminData;
+const D = global.window.boData;
 
 const SCHEMA   = 'shopjoy_2604';
 const REG_BY   = 'SYSTEM';
