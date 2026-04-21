@@ -31,8 +31,8 @@ window.MbMemberHist = {
     Vue.watch(viewMode2, v => { window._ecMemberHistState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
-    const memberOrders = computed(() => orders.value.filter(o => o.userId === props.memberId));
-    const memberClaims = computed(() => claims.value.filter(c => c.userId === props.memberId));
+    const memberOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.userId === props.memberId));
+    const memberClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.userId === props.memberId));
 
     return { members, loading, error, tab, memberOrders, memberClaims, viewMode2, showTab };
   },

@@ -57,7 +57,7 @@ window.OdOrderMng = {
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => orders.value.filter(o => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(orders, o => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
       if (applied.status && o.status !== applied.status) return false;
@@ -139,11 +139,11 @@ window.OdOrderMng = {
       checked.value = s;
     };
     const isChecked = (id) => checked.value.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(o => checked.value.has(o.orderId)));
+    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, o => checked.value.has(o.orderId)));
     const toggleCheckAll = () => {
       const s = new Set(checked.value);
-      if (allChecked.value) pageList.value.forEach(o => s.delete(o.orderId));
-      else pageList.value.forEach(o => s.add(o.orderId));
+      if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, o => s.delete(o.orderId));
+      else window.safeArrayUtils.safeForEach(pageList, o => s.add(o.orderId));
       checked.value = s;
     };
     const ORDER_STATUS_OPTIONS = ['입금대기','결제완료','상품준비중','배송중','배송완료','구매확정','취소','자동취소'];
@@ -166,7 +166,7 @@ window.OdOrderMng = {
     };
     const onReqTargetChange = () => {
       const ids = Array.from(checked.value);
-      const first = orders.value.find(o => ids.includes(o.orderId));
+      const first = orders.window.safeArrayUtils.safeFind(value, o => ids.includes(o.orderId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')      bulkForm.reqTargetNm = first.orderId || '';
       else if (bulkForm.reqTarget === '상품') bulkForm.reqTargetNm = first.prodNm || '';
@@ -194,7 +194,7 @@ window.OdOrderMng = {
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked.value);
-      const selected = orders.value.filter(o => ids.includes(o.orderId));
+      const selected = window.safeArrayUtils.safeFilter(orders, o => ids.includes(o.orderId));
       let rows = [];
       if (bulkTab.value === 'status') {
         if (!bulkForm.status) return '';
@@ -225,10 +225,10 @@ window.OdOrderMng = {
       if (!val) { props.showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
       const ok = await props.showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
       if (!ok) return;
-      if (bulkTab.value === 'status')    orders.value.forEach(o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
-      if (bulkTab.value === 'payMethod') orders.value.forEach(o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
-      if (bulkTab.value === 'approval')  orders.value.forEach(o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
-      if (bulkTab.value === 'approvalReq') orders.value.forEach(o => { if (ids.includes(o.orderId)) {
+      if (bulkTab.value === 'status')    window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
+      if (bulkTab.value === 'payMethod') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
+      if (bulkTab.value === 'approval')  window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
+      if (bulkTab.value === 'approvalReq') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) {
         o.apprToUserId = bulkForm.apprToUserId; o.apprToNm = bulkForm.apprToNm;
         o.reqTarget = bulkForm.reqTarget; o.reqTargetNm = bulkForm.reqTargetNm;
         o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;

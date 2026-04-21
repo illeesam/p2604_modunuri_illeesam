@@ -77,7 +77,7 @@ window.PdBundleMng = {
 
     const addCategory = cat => {
       const id = cat.categoryId;
-      if (dtlCategories.some(c => String(c.categoryId) === String(id))) return;
+      if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(id))) return;
       dtlCategories.push({ categoryId: id, categoryNm: cat.categoryNm || String(id), depth: cat.depth || 1 });
       catPickerOpen.value = false; catPickerSearch.value = '';
     };
@@ -255,7 +255,7 @@ window.PdBundleMng = {
       const arr = [...dtlItems];
       const [moved] = arr.splice(dragIdx.value, 1);
       arr.splice(dragoverIdx.value, 0, moved);
-      arr.forEach((item, i) => { item.sortOrd = i + 1; });
+      window.safeArrayUtils.safeForEach(arr, (item, i) => { item.sortOrd = i + 1; });
       dtlItems.splice(0, dtlItems.length, ...arr);
       dragIdx.value = dragoverIdx.value = null;
     };
@@ -313,8 +313,8 @@ window.PdBundleMng = {
       ];
       /* categoryProds 동기화 */
       if (!categoryProds.value) categoryProds.value = [];
-      categoryProds.value = categoryProds.value.filter(cp => String(cp.prodId) !== String(bundleProdId));
-      dtlCategories.forEach((cat, i) => {
+      categoryProds.value = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(bundleProdId));
+      window.safeArrayUtils.safeForEach(dtlCategories, (cat, i) => {
         categoryProds.value.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
       });
       if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }

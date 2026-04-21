@@ -80,7 +80,7 @@ window.MbMemGradeMng = {
       }
     };
     const saveAll = async () => {
-      const changed = gridRows.filter(r => r._row_status === 'N' || r._row_status === 'U');
+      const changed = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'N' || r._row_status === 'U');
       if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
       for (const row of changed) {
         if (!row.gradeCd || !row.gradeNm) { props.showToast('등급코드와 등급명은 필수입니다.', 'error'); return; }

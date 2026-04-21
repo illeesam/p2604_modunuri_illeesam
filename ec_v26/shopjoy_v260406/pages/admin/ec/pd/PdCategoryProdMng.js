@@ -69,7 +69,7 @@ window.PdCategoryProdMng = {
     /* 카테고리 경로 (재귀) */
     const getCatPath = (categoryId) => {
       const cats = categories.value || [];
-      const cat = cats.find(c => c.categoryId === categoryId);
+      const cat = window.safeArrayUtils.safeFind(cats, c => c.categoryId === categoryId);
       if (!cat) return '';
       if (!cat.parentId) return cat.categoryNm;
       const pp = getCatPath(cat.parentId);
@@ -110,16 +110,16 @@ window.PdCategoryProdMng = {
       const _ = expandedSet.value;
       const cats = categories.value || [];
       const map = {};
-      cats.forEach(c => { map[c.categoryId] = { ...c, _children: [] }; });
-      cats.forEach(c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
-      const roots = cats.filter(c => !c.parentId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
+      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
+      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       const result = [];
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
         if (isExpanded(node.categoryId))
           [...node._children].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
       };
-      roots.forEach(r => traverse(r, 0));
+      window.safeArrayUtils.safeForEach(roots, r => traverse(r, 0));
       return result;
     });
 
@@ -168,7 +168,7 @@ window.PdCategoryProdMng = {
     /* 검색 필터 */
     const filteredRows = computed(() => {
       const kw = applied.prodNm.trim().toLowerCase();
-      return tabRows.value.filter(r => !kw || getProdNm(r.prodId).toLowerCase().includes(kw));
+      return window.safeArrayUtils.safeFilter(tabRows, r => !kw || getProdNm(r.prodId).toLowerCase().includes(kw));
     });
 
     /* ── 드래그 정렬 ── */
@@ -183,7 +183,7 @@ window.PdCategoryProdMng = {
       const tabArr = [...tabRows.value];
       const [moved] = tabArr.splice(dragIdx.value, 1);
       tabArr.splice(dragoverIdx.value, 0, moved);
-      tabArr.forEach((r, i) => { r.sortOrd = i + 1; });
+      window.safeArrayUtils.safeForEach(tabArr, (r, i) => { r.sortOrd = i + 1; });
       const others = allRows.filter(r => r.categoryProdTypeCd !== activeTypeCd.value);
       allRows.splice(0, allRows.length, ...others, ...tabArr);
       dragIdx.value = dragoverIdx.value = null;
@@ -226,12 +226,12 @@ window.PdCategoryProdMng = {
     /* ── 저장 (현재 탭, 선택 카테고리+하위 전체) ── */
     const onSave = async () => {
       if (!selectedCatId.value) { props.showToast('카테고리를 선택하세요.', 'error'); return; }
-      const activeTab = TYPE_TABS.find(t => t.cd === activeTypeCd.value);
+      const activeTab = window.safeArrayUtils.safeFind(TYPE_TABS, t => t.cd === activeTypeCd.value);
       const ids = allDescendantIds(selectedCatId.value);
       const ok = await props.showConfirm('저장', `[${selectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`);
       if (!ok) return;
       if (!categoryProds.value) categoryProds.value = [];
-      const others = categoryProds.value.filter(
+      const others = window.safeArrayUtils.safeFilter(categoryProds, 
         cp => !(ids.includes(cp.categoryId) && (cp.categoryProdTypeCd || 'NORMAL') === activeTypeCd.value)
       );
       let seq2 = 0;
@@ -566,7 +566,7 @@ window.PdCategoryProdMng = {
           <div>
             <strong style="font-size:15px">상품 추가</strong>
             <span style="font-size:12px;color:#aaa;margin-left:8px">
-              → {{ selectedCat?.categoryNm }} / {{ TYPE_TABS.find(t=>t.cd===activeTypeCd)?.nm }}
+              → {{ selectedCat?.categoryNm }} / {{ window.safeArrayUtils.safeFind(TYPE_TABS, t=>t.cd===activeTypeCd)?.nm }}
             </span>
           </div>
           <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>

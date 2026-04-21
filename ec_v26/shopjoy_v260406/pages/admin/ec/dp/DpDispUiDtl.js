@@ -99,7 +99,7 @@ window.DpDispUiDtl = {
     const activeArea = computed(() => {
       if (!activeTab.value.startsWith('area_')) return null;
       const id = Number(activeTab.value.replace('area_', ''));
-      return relatedAreas.value.find(a => a.codeId === id) || null;
+      return relatedAreas.window.safeArrayUtils.safeFind(value, a => a.codeId === id) || null;
     });
 
     /* 패널(displays) 조회 헬퍼 */
@@ -118,12 +118,12 @@ window.DpDispUiDtl = {
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const previewFrameWidth = computed(() => {
-      const m = PREVIEW_MODES.find(x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
       return (m?.width || 480) + 'px';
     });
     const previewPaneWidth = ref(520);
     Vue.watch(previewMode, (m) => {
-      const info = PREVIEW_MODES.find(x => x.value === m);
+      const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       previewPaneWidth.value = (info?.width || 480) + 40;
     });
     const onSplitDrag = (e) => {
@@ -149,7 +149,7 @@ window.DpDispUiDtl = {
     const availableAreas = computed(() => {
       const all = (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA');
       const kw  = pickKw.value.trim().toLowerCase();
-      return all.filter(a => {
+      return window.safeArrayUtils.safeFilter(all, a => {
         if (a.uiCode === form.codeValue) return false;
         if (kw && !(a.codeLabel||'').toLowerCase().includes(kw) && !(a.codeValue||'').toLowerCase().includes(kw)) return false;
         return true;
@@ -173,8 +173,8 @@ window.DpDispUiDtl = {
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       const codes = codes.value || [];
-      ids.forEach(id => {
-        const a = codes.find(x => x.codeId === id);
+      window.safeArrayUtils.safeForEach(ids, id => {
+        const a = window.safeArrayUtils.safeFind(codes, x => x.codeId === id);
         if (a) a.uiCode = form.codeValue;
       });
       props.showToast && props.showToast(`${ids.length}개 영역을 추가했습니다.`, 'info');
@@ -217,7 +217,7 @@ window.DpDispUiDtl = {
         activeArea.value.visibilityTargets = '^PUBLIC^';
         return;
       }
-      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
       activeArea.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 

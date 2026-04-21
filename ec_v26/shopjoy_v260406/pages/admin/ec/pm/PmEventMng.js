@@ -55,7 +55,7 @@ window.PmEventMng = {
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => events.value.filter(e => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(events, e => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !e.title.toLowerCase().includes(kw)) return false;
       if (applied.status && e.status !== applied.status) return false;

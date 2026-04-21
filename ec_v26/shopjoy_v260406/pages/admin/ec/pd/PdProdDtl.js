@@ -95,7 +95,7 @@ window.PdProdDtl = {
     };
     const removeOptGroup = (idx) => {
       optGroups.splice(idx, 1);
-      optGroups.forEach((g, i) => { g.level = i + 1; });
+      window.safeArrayUtils.safeForEach(optGroups, (g, i) => { g.level = i + 1; });
       generateSkus();
     };
     const addOptItem = (grp) => {
@@ -121,20 +121,20 @@ window.PdProdDtl = {
 
     const generateSkus = () => {
       if (optGroups.length === 0) { skus.length = 0; return; }
-      const g1 = optGroups[0]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
-      const g2 = optGroups[1]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
+      const g1 = window.safeArrayUtils.safeFirst(optGroups)?.iwindow.safeArrayUtils.safeFilter(tems, i => i.useYn === 'Y' && i.nm.trim()) || [];
+      const g2 = optGroups[1]?.iwindow.safeArrayUtils.safeFilter(tems, i => i.useYn === 'Y' && i.nm.trim()) || [];
       const existMap = {};
-      skus.forEach(s => { existMap[s._optKey] = s; });
+      window.safeArrayUtils.safeForEach(skus, s => { existMap[s._optKey] = s; });
       const newSkus = [];
       if (g2.length === 0) {
-        g1.forEach(i1 => {
+        window.safeArrayUtils.safeForEach(g1, i1 => {
           const key = String(i1._id);
           newSkus.push(existMap[key]
             ? { ...existMap[key], _nm1: i1.nm, _nm2: '' }
             : { _id: 'sku_' + i1._id, _optKey: key, _nm1: i1.nm, _nm2: '', skuCode: '', addPrice: 0, stock: 0, useYn: 'Y', statusCd: 'ON_SALE', saleCnt: 0 });
         });
       } else {
-        g1.forEach(i1 => g2.forEach(i2 => {
+        window.safeArrayUtils.safeForEach(g1, i1 => window.safeArrayUtils.safeForEach(g2, i2 => {
           const key = i1._id + '_' + i2._id;
           newSkus.push(existMap[key]
             ? { ...existMap[key], _nm1: i1.nm, _nm2: i2.nm }
@@ -143,7 +143,7 @@ window.PdProdDtl = {
       }
       skus.splice(0, skus.length, ...newSkus);
     };
-    const totalStock = computed(() => skus.filter(s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
+    const totalStock = computed(() => window.safeArrayUtils.safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
     // ── SKU 필터 (1단/2단/재고)
     const skuFilter1     = ref('');
@@ -154,7 +154,7 @@ window.PdProdDtl = {
       const base = skuFilter1.value ? skus.filter(s => s._nm1 === skuFilter1.value) : skus;
       return [...new Set(base.map(s => s._nm2).filter(Boolean))];
     });
-    const skusFiltered = computed(() => skus.filter(s => {
+    const skusFiltered = computed(() => window.safeArrayUtils.safeFilter(skus, s => {
       if (skuFilter1.value     && s._nm1 !== skuFilter1.value) return false;
       if (skuFilter2.value     && s._nm2 !== skuFilter2.value) return false;
       if (skuFilterStock.value === 'in'  && (s.stock || 0) <= 0) return false;
@@ -176,10 +176,10 @@ window.PdProdDtl = {
       });
       e.target.value = '';
     };
-    const setMain = (id) => images.forEach(img => { img.isMain = img.id === id; });
+    const setMain = (id) => window.safeArrayUtils.safeForEach(images, img => { img.isMain = img.id === id; });
     const removeImage = (id) => {
       const idx = images.findIndex(img => img.id === id);
-      if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) images[0].isMain = true; }
+      if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) window.safeArrayUtils.safeFirst(images).isMain = true; }
     };
 
     // ── 이미지 드래그 정렬
@@ -222,7 +222,7 @@ window.PdProdDtl = {
       contentBlocks.splice(idx, 1);
     };
     const onBlockFileChange = (block, e) => {
-      const file = e.target.files[0]; if (!file) return;
+      const file = e.target.window.safeArrayUtils.safeFirst(files); if (!file) return;
       const reader = new FileReader();
       reader.onload = ev => { block.content = ev.target.result; block.fileName = file.name; };
       reader.readAsDataURL(file); e.target.value = '';
@@ -269,7 +269,7 @@ window.PdProdDtl = {
       const q    = prodPickerSearch.value.trim().toLowerCase();
       const all  = products.value || [];
       const used = (prodPickerOpen.value === 'rel' ? relProds : codeProds).map(r => r.productId);
-      return all.filter(p => {
+      return window.safeArrayUtils.safeFilter(all, p => {
         if (used.includes(p.productId)) return false;
         if (!q) return true;
         return String(p.productId).includes(q) || (p.prodNm||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q);
@@ -331,7 +331,7 @@ window.PdProdDtl = {
     };
     const addCategory = (cat) => {
       const id = cat.categoryId||cat.id;
-      if (prodCategories.some(c => String(c.categoryId) === String(id))) return;
+      if (window.safeArrayUtils.safeSome(prodCategories, c => String(c.categoryId) === String(id))) return;
       prodCategories.push({ categoryId: id, categoryNm: cat.categoryNm||cat.nm||String(id), depth: cat.depth||cat.level||1 });
       catPickerOpen.value = false; catPickerSearch.value = '';
     };
@@ -347,10 +347,10 @@ window.PdProdDtl = {
     // ── 판매계획
     const salePlans = reactive([]);
     let planIdSeq = 1;
-    const planVisible = computed(() => salePlans.filter(r => r._row_status !== 'D'));
+    const planVisible = computed(() => window.safeArrayUtils.safeFilter(salePlans, r => r._row_status !== 'D'));
     const planAllChecked = computed({
-      get: () => planVisible.value.length > 0 && planVisible.value.every(r => r._checked),
-      set: v => planVisible.value.forEach(r => { r._checked = v; }),
+      get: () => planVisible.value.length > 0 && window.safeArrayUtils.safeEvery(planVisible, r => r._checked),
+      set: v => window.safeArrayUtils.safeForEach(planVisible, r => { r._checked = v; }),
     });
     const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
     const onPlanChange = row => { if (row._row_status === 'N') row._row_status = 'U'; };
@@ -365,10 +365,10 @@ window.PdProdDtl = {
     const mdUserListFiltered = computed(() => {
       const q = mdSearch.value.trim().toLowerCase();
       if (!q) return mdUserList.value;
-      return mdUserList.value.filter(u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
+      return window.safeArrayUtils.safeFilter(mdUserList, u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
     });
     const mdSelectedNm = computed(() => {
-      const u = mdUserList.value.find(u => u.adminUserId === form.mdUserId);
+      const u = mdUserList.window.safeArrayUtils.safeFind(value, u => u.adminUserId === form.mdUserId);
       return u ? `${u.name} (${u.dept||''})` : '';
     });
     const openMdModal  = () => { mdSearch.value = ''; mdModalOpen.value = true; };
@@ -377,7 +377,7 @@ window.PdProdDtl = {
     onMounted(async () => {
       if (isNew.value) {
         // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
-        form.mdUserId = mdUserList.value[0]?.adminUserId || '';
+        form.mdUserId = mdUserList.window.safeArrayUtils.safeGet(value, 0)?.adminUserId || '';
       }
       if (!isNew.value) {
         const p = getProduct.value(props.editId);
@@ -451,7 +451,7 @@ window.PdProdDtl = {
       }
       await nextTick();
       // HTML 블록 Quill 마운트
-      contentBlocks.filter(b => b.type === 'html').forEach(block => {
+      window.safeArrayUtils.safeFilter(contentBlocks, b => b.type === 'html').forEach(block => {
         const el = document.getElementById('quill-block-' + block._id);
         if (el && !_blockQuills[block._id]) {
           const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.',
@@ -481,9 +481,9 @@ window.PdProdDtl = {
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const imgData = images.map(({ id, ...rest }) => rest);
-      const mainImg = images.find(img => img.isMain);
+      const mainImg = window.safeArrayUtils.safeFind(images, img => img.isMain);
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       let savedProdId;
@@ -497,8 +497,8 @@ window.PdProdDtl = {
       }
       // categoryProds 동기화
       if (!categoryProds.value) categoryProds.value = [];
-      categoryProds.value = categoryProds.value.filter(cp => String(cp.prodId) !== String(savedProdId));
-      prodCategories.forEach((cat, i) => {
+      categoryProds.value = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(savedProdId));
+      window.safeArrayUtils.safeForEach(prodCategories, (cat, i) => {
         categoryProds.value.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
       try {
@@ -831,7 +831,7 @@ window.PdProdDtl = {
             style="display:flex;align-items:center;gap:6px;">
             <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ gi+1 }}단 유형</span>
             <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
-              @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';})"
+              @change="grp.iwindow.safeArrayUtils.safeForEach(tems, i=>{i.val='';i.valCodeId='';})"
               <option value="">-- OPT_TYPE 2레벨 --</option>
               <option v-for="c in optTypeCodes" :key="c.codeId" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
             </select>
@@ -868,7 +868,7 @@ window.PdProdDtl = {
         <!-- 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
           <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
-          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ optTypeCodes.find(c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
+          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeFind(optTypeCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
           <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
             style="flex:1;min-width:100px;font-size:13px;" />
           <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
@@ -890,7 +890,7 @@ window.PdProdDtl = {
             <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
               <th style="width:18px;padding:4px 2px;"></th>
               <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
-              <th v-if="grp.level===2 && optGroups[0]?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">상위옵션값</th>
+              <th v-if="grp.level===2 && window.safeArrayUtils.safeFirst(optGroups)?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">상위옵션값</th>
               <th style="padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">표시명 (opt_nm)</th>
               <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">공통코드ID (opt_val_code_id)</th>
               <th style="width:120px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (opt_val)</th>
@@ -915,11 +915,11 @@ window.PdProdDtl = {
               <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
 
               <!-- 2단: 상위 옵션값 -->
-              <td v-if="grp.level===2 && optGroups[0]?.items.length>0" style="padding:2px 4px;">
+              <td v-if="grp.level===2 && window.safeArrayUtils.safeFirst(optGroups)?.items.length>0" style="padding:2px 4px;">
                 <select v-model="item.parentOptItemId"
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
                   <option value="">전체 공통</option>
-                  <option v-for="p1 in (optGroups[0]?.items||[])" :key="p1._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
+                  <option v-for="p1 in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="p1._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
                 </select>
               </td>
 
@@ -959,7 +959,7 @@ window.PdProdDtl = {
               </td>
             </tr>
             <tr v-if="grp.items.length===0">
-              <td :colspan="grp.level===2&&optGroups[0]?.items.length>0?8:7"
+              <td :colspan="grp.level===2&&window.safeArrayUtils.safeFirst(optGroups)?.items.length>0?8:7"
                 style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">값을 추가해주세요.</td>
             </tr>
           </tbody>
@@ -1218,8 +1218,8 @@ window.PdProdDtl = {
             <label class="form-label" style="font-size:11px;">opt_item_id_1 <span style="color:#aaa;">(NULL=공통)</span></label>
             <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
               <option value="">-- 공통 (NULL) --</option>
-              <option v-if="!optGroups[0]||optGroups[0].items.length===0" disabled value="">옵션설정 탭에서 1단 옵션을 먼저 추가하세요</option>
-              <option v-for="item in (optGroups[0]?.items||[])" :key="item._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
+              <option v-if="!window.safeArrayUtils.safeFirst(optGroups)||window.safeArrayUtils.safeFirst(optGroups).items.length===0" disabled value="">옵션설정 탭에서 1단 옵션을 먼저 추가하세요</option>
+              <option v-for="item in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="item._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
             </select>
           </div>
           <!-- opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) -->
@@ -1418,14 +1418,14 @@ window.PdProdDtl = {
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;flex-shrink:0;">
           SKU별 가격·재고 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
-          <span class="badge badge-blue" style="margin-left:6px;">{{ skusFiltered.filter(s=>s.useYn==='Y').length }}개 활성</span>
+          <span class="badge badge-blue" style="margin-left:6px;">{{ window.safeArrayUtils.safeFilter(skusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
           <span v-if="skusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ skusFiltered.length }}/{{ skus.length }}</span>
         </div>
         <!-- 필터 영역 -->
         <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
           <!-- 1단 필터 -->
           <div style="display:flex;align-items:center;gap:4px;">
-            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ optGroups[0]?.grpNm||'1단' }}</span>
+            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeGet(optGroups, 0)?.grpNm||'1단' }}</span>
             <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
               @change="skuFilter2=''">
               <option value="">전체</option>
@@ -1460,7 +1460,7 @@ window.PdProdDtl = {
         <table class="admin-table" style="font-size:12px;">
           <thead>
             <tr>
-              <th>1단<span v-if="optGroups[0]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[0].grpNm }})</span></th>
+              <th>1단<span v-if="window.safeArrayUtils.safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ window.safeArrayUtils.safeFirst(optGroups).grpNm }})</span></th>
               <th v-if="optGroups.length>1">2단<span v-if="optGroups[1]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[1].grpNm }})</span></th>
               <th style="width:130px;">SKU코드</th>
               <th style="width:100px;">기본가</th>

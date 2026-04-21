@@ -36,12 +36,12 @@ window.PdCategoryDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const c = categories.value.find(x => x.categoryId === props.editId);
+        const c = categories.window.safeArrayUtils.safeFind(value, x => x.categoryId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
 
-    const parentOptions = computed(() => categories.value.filter(c => {
+    const parentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {
       if (!isNew.value && c.categoryId === props.editId) return false;
       return true;
     }));
@@ -50,7 +50,7 @@ window.PdCategoryDtl = {
       if (form.parentId === null || form.parentId === '') {
         form.depth = 1;
       } else {
-        const parent = categories.value.find(c => c.categoryId === Number(form.parentId));
+        const parent = categories.window.safeArrayUtils.safeFind(value, c => c.categoryId === Number(form.parentId));
         form.depth = parent ? parent.depth + 1 : 1;
       }
     };
@@ -60,7 +60,7 @@ window.PdCategoryDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.inner.forEach(e => { errors[e.path] = e.message; });
+        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }

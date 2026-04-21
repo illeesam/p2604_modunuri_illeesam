@@ -45,19 +45,19 @@ window.PmCacheDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const c = cacheList.value.find(x => x.cacheId === props.editId);
+        const c = cacheList.window.safeArrayUtils.safeFind(value, x => x.cacheId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
 
     /* 같은 회원의 캐쉬 내역 */
     const memberCacheHistory = computed(() =>
-      cacheList.value.filter(c => String(c.userId) === String(form.userId) && c.cacheId !== props.editId)
+      window.safeArrayUtils.safeFilter(cacheList, c => String(c.userId) === String(form.userId) && c.cacheId !== props.editId)
         .slice(0, 20)
     );
 
     const totalBalance = computed(() => {
-      const list = cacheList.value.filter(c => String(c.userId) === String(form.userId));
+      const list = window.safeArrayUtils.safeFilter(cacheList, c => String(c.userId) === String(form.userId));
       if (!list.length) return 0;
       return list.sort((a, b) => b.date.localeCompare(a.date))[0]?.balance || 0;
     });
@@ -67,7 +67,7 @@ window.PmCacheDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.inner.forEach(e => { errors[e.path] = e.message; });
+        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
@@ -107,7 +107,7 @@ window.PmCacheDtl = {
     const showVendorModal = ref(false);
     const selectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = vendors.value.find(x => x.vendorId === form.vendorId);
+      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {

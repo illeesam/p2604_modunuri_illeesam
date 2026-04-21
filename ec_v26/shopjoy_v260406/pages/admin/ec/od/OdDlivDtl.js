@@ -48,7 +48,7 @@ window.OdDlivDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const d = deliveries.value.find(x => x.dlivId === props.editId);
+        const d = deliveries.window.safeArrayUtils.safeFind(value, x => x.dlivId === props.editId);
         if (d) {
           Object.assign(form, { ...d });
           if (!form.dlivId) form.dlivId = props.editId;
@@ -71,16 +71,16 @@ window.OdDlivDtl = {
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const relatedOrder  = computed(() => getOrder.value(form.orderId));
-    const relatedClaims = computed(() => claims.value.filter(c => c.orderId === form.orderId));
+    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === form.orderId));
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
-    const firstClaim = computed(() => relatedClaims.value[0] || null);
+    const firstClaim = computed(() => relatedClaims.window.safeArrayUtils.safeGet(value, 0) || null);
 
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.inner.forEach(e => { errors[e.path] = e.message; });
+        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
@@ -107,7 +107,7 @@ window.OdDlivDtl = {
 
     const dlivItems = reactive([]);
     const sampleDlivItems = () => {
-      const rel = orders.value.find(x => x.orderId === form.orderId);
+      const rel = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === form.orderId);
       const base = rel ? rel.prodNm : (form.receiver || '배송상품');
       const total = rel ? Number(rel.totalPrice || 0) : 30000;
       const shares = [0.50, 0.30, 0.20];

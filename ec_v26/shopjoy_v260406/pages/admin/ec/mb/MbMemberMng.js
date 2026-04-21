@@ -55,16 +55,20 @@ window.MbMemberMng = {
 
     const applied = Vue.reactive({ kw: '', grade: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => members.value.filter(m => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !m.memberNm.toLowerCase().includes(kw) && !m.email.toLowerCase().includes(kw) && !String(m.userId).includes(kw)) return false;
-      if (applied.grade && m.gradeCd !== applied.grade) return false;
-      if (applied.status && m.statusCd !== applied.status) return false;
-      const _d = String(m.joinDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
-      return true;
-    }));
+    const filtered = computed(() => {
+      if (!Array.isArray(members) || members.length === 0) return [];
+      return window.safeArrayUtils.safeFilter(members, m => {
+        if (!m) return false;
+        const kw = applied.kw.trim().toLowerCase();
+        if (kw && !String(m.memberNm || '').toLowerCase().includes(kw) && !String(m.email || '').toLowerCase().includes(kw) && !String(m.userId || '').includes(kw)) return false;
+        if (applied.grade && m.gradeCd !== applied.grade) return false;
+        if (applied.status && m.statusCd !== applied.status) return false;
+        const _d = String(m.joinDate || '').slice(0, 10);
+        if (applied.dateStart && _d < applied.dateStart) return false;
+        if (applied.dateEnd && _d > applied.dateEnd) return false;
+        return true;
+      });
+    });
     const total = computed(() => filtered.value.length);
     const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
     const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));

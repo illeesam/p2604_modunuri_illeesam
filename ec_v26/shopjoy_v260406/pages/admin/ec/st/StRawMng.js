@@ -44,8 +44,8 @@ window.StRawMng = {
 
     const rawList = computed(() => {
       const rows = [];
-      orders.value.forEach((o, idx) => {
-        const v = vendors.value.find(x => x.vendorId === o.vendorId);
+      window.safeArrayUtils.safeForEach(orders, (o, idx) => {
+        const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId);
         const isCancelled = o.status === '취소됨';
         const qty         = (idx % 3) + 1;
         const unitPrice   = Math.round((o.totalPrice || 50000) / qty);
@@ -90,9 +90,9 @@ window.StRawMng = {
           saveSchdAmt: saveSchd, giftAmt: 0,
         });
       });
-      claims.value.filter(c => ['환불완료','취소완료'].includes(c.status)).forEach((c, idx) => {
-        const o = orders.value.find(x => x.orderId === c.orderId);
-        const v = o ? vendors.value.find(x => x.vendorId === o.vendorId) : null;
+      window.safeArrayUtils.safeFilter(claims, c => ['환불완료','취소완료'].includes(c.status)).forEach((c, idx) => {
+        const o = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === c.orderId);
+        const v = o ? vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId) : null;
         const refund = -(c.refundAmount || 0);
         const feeAmt = Math.round(Math.abs(refund) * 0.1);
         const txDate = c.requestDate ? c.requestDate.slice(0, 10) : '';
@@ -132,7 +132,7 @@ window.StRawMng = {
       const kw = searchKw.value.trim().toLowerCase();
       const amtFrom = searchAmtFrom.value !== '' ? Number(searchAmtFrom.value) : null;
       const amtTo   = searchAmtTo.value   !== '' ? Number(searchAmtTo.value)   : null;
-      return rawList.value.filter(r => {
+      return window.safeArrayUtils.safeFilter(rawList, r => {
         if (dateStart.value        && r.txDate < dateStart.value)               return false;
         if (dateEnd.value          && r.txDate > dateEnd.value)                 return false;
         if (searchType.value       && r.sourceType !== searchType.value)        return false;
@@ -160,12 +160,12 @@ window.StRawMng = {
 
     const summary = computed(() => ({
       totalAmt:       filtered.value.reduce((s, r) => s + r.amount, 0),
-      collectCnt:     filtered.value.filter(r => r.collectYn === 'Y').length,
+      collectCnt:     window.safeArrayUtils.safeFilter(filtered, r => r.collectYn === 'Y').length,
       settleAmt:      filtered.value.reduce((s, r) => s + r.settleAmt, 0),
       feeAmt:         filtered.value.reduce((s, r) => s + r.settleFeeAmt, 0),
-      closeCnt:       filtered.value.filter(r => r.closeYn === 'Y').length,
-      erpCnt:         filtered.value.filter(r => r.erpSendYn === 'Y').length,
-      confirmCnt:     filtered.value.filter(r => r.buyConfirmYn === 'Y').length,
+      closeCnt:       window.safeArrayUtils.safeFilter(filtered, r => r.closeYn === 'Y').length,
+      erpCnt:         window.safeArrayUtils.safeFilter(filtered, r => r.erpSendYn === 'Y').length,
+      confirmCnt:     window.safeArrayUtils.safeFilter(filtered, r => r.buyConfirmYn === 'Y').length,
     }));
 
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
@@ -341,8 +341,8 @@ window.StRawMng = {
     <div class="toolbar">
       <span class="list-count">총 {{ total.toLocaleString() }}건</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" @click="() => { pageList.forEach(r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
-        <button class="btn btn-secondary btn-sm" @click="() => { pageList.forEach(r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(pageList, r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(pageList, r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
         <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
       </div>
     </div>

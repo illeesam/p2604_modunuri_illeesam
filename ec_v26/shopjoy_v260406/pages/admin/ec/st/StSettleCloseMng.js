@@ -18,15 +18,15 @@ window.StSettleCloseMng = {
 
     // 이번달 집계
     const thisMonth = new Date().toISOString().slice(0, 7);
-    const thisMonthOrders = computed(() => orders.value.filter(o => o.orderDate.startsWith(thisMonth) && o.status !== '취소됨'));
+    const thisMonthOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.orderDate.startsWith(thisMonth) && o.status !== '취소됨'));
     const thisMonthSales  = computed(() => thisMonthOrders.value.reduce((s, o) => s + o.totalPrice, 0));
-    const thisMonthRefund = computed(() => claims.value.filter(c => c.requestDate.startsWith(thisMonth) && ['환불완료','취소완료'].includes(c.status)).reduce((s, c) => s + c.refundAmount, 0));
+    const thisMonthRefund = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.requestDate.startsWith(thisMonth) && ['환불완료','취소완료'].includes(c.status)).reduce((s, c) => s + c.refundAmount, 0));
     const thisMonthNet    = computed(() => thisMonthSales.value - thisMonthRefund.value);
     const thisMonthComm   = computed(() => Math.round(thisMonthNet.value * 0.10));
     const thisMonthPromo  = computed(() => Math.round(thisMonthNet.value * 0.03));
     const thisMonthSettle = computed(() => thisMonthNet.value - thisMonthComm.value - thisMonthPromo.value);
 
-    const alreadyClosed = computed(() => closeList.some(c => c.closeMon === thisMonth));
+    const alreadyClosed = computed(() => window.safeArrayUtils.safeSome(closeList, c => c.closeMon === thisMonth));
 
     const doClose = async () => {
       if (alreadyClosed.value) { props.showToast('이미 마감된 월입니다.', 'error'); return; }

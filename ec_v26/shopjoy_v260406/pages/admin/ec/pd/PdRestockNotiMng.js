@@ -49,8 +49,8 @@ window.PdRestockNotiMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const allChecked    = computed(() => pageList.value.length > 0 && pageList.value.every(r => checkedIds.has(r.restockNotiId)));
-    const toggleAll     = () => { if (allChecked.value) pageList.value.forEach(r => checkedIds.delete(r.restockNotiId)); else pageList.value.forEach(r => checkedIds.add(r.restockNotiId)); };
+    const allChecked    = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, r => checkedIds.has(r.restockNotiId)));
+    const toggleAll     = () => { if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, r => checkedIds.delete(r.restockNotiId)); else window.safeArrayUtils.safeForEach(pageList, r => checkedIds.add(r.restockNotiId)); };
     const toggleOne     = id => { if (checkedIds.has(id)) checkedIds.delete(id); else checkedIds.add(id); };
     const checkedCount  = computed(() => checkedIds.size);
 
@@ -59,7 +59,7 @@ window.PdRestockNotiMng = {
       if (!targets.length) { props.showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
       const ok = await props.showConfirm('알림발송', `선택한 ${targets.length}건에 재입고 알림을 발송하시겠습니까?`);
       if (!ok) return;
-      const now = new Date().toLocaleString('sv').replace('T', ' '); targets.forEach(r => { r.notiYn = 'Y'; r.notiDate = now; }); checkedIds.clear();
+      const now = new Date().toLocaleString('sv').replace('T', ' '); window.safeArrayUtils.safeForEach(targets, r => { r.notiYn = 'Y'; r.notiDate = now; }); checkedIds.clear();
       try {
         const res = await window.adminApi.post('pd/restock-notis/send', { ids: targets.map(r => r.restockNotiId) });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

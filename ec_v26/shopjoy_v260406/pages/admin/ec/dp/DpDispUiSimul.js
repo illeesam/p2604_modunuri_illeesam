@@ -64,12 +64,12 @@ window.DpDispUiSimul = {
     const areaList = computed(() => {
       const all = allAreaListRaw.value;
       if (selectedAreas.size === 0) return all;
-      return all.filter(c => selectedAreas.has(c.codeValue));
+      return window.safeArrayUtils.safeFilter(all, c => selectedAreas.has(c.codeValue));
     });
 
     /* ── 영역 드롭다운 멀티선택 ── */
     const toggleArea     = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
-    const selectAllAreas = () => { allAreaListRaw.value.forEach(a => selectedAreas.add(a.codeValue)); };
+    const selectAllAreas = () => { window.safeArrayUtils.safeForEach(allAreaListRaw, a => selectedAreas.add(a.codeValue)); };
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const areaBtnLabel   = computed(() => {
       const sz = selectedAreas.size;
@@ -139,7 +139,7 @@ window.DpDispUiSimul = {
     /* 영역 펼침 상태 */
     const expandedAreas = reactive(new Set());
     const initExpandedAreas = () => {
-      allAreaListRaw.value.forEach(a => expandedAreas.add(a.codeValue));
+      window.safeArrayUtils.safeForEach(allAreaListRaw, a => expandedAreas.add(a.codeValue));
     };
     const toggleAreaExpand = (code) => {
       if (expandedAreas.has(code)) expandedAreas.delete(code);
@@ -151,20 +151,20 @@ window.DpDispUiSimul = {
       const id = p.dispId;
       const rows = p.rows || [];
       const panelOn = checkedPanelIds.has(id);
-      const allWidgetsOn = rows.length === 0 || rows.every((_, wi) => checkedWidgetKeys.has(id + '_' + wi));
+      const allWidgetsOn = rows.length === 0 || window.safeArrayUtils.safeEvery(rows, (_, wi) => checkedWidgetKeys.has(id + '_' + wi));
       if (panelOn && allWidgetsOn) {
         checkedPanelIds.delete(id);
-        rows.forEach((_, wi) => checkedWidgetKeys.delete(id + '_' + wi));
+        window.safeArrayUtils.safeForEach(rows, (_, wi) => checkedWidgetKeys.delete(id + '_' + wi));
       } else {
         checkedPanelIds.add(id);
-        rows.forEach((_, wi) => checkedWidgetKeys.add(id + '_' + wi));
+        window.safeArrayUtils.safeForEach(rows, (_, wi) => checkedWidgetKeys.add(id + '_' + wi));
       }
     };
     const isPanelAllChecked = (p) =>
       checkedPanelIds.has(p.dispId) &&
       ((p.rows || []).length === 0 || (p.rows || []).every((_, wi) => checkedWidgetKeys.has(p.dispId + '_' + wi)));
     const checkAllPanels = () => {
-      structAreaList.value.forEach(a => a.panels.forEach(p => {
+      window.safeArrayUtils.safeForEach(structAreaList, a => a.pwindow.safeArrayUtils.safeForEach(anels, p => {
         checkedPanelIds.add(p.dispId);
         (p.rows || []).forEach((_, wi) => checkedWidgetKeys.add(p.dispId + '_' + wi));
       }));
@@ -173,17 +173,17 @@ window.DpDispUiSimul = {
 
     /* 영역 단위 전체체크 — 하위 패널·위젯 포함 cascade */
     const checkAreaPanels = (area) => {
-      const allPanels = area.panels.every(p => checkedPanelIds.has(p.dispId));
-      const allWidgets = area.panels.every(p =>
+      const allPanels = area.pwindow.safeArrayUtils.safeEvery(anels, p => checkedPanelIds.has(p.dispId));
+      const allWidgets = area.pwindow.safeArrayUtils.safeEvery(anels, p =>
         (p.rows || []).every((_, wi) => checkedWidgetKeys.has(p.dispId + '_' + wi))
       );
       if (allPanels && allWidgets) {
-        area.panels.forEach(p => {
+        area.pwindow.safeArrayUtils.safeForEach(anels, p => {
           checkedPanelIds.delete(p.dispId);
           (p.rows || []).forEach((_, wi) => checkedWidgetKeys.delete(p.dispId + '_' + wi));
         });
       } else {
-        area.panels.forEach(p => {
+        area.pwindow.safeArrayUtils.safeForEach(anels, p => {
           checkedPanelIds.add(p.dispId);
           (p.rows || []).forEach((_, wi) => checkedWidgetKeys.add(p.dispId + '_' + wi));
         });
@@ -191,8 +191,8 @@ window.DpDispUiSimul = {
     };
     const isAreaAllChecked = (area) =>
       area.panels.length > 0 &&
-      area.panels.every(p => checkedPanelIds.has(p.dispId)) &&
-      area.panels.every(p => (p.rows || []).every((_, wi) => checkedWidgetKeys.has(p.dispId + '_' + wi)));
+      area.pwindow.safeArrayUtils.safeEvery(anels, p => checkedPanelIds.has(p.dispId)) &&
+      area.pwindow.safeArrayUtils.safeEvery(anels, p => (p.rows || []).every((_, wi) => checkedWidgetKeys.has(p.dispId + '_' + wi)));
 
     const checkedCount = computed(() => checkedPanelIds.size);
 
@@ -206,8 +206,8 @@ window.DpDispUiSimul = {
       else checkedWidgetKeys.add(key);
     };
     const checkAllWidgets = () => {
-      structAreaList.value.forEach(a =>
-        a.panels.forEach(p =>
+      window.safeArrayUtils.safeForEach(structAreaList, a =>
+        a.pwindow.safeArrayUtils.safeForEach(anels, p =>
           (p.rows || []).forEach((_, wi) => checkedWidgetKeys.add(`${p.dispId}_${wi}`))
         )
       );
@@ -218,8 +218,8 @@ window.DpDispUiSimul = {
     /* 선택된 위젯 목록 (패널·영역 정보 포함) */
     const checkedWidgetList = computed(() => {
       const result = [];
-      structAreaList.value.forEach(a =>
-        a.panels.forEach(p =>
+      window.safeArrayUtils.safeForEach(structAreaList, a =>
+        a.pwindow.safeArrayUtils.safeForEach(anels, p =>
           (p.rows || []).forEach((w, wi) => {
             if (checkedWidgetKeys.has(`${p.dispId}_${wi}`))
               result.push({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: a.codeLabel, _wi: wi });
@@ -257,7 +257,7 @@ window.DpDispUiSimul = {
     const sourceLines = computed(() => {
       const lines = [];
       const A = (key, val, real = false) => ({ key, val: String(val), real });
-      const areas = allAreaListRaw.value.filter(a =>
+      const areas = window.safeArrayUtils.safeFilter(allAreaListRaw, a =>
         selectedAreas.size === 0 || selectedAreas.has(a.codeValue)
       );
 
@@ -271,7 +271,7 @@ window.DpDispUiSimul = {
       lines.push({ type:'source-header', htype:'disp', data:{
         datetime:     `${previewDate.value || '-'} ${previewTime.value || ''}`.trim(),
         status:       searchStatus.value || '전체',
-        visibility:   searchVisibility.value ? (VISIBILITY_OPTS.find(o => o.value === searchVisibility.value)?.label || searchVisibility.value) : '전체',
+        visibility:   searchVisibility.value ? (window.safeArrayUtils.safeFind(VISIBILITY_OPTS, o => o.value === searchVisibility.value)?.label || searchVisibility.value) : '전체',
       }});
       lines.push({ type:'source-header', htype:'cond', data:{
         period:   '-',
@@ -280,7 +280,7 @@ window.DpDispUiSimul = {
       }});
       lines.push({ type:'blank' });
       lines.push({ type:'ui-open', level:0 });
-      areas.forEach((area, ai) => {
+      window.safeArrayUtils.safeForEach(areas, (area, ai) => {
         const panels = (displays.value || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
@@ -306,7 +306,7 @@ window.DpDispUiSimul = {
         if (panels.length === 0) {
           lines.push({ type:'comment', level:2, text:`<!-- 해당 날짜 활성 패널 없음 -->` });
         } else {
-          panels.forEach(p => {
+          window.safeArrayUtils.safeForEach(panels, p => {
             const rows = p.rows || [];
             lines.push({ type:'blank' });
             /* ── 패널 메타 주석 ── */
@@ -344,7 +344,7 @@ window.DpDispUiSimul = {
             if (rows.length === 0) {
               lines.push({ type:'comment', level:3, text:`<!-- (위젯 없음) -->` });
             } else {
-              rows.forEach(w => {
+              window.safeArrayUtils.safeForEach(rows, w => {
                 /* ── <DispX04Widget attrs /> ── */
                 lines.push({ type:'widget', level:3, attrs:[
                   A('widgetType', w.widgetType,        true),
@@ -464,7 +464,7 @@ window.DpDispUiSimul = {
       let bx = Math.max(0, Math.round((e.clientX - rect.left - 120) / SNAP) * SNAP);
       let by = Math.max(0, Math.round((e.clientY - rect.top  - 20)  / SNAP) * SNAP);
       const COLS = 3, W = 240, H = 180, GAP = 10;
-      widgets.forEach((w, i) => {
+      window.safeArrayUtils.safeForEach(widgets, (w, i) => {
         const col = i % COLS, row = Math.floor(i / COLS);
         structDashItems.push({ id: Date.now() + i, slot: { ...w },
           x: bx + col*(W+GAP), y: by + row*(H+GAP), w: W, h: H });
@@ -525,7 +525,7 @@ window.DpDispUiSimul = {
       if (axis === 'col') slot.colSpan = Math.max(1, Math.min(maxCol, (slot.colSpan||1) + delta));
       if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan||1) + delta));
     };
-    const structPlacedCount = computed(() => structSlots.filter(Boolean).length);
+    const structPlacedCount = computed(() => window.safeArrayUtils.safeFilter(structSlots, Boolean).length);
     const resetStructGrid = () => {
       structSlots.splice(0, structSlots.length, ...sMakeInit(structColCount.value));
     };
@@ -620,7 +620,7 @@ window.DpDispUiSimul = {
       dispUiAreaErr.value = false;
     };
     const dispUiSelectAllAreas = () => {
-      allAreaListRaw.value.forEach(a => {
+      window.safeArrayUtils.safeForEach(allAreaListRaw, a => {
         if (!dispUiForm.areas.includes(a.codeValue)) dispUiForm.areas.push(a.codeValue);
       });
       dispUiAreaErr.value = false;
@@ -911,7 +911,7 @@ window.DpDispUiSimul = {
       <span style="font-size:11px;color:#aaa;">조회 조건:</span>
       <span style="font-size:12px;background:#fff8e1;color:#f57c00;border-radius:10px;padding:2px 10px;">📅 {{ previewDate }} {{ previewTime }}</span>
       <span v-if="searchStatus" style="font-size:12px;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 10px;">상태: {{ searchStatus }}</span>
-      <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">공개: {{ VISIBILITY_OPTS.find(o => o.value === searchVisibility)?.label }}</span>
+      <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">공개: {{ window.safeArrayUtils.safeFind(VISIBILITY_OPTS, o => o.value === searchVisibility)?.label }}</span>
       <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
         <button @click="openDispUiLayer"
           style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
@@ -1559,7 +1559,7 @@ window.DpDispUiSimul = {
             </div>
             </template>
           </div><!-- /grid -->
-          <div v-if="structCurrentSlots.every(s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
+          <div v-if="window.safeArrayUtils.safeEvery(structCurrentSlots, s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
             좌측 영역 또는 패널을 드래그하여 배치하세요
           </div>
           </div><!-- /device frame -->

@@ -22,7 +22,7 @@ window.StReconVendorMng = {
 
     const rows = computed(() => {
       return vendors.value.map(v => {
-        const vOrders   = orders.value.filter(o => o.vendorId === v.vendorId && o.status !== '취소됨' && (!dateStart.value || o.orderDate.slice(0,10) >= dateStart.value) && (!dateEnd.value || o.orderDate.slice(0,10) <= dateEnd.value));
+        const vOrders   = window.safeArrayUtils.safeFilter(orders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && (!dateStart.value || o.orderDate.slice(0,10) >= dateStart.value) && (!dateEnd.value || o.orderDate.slice(0,10) <= dateEnd.value));
         const sysAmt    = vOrders.reduce((s, o) => s + Math.round(o.totalPrice * 0.9), 0);
         const vendorAmt = sysAmt + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 1000 : -1000) : 0);
         const diff      = sysAmt - Math.round(vendorAmt);
@@ -36,9 +36,9 @@ window.StReconVendorMng = {
     const pageList = computed(() => rows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const summary  = computed(() => ({
-      match: rows.value.filter(r=>r.diffStatus==='일치').length,
-      over:  rows.value.filter(r=>r.diffStatus==='시스템과다').length,
-      under: rows.value.filter(r=>r.diffStatus==='업체과다').length,
+      match: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='일치').length,
+      over:  window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='시스템과다').length,
+      under: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='업체과다').length,
     }));
 
     const diffBadge = s => ({ '일치':'badge-green','시스템과다':'badge-red','업체과다':'badge-orange' }[s] || 'badge-gray');

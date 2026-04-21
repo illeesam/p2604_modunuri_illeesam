@@ -33,7 +33,7 @@ window.OdOrderHist = {
 
     const orderItems = reactive([]);
     onMounted(() => {
-      const o = orders.value.find(x => x.orderId === props.orderId);
+      const o = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,
           { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
@@ -41,11 +41,11 @@ window.OdOrderHist = {
       }
     });
 
-    const relatedDliv   = computed(() => deliveries.value.find(d => d.orderId === props.orderId) || null);
-    const relatedClaims = computed(() => claims.value.filter(c => c.orderId === props.orderId));
+    const relatedDliv   = computed(() => deliveries.window.safeArrayUtils.safeFind(value, d => d.orderId === props.orderId) || null);
+    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
     const dlivHistory   = computed(() => {
       if (!relatedDliv.value) return [];
-      const o = orders.value.find(x => x.orderId === props.orderId);
+      const o = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === props.orderId);
       return [
         { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '상품준비중', location: '물류센터', memo: '상품 포장 완료' },
         { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courierCd || '-', memo: '출고 완료' },

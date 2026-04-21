@@ -52,7 +52,7 @@ window.OdClaimHist = {
             afStatus: c.statusCd, afMemo: '', afAdmin: '', afDate: '',
           });
         relatedOrder.value = getOrder.value(c.orderId);
-        relatedDliv.value  = deliveries.value.find(d => d.orderId === c.orderId) || null;
+        relatedDliv.value  = deliveries.window.safeArrayUtils.safeFind(value, d => d.orderId === c.orderId) || null;
       }
     });
 

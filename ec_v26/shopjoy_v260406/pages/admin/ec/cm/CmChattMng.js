@@ -56,7 +56,7 @@ window.CmChattMng = {
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => sorted.value.filter(c => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(sorted, c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.userNm.toLowerCase().includes(kw) && !c.subject.toLowerCase().includes(kw)) return false;
       if (applied.status && c.status !== applied.status) return false;

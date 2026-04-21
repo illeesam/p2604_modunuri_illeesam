@@ -101,7 +101,7 @@ window.DpDispAreaMng = {
         })),
       }));
     });
-    const expandAll   = () => { areaTree.value.forEach(n => treeOpen.value.add('grp_'+n.label)); treeOpen.value.add('__root__'); };
+    const expandAll   = () => { window.safeArrayUtils.safeForEach(areaTree, n => treeOpen.value.add('grp_'+n.label)); treeOpen.value.add('__root__'); };
     const collapseAll = () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
 
     /* ── 영역 목록 (codes에서 DISP_AREA 필터) ── */
@@ -110,7 +110,7 @@ window.DpDispAreaMng = {
     );
     const filtered = computed(() => {
       const kw = applied.kw.trim().toLowerCase();
-      return allAreas.value.filter(a => {
+      return window.safeArrayUtils.safeFilter(allAreas, a => {
         if (kw &&
             !(a.codeValue || '').toLowerCase().includes(kw) &&
             !(a.codeLabel || '').toLowerCase().includes(kw) &&
@@ -224,13 +224,13 @@ window.DpDispAreaMng = {
       const moved = codes.splice(si, 1)[0];
       codes.splice(ti, 0, moved);
       /* DISP_AREA만 순서 재부여 */
-      codes.filter(c => c.codeGrp === 'DISP_AREA').forEach((c, i) => { c.sortOrd = i + 1; });
+      window.safeArrayUtils.safeFilter(codes, c => c.codeGrp === 'DISP_AREA').forEach((c, i) => { c.sortOrd = i + 1; });
       props.showToast('영역 순서가 변경되었습니다.', 'info');
       dragSrc.value = null;
     };
     const onDragEnd = () => { dragSrc.value = null; dragOverIdx.value = -1; };
 
-    const areaTypeLabel = (v) => (AREA_TYPE_OPTS.find(o => o.value === v) || {}).label || '-';
+    const areaTypeLabel = (v) => (window.safeArrayUtils.safeFind(AREA_TYPE_OPTS, o => o.value === v) || {}).label || '-';
     const statusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* 영역 하위 패널 목록 */

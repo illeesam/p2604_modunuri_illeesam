@@ -55,13 +55,13 @@ window.StStatusMng = {
     const vendorPager     = reactive({ page: 1, size: 10 });
 
     const vendorRows = computed(() => {
-      const filteredOrders = orders.value.filter(o => inRange(o.orderDate) && o.status !== '취소됨');
+      const filteredOrders = window.safeArrayUtils.safeFilter(orders, o => inRange(o.orderDate) && o.status !== '취소됨');
       return vendors.value.map(v => {
-        const vOrders = filteredOrders.filter(o => o.vendorId === v.vendorId);
+        const vOrders = window.safeArrayUtils.safeFilter(filteredOrders, o => o.vendorId === v.vendorId);
         const sales   = vOrders.reduce((s, o) => s + (o.totalPrice || 0), 0);
         const refund  = claims.value
           .filter(c => inRange(c.requestDate) && ['환불완료','취소완료'].includes(c.status))
-          .filter(c => { const o = orders.value.find(x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
+          .filter(c => { const o = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
           .reduce((s, c) => s + (c.refundAmount || 0), 0);
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
@@ -82,13 +82,13 @@ window.StStatusMng = {
 
     const orderRows = computed(() => {
       const kw = orderSearchKw.value.trim().toLowerCase();
-      return orders.value.filter(o => {
+      return window.safeArrayUtils.safeFilter(orders, o => {
         if (!inRange(o.orderDate)) return false;
         if (orderSearchStatus.value && o.status !== orderSearchStatus.value) return false;
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
         return true;
       }).map(o => {
-        const vendor = vendors.value.find(v => v.vendorId === o.vendorId);
+        const vendor = vendors.window.safeArrayUtils.safeFind(value, v => v.vendorId === o.vendorId);
         const isCancelled = o.status === '취소됨';
         const comm   = isCancelled ? 0 : Math.round((o.totalPrice || 0) * COMM_RATE);
         const settle = isCancelled ? 0 : (o.totalPrice || 0) - comm;
@@ -99,7 +99,7 @@ window.StStatusMng = {
     const orderPages = computed(() => Math.max(1, Math.ceil(orderTotal.value / orderPager.size)));
     const orderPageList = computed(() => orderRows.value.slice((orderPager.page - 1) * orderPager.size, orderPager.page * orderPager.size));
     const orderSummary  = computed(() => {
-      const valid = orderRows.value.filter(r => !r.isCancelled);
+      const valid = window.safeArrayUtils.safeFilter(orderRows, r => !r.isCancelled);
       return { cnt: valid.length, sales: valid.reduce((s, r) => s + r.totalPrice, 0), comm: valid.reduce((s, r) => s + r.comm, 0), settle: valid.reduce((s, r) => s + r.settle, 0) };
     });
 
@@ -111,7 +111,7 @@ window.StStatusMng = {
     const claimPager        = reactive({ page: 1, size: 10 });
 
     const claimRows = computed(() => {
-      return claims.value.filter(c => {
+      return window.safeArrayUtils.safeFilter(claims, c => {
         if (!inRange(c.requestDate)) return false;
         if (claimSearchType.value   && c.type   !== claimSearchType.value)   return false;
         if (claimSearchStatus.value && c.status !== claimSearchStatus.value) return false;
@@ -129,9 +129,9 @@ window.StStatusMng = {
       cnt:     claimRows.value.length,
       refund:  claimRows.value.reduce((s, r) => s + (r.refundAmount || 0), 0),
       impact:  claimRows.value.reduce((s, r) => s + r.settleImpact, 0),
-      cancel:  claimRows.value.filter(r => r.type === '취소').length,
-      return_: claimRows.value.filter(r => r.type === '반품').length,
-      exchange:claimRows.value.filter(r => r.type === '교환').length,
+      cancel:  window.safeArrayUtils.safeFilter(claimRows, r => r.type === '취소').length,
+      return_: window.safeArrayUtils.safeFilter(claimRows, r => r.type === '반품').length,
+      exchange:window.safeArrayUtils.safeFilter(claimRows, r => r.type === '교환').length,
     }));
 
     /* ════════════════════════════════════════════════
@@ -155,10 +155,10 @@ window.StStatusMng = {
         };
       });
       const cacheRows = [
-        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: cacheList.value.filter(x => x.type==='충전').length, useCnt: cacheList.value.filter(x => x.type==='사용').length, discountAmt: cacheList.value.filter(x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
+        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: window.safeArrayUtils.safeFilter(cacheList, x => x.type==='충전').length, useCnt: window.safeArrayUtils.safeFilter(cacheList, x => x.type==='사용').length, discountAmt: window.safeArrayUtils.safeFilter(cacheList, x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
       ];
       const allRows = [...couponRows, ...cacheRows];
-      return allRows.filter(r => {
+      return window.safeArrayUtils.safeFilter(allRows, r => {
         if (promoSearchType.value && r.promoType !== promoSearchType.value) return false;
         if (kw && !r.promoNm.toLowerCase().includes(kw) && !r.promoType.toLowerCase().includes(kw)) return false;
         return true;
@@ -181,13 +181,13 @@ window.StStatusMng = {
 
     const settleRows = computed(() => {
       const monthMap = {};
-      orders.value.forEach(o => {
+      window.safeArrayUtils.safeForEach(orders, o => {
         const m = String(o.orderDate || '').slice(0, 7);
         if (!m) return;
         if (!monthMap[m]) monthMap[m] = { month: m, orderCnt: 0, sales: 0, refund: 0, commAmt: 0, promoAmt: 0 };
         if (o.status !== '취소됨') { monthMap[m].orderCnt++; monthMap[m].sales += o.totalPrice || 0; }
       });
-      claims.value.forEach(c => {
+      window.safeArrayUtils.safeForEach(claims, c => {
         const m = String(c.requestDate || '').slice(0, 7);
         if (m && monthMap[m] && ['환불완료','취소완료'].includes(c.status)) monthMap[m].refund += c.refundAmount || 0;
       });
@@ -235,7 +235,7 @@ window.StStatusMng = {
     const onSettleSizeChange = () => { settlePager.page = 1; };
 
     const exportTab = () => {
-      const tab = TABS.find(t => t.id === activeTab.value);
+      const tab = window.safeArrayUtils.safeFind(TABS, t => t.id === activeTab.value);
       props.showToast && props.showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
     };
 
@@ -437,7 +437,7 @@ window.StStatusMng = {
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0f4ff">
         <div style="font-size:11px;color:#888;margin-bottom:4px">처리율</div>
-        <div style="font-size:18px;font-weight:700;color:#3498db">{{ claimSummary.cnt > 0 ? Math.round(claimRows.filter(r=>r.isCompleted).length / claimSummary.cnt * 100) : 0 }}%</div>
+        <div style="font-size:18px;font-weight:700;color:#3498db">{{ claimSummary.cnt > 0 ? Math.round(window.safeArrayUtils.safeFilter(claimRows, r=>r.isCompleted).length / claimSummary.cnt * 100) : 0 }}%</div>
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">

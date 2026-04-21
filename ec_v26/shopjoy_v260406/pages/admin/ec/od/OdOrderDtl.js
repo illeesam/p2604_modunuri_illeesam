@@ -93,7 +93,7 @@ window.OdOrderDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.inner.forEach(e => { errors[e.path] = e.message; });
+        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
@@ -211,7 +211,7 @@ window.OdOrderDtl = {
     const expandedItems = ref(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems.value); if (s.has(i)) s.delete(i); else s.add(i); expandedItems.value = s; };
     const isExpanded = (i) => expandedItems.value.has(i);
-    const allExpanded = computed(() => orderItems.length > 0 && orderItems.every((_,i) => expandedItems.value.has(i)));
+    const allExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.value.has(i)));
     const toggleExpandAll = () => {
       if (allExpanded.value) expandedItems.value = new Set();
       else expandedItems.value = new Set(orderItems.map((_,i) => i));

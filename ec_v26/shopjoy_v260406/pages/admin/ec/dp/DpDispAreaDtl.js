@@ -120,7 +120,7 @@ window.DpDispAreaDtl = {
     const availablePanels = computed(() => {
       const all = (displays.value || []);
       const kw  = pickKw.value.trim().toLowerCase();
-      return all.filter(p => {
+      return window.safeArrayUtils.safeFilter(all, p => {
         if (p.area === form.codeValue) return false; /* 이미 포함된 것 제외 */
         if (kw && !p.name.toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
         return true;
@@ -139,7 +139,7 @@ window.DpDispAreaDtl = {
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       p.area = form.codeValue;
       const list = (displays.value || []).filter(x => x.area === form.codeValue);
-      list.forEach((x, i) => { x.sortOrder = i + 1; });
+      window.safeArrayUtils.safeForEach(list, (x, i) => { x.sortOrder = i + 1; });
       props.showToast && props.showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
       pickOpen.value = false;
     };
@@ -154,12 +154,12 @@ window.DpDispAreaDtl = {
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       const list = displays.value || [];
-      ids.forEach(id => {
-        const p = list.find(x => x.dispId === id);
+      window.safeArrayUtils.safeForEach(ids, id => {
+        const p = window.safeArrayUtils.safeFind(list, x => x.dispId === id);
         if (p) p.area = form.codeValue;
       });
       /* 순서 재부여 */
-      list.filter(p => p.area === form.codeValue).forEach((p, i) => { p.sortOrder = i + 1; });
+      window.safeArrayUtils.safeFilter(list, p => p.area === form.codeValue).forEach((p, i) => { p.sortOrder = i + 1; });
       props.showToast && props.showToast(`${ids.length}개 패널을 추가했습니다.`, 'info');
       closePick();
     };
@@ -186,12 +186,12 @@ window.DpDispAreaDtl = {
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const previewFrameWidth = computed(() => {
-      const m = PREVIEW_MODES.find(x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
       return (m?.width || 480) + 'px';
     });
     const previewPaneWidth = ref(520);
     Vue.watch(previewMode, (m) => {
-      const info = PREVIEW_MODES.find(x => x.value === m);
+      const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       previewPaneWidth.value = (info?.width || 480) + 40;
     });
     const onSplitDrag = (e) => {
@@ -212,7 +212,7 @@ window.DpDispAreaDtl = {
     const activePanel = computed(() => {
       if (!activeTab.value.startsWith('panel_')) return null;
       const id = Number(activeTab.value.replace('panel_', ''));
-      return relatedPanels.value.find(p => p.dispId === id) || null;
+      return relatedPanels.window.safeArrayUtils.safeFind(value, p => p.dispId === id) || null;
     });
 
     /* ── 저장 ── */
@@ -305,7 +305,7 @@ window.DpDispAreaDtl = {
         activePanel.value.visibilityTargets = '^PUBLIC^';
         return;
       }
-      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
       activePanel.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
@@ -373,7 +373,7 @@ window.DpDispAreaDtl = {
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
       if (code === 'PUBLIC' && i < 0) { form.areaBaseVisibilityTargets = '^PUBLIC^'; return; }
-      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 

@@ -30,7 +30,7 @@ window.StErpReconMng = {
     const pager = reactive({ page: 1, size: 10 });
 
     const filtered = computed(() => {
-      return reconList.filter(r => {
+      return window.safeArrayUtils.safeFilter(reconList, r => {
         if (dateStart.value && r.reconDate < dateStart.value) return false;
         if (dateEnd.value   && r.reconDate > dateEnd.value)   return false;
         if (searchDiff.value && r.diffStatus !== searchDiff.value) return false;
@@ -43,9 +43,9 @@ window.StErpReconMng = {
     const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const summary  = computed(() => ({
-      match:    filtered.value.filter(r=>r.diffStatus==='일치').length,
-      diff:     filtered.value.filter(r=>r.diffStatus==='차이').length,
-      noReflect:filtered.value.filter(r=>r.diffStatus==='미반영').length,
+      match:    window.safeArrayUtils.safeFilter(filtered, r=>r.diffStatus==='일치').length,
+      diff:     window.safeArrayUtils.safeFilter(filtered, r=>r.diffStatus==='차이').length,
+      noReflect:window.safeArrayUtils.safeFilter(filtered, r=>r.diffStatus==='미반영').length,
       diffAmt:  filtered.value.reduce((s,r)=>s+Math.abs(r.diff),0),
     }));
 

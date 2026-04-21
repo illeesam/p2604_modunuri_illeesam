@@ -57,7 +57,7 @@ window.PdProdHist = {
     const relatedOrders = computed(() => {
       const p = getProduct.value(props.prodId);
       if (!p) return [];
-      return orders.value.filter(o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
+      return window.safeArrayUtils.safeFilter(orders, o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
     return { products, loading, error, botTab, stockHistory, statusHistory, changeHistory, priceHistory, relatedOrders, viewMode2, showTab };

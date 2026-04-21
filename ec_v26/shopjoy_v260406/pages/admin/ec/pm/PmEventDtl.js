@@ -98,7 +98,7 @@ window.PmEventDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const e = events.value.find(x => x.eventId === props.editId);
+        const e = events.window.safeArrayUtils.safeFind(value, x => x.eventId === props.editId);
         if (e) {
           Object.assign(form, { ...e, targetProducts: [...(e.targetProducts || [])] });
           if (!form.visibilityTargets) {
@@ -114,7 +114,7 @@ window.PmEventDtl = {
     /* 대상 상품 팝업 */
     const showProdPopup = ref(false);
     const prodSearch = ref('');
-    const filteredProds = computed(() => products.value.filter(p => {
+    const filteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
       const kw = prodSearch.value.trim().toLowerCase();
       return !kw || p.prodNm.toLowerCase().includes(kw);
     }));
@@ -142,7 +142,7 @@ window.PmEventDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.inner.forEach(e => { errors[e.path] = e.message; });
+        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
@@ -182,7 +182,7 @@ window.PmEventDtl = {
     const showVendorModal = ref(false);
     const selectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = vendors.value.find(x => x.vendorId === form.vendorId);
+      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {

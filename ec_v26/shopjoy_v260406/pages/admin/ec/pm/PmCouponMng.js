@@ -55,7 +55,7 @@ window.PmCouponMng = {
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => coupons.value.filter(c => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(coupons, c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.name.toLowerCase().includes(kw) && !c.code.toLowerCase().includes(kw)) return false;
       if (applied.status && c.statusCd !== applied.status) return false;

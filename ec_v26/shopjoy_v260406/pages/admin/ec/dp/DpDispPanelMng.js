@@ -109,7 +109,7 @@ window.DpDispPanelMng = {
 
     const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
 
-    const filtered = computed(() => displays.value.filter(d => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(displays, d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
       if (applied.area && d.area !== applied.area) return false;
@@ -135,7 +135,7 @@ window.DpDispPanelMng = {
           // top-level prefix or sub-group
           const codes = codes.value || [];
           const areaNm = (code) => {
-            const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
+            const c = window.safeArrayUtils.safeFind(codes, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
             return c ? c.codeLabel : code;
           };
 
@@ -312,7 +312,7 @@ window.DpDispPanelMng = {
       if (si === -1 || ti === -1) { panelDragSrc.value = null; return; }
       const moved = arr.splice(si, 1)[0];
       arr.splice(ti, 0, moved);
-      arr.forEach((x, i) => { x.sortOrder = i + 1; });
+      window.safeArrayUtils.safeForEach(arr, (x, i) => { x.sortOrder = i + 1; });
       props.showToast('패널 순서가 변경되었습니다.', 'info');
       panelDragSrc.value = null;
     };
@@ -339,11 +339,11 @@ window.DpDispPanelMng = {
       if (widgetDragPanel.value !== dispId) return;
       const src = widgetDragSrcWi.value;
       if (src === null || src === wi) { widgetDragPanel.value = null; widgetDragSrcWi.value = null; return; }
-      const panel = displays.value.find(x => x.dispId === dispId);
+      const panel = displays.window.safeArrayUtils.safeFind(value, x => x.dispId === dispId);
       if (!panel?.rows) return;
       const moved = panel.rows.splice(src, 1)[0];
       panel.rows.splice(wi, 0, moved);
-      panel.rows.forEach((r, i) => { r.sortOrder = i + 1; });
+      panel.rwindow.safeArrayUtils.safeForEach(ows, (r, i) => { r.sortOrder = i + 1; });
       widgetDragPanel.value = null; widgetDragSrcWi.value = null;
     };
     const onWidgetDragEnd = () => { widgetDragPanel.value = null; widgetDragSrcWi.value = null; widgetDragOverWi.value = null; };
@@ -356,9 +356,9 @@ window.DpDispPanelMng = {
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const expandAll  = () => {
       treeOpen.value.add('__root__');
-      panelTree.value.forEach(n => {
+      window.safeArrayUtils.safeForEach(panelTree, n => {
         treeOpen.value.add('grp_'+n.label);
-        n.children.forEach(c => treeOpen.value.add(n.label+'_'+c.label));
+        n.cwindow.safeArrayUtils.safeForEach(hildren, c => treeOpen.value.add(n.label+'_'+c.label));
       });
     };
     const collapseAll= () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
@@ -367,7 +367,7 @@ window.DpDispPanelMng = {
     const panelTree = computed(() => {
       const codes = codes.value || [];
       const areaNm = (code) => {
-        const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
+        const c = window.safeArrayUtils.safeFind(codes, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;
       };
       const map = {};

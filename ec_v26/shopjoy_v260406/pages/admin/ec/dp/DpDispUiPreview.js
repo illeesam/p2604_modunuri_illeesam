@@ -187,7 +187,7 @@ window.DpDispUiPreview = {
       { value: 'EXECUTIVE', label: '임직원' },
     ];
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
-    const wTypeLabel = (v) => WIDGET_TYPES.find(t => t.value === v)?.label || v;
+    const wTypeLabel = (v) => window.safeArrayUtils.safeFind(WIDGET_TYPES, t => t.value === v)?.label || v;
 
     /* ── 조회 조건 ── */
     const previewDate     = ref(today);
@@ -268,11 +268,11 @@ window.DpDispUiPreview = {
     };
     const isOpen = (key) => openNodes.value.has(key);
     const allChildrenOpen = (node) =>
-      node.children.every(sub => openNodes.value.has(node.label + '_' + sub.label));
+      node.cwindow.safeArrayUtils.safeEvery(hildren, sub => openNodes.value.has(node.label + '_' + sub.label));
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
-      node.children.forEach(sub => {
+      node.cwindow.safeArrayUtils.safeForEach(hildren, sub => {
         const key = node.label + '_' + sub.label;
         if (open) openNodes.value.add(key);
         else openNodes.value.delete(key);
@@ -282,10 +282,10 @@ window.DpDispUiPreview = {
     Vue.watchEffect(() => {
       if (!openNodes.value.has('__root__')) openNodes.value.add('__root__');
       if (tree.value.length && openNodes.value.size === 1) {
-        openNodes.value.add(tree.value[0].label);
+        openNodes.value.add(tree.window.safeArrayUtils.safeGet(value, 0).label);
       }
     });
-    const expandAll = () => { tree.value.forEach(n => openNodes.value.add(n.label)); openNodes.value.add('__root__'); };
+    const expandAll = () => { window.safeArrayUtils.safeForEach(tree, n => openNodes.value.add(n.label)); openNodes.value.add('__root__'); };
     const collapseAll = () => { openNodes.value.clear(); openNodes.value.add('__root__'); };
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
@@ -296,7 +296,7 @@ window.DpDispUiPreview = {
     const onItemDragEnd = () => { window._dragWidgetLib = null; };
     const dedupeLibs = (arr) => {
       const seen = new Set();
-      return arr.filter(lib => { if (seen.has(lib.libId)) return false; seen.add(lib.libId); return true; });
+      return window.safeArrayUtils.safeFilter(arr, lib => { if (seen.has(lib.libId)) return false; seen.add(lib.libId); return true; });
     };
     const onNodeDragStart = (e, allLibs) => {
       const libs = dedupeLibs(allLibs);
@@ -439,7 +439,7 @@ window.DpDispUiPreview = {
         const startX = Math.max(0, e.clientX - rect.left - 120);
         const startY = Math.max(0, e.clientY - rect.top  - 20);
         const COLS = 3, W = 260, H = 200, GAP = 10;
-        nodeLibs.forEach((lib, i) => {
+        window.safeArrayUtils.safeForEach(nodeLibs, (lib, i) => {
           const col = i % COLS, row = Math.floor(i / COLS);
           dashItems.push({ id: Date.now() + i, lib: { ...lib },
             x: startX + col * (W + GAP), y: startY + row * (H + GAP), w: W, h: H });
@@ -497,7 +497,7 @@ window.DpDispUiPreview = {
     const placedCount = computed(() =>
       previewGrid.value === 'dashboard'
         ? dashItems.length
-        : currentSlots.value.filter(Boolean).length
+        : window.safeArrayUtils.safeFilter(currentSlots, Boolean).length
     );
     const resetCurrent = () => {
       if (previewGrid.value === 'dashboard') {

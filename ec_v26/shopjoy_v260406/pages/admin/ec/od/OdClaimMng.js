@@ -58,7 +58,7 @@ window.OdClaimMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => claims.value.filter(c => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(claims, c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.claimId.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw) && !c.prodNm.toLowerCase().includes(kw)) return false;
       if (applied.type && c.type !== applied.type) return false;
@@ -127,11 +127,11 @@ window.OdClaimMng = {
     const checked = ref(new Set());
     const toggleCheck = (id) => { const s = new Set(checked.value); if (s.has(id)) s.delete(id); else s.add(id); checked.value = s; };
     const isChecked = (id) => checked.value.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(c => checked.value.has(c.claimId)));
+    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, c => checked.value.has(c.claimId)));
     const toggleCheckAll = () => {
       const s = new Set(checked.value);
-      if (allChecked.value) pageList.value.forEach(c => s.delete(c.claimId));
-      else pageList.value.forEach(c => s.add(c.claimId));
+      if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, c => s.delete(c.claimId));
+      else window.safeArrayUtils.safeForEach(pageList, c => s.add(c.claimId));
       checked.value = s;
     };
     const claimStatusCodes = (codes.value || [])
@@ -160,7 +160,7 @@ window.OdClaimMng = {
     };
     const onReqTargetChange = () => {
       const ids = Array.from(checked.value);
-      const first = claims.value.find(c => ids.includes(c.claimId));
+      const first = claims.window.safeArrayUtils.safeFind(value, c => ids.includes(c.claimId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')    bulkForm.reqTargetNm = first.orderId || '';
       else if (bulkForm.reqTarget === '상품') bulkForm.reqTargetNm = first.prodNm || '';
@@ -176,7 +176,7 @@ window.OdClaimMng = {
     });
     const checkedByType = computed(() => {
       const r = { '취소':[], '반품':[], '교환':[] };
-      claims.value.forEach(c => { if (checked.value.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
+      window.safeArrayUtils.safeForEach(claims, c => { if (checked.value.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
       return r;
     });
     const openBulk = () => {
@@ -193,7 +193,7 @@ window.OdClaimMng = {
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked.value);
-      const selected = claims.value.filter(c => ids.includes(c.claimId));
+      const selected = window.safeArrayUtils.safeFilter(claims, c => ids.includes(c.claimId));
       let rows = [];
       if (bulkTab.value === 'status') {
         rows = selected
@@ -223,8 +223,8 @@ window.OdClaimMng = {
         const msg = changes.map(c => `[${c.type}] ${c.ids.length}건 → ${c.status}`).join('\n');
         const ok = await props.showConfirm('일괄 클레임상태 변경', `${msg}\n\n총 ${totalCnt}건을 변경하시겠습니까?`);
         if (!ok) return;
-        changes.forEach(ch => {
-          claims.value.forEach(c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
+        window.safeArrayUtils.safeForEach(changes, ch => {
+          window.safeArrayUtils.safeForEach(claims, c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
         });
         checked.value = new Set();
         bulkOpen.value = false;
@@ -243,7 +243,7 @@ window.OdClaimMng = {
         const ids = Array.from(checked.value);
         const ok = await props.showConfirm('일괄 클레임유형 변경', `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`);
         if (!ok) return;
-        claims.value.forEach(c => { if (ids.includes(c.claimId)) c.type = val; });
+        window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) c.type = val; });
         checked.value = new Set();
         bulkOpen.value = false;
         try {
@@ -260,7 +260,7 @@ window.OdClaimMng = {
         const ids = Array.from(checked.value);
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
-        claims.value.forEach(c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
+        window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
           const res = await window.adminApi.put('claims/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
@@ -276,7 +276,7 @@ window.OdClaimMng = {
         const ids = Array.from(checked.value);
         const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
         if (!ok) return;
-        claims.value.forEach(c => { if (ids.includes(c.claimId)) {
+        window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) {
           c.apprToUserId = bulkForm.apprToUserId; c.apprToNm = bulkForm.apprToNm;
           c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
           c.reqAmount = Number(bulkForm.reqAmount||0); c.reqReason = bulkForm.reqReason;

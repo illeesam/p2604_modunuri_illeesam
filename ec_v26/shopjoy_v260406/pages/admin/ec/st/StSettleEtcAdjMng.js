@@ -33,7 +33,7 @@ window.StSettleEtcAdjMng = {
 
     const filtered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
-      return etcAdjList.filter(r => {
+      return window.safeArrayUtils.safeFilter(etcAdjList, r => {
         if (dateStart.value && r.adjDate < dateStart.value) return false;
         if (dateEnd.value   && r.adjDate > dateEnd.value)   return false;
         if (searchType.value   && r.adjType    !== searchType.value)   return false;
@@ -66,7 +66,7 @@ window.StSettleEtcAdjMng = {
       if (!form.adjType)  { errors.adjType  = '유형을 선택하세요.'; }
       if (!form.reason)   { errors.reason   = '사유를 입력하세요.'; }
       if (Object.keys(errors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const v = vendors.value.find(x => x.vendorId === Number(form.vendorId));
+      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
       const ok = await props.showConfirm('저장', '기타조정을 저장하시겠습니까?');
       if (!ok) return;

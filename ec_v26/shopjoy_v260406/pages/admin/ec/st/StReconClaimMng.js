@@ -20,7 +20,7 @@ window.StReconClaimMng = {
     const pager = reactive({ page: 1, size: 10 });
 
     const rows = computed(() => {
-      return claims.value.filter(c => {
+      return window.safeArrayUtils.safeFilter(claims, c => {
         if (dateStart.value && c.requestDate.slice(0,10) < dateStart.value) return false;
         if (dateEnd.value   && c.requestDate.slice(0,10) > dateEnd.value)   return false;
         return true;
@@ -39,9 +39,9 @@ window.StReconClaimMng = {
     const pageList = computed(() => rows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const summary  = computed(() => ({
-      match: rows.value.filter(r=>r.diffStatus==='일치').length,
-      over:  rows.value.filter(r=>r.diffStatus==='조정과다').length,
-      under: rows.value.filter(r=>r.diffStatus==='조정부족').length,
+      match: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='일치').length,
+      over:  window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='조정과다').length,
+      under: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='조정부족').length,
     }));
 
     const diffBadge = s => ({ '일치':'badge-green','조정과다':'badge-red','조정부족':'badge-orange' }[s] || 'badge-gray');

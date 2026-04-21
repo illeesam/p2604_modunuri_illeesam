@@ -32,7 +32,7 @@ window.StErpViewMng = {
 
     const filtered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
-      return slips.filter(r => {
+      return window.safeArrayUtils.safeFilter(slips, r => {
         if (dateStart.value && r.slipDate < dateStart.value) return false;
         if (dateEnd.value   && r.slipDate > dateEnd.value)   return false;
         if (searchType.value   && r.slipType    !== searchType.value)   return false;

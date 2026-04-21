@@ -79,7 +79,7 @@ window.DpDispUiMng = {
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const uiTree = computed(() => {
       const group = {};
-      allUis.value.forEach(u => {
+      window.safeArrayUtils.safeForEach(allUis, u => {
         const t = u.uiType || '(미분류)';
         if (!group[t]) group[t] = [];
         group[t].push(u);
@@ -90,12 +90,12 @@ window.DpDispUiMng = {
         items: group[t].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
       }));
     });
-    const expandAll   = () => { uiTree.value.forEach(n => { treeOpen.value.add('grp_'+n.label); n.items.forEach(u => treeOpen.value.add('ui_'+u.codeId)); }); treeOpen.value.add('__root__'); };
+    const expandAll   = () => { window.safeArrayUtils.safeForEach(uiTree, n => { treeOpen.value.add('grp_'+n.label); n.iwindow.safeArrayUtils.safeForEach(tems, u => treeOpen.value.add('ui_'+u.codeId)); }); treeOpen.value.add('__root__'); };
     const collapseAll = () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
 
     const filtered = computed(() => {
       const kw = applied.kw.trim().toLowerCase();
-      return allUis.value.filter(u => {
+      return window.safeArrayUtils.safeFilter(allUis, u => {
         if (kw &&
             !(u.codeValue || '').toLowerCase().includes(kw) &&
             !(u.codeLabel || '').toLowerCase().includes(kw) &&
@@ -166,7 +166,7 @@ window.DpDispUiMng = {
       '전시UI목록.csv'
     );
 
-    const uiTypeLabel = (v) => (UI_TYPE_OPTS.find(o => o.value === v) || {}).label || '-';
+    const uiTypeLabel = (v) => (window.safeArrayUtils.safeFind(UI_TYPE_OPTS, o => o.value === v) || {}).label || '-';
     const statusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* UI 하위 영역 개수 (영역의 uiCode 필드 기준) */

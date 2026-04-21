@@ -50,7 +50,7 @@ window.CmNoticeMng = {
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-    const filtered = computed(() => notices.value.filter(n => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(notices, n => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !n.title.toLowerCase().includes(kw)) return false;
       if (applied.type && n.noticeType !== applied.type) return false;

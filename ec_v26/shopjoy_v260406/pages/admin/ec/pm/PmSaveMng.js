@@ -56,7 +56,7 @@ window.PmSaveMng = {
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
     const list = computed(() => saveList.value || []);
-    const filtered = computed(() => list.value.filter(s => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(list, s => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(s.saveNm || '').toLowerCase().includes(kw) && !String(s.saveId || '').includes(kw)) return false;
       if (applied.type   && s.saveType   !== applied.type)   return false;

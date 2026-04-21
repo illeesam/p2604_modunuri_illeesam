@@ -42,13 +42,13 @@ window.DpDispPanelDtl = {
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const previewFrameWidth = computed(() => {
-      const m = PREVIEW_MODES.find(x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
       return (m?.width || 480) + 'px';
     });
     /* 패널 폭(스플리터 드래그 반영). 모드 변경 시 자동 갱신 */
     const previewPaneWidth = ref(520);
     Vue.watch(previewMode, (m) => {
-      const info = PREVIEW_MODES.find(x => x.value === m);
+      const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       previewPaneWidth.value = (info?.width || 480) + 40;
     });
     /* 스플리터 드래그 */
@@ -150,7 +150,7 @@ window.DpDispPanelDtl = {
       { key: 'info', label: '패널기본정보' },
       ...rows.map((_, i) => ({ key: 'tab'+(i+1), label: '전시항목 '+(i+1) })),
     ]);
-    const TAB_ROW_MAP  = computed(() => { const m = {}; rows.forEach((_, i) => { m['tab'+(i+1)] = i; }); return m; });
+    const TAB_ROW_MAP  = computed(() => { const m = {}; window.safeArrayUtils.safeForEach(rows, (_, i) => { m['tab'+(i+1)] = i; }); return m; });
     const ROW_TAB_KEYS = computed(() => rows.map((_, i) => 'tab'+(i+1)));
 
     const activeRowIdx = computed(() => { const idx = TAB_ROW_MAP.value[tab.value]; return idx !== undefined ? idx : null; });
@@ -167,7 +167,7 @@ window.DpDispPanelDtl = {
       Object.assign(rows[idx], b);
       Object.assign(rows[target], a);
       /* 탭 순서(1~5)를 sortOrder에 반영 */
-      rows.forEach((r, i) => { r.sortOrder = i + 1; });
+      window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
       tab.value = ROW_TAB_KEYS.value[target];
     };
 
@@ -242,7 +242,7 @@ window.DpDispPanelDtl = {
       if (activeRow.value) activeRow.value.fileListJson = JSON.stringify(items);
     };
     const addFileItem    = () => _saveFileList([...fileListItems.value, { name: '', url: '' }]);
-    const removeFileItem = (idx) => _saveFileList(fileListItems.value.filter((_, i) => i !== idx));
+    const removeFileItem = (idx) => _saveFileList(window.safeArrayUtils.safeFilter(fileListItems, (_, i) => i !== idx));
     const updateFileItem = (idx, field, val) =>
       _saveFileList(fileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
@@ -442,7 +442,7 @@ window.DpDispPanelDtl = {
       await nextTick();
       /* 기존 데이터 로드 */
       if (!isNew.value) {
-        const d = displays.value.find(x => x.dispId === props.editId);
+        const d = displays.window.safeArrayUtils.safeFind(value, x => x.dispId === props.editId);
         if (d) {
           form.dispId        = d.dispId;
           form.dispCode      = d.dispCode      || '';
@@ -464,9 +464,9 @@ window.DpDispPanelDtl = {
           form.panelVisibilityTargets= d.panelVisibilityTargets|| '^PUBLIC^';
           if (d.rows && d.rows.length) {
             rows.splice(0, rows.length, ...d.rows.map((r, i) => makeRowData({ sortOrder: i+1, ...r })));
-            d.rows.forEach((_, i) => expandedSections.add('tab'+(i+1)));
+            d.rwindow.safeArrayUtils.safeForEach(ows, (_, i) => expandedSections.add('tab'+(i+1)));
           } else {
-            Object.assign(rows[0], { ...d });
+            Object.assign(window.safeArrayUtils.safeGet(rows, 0), { ...d });
           }
         }
       } else {
@@ -509,7 +509,7 @@ window.DpDispPanelDtl = {
       const isNewPanel = isNew.value;
       const ok = await props.showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(rows[0].sortOrder) };
+      const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(window.safeArrayUtils.safeGet(rows, 0).sortOrder) };
       if (isNewPanel) {
         payload.dispId  = nextId.value(displays.value, 'dispId');
         payload.regDate = new Date().toISOString().slice(0, 10);
@@ -546,7 +546,7 @@ window.DpDispPanelDtl = {
       const found = (codes.value || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
-    const wLabel = (t) => WIDGET_TYPES.find(w => w.value === t)?.label || t || '-';
+    const wLabel = (t) => window.safeArrayUtils.safeFind(WIDGET_TYPES, w => w.value === t)?.label || t || '-';
 
     /* ── 펼치기 / 탭 모드 토글 ── */
     const viewAll = ref(false);
@@ -593,7 +593,7 @@ window.DpDispPanelDtl = {
       const b = { ...rows[target] };
       Object.assign(rows[rowIdx], b);
       Object.assign(rows[target], a);
-      rows.forEach((r, i) => { r.sortOrder = i + 1; });
+      window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
     };
 
     /* ── 위젯 추가 / 삭제 ── */
@@ -608,7 +608,7 @@ window.DpDispPanelDtl = {
       if (idx === 0 || rows.length <= 1) return;
       const currentIdx = activeRowIdx.value;
       rows.splice(idx, 1);
-      rows.forEach((r, i) => { r.sortOrder = i + 1; });
+      window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
       expandedSections.delete('tab' + (rows.length + 1));
       if (currentIdx !== null && currentIdx >= rows.length) {
         tab.value = 'tab' + rows.length;
@@ -630,7 +630,7 @@ window.DpDispPanelDtl = {
         activeRow.value.visibilityTargets = '^PUBLIC^';
         return;
       }
-      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
       activeRow.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
@@ -667,7 +667,7 @@ window.DpDispPanelDtl = {
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
       if (code === 'PUBLIC' && i < 0) { form.panelVisibilityTargets = '^PUBLIC^'; return; }
-      const filtered = list.filter(c => c !== 'PUBLIC' || code === 'PUBLIC');
+      const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
       form.panelVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
@@ -675,7 +675,7 @@ window.DpDispPanelDtl = {
     const rowCopyOpen = ref(false);
     const onRowCopy = (pickedRows) => {
       if (!Array.isArray(pickedRows) || !pickedRows.length) return;
-      pickedRows.forEach(r => {
+      window.safeArrayUtils.safeForEach(pickedRows, r => {
         if (rows.length >= MAX_WIDGETS) return;
         rows.push({ ...makeRowData(), ...r, sortOrder: rows.length + 1 });
       });
@@ -1317,7 +1317,7 @@ window.DpDispPanelDtl = {
             </span>
           </span>
           <span style="font-size:10px;color:#aaa;margin-left:auto;">
-            {{ tab==='info' ? '전체 전시항목' : (TAB_LABELS.find(t=>t.key===tab)||{}).label }}
+            {{ tab==='info' ? '전체 전시항목' : (window.safeArrayUtils.safeFind(TAB_LABELS, t=>t.key===tab)||{}).label }}
           </span>
         </div>
         <!-- 디바이스 모드 버튼 -->
@@ -1355,7 +1355,7 @@ window.DpDispPanelDtl = {
             <disp-x04-widget
               :params="{ }"
               :disp-opt="{ showBadges: true }"
-              :widget-item="{...activeRow, widgetNm: activeRow.widgetNm||(TAB_LABELS.find(t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
+              :widget-item="{...activeRow, widgetNm: activeRow.widgetNm||(window.safeArrayUtils.safeFind(TAB_LABELS, t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
             />
           </template>
         </div><!-- /device frame -->

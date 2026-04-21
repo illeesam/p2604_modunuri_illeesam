@@ -21,7 +21,7 @@ window.StReconPayMng = {
 
     const PAY_METHODS = ['카드결제','계좌이체','캐쉬','혼합결제'];
     const rows = computed(() => {
-      return orders.value.filter(o => {
+      return window.safeArrayUtils.safeFilter(orders, o => {
         if (dateStart.value && o.orderDate.slice(0,10) < dateStart.value) return false;
         if (dateEnd.value   && o.orderDate.slice(0,10) > dateEnd.value)   return false;
         return true;
@@ -40,9 +40,9 @@ window.StReconPayMng = {
     const pageList = computed(() => rows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const summary  = computed(() => ({
-      match:   rows.value.filter(r=>r.diffStatus==='일치').length,
-      over:    rows.value.filter(r=>r.diffStatus==='결제과다').length,
-      under:   rows.value.filter(r=>r.diffStatus==='결제부족').length,
+      match:   window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='일치').length,
+      over:    window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='결제과다').length,
+      under:   window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='결제부족').length,
       diffAmt: rows.value.reduce((s,r)=>s+Math.abs(r.diff),0),
     }));
 

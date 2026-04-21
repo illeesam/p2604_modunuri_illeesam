@@ -68,7 +68,7 @@ window.DpDispWidgetLibMng = {
       'barcode_qrcode':'🔖', 'video_player':'▶️',      'countdown':'⏱',
       'payment_widget':'💳', 'approval_widget':'✅',   'map_widget':'🗺',
     };
-    const wTypeLabel = (v) => WIDGET_TYPES.find(t => t.value === v)?.label || v;
+    const wTypeLabel = (v) => window.safeArrayUtils.safeFind(WIDGET_TYPES, t => t.value === v)?.label || v;
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* ── 검색 ── */
@@ -108,15 +108,15 @@ window.DpDispWidgetLibMng = {
       const addToPath = (lib, pathStr) => {
         const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
         if (!parts.length) return;
-        const top = parts[0];
+        const top = window.safeArrayUtils.safeGet(parts, 0);
         const rest = parts.slice(1).join(' > ') || '(루트)';
         if (!map[top]) map[top] = {};
         if (!map[top][rest]) map[top][rest] = [];
         map[top][rest].push(lib);
       };
-      searchedLibs.value.forEach(lib => {
+      window.safeArrayUtils.safeForEach(searchedLibs, lib => {
         if (!lib.usedPaths || !lib.usedPaths.length) addToPath(lib, '(미등록) > (미등록)');
-        else lib.usedPaths.forEach(p => addToPath(lib, p));
+        else lib.uwindow.safeArrayUtils.safeForEach(sedPaths, p => addToPath(lib, p));
       });
       return Object.keys(map).sort().map(top => ({
         label: top,
@@ -136,7 +136,7 @@ window.DpDispWidgetLibMng = {
     const isOpen = (key) => openNodes.value.has(key);
     const selectTree = (key) => { selectedTreeKey.value = selectedTreeKey.value === key ? '' : key; pager.page = 1; };
     const expandAll = () => {
-      tree.value.forEach(n => { openNodes.value.add(n.label); });
+      window.safeArrayUtils.safeForEach(tree, n => { openNodes.value.add(n.label); });
     };
     const collapseAll = () => { openNodes.value.clear(); };
 
@@ -146,13 +146,13 @@ window.DpDispWidgetLibMng = {
       let list = searchedLibs.value;
       if (key) {
         const [top, sub] = key.split('>').map(s => s.trim());
-        list = list.filter(lib => {
+        list = window.safeArrayUtils.safeFilter(list, lib => {
           const paths = lib.usedPaths && lib.usedPaths.length
             ? lib.usedPaths
             : ['(미등록) > (미등록)'];
-          return paths.some(p => {
+          return window.safeArrayUtils.safeSome(paths, p => {
             const parts = p.split('>').map(s => s.trim()).filter(Boolean);
-            if (parts[0] !== top) return false;
+            if (window.safeArrayUtils.safeFirst(parts) !== top) return false;
             if (!sub) return true;
             const rest = parts.slice(1).join(' > ') || '(루트)';
             return rest === sub;

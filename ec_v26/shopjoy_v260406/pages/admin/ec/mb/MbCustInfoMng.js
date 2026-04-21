@@ -117,27 +117,27 @@
       /* ── 파생 데이터 (computed) ── */
       const custOrders = computed(() =>
         !customer.value ? [] : filtered(
-          orders.value.filter(o => o.userId === customer.value.userId), 'orderDate')
+          window.safeArrayUtils.safeFilter(orders, o => o.userId === customer.value.userId), 'orderDate')
       );
       const custClaims = computed(() =>
         !customer.value ? [] : filtered(
-          claims.value.filter(c => c.userId === customer.value.userId), 'requestDate')
+          window.safeArrayUtils.safeFilter(claims, c => c.userId === customer.value.userId), 'requestDate')
       );
       const custDeliveries = computed(() =>
         !customer.value ? [] : filtered(
-          deliveries.value.filter(d => d.userId === customer.value.userId), 'regDate')
+          window.safeArrayUtils.safeFilter(deliveries, d => d.userId === customer.value.userId), 'regDate')
       );
       const custCache = computed(() =>
         !customer.value ? [] : filtered(
-          cacheList.value.filter(c => c.userId === customer.value.userId), 'date')
+          window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId), 'date')
       );
       const custContacts = computed(() =>
         !customer.value ? [] : filtered(
-          contacts.value.filter(c => c.userId === customer.value.userId), 'date')
+          window.safeArrayUtils.safeFilter(contacts, c => c.userId === customer.value.userId), 'date')
       );
       const custChats = computed(() =>
         !customer.value ? [] : filtered(
-          chats.value.filter(c => c.userId === customer.value.userId), 'date')
+          window.safeArrayUtils.safeFilter(chats, c => c.userId === customer.value.userId), 'date')
       );
       const custLoginHist = computed(() =>
         !customer.value ? [] : filtered(
@@ -155,7 +155,7 @@
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */
       const custCacheBalance = computed(() => {
         if (!customer.value) return 0;
-        const all = cacheList.value.filter(c => c.userId === customer.value.userId);
+        const all = window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId);
         if (!all.length) return 0;
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
@@ -169,7 +169,7 @@
       const searchMemberModal = () => {
         const kw = memberModal.keyword.trim().toLowerCase();
         memberModal.list = kw
-          ? members.value.filter(m =>
+          ? window.safeArrayUtils.safeFilter(members, m =>
               m.memberNm.includes(kw) || m.email.toLowerCase().includes(kw) || (m.phone || '').includes(kw))
           : [...members.value];
       };
@@ -185,15 +185,15 @@
         const kw = searchInput.value.trim();
         if (!kw) { props.showToast('검색어를 입력하세요.', 'error'); return; }
         if (searchMode.value === 'order') {
-          const order = orders.value.find(o => o.orderId === kw);
+          const order = orders.window.safeArrayUtils.safeFind(value, o => o.orderId === kw);
           if (!order) { props.showToast('해당 주문을 찾을 수 없습니다.', 'error'); return; }
-          const mem = members.value.find(m => m.userId === order.userId);
+          const mem = members.window.safeArrayUtils.safeFind(value, m => m.userId === order.userId);
           if (!mem) { props.showToast('주문의 회원 정보를 찾을 수 없습니다.', 'error'); return; }
           customer.value = mem; searchInput.value = '';
         } else if (searchMode.value === 'claim') {
-          const claim = claims.value.find(c => c.claimId === kw);
+          const claim = claims.window.safeArrayUtils.safeFind(value, c => c.claimId === kw);
           if (!claim) { props.showToast('해당 클레임을 찾을 수 없습니다.', 'error'); return; }
-          const mem = members.value.find(m => m.userId === claim.userId);
+          const mem = members.window.safeArrayUtils.safeFind(value, m => m.userId === claim.userId);
           if (!mem) { props.showToast('클레임의 회원 정보를 찾을 수 없습니다.', 'error'); return; }
           customer.value = mem; searchInput.value = '';
         }
@@ -310,7 +310,7 @@
       <div style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;">
         <!-- 아바타 -->
         <div :style="'width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;'+(customer.grade==='VIP'?'background:linear-gradient(135deg,#9c27b0,#e040fb);':customer.grade==='우수'?'background:linear-gradient(135deg,#1976d2,#42a5f5);':'background:linear-gradient(135deg,#78909c,#b0bec5);')">
-          {{ customer.memberNm[0] }}
+          {{ customer.window.safeArrayUtils.safeGet(memberNm, 0) }}
         </div>
         <!-- 이름/등급/상태 -->
         <div style="flex:1;min-width:0;">

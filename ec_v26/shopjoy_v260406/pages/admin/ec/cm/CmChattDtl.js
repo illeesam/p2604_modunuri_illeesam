@@ -67,7 +67,7 @@ window.CmChattDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        chat.value = chats.value.find(c => c.chatId === props.editId) || null;
+        chat.value = chats.window.safeArrayUtils.safeFind(value, c => c.chatId === props.editId) || null;
         if (chat.value) chat.value.unread = 0;
         scrollToBottom();
       } else {
@@ -78,7 +78,7 @@ window.CmChattDtl = {
     /* 회원의 다른 채팅 이력 */
     const memberChats = computed(() => {
       if (!chat.value) return [];
-      return chats.value.filter(c => c.userId === chat.value.userId && c.chatId !== chat.value.chatId);
+      return window.safeArrayUtils.safeFilter(chats, c => c.userId === chat.value.userId && c.chatId !== chat.value.chatId);
     });
 
     /* 신규 채팅 form */
@@ -111,7 +111,7 @@ window.CmChattDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.inner.forEach(e => { errors[e.path] = e.message; });
+        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
@@ -145,7 +145,7 @@ window.CmChattDtl = {
     const searchUserId = ref('');
     const userChats = computed(() => {
       if (!searchUserId.value) return [];
-      return chats.value.filter(c => String(c.userId) === String(searchUserId.value));
+      return window.safeArrayUtils.safeFilter(chats, c => String(c.userId) === String(searchUserId.value));
     });
     const searchUser = computed(() => getMember.value(Number(searchUserId.value)));
 

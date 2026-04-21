@@ -34,7 +34,7 @@ window.StSettlePayMng = {
 
     const filtered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
-      return payList.filter(r => {
+      return window.safeArrayUtils.safeFilter(payList, r => {
         if (dateStart.value && r.payDate < dateStart.value) return false;
         if (dateEnd.value   && r.payDate > dateEnd.value)   return false;
         if (searchStatus.value && r.payStatus !== searchStatus.value) return false;
@@ -49,8 +49,8 @@ window.StSettlePayMng = {
 
     const summary = computed(() => ({
       total:  filtered.value.reduce((s, r) => s + r.settleAmt, 0),
-      paid:   filtered.value.filter(r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
-      pending:filtered.value.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
+      paid:   window.safeArrayUtils.safeFilter(filtered, r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
+      pending:window.safeArrayUtils.safeFilter(filtered, r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
     }));
 
     const doPay = async (r) => {

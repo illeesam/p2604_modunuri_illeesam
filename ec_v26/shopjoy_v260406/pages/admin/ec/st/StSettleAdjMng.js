@@ -33,7 +33,7 @@ window.StSettleAdjMng = {
 
     const filtered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
-      return adjList.filter(r => {
+      return window.safeArrayUtils.safeFilter(adjList, r => {
         if (dateStart.value && r.adjDate < dateStart.value) return false;
         if (dateEnd.value   && r.adjDate > dateEnd.value)   return false;
         if (searchType.value   && r.adjType     !== searchType.value)   return false;
@@ -70,8 +70,8 @@ window.StSettleAdjMng = {
     const doSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const v = vendors.value.find(x => x.vendorId === Number(form.vendorId));
+      catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
       const ok = await props.showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) return;

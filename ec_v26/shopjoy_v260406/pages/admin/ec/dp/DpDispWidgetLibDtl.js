@@ -154,7 +154,7 @@ window.DpDispWidgetLibDtl = {
     });
     const saveFileList   = (items) => { form.fileListJson = JSON.stringify(items); };
     const addFileItem    = () => saveFileList([...fileListItems.value, { name: '', url: '' }]);
-    const removeFileItem = (idx) => saveFileList(fileListItems.value.filter((_, i) => i !== idx));
+    const removeFileItem = (idx) => saveFileList(window.safeArrayUtils.safeFilter(fileListItems, (_, i) => i !== idx));
     const updateFileItem = (idx, field, val) =>
       saveFileList(fileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
@@ -301,12 +301,12 @@ window.DpDispWidgetLibDtl = {
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const previewFrameWidth = computed(() => {
-      const m = PREVIEW_MODES.find(x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
       return (m?.width || 420) + 'px';
     });
     const previewPaneWidth = ref(460);
     Vue.watch(previewMode, (m) => {
-      const info = PREVIEW_MODES.find(x => x.value === m);
+      const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       previewPaneWidth.value = (info?.width || 420) + 40;
     });
     const onSplitDrag = (e) => {
@@ -400,7 +400,7 @@ window.DpDispWidgetLibDtl = {
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
       const isNewLib = isNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');

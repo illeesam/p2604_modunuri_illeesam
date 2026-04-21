@@ -36,16 +36,16 @@ window.PdCategoryMng = {
       const _ = expandedSet.value; // reactive dependency
       const cats = categories.value;
       const map = {};
-      cats.forEach(c => { map[c.categoryId] = { ...c, _children: [] }; });
-      cats.forEach(c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
-      const roots = cats.filter(c => !c.parentId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
+      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
+      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       const result = [];
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
         if (isExpanded(node.categoryId))
           [...node._children].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
       };
-      roots.forEach(r => traverse(r, 0));
+      window.safeArrayUtils.safeForEach(roots, r => traverse(r, 0));
       return result;
     });
 
@@ -66,9 +66,9 @@ window.PdCategoryMng = {
     /* 그리드 트리 평탄화 */
     const buildTreeRows = (items) => {
       const map = {};
-      items.forEach(c => { map[c.categoryId] = { ...c, _children: [] }; });
+      window.safeArrayUtils.safeForEach(items, c => { map[c.categoryId] = { ...c, _children: [] }; });
       const roots = [];
-      items.forEach(c => {
+      window.safeArrayUtils.safeForEach(items, c => {
         if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]);
         else roots.push(map[c.categoryId]);
       });
@@ -88,7 +88,7 @@ window.PdCategoryMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      const filtered = categories.value.filter(c => {
+      const filtered = window.safeArrayUtils.safeFilter(categories, c => {
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !(c.categoryNm || '').toLowerCase().includes(kw)) return false;
         if (applied.depth  && String(c.depth) !== applied.depth) return false;
@@ -103,7 +103,7 @@ window.PdCategoryMng = {
 
     loadGrid();
 
-    const total      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const total      = computed(() => window.safeArrayUtils.safeFilter(gridRows, r => r._row_status !== 'D').length);
     const pagedRows  = computed(() => gridRows.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
     const pageNums   = computed(() => {
@@ -121,13 +121,13 @@ window.PdCategoryMng = {
 
     const onCellChange = row => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
+      const changed = window.safeArrayUtils.safeSome(EDIT_FIELDS, f => String(row[f]) !== String(row._orig[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
     const calcDepth = parentId => {
       if (!parentId) return 1;
-      const p = categories.value.find(c => c.categoryId === parentId);
+      const p = categories.window.safeArrayUtils.safeFind(value, c => c.categoryId === parentId);
       return p ? (p.depth || 1) + 1 : 1;
     };
 
@@ -135,7 +135,7 @@ window.PdCategoryMng = {
     const addRow = () => {
       const parentId = selectedCatId.value || null;
       const depth    = calcDepth(parentId);
-      const maxSort  = gridRows.filter(r => r.parentId === parentId && r._row_status !== 'D')
+      const maxSort  = window.safeArrayUtils.safeFilter(gridRows, r => r.parentId === parentId && r._row_status !== 'D')
                                .reduce((m, r) => Math.max(m, r.sortOrd || 0), 0);
       const newRow = {
         categoryId: _tempId--, categoryNm: '', parentId, depth,
@@ -152,7 +152,7 @@ window.PdCategoryMng = {
     const addChildRow = (row, realIdx) => {
       const parentId = row.categoryId > 0 ? row.categoryId : null;
       const depth    = calcDepth(parentId);
-      const maxSort  = gridRows.filter(r => r.parentId === parentId && r._row_status !== 'D')
+      const maxSort  = window.safeArrayUtils.safeFilter(gridRows, r => r.parentId === parentId && r._row_status !== 'D')
                                .reduce((m, r) => Math.max(m, r.sortOrd || 0), 0);
       const newRow = {
         categoryId: _tempId--, categoryNm: '', parentId, depth,
@@ -173,7 +173,7 @@ window.PdCategoryMng = {
     const cancelRow = realIdx => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') gridRows.splice(realIdx, 1);
-      else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+      else { if (row._orig) window.safeArrayUtils.safeForEach(EDIT_FIELDS, f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
     };
 
     const deleteRows = () => {
@@ -190,7 +190,7 @@ window.PdCategoryMng = {
         if (!row._row_check) continue;
         if (row._row_status === 'I') gridRows.splice(i, 1);
         else if (row._row_status !== 'N') {
-          if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+          if (row._orig) window.safeArrayUtils.safeForEach(EDIT_FIELDS, f => { row[f] = row._orig[f]; });
           row._row_status = 'N';
         }
       }
@@ -208,7 +208,7 @@ window.PdCategoryMng = {
       const arr = [...gridRows];
       const [moved] = arr.splice(dragRowIdx.value, 1);
       arr.splice(dragoverRowIdx.value, 0, moved);
-      arr.forEach((row, i) => {
+      window.safeArrayUtils.safeForEach(arr, (row, i) => {
         row.sortOrd = i + 1;
         if (row._row_status === 'N') row._row_status = 'U';
       });
@@ -218,9 +218,9 @@ window.PdCategoryMng = {
 
     /* ── 저장 ── */
     const doSave = async () => {
-      const iRows = gridRows.filter(r => r._row_status === 'I');
-      const uRows = gridRows.filter(r => r._row_status === 'U');
-      const dRows = gridRows.filter(r => r._row_status === 'D');
+      const iRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'I');
+      const uRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'U');
+      const dRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
         if (!(r.categoryNm || '').trim()) { props.showToast('카테고리명은 필수 항목입니다.', 'error'); return; }
@@ -231,11 +231,11 @@ window.PdCategoryMng = {
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      dRows.forEach(r => {
+      window.safeArrayUtils.safeForEach(dRows, r => {
         const i = categories.value.findIndex(c => c.categoryId === r.categoryId);
         if (i !== -1) categories.value.splice(i, 1);
       });
-      uRows.forEach(r => {
+      window.safeArrayUtils.safeForEach(uRows, r => {
         const i = categories.value.findIndex(c => c.categoryId === r.categoryId);
         if (i !== -1) Object.assign(categories.value[i], {
           categoryNm: r.categoryNm, parentId: r.parentId || null,
@@ -244,7 +244,7 @@ window.PdCategoryMng = {
         });
       });
       let nextId = Math.max(0, ...categories.value.map(c => c.categoryId));
-      iRows.forEach(r => {
+      window.safeArrayUtils.safeForEach(iRows, r => {
         categories.value.push({
           categoryId: ++nextId, categoryNm: r.categoryNm,
           parentId: r.parentId || null, depth: calcDepth(r.parentId),
@@ -257,11 +257,11 @@ window.PdCategoryMng = {
     };
 
     const checkAll = ref(false);
-    const toggleCheckAll = () => { pagedRows.value.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { window.safeArrayUtils.safeForEach(pagedRows, r => { r._row_check = checkAll.value; }); };
 
     const parentNm = parentId => {
       if (!parentId) return '';
-      const p = categories.value.find(c => c.categoryId === parentId);
+      const p = categories.window.safeArrayUtils.safeFind(value, c => c.categoryId === parentId);
       return p ? p.categoryNm : `ID:${parentId}`;
     };
 
@@ -269,7 +269,7 @@ window.PdCategoryMng = {
     const catPickerModal = reactive({ show: false, targetRow: null, search: '' });
     const catPickerList  = computed(() => {
       const q = catPickerModal.search.trim().toLowerCase();
-      return categories.value.filter(c =>
+      return window.safeArrayUtils.safeFilter(categories, c =>
         (!q || (c.categoryNm || '').toLowerCase().includes(q)) &&
         c.categoryId !== (catPickerModal.targetRow && catPickerModal.targetRow.categoryId)
       );

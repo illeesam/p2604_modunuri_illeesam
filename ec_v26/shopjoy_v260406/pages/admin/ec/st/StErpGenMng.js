@@ -14,7 +14,7 @@ window.StErpGenMng = {
 
     const previewRows = computed(() => {
       return vendors.value.map(v => {
-        const vOrders = orders.value.filter(o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
+        const vOrders = window.safeArrayUtils.safeFilter(orders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
         const sales   = vOrders.reduce((s, o) => s + o.totalPrice, 0);
         const comm    = Math.round(sales * 0.10);
         const settle  = sales - comm;

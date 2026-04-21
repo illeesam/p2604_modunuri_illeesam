@@ -55,7 +55,7 @@ window.PmCacheMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => cacheList.value.filter(c => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(cacheList, c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.userNm.toLowerCase().includes(kw) && !c.desc.toLowerCase().includes(kw) && !String(c.userId).includes(kw)) return false;
       if (applied.type && c.type !== applied.type) return false;

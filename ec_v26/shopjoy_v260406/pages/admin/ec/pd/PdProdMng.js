@@ -55,7 +55,7 @@ window.PdProdMng = {
 
     const applied = Vue.reactive({ kw: '', cate: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => products.value.filter(p => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(products, p => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !p.prodNm.toLowerCase().includes(kw) && !String(p.productId).includes(kw)) return false;
       if (applied.cate && p.category !== applied.cate) return false;
@@ -74,7 +74,7 @@ window.PdProdMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const categories = computed(() => categories.value.filter(c => c.status === '활성').map(c => c.categoryNm));
+    const categories = computed(() => window.safeArrayUtils.safeFilter(categories, c => c.status === '활성').map(c => c.categoryNm));
 
     /* ── 카테고리 선택 모달 ── */
     const catModal = Vue.reactive({ show: false });

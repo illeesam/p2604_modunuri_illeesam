@@ -61,7 +61,7 @@ window.OdDlivMng = {
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
     /* 목록 */
-    const filtered = computed(() => deliveries.value.filter(d => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(deliveries, d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.dlivId.toLowerCase().includes(kw) && !d.orderId.toLowerCase().includes(kw)
             && !d.userNm.toLowerCase().includes(kw) && !d.receiver.toLowerCase().includes(kw)) return false;
@@ -127,11 +127,11 @@ window.OdDlivMng = {
     const checked = ref(new Set());
     const toggleCheck = (id) => { const s = new Set(checked.value); if (s.has(id)) s.delete(id); else s.add(id); checked.value = s; };
     const isChecked = (id) => checked.value.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(d => checked.value.has(d.dlivId)));
+    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, d => checked.value.has(d.dlivId)));
     const toggleCheckAll = () => {
       const s = new Set(checked.value);
-      if (allChecked.value) pageList.value.forEach(d => s.delete(d.dlivId));
-      else pageList.value.forEach(d => s.add(d.dlivId));
+      if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, d => s.delete(d.dlivId));
+      else window.safeArrayUtils.safeForEach(pageList, d => s.add(d.dlivId));
       checked.value = s;
     };
     const DLIV_STATUS_OPTIONS = ['준비중','출고완료','배송중','배송완료','배송실패'];
@@ -153,7 +153,7 @@ window.OdDlivMng = {
     };
     const onReqTargetChange = () => {
       const ids = Array.from(checked.value);
-      const first = deliveries.value.find(d => ids.includes(d.dlivId));
+      const first = deliveries.window.safeArrayUtils.safeFind(value, d => ids.includes(d.dlivId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')      bulkForm.reqTargetNm = first.orderId || '';
       else if (bulkForm.reqTarget === '배송') bulkForm.reqTargetNm = first.dlivId || '';
@@ -181,7 +181,7 @@ window.OdDlivMng = {
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked.value);
-      const selected = deliveries.value.filter(d => ids.includes(d.dlivId));
+      const selected = window.safeArrayUtils.safeFilter(deliveries, d => ids.includes(d.dlivId));
       let rows = [];
       if (bulkTab.value === 'status') {
         if (!bulkForm.status) return '';
@@ -211,7 +211,7 @@ window.OdDlivMng = {
         if (!bulkForm.status) { props.showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) return;
-        deliveries.value.forEach(d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
+        window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
         checked.value = new Set(); bulkOpen.value = false;
         try {
           const res = await window.adminApi.put('deliveries/bulk-status', { ids, status: bulkForm.status });
@@ -226,7 +226,7 @@ window.OdDlivMng = {
         if (!bulkForm.courier && !bulkForm.trackingNo) { props.showToast('택배사 또는 운송장번호를 입력하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 택배정보 변경', `선택한 ${ids.length}건의 택배정보를 변경하시겠습니까?`);
         if (!ok) return;
-        deliveries.value.forEach(d => {
+        window.safeArrayUtils.safeForEach(deliveries, d => {
           if (ids.includes(d.dlivId)) {
             if (bulkForm.courier) d.courier = bulkForm.courier;
             if (bulkForm.trackingNo) d.trackingNo = bulkForm.trackingNo;
@@ -246,7 +246,7 @@ window.OdDlivMng = {
         if (!bulkForm.apprAction) { props.showToast('결재처리 구분을 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
-        deliveries.value.forEach(d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
+        window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
           const res = await window.adminApi.put('deliveries/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
@@ -261,7 +261,7 @@ window.OdDlivMng = {
         if (!bulkForm.apprToUserId) { props.showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
         if (!ok) return;
-        deliveries.value.forEach(d => { if (ids.includes(d.dlivId)) {
+        window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) {
           d.apprToUserId = bulkForm.apprToUserId; d.apprToNm = bulkForm.apprToNm;
           d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
           d.reqAmount = Number(bulkForm.reqAmount||0); d.reqReason = bulkForm.reqReason;

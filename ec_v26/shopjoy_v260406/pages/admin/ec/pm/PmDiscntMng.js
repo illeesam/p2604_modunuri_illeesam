@@ -56,7 +56,7 @@ window.PmDiscntMng = {
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
     const list = computed(() => discntList.value || []);
-    const filtered = computed(() => list.value.filter(d => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(list, d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(d.discntNm || '').toLowerCase().includes(kw) && !String(d.discntId || '').includes(kw)) return false;
       if (applied.type   && d.discntType   !== applied.type)   return false;

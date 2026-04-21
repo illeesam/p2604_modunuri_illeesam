@@ -87,7 +87,7 @@ window.PmCouponDtl = {
     const showVendorModal = ref(false);
     const selectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = vendors.value.find(x => x.vendorId === form.vendorId);
+      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {
@@ -98,14 +98,14 @@ window.PmCouponDtl = {
     /* 발급목록 */
     const issuedList = computed(() => {
       if (!coupons.value) return [];
-      const c = coupons.value.find(x => x.couponId === props.editId);
+      const c = coupons.window.safeArrayUtils.safeFind(value, x => x.couponId === props.editId);
       return c ? (c.issuedList || []) : [];
     });
 
     /* 사용목록 */
     const usedList = computed(() => {
       if (!coupons.value) return [];
-      const c = coupons.value.find(x => x.couponId === props.editId);
+      const c = coupons.window.safeArrayUtils.safeFind(value, x => x.couponId === props.editId);
       return c ? (c.usedList || []) : [];
     });
 
@@ -184,7 +184,7 @@ window.PmCouponDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.inner.forEach(e => { errors[e.path] = e.message; });
+        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }

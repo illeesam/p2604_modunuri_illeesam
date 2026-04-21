@@ -56,7 +56,7 @@ window.PmGiftMng = {
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
     const list = computed(() => giftList.value || []);
-    const filtered = computed(() => list.value.filter(g => {
+    const filtered = computed(() => window.safeArrayUtils.safeFilter(list, g => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(g.giftNm || '').toLowerCase().includes(kw) && !String(g.giftId || '').includes(kw)) return false;
       if (applied.type   && g.giftType   !== applied.type)   return false;

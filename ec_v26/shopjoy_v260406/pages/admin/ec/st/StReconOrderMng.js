@@ -24,13 +24,13 @@ window.StReconOrderMng = {
 
     const rows = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
-      return orders.value.filter(o => {
+      return window.safeArrayUtils.safeFilter(orders, o => {
         if (dateStart.value && o.orderDate.slice(0,10) < dateStart.value) return false;
         if (dateEnd.value   && o.orderDate.slice(0,10) > dateEnd.value)   return false;
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw)) return false;
         return true;
       }).map(o => {
-        const v = vendors.value.find(x => x.vendorId === o.vendorId);
+        const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId);
         const orderAmt   = o.status === '취소됨' ? 0 : o.totalPrice;
         const settleAmt  = Math.round(orderAmt * 0.9); // 수수료 10% 차감 가정
         const reconAmt   = settleAmt + (Math.random() > 0.85 ? (Math.random() > 0.5 ? 100 : -200) : 0); // 일부 차이
@@ -45,9 +45,9 @@ window.StReconOrderMng = {
     const pageList = computed(() => rows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const summary  = computed(() => ({
-      match:   rows.value.filter(r => r.diffStatus==='일치').length,
-      over:    rows.value.filter(r => r.diffStatus==='정산과다').length,
-      under:   rows.value.filter(r => r.diffStatus==='정산부족').length,
+      match:   window.safeArrayUtils.safeFilter(rows, r => r.diffStatus==='일치').length,
+      over:    window.safeArrayUtils.safeFilter(rows, r => r.diffStatus==='정산과다').length,
+      under:   window.safeArrayUtils.safeFilter(rows, r => r.diffStatus==='정산부족').length,
       diffAmt: rows.value.reduce((s, r) => s + Math.abs(r.diff), 0),
     }));
 

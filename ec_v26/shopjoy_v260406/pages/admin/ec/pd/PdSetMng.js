@@ -73,7 +73,7 @@ window.PdSetMng = {
       catDragIdx.value = catDragoverIdx.value = null;
     };
     const addCategory    = cat => {
-      if (dtlCategories.some(c => String(c.categoryId) === String(cat.categoryId))) return;
+      if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(cat.categoryId))) return;
       dtlCategories.push({ categoryId: cat.categoryId, categoryNm: cat.categoryNm, depth: cat.depth || 1 });
       catPickerOpen.value = false; catPickerSearch.value = '';
     };
@@ -97,7 +97,7 @@ window.PdSetMng = {
       const arr = [...dtlItems];
       const [moved] = arr.splice(dragIdx.value, 1);
       arr.splice(dragoverIdx.value, 0, moved);
-      arr.forEach((item, i) => { item.sortOrd = i + 1; });
+      window.safeArrayUtils.safeForEach(arr, (item, i) => { item.sortOrd = i + 1; });
       dtlItems.splice(0, dtlItems.length, ...arr);
       dragIdx.value = dragoverIdx.value = null;
     };
@@ -233,7 +233,7 @@ window.PdSetMng = {
         if (!newForm.salePrice || newForm.salePrice <= 0) newErrors.salePrice = '판매가를 입력해주세요.';
         if (Object.keys(newErrors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       }
-      const hasBlankNm = dtlItems.some(d => !d.itemNm.trim());
+      const hasBlankNm = window.safeArrayUtils.safeSome(dtlItems, d => !d.itemNm.trim());
       if (hasBlankNm) { props.showToast('구성품 표시명을 모두 입력해주세요.', 'error'); return; }
 
       const isNew     = dtlMode.value === 'new';
@@ -271,8 +271,8 @@ window.PdSetMng = {
         })),
       ];
       if (!categoryProds.value) categoryProds.value = [];
-      categoryProds.value = categoryProds.value.filter(cp => String(cp.prodId) !== String(setProdId));
-      dtlCategories.forEach((cat, i) => {
+      categoryProds.value = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(setProdId));
+      window.safeArrayUtils.safeForEach(dtlCategories, (cat, i) => {
         categoryProds.value.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
       });
       if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
