@@ -87,7 +87,7 @@ window.SyRoleMng = {
     /* 루트 역할코드 → 자동 카테고리 매핑 */
     const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
     const deriveRoleCat = (role) => {
-      const roles = roles.value || [];
+      const rolesData = roles.value || [];
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
       let cur = role;
       while (cur && cur.parentId) cur = m[cur.parentId];
@@ -101,7 +101,7 @@ window.SyRoleMng = {
       onCellChange(row);
     };
     window.adminUtil.__roleCatOf = (roleId) => {
-      const roles = roles.value || [];
+      const rolesData = roles.value || [];
       const r = roles.find(x => x.roleId === roleId);
       if (!r) return [];
       if (r.roleCat && r.roleCat.length) return r.roleCat;

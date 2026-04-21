@@ -6,6 +6,7 @@ window.DpDispUiMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const codes = ref((window.adminData?.codes || []));
     const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -140,7 +141,7 @@ window.DpDispUiMng = {
     const doDelete = async (u) => {
       const ok = await props.showConfirm('삭제', `[${u.codeLabel}] UI를 삭제하시겠습니까?`);
       if (!ok) return;
-      const codes = codes.value;
+      const codesData = codes.value;
       const idx = codes.findIndex(x => x.codeId === u.codeId);
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === u.codeId) selectedId.value = null;
@@ -187,7 +188,7 @@ window.DpDispUiMng = {
     };
     const isUIExpanded = (uiId) => expandedUIs.value.has(uiId);
 
-    return { displays, loading, error, pathLabel,
+    return { codes, displays, loading, error, pathLabel,
       searchKw, searchUiType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       UI_TYPE_OPTS,

@@ -6,6 +6,7 @@ const _WP_DispPanelPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const codes = ref((window.adminData?.codes || []));
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;
@@ -15,7 +16,7 @@ const _WP_DispPanelPreview = {
       const max = Math.max(...values, 1);
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
-    return { chartBars };
+    return { codes, chartBars };
   },
   template: /* html */`
 <div style="padding:10px;">
@@ -237,7 +238,7 @@ window.DpDispPanelPreview = {
     /* ── 트리 상태 ── */
     /* ── 패널 트리: prefix > 영역명 > 패널명 ── */
     const tree = computed(() => {
-      const codes = codes.value || [];
+      const codesData = codes.value || [];
       const areaNm = (code) => {
         const c = window.safeArrayUtils.safeFind(codes, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;

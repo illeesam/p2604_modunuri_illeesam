@@ -4,6 +4,7 @@ window.DpDispAreaMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const codes = ref((window.adminData?.codes || []));
     const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -165,7 +166,7 @@ window.DpDispAreaMng = {
     const doDelete = async (a) => {
       const ok = await props.showConfirm('삭제', `[${a.codeLabel}] 영역을 삭제하시겠습니까?`);
       if (!ok) return;
-      const codes = codes.value;
+      const codesData = codes.value;
       const idx = codes.findIndex(x => x.codeId === a.codeId);
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === a.codeId) selectedId.value = null;
@@ -217,7 +218,7 @@ window.DpDispAreaMng = {
       const srcId = pageList.value[src]?.codeId;
       const tgtId = pageList.value[pageIdx]?.codeId;
       if (!srcId || !tgtId) { dragSrc.value = null; return; }
-      const codes = codes.value;
+      const codesData = codes.value;
       const si = codes.findIndex(x => x.codeId === srcId);
       const ti = codes.findIndex(x => x.codeId === tgtId);
       if (si === -1 || ti === -1) { dragSrc.value = null; return; }
@@ -247,7 +248,7 @@ window.DpDispAreaMng = {
     };
     const isAreaExpanded = (areaId) => expandedAreas.value.has(areaId);
 
-    return { areas, loading, error, pathLabel,
+    return { codes, areas, loading, error, pathLabel,
       searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,

@@ -4,6 +4,7 @@ window.DpDispUiDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const codes = ref((window.adminData?.codes || []));
     const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -172,7 +173,7 @@ window.DpDispUiDtl = {
       const ids = Array.from(pickSel.value);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
-      const codes = codes.value || [];
+      const codesData = codes.value || [];
       window.safeArrayUtils.safeForEach(ids, id => {
         const a = window.safeArrayUtils.safeFind(codes, x => x.codeId === id);
         if (a) a.uiCode = form.codeValue;
@@ -271,9 +272,9 @@ window.DpDispUiDtl = {
       const isNewUi = isNew.value;
       const ok = await props.showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
       if (!ok) return;
-      const codes = codes.value;
+      const codesData = codes.value;
       if (isNewUi) {
-        const nextId = nextId.value(codes, 'codeId');
+        const nextId = nextId.value(codesData, 'codeId');
         codes.push({ ...form, codeId: nextId });
       } else {
         const idx = codes.findIndex(c => c.codeId === form.codeId);
@@ -316,7 +317,7 @@ window.DpDispUiDtl = {
       if (t === 'base') { await nextTick(); initQuillDesc(); }
     });
 
-    return { displays, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { codes, displays, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, isNew, UI_TYPE_OPTS,
       save, doCancel, relatedAreas, panelsOfArea,
       activeTab, selectTab, activeArea, expanded, moveArea,

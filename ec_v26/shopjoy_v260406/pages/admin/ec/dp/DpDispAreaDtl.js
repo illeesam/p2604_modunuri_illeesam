@@ -3,7 +3,7 @@ window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = ref((window.adminData?.codes || []));
     const areas = reactive([]);
     const loading = ref(false);
