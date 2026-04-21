@@ -49,11 +49,9 @@ public class SyhSendEmailLog {
     @Column(name = "subject", length = 300, nullable = false)
     private String subject;
 
-    @Lob
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @Lob
     @Column(name = "params", columnDefinition = "TEXT")
     private String params;
 

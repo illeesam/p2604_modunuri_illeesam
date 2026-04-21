@@ -40,7 +40,6 @@ public class PmGiftIssue {
     @Column(name = "gift_issue_status_cd_before", length = 20)
     private String giftIssueStatusCdBefore;
 
-    @Lob
     @Column(name = "gift_issue_memo", columnDefinition = "TEXT")
     private String giftIssueMemo;
 

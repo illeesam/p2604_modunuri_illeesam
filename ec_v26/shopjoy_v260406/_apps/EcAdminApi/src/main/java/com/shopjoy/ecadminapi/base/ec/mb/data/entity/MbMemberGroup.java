@@ -25,7 +25,6 @@ public class MbMemberGroup {
     @Column(name = "group_nm", length = 100, nullable = false)
     private String groupNm;
 
-    @Lob
     @Column(name = "group_memo", columnDefinition = "TEXT")
     private String groupMemo;
 

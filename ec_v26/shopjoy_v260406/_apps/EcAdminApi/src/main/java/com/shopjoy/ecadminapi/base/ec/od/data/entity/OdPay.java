@@ -65,7 +65,6 @@ public class OdPay {
     @Column(name = "pg_approval_no", length = 50)
     private String pgApprovalNo;
 
-    @Lob
     @Column(name = "pg_response", columnDefinition = "TEXT")
     private String pgResponse;
 

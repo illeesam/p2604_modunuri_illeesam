@@ -43,7 +43,6 @@ public class OdClaim {
     @Column(name = "reason_cd", length = 50)
     private String reasonCd;
 
-    @Lob
     @Column(name = "reason_detail", columnDefinition = "TEXT")
     private String reasonDetail;
 
@@ -98,7 +97,6 @@ public class OdClaim {
     @Column(name = "proc_user_id", length = 21)
     private String procUserId;
 
-    @Lob
     @Column(name = "memo", columnDefinition = "TEXT")
     private String memo;
 

@@ -26,7 +26,7 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   config-location: classpath:mybatis/mybatis-config.xml
-  type-aliases-package: com.shopjoy.ecadminapi.domain
+  type-aliases-package: com.shopjoy.ecadminapi
 
 server:
   port: 8080

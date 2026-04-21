@@ -47,7 +47,6 @@ public class PmVoucher {
     @Column(name = "voucher_status_cd_before", length = 20)
     private String voucherStatusCdBefore;
 
-    @Lob
     @Column(name = "voucher_desc", columnDefinition = "TEXT")
     private String voucherDesc;
 

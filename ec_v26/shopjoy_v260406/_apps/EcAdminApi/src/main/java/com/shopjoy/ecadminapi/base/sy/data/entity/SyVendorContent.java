@@ -34,7 +34,6 @@ public class SyVendorContent {
     @Column(name = "vendor_content_subtitle", length = 300)
     private String vendorContentSubtitle;
 
-    @Lob
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 

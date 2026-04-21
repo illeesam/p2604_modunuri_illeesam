@@ -31,7 +31,6 @@ public class SyNotice {
     @Column(name = "is_fixed", length = 1)
     private String isFixed;
 
-    @Lob
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 

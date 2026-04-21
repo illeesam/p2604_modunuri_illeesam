@@ -40,7 +40,6 @@ public class PdProdQna {
     @Column(name = "qna_title", length = 200, nullable = false)
     private String qnaTitle;
 
-    @Lob
     @Column(name = "qna_content", columnDefinition = "TEXT")
     private String qnaContent;
 
@@ -50,7 +49,6 @@ public class PdProdQna {
     @Column(name = "answ_yn", length = 1)
     private String answYn;
 
-    @Lob
     @Column(name = "answ_content", columnDefinition = "TEXT")
     private String answContent;
 

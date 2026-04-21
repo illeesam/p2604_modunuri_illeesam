@@ -43,7 +43,6 @@ public class PdCategory {
     @Column(name = "img_url", length = 500)
     private String imgUrl;
 
-    @Lob
     @Column(name = "category_desc", columnDefinition = "TEXT")
     private String categoryDesc;
 

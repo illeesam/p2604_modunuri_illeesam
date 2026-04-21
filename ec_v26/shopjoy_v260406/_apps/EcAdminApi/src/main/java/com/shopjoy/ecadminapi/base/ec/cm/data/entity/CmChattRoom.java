@@ -49,7 +49,6 @@ public class CmChattRoom {
     @Column(name = "admin_unread_cnt")
     private Integer adminUnreadCnt;
 
-    @Lob
     @Column(name = "chatt_memo", columnDefinition = "TEXT")
     private String chattMemo;
 

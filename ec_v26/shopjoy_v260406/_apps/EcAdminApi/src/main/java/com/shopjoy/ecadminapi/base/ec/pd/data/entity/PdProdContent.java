@@ -28,7 +28,6 @@ public class PdProdContent {
     @Column(name = "content_type_cd", length = 50, nullable = false)
     private String contentTypeCd;
 
-    @Lob
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 

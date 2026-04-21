@@ -37,7 +37,6 @@ public class CmhPushLog {
     @Column(name = "push_log_title", length = 200)
     private String pushLogTitle;
 
-    @Lob
     @Column(name = "push_log_content", columnDefinition = "TEXT")
     private String pushLogContent;
 

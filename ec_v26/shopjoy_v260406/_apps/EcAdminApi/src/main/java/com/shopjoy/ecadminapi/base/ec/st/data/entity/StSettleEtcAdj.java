@@ -37,7 +37,6 @@ public class StSettleEtcAdj {
     @Column(name = "etc_adj_reason", length = 200, nullable = false)
     private String etcAdjReason;
 
-    @Lob
     @Column(name = "settle_etc_adj_memo", columnDefinition = "TEXT")
     private String settleEtcAdjMemo;
 

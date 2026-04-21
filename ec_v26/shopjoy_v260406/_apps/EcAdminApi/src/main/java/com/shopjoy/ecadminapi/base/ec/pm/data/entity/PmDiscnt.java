@@ -56,7 +56,6 @@ public class PmDiscnt {
     @Column(name = "discnt_status_cd_before", length = 20)
     private String discntStatusCdBefore;
 
-    @Lob
     @Column(name = "discnt_desc", columnDefinition = "TEXT")
     private String discntDesc;
 

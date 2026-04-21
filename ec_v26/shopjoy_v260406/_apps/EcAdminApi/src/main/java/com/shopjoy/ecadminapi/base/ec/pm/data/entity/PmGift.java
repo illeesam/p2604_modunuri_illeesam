@@ -35,7 +35,6 @@ public class PmGift {
     @Column(name = "gift_stock")
     private Integer giftStock;
 
-    @Lob
     @Column(name = "gift_desc", columnDefinition = "TEXT")
     private String giftDesc;
 

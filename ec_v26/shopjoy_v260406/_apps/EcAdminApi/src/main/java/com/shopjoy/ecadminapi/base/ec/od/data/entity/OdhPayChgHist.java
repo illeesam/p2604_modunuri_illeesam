@@ -40,7 +40,6 @@ public class OdhPayChgHist {
     @Column(name = "chg_reason", length = 300)
     private String chgReason;
 
-    @Lob
     @Column(name = "pg_response", columnDefinition = "TEXT")
     private String pgResponse;
 

@@ -31,11 +31,9 @@ public class PdhProdContentChgHist {
     @Column(name = "content_type_cd", length = 50)
     private String contentTypeCd;
 
-    @Lob
     @Column(name = "content_before", columnDefinition = "TEXT")
     private String contentBefore;
 
-    @Lob
     @Column(name = "content_after", columnDefinition = "TEXT")
     private String contentAfter;
 

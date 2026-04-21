@@ -34,7 +34,6 @@ public class SyhAccessLog {
     @Column(name = "req_ua", length = 500)
     private String reqUa;
 
-    @Lob
     @Column(name = "req_body", columnDefinition = "TEXT")
     private String reqBody;
 
@@ -64,7 +63,6 @@ public class SyhAccessLog {
     @Column(name = "resp_time_ms")
     private Long respTimeMs;
 
-    @Lob
     @Column(name = "resp_body", columnDefinition = "TEXT")
     private String respBody;
 

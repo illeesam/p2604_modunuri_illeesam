@@ -26,7 +26,7 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   config-location: classpath:mybatis/mybatis-config.xml
-  type-aliases-package: com.shopjoy.ecadminapi.domain
+  type-aliases-package: com.shopjoy.ecadminapi
 
 server:
   port: 8080
@@ -84,20 +84,6 @@ app:
     jenkins:
       enabled: false
     allowed-ips: ""        # 빈값=전체허용 | "*"=전체허용 | "127.0.0.1^10.0.0.1"=IP지정
-
-# ────────────────────────────────────────────
-# 로깅 — local 프로파일
-#   레벨   : DEBUG (logback-spring.xml <springProfile name="local,dev"> 적용)
-#   콘솔   : 컬러 + (%파일:%라인) IntelliJ 클릭 링크 → 소스 바로 이동
-#   파일   : logs/ecadminapi.log  (50MB 롤링·30일·2GB·gzip)
-#   에러   : logs/ecadminapi-error.log (20MB 롤링·90일·500MB·gzip)
-#   시작 시: logback statusListener 가 파일 경로를 콘솔에 출력
-# ────────────────────────────────────────────
-logging:
-  file:
-    path: logs
-
-app:
   error-log:
     db-save: true             # true=DB저장 | false=파일만 기록(DB저장 생략)
     queue-size: 100           # 초과 시 즉시 드롭
@@ -113,3 +99,15 @@ app:
     #   "admin01^member123^BO"    → 특정 userId 두 명 + BO 전체
     filter: "*"               # local: 전체 기록
     max-body-size: 2000       # 요청/응답 바디 최대 저장 크기(bytes). 0=미수집
+
+# ────────────────────────────────────────────
+# 로깅 — local 프로파일
+#   레벨   : DEBUG (logback-spring.xml <springProfile name="local,dev"> 적용)
+#   콘솔   : 컬러 + (%파일:%라인) IntelliJ 클릭 링크 → 소스 바로 이동
+#   파일   : logs/ecadminapi.log  (50MB 롤링·30일·2GB·gzip)
+#   에러   : logs/ecadminapi-error.log (20MB 롤링·90일·500MB·gzip)
+#   시작 시: logback statusListener 가 파일 경로를 콘솔에 출력
+# ────────────────────────────────────────────
+logging:
+  file:
+    path: logs

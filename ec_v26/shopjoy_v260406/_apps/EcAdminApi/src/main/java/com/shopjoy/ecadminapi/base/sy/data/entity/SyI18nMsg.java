@@ -25,7 +25,6 @@ public class SyI18nMsg {
     @Column(name = "lang_cd", length = 10, nullable = false)
     private String langCd;
 
-    @Lob
     @Column(name = "i18n_msg", columnDefinition = "TEXT")
     private String i18nMsg;
 

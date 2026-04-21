@@ -28,11 +28,9 @@ public class PdhProdChgHist {
     @Column(name = "chg_type_cd", length = 30)
     private String chgTypeCd;
 
-    @Lob
     @Column(name = "before_val", columnDefinition = "TEXT")
     private String beforeVal;
 
-    @Lob
     @Column(name = "after_val", columnDefinition = "TEXT")
     private String afterVal;
 

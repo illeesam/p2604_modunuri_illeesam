@@ -25,7 +25,6 @@ public class SyProp {
     @Column(name = "prop_key", length = 100, nullable = false)
     private String propKey;
 
-    @Lob
     @Column(name = "prop_value", columnDefinition = "TEXT")
     private String propValue;
 

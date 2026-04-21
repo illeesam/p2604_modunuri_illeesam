@@ -34,7 +34,6 @@ public class StSettleAdj {
     @Column(name = "adj_reason", length = 200, nullable = false)
     private String adjReason;
 
-    @Lob
     @Column(name = "settle_adj_memo", columnDefinition = "TEXT")
     private String settleAdjMemo;
 

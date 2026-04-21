@@ -35,7 +35,6 @@ public class PmEvent {
     @Column(name = "event_title", length = 200)
     private String eventTitle;
 
-    @Lob
     @Column(name = "event_content", columnDefinition = "TEXT")
     private String eventContent;
 
@@ -69,7 +68,6 @@ public class PmEvent {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Lob
     @Column(name = "event_desc", columnDefinition = "TEXT")
     private String eventDesc;
 

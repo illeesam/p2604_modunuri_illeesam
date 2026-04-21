@@ -68,7 +68,6 @@ public class PdProd {
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
 
-    @Lob
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 

@@ -58,7 +58,6 @@ public class StRecon {
     @Column(name = "diff_amt")
     private Long diffAmt;
 
-    @Lob
     @Column(name = "recon_note", columnDefinition = "TEXT")
     private String reconNote;
 

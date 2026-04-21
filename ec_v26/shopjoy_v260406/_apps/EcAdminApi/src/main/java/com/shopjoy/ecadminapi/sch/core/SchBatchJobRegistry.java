@@ -36,15 +36,18 @@ public class SchBatchJobRegistry {
 
         unregister(code);
 
+        // Unix 5필드 cron(분 시 일 월 요일)을 Spring 6필드(초 분 시 일 월 요일)로 자동 변환
+        String springCron = cron.trim().split("\\s+").length == 5 ? "0 " + cron.trim() : cron.trim();
+
         try {
             ScheduledFuture<?> future = taskScheduler.schedule(
                 () -> executor.execute(batch),
-                new CronTrigger(cron)
+                new CronTrigger(springCron)
             );
             futures.put(code, future);
-            log.info("[SCH] 등록: batchCode={} cron={}", code, cron);
+            log.info("[SCH] 등록: batchCode={} cron={}", code, springCron);
         } catch (Exception e) {
-            log.error("[SCH] 등록 실패: batchCode={} cron={} error={}", code, cron, e.getMessage());
+            log.error("[SCH] 등록 실패: batchCode={} cron={} error={}", code, springCron, e.getMessage());
         }
     }
 

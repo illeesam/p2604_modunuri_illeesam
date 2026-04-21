@@ -32,7 +32,6 @@ public class DpPanelItem {
     @Column(name = "widget_title", length = 200)
     private String widgetTitle;
 
-    @Lob
     @Column(name = "widget_content", columnDefinition = "TEXT")
     private String widgetContent;
 
@@ -48,7 +47,6 @@ public class DpPanelItem {
     @Column(name = "item_sort_ord")
     private Integer itemSortOrd;
 
-    @Lob
     @Column(name = "widget_config_json", columnDefinition = "TEXT")
     private String widgetConfigJson;
 

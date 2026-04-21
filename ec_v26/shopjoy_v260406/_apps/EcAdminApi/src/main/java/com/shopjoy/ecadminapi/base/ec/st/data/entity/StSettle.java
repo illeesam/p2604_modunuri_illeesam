@@ -71,7 +71,6 @@ public class StSettle {
     @Column(name = "settle_status_cd_before", length = 20)
     private String settleStatusCdBefore;
 
-    @Lob
     @Column(name = "settle_memo", columnDefinition = "TEXT")
     private String settleMemo;
 

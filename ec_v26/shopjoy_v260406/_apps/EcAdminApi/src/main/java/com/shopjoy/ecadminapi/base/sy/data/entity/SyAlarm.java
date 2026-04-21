@@ -40,7 +40,6 @@ public class SyAlarm {
     @Column(name = "template_id", length = 21)
     private String templateId;
 
-    @Lob
     @Column(name = "alarm_msg", columnDefinition = "TEXT")
     private String alarmMsg;
 

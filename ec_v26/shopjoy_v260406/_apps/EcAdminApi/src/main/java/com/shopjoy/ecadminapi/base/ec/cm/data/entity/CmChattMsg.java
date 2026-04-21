@@ -28,7 +28,6 @@ public class CmChattMsg {
     @Column(name = "sender_cd", length = 20, nullable = false)
     private String senderCd;
 
-    @Lob
     @Column(name = "msg_text", columnDefinition = "TEXT")
     private String msgText;
 

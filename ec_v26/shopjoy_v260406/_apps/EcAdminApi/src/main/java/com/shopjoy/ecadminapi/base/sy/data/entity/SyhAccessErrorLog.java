@@ -61,11 +61,9 @@ public class SyhAccessErrorLog {
     @Column(name = "error_type", length = 300)
     private String errorType;
 
-    @Lob
     @Column(name = "error_msg", columnDefinition = "TEXT")
     private String errorMsg;
 
-    @Lob
     @Column(name = "stack_trace", columnDefinition = "TEXT")
     private String stackTrace;
 

@@ -43,7 +43,6 @@ public class PmSave {
     @Column(name = "expire_date")
     private LocalDateTime expireDate;
 
-    @Lob
     @Column(name = "save_memo", columnDefinition = "TEXT")
     private String saveMemo;
 

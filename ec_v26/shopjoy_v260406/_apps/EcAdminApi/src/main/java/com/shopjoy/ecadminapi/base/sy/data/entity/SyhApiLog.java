@@ -34,11 +34,9 @@ public class SyhApiLog {
     @Column(name = "endpoint", length = 500)
     private String endpoint;
 
-    @Lob
     @Column(name = "req_body", columnDefinition = "TEXT")
     private String reqBody;
 
-    @Lob
     @Column(name = "res_body", columnDefinition = "TEXT")
     private String resBody;
 

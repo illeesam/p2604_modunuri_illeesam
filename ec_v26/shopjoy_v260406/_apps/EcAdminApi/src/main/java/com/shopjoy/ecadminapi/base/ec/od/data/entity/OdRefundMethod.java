@@ -55,7 +55,6 @@ public class OdRefundMethod {
     @Column(name = "pg_refund_id", length = 100)
     private String pgRefundId;
 
-    @Lob
     @Column(name = "pg_response", columnDefinition = "TEXT")
     private String pgResponse;
 

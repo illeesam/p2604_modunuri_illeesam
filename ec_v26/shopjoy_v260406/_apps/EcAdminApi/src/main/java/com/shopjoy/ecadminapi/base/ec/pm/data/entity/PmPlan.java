@@ -31,7 +31,6 @@ public class PmPlan {
     @Column(name = "plan_type_cd", length = 20)
     private String planTypeCd;
 
-    @Lob
     @Column(name = "plan_desc", columnDefinition = "TEXT")
     private String planDesc;
 

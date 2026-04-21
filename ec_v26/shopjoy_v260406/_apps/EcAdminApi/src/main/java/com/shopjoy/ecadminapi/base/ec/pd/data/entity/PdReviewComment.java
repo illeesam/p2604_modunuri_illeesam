@@ -37,7 +37,6 @@ public class PdReviewComment {
     @Column(name = "writer_nm", length = 50)
     private String writerNm;
 
-    @Lob
     @Column(name = "review_reply_content", columnDefinition = "TEXT")
     private String reviewReplyContent;
 

@@ -28,7 +28,6 @@ public class SyBatch {
     @Column(name = "batch_nm", length = 100, nullable = false)
     private String batchNm;
 
-    @Lob
     @Column(name = "batch_desc", columnDefinition = "TEXT")
     private String batchDesc;
 
@@ -56,7 +55,6 @@ public class SyBatch {
     @Column(name = "batch_timeout_sec")
     private Integer batchTimeoutSec;
 
-    @Lob
     @Column(name = "batch_memo", columnDefinition = "TEXT")
     private String batchMemo;
 

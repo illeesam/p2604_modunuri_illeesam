@@ -49,11 +49,9 @@ public class SyhBatchHist {
     @Column(name = "error_count")
     private Integer errorCount;
 
-    @Lob
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
-    @Lob
     @Column(name = "detail", columnDefinition = "TEXT")
     private String detail;
 

@@ -32,7 +32,6 @@ public class PdReview {
     @Column(name = "review_title", length = 200, nullable = false)
     private String reviewTitle;
 
-    @Lob
     @Column(name = "review_content", columnDefinition = "TEXT")
     private String reviewContent;
 

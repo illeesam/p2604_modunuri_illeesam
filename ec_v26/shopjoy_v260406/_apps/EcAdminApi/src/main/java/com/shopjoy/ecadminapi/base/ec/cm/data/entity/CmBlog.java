@@ -31,7 +31,6 @@ public class CmBlog {
     @Column(name = "blog_summary", length = 500)
     private String blogSummary;
 
-    @Lob
     @Column(name = "blog_content", columnDefinition = "TEXT")
     private String blogContent;
 

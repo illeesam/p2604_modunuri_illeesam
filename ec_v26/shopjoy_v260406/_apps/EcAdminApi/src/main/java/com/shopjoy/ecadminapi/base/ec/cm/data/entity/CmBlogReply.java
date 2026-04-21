@@ -34,7 +34,6 @@ public class CmBlogReply {
     @Column(name = "writer_nm", length = 50)
     private String writerNm;
 
-    @Lob
     @Column(name = "blog_comment_content", columnDefinition = "TEXT")
     private String blogCommentContent;
 

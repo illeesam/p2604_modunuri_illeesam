@@ -34,11 +34,9 @@ public class SyTemplate {
     @Column(name = "template_subject", length = 200)
     private String templateSubject;
 
-    @Lob
     @Column(name = "template_content", columnDefinition = "TEXT")
     private String templateContent;
 
-    @Lob
     @Column(name = "sample_params", columnDefinition = "TEXT")
     private String sampleParams;
 

@@ -50,7 +50,6 @@ public class DpPanel {
     @Column(name = "disp_panel_status_cd_before", length = 20)
     private String dispPanelStatusCdBefore;
 
-    @Lob
     @Column(name = "content_json", columnDefinition = "TEXT")
     private String contentJson;
 

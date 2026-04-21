@@ -37,7 +37,6 @@ public class DpWidget {
     @Column(name = "widget_title", length = 200)
     private String widgetTitle;
 
-    @Lob
     @Column(name = "widget_content", columnDefinition = "TEXT")
     private String widgetContent;
 
@@ -47,7 +46,6 @@ public class DpWidget {
     @Column(name = "widget_lib_ref_yn", length = 1)
     private String widgetLibRefYn;
 
-    @Lob
     @Column(name = "widget_config_json", columnDefinition = "TEXT")
     private String widgetConfigJson;
 

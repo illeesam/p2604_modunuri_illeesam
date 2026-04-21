@@ -74,7 +74,6 @@ public class MbMember {
     @Column(name = "member_addr_detail", length = 200)
     private String memberAddrDetail;
 
-    @Lob
     @Column(name = "member_memo", columnDefinition = "TEXT")
     private String memberMemo;
 

@@ -55,7 +55,6 @@ public class StSettlePay {
     @Column(name = "pay_by", length = 20)
     private String payBy;
 
-    @Lob
     @Column(name = "settle_pay_memo", columnDefinition = "TEXT")
     private String settlePayMemo;
 

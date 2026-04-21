@@ -52,7 +52,6 @@ public class SyUser {
     @Column(name = "login_fail_cnt")
     private Integer loginFailCnt;
 
-    @Lob
     @Column(name = "user_memo", columnDefinition = "TEXT")
     private String userMemo;
 

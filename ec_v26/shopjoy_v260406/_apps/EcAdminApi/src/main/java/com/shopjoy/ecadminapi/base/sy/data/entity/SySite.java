@@ -37,7 +37,6 @@ public class SySite {
     @Column(name = "favicon_url", length = 500)
     private String faviconUrl;
 
-    @Lob
     @Column(name = "site_desc", columnDefinition = "TEXT")
     private String siteDesc;
 
@@ -62,7 +61,6 @@ public class SySite {
     @Column(name = "site_status_cd", length = 20)
     private String siteStatusCd;
 
-    @Lob
     @Column(name = "config_json", columnDefinition = "TEXT")
     private String configJson;
 

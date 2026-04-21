@@ -49,11 +49,9 @@ public class SyhSendMsgLog {
     @Column(name = "title", length = 200)
     private String title;
 
-    @Lob
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @Lob
     @Column(name = "params", columnDefinition = "TEXT")
     private String params;
 

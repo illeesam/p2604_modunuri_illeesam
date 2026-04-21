@@ -31,7 +31,6 @@ public class SyVoc {
     @Column(name = "voc_nm", length = 100, nullable = false)
     private String vocNm;
 
-    @Lob
     @Column(name = "voc_content", columnDefinition = "TEXT")
     private String vocContent;
 

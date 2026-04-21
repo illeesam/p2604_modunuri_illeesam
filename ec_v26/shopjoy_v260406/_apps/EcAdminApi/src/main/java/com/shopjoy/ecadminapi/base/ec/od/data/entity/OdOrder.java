@@ -121,7 +121,6 @@ public class OdOrder {
     @Column(name = "coupon_id", length = 21)
     private String couponId;
 
-    @Lob
     @Column(name = "memo", columnDefinition = "TEXT")
     private String memo;
 

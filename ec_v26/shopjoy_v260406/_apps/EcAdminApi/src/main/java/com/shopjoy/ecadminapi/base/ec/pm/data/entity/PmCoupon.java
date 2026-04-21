@@ -57,7 +57,6 @@ public class PmCoupon {
     @Column(name = "max_issue_per_mem")
     private Integer maxIssuePerMem;
 
-    @Lob
     @Column(name = "coupon_desc", columnDefinition = "TEXT")
     private String couponDesc;
 
@@ -103,7 +102,6 @@ public class PmCoupon {
     @Column(name = "dvc_mapp_yn", length = 1)
     private String dvcMappYn;
 
-    @Lob
     @Column(name = "memo", columnDefinition = "TEXT")
     private String memo;
 

@@ -34,7 +34,6 @@ public class SyContact {
     @Column(name = "contact_title", length = 200, nullable = false)
     private String contactTitle;
 
-    @Lob
     @Column(name = "contact_content", columnDefinition = "TEXT")
     private String contactContent;
 
@@ -44,7 +43,6 @@ public class SyContact {
     @Column(name = "contact_status_cd", length = 20)
     private String contactStatusCd;
 
-    @Lob
     @Column(name = "contact_answer", columnDefinition = "TEXT")
     private String contactAnswer;
 

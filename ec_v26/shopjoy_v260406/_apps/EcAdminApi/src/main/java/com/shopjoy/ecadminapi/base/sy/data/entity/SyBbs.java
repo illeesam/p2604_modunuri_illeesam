@@ -37,7 +37,6 @@ public class SyBbs {
     @Column(name = "bbs_title", length = 200, nullable = false)
     private String bbsTitle;
 
-    @Lob
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 

@@ -34,11 +34,9 @@ public class OdhOrderItemChgHist {
     @Column(name = "chg_field", length = 50)
     private String chgField;
 
-    @Lob
     @Column(name = "before_val", columnDefinition = "TEXT")
     private String beforeVal;
 
-    @Lob
     @Column(name = "after_val", columnDefinition = "TEXT")
     private String afterVal;
 

@@ -31,7 +31,6 @@ public class DpWidgetLib {
     @Column(name = "widget_type_cd", length = 30, nullable = false)
     private String widgetTypeCd;
 
-    @Lob
     @Column(name = "widget_lib_desc", columnDefinition = "TEXT")
     private String widgetLibDesc;
 
@@ -41,11 +40,9 @@ public class DpWidgetLib {
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
 
-    @Lob
     @Column(name = "template_html", columnDefinition = "TEXT")
     private String templateHtml;
 
-    @Lob
     @Column(name = "config_schema", columnDefinition = "TEXT")
     private String configSchema;
 
