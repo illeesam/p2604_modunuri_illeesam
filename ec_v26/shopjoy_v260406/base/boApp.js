@@ -533,7 +533,7 @@
         } else { activeRoleId.value = null; }
       }, { immediate: true });
       const loginModal  = reactive({ show: false, tab: 'login' });
-      const loginForm   = reactive({ email: 'admin1@demo.com', password: 'demo1234', authMethod: '메인' });
+      const loginForm   = reactive({ loginName: 'admin1@demo.com', loginPwd: 'demo1234', authMethod: '메인' });
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
       const loginError  = ref('');
       const userMenuShow = ref(false);
@@ -579,24 +579,24 @@
       };
       const closeLogin = () => { loginModal.show = false; loginError.value = ''; };
 
-      const quickLogin = (email) => {
-        loginForm.email = email;
-        loginForm.password = 'demo1234';
+      const quickLogin = (loginName) => {
+        loginForm.loginName = loginName;
+        loginForm.loginPwd = 'demo1234';
         loginForm.authMethod = '메인';
         doLogin();
       };
       const doLogin = async () => {
         loginError.value = '';
-        if (!loginForm.email || !loginForm.password) { loginError.value = '이메일과 비밀번호를 입력하세요.'; return; }
+        if (!loginForm.loginName || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
         try {
           const authStore = window.useAuthStore();
           const configStore = window.useConfigStore();
-          const user = await authStore.login(loginForm.email, loginForm.password, loginForm.authMethod);
+          const user = await authStore.login(loginForm.loginName, loginForm.loginPwd, loginForm.authMethod);
           currentUser.value = user;
           await configStore.loadCodes();
           await configStore.loadUserInfo();
           openTabs.splice(0);
-          loginForm.email = ''; loginForm.password = '';
+          loginForm.loginName = ''; loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
           showToast(`${user.name}님 환영합니다.`);
@@ -1321,12 +1321,12 @@
       <!-- 로그인 폼 -->
       <div v-if="loginModal.tab==='login'">
         <div class="form-group">
-          <label class="form-label">이메일</label>
-          <input class="form-control" v-model="loginForm.email" placeholder="이메일 입력" @keyup.enter="doLogin" autocomplete="email" />
+          <label class="form-label">로그인 ID</label>
+          <input class="form-control" v-model="loginForm.loginName" placeholder="로그인 ID 입력" @keyup.enter="doLogin" autocomplete="username" />
         </div>
         <div class="form-group">
           <label class="form-label">비밀번호</label>
-          <input class="form-control" type="password" v-model="loginForm.password" placeholder="비밀번호 입력" @keyup.enter="doLogin" autocomplete="current-password" />
+          <input class="form-control" type="password" v-model="loginForm.loginPwd" placeholder="비밀번호 입력" @keyup.enter="doLogin" autocomplete="current-password" />
         </div>
         <div class="form-group">
           <label class="form-label">인증방식</label>

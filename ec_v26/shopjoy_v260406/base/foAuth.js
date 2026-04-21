@@ -46,11 +46,11 @@
   };
 
   /* ── 이메일/비밀번호 로그인 ── */
-  const login = async (email, password) => {
+  const login = async (loginName, loginPwd) => {
     state.loading = true;
     try {
       if (!window.frontApi) throw new Error('no api');
-      const res = await window.frontApi.post('/auth/fo/auth/login', { email, password });
+      const res = await window.frontApi.post('/auth/fo/auth/login', { loginName, loginPwd });
       if (res.data?.data) {
         const d = res.data.data;
         const user  = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };

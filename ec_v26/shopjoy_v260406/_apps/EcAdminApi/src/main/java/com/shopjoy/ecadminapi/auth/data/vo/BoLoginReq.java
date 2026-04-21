@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 public class BoLoginReq {
     @NotBlank(message = "로그인 ID를 입력해주세요.")
-    private String loginId;
+    private String loginName;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
-    private String password;
+    private String loginPwd;
 }

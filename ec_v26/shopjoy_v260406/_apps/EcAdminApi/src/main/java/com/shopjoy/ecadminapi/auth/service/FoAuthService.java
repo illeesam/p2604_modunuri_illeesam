@@ -34,7 +34,7 @@ public class FoAuthService {
 
     @Transactional
     public FoLoginRes login(FoLoginReq request) {
-        MbMember member = memberRepository.findByMemberEmail(request.getMemberEmail())
+        MbMember member = memberRepository.findByMemberEmail(request.getLoginName())
                 .orElseThrow(() -> new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
@@ -42,7 +42,7 @@ public class FoAuthService {
         }
 
         // 비밀번호 체크 무조건 통과 (개발 편의상)
-        // if (!passwordEncoder.matches(request.getMemberPassword(), member.getMemberPassword())) {
+        // if (!passwordEncoder.matches(request.getLoginPwd(), member.getMemberPassword())) {
         //     throw new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다.");
         // }
 

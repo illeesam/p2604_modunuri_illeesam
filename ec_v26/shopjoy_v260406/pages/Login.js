@@ -11,13 +11,13 @@ window.Login = {
     const snsProvider = ref(null); // sns 회원가입 시 provider 저장
 
     /* ── 로그인 ── */
-    const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
+    const form     = reactive({ loginName: 'user1@demo.com', loginPwd: 'demo1234' });
     const loginErr = ref('');
 
     const doLogin = async () => {
       loginErr.value = '';
-      if (!form.email || !form.password) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
-      const r = await window.foAuth.login(form.email, form.password);
+      if (!form.loginName || !form.loginPwd) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
+      const r = await window.foAuth.login(form.loginName, form.loginPwd);
       if (r.ok) {
         props.showToast(window.foAuth.state.user.memberNm + '님, 환영합니다!', 'success');
         emit('close');

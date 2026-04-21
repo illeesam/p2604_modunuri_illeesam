@@ -27,11 +27,11 @@
 
     actions: {
       // 로그인
-      async login(email, password, authMethod = '메인') {
+      async login(loginName, loginPwd, authMethod = '메인') {
         try {
           const res = await window.adminApi.post('/auth/bo/auth/login', {
-            email,
-            password,
+            loginName,
+            loginPwd,
             authMethod,
           });
 
