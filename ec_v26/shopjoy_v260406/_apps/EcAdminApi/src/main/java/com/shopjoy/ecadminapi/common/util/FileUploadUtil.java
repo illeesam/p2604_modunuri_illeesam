@@ -1,0 +1,172 @@
+package com.shopjoy.ecadminapi.common.util;
+
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
+/// 파일 업로드 검증 및 경로/파일명 생성 유틸 - 확장자/용량 제한
+@Slf4j
+@Component
+public class FileUploadUtil {
+
+    @Value("${app.file.allowed-extensions:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip}")
+    private String allowedExtensionsStr;
+
+    @Value("${app.file.max-file-size:10485760}")
+    private long maxFileSize;
+
+    @Value("${app.file.max-image-size:5242880}")
+    private long maxImageSize;
+
+    @Value("${app.file.max-document-size:20971520}")
+    private long maxDocumentSize;
+
+    private static final Set<String> IMAGE_EXTENSIONS = new HashSet<>(
+            Arrays.asList("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"));
+    private static final Set<String> DOCUMENT_EXTENSIONS = new HashSet<>(
+            Arrays.asList("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv"));
+    private static final Set<String> BLOCKED_EXTENSIONS = new HashSet<>(
+            Arrays.asList("exe", "bat", "cmd", "com", "dll", "sys", "scr", "vbs", "js", "jar", "zip", "rar", "7z", "iso"));
+
+    /// 파일 유효성 검사 (확장자 + 용량)
+    public void validate(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new CmBizException("파일을 선택해주세요.");
+        }
+
+        // 확장자 검증
+        String fileName = file.getOriginalFilename();
+        String ext = getFileExtension(fileName).toLowerCase();
+
+        // 실행파일 차단
+        if (isBlockedExtension(ext)) {
+            throw new CmBizException("실행 파일은 업로드할 수 없습니다: ." + ext);
+        }
+
+        if (!isAllowedExtension(ext)) {
+            throw new CmBizException("허용되지 않는 파일 형식입니다. 허용: " + allowedExtensionsStr);
+        }
+
+        // 용량 검증
+        long fileSize = file.getSize();
+        validateFileSize(ext, fileSize, fileName);
+    }
+
+    /// 파일 크기 검증 (타입별 제한)
+    private void validateFileSize(String ext, long fileSize, String fileName) {
+        if (isImage(ext)) {
+            if (fileSize > maxImageSize) {
+                throw new CmBizException(String.format("이미지 파일은 %dMB 이하여야 합니다.", maxImageSize / 1024 / 1024));
+            }
+        } else if (isDocument(ext)) {
+            if (fileSize > maxDocumentSize) {
+                throw new CmBizException(String.format("문서 파일은 %dMB 이하여야 합니다.", maxDocumentSize / 1024 / 1024));
+            }
+        } else {
+            if (fileSize > maxFileSize) {
+                throw new CmBizException(String.format("파일은 %dMB 이하여야 합니다.", maxFileSize / 1024 / 1024));
+            }
+        }
+    }
+
+    /// 확장자 허용 여부
+    public boolean isAllowedExtension(String ext) {
+        return getAllowedExtensions().contains(ext.toLowerCase());
+    }
+
+    /// 이미지 파일 여부
+    public boolean isImage(String ext) {
+        return IMAGE_EXTENSIONS.contains(ext.toLowerCase());
+    }
+
+    /// 문서 파일 여부
+    public boolean isDocument(String ext) {
+        return DOCUMENT_EXTENSIONS.contains(ext.toLowerCase());
+    }
+
+    /// 파일명에서 확장자 추출
+    public String getFileExtension(String fileName) {
+        if (fileName == null || !fileName.contains(".")) {
+            return "";
+        }
+        return fileName.substring(fileName.lastIndexOf(".") + 1);
+    }
+
+    /// 안전한 파일명 생성 (보안)
+    public String sanitizeFileName(String fileName) {
+        return fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+
+    /// 허용된 확장자 목록 조회
+    public Set<String> getAllowedExtensions() {
+        return new HashSet<>(Arrays.asList(allowedExtensionsStr.toLowerCase().split(",")));
+    }
+
+    /// 최대 파일 크기 조회
+    public long getMaxFileSize(String ext) {
+        if (isImage(ext)) {
+            return maxImageSize;
+        } else if (isDocument(ext)) {
+            return maxDocumentSize;
+        }
+        return maxFileSize;
+    }
+
+    /// 실행파일 차단 확장자 여부
+    public boolean isBlockedExtension(String ext) {
+        return BLOCKED_EXTENSIONS.contains(ext.toLowerCase());
+    }
+
+    /// 폴더 경로 생성 (정책: /cdn/업무명/YYYY/YYYYMM/YYYYMMDD)
+    public String generateFolderPath(String businessCode) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter yyyy = DateTimeFormatter.ofPattern("yyyy");
+        DateTimeFormatter yyyymm = DateTimeFormatter.ofPattern("yyyyMM");
+        DateTimeFormatter yyyymmdd = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        return String.format("static/cdn/%s/%s/%s/%s",
+                businessCode,
+                now.format(yyyy),
+                now.format(yyyymm),
+                now.format(yyyymmdd));
+    }
+
+    /// 파일명 생성 (정책: YYYYMMDDhhmmss + random(4) + 순서번호 + 확장자)
+    public String generateFileName(String ext, int fileSequence) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String timestamp = now.format(fmt);
+
+        int random = new Random().nextInt(10000);
+        String randomStr = String.format("%04d", random);
+
+        String sequence = String.format("%02d", fileSequence);
+
+        return timestamp + randomStr + sequence + "." + ext;
+    }
+
+    /// 썸네일 파일명 생성 (_thumb 추가)
+    public String generateThumbFileName(String fileName) {
+        int dotIndex = fileName.lastIndexOf(".");
+        if (dotIndex <= 0) {
+            return fileName + "_thumb";
+        }
+        String nameWithoutExt = fileName.substring(0, dotIndex);
+        String ext = fileName.substring(dotIndex + 1);
+        return nameWithoutExt + "_thumb." + ext;
+    }
+
+    /// 섬네일 생성 가능 확장자 여부
+    public boolean canGenerateThumbnail(String ext) {
+        return IMAGE_EXTENSIONS.contains(ext.toLowerCase());
+    }
+}

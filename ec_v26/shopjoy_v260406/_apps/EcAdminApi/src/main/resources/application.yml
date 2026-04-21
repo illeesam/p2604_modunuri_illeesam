@@ -3,6 +3,99 @@ spring:
     active: dev
 
 # ════════════════════════════════════════════════════════════════
+# Swagger/OpenAPI 설정
+# ════════════════════════════════════════════════════════════════
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+# ════════════════════════════════════════════════════════════════
+# 파일 업로드 설정 (Spring MultipartFile)
+# ════════════════════════════════════════════════════════════════
+spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+# ════════════════════════════════════════════════════════════════
+# 파일 업로드 정책 및 스토리지 설정
+#
+# 저장 경로 정책:
+#   /static/cdn/{businessCode}/YYYY/YYYYMM/YYYYMMDD/
+#
+# 파일명 정책:
+#   YYYYMMDDhhmmss + random(4) + 순서번호 + 확장자
+#   예: 202604211430450145801.jpg
+#
+# sy_attach_grp: 파일 그룹 (다중 첨부 시 사용, sy_attach_grp_id 참조)
+# sy_attach: 실제 파일 정보 저장 (file_nm, stored_nm, attach_url, cdn_host, cdn_img_url 등)
+# ════════════════════════════════════════════════════════════════
+app:
+  file:
+    # ── 기본 검증 ──────────────────────────────────────────────
+    # 허용 확장자 (쉼표 구분)
+    allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip
+    # 파일당 최대 용량 (바이트)
+    max-file-size: 10485760
+    # 요청당 최대 용량 (바이트)
+    max-request-size: 52428800
+    # 이미지 최대 용량 (바이트, 기본: 5MB)
+    max-image-size: 5242880
+    # 문서 최대 용량 (바이트, 기본: 20MB)
+    max-document-size: 20971520
+
+    # ── 스토리지 설정 ────────────────────────────────────────────
+    # 스토리지 타입 (LOCAL / AWS_S3 / NCP_OBS)
+    storage-type: LOCAL
+
+    # ── LOCAL 스토리지 (개발 환경용) ────────────────────────────────
+    local:
+      # 로컬 저장소 기본 경로 (상대경로)
+      base-path: static/cdn
+      # 업로드 디렉토리명
+      upload-dir: uploads
+
+    # ── AWS S3 스토리지 설정 ──────────────────────────────────────
+    aws:
+      # S3 버킷명
+      bucket-name: shopjoy-files
+      # AWS 리전 (us-east-1, ap-northeast-2 등)
+      region: ap-northeast-2
+      # Access Key ID (환경변수 권장: AWS_ACCESS_KEY_ID)
+      access-key: ${AWS_ACCESS_KEY_ID:}
+      # Secret Access Key (환경변수 권장: AWS_SECRET_ACCESS_KEY)
+      secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      # S3 CDN 기본 URL (CloudFront 또는 S3 직접 접근)
+      cdn-url: https://cdn.shopjoy.com
+
+    # ── NCP (Naver Cloud Platform) OBS 스토리지 설정 ──────────────────────
+    ncp:
+      # 오브젝트 스토리지 버킷명
+      bucket-name: shopjoy-files
+      # NCP 리전 엔드포인트 (kr-standard, kr-standard-dn 등)
+      endpoint: https://obs.kr-standard.ncrdev.ncloud.com
+      # 액세스 키 ID (환경변수 권장: NCP_ACCESS_KEY)
+      access-key: ${NCP_ACCESS_KEY:}
+      # 액세스 시크릿 (환경변수 권장: NCP_SECRET_KEY)
+      secret-key: ${NCP_SECRET_KEY:}
+      # NCP CDN 기본 URL
+      cdn-url: https://cdn-ncp.shopjoy.com
+
+    # ── CDN 및 스토리지 경로 ──────────────────────────────────────
+    # CDN 호스트명 (sy_attach.cdn_host에 저장, 다중 호스트 지원)
+    cdn-host: https://cdn.shopjoy.com
+    # 썸네일 생성 여부
+    thumbnail-enabled: true
+    # 썸네일 크기 (width x height, 쉼표 구분)
+    thumbnail-sizes: 200x200,400x400,800x800
+
+# ════════════════════════════════════════════════════════════════
 # 로깅 공통 설정  (logback-spring.xml 위임)
 #
 #   프로파일별 레벨/appender 는 logback-spring.xml <springProfile> 에서 제어

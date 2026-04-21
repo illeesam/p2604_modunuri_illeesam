@@ -35,7 +35,9 @@
       "Bash(node _doc/rename_auth_methods.js)",
       "Bash(./gradlew compileJava)",
       "Bash(./gradlew build *)",
-      "Bash(gradle build *)"
+      "Bash(gradle build *)",
+      "Bash(grep -i \"\\\\.java$\")",
+      "Bash(./gradlew clean *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\illee\\.claude\\projects\\c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406\\memory"

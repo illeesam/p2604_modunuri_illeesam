@@ -98,6 +98,20 @@ app:
     filter: "*"               # local: 전체 기록
     max-body-size: 2000       # 요청/응답 바디 최대 저장 크기(bytes). 0=미수집
 
+  # ── 파일 업로드 설정 (local 프로파일) ─────────────────────────────────
+  file:
+    # 스토리지 타입: LOCAL (개발/테스트용)
+    storage-type: LOCAL
+    # 로컬 저장소 경로 (프로젝트 루트 기준)
+    local:
+      base-path: static/cdn
+      upload-dir: uploads
+    # CDN 호스트 (로컬에서는 상대경로로 접근)
+    cdn-host: http://localhost:8080/static/cdn
+    # 썸네일 생성 활성화 (개발용)
+    thumbnail-enabled: true
+    thumbnail-sizes: 200x200,400x400,800x800
+
 # ────────────────────────────────────────────
 # 로깅 — local 프로파일
 #   레벨   : DEBUG (logback-spring.xml <springProfile name="local,dev"> 적용)

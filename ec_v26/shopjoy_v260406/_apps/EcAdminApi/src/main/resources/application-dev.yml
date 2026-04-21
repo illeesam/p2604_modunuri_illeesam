@@ -98,6 +98,28 @@ app:
     filter: "BO^FO^EXT"       # dev: 인증된 모든 유형 기록
     max-body-size: 2000
 
+  # ── 파일 업로드 설정 (dev 프로파일) ─────────────────────────────────
+  file:
+    # 스토리지 타입: LOCAL 또는 AWS_S3 또는 NCP_OBS (dev 환경에서는 LOCAL 권장)
+    storage-type: LOCAL
+    # 로컬 저장소 경로 (프로젝트 루트 기준)
+    local:
+      base-path: static/cdn
+      upload-dir: uploads
+    # CDN 호스트 (dev 서버 URL)
+    cdn-host: http://dev.shopjoy.com/static/cdn
+    # 썸네일 생성 활성화
+    thumbnail-enabled: true
+    thumbnail-sizes: 200x200,400x400,800x800
+
+    # AWS S3 설정 (필요 시 storage-type을 AWS_S3로 변경)
+    # aws:
+    #   bucket-name: shopjoy-files-dev
+    #   region: ap-northeast-2
+    #   access-key: ${AWS_ACCESS_KEY_ID:}
+    #   secret-key: ${AWS_SECRET_ACCESS_KEY:}
+    #   cdn-url: https://cdn-dev.shopjoy.com
+
 # ────────────────────────────────────────────
 # 로깅 — dev 프로파일
 #   레벨   : DEBUG (logback-spring.xml <springProfile name="local,dev"> 적용)

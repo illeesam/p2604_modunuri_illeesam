@@ -97,3 +97,31 @@ app:
     #   "admin01^member123^BO"    → 특정 userId 두 명 + BO 전체
     filter: "BO"             # prod: BO 관리자만 기록
     max-body-size: 0         # prod: 바디 미수집 (성능/보안)
+
+  # ── 파일 업로드 설정 (prod 프로파일) ─────────────────────────────────
+  file:
+    # 스토리지 타입: AWS_S3 또는 NCP_OBS (환경변수로 선택 가능)
+    # storage-type: ${STORAGE_TYPE:AWS_S3}
+    storage-type: AWS_S3  # AWS_S3 또는 NCP_OBS로 변경 가능
+
+    # AWS S3 설정 (운영 환경)
+    aws:
+      bucket-name: ${AWS_S3_BUCKET:shopjoy-files-prod}
+      region: ${AWS_REGION:ap-northeast-2}
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+      cdn-url: ${AWS_CLOUDFRONT_URL:https://cdn.shopjoy.com}
+
+    # NCP OBS 설정 (대안)
+    ncp:
+      bucket-name: ${NCP_BUCKET:shopjoy-files-prod}
+      endpoint: ${NCP_ENDPOINT:https://obs.kr-standard.ncrdev.ncloud.com}
+      access-key: ${NCP_ACCESS_KEY}
+      secret-key: ${NCP_SECRET_KEY}
+      cdn-url: ${NCP_CDN_URL:https://cdn-ncp.shopjoy.com}
+
+    # CDN 호스트 (운영 환경)
+    cdn-host: ${CDN_HOST:https://cdn.shopjoy.com}
+    # 썸네일 생성 활성화
+    thumbnail-enabled: true
+    thumbnail-sizes: 200x200,400x400,800x800

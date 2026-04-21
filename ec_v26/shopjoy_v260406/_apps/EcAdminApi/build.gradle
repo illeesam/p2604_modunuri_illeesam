@@ -46,6 +46,12 @@ dependencies {
     // Redis (선택적 사용 — app.redis.enabled=true 일 때만 활성)
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // Swagger/OpenAPI (API 문서 자동 생성 + UI)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0'
+
+    // 이미지 처리 (썸네일 생성)
+    implementation 'net.coobird:thumbnailator:0.4.20'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 }

@@ -52,6 +52,27 @@ public class SyAttach {
     @Column(name = "cdn_thumb_url", length = 500)
     private String cdnThumbUrl;
 
+    @Column(name = "storage_type", length = 50)
+    private String storageType;
+
+    @Column(name = "storage_path", length = 500)
+    private String storagePath;
+
+    @Column(name = "thumb_file_nm", length = 300)
+    private String thumbFileNm;
+
+    @Column(name = "thumb_stored_nm", length = 300)
+    private String thumbStoredNm;
+
+    @Column(name = "thumb_url", length = 500)
+    private String thumbUrl;
+
+    @Column(name = "thumb_cdn_url", length = 500)
+    private String thumbCdnUrl;
+
+    @Column(name = "thumb_generated_yn", length = 1)
+    private String thumbGeneratedYn;
+
     @Column(name = "sort_ord")
     private Integer sortOrd;
 
