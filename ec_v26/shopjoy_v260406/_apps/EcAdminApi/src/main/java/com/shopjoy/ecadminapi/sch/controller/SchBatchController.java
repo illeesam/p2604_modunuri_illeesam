@@ -24,7 +24,7 @@ import java.util.Map;
  * POST /api/sch/reload             — DB 재로드 후 전체 재등록
  */
 @RestController
-@RequestMapping("/sch")
+@RequestMapping("/api/sch")
 @RequiredArgsConstructor
 @BoOnly
 public class SchBatchController {

@@ -15,15 +15,15 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * FO 회원 인증 API (ec_member)
- * POST /auth/fo/login   — 로그인 (JWT 발급)
- * POST /auth/fo/join    — 회원가입
- * POST /auth/fo/refresh — 토큰 갱신
- * POST /auth/fo/logout  — 로그아웃
+ * POST /api/auth/fo/auth/login   — 로그인 (JWT 발급)
+ * POST /api/auth/fo/auth/join    — 회원가입
+ * POST /api/auth/fo/auth/refresh — 토큰 갱신
+ * POST /api/auth/fo/auth/logout  — 로그아웃
  *
  * 인가: 전체 permitAll
  */
 @RestController
-@RequestMapping("/auth/fo")
+@RequestMapping("/api/auth/fo/auth")
 @RequiredArgsConstructor
 public class FoAuthController {
 

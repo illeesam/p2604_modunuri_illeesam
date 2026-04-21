@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * 애플리케이션 환경 정보 조회 API.
  *
- * GET /cm/info
+ * GET /api/cm/app-info/info
  *   - 활성 프로파일, Java/JVM/OS/메모리 정보
  *   - application*.yml 주요 설정값 (비밀번호·시크릿 마스킹)
  *   - Spring Boot 버전, Gradle 빌드 정보 (build-info.properties 생성 시)
@@ -38,7 +38,7 @@ import java.util.Map;
  *    springBoot { buildInfo() }
  */
 @RestController
-@RequestMapping("/cm")
+@RequestMapping("/api/cm/app-info")
 @RequiredArgsConstructor
 public class CmAppInfoController {
 

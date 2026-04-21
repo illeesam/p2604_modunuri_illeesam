@@ -32,7 +32,7 @@ import java.util.List;
  * 11. POST   /autoRest/{d}/{s}/{table}/save-list — _row_status 목록 저장 (I/U/D)
  */
 @RestController
-@RequestMapping("/autoRest/{domain}/{sub}/{table}")
+@RequestMapping("/api/autoRest/{domain}/{sub}/{table}")
 @RequiredArgsConstructor
 public class AutoRestController {
 

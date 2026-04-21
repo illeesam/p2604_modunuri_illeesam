@@ -30,8 +30,6 @@ mybatis:
 
 server:
   port: 8091
-  servlet:
-    context-path: /api
 
 jwt:
   secret: c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt

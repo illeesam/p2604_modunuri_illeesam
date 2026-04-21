@@ -15,15 +15,15 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * BO 관리자 인증 API (sy_user)
- * POST /auth/bo/login   — 로그인 (JWT 발급)
- * POST /auth/bo/join    — 관리자 등록
- * POST /auth/bo/refresh — 토큰 갱신
- * POST /auth/bo/logout  — 로그아웃
+ * POST /api/auth/bo/auth/login   — 로그인 (JWT 발급)
+ * POST /api/auth/bo/auth/join    — 관리자 등록
+ * POST /api/auth/bo/auth/refresh — 토큰 갱신
+ * POST /api/auth/bo/auth/logout  — 로그아웃
  *
  * 인가: 전체 permitAll
  */
 @RestController
-@RequestMapping("/auth/bo")
+@RequestMapping("/api/auth/bo/auth")
 @RequiredArgsConstructor
 public class BoAuthController {
 

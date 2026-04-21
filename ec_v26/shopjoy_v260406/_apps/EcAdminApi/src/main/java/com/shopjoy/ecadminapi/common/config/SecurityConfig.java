@@ -92,7 +92,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/bo/**", "/auth/fo/**").permitAll()
+                .requestMatchers("/api/auth/bo/**", "/api/auth/fo/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
@@ -115,12 +115,12 @@ public class SecurityConfig {
                 // /api/ext/** — EXT(외부 시스템)만 허용
                 .requestMatchers("/api/ext/**").access(EXT_ONLY)
 
-                // /api/**, /autoRest/** — GET: USER or MEMBER / 변경: USER만
-                .requestMatchers(HttpMethod.GET,    "/api/**", "/autoRest/**").access(BO_OR_FO)
-                .requestMatchers(HttpMethod.POST,   "/api/**", "/autoRest/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PUT,    "/api/**", "/autoRest/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PATCH,  "/api/**", "/autoRest/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.DELETE, "/api/**", "/autoRest/**").access(BO_ONLY)
+                // /api/**, /api/autoRest/** — GET: USER or MEMBER / 변경: USER만
+                .requestMatchers(HttpMethod.GET,    "/api/**").access(BO_OR_FO)
+                .requestMatchers(HttpMethod.POST,   "/api/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PUT,    "/api/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PATCH,  "/api/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.DELETE, "/api/**").access(BO_ONLY)
 
                 .anyRequest().authenticated()
             )
