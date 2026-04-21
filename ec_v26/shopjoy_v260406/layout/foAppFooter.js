@@ -18,7 +18,7 @@ window.foAppFooter = {
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispFrontUi') {
         window.open((window.pageUrl ? window.pageUrl('disp-fo-ui.html') : 'disp-fo-ui.html') + (target ? '#page=' + target : ''), '_blank');
-      } else if (root === 'dispAdminUi') {
+      } else if (root === 'dispBoUi') {
         window.open((window.pageUrl ? window.pageUrl('disp-bo-ui.html') : 'disp-bo-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'foSite') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + target;
@@ -218,7 +218,7 @@ window.foAppFooter = {
                   <button type="button" @click="goItem('dispFrontUi', m.id); closeMenu();"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
                     title="사용자 미리보기">사용자 ↗</button>
-                  <button type="button" @click="goItem('dispAdminUi', m.id); closeMenu();"
+                  <button type="button" @click="goItem('dispBoUi', m.id); closeMenu();"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
                     title="관리자 미리보기">관리자 ↗</button>
                 </div>

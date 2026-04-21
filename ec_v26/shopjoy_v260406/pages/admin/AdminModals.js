@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 공통 참조 모달 (회원/상품/주문/클레임/쿠폰) */
-window.AdminRefModal = {
-  name: 'AdminRefModal',
+window.BoRefModal = {
+  name: 'BoRefModal',
   props: ['state'],
   emits: ['close'],
   setup(props, { emit }) {

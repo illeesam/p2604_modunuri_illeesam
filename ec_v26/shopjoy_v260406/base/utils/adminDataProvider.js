@@ -1,6 +1,6 @@
 /**
- * Admin 공통 데이터 제공자 (함수형)
- * - 모든 adminData 접근을 함수로 통합
+ * BO 공통 데이터 제공자 (함수형)
+ * - 모든 boData 접근을 함수로 통합
  * - undefined/null은 절대 반환하지 않음
  * - 항상 안전한 기본값 보장
  */
@@ -146,11 +146,11 @@ window.boDataProvider = (() => {
     },
 
     // ==================== 관리자 사용자 ====================
-    getAdminUsers() {
+    getBoUsers() {
       return (getAdminData().boUsers || []);
     },
 
-    getAdminUserById(boUserId) {
+    getBoUserById(boUserId) {
       const boUsers = this.getBoUsers();
       return boUsers.find(u => u?.boUserId === boUserId) || { boUserId: 0, loginId: '', password: '', name: '', email: '', phone: '', dept: '', role: '', status: '', lastLogin: '' };
     },

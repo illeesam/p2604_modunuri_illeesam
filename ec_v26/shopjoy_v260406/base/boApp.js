@@ -1507,7 +1507,7 @@
   /* ── components/comp/ (공통 컴포넌트) ── */
   .component('BaseAttachGrp',  window.BaseAttachGrp)
   /* ── pages/admin/ (공통) ── */
-  .component('AdminRefModal',  window.AdminRefModal)
+  .component('BoRefModal',  window.BoRefModal)
   /* ── pages/admin/ec/ — 회원 ── */
   .component('MbMemberMng',    window.MbMemberMng)
   .component('MbMemberDtl',    window.MbMemberDtl)
@@ -1648,7 +1648,7 @@
   .component('SyContactDtl',   window.SyContactDtl)
   .component('CmBlogMng',      window.CmBlogMng)
   /* ── components/modals/ — 선택 모달 ── */
-  .component('AdminUserSelectModal', window.AdminUserSelectModal)
+  .component('BoUserSelectModal', window.BoUserSelectModal)
   .component('BbmSelectModal',       window.BbmSelectModal)
   .component('MemberSelectModal',    window.MemberSelectModal)
   .component('OrderSelectModal',     window.OrderSelectModal)

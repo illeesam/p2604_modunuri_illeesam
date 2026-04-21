@@ -641,7 +641,7 @@
   .component('OrderDetailModal',     window.OrderDetailModal)
   .component('ProductModal',         window.ProductModal)
   /* ── components/modals/ — 선택 모달 ── */
-  .component('AdminUserSelectModal', window.AdminUserSelectModal)
+  .component('BoUserSelectModal', window.BoUserSelectModal)
   .component('BbmSelectModal',       window.BbmSelectModal)
   .component('CategorySelectModal',  window.CategorySelectModal)
   .component('MemberSelectModal',    window.MemberSelectModal)

@@ -600,8 +600,8 @@ window.VendorSelectModal = {
 };
 
 /* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
-window.AdminUserSelectModal = {
-  name: 'AdminUserSelectModal',
+window.BoUserSelectModal = {
+  name: 'BoUserSelectModal',
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
