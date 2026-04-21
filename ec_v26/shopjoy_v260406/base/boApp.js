@@ -453,7 +453,7 @@
       const filterSite      = computed(() => null);
       const filterVendor    = computed(() => null);
       const filterDlivVendor = computed(() => null);
-      const filterAdminUser = computed(() => null);
+      const filterBoUser = computed(() => null);
       const filterMember    = computed(() => null);
       const filterOrder     = computed(() => null);
 
@@ -1208,9 +1208,9 @@
             <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('adminUser')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('adminUser')">
-            <span v-if="filterAdminUser" class="popup-sel-name">{{ filterAdminUser.name }}</span>
+            <span v-if="filterBoUser" class="popup-sel-name">{{ filterBoUser.name }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterAdminUser" class="popup-sel-id">{{ filterAdminUser.boUserId }}</span>
+            <span v-if="filterBoUser" class="popup-sel-id">{{ filterBoUser.boUserId }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
@@ -1600,9 +1600,9 @@
   .component('MbCustInfoMng',  window.MbCustInfoMng)
   /* ── pages/admin/sy/ — 대시보드 ── */
   .component('SyDashboardMng', window.SyDashboardMng)
-  .component('DashboardAdminEc01', window.DashboardAdminEc01)
-  .component('DashboardAdminEc02', window.DashboardAdminEc02)
-  .component('DashboardAdminEc03', window.DashboardAdminEc03)
+  .component('DashboardBoEc01', window.DashboardBoEc01)
+  .component('DashboardBoEc02', window.DashboardBoEc02)
+  .component('DashboardBoEc03', window.DashboardBoEc03)
   /* ── pages/admin/sy/ — 사용자/권한/조직 ── */
   .component('SyUserMng',      window.SyUserMng)
   .component('SyUserDtl',      window.SyUserDtl)

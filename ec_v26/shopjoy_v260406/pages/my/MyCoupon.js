@@ -54,7 +54,7 @@ window.MyCoupon = {
     };
   },
   template: /* html */ `
-<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
+<fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
 
   <MyDateFilter @search="onDateSearch" />
 
@@ -176,7 +176,7 @@ window.MyCoupon = {
 </FrontMyLayout>
   `,
   components: {
-    FrontMyLayout:    window.foMyLayout,
+    FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,
   }

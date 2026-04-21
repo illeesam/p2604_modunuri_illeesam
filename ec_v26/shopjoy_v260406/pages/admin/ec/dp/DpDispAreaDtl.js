@@ -270,7 +270,7 @@ window.DpDispAreaDtl = {
     };
     const openWidgetPreview = (scope) => {
       if (!activePanel.value) return props.showToast && props.showToast('미리볼 패널을 선택하세요.', 'error');
-      const file = scope === 'admin' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
+      const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
       window.open(`${window.pageUrl(file)}?areas=${form.codeValue}&date=${form.regDate}&time=00:00`, '_blank', 'width=1280,height=900');
     };
 
@@ -412,8 +412,8 @@ window.DpDispAreaDtl = {
         <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">{{ relatedPanels.length }}개</span>
       </span>
       <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openPanelPreview">🖼 패널미리보기</button>
-      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="openWidgetPreview('front')">👁 사용자 미리보기</button>
-      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="openWidgetPreview('admin')">👁 관리자 미리보기</button>
+      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="openWidgetPreview('fo')">👁 사용자 미리보기</button>
+      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="openWidgetPreview('bo')">👁 관리자 미리보기</button>
       <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
       <button class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
     </div>

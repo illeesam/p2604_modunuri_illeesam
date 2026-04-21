@@ -19,7 +19,7 @@ window.MyChatt = {
     return { myStore, chats, expandedChat, chatPager, paginate, dateFilteredChats, onDateSearch };
   },
   template: /* html */ `
-<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
+<fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
 
   <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredChats.length" :pager="chatPager" />
@@ -56,10 +56,10 @@ window.MyChatt = {
 
   <Pagination :total="chats.length" :pager="chatPager" />
 
-</FrontMyLayout>
+</fo-my-layout>
   `,
   components: {
-    FrontMyLayout:    window.foMyLayout,
+    FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,
   }

@@ -42,7 +42,7 @@ window.MyCache = {
     };
   },
   template: /* html */ `
-<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
+<fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
 
   <MyDateFilter @search="onDateSearch" />
 
@@ -149,10 +149,10 @@ window.MyCache = {
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
   </Teleport>
 
-</FrontMyLayout>
+</fo-my-layout>
   `,
   components: {
-    FrontMyLayout:         window.foMyLayout,
+    FoMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

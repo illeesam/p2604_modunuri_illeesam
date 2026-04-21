@@ -186,7 +186,7 @@ window.MyOrder = {
     };
   },
   template: /* html */ `
-<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
+<fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
 
   <MyDateFilter @search="onDateSearch" @reset="flowStatusFilter.splice(0)" />
 
@@ -733,7 +733,7 @@ window.MyOrder = {
 </FrontMyLayout>
   `,
   components: {
-    FrontMyLayout:         window.foMyLayout,
+    FoMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

@@ -76,7 +76,7 @@ window.MyClaim = {
     };
   },
   template: /* html */ `
-<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
+<fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
 
   <MyDateFilter @search="onDateSearch" @reset="claimStatusFilter.splice(0)" />
 
@@ -284,7 +284,7 @@ window.MyClaim = {
 </FrontMyLayout>
   `,
   components: {
-    FrontMyLayout:         window.foMyLayout,
+    FoMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

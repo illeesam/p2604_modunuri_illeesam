@@ -165,7 +165,7 @@ window.XsSample04 = {
     const CATALOG2_ADMIN = [
       { id: 'siteSelect',      icon: '🌐', name: '사이트 선택',       desc: 'SiteSelectModal — 검색+선택',          color: '#0f766e' },
       { id: 'vendorSelect',    icon: '🏢', name: '판매업체 선택',     desc: 'VendorSelectModal — 검색+선택',        color: '#b45309' },
-      { id: 'adminUserSelect', icon: '👥', name: '사용자 선택',       desc: 'AdminUserSelectModal — 부서트리+멀티', color: '#1e40af' },
+      { id: 'boUserSelect', icon: '👥', name: '사용자 선택',       desc: 'BoUserSelectModal — 부서트리+멀티', color: '#1e40af' },
       { id: 'memberSelect',    icon: '🙋', name: '회원 선택',         desc: 'MemberSelectModal — 회원 검색선택',   color: '#9333ea' },
       { id: 'orderSelect',     icon: '🧾', name: '주문 선택',         desc: 'OrderSelectModal — 주문 검색선택',    color: '#be185d' },
       { id: 'bbmSelect',       icon: '📬', name: '게시판 선택',       desc: 'BbmSelectModal — 페이지네이션',        color: '#065f46' },
@@ -703,7 +703,7 @@ window.XsSample04 = {
   <template v-if="bModal.type==='vendorSelect'">
     <vendor-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
-  <template v-if="bModal.type==='adminUserSelect'">
+  <template v-if="bModal.type==='boUserSelect'">
     <bo-user-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='memberSelect'">

@@ -26,8 +26,8 @@
     return `M${first[0]},${h - pad} L${pts.replace(/ /g, ' L')} L${last[0]},${h - pad} Z`;
   };
 
-  window.DashboardAdminEc02 = {
-    name: 'DashboardAdminEc02',
+  window.DashboardBoEc03 = {
+    name: 'DashboardBoEc03',
     props: ['navigate', 'showToast'],
 
     setup() {

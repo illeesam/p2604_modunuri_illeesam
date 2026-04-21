@@ -30,7 +30,7 @@ window.MyContact = {
     };
   },
   template: /* html */ `
-<FoMyLayout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
+<fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
 
   <MyDateFilter @search="onDateSearch" />
   <PagerHeader :total="dateFilteredInquiries.length" :pager="inquiryPager" />
@@ -65,7 +65,7 @@ window.MyContact = {
 </FrontMyLayout>
   `,
   components: {
-    FrontMyLayout:    window.foMyLayout,
+    FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,
   }
