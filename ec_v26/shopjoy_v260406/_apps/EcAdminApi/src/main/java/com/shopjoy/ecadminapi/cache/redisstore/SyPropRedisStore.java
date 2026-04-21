@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Optional;
  * TTL: app.redis.ttl.sy-prop-seconds (기본 3600s)
  * 프로퍼티 변경 시 evict 후 재조회 or saveAll() 로 갱신.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SyPropRedisStore {
@@ -30,10 +32,12 @@ public class SyPropRedisStore {
 
     public void saveAll(Map<String, String> propMap) {
         redis.set(CacheKey.SY_PROP_ALL, propMap, props.getTtl().getSyPropSeconds());
+        log.info("[Cache][redis] [sy:prop:all] saveAll()— {}건", propMap.size());
     }
 
     public void save(String propKey, String propValue) {
         redis.set(CacheKey.SY_PROP_KEY + propKey, propValue, props.getTtl().getSyPropSeconds());
+        log.info("[Cache][redis] [sy:prop:key][{}] save()", propKey);
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

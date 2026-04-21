@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Optional;
  * TTL: app.redis.ttl.sy-role-menu-seconds (기본 3600s)
  * 역할 또는 메뉴 권한 변경 시 evict 필수.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SyRoleMenuRedisStore {
@@ -29,6 +31,7 @@ public class SyRoleMenuRedisStore {
 
     public void save(String roleId, List<String> menuIds) {
         redis.set(CacheKey.SY_ROLE_MENU + roleId, menuIds, props.getTtl().getSyRoleMenuSeconds());
+        log.info("[Cache][redis] [sy:role:menu][{}] save()— {}건", roleId, menuIds.size());
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

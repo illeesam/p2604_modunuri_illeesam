@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.Optional;
  * TTL: app.redis.ttl.sy-code-seconds (기본 3600s)
  * 코드 변경 시 evict 후 재조회 or saveAll() 로 갱신.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SyCodeRedisStore {
@@ -31,10 +33,12 @@ public class SyCodeRedisStore {
 
     public void saveGroup(String groupCode, List<Map<String, Object>> codes) {
         redis.set(CacheKey.SY_CODE_GRP + groupCode, codes, props.getTtl().getSyCodeSeconds());
+        log.info("[Cache][redis] [sy:code:grp][{}] saveGroup()— {}건", groupCode, codes.size());
     }
 
     public void saveAll(Map<String, List<Map<String, Object>>> allCodes) {
         redis.set(CacheKey.SY_CODE_ALL, allCodes, props.getTtl().getSyCodeSeconds());
+        log.info("[Cache][redis] [sy:code:all] saveAll()— {}개그룹", allCodes.size());
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

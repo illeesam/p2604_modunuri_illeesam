@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.Optional;
  * TTL: app.redis.ttl.sy-menu-seconds (기본 3600s)
  * 메뉴 구조 변경 시 evictAll() 호출 필수.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SyMenuRedisStore {
@@ -31,10 +33,12 @@ public class SyMenuRedisStore {
 
     public void saveAll(List<Map<String, Object>> menuList) {
         redis.set(CacheKey.SY_MENU_ALL, menuList, props.getTtl().getSyMenuSeconds());
+        log.info("[Cache][redis] [sy:menu:all] saveAll()— {}건", menuList.size());
     }
 
     public void saveByRole(String roleId, List<Map<String, Object>> menuList) {
         redis.set(CacheKey.SY_MENU_ROLE + roleId, menuList, props.getTtl().getSyMenuSeconds());
+        log.info("[Cache][redis] [sy:menu:role][{}] saveByRole()— {}건", roleId, menuList.size());
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

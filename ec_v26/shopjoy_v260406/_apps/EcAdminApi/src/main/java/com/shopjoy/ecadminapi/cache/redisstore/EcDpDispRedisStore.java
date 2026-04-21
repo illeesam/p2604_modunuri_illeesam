@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Optional;
  *
  * secondary Redis 가 설정된 경우 secondary 에 저장한다.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EcDpDispRedisStore {
@@ -33,11 +35,13 @@ public class EcDpDispRedisStore {
     public void saveDetail(String dispId, Map<String, Object> dispDetail) {
         redis.set(CacheKey.EC_DP_DISP_DTL + dispId, dispDetail,
                 props.getTtl().getEcDpDispSeconds(), target());
+        log.info("[Cache][redis] [ec-dp-disp:dtl][{}] saveDetail()", dispId);
     }
 
     public void saveList(String siteId, List<Map<String, Object>> dispList) {
         redis.set(CacheKey.EC_DP_DISP_ALL + siteId, dispList,
                 props.getTtl().getEcDpDispSeconds(), target());
+        log.info("[Cache][redis] [ec-dp-disp:list][{}] saveList()— {}건", siteId, dispList.size());
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

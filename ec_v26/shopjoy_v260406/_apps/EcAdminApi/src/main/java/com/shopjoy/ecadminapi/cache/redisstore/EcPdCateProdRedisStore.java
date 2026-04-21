@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.Optional;
  * TTL: app.redis.ttl.ec-pd-cate-prod-seconds (기본 3600s = 1시간)
  * secondary Redis 가 설정된 경우 secondary 에 저장한다.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EcPdCateProdRedisStore {
@@ -32,11 +34,13 @@ public class EcPdCateProdRedisStore {
     public void saveDetail(String prodId, Map<String, Object> detail) {
         redis.set(CacheKey.EC_PD_CATE_PROD_DTL + prodId, detail,
                 props.getTtl().getEcPdCateProdSeconds(), target());
+        log.info("[Cache][redis] [ec-pd-cate-prod:dtl][{}] saveDetail()", prodId);
     }
 
     public void saveList(String cateId, List<Map<String, Object>> list) {
         redis.set(CacheKey.EC_PD_CATE_PROD_ALL + cateId, list,
                 props.getTtl().getEcPdCateProdSeconds(), target());
+        log.info("[Cache][redis] [ec-pd-cate-prod:list][{}] saveList()— {}건", cateId, list.size());
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

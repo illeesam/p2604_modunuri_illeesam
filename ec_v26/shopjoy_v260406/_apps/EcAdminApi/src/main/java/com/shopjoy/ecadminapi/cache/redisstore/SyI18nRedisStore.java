@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Optional;
  * TTL: app.redis.ttl.sy-i18n-seconds (기본 3600s)
  * 메시지 변경 시 evictAll() 호출 필수.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SyI18nRedisStore {
@@ -30,10 +32,12 @@ public class SyI18nRedisStore {
 
     public void saveAll(Map<String, Map<String, String>> i18nMap) {
         redis.set(CacheKey.SY_I18N_ALL, i18nMap, props.getTtl().getSyI18nSeconds());
+        log.info("[Cache][redis] [sy:i18n:all] saveAll()— {}개언어", i18nMap.size());
     }
 
     public void save(String locale, String msgKey, String msgValue) {
         redis.set(CacheKey.SY_I18N_MSG + locale + ":" + msgKey, msgValue, props.getTtl().getSyI18nSeconds());
+        log.info("[Cache][redis] [sy:i18n:msg][{}:{}] save()", locale, msgKey);
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

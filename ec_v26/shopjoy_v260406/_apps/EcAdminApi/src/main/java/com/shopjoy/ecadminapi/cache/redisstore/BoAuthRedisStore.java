@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.Optional;
  *
  * TTL: app.redis.ttl.bo-auth-seconds (기본 900s)
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class BoAuthRedisStore {
@@ -29,6 +31,7 @@ public class BoAuthRedisStore {
 
     public void saveSession(String userId, Map<String, Object> sessionInfo) {
         redis.set(CacheKey.BO_AUTH_SESSION + userId, sessionInfo, props.getTtl().getBoAuthSeconds());
+        log.info("[Cache][redis] [bo:auth:session][{}] saveSession()", userId);
     }
 
     @SuppressWarnings("unchecked")
@@ -47,6 +50,7 @@ public class BoAuthRedisStore {
     public void blacklistToken(String token, long remainingTtlSeconds) {
         if (remainingTtlSeconds <= 0) return;
         redis.set(CacheKey.BO_AUTH_BLACKLIST + token, "1", remainingTtlSeconds);
+        log.info("[Cache][redis] [bo:auth:blacklist] blacklistToken()— ttl={}s", remainingTtlSeconds);
     }
 
     /** 블랙리스트 등록 여부 확인 → true 이면 토큰 사용 불가 */

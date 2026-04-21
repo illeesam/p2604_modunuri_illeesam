@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.Optional;
  * TTL: app.redis.ttl.sy-role-seconds (기본 3600s)
  * 역할 변경 시 evict 후 재조회.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SyRoleRedisStore {
@@ -31,10 +33,12 @@ public class SyRoleRedisStore {
 
     public void saveAll(List<Map<String, Object>> roles) {
         redis.set(CacheKey.SY_ROLE_ALL, roles, props.getTtl().getSyRoleSeconds());
+        log.info("[Cache][redis] [sy:role:all] saveAll()— {}건", roles.size());
     }
 
     public void save(String roleId, Map<String, Object> role) {
         redis.set(CacheKey.SY_ROLE_DTL + roleId, role, props.getTtl().getSyRoleSeconds());
+        log.info("[Cache][redis] [sy:role:dtl][{}] save()", roleId);
     }
 
     // ── 조회 ──────────────────────────────────────────────────────

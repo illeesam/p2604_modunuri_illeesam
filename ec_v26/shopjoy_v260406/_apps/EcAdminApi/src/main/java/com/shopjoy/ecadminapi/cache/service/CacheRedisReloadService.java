@@ -85,21 +85,21 @@ public class CacheRedisReloadService {
     @Transactional(readOnly = true)
     public Map<String, Integer> reloadAll() {
         Map<String, Integer> result = new LinkedHashMap<>();
-        // SY: full reload
-        result.put("sy-code",      reloadCode());
-        result.put("sy-menu",      reloadMenu());
-        result.put("sy-role",      reloadRole());
-        result.put("sy-role-menu", reloadRoleMenu());
-        result.put("sy-prop",      reloadProp());
-        result.put("sy-i18n",      reloadI18n());
-        // EC: 카테고리만 reload, 나머지는 evict(lazy 재적재)
-        result.put("ec-pd-cate",      reloadEcPdCate());
-        result.put("ec-pd-prod",      evictAndReturn("ec-pd-prod"));
-        result.put("ec-pd-cate-prod", evictAndReturn("ec-pd-cate-prod"));
-        result.put("ec-pm-prom",      evictAndReturn("ec-pm-prom"));
-        result.put("ec-pm-prom-item", evictAndReturn("ec-pm-prom-item"));
-        result.put("ec-dp-disp",      evictAndReturn("ec-dp-disp"));
-        result.put("ec-dp-disp-item", evictAndReturn("ec-dp-disp-item"));
+        // SY: 건수 소 → DB 즉시 재적재
+        result.put("sy-code",      reloadCode());                        // 공통코드
+        result.put("sy-menu",      reloadMenu());                        // 메뉴 구조
+        result.put("sy-role",      reloadRole());                        // 역할 정보
+        result.put("sy-role-menu", reloadRoleMenu());                    // 역할-메뉴 매핑
+        result.put("sy-prop",      reloadProp());                        // 시스템 프로퍼티
+        result.put("sy-i18n",      reloadI18n());                        // 다국어 메시지
+        // EC: 카테고리만 reload, 나머지는 evict-only(lazy 재적재) — siteId별 키 다수
+        result.put("ec-pd-cate",      reloadEcPdCate());                 // 카테고리 (reload)
+        result.put("ec-pd-prod",      evictAndReturn("ec-pd-prod"));     // 상품 (evict-only)
+        result.put("ec-pd-cate-prod", evictAndReturn("ec-pd-cate-prod")); // 카테고리-상품 (evict-only)
+        result.put("ec-pm-prom",      evictAndReturn("ec-pm-prom"));     // 프로모션 (evict-only)
+        result.put("ec-pm-prom-item", evictAndReturn("ec-pm-prom-item")); // 프로모션 항목 (evict-only)
+        result.put("ec-dp-disp",      evictAndReturn("ec-dp-disp"));     // 전시 (evict-only)
+        result.put("ec-dp-disp-item", evictAndReturn("ec-dp-disp-item")); // 전시 항목 (evict-only)
         log.info("[Cache] 전체 리로드 완료 — {}", result);
         return result;
     }
@@ -223,19 +223,19 @@ public class CacheRedisReloadService {
     public void evict(String domain) {
         if (!redis.isEnabled()) return;
         switch (domain) {
-            case "sy-code"         -> codeCache.evictAll();
-            case "sy-menu"         -> menuCache.evictAll();
-            case "sy-role"         -> roleCache.evictAll();
-            case "sy-role-menu"    -> roleMenuCache.evictAll();
-            case "sy-prop"         -> propCache.evictAll();
-            case "sy-i18n"         -> i18nCache.evictAll();
-            case "ec-pd-prod"      -> ecPdProdCache.evictAll();
-            case "ec-pd-cate"      -> ecPdCateCache.evictAll();
-            case "ec-pd-cate-prod" -> ecPdCateProdCache.evictAll();
-            case "ec-pm-prom"      -> ecPmPromCache.evictAll();
-            case "ec-pm-prom-item" -> ecPmPromItemCache.evictAll();
-            case "ec-dp-disp"      -> ecDpDispCache.evictAll();
-            case "ec-dp-disp-item" -> ecDpDispItemCache.evictAll();
+            case "sy-code"         -> codeCache.evictAll();         // 공통코드
+            case "sy-menu"         -> menuCache.evictAll();         // 메뉴 구조
+            case "sy-role"         -> roleCache.evictAll();         // 역할 정보
+            case "sy-role-menu"    -> roleMenuCache.evictAll();     // 역할-메뉴 매핑
+            case "sy-prop"         -> propCache.evictAll();         // 시스템 프로퍼티
+            case "sy-i18n"         -> i18nCache.evictAll();         // 다국어 메시지
+            case "ec-pd-prod"      -> ecPdProdCache.evictAll();     // 상품
+            case "ec-pd-cate"      -> ecPdCateCache.evictAll();     // 카테고리
+            case "ec-pd-cate-prod" -> ecPdCateProdCache.evictAll(); // 카테고리-상품
+            case "ec-pm-prom"      -> ecPmPromCache.evictAll();     // 프로모션
+            case "ec-pm-prom-item" -> ecPmPromItemCache.evictAll(); // 프로모션 항목
+            case "ec-dp-disp"      -> ecDpDispCache.evictAll();     // 전시
+            case "ec-dp-disp-item" -> ecDpDispItemCache.evictAll(); // 전시 항목
         }
     }
 

@@ -51,21 +51,21 @@ public class CacheRedisInfoService {
         status.put("enabled", redis.isEnabled());
         if (!redis.isEnabled()) return status;
 
-        // reload: DB 재조회 지원 / evict-only: 삭제만 지원 (lazy 재적재)
+        // reload: evict 후 DB 즉시 재적재 / evict-only: 키 삭제만 → 다음 요청 시 lazy 재적재
         Map<String, String> domains = new LinkedHashMap<>();
-        domains.put("sy-code",          "reload");
-        domains.put("sy-menu",          "reload");
-        domains.put("sy-role",          "reload");
-        domains.put("sy-role-menu",     "reload");
-        domains.put("sy-prop",          "reload");
-        domains.put("sy-i18n",          "reload");
-        domains.put("ec-pd-cate",       "reload");
-        domains.put("ec-pd-prod",       "evict-only");
-        domains.put("ec-pd-cate-prod",  "evict-only");
-        domains.put("ec-pm-prom",       "evict-only");
-        domains.put("ec-pm-prom-item",  "evict-only");
-        domains.put("ec-dp-disp",       "evict-only");
-        domains.put("ec-dp-disp-item",  "evict-only");
+        domains.put("sy-code",          "reload");      // 공통코드         | 건수 소 → 즉시 재적재
+        domains.put("sy-menu",          "reload");      // 메뉴 구조        | 건수 소 → 즉시 재적재
+        domains.put("sy-role",          "reload");      // 역할 정보        | 건수 소 → 즉시 재적재
+        domains.put("sy-role-menu",     "reload");      // 역할-메뉴 매핑   | 건수 소 → 즉시 재적재
+        domains.put("sy-prop",          "reload");      // 시스템 프로퍼티  | 건수 소 → 즉시 재적재
+        domains.put("sy-i18n",          "reload");      // 다국어 메시지    | 건수 소 → 즉시 재적재
+        domains.put("ec-pd-cate",       "reload");      // 카테고리         | 건수 소 → 즉시 재적재
+        domains.put("ec-pd-prod",       "evict-only");  // 상품             | siteId별 다수 → lazy 재적재
+        domains.put("ec-pd-cate-prod",  "evict-only");  // 카테고리-상품    | siteId별 다수 → lazy 재적재
+        domains.put("ec-pm-prom",       "evict-only");  // 프로모션         | siteId별 다수 → lazy 재적재
+        domains.put("ec-pm-prom-item",  "evict-only");  // 프로모션 항목    | siteId별 다수 → lazy 재적재
+        domains.put("ec-dp-disp",       "evict-only");  // 전시             | siteId별 다수 → lazy 재적재
+        domains.put("ec-dp-disp-item",  "evict-only");  // 전시 항목        | siteId별 다수 → lazy 재적재
         status.put("domains", domains);
         return status;
     }

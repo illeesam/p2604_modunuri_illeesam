@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.Optional;
  *
  * TTL: app.redis.ttl.ext-auth-seconds (기본 900s)
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ExtAuthRedisStore {
@@ -29,6 +31,7 @@ public class ExtAuthRedisStore {
 
     public void saveSession(String userId, Map<String, Object> sessionInfo) {
         redis.set(CacheKey.EXT_AUTH_SESSION + userId, sessionInfo, props.getTtl().getExtAuthSeconds());
+        log.info("[Cache][redis] [ext:auth:session][{}] saveSession()", userId);
     }
 
     @SuppressWarnings("unchecked")
@@ -46,6 +49,7 @@ public class ExtAuthRedisStore {
     public void blacklistToken(String token, long remainingTtlSeconds) {
         if (remainingTtlSeconds <= 0) return;
         redis.set(CacheKey.EXT_AUTH_BLACKLIST + token, "1", remainingTtlSeconds);
+        log.info("[Cache][redis] [ext:auth:blacklist] blacklistToken()— ttl={}s", remainingTtlSeconds);
     }
 
     public boolean isBlacklisted(String token) {
