@@ -176,7 +176,7 @@
       const page   = ref('dashboard');
       const dashboardComp = computed(() => 'DashboardAdminEc' + (window.BO_SITE_NO || '01'));
       const errorMessage = ref('');
-      /* API 에러 → 오류 페이지 전환 (adminAxios 에서 window.dispatchEvent('api-error')) */
+      /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
       window.addEventListener('api-error', (ev) => {
         const d = ev.detail || {};
         const st = d.status;
@@ -996,7 +996,7 @@
             <button @click="relatedSiteOpen=false" style="background:none;border:none;font-size:13px;color:#9f2946;cursor:pointer;padding:2px 6px;border-radius:4px;">✕</button>
           </div>
           <div style="padding:12px;">
-            <!-- _SITE_NO (FRONT / ADMIN 분리 링크) -->
+            <!-- _SITE_NO (FO / BO 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;margin-bottom:12px;">
               <div style="font-size:12px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:10.5px;color:#888;font-weight:600;">(FO: {{ currentFrontNo || '-' }}, BO: {{ currentAdminSiteNo || '-' }})</span></div>
               <div style="display:flex;flex-direction:column;gap:4px;">

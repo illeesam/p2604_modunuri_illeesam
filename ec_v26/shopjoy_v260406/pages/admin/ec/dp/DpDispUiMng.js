@@ -31,8 +31,8 @@ window.DpDispUiMng = {
 
 
     const UI_TYPE_OPTS = [
-      { value: 'FRONT',  label: '프론트' },
-      { value: 'ADMIN',  label: '관리자' },
+      { value: 'FO',     label: '프론트(FO)' },
+      { value: 'BO',     label: '관리자(BO)' },
       { value: 'MOBILE', label: '모바일' },
       { value: 'KIOSK',  label: '키오스크' },
     ];

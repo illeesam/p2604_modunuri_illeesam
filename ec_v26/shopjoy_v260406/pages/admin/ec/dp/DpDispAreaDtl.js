@@ -570,7 +570,7 @@ window.DpDispAreaDtl = {
           </div>
           <div class="form-row" style="margin-bottom:8px;">
             <div class="form-group" style="grid-column:1 / -1;">
-              <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">영역이 노출되는 경로 (예: FRONT.모바일메인)</span></label>
+              <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">영역이 노출되는 경로 (예: FO.모바일메인)</span></label>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                 <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
                 <button type="button" @click="openPathPick('form')" title="표시경로 선택"

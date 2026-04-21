@@ -177,7 +177,7 @@ window.foAppFooter = {
 
           <!-- 나머지: Front 사이트번호 + dispUi -->
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <!-- _SITE_NO (FRONT / BACK 분리 링크) -->
+            <!-- _SITE_NO (FO / BO 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
               <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FO: {{ currentSiteNo }}, BO: {{ currentAdminNo }})</span></div>
               <div style="display:flex;flex-direction:column;gap:4px;">

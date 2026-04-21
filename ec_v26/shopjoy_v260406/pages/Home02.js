@@ -10,7 +10,7 @@ window.Home02 = {
   <div style="background:linear-gradient(135deg,#2e7d6b 0%,#4a9b7e 50%,#5b9279 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
     <span style="font-size:10px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(255,255,255,0.4);border-radius:2px;">MINT EDITION</span>
     <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;">🌿 자연에서 영감받은 세이지 그린 컬렉션</span>
-    <span style="margin-left:auto;font-size:11px;opacity:0.85;">FRONT_SITE_NO=02</span>
+    <span style="margin-left:auto;font-size:11px;opacity:0.85;">FO_SITE_NO=02</span>
   </div>
 
   <!-- ══ Hero Banner Slider ══ -->

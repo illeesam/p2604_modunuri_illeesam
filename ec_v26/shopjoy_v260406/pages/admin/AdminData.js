@@ -1383,11 +1383,11 @@
 
     codes: [
       /* ── 전시 UI (최상위) ── */
-      { codeId:681, codeGrp: 'DISP_UI', codeLabel: '프론트 메인',    codeValue: 'FRONT_MAIN',    uiType: 'FRONT',  sortOrd: 1, useYn: 'Y', remark: '사용자 메인 화면',   parentCodeValue: null, regDate: '2026-01-01' },
-      { codeId:682, codeGrp: 'DISP_UI', codeLabel: '상품 상세',      codeValue: 'FRONT_PRODUCT', uiType: 'FRONT',  sortOrd: 2, useYn: 'Y', remark: '상품 상세 페이지',   parentCodeValue: null, regDate: '2026-01-01' },
-      { codeId:683, codeGrp: 'DISP_UI', codeLabel: '마이페이지',     codeValue: 'FRONT_MY',      uiType: 'FRONT',  sortOrd: 3, useYn: 'Y', remark: '회원 마이페이지',    parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId:681, codeGrp: 'DISP_UI', codeLabel: '프론트 메인',    codeValue: 'FO_MAIN',    uiType: 'FO',  sortOrd: 1, useYn: 'Y', remark: '사용자 메인 화면',   parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId:682, codeGrp: 'DISP_UI', codeLabel: '상품 상세',      codeValue: 'FO_PRODUCT', uiType: 'FO',  sortOrd: 2, useYn: 'Y', remark: '상품 상세 페이지',   parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId:683, codeGrp: 'DISP_UI', codeLabel: '마이페이지',     codeValue: 'FO_MY',      uiType: 'FO',  sortOrd: 3, useYn: 'Y', remark: '회원 마이페이지',    parentCodeValue: null, regDate: '2026-01-01' },
       { codeId:684, codeGrp: 'DISP_UI', codeLabel: '모바일 메인',    codeValue: 'MOBILE_MAIN',   uiType: 'MOBILE', sortOrd: 4, useYn: 'Y', remark: '모바일 메인 화면',   parentCodeValue: null, regDate: '2026-01-01' },
-      { codeId:685, codeGrp: 'DISP_UI', codeLabel: '관리자 대시보드',codeValue: 'ADMIN_DASH',    uiType: 'ADMIN',  sortOrd: 5, useYn: 'Y', remark: '관리자 대시보드',    parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId:685, codeGrp: 'DISP_UI', codeLabel: '관리자 대시보드',codeValue: 'BO_DASH',    uiType: 'BO',  sortOrd: 5, useYn: 'Y', remark: '관리자 대시보드',    parentCodeValue: null, regDate: '2026-01-01' },
 
       /* ── 공개 대상 (노출 타겟) ── */
       { codeId:701, codeGrp: 'VISIBILITY_TARGET', codeLabel: '전체 공개',   codeValue: 'PUBLIC',     sortOrd: 1, useYn: 'Y', remark: '모든 방문자',           parentCodeValue: null, regDate: '2026-01-01' },
@@ -2401,20 +2401,20 @@
       { pathId: 86, bizCd: 'sy_biz', parentPathId: null, pathLabel: '유지보수업체',  sortOrd: 7, useYn: 'Y', remark: '' },
 
       /* ec_disp_area 트리 */
-      { pathId: 30, bizCd: 'ec_disp_area', parentPathId: null, pathLabel: 'FRONT',   sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 30, bizCd: 'ec_disp_area', parentPathId: null, pathLabel: 'FO',   sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 31, bizCd: 'ec_disp_area', parentPathId: 30,   pathLabel: '모바일',  sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 32, bizCd: 'ec_disp_area', parentPathId: 30,   pathLabel: 'PC',      sortOrd: 2, useYn: 'Y', remark: '' },
-      { pathId: 33, bizCd: 'ec_disp_area', parentPathId: null, pathLabel: 'ADMIN',   sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 33, bizCd: 'ec_disp_area', parentPathId: null, pathLabel: 'BO',   sortOrd: 2, useYn: 'Y', remark: '' },
       /* ec_disp_panel */
-      { pathId: 40, bizCd: 'ec_disp_panel', parentPathId: null, pathLabel: 'FRONT',  sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 40, bizCd: 'ec_disp_panel', parentPathId: null, pathLabel: 'FO',  sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 41, bizCd: 'ec_disp_panel', parentPathId: 40,   pathLabel: '모바일', sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 42, bizCd: 'ec_disp_panel', parentPathId: 40,   pathLabel: 'PC',     sortOrd: 2, useYn: 'Y', remark: '' },
-      { pathId: 43, bizCd: 'ec_disp_panel', parentPathId: null, pathLabel: 'ADMIN',  sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 43, bizCd: 'ec_disp_panel', parentPathId: null, pathLabel: 'BO',  sortOrd: 2, useYn: 'Y', remark: '' },
       /* ec_disp_widget */
-      { pathId: 50, bizCd: 'ec_disp_widget', parentPathId: null, pathLabel: 'FRONT',  sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 50, bizCd: 'ec_disp_widget', parentPathId: null, pathLabel: 'FO',  sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 51, bizCd: 'ec_disp_widget', parentPathId: 50,   pathLabel: '모바일', sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 52, bizCd: 'ec_disp_widget', parentPathId: 50,   pathLabel: 'PC',     sortOrd: 2, useYn: 'Y', remark: '' },
-      { pathId: 53, bizCd: 'ec_disp_widget', parentPathId: null, pathLabel: 'ADMIN',  sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 53, bizCd: 'ec_disp_widget', parentPathId: null, pathLabel: 'BO',  sortOrd: 2, useYn: 'Y', remark: '' },
       /* ec_disp_widget_lib */
       { pathId: 60, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '배너',   sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 61, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '상품',   sortOrd: 2, useYn: 'Y', remark: '' },
@@ -2422,11 +2422,11 @@
       { pathId: 63, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '이벤트', sortOrd: 4, useYn: 'Y', remark: '' },
       { pathId: 64, bizCd: 'ec_disp_widget_lib', parentPathId: null, pathLabel: '기타',   sortOrd: 5, useYn: 'Y', remark: '' },
       /* ec_disp_ui */
-      { pathId: 70, bizCd: 'ec_disp_ui', parentPathId: null, pathLabel: 'FRONT', sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 70, bizCd: 'ec_disp_ui', parentPathId: null, pathLabel: 'FO', sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 71, bizCd: 'ec_disp_ui', parentPathId: 70,   pathLabel: '메인',  sortOrd: 1, useYn: 'Y', remark: '' },
       { pathId: 72, bizCd: 'ec_disp_ui', parentPathId: 70,   pathLabel: '상품',  sortOrd: 2, useYn: 'Y', remark: '' },
       { pathId: 73, bizCd: 'ec_disp_ui', parentPathId: 70,   pathLabel: '마이',  sortOrd: 3, useYn: 'Y', remark: '' },
-      { pathId: 74, bizCd: 'ec_disp_ui', parentPathId: null, pathLabel: 'ADMIN', sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 74, bizCd: 'ec_disp_ui', parentPathId: null, pathLabel: 'BO', sortOrd: 2, useYn: 'Y', remark: '' },
       /* 업무코드별 전시영역 경로 */
       { pathId: 160, bizCd: 'ec_disp_area', parentPathId: 30, pathLabel: '전시UI',      sortOrd: 3, useYn: 'Y', remark: '전시 UI 관련 영역' },
       { pathId: 161, bizCd: 'ec_disp_area', parentPathId: 30, pathLabel: '공통테스트',  sortOrd: 4, useYn: 'Y', remark: '공통 테스트 영역' },
@@ -3092,13 +3092,13 @@
 
   /* ── 영역(DISP_AREA)에 UI 코드 자동 매핑 ── */
   const _uiMap = {
-    HOME: 'FRONT_MAIN', PRODUCT: 'FRONT_PRODUCT', MY: 'FRONT_MY',
-    SIDEBAR: 'FRONT_MAIN', FOOTER: 'FRONT_MAIN',
+    HOME: 'FO_MAIN', PRODUCT: 'FO_PRODUCT', MY: 'FO_MY',
+    SIDEBAR: 'FO_MAIN', FOOTER: 'FO_MAIN',
   };
   (window.boData.codes || []).forEach(c => {
     if (c.codeGrp === 'DISP_AREA' && !c.uiCode) {
       const prefix = (c.codeValue || '').split('_')[0];
-      c.uiCode = _uiMap[prefix] || 'FRONT_MAIN';
+      c.uiCode = _uiMap[prefix] || 'FO_MAIN';
     }
   });
 })();

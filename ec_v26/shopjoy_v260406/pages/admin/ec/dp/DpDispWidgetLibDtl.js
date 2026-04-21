@@ -531,7 +531,7 @@ window.DpDispWidgetLibDtl = {
             <input v-model="form.tags" class="form-control" placeholder="봄,배너,시즌" style="margin:0;" />
           </div>
         </div>
-        <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로 (예: FRONT.모바일메인)</span></div>
+        <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로 (예: FO.모바일메인)</span></div>
         <div v-for="(_id, pi) in (form.usedPathIds || [])" :key="pi"
           style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
           <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:_id!=null?'#374151':'#9ca3af',fontWeight:_id!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">

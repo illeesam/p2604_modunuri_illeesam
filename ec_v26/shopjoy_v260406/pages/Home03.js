@@ -10,7 +10,7 @@ window.Home03 = {
   <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
     <span style="font-size:10px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(255,255,255,0.5);border-radius:2px;">👑 LUXE EDITION</span>
     <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;">✨ 로얄 퍼플 프리미엄 컬렉션 — 한정 수량</span>
-    <span style="margin-left:auto;font-size:11px;opacity:0.9;">FRONT_SITE_NO=03</span>
+    <span style="margin-left:auto;font-size:11px;opacity:0.9;">FO_SITE_NO=03</span>
   </div>
 
   <!-- ══ Hero Banner Slider ══ -->

@@ -35,8 +35,8 @@ window.DpDispUiDtl = {
 
     const UI_TYPE_OPTS = [
       { value: '',       label: '-' },
-      { value: 'FRONT',  label: '프론트' },
-      { value: 'ADMIN',  label: '관리자' },
+      { value: 'FO',     label: '프론트(FO)' },
+      { value: 'BO',     label: '관리자(BO)' },
       { value: 'MOBILE', label: '모바일' },
       { value: 'KIOSK',  label: '키오스크' },
     ];
@@ -52,7 +52,7 @@ window.DpDispUiDtl = {
     const form = reactive({
       codeId: null, codeGrp: 'DISP_UI',
       codeValue: '', codeLabel: '',
-      uiType: 'FRONT',
+      uiType: 'FO',
       remark: '', sortOrd: 1, useYn: 'Y', useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE, regDate: '', displayPath: '', pathId: null,
       titleYn: 'N', title: '', htmlDesc: '',
     });
@@ -70,7 +70,7 @@ window.DpDispUiDtl = {
           Object.assign(form, {
             codeId: u.codeId, codeGrp: u.codeGrp,
             codeValue: u.codeValue || '', codeLabel: u.codeLabel || '',
-            uiType: u.uiType || 'FRONT',
+            uiType: u.uiType || 'FO',
             remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y', useStartDate: u.useStartDate || '', useEndDate: u.useEndDate || '', displayPath: u.displayPath || '', pathId: u.pathId == null ? null : u.pathId,
             regDate: u.regDate || '',
             titleYn: u.titleYn || 'N', title: u.title || '', htmlDesc: u.htmlDesc || '',
@@ -442,7 +442,7 @@ window.DpDispUiDtl = {
           </div>
           <div class="form-row" style="margin-bottom:8px;">
             <div class="form-group" style="grid-column:1 / -1;">
-              <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">UI가 노출되는 경로 (예: FRONT.모바일메인)</span></label>
+              <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">UI가 노출되는 경로 (예: FO.모바일메인)</span></label>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                 <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
                 <button type="button" @click="openPathPick('form')" title="표시경로 선택"
