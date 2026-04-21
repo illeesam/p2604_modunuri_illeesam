@@ -148,13 +148,29 @@ window.PdBundleMng = {
     const totalCnt   = computed(() => (bundleList.value || []).length);
     const totalPages = computed(() => Math.max(1, Math.ceil((totalCnt.value || 0) / (pager.size || 10))));
     const pageList   = computed(() => {
-      const list = bundleList.value || [];
-      if (!Array.isArray(list)) return [];
-      return list.slice((pager.page - 1) * pager.size, pager.page * pager.size);
+      try {
+        const list = bundleList.value || [];
+        if (!Array.isArray(list)) return [];
+        const start = ((pager.page || 1) - 1) * (pager.size || 10);
+        const end = start + (pager.size || 10);
+        return list.slice(start, end) || [];
+      } catch (e) {
+        console.error('pageList error:', e);
+        return [];
+      }
     });
     const pageNums   = computed(() => {
-      const c = pager.page, l = totalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+      try {
+        const c = pager.page || 1;
+        const l = Math.max(1, totalPages.value || 1);
+        const s = Math.max(1, c - 2);
+        const e = Math.min(l, s + 4);
+        const len = Math.max(0, e - s + 1);
+        return Array.from({ length: len }, (_, i) => s + i) || [];
+      } catch (e) {
+        console.error('pageNums error:', e);
+        return [];
+      }
     });
 
     const onSearch = () => { Object.assign(applied, { nm: searchNm.value }); pager.page = 1; };
@@ -404,7 +420,7 @@ window.PdBundleMng = {
                 <div>
                   <span class="title-link" @click="openDtl(g.bundleProdId)">{{ g.prodNm }}</span>
                   <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
-                    <span v-for="(item,i) in g.items" :key="item.bundleItemId||i"
+                    <span v-for="(item,i) in (g?.items || [])" :key="item?.bundleItemId||i"
                           style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
                       {{ getProdNm(item.itemProdId) }}
                       <span style="color:#1677ff">×{{ item.itemQty }}</span>
