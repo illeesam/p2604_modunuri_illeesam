@@ -1,6 +1,18 @@
 ═══════════════════════════════════════════════════════
   SCH 패키지 — 스케줄러 구동 원리
+  권한: @BoOnly  |  context-path: /api → /api/sch/...
 ═══════════════════════════════════════════════════════
+
+▶ REST API 목록  (SchBatchController)
+
+  GET    /sch/batch                   전체 배치 목록 + 등록 상태
+  POST   /sch/batch/{batchCode}/run   배치 즉시 실행
+  POST   /sch/batch/{batchCode}/on    배치 스케줄 등록
+  POST   /sch/batch/{batchCode}/off   배치 스케줄 해제
+  POST   /sch/reload                  DB 재로드 후 전체 재등록
+
+
+
 
 ▶ 핵심 흐름 (앱 시작 → 자동 실행)
 

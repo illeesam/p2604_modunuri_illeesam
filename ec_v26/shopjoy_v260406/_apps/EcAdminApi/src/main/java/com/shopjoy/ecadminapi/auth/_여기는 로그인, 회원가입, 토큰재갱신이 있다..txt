@@ -1,0 +1,26 @@
+═══════════════════════════════════════════════════════
+  auth 패키지 — 로그인 / 회원가입 / 토큰 재갱신
+  context-path: /api  → 실제 경로 = /api + 아래 경로
+═══════════════════════════════════════════════════════
+
+▶ FoAuthController  (회원 전용, /auth/fo)
+
+  POST  /auth/fo/login      회원 로그인 (JWT 발급)
+  POST  /auth/fo/join       회원가입
+  POST  /auth/fo/refresh    액세스 토큰 재발급
+  POST  /auth/fo/logout     로그아웃
+
+▶ BoAuthController  (관리자 전용, /auth/bo)
+
+  POST  /auth/bo/login      관리자 로그인 (JWT 발급)
+  POST  /auth/bo/join       관리자 계정 등록
+  POST  /auth/bo/refresh    액세스 토큰 재발급
+  POST  /auth/bo/logout     로그아웃
+
+▶ 공통 사항
+
+  - 로그인 성공 시 응답: accessToken / refreshToken / loginAt / accessExpiresIn(분) / refreshExpiresIn(분)
+  - 토큰 방식: JWT (Authorization: Bearer {accessToken})
+  - FO VO : FoLoginReq(memberEmail, memberPassword) → FoLoginRes
+  - BO VO : BoLoginReq(loginId, password)           → BoLoginRes
+  - 회원가입 응답: FoJoinRes(memberId, memberEmail) / BoJoinRes(userId, loginId)
