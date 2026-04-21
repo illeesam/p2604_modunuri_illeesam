@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.cache.store;
+package com.shopjoy.ecadminapi.cache.redisstore;
 
 import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
@@ -11,55 +11,55 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 시스템 공통코드 캐시.
+ * 역할(Role) 정보 캐시.
  *
  * 저장 항목:
- *   - 그룹별 코드 목록 : code:grp:{groupCode} → List<Map>
- *   - 전체 코드 맵     : code:all             → Map<groupCode, List<Map>>
+ *   - 전체 역할 목록 : role:all          → List<Map>
+ *   - 역할 상세      : role:dtl:{roleId} → Map<String, Object>
  *
- * TTL: app.redis.ttl.sy-code-seconds (기본 3600s)
- * 코드 변경 시 evict 후 재조회 or saveAll() 로 갱신.
+ * TTL: app.redis.ttl.sy-role-seconds (기본 3600s)
+ * 역할 변경 시 evict 후 재조회.
  */
 @Component
 @RequiredArgsConstructor
-public class SyCodeCacheStore {
+public class SyRoleRedisStore {
 
     private final RedisUtil        redis;
     private final RedisProperties  props;
 
     // ── 저장 ──────────────────────────────────────────────────────
 
-    public void saveGroup(String groupCode, List<Map<String, Object>> codes) {
-        redis.set(CacheKey.SY_CODE_GRP + groupCode, codes, props.getTtl().getSyCodeSeconds());
+    public void saveAll(List<Map<String, Object>> roles) {
+        redis.set(CacheKey.SY_ROLE_ALL, roles, props.getTtl().getSyRoleSeconds());
     }
 
-    public void saveAll(Map<String, List<Map<String, Object>>> allCodes) {
-        redis.set(CacheKey.SY_CODE_ALL, allCodes, props.getTtl().getSyCodeSeconds());
+    public void save(String roleId, Map<String, Object> role) {
+        redis.set(CacheKey.SY_ROLE_DTL + roleId, role, props.getTtl().getSyRoleSeconds());
     }
 
     // ── 조회 ──────────────────────────────────────────────────────
 
     @SuppressWarnings("unchecked")
-    public Optional<List<Map<String, Object>>> getGroup(String groupCode) {
-        return redis.get(CacheKey.SY_CODE_GRP + groupCode, List.class)
+    public Optional<List<Map<String, Object>>> getAll() {
+        return redis.get(CacheKey.SY_ROLE_ALL, List.class)
                 .map(l -> (List<Map<String, Object>>) l);
     }
 
     @SuppressWarnings("unchecked")
-    public Optional<Map<String, List<Map<String, Object>>>> getAll() {
-        return redis.get(CacheKey.SY_CODE_ALL, Map.class)
-                .map(m -> (Map<String, List<Map<String, Object>>>) m);
+    public Optional<Map<String, Object>> get(String roleId) {
+        return redis.get(CacheKey.SY_ROLE_DTL + roleId, Map.class)
+                .map(m -> (Map<String, Object>) m);
     }
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
-    public void evictGroup(String groupCode) {
-        redis.delete(CacheKey.SY_CODE_GRP + groupCode);
+    public void evict(String roleId) {
+        redis.delete(CacheKey.SY_ROLE_DTL + roleId);
     }
 
     public void evictAll() {
-        redis.deleteByPattern(CacheKey.SY_CODE_GRP + "*");
-        redis.delete(CacheKey.SY_CODE_ALL);
+        redis.delete(CacheKey.SY_ROLE_ALL);
+        redis.deleteByPattern(CacheKey.SY_ROLE_DTL + "*");
     }
 
     public boolean isEnabled() {

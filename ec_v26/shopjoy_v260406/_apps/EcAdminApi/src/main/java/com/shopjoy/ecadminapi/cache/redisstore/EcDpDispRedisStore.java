@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.cache.store;
+package com.shopjoy.ecadminapi.cache.redisstore;
 
 import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
@@ -11,62 +11,62 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 상품(ec-pd) 정보 캐시.
+ * 전시(ec-dp) 정보 캐시.
  *
  * 저장 항목:
- *   - 상품 상세  : prod:dtl:{prodId}   → Map<String, Object>
- *   - 상품 목록  : prod:list:{siteId}  → List<Map<String, Object>>
+ *   - 전시 상세  : disp:dtl:{dispId}   → Map<String, Object>
+ *   - 전시 목록  : disp:list:{siteId}  → List<Map<String, Object>>
  *
- * TTL: app.redis.ttl.ec-pd-prod-seconds (기본 1800s = 30분)
+ * TTL: app.redis.ttl.ec-dp-disp-seconds (기본 1800s = 30분)
  *
- * secondary Redis 가 설정된 경우 상품 캐시는 secondary 에 저장한다.
+ * secondary Redis 가 설정된 경우 secondary 에 저장한다.
  */
 @Component
 @RequiredArgsConstructor
-public class EcPdProdCacheStore {
+public class EcDpDispRedisStore {
 
     private final RedisUtil        redis;
     private final RedisProperties  props;
 
     // ── 저장 ──────────────────────────────────────────────────────
 
-    public void saveDetail(String prodId, Map<String, Object> prodDetail) {
-        redis.set(CacheKey.EC_PD_PROD_DTL + prodId, prodDetail,
-                props.getTtl().getEcPdProdSeconds(), target());
+    public void saveDetail(String dispId, Map<String, Object> dispDetail) {
+        redis.set(CacheKey.EC_DP_DISP_DTL + dispId, dispDetail,
+                props.getTtl().getEcDpDispSeconds(), target());
     }
 
-    public void saveList(String siteId, List<Map<String, Object>> prodList) {
-        redis.set(CacheKey.EC_PD_PROD_ALL + siteId, prodList,
-                props.getTtl().getEcPdProdSeconds(), target());
+    public void saveList(String siteId, List<Map<String, Object>> dispList) {
+        redis.set(CacheKey.EC_DP_DISP_ALL + siteId, dispList,
+                props.getTtl().getEcDpDispSeconds(), target());
     }
 
     // ── 조회 ──────────────────────────────────────────────────────
 
     @SuppressWarnings("unchecked")
-    public Optional<Map<String, Object>> getDetail(String prodId) {
-        return redis.get(CacheKey.EC_PD_PROD_DTL + prodId, Map.class, target())
+    public Optional<Map<String, Object>> getDetail(String dispId) {
+        return redis.get(CacheKey.EC_DP_DISP_DTL + dispId, Map.class, target())
                 .map(m -> (Map<String, Object>) m);
     }
 
     @SuppressWarnings("unchecked")
     public Optional<List<Map<String, Object>>> getList(String siteId) {
-        return redis.get(CacheKey.EC_PD_PROD_ALL + siteId, List.class, target())
+        return redis.get(CacheKey.EC_DP_DISP_ALL + siteId, List.class, target())
                 .map(l -> (List<Map<String, Object>>) l);
     }
 
     // ── 삭제 (evict) ──────────────────────────────────────────────
 
-    public void evictDetail(String prodId) {
-        redis.delete(CacheKey.EC_PD_PROD_DTL + prodId, target());
+    public void evictDetail(String dispId) {
+        redis.delete(CacheKey.EC_DP_DISP_DTL + dispId, target());
     }
 
     public void evictList(String siteId) {
-        redis.delete(CacheKey.EC_PD_PROD_ALL + siteId, target());
+        redis.delete(CacheKey.EC_DP_DISP_ALL + siteId, target());
     }
 
     public void evictAll() {
-        redis.deleteByPattern(CacheKey.EC_PD_PROD_DTL + "*", target());
-        redis.deleteByPattern(CacheKey.EC_PD_PROD_ALL   + "*", target());
+        redis.deleteByPattern(CacheKey.EC_DP_DISP_DTL + "*", target());
+        redis.deleteByPattern(CacheKey.EC_DP_DISP_ALL   + "*", target());
     }
 
     public boolean isEnabled() {

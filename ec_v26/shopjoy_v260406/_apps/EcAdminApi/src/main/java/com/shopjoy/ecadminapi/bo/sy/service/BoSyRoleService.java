@@ -4,8 +4,8 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyRoleMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
-import com.shopjoy.ecadminapi.cache.store.SyRoleCacheStore;
-import com.shopjoy.ecadminapi.cache.store.SyRoleMenuCacheStore;
+import com.shopjoy.ecadminapi.cache.redisstore.SyRoleRedisStore;
+import com.shopjoy.ecadminapi.cache.redisstore.SyRoleMenuRedisStore;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -25,8 +25,8 @@ public class BoSyRoleService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final SyRoleMapper        mapper;
     private final SyRoleRepository    repository;
-    private final SyRoleCacheStore    roleCache;
-    private final SyRoleMenuCacheStore roleMenuCache;
+    private final SyRoleRedisStore    roleCache;
+    private final SyRoleMenuRedisStore roleMenuCache;
 
     @Transactional(readOnly = true)
     public List<SyRoleDto> getList(Map<String, Object> p) {

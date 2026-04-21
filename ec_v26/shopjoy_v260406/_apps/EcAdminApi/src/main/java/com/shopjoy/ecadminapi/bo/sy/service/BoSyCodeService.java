@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyCodeMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyCodeRepository;
-import com.shopjoy.ecadminapi.cache.store.SyCodeCacheStore;
+import com.shopjoy.ecadminapi.cache.redisstore.SyCodeRedisStore;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -24,7 +24,7 @@ public class BoSyCodeService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final SyCodeMapper      mapper;
     private final SyCodeRepository  repository;
-    private final SyCodeCacheStore  codeCache;
+    private final SyCodeRedisStore  codeCache;
 
     @Transactional(readOnly = true)
     public List<SyCodeDto> getList(Map<String, Object> p) {

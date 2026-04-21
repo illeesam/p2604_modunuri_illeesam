@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyMenuMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
-import com.shopjoy.ecadminapi.cache.store.SyMenuCacheStore;
+import com.shopjoy.ecadminapi.cache.redisstore.SyMenuRedisStore;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -24,7 +24,7 @@ public class BoSyMenuService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final SyMenuMapper      mapper;
     private final SyMenuRepository  repository;
-    private final SyMenuCacheStore  menuCache;
+    private final SyMenuRedisStore  menuCache;
 
     @Transactional(readOnly = true)
     public List<SyMenuDto> getList(Map<String, Object> p) {

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.cache.store;
+package com.shopjoy.ecadminapi.cache.redisstore;
 
 import com.shopjoy.ecadminapi.cache.config.CacheKey;
 import com.shopjoy.ecadminapi.cache.config.RedisProperties;
@@ -21,7 +21,7 @@ import java.util.Optional;
  */
 @Component
 @RequiredArgsConstructor
-public class SyI18nCacheStore {
+public class SyI18nRedisStore {
 
     private final RedisUtil        redis;
     private final RedisProperties  props;

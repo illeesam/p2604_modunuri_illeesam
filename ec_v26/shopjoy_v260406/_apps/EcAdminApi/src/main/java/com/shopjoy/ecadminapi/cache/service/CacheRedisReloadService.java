@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryMapper;
 import com.shopjoy.ecadminapi.base.sy.mapper.*;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
-import com.shopjoy.ecadminapi.cache.store.*;
+import com.shopjoy.ecadminapi.cache.redisstore.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,21 +40,21 @@ import java.util.stream.Collectors;
 public class CacheRedisReloadService {
 
     // ── SY CacheStore ─────────────────────────────────────────────
-    private final SyCodeCacheStore     codeCache;
-    private final SyMenuCacheStore     menuCache;
-    private final SyRoleCacheStore     roleCache;
-    private final SyRoleMenuCacheStore roleMenuCache;
-    private final SyPropCacheStore     propCache;
-    private final SyI18nCacheStore     i18nCache;
+    private final SyCodeRedisStore     codeCache;
+    private final SyMenuRedisStore     menuCache;
+    private final SyRoleRedisStore     roleCache;
+    private final SyRoleMenuRedisStore roleMenuCache;
+    private final SyPropRedisStore     propCache;
+    private final SyI18nRedisStore     i18nCache;
 
     // ── EC CacheStore ─────────────────────────────────────────────
-    private final EcPdProdCacheStore      ecPdProdCache;
-    private final EcPdCateCacheStore      ecPdCateCache;
-    private final EcPdCateProdCacheStore  ecPdCateProdCache;
-    private final EcPmPromCacheStore      ecPmPromCache;
-    private final EcPmPromItemCacheStore  ecPmPromItemCache;
-    private final EcDpDispCacheStore      ecDpDispCache;
-    private final EcDpDispItemCacheStore  ecDpDispItemCache;
+    private final EcPdProdRedisStore      ecPdProdCache;
+    private final EcPdCateRedisStore      ecPdCateCache;
+    private final EcPdCateProdRedisStore  ecPdCateProdCache;
+    private final EcPmPromRedisStore      ecPmPromCache;
+    private final EcPmPromItemRedisStore  ecPmPromItemCache;
+    private final EcDpDispRedisStore      ecDpDispCache;
+    private final EcDpDispItemRedisStore  ecDpDispItemCache;
 
     // ── SY Mapper (DB 재조회) ─────────────────────────────────────
     private final SyCodeMapper         codeMapper;
