@@ -436,7 +436,7 @@
         if      (type === 'site')      commonFilter.siteId   = item?.siteId   ?? null;
         else if (type === 'vendor')    commonFilter.vendorId = item?.vendorId  ?? null;
         else if (type === 'dlivVendor') commonFilter.dlivVendorId = item?.vendorId ?? null;
-        else if (type === 'adminUser') commonFilter.userId   = item?.boUserId ?? null;
+        else if (type === 'boUser') commonFilter.userId   = item?.boUserId ?? null;
         else if (type === 'member')    commonFilter.memberId = item?.memberId  ?? null;
         else if (type === 'order')     commonFilter.orderId  = item?.orderId   ?? null;
         selectModal.show = false;
@@ -445,7 +445,7 @@
         if      (type === 'site')      commonFilter.siteId   = null;
         else if (type === 'vendor')    commonFilter.vendorId = null;
         else if (type === 'dlivVendor') commonFilter.dlivVendorId = null;
-        else if (type === 'adminUser') commonFilter.userId   = null;
+        else if (type === 'boUser') commonFilter.userId   = null;
         else if (type === 'member')    commonFilter.memberId = null;
         else if (type === 'order')     commonFilter.orderId  = null;
       };
@@ -1205,9 +1205,9 @@
         </div>
         <div class="popup-sel">
           <div class="popup-sel-label">판매사용자
-            <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('adminUser')">✕</span>
+            <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('boUser')">✕</span>
           </div>
-          <div class="popup-sel-row" @click="openSelectModal('adminUser')">
+          <div class="popup-sel-row" @click="openSelectModal('boUser')">
             <span v-if="filterBoUser" class="popup-sel-name">{{ filterBoUser.name }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="filterBoUser" class="popup-sel-id">{{ filterBoUser.boUserId }}</span>
@@ -1250,7 +1250,7 @@
       </div>
     </div>
 
-  </div><!-- /admin-body -->
+  </div><!-- /bo-body -->
 
   <!-- 선택 모달들 -->
   <site-select-modal v-if="selectModal.show && selectModal.type==='site'"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />

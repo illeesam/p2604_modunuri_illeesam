@@ -300,7 +300,7 @@ window.XsSample04 = {
       </div>
     </div>
 
-    <!-- ③ Admin 전용 (13종) -->
+    <!-- ③ BO 전용 (13종) -->
     <div style="border:1px solid #fecaca;border-radius:10px;padding:14px 16px;background:#fff7f7;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;">BO 전용</span>

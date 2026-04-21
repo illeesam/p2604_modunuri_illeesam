@@ -46,7 +46,7 @@
           window.FO_SITE_NO = saved || DEFAULT_FO_SITE_NO;
         }
       } catch(e) { window.FO_SITE_NO = DEFAULT_FO_SITE_NO; }
-      /* BO_SITE_NO 기본값은 bo.html에서 전적으로 관리. front 진입 시 저장된 값만 읽음 (덮어쓰지 않음) */
+      /* BO_SITE_NO 기본값은 bo.html에서 전적으로 관리. fo 진입 시 저장된 값만 읽음 (덮어쓰지 않음) */
       try {
         var savedA = null;
         try { savedA = localStorage.getItem('modu-bo-site_no'); } catch(_){}
