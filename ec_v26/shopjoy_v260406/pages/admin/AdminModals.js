@@ -8,27 +8,28 @@ window.AdminRefModal = {
 
     const close = () => emit('close');
     const s = props.state;
+    const data = window.adminData || {};
 
     /* ── 각 타입별 데이터 ── */
     const memberData = computed(() => {
       if (s.type !== 'member' || !s.id) return null;
-      return getMember.value(s.id);
+      return (data.members || []).find(m => m.userId === s.id);
     });
     const productData = computed(() => {
       if (s.type !== 'product' || !s.id) return null;
-      return getProduct.value(s.id);
+      return (data.products || []).find(p => p.productId === s.id);
     });
     const orderData = computed(() => {
       if (s.type !== 'order' || !s.id) return null;
-      return getOrder.value(s.id);
+      return (data.orders || []).find(o => o.orderId === s.id);
     });
     const claimData = computed(() => {
       if (s.type !== 'claim' || !s.id) return null;
-      return getClaim.value(s.id);
+      return (data.claims || []).find(c => c.claimId === s.id);
     });
     const couponData = computed(() => {
       if (s.type !== 'coupon' || !s.id) return null;
-      return getCoupon.value(s.id);
+      return (data.coupons || []).find(c => c.couponId === s.id);
     });
 
     const badgeCls = (status) => {
