@@ -481,15 +481,21 @@
       const activeRoleId = ref(null);
       const currentUserRoles = computed(() => {
         if (!currentUser.value) return [];
-        const ids = ([])
-          .filter(ru => ru.adminUserId === currentUser.value.adminUserId)
-          .map(ru => ru.roleId);
-        const roleMap = Object.fromEntries(([]).map(r => [r.roleId, r]));
+        const data = window.adminData || {};
+        const userRoles = (data.userRoles || []);
+        const ids = userRoles
+          .filter(ru => ru?.adminUserId === currentUser.value?.adminUserId)
+          .map(ru => ru?.roleId)
+          .filter(Boolean);
+        const roles = (data.roles || []);
+        const roleMap = Object.fromEntries(roles.map(r => [r?.roleId, r]));
         return ids.map(id => roleMap[id]).filter(Boolean);
       });
       const rolePath = (r, uid) => {
         if (!r) return '';
-        const m = Object.fromEntries(([]).map(x => [x.roleId, x]));
+        const data = window.adminData || {};
+        const roles = (data.roles || []);
+        const m = Object.fromEntries(roles.map(x => [x?.roleId, x]));
         const seg = []; let cur = r; let root = r;
         while (cur) { seg.unshift(cur.roleNm); root = cur; cur = cur.parentId ? m[cur.parentId] : null; }
         const path = seg.join(' > ');
@@ -500,9 +506,12 @@
           const targetUid = uid != null ? uid : currentUser.value?.adminUserId;
           let names = [];
           if (targetUid != null) {
-            const bus = ([]).filter(b => b.userId === targetUid);
-            const bm = Object.fromEntries(([]).map(b => [b.bizId, b]));
-            names = bus.map(bu => bm[bu.bizId]).filter(b => b && b.vendorTypeCd === wantType).map(b => b.bizNm);
+            const data = window.adminData || {};
+            const userBizs = (data.userBizs || []);
+            const bizs = (data.bizs || []);
+            const bus = userBizs.filter(b => b?.adminUserId === targetUid);
+            const bm = Object.fromEntries(bizs.map(b => [b?.bizId, b]));
+            names = bus.map(bu => bm[bu?.bizId]).filter(b => b && b?.vendorTypeCd === wantType).map(b => b?.bizNm);
           }
           const nameStr = names.length ? names.join(', ') : '(소속없음)';
           return '[' + typeLabel + '] ' + nameStr + ' :: ' + path;
@@ -511,13 +520,19 @@
       };
       const onRoleChange = () => { location.reload(); };
       const rolesOfUser = (uid) => {
-        const ids = ([]).filter(ru => ru.adminUserId === uid).map(ru => ru.roleId);
-        const m = Object.fromEntries(([]).map(r => [r.roleId, r]));
+        const data = window.adminData || {};
+        const userRoles = (data.userRoles || []);
+        const roles = (data.roles || []);
+        const ids = userRoles.filter(ru => ru?.adminUserId === uid).map(ru => ru?.roleId);
+        const m = Object.fromEntries(roles.map(r => [r?.roleId, r]));
         return ids.map(id => m[id]).filter(Boolean);
       };
       const bizInfoOfUser = (uid) => {
-        const bus = ([]).filter(b => b.userId === uid);
-        const bm = Object.fromEntries(([]).map(b => [b.bizId, b]));
+        const data = window.adminData || {};
+        const users = (data.adminUsers || []);
+        const bizs = (data.bizs || []);
+        const bus = users.filter(b => b?.adminUserId === uid);
+        const bm = Object.fromEntries(bizs.map(b => [b?.bizId, b]));
         const typeLabel = { SALES:'판매업체', DELIVERY:'배송업체', PARTNER:'제휴사', INTERNAL:'내부법인' };
         return bus.map(bu => {
           const b = bm[bu.bizId]; if (!b) return '';
@@ -826,7 +841,7 @@
     <nav class="admin-left-nav" :class="{closed: !leftMenuOpen}">
       <div class="left-nav-top">
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
-        <template v-for="item in LEFT_MENUS[activeTop]" :key="item.group || item.id">
+        <template v-for="item in (LEFT_MENUS[activeTop] || [])" :key="item?.group || item?.id">
           <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
           <div v-else class="left-nav-item left-nav-sub-item" :class="{active: activeTabId===item.id}"
             @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
@@ -1347,7 +1362,7 @@
         <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;">
           <div style="font-weight:700;margin-bottom:6px;color:#555;">테스트 계정 <span style="font-weight:400;color:#aaa;">(클릭 시 자동 로그인)</span></div>
           <div style="display:flex;flex-direction:column;gap:4px;max-height:420px;overflow:auto;">
-            <button v-for="u in []" :key="u.adminUserId" type="button" @click="quickLogin(u.email)"
+            <button v-for="u in (window.adminData?.adminUsers || [])" :key="u?.adminUserId" type="button" @click="quickLogin(u?.email)"
               style="display:grid;grid-template-columns:200px 32px 1fr;align-items:center;gap:10px;padding:7px 10px;font-size:12px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
               onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';"
               onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';">
