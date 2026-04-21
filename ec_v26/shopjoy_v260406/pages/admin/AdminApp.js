@@ -170,7 +170,7 @@
   /* 인증방식 옵션 */
   const AUTH_METHODS = ['메인', 'SMS', 'OTP', 'Authenticator'];
 
-  createApp({
+  const app = createApp({
     setup() {
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
@@ -585,33 +585,32 @@
         loginForm.authMethod = '메인';
         doLogin();
       };
-      const doLogin = () => {
+      const doLogin = async () => {
         loginError.value = '';
         if (!loginForm.email || !loginForm.password) { loginError.value = '이메일과 비밀번호를 입력하세요.'; return; }
-        const u = window.adminData.adminUsers.find(x => x.email === loginForm.email && x.password === loginForm.password);
-        if (!u) { loginError.value = '이메일 또는 비밀번호가 올바르지 않습니다.'; return; }
-        if (u.status === '비활성') { loginError.value = '비활성 계정입니다. 관리자에게 문의하세요.'; return; }
-        currentUser.value = u;
-        const now = new Date();
-        u.lastLogin = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         try {
-          localStorage.setItem('modu-admin-token', _mkAdminToken());
-          localStorage.setItem('modu-admin-user', JSON.stringify(u));
-        } catch(_){}
-        /* 모든 탭 닫고 대시보드로 */
-        openTabs.splice(0);
-        loginForm.email = ''; loginForm.password = '';
-        closeLogin();
-        navigate('dashboard');
-        showToast(`${u.name}님 환영합니다.`);
+          const authStore = window.useAuthStore();
+          const configStore = window.useConfigStore();
+          const user = await authStore.login(loginForm.email, loginForm.password, loginForm.authMethod);
+          currentUser.value = user;
+          await configStore.loadCodes();
+          await configStore.loadUserInfo();
+          openTabs.splice(0);
+          loginForm.email = ''; loginForm.password = '';
+          closeLogin();
+          navigate('dashboard');
+          showToast(`${user.name}님 환영합니다.`);
+        } catch (err) {
+          loginError.value = err.response?.data?.message || err.message || '로그인 실패';
+        }
       };
 
-      const doLogout = () => {
+      const doLogout = async () => {
+        const authStore = window.useAuthStore();
+        const configStore = window.useConfigStore();
+        await authStore.logout();
+        configStore.reset();
         currentUser.value = null; userMenuShow.value = false;
-        try {
-          localStorage.removeItem('modu-admin-token');
-          localStorage.removeItem('modu-admin-user');
-        } catch(_){}
         openTabs.splice(0);
         navigate('dashboard');
         showToast('로그아웃되었습니다.');
@@ -1587,6 +1586,7 @@
   .component('SyMemberLoginHist',     window.SyMemberLoginHist)
   .component('SyUserLoginHist',       window.SyUserLoginHist)
   .component('SyPostman',             window.SyPostman)
+  .use(Pinia.createPinia())
   .mount('#app');
 
   const loadingEl = document.getElementById('_boot_loading');
