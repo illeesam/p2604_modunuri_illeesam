@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyCodeMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyCodeRepository;
+import com.shopjoy.ecadminapi.cache.store.SyCodeCacheStore;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -21,8 +22,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyCodeService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyCodeMapper mapper;
-    private final SyCodeRepository repository;
+    private final SyCodeMapper      mapper;
+    private final SyCodeRepository  repository;
+    private final SyCodeCacheStore  codeCache;
 
     @Transactional(readOnly = true)
     public List<SyCodeDto> getList(Map<String, Object> p) {
@@ -48,7 +50,9 @@ public class BoSyCodeService {
         body.setCodeId("CD" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.currentUserId());
         body.setRegDate(LocalDateTime.now());
-        return repository.save(body);
+        SyCode saved = repository.save(body);
+        codeCache.evictAll();
+        return saved;
     }
 
     @Transactional
@@ -57,6 +61,7 @@ public class BoSyCodeService {
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
+        codeCache.evictAll();
         return getById(id);
     }
 
@@ -64,5 +69,6 @@ public class BoSyCodeService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        codeCache.evictAll();
     }
 }

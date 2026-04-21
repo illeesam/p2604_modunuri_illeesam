@@ -46,6 +46,39 @@ management:
         include: health,info
 
 app:
+  redis:
+    enabled: false            # true 로 변경 시 Redis 활성화
+    primary:
+      host: localhost
+      port: 6379
+      password: ""
+      database: 0
+      timeout: 3000
+    # secondary:              # 보조 Redis 노드 (미설정 시 primary fallback)
+    #   host: localhost
+    #   port: 6380
+    #   password: ""
+    #   database: 0
+    ttl:
+      # auth: JWT access-expiry(900s)와 동일
+      bo-auth-seconds: 900            # BO 관리자 세션  | 15분
+      fo-auth-seconds: 900            # FO 회원 세션    | 15분
+      ext-auth-seconds: 900           # EXT 외부 세션   | 15분
+      # sy-*: 변경 시 evict() 호출로 즉시 반영 → TTL은 안전망
+      sy-code-seconds: 3600           # 공통코드        | 1시간
+      sy-menu-seconds: 3600           # 메뉴 구조       | 1시간
+      sy-role-seconds: 3600           # 역할 정보       | 1시간
+      sy-role-menu-seconds: 3600      # 역할-메뉴 매핑  | 1시간
+      sy-prop-seconds: 3600           # 시스템 프로퍼티 | 1시간
+      sy-i18n-seconds: 3600           # 다국어 메시지   | 1시간
+      # ec-*: 변경 시 evict() 호출 전제, 3600으로 통일
+      ec-pd-prod-seconds: 3600        # 상품 정보           | 1시간
+      ec-pd-cate-seconds: 3600        # 카테고리 정보       | 1시간
+      ec-pd-cate-prod-seconds: 3600   # 카테고리 상품 정보  | 1시간
+      ec-pm-prom-seconds: 3600        # 프로모션 정보       | 1시간
+      ec-pm-prom-item-seconds: 3600   # 프로모션 항목 정보  | 1시간
+      ec-dp-disp-seconds: 3600        # 전시 정보           | 1시간
+      ec-dp-disp-item-seconds: 3600   # 전시 항목 정보      | 1시간
   scheduler:
     enabled: false          # 로컬 환경: 스케줄러 비활성
     jenkins:

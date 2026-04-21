@@ -1,10 +1,9 @@
-package com.shopjoy.ecadminapi.base.sy.service;
+package com.shopjoy.ecadminapi.base.ec.pm.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyRoleMenuMapper;
-import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
-import com.shopjoy.ecadminapi.cache.store.SyRoleMenuCacheStore;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveItemDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveItem;
+import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmSaveItemMapper;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveItemRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -20,77 +19,68 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class SyRoleMenuService {
+public class PmSaveItemService {
 
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
-    private final SyRoleMenuMapper      mapper;
-    private final SyRoleMenuRepository  repository;
-    private final SyRoleMenuCacheStore  roleMenuCache;
+    private final PmSaveItemMapper      mapper;
+    private final PmSaveItemRepository  repository;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public SyRoleMenuDto getById(String id) {
-        SyRoleMenuDto result = mapper.selectById(id);
+    public PmSaveItemDto getById(String id) {
+        PmSaveItemDto result = mapper.selectById(id);
         return result;
     }
 
     @Transactional(readOnly = true)
-    public List<SyRoleMenuDto> getList(Map<String, Object> p) {
+    public List<PmSaveItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        List<SyRoleMenuDto> result = mapper.selectList(p);
-        return result;
+        return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<SyRoleMenuDto> getPageData(Map<String, Object> p) {
+    public PageResult<PmSaveItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
-    public int update(SyRoleMenu entity) {
-        int result = mapper.updateSelective(entity);
-        roleMenuCache.evict(entity.getRoleId());
-        return result;
+    public int update(PmSaveItem entity) {
+        return mapper.updateSelective(entity);
     }
 
     // ── JPA 저장/삭제 ────────────────────────────────────────────
 
     @Transactional
-    public SyRoleMenu create(SyRoleMenu entity) {
-        entity.setRoleMenuId(generateId());
+    public PmSaveItem create(PmSaveItem entity) {
+        entity.setSaveItemId(generateId());
         entity.setRegBy(SecurityUtil.currentUserId());
         entity.setRegDate(LocalDateTime.now());
-        SyRoleMenu result = repository.save(entity);
-        roleMenuCache.evict(entity.getRoleId());
-        return result;
+        return repository.save(entity);
     }
 
     @Transactional
-    public SyRoleMenu save(SyRoleMenu entity) {
-        if (!repository.existsById(entity.getRoleMenuId()))
-            throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + entity.getRoleMenuId());
+    public PmSaveItem save(PmSaveItem entity) {
+        if (!repository.existsById(entity.getSaveItemId()))
+            throw new CmBizException("존재하지 않는 PmSaveItem입니다: " + entity.getSaveItemId());
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
-        SyRoleMenu result = repository.save(entity);
-        roleMenuCache.evict(entity.getRoleId());
-        return result;
+        return repository.save(entity);
     }
 
     @Transactional
     public void delete(String id) {
         if (!repository.existsById(id))
-            throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + id);
+            throw new CmBizException("존재하지 않는 PmSaveItem입니다: " + id);
         repository.deleteById(id);
-        roleMenuCache.evictAll();  // roleId 조회 없이 전체 무효화
     }
 
-    /** ID 생성: prefix=ROM (sy_role_menu) */
+    /** ID 생성: prefix=SAI (pm_save_item) */
     private String generateId() {
         String ts   = LocalDateTime.now().format(ID_FMT);
         String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "ROM" + ts + rand;
+        return "SAI" + ts + rand;
     }
 }

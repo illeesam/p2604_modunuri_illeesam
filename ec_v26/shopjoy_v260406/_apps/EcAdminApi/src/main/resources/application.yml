@@ -43,6 +43,58 @@ logging:
 #       "*"             → 전체 허용 (명시적)
 #       "127.0.0.1^10.0.0.1" → "^" 구분 IP 화이트리스트
 
+# ── app.redis ───────────────────────────────────────────────────
+# app:
+#   redis:
+#     enabled: false
+#       Redis 캐시 전체 활성 여부.
+#       false → RedisConfig 빈 미생성. RedisUtil 모든 연산 no-op.
+#               코드/세션/상품 캐시 모두 동작 안 함 (DB 직접 조회).
+#       true  → primary 노드에 연결. secondary 설정 시 추가 연결.
+#
+#     primary:
+#       host: localhost        Redis 주(primary) 노드 호스트. prod 는 환경변수 권장.
+#       port: 6379             기본 Redis 포트.
+#       password: ""           비밀번호 없을 때 빈 문자열.
+#       database: 0            Redis DB 인덱스 (0~15).
+#       timeout: 3000          연결/읽기 타임아웃(ms).
+#
+#     secondary:               (선택) 보조 Redis 노드. 미설정 시 primary 에 fallback.
+#       host: ""               host 가 빈 문자열이면 secondary 사용 안 함.
+#       port: 6379
+#       password: ""
+#       database: 0
+#
+#     ttl:
+#       bo-auth-seconds: 900         BO 관리자 세션 TTL.
+#       fo-auth-seconds: 900         FO 회원 세션 TTL.
+#       ext-auth-seconds: 900        EXT 외부 세션 TTL.
+#       sy-code-seconds: 3600        시스템 공통코드 TTL.
+#       sy-menu-seconds: 3600        메뉴 구조 TTL.
+#       sy-role-seconds: 3600        역할 정보 TTL.
+#       sy-role-menu-seconds: 3600   역할-메뉴 매핑 TTL.
+#       sy-prop-seconds: 3600        시스템 프로퍼티 TTL.
+#       sy-i18n-seconds: 3600        다국어 메시지 TTL.
+#       ec-pd-prod-seconds: 1800       상품 정보 TTL.
+#       ec-pd-categ-seconds: 3600      카테고리 정보 TTL.
+#       ec-pd-categ-prod-seconds: 3600 카테고리 상품 정보 TTL.
+#       ec-pm-prom-seconds: 1800     프로모션 정보 TTL.
+#       ec-pm-prom-item-seconds: 3600  프로모션 항목 정보 TTL.
+#       ec-dp-disp-seconds: 1800     전시 정보 TTL.
+#       ec-dp-disp-item-seconds: 3600  전시 항목 정보 TTL.
+#
+#   캐시 대상별 저장 위치:
+#     auth(세션/블랙리스트) → primary
+#     code(공통코드)        → primary
+#     prop(시스템프로퍼티)   → primary
+#     prod(상품정보)        → secondary (미설정 시 primary)
+#
+#   키 패턴:
+#     auth:session:{userId}      auth:blacklist:{token}
+#     code:grp:{groupCode}       code:all
+#     prop:key:{key}             prop:all
+#     prod:dtl:{prodId}          prod:list:{siteId}
+
 # ── app.error-log ────────────────────────────────────────────────
 # app:
 #   error-log:

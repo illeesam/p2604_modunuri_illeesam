@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyMenuMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
+import com.shopjoy.ecadminapi.cache.store.SyMenuCacheStore;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -21,8 +22,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoSyMenuService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final SyMenuMapper mapper;
-    private final SyMenuRepository repository;
+    private final SyMenuMapper      mapper;
+    private final SyMenuRepository  repository;
+    private final SyMenuCacheStore  menuCache;
 
     @Transactional(readOnly = true)
     public List<SyMenuDto> getList(Map<String, Object> p) {
@@ -48,7 +50,9 @@ public class BoSyMenuService {
         body.setMenuId("MN" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.currentUserId());
         body.setRegDate(LocalDateTime.now());
-        return repository.save(body);
+        SyMenu saved = repository.save(body);
+        menuCache.evictAll();
+        return saved;
     }
 
     @Transactional
@@ -57,6 +61,7 @@ public class BoSyMenuService {
         entity.setUpdBy(SecurityUtil.currentUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
+        menuCache.evictAll();
         return getById(id);
     }
 
@@ -64,5 +69,6 @@ public class BoSyMenuService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        menuCache.evictAll();
     }
 }

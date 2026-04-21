@@ -51,6 +51,35 @@
   - 최대세션: 3개 (다중로그인 허용)
   - 자동로그아웃: 비활성 30분
 
+### 3-1. 인증 컨텍스트 구분 (BO / FO / EXT)
+
+시스템은 3가지 인증 컨텍스트를 분리하여 세션 TTL·접근로그·필터를 독립 관리한다.
+
+| 코드 | 대상 | 설명 |
+|------|------|------|
+| `BO` | Back Office | 관리자·운영자 (sy_user 기반) |
+| `FO` | Front Office | 고객 회원 (ec_member 기반) |
+| `EXT` | External | 외부 시스템·API 키·파트너 연동 |
+
+**Redis TTL 설정** (`app.redis.ttl`, `application-{env}.yml`):
+
+| 키 | dev 기본값 | 설명 |
+|----|-----------|------|
+| `bo-auth-seconds` | 900 (15분) | BO 관리자 세션 TTL |
+| `fo-auth-seconds` | 900 (15분) | FO 회원 세션 TTL |
+| `ext-auth-seconds` | 900 (15분) | EXT 외부 시스템 세션 TTL |
+
+> prod 환경에서는 보안 정책에 따라 BO를 짧게, FO를 길게(예: 3600) 별도 설정한다.
+
+**접근 로그 필터** (`app.access-log.filter`):
+- `"BO^FO^EXT"` → 인증된 모든 컨텍스트 기록 (dev 기본)
+- `"BO"` → BO 관리자만 기록
+- 특정 userId 직접 지정 가능 (`"admin01^BO"`)
+
+**JWT 토큰**:
+- `jwt.access-expiry`: 900000ms(15분) — 컨텍스트 구분 없이 동일
+- `jwt.refresh-expiry`: 604800000ms(7일)
+
 ### 4. 사용자 상태 변경
 - **ACTIVE → DORMANT**: 90일 미접속 자동
 - **SUSPENDED**: 관리자 수동 정지
@@ -105,3 +134,4 @@
 
 ## 변경이력
 - 2026-04-16: 초기 작성
+- 2026-04-21: 인증 컨텍스트 구분(BO/FO/EXT) 및 Redis TTL 설정 정책 추가
