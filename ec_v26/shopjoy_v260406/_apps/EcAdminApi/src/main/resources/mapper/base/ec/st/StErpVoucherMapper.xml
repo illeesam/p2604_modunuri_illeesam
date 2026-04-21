@@ -18,7 +18,7 @@
 
     <!-- ERP 전표 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto">
-        SELECT
+        SELECT  /* base.ec.st :: StErpVoucher :: selectById */
               v.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -34,7 +34,7 @@
 
     <!-- ERP 전표 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto">
-        SELECT
+        SELECT  /* base.ec.st :: StErpVoucher :: selectList */
               v.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -58,7 +58,7 @@
 
     <!-- ERP 전표 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto">
-        SELECT
+        SELECT  /* base.ec.st :: StErpVoucher :: selectPageList */
               v.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -82,14 +82,14 @@
 
     <!-- ERP 전표 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.st :: StErpVoucher :: selectPageCount */
         FROM st_erp_voucher v
             <include refid="stErpVoucherCond"/>
     </select>
 
     <!-- ERP 전표 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher">
-        UPDATE st_erp_voucher
+        UPDATE st_erp_voucher  /* base.ec.st :: StErpVoucher :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="vendorId != null">vendor_id = #{vendorId},</if>

@@ -15,7 +15,7 @@
 
     <!-- 프로모션 플랜 아이템 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmPlanItem :: selectById */
               i.*
             , pla.plan_nm AS plan_nm
             , prd.prod_nm AS prod_nm
@@ -29,7 +29,7 @@
 
     <!-- 프로모션 플랜 아이템 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmPlanItem :: selectList */
               i.*
             , pla.plan_nm AS plan_nm
             , prd.prod_nm AS prod_nm
@@ -51,7 +51,7 @@
 
     <!-- 프로모션 플랜 아이템 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmPlanItem :: selectPageList */
               i.*
             , pla.plan_nm AS plan_nm
             , prd.prod_nm AS prod_nm
@@ -73,14 +73,14 @@
 
     <!-- 프로모션 플랜 아이템 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pm :: PmPlanItem :: selectPageCount */
         FROM pm_plan_item i
             <include refid="pmPlanItemCond"/>
     </select>
 
     <!-- 프로모션 플랜 아이템 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlanItem">
-        UPDATE pm_plan_item
+        UPDATE pm_plan_item  /* base.ec.pm :: PmPlanItem :: updateSelective */
         <set>
             <if test="planId != null">plan_id = #{planId},</if>
             <if test="siteId != null">site_id = #{siteId},</if>

@@ -25,7 +25,7 @@
 
     <!-- 결제 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdPay :: selectById */
               p.*
             , o.member_nm, o.order_date, o.order_status_cd
             , m.member_email
@@ -51,7 +51,7 @@
 
     <!-- 결제 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdPay :: selectList */
               p.*
             , o.member_nm,    o.order_date
             , m.member_email
@@ -85,7 +85,7 @@
 
     <!-- 결제 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdPay :: selectPageList */
               p.*
             , o.member_nm,    o.order_date
             , m.member_email
@@ -119,7 +119,7 @@
 
     <!-- 결제 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.od :: OdPay :: selectPageCount */
         FROM od_pay p
             LEFT JOIN od_order  o ON o.order_id  = p.order_id
             LEFT JOIN mb_member m ON m.member_id = o.member_id
@@ -128,7 +128,7 @@
 
     <!-- 결제 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPay">
-        UPDATE od_pay
+        UPDATE od_pay  /* base.ec.od :: OdPay :: updateSelective */
         <set>
             <if test="payStatusCd != null">pay_status_cd = #{payStatusCd},</if>
             <if test="payStatusCdBefore != null">pay_status_cd_before = #{payStatusCdBefore},</if>
@@ -149,7 +149,7 @@
 
     <!-- 주문번호로 결제 목록 조회 -->
     <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdPay :: selectByOrderId */
               p.*
             , cd_ps.code_label AS pay_status_cd_nm
             , cd_pm.code_label AS pay_method_cd_nm

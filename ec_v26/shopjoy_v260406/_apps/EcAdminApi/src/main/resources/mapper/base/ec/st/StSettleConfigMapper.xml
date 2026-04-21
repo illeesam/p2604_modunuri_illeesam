@@ -16,7 +16,7 @@
 
     <!-- 정산 설정 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto">
-        SELECT
+        SELECT  /* base.ec.st :: StSettleConfig :: selectById */
               c.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -32,7 +32,7 @@
 
     <!-- 정산 설정 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto">
-        SELECT
+        SELECT  /* base.ec.st :: StSettleConfig :: selectList */
               c.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -56,7 +56,7 @@
 
     <!-- 정산 설정 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto">
-        SELECT
+        SELECT  /* base.ec.st :: StSettleConfig :: selectPageList */
               c.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -80,14 +80,14 @@
 
     <!-- 정산 설정 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.st :: StSettleConfig :: selectPageCount */
         FROM st_settle_config c
             <include refid="stSettleConfigCond"/>
     </select>
 
     <!-- 정산 설정 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig">
-        UPDATE st_settle_config
+        UPDATE st_settle_config  /* base.ec.st :: StSettleConfig :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="vendorId != null">vendor_id = #{vendorId},</if>

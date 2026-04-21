@@ -18,7 +18,7 @@
 
     <!-- 공통 코드 그룹 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto">
-        SELECT
+        SELECT  /* base.sy :: SyCodeGrp :: selectById */
               g.*
             , ste.site_nm AS site_nm
         FROM sy_code_grp g
@@ -28,7 +28,7 @@
 
     <!-- 공통 코드 그룹 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto">
-        SELECT
+        SELECT  /* base.sy :: SyCodeGrp :: selectList */
               g.*
             , ste.site_nm AS site_nm
         FROM sy_code_grp g
@@ -48,7 +48,7 @@
 
     <!-- 공통 코드 그룹 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto">
-        SELECT
+        SELECT  /* base.sy :: SyCodeGrp :: selectPageList */
               g.*
             , ste.site_nm AS site_nm
         FROM sy_code_grp g
@@ -68,14 +68,14 @@
 
     <!-- 공통 코드 그룹 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyCodeGrp :: selectPageCount */
         FROM sy_code_grp g
             <include refid="syCodeGrpCond"/>
     </select>
 
     <!-- 공통 코드 그룹 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp">
-        UPDATE sy_code_grp
+        UPDATE sy_code_grp  /* base.sy :: SyCodeGrp :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="codeGrp != null">code_grp = #{codeGrp},</if>

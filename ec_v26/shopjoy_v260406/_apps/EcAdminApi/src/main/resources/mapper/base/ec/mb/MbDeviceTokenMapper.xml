@@ -14,7 +14,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbDeviceToken :: selectById */
               t.*
             , mem.member_nm AS member_nm
         FROM mb_device_token t
@@ -23,7 +23,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbDeviceToken :: selectList */
               t.*
             , mem.member_nm AS member_nm
         FROM mb_device_token t
@@ -40,7 +40,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbDeviceToken :: selectPageList */
               t.*
             , mem.member_nm AS member_nm
         FROM mb_device_token t
@@ -57,13 +57,13 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.mb :: MbDeviceToken :: selectPageCount */
         FROM mb_device_token t
             <include refid="mbDeviceTokenCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken">
-        UPDATE mb_device_token
+        UPDATE mb_device_token  /* base.ec.mb :: MbDeviceToken :: updateSelective */
         <set>
             <if test="deviceToken != null">device_token = #{deviceToken},</if>
             <if test="memberId != null">member_id = #{memberId},</if>

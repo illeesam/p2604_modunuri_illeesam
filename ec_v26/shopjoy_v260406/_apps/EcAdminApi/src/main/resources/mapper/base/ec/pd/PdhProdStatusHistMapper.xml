@@ -16,7 +16,7 @@
 
     <!-- 상품 상태 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdStatusHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS proc_user_nm
@@ -30,7 +30,7 @@
 
     <!-- 상품 상태 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdStatusHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS proc_user_nm
@@ -52,7 +52,7 @@
 
     <!-- 상품 상태 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdStatusHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS proc_user_nm
@@ -73,7 +73,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdhProdStatusHist :: selectPageCount */
         FROM pdh_prod_status_hist h
             <include refid="pdhProdStatusHistCond"/>
     </select>

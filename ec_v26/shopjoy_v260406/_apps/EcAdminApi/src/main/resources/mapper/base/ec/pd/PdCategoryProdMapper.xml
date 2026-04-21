@@ -16,7 +16,7 @@
 
     <!-- 카테고리-상품 매핑 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdCategoryProd :: selectById */
               p.*
             , ste.site_nm AS site_nm
             , cat.category_nm AS category_nm
@@ -30,7 +30,7 @@
 
     <!-- 카테고리-상품 매핑 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdCategoryProd :: selectList */
               p.*
             , ste.site_nm AS site_nm
             , cat.category_nm AS category_nm
@@ -52,7 +52,7 @@
 
     <!-- 카테고리-상품 매핑 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdCategoryProd :: selectPageList */
               p.*
             , ste.site_nm AS site_nm
             , cat.category_nm AS category_nm
@@ -74,14 +74,14 @@
 
     <!-- 카테고리-상품 매핑 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdCategoryProd :: selectPageCount */
         FROM pd_category_prod p
             <include refid="pdCategoryProdCond"/>
     </select>
 
     <!-- 카테고리-상품 매핑 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd">
-        UPDATE pd_category_prod
+        UPDATE pd_category_prod  /* base.ec.pd :: PdCategoryProd :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="categoryId != null">category_id = #{categoryId},</if>

@@ -19,7 +19,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
-        SELECT
+        SELECT  /* base.sy :: SyVendorUser :: selectById */
               u.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -38,7 +38,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
-        SELECT
+        SELECT  /* base.sy :: SyVendorUser :: selectList */
               u.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -67,7 +67,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto">
-        SELECT
+        SELECT  /* base.sy :: SyVendorUser :: selectPageList */
               u.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -96,13 +96,13 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyVendorUser :: selectPageCount */
         FROM sy_vendor_user u
             <include refid="syVendorUserCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser">
-        UPDATE sy_vendor_user
+        UPDATE sy_vendor_user  /* base.sy :: SyVendorUser :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="vendorId != null">vendor_id = #{vendorId},</if>

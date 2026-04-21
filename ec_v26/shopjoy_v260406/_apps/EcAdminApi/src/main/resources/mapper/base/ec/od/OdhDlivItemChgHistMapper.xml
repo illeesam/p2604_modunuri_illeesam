@@ -14,7 +14,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivItemChgHistDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdhDlivItemChgHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS chg_user_nm
@@ -25,7 +25,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivItemChgHistDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdhDlivItemChgHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS chg_user_nm
@@ -44,7 +44,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivItemChgHistDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdhDlivItemChgHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS chg_user_nm
@@ -63,7 +63,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.od :: OdhDlivItemChgHist :: selectPageCount */
         FROM odh_dliv_item_chg_hist h
             <include refid="odhDlivItemChgHistCond"/>
     </select>

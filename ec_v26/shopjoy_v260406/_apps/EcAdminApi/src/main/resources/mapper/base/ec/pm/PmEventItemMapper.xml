@@ -16,7 +16,7 @@
 
     <!-- 이벤트 대상 상품 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmEventItem :: selectById */
               i.*
             , evt.event_nm AS event_nm
             , ste.site_nm AS site_nm
@@ -30,7 +30,7 @@
 
     <!-- 이벤트 대상 상품 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmEventItem :: selectList */
               i.*
             , evt.event_nm AS event_nm
             , ste.site_nm AS site_nm
@@ -52,7 +52,7 @@
 
     <!-- 이벤트 대상 상품 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmEventItem :: selectPageList */
               i.*
             , evt.event_nm AS event_nm
             , ste.site_nm AS site_nm
@@ -74,14 +74,14 @@
 
     <!-- 이벤트 대상 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pm :: PmEventItem :: selectPageCount */
         FROM pm_event_item i
             <include refid="pmEventItemCond"/>
     </select>
 
     <!-- 이벤트 대상 상품 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventItem">
-        UPDATE pm_event_item
+        UPDATE pm_event_item  /* base.ec.pm :: PmEventItem :: updateSelective */
         <set>
             <if test="eventId != null">event_id = #{eventId},</if>
             <if test="siteId != null">site_id = #{siteId},</if>

@@ -17,7 +17,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
-        SELECT
+        SELECT  /* base.sy :: SyRole :: selectById */
               r.*
             , ste.site_nm AS site_nm
             , cd_rt.code_label AS role_type_cd_nm
@@ -28,7 +28,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
-        SELECT
+        SELECT  /* base.sy :: SyRole :: selectList */
               r.*
             , ste.site_nm AS site_nm
             , cd_rt.code_label AS role_type_cd_nm
@@ -49,7 +49,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto">
-        SELECT
+        SELECT  /* base.sy :: SyRole :: selectPageList */
               r.*
             , ste.site_nm AS site_nm
             , cd_rt.code_label AS role_type_cd_nm
@@ -70,13 +70,13 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyRole :: selectPageCount */
         FROM sy_role r
             <include refid="syRoleCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyRole">
-        UPDATE sy_role
+        UPDATE sy_role  /* base.sy :: SyRole :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="roleCode != null">role_code = #{roleCode},</if>

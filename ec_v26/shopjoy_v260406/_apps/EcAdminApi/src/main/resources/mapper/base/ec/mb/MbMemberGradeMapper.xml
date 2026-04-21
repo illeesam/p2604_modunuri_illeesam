@@ -18,7 +18,7 @@
 
     <!-- 회원 등급 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberGrade :: selectById */
               g.*
             , ste.site_nm AS site_nm
             , cd_mg.code_label AS grade_cd_nm
@@ -30,7 +30,7 @@
 
     <!-- 회원 등급 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberGrade :: selectList */
               g.*
             , ste.site_nm AS site_nm
             , cd_mg.code_label AS grade_cd_nm
@@ -52,7 +52,7 @@
 
     <!-- 회원 등급 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberGrade :: selectPageList */
               g.*
             , ste.site_nm AS site_nm
             , cd_mg.code_label AS grade_cd_nm
@@ -74,14 +74,14 @@
 
     <!-- 회원 등급 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.mb :: MbMemberGrade :: selectPageCount */
         FROM mb_member_grade g
             <include refid="mbMemberGradeCond"/>
     </select>
 
     <!-- 회원 등급 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade">
-        UPDATE mb_member_grade
+        UPDATE mb_member_grade  /* base.ec.mb :: MbMemberGrade :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="gradeCd != null">grade_cd = #{gradeCd},</if>

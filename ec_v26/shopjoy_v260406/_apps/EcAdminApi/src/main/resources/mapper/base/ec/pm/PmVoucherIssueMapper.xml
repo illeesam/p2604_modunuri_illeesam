@@ -16,7 +16,7 @@
 
     <!-- 바우처(상품권) 발행 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmVoucherIssue :: selectById */
               i.*
             , vou.voucher_nm AS voucher_nm
             , ord.member_nm AS order_nm
@@ -32,7 +32,7 @@
 
     <!-- 바우처(상품권) 발행 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmVoucherIssue :: selectList */
               i.*
             , vou.voucher_nm AS voucher_nm
             , ord.member_nm AS order_nm
@@ -56,7 +56,7 @@
 
     <!-- 바우처(상품권) 발행 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmVoucherIssue :: selectPageList */
               i.*
             , vou.voucher_nm AS voucher_nm
             , ord.member_nm AS order_nm
@@ -80,14 +80,14 @@
 
     <!-- 바우처(상품권) 발행 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pm :: PmVoucherIssue :: selectPageCount */
         FROM pm_voucher_issue i
             <include refid="pmVoucherIssueCond"/>
     </select>
 
     <!-- 바우처(상품권) 발행 이력 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucherIssue">
-        UPDATE pm_voucher_issue
+        UPDATE pm_voucher_issue  /* base.ec.pm :: PmVoucherIssue :: updateSelective */
         <set>
             <if test="voucherId != null">voucher_id = #{voucherId},</if>
             <if test="siteId != null">site_id = #{siteId},</if>

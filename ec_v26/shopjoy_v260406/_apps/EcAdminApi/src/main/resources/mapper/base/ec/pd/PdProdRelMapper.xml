@@ -15,7 +15,7 @@
 
     <!-- 연관 상품 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdRel :: selectById */
               r.*
             , prd.prod_nm AS prod_nm
             , prd2.prod_nm AS rel_prod_nm
@@ -29,7 +29,7 @@
 
     <!-- 연관 상품 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdRel :: selectList */
               r.*
             , prd.prod_nm AS prod_nm
             , prd2.prod_nm AS rel_prod_nm
@@ -51,7 +51,7 @@
 
     <!-- 연관 상품 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdRel :: selectPageList */
               r.*
             , prd.prod_nm AS prod_nm
             , prd2.prod_nm AS rel_prod_nm
@@ -73,14 +73,14 @@
 
     <!-- 연관 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdProdRel :: selectPageCount */
         FROM pd_prod_rel r
             <include refid="pdProdRelCond"/>
     </select>
 
     <!-- 연관 상품 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdRel">
-        UPDATE pd_prod_rel
+        UPDATE pd_prod_rel  /* base.ec.pd :: PdProdRel :: updateSelective */
         <set>
             <if test="prodId != null">prod_id = #{prodId},</if>
             <if test="relProdId != null">rel_prod_id = #{relProdId},</if>

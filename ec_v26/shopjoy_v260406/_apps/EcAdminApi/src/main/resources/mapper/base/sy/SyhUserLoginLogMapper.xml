@@ -13,7 +13,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhUserLoginLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS user_nm
@@ -26,7 +26,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhUserLoginLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS user_nm
@@ -47,7 +47,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhUserLoginLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS user_nm
@@ -68,7 +68,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyhUserLoginLog :: selectPageCount */
         FROM syh_user_login_log l
             <include refid="syhUserLoginLogCond"/>
     </select>

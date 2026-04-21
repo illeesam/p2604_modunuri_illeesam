@@ -14,7 +14,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhSendMsgLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
             , tpl.template_nm AS template_nm
@@ -31,7 +31,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhSendMsgLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
             , tpl.template_nm AS template_nm
@@ -56,7 +56,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhSendMsgLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm
             , tpl.template_nm AS template_nm
@@ -81,7 +81,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyhSendMsgLog :: selectPageCount */
         FROM syh_send_msg_log l
             <include refid="syhSendMsgLogCond"/>
     </select>

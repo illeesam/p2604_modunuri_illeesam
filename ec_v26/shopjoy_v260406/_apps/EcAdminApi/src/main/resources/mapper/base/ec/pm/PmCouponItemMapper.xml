@@ -16,7 +16,7 @@
 
     <!-- 쿠폰 대상 상품 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmCouponItem :: selectById */
               i.*
             , cpn.coupon_nm AS coupon_nm
             , ste.site_nm AS site_nm
@@ -30,7 +30,7 @@
 
     <!-- 쿠폰 대상 상품 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmCouponItem :: selectList */
               i.*
             , cpn.coupon_nm AS coupon_nm
             , ste.site_nm AS site_nm
@@ -52,7 +52,7 @@
 
     <!-- 쿠폰 대상 상품 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmCouponItem :: selectPageList */
               i.*
             , cpn.coupon_nm AS coupon_nm
             , ste.site_nm AS site_nm
@@ -74,14 +74,14 @@
 
     <!-- 쿠폰 대상 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pm :: PmCouponItem :: selectPageCount */
         FROM pm_coupon_item i
             <include refid="pmCouponItemCond"/>
     </select>
 
     <!-- 쿠폰 대상 상품 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponItem">
-        UPDATE pm_coupon_item
+        UPDATE pm_coupon_item  /* base.ec.pm :: PmCouponItem :: updateSelective */
         <set>
             <if test="couponId != null">coupon_id = #{couponId},</if>
             <if test="siteId != null">site_id = #{siteId},</if>

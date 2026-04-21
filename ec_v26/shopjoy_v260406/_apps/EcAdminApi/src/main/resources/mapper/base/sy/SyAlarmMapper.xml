@@ -20,7 +20,7 @@
 
     <!-- 알람 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto">
-        SELECT
+        SELECT  /* base.sy :: SyAlarm :: selectById */
               a.*
             , ste.site_nm AS site_nm
             , cd_at.code_label AS alarm_type_cd_nm
@@ -36,7 +36,7 @@
 
     <!-- 알람 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto">
-        SELECT
+        SELECT  /* base.sy :: SyAlarm :: selectList */
               a.*
             , ste.site_nm AS site_nm
             , cd_at.code_label AS alarm_type_cd_nm
@@ -62,7 +62,7 @@
 
     <!-- 알람 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto">
-        SELECT
+        SELECT  /* base.sy :: SyAlarm :: selectPageList */
               a.*
             , ste.site_nm AS site_nm
             , cd_at.code_label AS alarm_type_cd_nm
@@ -88,14 +88,14 @@
 
     <!-- 알람 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyAlarm :: selectPageCount */
         FROM sy_alarm a
             <include refid="syAlarmCond"/>
     </select>
 
     <!-- 알람 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm">
-        UPDATE sy_alarm
+        UPDATE sy_alarm  /* base.sy :: SyAlarm :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="alarmTitle != null">alarm_title = #{alarmTitle},</if>

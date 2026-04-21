@@ -19,7 +19,7 @@
 
     <!-- 상품 리뷰 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReview :: selectById */
               r.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -35,7 +35,7 @@
 
     <!-- 상품 리뷰 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReview :: selectList */
               r.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -61,7 +61,7 @@
 
     <!-- 상품 리뷰 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReview :: selectPageList */
               r.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -87,14 +87,14 @@
 
     <!-- 상품 리뷰 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdReview :: selectPageCount */
         FROM pd_review r
             <include refid="pdReviewCond"/>
     </select>
 
     <!-- 상품 리뷰 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview">
-        UPDATE pd_review
+        UPDATE pd_review  /* base.ec.pd :: PdReview :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="prodId != null">prod_id = #{prodId},</if>

@@ -19,7 +19,7 @@
 
     <!-- 메뉴 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto">
-        SELECT
+        SELECT  /* base.sy :: SyMenu :: selectById */
               m.*
             , ste.site_nm AS site_nm
             , cd_mt.code_label AS menu_type_cd_nm
@@ -31,7 +31,7 @@
 
     <!-- 메뉴 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto">
-        SELECT
+        SELECT  /* base.sy :: SyMenu :: selectList */
               m.*
             , ste.site_nm AS site_nm
             , cd_mt.code_label AS menu_type_cd_nm
@@ -53,7 +53,7 @@
 
     <!-- 메뉴 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto">
-        SELECT
+        SELECT  /* base.sy :: SyMenu :: selectPageList */
               m.*
             , ste.site_nm AS site_nm
             , cd_mt.code_label AS menu_type_cd_nm
@@ -75,14 +75,14 @@
 
     <!-- 메뉴 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyMenu :: selectPageCount */
         FROM sy_menu m
             <include refid="syMenuCond"/>
     </select>
 
     <!-- 메뉴 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu">
-        UPDATE sy_menu
+        UPDATE sy_menu  /* base.sy :: SyMenu :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="menuCode != null">menu_code = #{menuCode},</if>

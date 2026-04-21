@@ -16,7 +16,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdViewLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
         FROM pdh_prod_view_log l
@@ -25,7 +25,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdViewLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
         FROM pdh_prod_view_log l
@@ -44,7 +44,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdViewLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm
         FROM pdh_prod_view_log l
@@ -63,7 +63,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdhProdViewLog :: selectPageCount */
         FROM pdh_prod_view_log l
             <include refid="pdhProdViewLogCond"/>
     </select>

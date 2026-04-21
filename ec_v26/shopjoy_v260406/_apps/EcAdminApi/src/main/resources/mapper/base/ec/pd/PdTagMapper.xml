@@ -18,7 +18,7 @@
 
     <!-- 태그 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdTag :: selectById */
               t.*
             , ste.site_nm AS site_nm
         FROM pd_tag t
@@ -28,7 +28,7 @@
 
     <!-- 태그 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdTag :: selectList */
               t.*
             , ste.site_nm AS site_nm
         FROM pd_tag t
@@ -48,7 +48,7 @@
 
     <!-- 태그 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdTag :: selectPageList */
               t.*
             , ste.site_nm AS site_nm
         FROM pd_tag t
@@ -68,14 +68,14 @@
 
     <!-- 태그 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdTag :: selectPageCount */
         FROM pd_tag t
             <include refid="pdTagCond"/>
     </select>
 
     <!-- 태그 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag">
-        UPDATE pd_tag
+        UPDATE pd_tag  /* base.ec.pd :: PdTag :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="tagNm != null">tag_nm = #{tagNm},</if>

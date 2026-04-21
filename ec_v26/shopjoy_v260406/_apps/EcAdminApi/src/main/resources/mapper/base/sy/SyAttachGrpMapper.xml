@@ -17,14 +17,14 @@
 
     <!-- 첨부파일 그룹 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto">
-        SELECT g.*
+        SELECT g.*  /* base.sy :: SyAttachGrp :: selectById */
         FROM sy_attach_grp g
         WHERE g.attach_grp_id = #{id}
     </select>
 
     <!-- 첨부파일 그룹 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto">
-        SELECT g.*
+        SELECT g.*  /* base.sy :: SyAttachGrp :: selectList */
         FROM sy_attach_grp g
             <include refid="syAttachGrpCond"/>
         <choose>
@@ -41,7 +41,7 @@
 
     <!-- 첨부파일 그룹 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto">
-        SELECT g.*
+        SELECT g.*  /* base.sy :: SyAttachGrp :: selectPageList */
         FROM sy_attach_grp g
             <include refid="syAttachGrpCond"/>
         <choose>
@@ -58,14 +58,14 @@
 
     <!-- 첨부파일 그룹 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyAttachGrp :: selectPageCount */
         FROM sy_attach_grp g
             <include refid="syAttachGrpCond"/>
     </select>
 
     <!-- 첨부파일 그룹 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp">
-        UPDATE sy_attach_grp
+        UPDATE sy_attach_grp  /* base.sy :: SyAttachGrp :: updateSelective */
         <set>
             <if test="attachGrpCode != null">attach_grp_code = #{attachGrpCode},</if>
             <if test="attachGrpNm != null">attach_grp_nm = #{attachGrpNm},</if>

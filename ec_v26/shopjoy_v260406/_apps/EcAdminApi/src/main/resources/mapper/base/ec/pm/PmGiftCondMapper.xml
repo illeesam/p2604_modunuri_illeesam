@@ -16,7 +16,7 @@
 
     <!-- 사은품 지급 조건 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmGiftCond :: selectById */
               c.*
             , gif.gift_nm AS gift_nm
             , ste.site_nm AS site_nm
@@ -30,7 +30,7 @@
 
     <!-- 사은품 지급 조건 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmGiftCond :: selectList */
               c.*
             , gif.gift_nm AS gift_nm
             , ste.site_nm AS site_nm
@@ -52,7 +52,7 @@
 
     <!-- 사은품 지급 조건 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmGiftCond :: selectPageList */
               c.*
             , gif.gift_nm AS gift_nm
             , ste.site_nm AS site_nm
@@ -74,14 +74,14 @@
 
     <!-- 사은품 지급 조건 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pm :: PmGiftCond :: selectPageCount */
         FROM pm_gift_cond c
             <include refid="pmGiftCondCond"/>
     </select>
 
     <!-- 사은품 지급 조건 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond">
-        UPDATE pm_gift_cond
+        UPDATE pm_gift_cond  /* base.ec.pm :: PmGiftCond :: updateSelective */
         <set>
             <if test="giftId != null">gift_id = #{giftId},</if>
             <if test="siteId != null">site_id = #{siteId},</if>

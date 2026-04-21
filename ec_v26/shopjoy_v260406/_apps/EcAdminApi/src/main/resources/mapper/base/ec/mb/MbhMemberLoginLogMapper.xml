@@ -15,7 +15,7 @@
 
     <!-- 회원 로그인 로그 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbhMemberLoginLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
             , mem.member_nm AS member_nm
@@ -29,7 +29,7 @@
 
     <!-- 회원 로그인 로그 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbhMemberLoginLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
             , mem.member_nm AS member_nm
@@ -51,7 +51,7 @@
 
     <!-- 회원 로그인 로그 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbhMemberLoginLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm
             , mem.member_nm AS member_nm
@@ -73,7 +73,7 @@
 
     <!-- 회원 로그인 로그 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.mb :: MbhMemberLoginLog :: selectPageCount */
         FROM mbh_member_login_log l
             <include refid="mbhMemberLoginLogCond"/>
     </select>

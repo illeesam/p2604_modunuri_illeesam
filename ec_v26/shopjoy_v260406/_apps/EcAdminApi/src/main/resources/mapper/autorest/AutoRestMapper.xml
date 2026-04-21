@@ -65,7 +65,7 @@
          목록 조회 (전체, limit 1000)
          ============================================================ -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
-        SELECT t.*
+        SELECT t.*  /* autorest :: AutoRest :: selectList */
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
         <choose>
@@ -83,7 +83,7 @@
          페이지 조회
          ============================================================ -->
     <select id="selectPage" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
-        SELECT t.*
+        SELECT t.*  /* autorest :: AutoRest :: selectPage */
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
         <choose>
@@ -101,7 +101,7 @@
          건수 조회
          ============================================================ -->
     <select id="selectCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* autorest :: AutoRest :: selectCount */
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
     </select>
@@ -110,7 +110,7 @@
          단건 조회
          ============================================================ -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
-        SELECT t.*
+        SELECT t.*  /* autorest :: AutoRest :: selectById */
         FROM ${p.schema}.${p.table} t
         WHERE t.${p.pk} = #{p.id}
     </select>
@@ -119,7 +119,7 @@
          자식 테이블 조회 (getById 에서 childTables 처리)
          ============================================================ -->
     <select id="selectChildren" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
-        SELECT *
+        SELECT *  /* autorest :: AutoRest :: selectChildren */
         FROM ${p.schema}.${p.table}
         WHERE ${p.fkCol} = #{p.fkVal}
         ORDER BY ${p.pk} ASC
@@ -129,7 +129,7 @@
          공통코드 라벨 조회 (cdFields 처리용)
          ============================================================ -->
     <select id="selectCodeLabels" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
-        SELECT code_value, code_label
+        SELECT code_value, code_label  /* autorest :: AutoRest :: selectCodeLabels */
         FROM sy_code c
         JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id
         WHERE g.code_grp = #{codeGrp}

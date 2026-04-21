@@ -16,7 +16,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto">
-        SELECT
+        SELECT  /* base.sy :: SyhBatchHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
         FROM syh_batch_hist h
@@ -25,7 +25,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto">
-        SELECT
+        SELECT  /* base.sy :: SyhBatchHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
         FROM syh_batch_hist h
@@ -44,7 +44,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto">
-        SELECT
+        SELECT  /* base.sy :: SyhBatchHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm
         FROM syh_batch_hist h
@@ -63,7 +63,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyhBatchHist :: selectPageCount */
         FROM syh_batch_hist h
             <include refid="syhBatchHistCond"/>
     </select>

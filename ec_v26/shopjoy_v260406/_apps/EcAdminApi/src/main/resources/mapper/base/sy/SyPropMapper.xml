@@ -14,7 +14,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
-        SELECT
+        SELECT  /* base.sy :: SyProp :: selectById */
               p.*
             , ste.site_nm AS site_nm
             , cd_pt.code_label AS prop_type_cd_nm
@@ -25,7 +25,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
-        SELECT
+        SELECT  /* base.sy :: SyProp :: selectList */
               p.*
             , ste.site_nm AS site_nm
             , cd_pt.code_label AS prop_type_cd_nm
@@ -44,7 +44,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
-        SELECT
+        SELECT  /* base.sy :: SyProp :: selectPageList */
               p.*
             , ste.site_nm AS site_nm
             , cd_pt.code_label AS prop_type_cd_nm
@@ -63,13 +63,13 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyProp :: selectPageCount */
         FROM sy_prop p
             <include refid="syPropCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyProp">
-        UPDATE sy_prop
+        UPDATE sy_prop  /* base.sy :: SyProp :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="dispPath != null">disp_path = #{dispPath},</if>

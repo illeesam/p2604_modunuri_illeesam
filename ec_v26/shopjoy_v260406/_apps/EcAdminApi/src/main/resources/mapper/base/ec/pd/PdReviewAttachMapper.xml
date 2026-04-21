@@ -16,7 +16,7 @@
 
     <!-- 리뷰 첨부파일 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReviewAttach :: selectById */
               a.*
             , att.file_nm AS attach_nm
             , ste.site_nm AS site_nm
@@ -30,7 +30,7 @@
 
     <!-- 리뷰 첨부파일 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReviewAttach :: selectList */
               a.*
             , att.file_nm AS attach_nm
             , ste.site_nm AS site_nm
@@ -52,7 +52,7 @@
 
     <!-- 리뷰 첨부파일 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReviewAttach :: selectPageList */
               a.*
             , att.file_nm AS attach_nm
             , ste.site_nm AS site_nm
@@ -74,14 +74,14 @@
 
     <!-- 리뷰 첨부파일 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdReviewAttach :: selectPageCount */
         FROM pd_review_attach a
             <include refid="pdReviewAttachCond"/>
     </select>
 
     <!-- 리뷰 첨부파일 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewAttach">
-        UPDATE pd_review_attach
+        UPDATE pd_review_attach  /* base.ec.pd :: PdReviewAttach :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="reviewId != null">review_id = #{reviewId},</if>

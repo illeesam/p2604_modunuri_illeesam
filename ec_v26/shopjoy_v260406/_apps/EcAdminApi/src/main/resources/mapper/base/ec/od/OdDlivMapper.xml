@@ -26,7 +26,7 @@
 
     <!-- 배송 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdDliv :: selectById */
               d.*
             , o.member_nm, o.order_date, o.pay_method_cd
             , v.vendor_nm, v.vendor_tel
@@ -48,7 +48,7 @@
 
     <!-- 배송 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdDliv :: selectList */
               d.*
             , o.member_nm,    o.order_date,   o.order_status_cd
             , v.vendor_nm
@@ -80,7 +80,7 @@
 
     <!-- 배송 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdDliv :: selectPageList */
               d.*
             , o.member_nm,    o.order_date,   o.order_status_cd
             , v.vendor_nm
@@ -112,7 +112,7 @@
 
     <!-- 배송 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.od :: OdDliv :: selectPageCount */
         FROM od_dliv d
             LEFT JOIN od_order o ON o.order_id = d.order_id
                 <include refid="odDlivCond"/>
@@ -120,7 +120,7 @@
 
     <!-- 배송 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv">
-        UPDATE od_dliv
+        UPDATE od_dliv  /* base.ec.od :: OdDliv :: updateSelective */
         <set>
             <if test="dlivStatusCd != null">dliv_status_cd = #{dlivStatusCd},</if>
             <if test="dlivStatusCdBefore != null">dliv_status_cd_before = #{dlivStatusCdBefore},</if>
@@ -141,7 +141,7 @@
 
     <!-- 주문번호로 배송 목록 조회 -->
     <select id="selectByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdDliv :: selectByOrderId */
               d.*
             , cd_ds.code_label AS dliv_status_cd_nm
             , cd_dt.code_label AS dliv_type_cd_nm

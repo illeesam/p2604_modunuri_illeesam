@@ -18,7 +18,7 @@
 
     <!-- 게시판 카테고리 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto">
-        SELECT
+        SELECT  /* base.ec.cm :: CmBlogCate :: selectById */
               c.*
             , ste.site_nm AS site_nm
         FROM cm_blog_cate c
@@ -28,7 +28,7 @@
 
     <!-- 게시판 카테고리 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto">
-        SELECT
+        SELECT  /* base.ec.cm :: CmBlogCate :: selectList */
               c.*
             , ste.site_nm AS site_nm
         FROM cm_blog_cate c
@@ -48,7 +48,7 @@
 
     <!-- 게시판 카테고리 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto">
-        SELECT
+        SELECT  /* base.ec.cm :: CmBlogCate :: selectPageList */
               c.*
             , ste.site_nm AS site_nm
         FROM cm_blog_cate c
@@ -68,14 +68,14 @@
 
     <!-- 게시판 카테고리 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.cm :: CmBlogCate :: selectPageCount */
         FROM cm_blog_cate c
             <include refid="cmBlogCateCond"/>
     </select>
 
     <!-- 게시판 카테고리 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate">
-        UPDATE cm_blog_cate
+        UPDATE cm_blog_cate  /* base.ec.cm :: CmBlogCate :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="blogCateNm != null">blog_cate_nm = #{blogCateNm},</if>

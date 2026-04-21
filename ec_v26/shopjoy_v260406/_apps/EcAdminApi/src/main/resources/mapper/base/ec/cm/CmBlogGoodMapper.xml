@@ -14,7 +14,7 @@
 
     <!-- 게시물 좋아요 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto">
-        SELECT
+        SELECT  /* base.ec.cm :: CmBlogGood :: selectById */
               g.*
             , blt.blog_title AS blog_nm
         FROM cm_blog_good g
@@ -24,7 +24,7 @@
 
     <!-- 게시물 좋아요 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto">
-        SELECT
+        SELECT  /* base.ec.cm :: CmBlogGood :: selectList */
               g.*
             , blt.blog_title AS blog_nm
         FROM cm_blog_good g
@@ -42,7 +42,7 @@
 
     <!-- 게시물 좋아요 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto">
-        SELECT
+        SELECT  /* base.ec.cm :: CmBlogGood :: selectPageList */
               g.*
             , blt.blog_title AS blog_nm
         FROM cm_blog_good g
@@ -60,14 +60,14 @@
 
     <!-- 게시물 좋아요 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.cm :: CmBlogGood :: selectPageCount */
         FROM cm_blog_good g
             <include refid="cmBlogGoodCond"/>
     </select>
 
     <!-- 게시물 좋아요 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogGood">
-        UPDATE cm_blog_good
+        UPDATE cm_blog_good  /* base.ec.cm :: CmBlogGood :: updateSelective */
         <set>
             <if test="blogId != null">blog_id = #{blogId},</if>
             <if test="userId != null">user_id = #{userId},</if>

@@ -16,7 +16,7 @@
 
     <!-- 클레임 아이템 변경 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimItemChgHistDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdhClaimItemChgHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS chg_user_nm
@@ -28,7 +28,7 @@
 
     <!-- 클레임 아이템 변경 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimItemChgHistDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdhClaimItemChgHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS chg_user_nm
@@ -48,7 +48,7 @@
 
     <!-- 클레임 아이템 변경 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimItemChgHistDto">
-        SELECT
+        SELECT  /* base.ec.od :: OdhClaimItemChgHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm
             , usr.user_nm AS chg_user_nm
@@ -68,7 +68,7 @@
 
     <!-- 클레임 아이템 변경 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.od :: OdhClaimItemChgHist :: selectPageCount */
         FROM odh_claim_item_chg_hist h
             <include refid="odhClaimItemChgHistCond"/>
     </select>

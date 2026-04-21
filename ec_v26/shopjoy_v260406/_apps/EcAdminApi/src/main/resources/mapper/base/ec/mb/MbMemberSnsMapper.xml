@@ -14,7 +14,7 @@
 
     <!-- SNS 연동 회원 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberSns :: selectById */
               m.*
             , mem.member_nm AS member_nm
             , cd_sc.code_label AS sns_channel_cd_nm
@@ -26,7 +26,7 @@
 
     <!-- SNS 연동 회원 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberSns :: selectList */
               m.*
             , mem.member_nm AS member_nm
             , cd_sc.code_label AS sns_channel_cd_nm
@@ -46,7 +46,7 @@
 
     <!-- SNS 연동 회원 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberSns :: selectPageList */
               m.*
             , mem.member_nm AS member_nm
             , cd_sc.code_label AS sns_channel_cd_nm
@@ -66,14 +66,14 @@
 
     <!-- SNS 연동 회원 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.mb :: MbMemberSns :: selectPageCount */
         FROM mb_member_sns m
             <include refid="mbMemberSnsCond"/>
     </select>
 
     <!-- SNS 연동 회원 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns">
-        UPDATE mb_member_sns
+        UPDATE mb_member_sns  /* base.ec.mb :: MbMemberSns :: updateSelective */
         <set>
             <if test="memberId != null">member_id = #{memberId},</if>
             <if test="snsChannelCd != null">sns_channel_cd = #{snsChannelCd},</if>

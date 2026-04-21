@@ -17,7 +17,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
-        SELECT
+        SELECT  /* base.sy :: SyTemplate :: selectById */
               t.*
             , ste.site_nm AS site_nm
             , cd_tt.code_label AS template_type_cd_nm
@@ -28,7 +28,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
-        SELECT
+        SELECT  /* base.sy :: SyTemplate :: selectList */
               t.*
             , ste.site_nm AS site_nm
             , cd_tt.code_label AS template_type_cd_nm
@@ -49,7 +49,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
-        SELECT
+        SELECT  /* base.sy :: SyTemplate :: selectPageList */
               t.*
             , ste.site_nm AS site_nm
             , cd_tt.code_label AS template_type_cd_nm
@@ -70,13 +70,13 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyTemplate :: selectPageCount */
         FROM sy_template t
             <include refid="syTemplateCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate">
-        UPDATE sy_template
+        UPDATE sy_template  /* base.sy :: SyTemplate :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="templateTypeCd != null">template_type_cd = #{templateTypeCd},</if>

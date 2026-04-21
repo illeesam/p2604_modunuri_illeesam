@@ -20,7 +20,7 @@
 
     <!-- 브랜드 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto">
-        SELECT
+        SELECT  /* base.sy :: SyBrand :: selectById */
               b.*
             , ste.site_nm AS site_nm
         FROM sy_brand b
@@ -30,7 +30,7 @@
 
     <!-- 브랜드 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto">
-        SELECT
+        SELECT  /* base.sy :: SyBrand :: selectList */
               b.*
             , ste.site_nm AS site_nm
         FROM sy_brand b
@@ -50,7 +50,7 @@
 
     <!-- 브랜드 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto">
-        SELECT
+        SELECT  /* base.sy :: SyBrand :: selectPageList */
               b.*
             , ste.site_nm AS site_nm
         FROM sy_brand b
@@ -70,14 +70,14 @@
 
     <!-- 브랜드 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyBrand :: selectPageCount */
         FROM sy_brand b
             <include refid="syBrandCond"/>
     </select>
 
     <!-- 브랜드 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand">
-        UPDATE sy_brand
+        UPDATE sy_brand  /* base.sy :: SyBrand :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="brandCode != null">brand_code = #{brandCode},</if>

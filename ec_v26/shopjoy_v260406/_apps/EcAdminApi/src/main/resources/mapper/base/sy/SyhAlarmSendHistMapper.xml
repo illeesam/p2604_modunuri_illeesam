@@ -14,7 +14,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto">
-        SELECT
+        SELECT  /* base.sy :: SyhAlarmSendHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
         FROM syh_alarm_send_hist h
@@ -23,7 +23,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto">
-        SELECT
+        SELECT  /* base.sy :: SyhAlarmSendHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
         FROM syh_alarm_send_hist h
@@ -40,7 +40,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto">
-        SELECT
+        SELECT  /* base.sy :: SyhAlarmSendHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm
         FROM syh_alarm_send_hist h
@@ -57,7 +57,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyhAlarmSendHist :: selectPageCount */
         FROM syh_alarm_send_hist h
             <include refid="syhAlarmSendHistCond"/>
     </select>

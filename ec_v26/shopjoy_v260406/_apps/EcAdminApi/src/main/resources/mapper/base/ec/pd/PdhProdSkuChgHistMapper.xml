@@ -16,7 +16,7 @@
 
     <!-- 상품 SKU 변경 이력 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuChgHistDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdSkuChgHist :: selectById */
               h.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -30,7 +30,7 @@
 
     <!-- 상품 SKU 변경 이력 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuChgHistDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdSkuChgHist :: selectList */
               h.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -52,7 +52,7 @@
 
     <!-- 상품 SKU 변경 이력 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuChgHistDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdhProdSkuChgHist :: selectPageList */
               h.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -74,7 +74,7 @@
 
     <!-- 상품 SKU 변경 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdhProdSkuChgHist :: selectPageCount */
         FROM pdh_prod_sku_chg_hist h
             <include refid="pdhProdSkuChgHistCond"/>
     </select>

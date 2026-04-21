@@ -20,7 +20,7 @@
 
     <!-- 사이트 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
-        SELECT
+        SELECT  /* base.sy :: SySite :: selectById */
               s.*
             , cd_st.code_label AS site_type_cd_nm
             , cd_ss.code_label AS site_status_cd_nm
@@ -32,7 +32,7 @@
 
     <!-- 사이트 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
-        SELECT
+        SELECT  /* base.sy :: SySite :: selectList */
               s.*
             , cd_st.code_label AS site_type_cd_nm
             , cd_ss.code_label AS site_status_cd_nm
@@ -54,7 +54,7 @@
 
     <!-- 사이트 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto">
-        SELECT
+        SELECT  /* base.sy :: SySite :: selectPageList */
               s.*
             , cd_st.code_label AS site_type_cd_nm
             , cd_ss.code_label AS site_status_cd_nm
@@ -76,14 +76,14 @@
 
     <!-- 사이트 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SySite :: selectPageCount */
         FROM sy_site s
             <include refid="sySiteCond"/>
     </select>
 
     <!-- 사이트 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SySite">
-        UPDATE sy_site
+        UPDATE sy_site  /* base.sy :: SySite :: updateSelective */
         <set>
             <if test="siteCode != null">site_code = #{siteCode},</if>
             <if test="siteTypeCd != null">site_type_cd = #{siteTypeCd},</if>

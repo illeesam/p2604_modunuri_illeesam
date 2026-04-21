@@ -17,7 +17,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhApiLog :: selectById */
               l.*
             , ste.site_nm AS site_nm
         FROM syh_api_log l
@@ -26,7 +26,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhApiLog :: selectList */
               l.*
             , ste.site_nm AS site_nm
         FROM syh_api_log l
@@ -45,7 +45,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto">
-        SELECT
+        SELECT  /* base.sy :: SyhApiLog :: selectPageList */
               l.*
             , ste.site_nm AS site_nm
         FROM syh_api_log l
@@ -64,7 +64,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyhApiLog :: selectPageCount */
         FROM syh_api_log l
             <include refid="syhApiLogCond"/>
     </select>

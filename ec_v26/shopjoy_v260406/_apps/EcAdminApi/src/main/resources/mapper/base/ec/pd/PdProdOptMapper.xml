@@ -19,7 +19,7 @@
 
     <!-- 상품 옵션 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdOpt :: selectById */
               o.*
             , ste.site_nm AS site_nm
             , cd_ot.code_label AS opt_type_cd_nm
@@ -33,7 +33,7 @@
 
     <!-- 상품 옵션 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdOpt :: selectList */
               o.*
             , ste.site_nm AS site_nm
             , cd_ot.code_label AS opt_type_cd_nm
@@ -57,7 +57,7 @@
 
     <!-- 상품 옵션 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdOpt :: selectPageList */
               o.*
             , ste.site_nm AS site_nm
             , cd_ot.code_label AS opt_type_cd_nm
@@ -81,14 +81,14 @@
 
     <!-- 상품 옵션 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdProdOpt :: selectPageCount */
         FROM pd_prod_opt o
             <include refid="pdProdOptCond"/>
     </select>
 
     <!-- 상품 옵션 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt">
-        UPDATE pd_prod_opt
+        UPDATE pd_prod_opt  /* base.ec.pd :: PdProdOpt :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="prodId != null">prod_id = #{prodId},</if>

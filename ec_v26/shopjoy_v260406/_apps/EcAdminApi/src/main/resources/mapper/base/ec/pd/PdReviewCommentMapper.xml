@@ -20,7 +20,7 @@
 
     <!-- 리뷰 댓글 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReviewComment :: selectById */
               c.*
             , ste.site_nm AS site_nm
             , cd_rwt.code_label AS writer_type_cd_nm
@@ -32,7 +32,7 @@
 
     <!-- 리뷰 댓글 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReviewComment :: selectList */
               c.*
             , ste.site_nm AS site_nm
             , cd_rwt.code_label AS writer_type_cd_nm
@@ -54,7 +54,7 @@
 
     <!-- 리뷰 댓글 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdReviewComment :: selectPageList */
               c.*
             , ste.site_nm AS site_nm
             , cd_rwt.code_label AS writer_type_cd_nm
@@ -76,14 +76,14 @@
 
     <!-- 리뷰 댓글 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdReviewComment :: selectPageCount */
         FROM pd_review_comment c
             <include refid="pdReviewCommentCond"/>
     </select>
 
     <!-- 리뷰 댓글 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment">
-        UPDATE pd_review_comment
+        UPDATE pd_review_comment  /* base.ec.pd :: PdReviewComment :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="reviewId != null">review_id = #{reviewId},</if>

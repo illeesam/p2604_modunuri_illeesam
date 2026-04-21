@@ -20,7 +20,7 @@
 
     <!-- 전시 패널 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto">
-        SELECT
+        SELECT  /* base.ec.dp :: DpPanel :: selectById */
               p.*
             , ste.site_nm AS site_nm
             , cd_dt.code_label AS panel_type_cd_nm
@@ -34,7 +34,7 @@
 
     <!-- 전시 패널 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto">
-        SELECT
+        SELECT  /* base.ec.dp :: DpPanel :: selectList */
               p.*
             , ste.site_nm AS site_nm
             , cd_dt.code_label AS panel_type_cd_nm
@@ -58,7 +58,7 @@
 
     <!-- 전시 패널 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto">
-        SELECT
+        SELECT  /* base.ec.dp :: DpPanel :: selectPageList */
               p.*
             , ste.site_nm AS site_nm
             , cd_dt.code_label AS panel_type_cd_nm
@@ -82,14 +82,14 @@
 
     <!-- 전시 패널 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.dp :: DpPanel :: selectPageCount */
         FROM dp_panel p
             <include refid="dpPanelCond"/>
     </select>
 
     <!-- 전시 패널 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel">
-        UPDATE dp_panel
+        UPDATE dp_panel  /* base.ec.dp :: DpPanel :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="panelNm != null">panel_nm = #{panelNm},</if>

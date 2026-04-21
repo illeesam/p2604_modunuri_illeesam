@@ -23,7 +23,7 @@
 
     <!-- 쿠폰 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmCoupon :: selectById */
               c.*
             , cd_ct.code_label AS coupon_type_cd_nm
             , cd_cs.code_label AS coupon_status_cd_nm
@@ -39,7 +39,7 @@
 
     <!-- 쿠폰 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmCoupon :: selectList */
               c.*
             , cd_ct.code_label AS coupon_type_cd_nm
             , cd_cs.code_label AS coupon_status_cd_nm
@@ -63,7 +63,7 @@
 
     <!-- 쿠폰 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmCoupon :: selectPageList */
               c.*
             , cd_ct.code_label AS coupon_type_cd_nm
             , cd_cs.code_label AS coupon_status_cd_nm
@@ -87,13 +87,13 @@
 
     <!-- 쿠폰 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*) FROM pm_coupon c
+        SELECT COUNT(*) FROM pm_coupon c  /* base.ec.pm :: PmCoupon :: selectPageCount */
                 <include refid="pmCouponCond"/>
     </select>
 
     <!-- 쿠폰 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon">
-        UPDATE pm_coupon
+        UPDATE pm_coupon  /* base.ec.pm :: PmCoupon :: updateSelective */
         <set>
             <if test="couponStatusCd != null">coupon_status_cd = #{couponStatusCd},</if>
             <if test="couponStatusCdBefore != null">coupon_status_cd_before = #{couponStatusCdBefore},</if>
@@ -115,7 +115,7 @@
 
     <!-- 쿠폰 ID로 발행 이력 조회 -->
     <select id="selectIssuesByCouponId" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmCoupon :: selectIssuesByCouponId */
               ci.*
             , m.member_nm,    m.member_email
         FROM pm_coupon_issue ci

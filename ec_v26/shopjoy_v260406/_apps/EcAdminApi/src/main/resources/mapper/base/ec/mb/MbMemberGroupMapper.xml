@@ -18,7 +18,7 @@
 
     <!-- 회원 그룹 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGroupDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberGroup :: selectById */
               g.*
             , ste.site_nm AS site_nm
         FROM mb_member_group g
@@ -28,7 +28,7 @@
 
     <!-- 회원 그룹 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGroupDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberGroup :: selectList */
               g.*
             , ste.site_nm AS site_nm
         FROM mb_member_group g
@@ -48,7 +48,7 @@
 
     <!-- 회원 그룹 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGroupDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMemberGroup :: selectPageList */
               g.*
             , ste.site_nm AS site_nm
         FROM mb_member_group g
@@ -68,14 +68,14 @@
 
     <!-- 회원 그룹 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.mb :: MbMemberGroup :: selectPageCount */
         FROM mb_member_group g
             <include refid="mbMemberGroupCond"/>
     </select>
 
     <!-- 회원 그룹 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGroup">
-        UPDATE mb_member_group
+        UPDATE mb_member_group  /* base.ec.mb :: MbMemberGroup :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="groupNm != null">group_nm = #{groupNm},</if>

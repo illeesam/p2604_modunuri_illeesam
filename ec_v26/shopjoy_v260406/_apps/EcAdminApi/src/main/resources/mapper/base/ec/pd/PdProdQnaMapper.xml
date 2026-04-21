@@ -19,7 +19,7 @@
 
     <!-- 상품 문의 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdQna :: selectById */
               q.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -39,7 +39,7 @@
 
     <!-- 상품 문의 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdQna :: selectList */
               q.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -69,7 +69,7 @@
 
     <!-- 상품 문의 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto">
-        SELECT
+        SELECT  /* base.ec.pd :: PdProdQna :: selectPageList */
               q.*
             , ste.site_nm AS site_nm
             , prd.prod_nm AS prod_nm
@@ -99,14 +99,14 @@
 
     <!-- 상품 문의 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pd :: PdProdQna :: selectPageCount */
         FROM pd_prod_qna q
             <include refid="pdProdQnaCond"/>
     </select>
 
     <!-- 상품 문의 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna">
-        UPDATE pd_prod_qna
+        UPDATE pd_prod_qna  /* base.ec.pd :: PdProdQna :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="prodId != null">prod_id = #{prodId},</if>

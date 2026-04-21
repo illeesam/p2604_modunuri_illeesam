@@ -16,7 +16,7 @@
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
-        SELECT
+        SELECT  /* base.sy :: SyVoc :: selectById */
               v.*
             , ste.site_nm AS site_nm
             , cd_vm.code_label AS voc_master_cd_nm
@@ -29,7 +29,7 @@
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
-        SELECT
+        SELECT  /* base.sy :: SyVoc :: selectList */
               v.*
             , ste.site_nm AS site_nm
             , cd_vm.code_label AS voc_master_cd_nm
@@ -52,7 +52,7 @@
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto">
-        SELECT
+        SELECT  /* base.sy :: SyVoc :: selectPageList */
               v.*
             , ste.site_nm AS site_nm
             , cd_vm.code_label AS voc_master_cd_nm
@@ -75,13 +75,13 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.sy :: SyVoc :: selectPageCount */
         FROM sy_voc v
             <include refid="syVocCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyVoc">
-        UPDATE sy_voc
+        UPDATE sy_voc  /* base.sy :: SyVoc :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="vocMasterCd != null">voc_master_cd = #{vocMasterCd},</if>

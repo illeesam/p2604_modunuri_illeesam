@@ -16,7 +16,7 @@
 
     <!-- 할인 대상 상품 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmDiscntItem :: selectById */
               i.*
             , dis.discnt_nm AS discnt_nm
             , ste.site_nm AS site_nm
@@ -30,7 +30,7 @@
 
     <!-- 할인 대상 상품 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmDiscntItem :: selectList */
               i.*
             , dis.discnt_nm AS discnt_nm
             , ste.site_nm AS site_nm
@@ -52,7 +52,7 @@
 
     <!-- 할인 대상 상품 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntItemDto">
-        SELECT
+        SELECT  /* base.ec.pm :: PmDiscntItem :: selectPageList */
               i.*
             , dis.discnt_nm AS discnt_nm
             , ste.site_nm AS site_nm
@@ -74,14 +74,14 @@
 
     <!-- 할인 대상 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.pm :: PmDiscntItem :: selectPageCount */
         FROM pm_discnt_item i
             <include refid="pmDiscntItemCond"/>
     </select>
 
     <!-- 할인 대상 상품 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntItem">
-        UPDATE pm_discnt_item
+        UPDATE pm_discnt_item  /* base.ec.pm :: PmDiscntItem :: updateSelective */
         <set>
             <if test="discntId != null">discnt_id = #{discntId},</if>
             <if test="siteId != null">site_id = #{siteId},</if>

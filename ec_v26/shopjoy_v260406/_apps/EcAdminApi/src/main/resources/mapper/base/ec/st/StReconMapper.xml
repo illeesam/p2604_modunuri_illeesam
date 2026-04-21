@@ -18,7 +18,7 @@
 
     <!-- 정산 대사 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto">
-        SELECT
+        SELECT  /* base.ec.st :: StRecon :: selectById */
               r.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -36,7 +36,7 @@
 
     <!-- 정산 대사 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto">
-        SELECT
+        SELECT  /* base.ec.st :: StRecon :: selectList */
               r.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -62,7 +62,7 @@
 
     <!-- 정산 대사 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto">
-        SELECT
+        SELECT  /* base.ec.st :: StRecon :: selectPageList */
               r.*
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
@@ -88,14 +88,14 @@
 
     <!-- 정산 대사 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)
+        SELECT COUNT(*)  /* base.ec.st :: StRecon :: selectPageCount */
         FROM st_recon r
             <include refid="stReconCond"/>
     </select>
 
     <!-- 정산 대사 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon">
-        UPDATE st_recon
+        UPDATE st_recon  /* base.ec.st :: StRecon :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="vendorId != null">vendor_id = #{vendorId},</if>

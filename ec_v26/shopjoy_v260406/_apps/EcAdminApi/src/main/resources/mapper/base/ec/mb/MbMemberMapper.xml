@@ -25,7 +25,7 @@
 
     <!-- 회원 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMember :: selectById */
               m.*
             , s.site_nm
             , cd_gr.code_label AS grade_cd_nm
@@ -39,7 +39,7 @@
 
     <!-- 회원 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMember :: selectList */
               m.*
             , s.site_nm
             , cd_gr.code_label AS grade_cd_nm
@@ -63,7 +63,7 @@
 
     <!-- 회원 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto">
-        SELECT
+        SELECT  /* base.ec.mb :: MbMember :: selectPageList */
               m.*
             , s.site_nm
             , cd_gr.code_label AS grade_cd_nm
@@ -87,13 +87,13 @@
 
     <!-- 회원 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*) FROM mb_member m
+        SELECT COUNT(*) FROM mb_member m  /* base.ec.mb :: MbMember :: selectPageCount */
                 <include refid="mbMemberCond"/>
     </select>
 
     <!-- 회원 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember">
-        UPDATE mb_member
+        UPDATE mb_member  /* base.ec.mb :: MbMember :: updateSelective */
         <set>
             <if test="memberStatusCd != null">member_status_cd = #{memberStatusCd},</if>
             <if test="memberStatusCdBefore != null">member_status_cd_before = #{memberStatusCdBefore},</if>
@@ -113,7 +113,7 @@
 
     <!-- 회원ID별 주소 목록 조회 -->
     <select id="selectAddrsByMemberId" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto">
-        SELECT * FROM mb_member_addr
+        SELECT * FROM mb_member_addr  /* base.ec.mb :: MbMember :: selectAddrsByMemberId */
         WHERE member_id = #{memberId}
         ORDER BY default_yn DESC, reg_date ASC
     </select>
