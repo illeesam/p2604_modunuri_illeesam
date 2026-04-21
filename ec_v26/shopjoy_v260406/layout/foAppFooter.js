@@ -11,10 +11,10 @@ window.foAppFooter = {
     /* 외부(헤더 등)에서 팝업 오픈 요청 수신 */
     window.addEventListener('open-quick-menu', () => { menuOpen.value = true; });
     const goItem = (root, target) => {
-      if (root === 'frontOffice') {
+      if (root === 'foOffice') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');
         if (target && typeof window.navigate === 'function') window.navigate(target);
-      } else if (root === 'backOffice') {
+      } else if (root === 'boOffice') {
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispFoUi') {
         window.open((window.pageUrl ? window.pageUrl('disp-fo-ui.html') : 'disp-fo-ui.html') + (target ? '#page=' + target : ''), '_blank');
@@ -150,7 +150,7 @@ window.foAppFooter = {
             <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">🛍 frontOffice</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in FO_MENU" :key="m.id" type="button"
-                @click="goItem('frontOffice', m.id)"
+                @click="goItem('foOffice', m.id)"
                 style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
                 onmouseover="this.style.background='#fff5f8';this.style.color='#e8587a';"
                 onmouseout="this.style.background='transparent';this.style.color='#333';">
@@ -165,7 +165,7 @@ window.foAppFooter = {
             <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 backOffice (bo)</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in BO_MENU" :key="m.id" type="button"
-                @click="goItem('backOffice', m.id)"
+                @click="goItem('boOffice', m.id)"
                 style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
                 onmouseover="this.style.background='#f7f0fa';this.style.color='#7b1fa2';"
                 onmouseout="this.style.background='transparent';this.style.color='#333';">

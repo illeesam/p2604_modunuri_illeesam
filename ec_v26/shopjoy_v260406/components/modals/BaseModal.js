@@ -3009,7 +3009,7 @@ window.PathPickModal = {
     };
     const cancelEdit = () => { editingId.value = null; };
 
-    /* 삭제 (자식 없는 경우만) — adminConfirm 디자인 다이얼로그 사용 */
+    /* 삭제 (자식 없는 경우만) — boConfirm 디자인 다이얼로그 사용 */
     const deleteNode = async (node) => {
       if ((node.children || []).length > 0) {
         if (window.boConfirm) await window.boConfirm('삭제 불가', '하위 경로가 있어 삭제할 수 없습니다.', { btnCancel: '' });

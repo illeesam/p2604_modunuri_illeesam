@@ -586,7 +586,7 @@
         }
       }, { immediate: true });
       const loginModal  = reactive({ show: false, tab: 'login' });
-      const loginForm   = reactive({ loginName: 'admin1@demo.com', loginPwd: 'demo1234', authMethod: '메인' });
+      const loginForm   = reactive({ loginName: 'bo1@demo.com', loginPwd: 'demo1234', authMethod: '메인' });
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
       const loginError  = ref('');
       const userMenuShow = ref(false);
