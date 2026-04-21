@@ -11,7 +11,7 @@ window.SyDeptMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/dept/page', {
+        const res = await window.boApi.get('/bo/sy/dept/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         depts.value = res.data?.data?.list || [];
@@ -28,16 +28,16 @@ window.SyDeptMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedTreeId.value = id; };
-    const tree = computed(() => window.adminUtil.buildDeptTree());
+    const tree = computed(() => window.boCmUtil.buildDeptTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     const allowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
-      return window.adminUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedTreeId.value);
+      return window.boCmUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedTreeId.value);
     });
     watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
@@ -224,14 +224,14 @@ window.SyDeptMng = {
       deptTreeModal.show = false;
     };
 
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
     const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const exportExcel = () => window.adminUtil.exportCsv(
+    const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
       '부서목록.csv'

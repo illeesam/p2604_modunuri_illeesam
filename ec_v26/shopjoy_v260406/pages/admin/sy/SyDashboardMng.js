@@ -4,7 +4,7 @@ window.SyDashboardMng = {
   props: ['navigate', 'showToast'],
   setup(props) {
     const { computed } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const stats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,
@@ -28,9 +28,9 @@ window.SyDashboardMng = {
       { label: '사이트',      value: sites.value?.length || 0,
         color: '#d46b08', icon: '🌐',
         sub: '운영중 ' + (sites.value?.filter(s => s.status === '운영중').length || 0) + '개' },
-      { label: '관리자',      value: adminUsers.value?.length || 0,
+      { label: '관리자',      value: boUsers.value?.length || 0,
         color: '#13c2c2', icon: '👤',
-        sub: '활성 ' + (adminUsers.value?.filter(u => u.status === '활성').length || 0) + '명' },
+        sub: '활성 ' + (boUsers.value?.filter(u => u.status === '활성').length || 0) + '명' },
     ]);
 
     const shortcuts = [

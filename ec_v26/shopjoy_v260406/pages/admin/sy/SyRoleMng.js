@@ -10,7 +10,7 @@ window.SyRoleMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/role/page', {
+        const res = await window.boApi.get('/bo/sy/role/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         roles.value = res.data?.data?.list || [];
@@ -33,7 +33,7 @@ window.SyRoleMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* ── 좌측 표시경로 트리 ── */
@@ -42,7 +42,7 @@ window.SyRoleMng = {
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
     const tree = Vue.computed(() => {
-      const t = window.adminUtil.buildRoleTree();
+      const t = window.boCmUtil.buildRoleTree();
       const rolesById = Object.fromEntries((roles.value || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
@@ -67,19 +67,19 @@ window.SyRoleMng = {
     /* 선택 권한 + 자손 roleId Set */
     const allowedRoleIds = Vue.computed(() => {
       if (selectedPath.value == null) return null;
-      return window.adminUtil.collectDescendantIds(roles.value, 'roleId', 'parentId', selectedPath.value);
+      return window.boCmUtil.collectDescendantIds(roles.value, 'roleId', 'parentId', selectedPath.value);
     });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     Vue.onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
     const { ref, reactive, computed, watch } = Vue;
 
-    const siteNm  = computed(() => window.adminUtil.getSiteNm());
+    const siteNm  = computed(() => window.boCmUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const PERM_LEVELS = ['없음', '읽기', '쓰기', '관리', '차단'];
     const ROLE_CATS   = [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']];
@@ -100,7 +100,7 @@ window.SyRoleMng = {
       row.roleCat = (cur.length === 1 && cur[0] === code) ? [] : [code];
       onCellChange(row);
     };
-    window.adminUtil.__roleCatOf = (roleId) => {
+    window.boCmUtil.__roleCatOf = (roleId) => {
       const rolesData = roles.value || [];
       const r = roles.find(x => x.roleId === roleId);
       if (!r) return [];
@@ -110,8 +110,8 @@ window.SyRoleMng = {
       const code = cur && ROOT_CAT_MAP[cur.roleCode];
       return code ? [code] : [];
     };
-    window.adminUtil.__roleCatLabel = (code) => (ROLE_CATS.find(x=>x[0]===code) || [,code])[1];
-    window.adminUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
+    window.boCmUtil.__roleCatLabel = (code) => (ROLE_CATS.find(x=>x[0]===code) || [,code])[1];
+    window.boCmUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
     const PERM_COLORS = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
     const permColor   = (p) => PERM_COLORS[p] || '#9ca3af';
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
@@ -178,12 +178,12 @@ window.SyRoleMng = {
         if (applied.type  && r.roleType !== applied.type)  return false;
         if (applied.useYn && r.useYn    !== applied.useYn) return false;
         if (applied.cat) {
-          const cats = window.adminUtil.__roleCatOf ? window.adminUtil.__roleCatOf(r.roleId) : [];
+          const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
           if (!cats.includes(applied.cat)) return false;
         }
         if (allowedRoleIds.value && !allowedRoleIds.value.has(r.roleId)) return false;
         if (treeCatFilter.value) {
-          const cats = window.adminUtil.__roleCatOf ? window.adminUtil.__roleCatOf(r.roleId) : [];
+          const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
           if (!cats.includes(treeCatFilter.value)) return false;
         }
         return true;
@@ -395,22 +395,22 @@ window.SyRoleMng = {
       if (!selectedRoleId.value) return [];
       return roleUsers.value
         .filter(x => x.roleId === selectedRoleId.value)
-        .map(x => adminUsers.value.find(u => u.adminUserId === x.adminUserId))
+        .map(x => boUsers.value.find(u => u.boUserId === x.boUserId))
         .filter(Boolean);
     });
 
     const onUserSelect = (users) => {
       if (!selectedRoleId.value) return;
       users.forEach(u => {
-        const already = roleUsers.value.some(x => x.roleId === selectedRoleId.value && x.adminUserId === u.adminUserId);
-        if (!already) roleUsers.value.push({ roleId: selectedRoleId.value, adminUserId: u.adminUserId });
+        const already = roleUsers.value.some(x => x.roleId === selectedRoleId.value && x.boUserId === u.boUserId);
+        if (!already) roleUsers.value.push({ roleId: selectedRoleId.value, boUserId: u.boUserId });
       });
       userSelectOpen.value = false;
     };
 
-    const removeUser = (adminUserId) => {
+    const removeUser = (boUserId) => {
       if (!selectedRoleId.value) return;
-      const idx = roleUsers.value.findIndex(x => x.roleId === selectedRoleId.value && x.adminUserId === adminUserId);
+      const idx = roleUsers.value.findIndex(x => x.roleId === selectedRoleId.value && x.boUserId === boUserId);
       if (idx !== -1) roleUsers.value.splice(idx, 1);
     };
 
@@ -420,7 +420,7 @@ window.SyRoleMng = {
       return r ? r.roleNm : '';
     });
 
-    const exportExcel = () => window.adminUtil.exportCsv(
+    const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
       '역할목록.csv'
@@ -682,7 +682,7 @@ window.SyRoleMng = {
             <span style="font-size:12px;">[사용자 추가] 버튼으로 추가하세요.</span>
           </div>
           <div v-else style="display:flex;flex-direction:column;gap:6px;padding-top:4px;">
-            <div v-for="u in roleUsersList" :key="u.adminUserId"
+            <div v-for="u in roleUsersList" :key="u.boUserId"
               style="display:flex;align-items:center;padding:9px 14px;background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
               @mouseenter="$event.currentTarget.style.background='#fff0f4'"
               @mouseleave="$event.currentTarget.style.background='#fafafa'">
@@ -694,7 +694,7 @@ window.SyRoleMng = {
                 <div style="font-size:11px;color:#888;margin-top:1px;">{{ u.loginId }} · {{ u.dept || '-' }} · {{ u.role }}</div>
               </div>
               <span class="badge" :class="u.status==='활성'?'badge-green':'badge-gray'" style="font-size:10px;margin-right:8px;">{{ u.status }}</span>
-              <button class="btn btn-danger btn-xs" @click="removeUser(u.adminUserId)" title="제거">✕</button>
+              <button class="btn btn-danger btn-xs" @click="removeUser(u.boUserId)" title="제거">✕</button>
             </div>
           </div>
         </div>

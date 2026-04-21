@@ -10,7 +10,7 @@ window.SyUserDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/user/page', {
+        const res = await window.boApi.get('/bo/sy/user/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         users.value = res.data?.data?.list || [];
@@ -24,10 +24,10 @@ window.SyUserDtl = {
     });
     const { reactive, computed, onMounted, ref } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const form = reactive({
-      adminUserId: null, loginId: '', name: '', email: '', phone: '',
+      boUserId: null, loginId: '', name: '', email: '', phone: '',
       role: '운영자', dept: '', deptId: null,
       zipcode: '', address: '', addressDetail: '',
       statusCd: '활성', password: '',
@@ -43,7 +43,7 @@ window.SyUserDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const u = adminUsers.value.find(x => x.adminUserId === props.editId);
+        const u = boUsers.value.find(x => x.boUserId === props.editId);
         if (u) Object.assign(form, { ...u, password: '' });
       }
     });
@@ -80,7 +80,7 @@ window.SyUserDtl = {
     const userRoles = computed(() => {
       if (isNew.value) return [];
       return roleUsers.value
-        .filter(ru => ru.adminUserId === props.editId)
+        .filter(ru => ru.boUserId === props.editId)
         .map(ru => roles.value.find(r => r.roleId === ru.roleId))
         .filter(Boolean);
     });
@@ -103,16 +103,16 @@ window.SyUserDtl = {
       if (!ok) return;
       if (isNew.value) {
         const { password, ...rest } = form;
-        adminUsers.value.push({ ...rest, adminUserId: nextId.value(adminUsers.value, 'adminUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
+        boUsers.value.push({ ...rest, boUserId: nextId.value(boUsers.value, 'boUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = adminUsers.value.findIndex(x => x.adminUserId === props.editId);
+        const idx = boUsers.value.findIndex(x => x.boUserId === props.editId);
         if (idx !== -1) {
           const { password, ...rest } = form;
-          Object.assign(adminUsers.value[idx], rest);
+          Object.assign(boUsers.value[idx], rest);
         }
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`admin-users/${form.adminUserId}`, { ...form }) : window.adminApi.put(`admin-users/${form.adminUserId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`admin-users/${form.boUserId}`, { ...form }) : window.boApi.put(`admin-users/${form.boUserId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syUserMng');
@@ -130,7 +130,7 @@ window.SyUserDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '사용자 등록' : (viewMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.adminUserId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '사용자 등록' : (viewMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.boUserId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">

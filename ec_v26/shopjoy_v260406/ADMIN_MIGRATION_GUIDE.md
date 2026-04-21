@@ -236,7 +236,7 @@ window.adminData = {
 # AdminData.js 삭제 (선택)
 rm pages/admin/AdminData.js
 
-# admin.html에서 AdminData.js 로드 제거
+# bo.html에서 AdminData.js 로드 제거
 # <script src="pages/admin/AdminData.js"></script> 삭제
 ```
 

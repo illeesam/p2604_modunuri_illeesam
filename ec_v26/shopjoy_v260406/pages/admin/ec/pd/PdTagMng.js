@@ -12,7 +12,7 @@ window.PdTagMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/tag/page', {
+        const res = await window.boApi.get('/bo/ec/pd/tag/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         tags.splice(0, tags.length, ...(res.data?.data?.list || []));
@@ -58,7 +58,7 @@ window.PdTagMng = {
       if (!ok) return;
       const si = tags.value.findIndex(t => t.tagId === row.tagId); if (si !== -1) tags.value.splice(si, 1); gridRows.splice(idx, 1);
       try {
-        const res = await window.adminApi.delete(`/bo/ec/pd/tag/${row.tagId}`);
+        const res = await window.boApi.delete(`/bo/ec/pd/tag/${row.tagId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -79,7 +79,7 @@ window.PdTagMng = {
         else { const si = src.findIndex(t => t.tagId === row.tagId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? window.adminApi.post(`/bo/ec/pd/tag/${row.tagId}`, { ...row }) : window.adminApi.put(`/bo/ec/pd/tag/${row.tagId}`, { ...row }));
+          const res = await (isNewRow ? window.boApi.post(`/bo/ec/pd/tag/${row.tagId}`, { ...row }) : window.boApi.put(`/bo/ec/pd/tag/${row.tagId}`, { ...row }));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

@@ -16,7 +16,7 @@ window.SyPropMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const ad = null;
 
@@ -43,7 +43,7 @@ window.SyPropMng = {
     });
 
     /* ── 트리 구성 (disp_path 점 분리) ── */
-    const tree = computed(() => window.adminUtil.buildPathTree('sy_prop'));
+    const tree = computed(() => window.boCmUtil.buildPathTree('sy_prop'));
 
     /* ── 트리 펼침 상태 ── */
     const expanded = reactive(new Set(['']));
@@ -57,7 +57,7 @@ window.SyPropMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     Vue.onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 

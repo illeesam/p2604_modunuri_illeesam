@@ -34,7 +34,7 @@
       async loadMembers(params = {}) {
         this.loading = true;
         try {
-          const res = await window.adminApi.get('/bo/ec/mb/member/page', { params });
+          const res = await window.boApi.get('/bo/ec/mb/member/page', { params });
           this.members = res.data?.data?.list || [];
           this.error = null;
         } catch (err) {
@@ -49,7 +49,7 @@
       async loadCodes(params = {}) {
         this.loading = true;
         try {
-          const res = await window.adminApi.get('/bo/sy/code', { params });
+          const res = await window.boApi.get('/bo/sy/code', { params });
           this.codes = res.data?.data || [];
           this.error = null;
         } catch (err) {

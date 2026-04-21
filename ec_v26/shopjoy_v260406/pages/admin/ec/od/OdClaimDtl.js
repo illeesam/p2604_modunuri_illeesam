@@ -15,8 +15,8 @@ window.OdClaimDtl = {
       loading.value = true;
       try {
         const [claimsRes, ordersRes] = await Promise.all([
-          window.adminApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.adminApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } })
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
         claims = claimsRes.data?.data?.list || [];
         orders = ordersRes.data?.data?.list || [];
@@ -87,7 +87,7 @@ window.OdClaimDtl = {
         if (idx !== -1) Object.assign(claims.value[idx], { ...form, refundAmount: Number(form.refundAmount) });
       }
       try {
-        const res = await (isNewClaim ? window.adminApi.post(`/bo/ec/od/claim/${form.claimId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form }));
+        const res = await (isNewClaim ? window.boApi.post(`/bo/ec/od/claim/${form.claimId}`, { ...form }) : window.boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odClaimMng');

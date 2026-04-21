@@ -4,7 +4,7 @@ window.DpDispAreaMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const codes = ref((window.adminData?.codes || []));
+    const codes = ref((window.boData?.codes || []));
     const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -13,7 +13,7 @@ window.DpDispAreaMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/dp/area/page', {
+        const res = await window.boApi.get('/bo/ec/dp/area/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         areas.splice(0, areas.length, ...(res.data?.data?.list || []));
@@ -25,7 +25,7 @@ window.DpDispAreaMng = {
         loading.value = false;
       }
     });
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     const AREA_TYPE_OPTS = [
@@ -47,15 +47,15 @@ window.DpDispAreaMng = {
     const searchDateStart = ref('');
     const searchDateEnd   = ref('');
     const searchDateRange = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
       if (searchDateRange.value) {
-        const r = window.adminUtil.getDateRange(searchDateRange.value);
+        const r = window.boCmUtil.getDateRange(searchDateRange.value);
         searchDateStart.value = r ? r.from : '';
         searchDateEnd.value   = r ? r.to   : '';
       }
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const applied = reactive({ kw: '', areaType: '', useYn: '', dateStart: '', dateEnd: '' });
     const onSearch = () => {
@@ -171,7 +171,7 @@ window.DpDispAreaMng = {
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === a.codeId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/ec/dp/area/${a.codeId}`);
+        const res = await window.boApi.delete(`/bo/ec/dp/area/${a.codeId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -185,9 +185,9 @@ window.DpDispAreaMng = {
     const exportExcel = () => {
       const dataWithPath = filtered.value.map(a => ({
         ...a,
-        pathLabel: a.pathId ? (window.adminUtil.getPathLabel(a.pathId) || '') : '',
+        pathLabel: a.pathId ? (window.boCmUtil.getPathLabel(a.pathId) || '') : '',
       }));
-      window.adminUtil.exportCsv(
+      window.boCmUtil.exportCsv(
         dataWithPath,
         [
           { label: 'ID', key: 'codeId' },

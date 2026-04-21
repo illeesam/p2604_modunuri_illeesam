@@ -55,8 +55,8 @@ npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tail
 | 진입점 | 용도 | 주 CSS | 주 데이터 소스 |
 |---|---|---|---|
 | `index.html` | **사용자 페이스** (front office) | `assets/css/frontGlobalStyle0N.css` | `base/config.js` + `api/*` JSON |
-| `admin.html` | **관리자 페이스** (back office) | `assets/css/adminGlobalStyle0N.css` | `pages/admin/AdminData.js` (목업) |
-| `disp-front-ui.html` / `disp-admin-ui.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/adminGlobalStyle0N.css` | `adminData` + `api/xs/*` |
+| `bo.html` | **관리자 페이스** (back office) | `assets/css/adminGlobalStyle0N.css` | `pages/admin/AdminData.js` (목업) |
+| `disp-fo-ui.html` / `disp-bo-ui.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/adminGlobalStyle0N.css` | `adminData` + `api/xs/*` |
 
 테스트 프레임워크 없음. 브라우저 콘솔에서 직접 검증.
 
@@ -106,11 +106,11 @@ index.html
 - `#page=prodList` → `window['Prod' + FRONT_SITE_NO + 'List']`
 - `#page=prodView` → `window['Prod' + FRONT_SITE_NO + 'View']`
 
-### 2) `admin.html` — 관리자 페이스
+### 2) `bo.html` — 관리자 페이스
 
 구조:
 ```
-admin.html
+bo.html
 ├─ head: Vue, Yup, Quill, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js   (window.adminData - 모든 목업)
 ├─ utils/adminAxios.js (window.adminApi) + utils/adminUtil.js (window.adminUtil)
@@ -128,7 +128,7 @@ admin.html
 **Dtl 탭 뷰모드** (Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt + 상응하는 Hist): 📑 탭 / 1열 / 2열 / 3열 / 4열. 각 상태는 `window._ec{X}DtlState`에 영속화. 3/4열 모드는 `.admin-wrap { max-width:none }` 자동 적용.
 
 **새 컴포넌트 추가 시 필수 4단계**:
-1. `admin.html`에 `<script>` 태그 추가
+1. `bo.html`에 `<script>` 태그 추가
 2. `AdminApp.js`의 `PAGE_COMP_MAP`에 `pageId → kebab-case` 추가
 3. `app.component('ClassName', window.ClassName)` 등록
 4. AdminApp.js 템플릿 `v-else-if` 체인에 렌더 항목 추가 (`PAGE_COMP_MAP`만으로는 렌더 안 됨)
@@ -154,11 +154,11 @@ template: `
   </div>`
 ```
 
-### 3) `disp-front-ui.html` / `disp-admin-ui.html` — 전시 UI 미리보기
+### 3) `disp-fo-ui.html` / `disp-bo-ui.html` — 전시 UI 미리보기
 
 구조:
 ```
-disp-admin-ui.html (관리자 컨텍스트)  |  disp-front-ui.html (사용자 컨텍스트)
+disp-bo-ui.html (관리자 컨텍스트)  |  disp-fo-ui.html (사용자 컨텍스트)
 ├─ head: Vue, axios, yup, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js + utils/adminUtil.js
 ├─ components/comp/BaseComp.js + pages/base/(admin|front)Error404.js
@@ -503,7 +503,7 @@ npm run build
 
 ### HTML에 Tailwind 연결
 
-각 진입점(index.html / admin.html / disp-ui.html) `<head>`에 다음 한 줄 추가:
+각 진입점(index.html / bo.html / disp-ui.html) `<head>`에 다음 한 줄 추가:
 
 ```html
 <link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">
@@ -651,7 +651,7 @@ public List<XxxDto> getMyXxx(Map<String, Object> p) {
 
 ## 작업 지침
 
-1. **새 관리자 페이지 추가 3단계 누락 금지**: `admin.html` script 태그 + `AdminApp.js` PAGE_COMP_MAP + `app.component()`
+1. **새 관리자 페이지 추가 3단계 누락 금지**: `bo.html` script 태그 + `AdminApp.js` PAGE_COMP_MAP + `app.component()`
 2. **컴포넌트 태그는 `ec-*` / `sy-*` 프리픽스 필수** — 프리픽스 빼먹으면 렌더 안 됨
 3. **`window.*` 전역 의존이 많음** — 모듈화 이전에 건드릴 때 주입 순서 주의
 4. **`adminData` 직접 수정이 소스 오브 트루스** — 목업 변경하면 전 화면 즉시 반영

@@ -1,5 +1,5 @@
 /* ShopJoy - AppHeader */
-window.frontAppHeader = {
+window.foAppHeader = {
   name: 'FrontAppHeader',
   props: ['page', 'theme', 'sidebarOpen', 'mobileOpen', 'config', 'navigate',
           'toggleTheme', 'cartCount', 'likeCount', 'auth', 'onShowLogin', 'onLogout'],
@@ -38,9 +38,9 @@ window.frontAppHeader = {
         });
         /* Pinia store 에도 반영 */
         try {
-          const store = window.useFrontAuthStore(Pinia.getActivePinia());
+          const store = window.useFoAuthStore(Pinia.getActivePinia());
           store.user = { ...u };
-          localStorage.setItem('modu-front-user', JSON.stringify(store.user));
+          localStorage.setItem('modu-fo-user', JSON.stringify(store.user));
         } catch (e) {}
       }
       profileOpen.value = false;
@@ -64,9 +64,9 @@ window.frontAppHeader = {
       if (pw.next.length < 6) { pw.err = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
       if (pw.next !== pw.next2) { pw.err = '새 비밀번호가 일치하지 않습니다.'; return; }
       /* TODO: API 호출로 비밀번호 변경 */
-      if (window.frontApi) {
+      if (window.foApi) {
         try {
-          await window.frontApi.post('/auth/fo/change-password', {
+          await window.foApi.post('/auth/fo/change-password', {
             email: props.auth.user?.email,
             currentPassword: pw.current,
             newPassword: pw.next,
@@ -78,6 +78,11 @@ window.frontAppHeader = {
         }
       }
     };
+
+    /* ── 안전한 사용자 정보 접근 ── */
+    const authUser = computed(() => props?.auth?.user || { userId: 0, memberNm: '', email: '' });
+    const userFirstChar = computed(() => ((authUser.value?.memberNm || '').charAt(0)) || '?');
+    const isLogin = computed(() => window.isFoLogin?.() ?? false);
 
     /* ── 공통 인풋 스타일 ── */
     const IS = 'width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;';
@@ -118,8 +123,9 @@ window.frontAppHeader = {
       userMenuOpen, toggleUserMenu, closeUserMenu, goMy, doLogout, menuItems,
       profileOpen, pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pwOpen, pw, openPw, savePw, IS,
-      frontSiteNo: window.FRONT_SITE_NO || '01',
-      adminSiteNo: (typeof localStorage !== 'undefined' && localStorage.getItem('modu-admin-site_no')) || '01',
+      authUser, userFirstChar, isLogin,
+      foSiteNo: window.FO_SITE_NO || '01',
+      boSiteNo: (typeof localStorage !== 'undefined' && localStorage.getItem('modu-bo-site_no')) || '01',
       openQuickMenu: () => window.dispatchEvent(new CustomEvent('open-quick-menu')),
     };
   },
@@ -177,12 +183,12 @@ window.frontAppHeader = {
       <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">
         {{ config.tagline }}
         <span class="front-site-badge"
-          :title="'FRONT_SITE_NO=' + (frontSiteNo || '-') + ' ADMIN_SITE_NO=' + (adminSiteNo || '-') + ' — 클릭: 메뉴 바로가기'"
-          :data-tip="'FRONT_SITE_NO=' + (frontSiteNo || '-') + ' ADMIN_SITE_NO=' + (adminSiteNo || '-')"
+          :title="'FO_SITE_NO=' + (foSiteNo || '-') + ' BO_SITE_NO=' + (boSiteNo || '-') + ' — 클릭: 메뉴 바로가기'"
+          :data-tip="'FO_SITE_NO=' + (foSiteNo || '-') + ' BO_SITE_NO=' + (boSiteNo || '-')"
           style="cursor:pointer;"
           @click.stop="openQuickMenu">
-          <span :style="{fontWeight:800,marginLeft:'4px',color: frontSiteNo==='03' ? '#7b1fa2' : frontSiteNo==='02' ? '#2e7d6b' : frontSiteNo==='9999' ? '#888' : '#9f2946'}">{{ frontSiteNo || '-' }}</span>
-          <span :style="{fontWeight:800,marginLeft:'3px',color: adminSiteNo==='03' ? '#7b1fa2' : adminSiteNo==='02' ? '#2e7d6b' : adminSiteNo==='9999' ? '#888' : '#9f2946'}">{{ adminSiteNo || '-' }}</span>
+          <span :style="{fontWeight:800,marginLeft:'4px',color: foSiteNo==='03' ? '#7b1fa2' : foSiteNo==='02' ? '#2e7d6b' : foSiteNo==='9999' ? '#888' : '#9f2946'}">{{ foSiteNo || '-' }}</span>
+          <span :style="{fontWeight:800,marginLeft:'3px',color: boSiteNo==='03' ? '#7b1fa2' : boSiteNo==='02' ? '#2e7d6b' : boSiteNo==='9999' ? '#888' : '#9f2946'}">{{ boSiteNo || '-' }}</span>
         </span>
       </span>
     </div>
@@ -192,7 +198,7 @@ window.frontAppHeader = {
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
     <template v-for="m in config.topMenu" :key="m.menuId">
       <!-- Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) -->
-      <template v-if="frontSiteNo==='01' && (m.menuId && (m.menuId.startsWith('dispUi') || m.menuId==='divider-disp'))"></template>
+      <template v-if="foSiteNo==='01' && (m.menuId && (m.menuId.startsWith('dispUi') || m.menuId==='divider-disp'))"></template>
       <span v-else-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
       <button v-else @click="navigate(m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
         <span>{{ m.menuNm }}</span>
@@ -204,7 +210,7 @@ window.frontAppHeader = {
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
 
     <!-- 비로그인 -->
-    <button v-if="!auth.user" @click="onShowLogin"
+    <button v-if="!isLogin" @click="onShowLogin"
       style="padding:7px 16px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;transition:all 0.2s;"
       @mouseenter="$event.target.style.background='var(--blue)';$event.target.style.color='#fff';"
       @mouseleave="$event.target.style.background='transparent';$event.target.style.color='var(--blue)';">
@@ -216,9 +222,9 @@ window.frontAppHeader = {
       <button type="button" @click="toggleUserMenu"
         style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;color:var(--text-primary);font-weight:600;">
         <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">
-          {{ auth.user.memberNm.charAt(0) }}
+          {{ userFirstChar }}
         </span>
-        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.memberNm }}</span>
+        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.memberNm }}</span>
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
           :style="userMenuOpen?'transform:rotate(180deg);transition:0.2s;':'transition:0.2s;'"><path d="M6 9l6 6 6-6"/></svg>
       </button>
@@ -230,11 +236,11 @@ window.frontAppHeader = {
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0;">
-              {{ auth.user.memberNm.charAt(0) }}
+              {{ userFirstChar }}
             </span>
             <div style="min-width:0;">
-              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.memberNm }}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth.user.email }}</div>
+              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.memberNm }}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.email }}</div>
             </div>
           </div>
         </div>

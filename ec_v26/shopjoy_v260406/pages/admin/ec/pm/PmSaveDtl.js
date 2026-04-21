@@ -13,7 +13,7 @@ window.PmSaveDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pm/save/page', {
+        const res = await window.boApi.get('/bo/ec/pm/save/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         saves.splice(0, saves.length, ...(res.data?.data?.list || []));
@@ -101,7 +101,7 @@ window.PmSaveDtl = {
         if (idx !== -1) Object.assign(saveList.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`save/${form.saveId}`, { ...form }) : window.adminApi.put(`save/${form.saveId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`save/${form.saveId}`, { ...form }) : window.boApi.put(`save/${form.saveId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmSaveMng');

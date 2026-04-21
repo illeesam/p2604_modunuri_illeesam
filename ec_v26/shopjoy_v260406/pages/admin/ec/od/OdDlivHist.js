@@ -13,7 +13,7 @@ window.OdDlivHist = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/od/dliv/page', {
+        const res = await window.boApi.get('/bo/ec/od/dliv/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         deliveries.splice(0, deliveries.length, ...(res.data?.data?.list || []));

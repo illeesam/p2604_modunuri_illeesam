@@ -5,7 +5,7 @@ window.PmEventDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const products = ref(window.adminDataProvider?.getProducts?.() || []);
+    const products = ref(window.boDataProvider?.getProducts?.() || []);
     const events = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -14,7 +14,7 @@ window.PmEventDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pm/event/page', {
+        const res = await window.boApi.get('/bo/ec/pm/event/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         events.splice(0, events.length, ...(res.data?.data?.list || []));
@@ -159,7 +159,7 @@ window.PmEventDtl = {
         if (idx !== -1) Object.assign(events.value[idx], { ...form, targetProducts: [...form.targetProducts] });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`events/${form.eventId}`, { ...form }) : window.adminApi.put(`events/${form.eventId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`events/${form.eventId}`, { ...form }) : window.boApi.put(`events/${form.eventId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmEventMng');

@@ -4,7 +4,7 @@
 
 ### Core System
 - [x] Created `base/utils/adminDataProvider.js` with all getter functions
-- [x] Added provider script to `admin.html` (after AdminData.js)
+- [x] Added provider script to `bo.html` (after AdminData.js)
 - [x] All provider functions return guaranteed non-null defaults
 - [x] Provider uses optional chaining (?.) for safe access
 
@@ -127,7 +127,7 @@
 
 ## Testing Ready ✅
 
-When user accesses http://127.0.0.1:5501/admin.html:
+When user accesses http://127.0.0.1:5501/bo.html:
 
 1. **Login** with any test account
 2. **Navigate** to any admin page (e.g., PdBundleMng)

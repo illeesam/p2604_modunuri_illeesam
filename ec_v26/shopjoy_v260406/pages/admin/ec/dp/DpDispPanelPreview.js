@@ -6,7 +6,7 @@ const _WP_DispPanelPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const codes = ref((window.adminData?.codes || []));
+    const codes = ref((window.boData?.codes || []));
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;
@@ -140,7 +140,7 @@ window.DpDispPanelPreview = {
   name: 'DpDispPanelPreview',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

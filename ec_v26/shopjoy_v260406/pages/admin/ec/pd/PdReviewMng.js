@@ -4,8 +4,8 @@ window.PdReviewMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const members = ref(window.adminDataProvider?.getMembers?.() || []);
+    const products = ref(window.boDataProvider?.getProducts?.() || []);
+    const members = ref(window.boDataProvider?.getMembers?.() || []);
     const reviews = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -14,7 +14,7 @@ window.PdReviewMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/review/page', {
+        const res = await window.boApi.get('/bo/ec/pd/review/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         reviews.splice(0, reviews.length, ...(res.data?.data?.list || []));
@@ -63,7 +63,7 @@ window.PdReviewMng = {
       if (!ok) return;
       row.reviewStatusCd = newStatus; if (selectedRow.value) selectedRow.value.reviewStatusCd = newStatus;
       try {
-        const res = await window.adminApi.put(`pd/reviews/${row.reviewId}/status`, { reviewStatusCd: newStatus });
+        const res = await window.boApi.put(`pd/reviews/${row.reviewId}/status`, { reviewStatusCd: newStatus });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

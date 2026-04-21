@@ -11,7 +11,7 @@ window.SyVendorMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/vendor/page', {
+        const res = await window.boApi.get('/bo/sy/vendor/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         vendors.value = res.data?.data?.list || [];
@@ -34,7 +34,7 @@ window.SyVendorMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* ── 좌측 표시경로 트리 ── */
@@ -42,23 +42,23 @@ window.SyVendorMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = computed(() => window.adminUtil.buildPathTree('sy_vendor'));
+    const tree = computed(() => window.boCmUtil.buildPathTree('sy_vendor'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
@@ -130,7 +130,7 @@ window.SyVendorMng = {
       if (idx !== -1) vendors.value.splice(idx, 1);
       if (selectedId.value === v.vendorId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`vendors/${v.vendorId}`);
+        const res = await window.boApi.delete(`vendors/${v.vendorId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -140,7 +140,7 @@ window.SyVendorMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 

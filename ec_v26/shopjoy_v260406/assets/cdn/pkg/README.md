@@ -83,7 +83,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js` |
-| 로드 위치 | `index.html`, `admin.html`, `disp-ui.html` |
+| 로드 위치 | `index.html`, `bo.html`, `disp-ui.html` |
 | 사용 코드 | `const { ref, reactive, computed } = Vue;` |
 
 ### vue-demi · `vue-demi/0.14.10/vue-demi.iife.js`
@@ -124,7 +124,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | 없음 (로컬 구현) |
-| 로드 위치 | `admin.html`, `disp-ui.html` |
+| 로드 위치 | `bo.html`, `disp-ui.html` |
 | 지원 | `.required()`, `.min/max()`, `.oneOf()`, `.test()`, `.email()`, `.when()`, `.object({})`, `.array()` |
 | ⚠️ 미지원 | `.matches(regex)` — 별도 regex 검증으로 대체 |
 | 사용 위치 | `pages/admin/**/*Dtl.js` 저장 로직 (폼 유효성 검사) |
@@ -137,7 +137,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://cdn.quilljs.com/1.3.7/{quill.min.js, quill.snow.css}` |
-| 로드 위치 | `admin.html`만 |
+| 로드 위치 | `bo.html`만 |
 | 사용 파일 | CouponDtl, DispPanelDtl, DispWidgetDtl, DispWidgetLibDtl, DlivDtl, EventDtl, MemberDtl, NoticeDtl, OrderDtl, ClaimDtl 등 |
 
 ### Kakao 우편번호 · `postcode/2/postcode.v2.js`
@@ -159,7 +159,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.umd.min.js` |
-| 로드 위치 | `index.html`, `admin.html`, `disp-ui.html` |
+| 로드 위치 | `index.html`, `bo.html`, `disp-ui.html` |
 | 사용 파일 | `components/disp/DispX04Widget.js:61` |
 
 ### JsBarcode · `jsbarcode/3.11.6/JsBarcode.all.min.js`
@@ -167,7 +167,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js` |
-| 로드 위치 | `admin.html` |
+| 로드 위치 | `bo.html` |
 | 사용 파일 | `components/disp/barcode/BarcodeWidget.js` |
 
 ### qrcode.js · `qrcodejs/1.0.0/qrcode.min.js`
@@ -175,7 +175,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js` |
-| 로드 위치 | `admin.html` |
+| 로드 위치 | `bo.html` |
 
 ---
 
@@ -364,7 +364,7 @@ curl -Lo qrcodejs/1.0.0/qrcode.min.js              https://cdnjs.cloudflare.com/
 <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
 ```
 
-### `admin.html` (관리자)
+### `bo.html` (관리자)
 
 ```html
 <!-- head -->

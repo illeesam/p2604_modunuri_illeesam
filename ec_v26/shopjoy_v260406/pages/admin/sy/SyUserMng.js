@@ -11,7 +11,7 @@ window.SyUserMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/user/page', {
+        const res = await window.boApi.get('/bo/sy/user/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         users.value = res.data?.data?.list || [];
@@ -28,29 +28,29 @@ window.SyUserMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedDeptId.value = id; };
-    const tree = computed(() => window.adminUtil.buildDeptTree());
+    const tree = computed(() => window.boCmUtil.buildDeptTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     /* 선택 부서 + 자손의 dept 이름 Set */
     const allowedDeptNms = computed(() => {
       if (selectedDeptId.value == null) return null;
-      const desc = window.adminUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedDeptId.value);
+      const desc = window.boCmUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedDeptId.value);
       if (!desc) return null;
       return new Set((depts.value || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
 
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchRole = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
@@ -73,7 +73,7 @@ window.SyUserMng = {
 
     const applied = Vue.reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => adminUsers.value.filter(u => {
+    const filtered = computed(() => boUsers.value.filter(u => {
       if (allowedDeptNms.value && !allowedDeptNms.value.has(u.dept)) return false;
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
@@ -120,11 +120,11 @@ window.SyUserMng = {
       if (u.role === '슈퍼관리자') { props.showToast('슈퍼관리자는 삭제할 수 없습니다.', 'error'); return; }
       const ok = await props.showConfirm('삭제', `[${u.name}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = adminUsers.value.findIndex(x => x.adminUserId === u.adminUserId);
-      if (idx !== -1) adminUsers.value.splice(idx, 1);
-      if (selectedId.value === u.adminUserId) selectedId.value = null;
+      const idx = boUsers.value.findIndex(x => x.boUserId === u.boUserId);
+      if (idx !== -1) boUsers.value.splice(idx, 1);
+      if (selectedId.value === u.boUserId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`admin-users/${u.adminUserId}`);
+        const res = await window.boApi.delete(`admin-users/${u.boUserId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -134,7 +134,7 @@ window.SyUserMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'adminUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
     return { users, loading, error, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
@@ -185,10 +185,10 @@ window.SyUserMng = {
       </tr></thead>
       <tbody>
         <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="u in pageList" :key="u.adminUserId" :style="selectedId===u.adminUserId?'background:#fff8f9;':''">
-          <td>{{ u.adminUserId }}</td>
+        <tr v-for="u in pageList" :key="u.boUserId" :style="selectedId===u.boUserId?'background:#fff8f9;':''">
+          <td>{{ u.boUserId }}</td>
           <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ u.loginId }}</code></td>
-          <td><span class="title-link" @click="loadDetail(u.adminUserId)" :style="selectedId===u.adminUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="selectedId===u.adminUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="loadDetail(u.boUserId)" :style="selectedId===u.boUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="selectedId===u.boUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;">{{ u.email }}</td>
           <td>{{ u.phone }}</td>
           <td><span class="badge" :class="roleBadge(u.role)">{{ u.role }}</span></td>
@@ -197,7 +197,7 @@ window.SyUserMng = {
           <td style="font-size:12px;color:#888;">{{ u.lastLogin }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(u.adminUserId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="loadDetail(u.boUserId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="doDelete(u)">삭제</button>
           </div></td>
         </tr>

@@ -107,10 +107,10 @@ window.SyPostman = {
     });
 
     /* ===== App Filter ===== */
-    const appFilter = reactive({ front: true, admin: true, samples: true });
+    const appFilter = reactive({ fo: true, bo: true, samples: true });
     const APP_META  = {
-      front:   { label: 'Front',   color: '#1a73e8' },
-      admin:   { label: 'Admin',   color: '#e8587a' },
+      fo:   { label: 'Front',   color: '#1a73e8' },
+      bo:   { label: 'Admin',   color: '#e8587a' },
       samples: { label: 'Samples', color: '#34a853' },
     };
 

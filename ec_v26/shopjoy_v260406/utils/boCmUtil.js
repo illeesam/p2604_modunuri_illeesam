@@ -13,8 +13,8 @@
   });
 
   /* 기본값: 첫 번째 사이트(ShopJoy)로 초기화 */
-  if (window.adminData && window.adminData.sites && window.adminData.sites.length) {
-    window.adminCommonFilter.siteId = window.adminData.sites[0]?.siteId ?? null;
+  if (window.boData && window.boData.sites && window.boData.sites.length) {
+    window.adminCommonFilter.siteId = window.boData.sites[0]?.siteId ?? null;
   }
 
   /* ── 등록기간 옵션 ── */
@@ -69,7 +69,7 @@
     return d >= r.from && d <= r.to;
   }
 
-  window.adminUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange };
+  window.boCmUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange };
 
   /* ── 공개 대상(Visibility) 유틸 ──
    * 저장 포맷: '^MEMBER^VIP^' (양끝 ^ 래핑). 공개 안 함=''.
@@ -114,27 +114,27 @@
     },
     /* 라벨 조회용 */
     label(code) {
-      const c = (window.adminData?.codes || [])
+      const c = (window.boData?.codes || [])
         .find(x => x.codeGrp === 'VISIBILITY_TARGET' && x.codeValue === code);
       return c?.codeLabel || code;
     },
     allOptions() {
-      return (window.adminData?.codes || [])
+      return (window.boData?.codes || [])
         .filter(x => x.codeGrp === 'VISIBILITY_TARGET' && x.useYn === 'Y')
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
     },
   };
 
-  window.adminUtil.getSiteNm = function() {
+  window.boCmUtil.getSiteNm = function() {
     if (!window.adminCommonFilter.siteId) return 'ShopJoy';
-    const site = window.adminData?.sites?.find(s => s.siteId === window.adminCommonFilter.siteId);
+    const site = window.boData?.sites?.find(s => s.siteId === window.adminCommonFilter.siteId);
     return site?.siteNm || 'ShopJoy';
   };
 
   /* ── CSV/엑셀 다운로드 ──
      columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
   ── */
-  window.adminUtil.exportCsv = function(rows, columns, filename) {
+  window.boCmUtil.exportCsv = function(rows, columns, filename) {
     const header = columns.map(c => `"${c.label}"`).join(',');
     const body = rows.map(row =>
       columns.map(c => {
@@ -153,8 +153,8 @@
   /* ──────────────────────────────────────────────
      sy_path 기반 트리 헬퍼 (공통)
   ────────────────────────────────────────────── */
-  window.adminUtil.buildPathTree = function (bizCd) {
-    const list = (window.adminData.paths || [])
+  window.boCmUtil.buildPathTree = function (bizCd) {
+    const list = (window.boData.paths || [])
       .filter(p => p.bizCd === bizCd && p.useYn !== 'N');
     const byParent = {};
     list.forEach(p => {
@@ -178,10 +178,10 @@
     return root;
   };
 
-  window.adminUtil.getPathDescendants = function (bizCd, pathId) {
+  window.boCmUtil.getPathDescendants = function (bizCd, pathId) {
     if (pathId == null) return null;
     const set = new Set([pathId]);
-    const list = (window.adminData.paths || []).filter(p => p.bizCd === bizCd);
+    const list = (window.boData.paths || []).filter(p => p.bizCd === bizCd);
     let added = true;
     while (added) {
       added = false;
@@ -195,7 +195,7 @@
   /* 일반 부모-자식 트리 빌더
    * items: 배열, idKey: PK, parentKey: 부모 FK, labelKey: 표시명, sortKey: 정렬 (선택)
    */
-  window.adminUtil.buildGenericTree = function (items, idKey, parentKey, labelKey, sortKey) {
+  window.boCmUtil.buildGenericTree = function (items, idKey, parentKey, labelKey, sortKey) {
     const list = (items || []).filter(x => x.useYn !== 'N');
     const byParent = {};
     list.forEach(x => {
@@ -216,17 +216,17 @@
     recur(root);
     return root;
   };
-  window.adminUtil.buildDeptTree = function () {
-    return window.adminUtil.buildGenericTree(window.adminData.depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
+  window.boCmUtil.buildDeptTree = function () {
+    return window.boCmUtil.buildGenericTree(window.boData.depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
   };
-  window.adminUtil.buildMenuTree = function () {
-    return window.adminUtil.buildGenericTree(window.adminData.menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
+  window.boCmUtil.buildMenuTree = function () {
+    return window.boCmUtil.buildGenericTree(window.boData.menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
   };
-  window.adminUtil.buildRoleTree = function () {
-    return window.adminUtil.buildGenericTree(window.adminData.roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
+  window.boCmUtil.buildRoleTree = function () {
+    return window.boCmUtil.buildGenericTree(window.boData.roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
   };
   /* 일반 트리 후손 ID Set */
-  window.adminUtil.collectDescendantIds = function (items, idKey, parentKey, rootId) {
+  window.boCmUtil.collectDescendantIds = function (items, idKey, parentKey, rootId) {
     if (rootId == null) return null;
     const set = new Set([rootId]);
     let added = true;
@@ -240,7 +240,7 @@
   };
 
   /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
-  window.adminUtil.collectExpandedToDepth = function (tree, maxDepth) {
+  window.boCmUtil.collectExpandedToDepth = function (tree, maxDepth) {
     const set = new Set([null]);
     const walk = (n, d) => {
       if (d >= maxDepth) return;
@@ -250,9 +250,9 @@
     return set;
   };
 
-  window.adminUtil.getPathLabel = function (pathId) {
+  window.boCmUtil.getPathLabel = function (pathId) {
     if (pathId == null) return '';
-    const list = window.adminData.paths || [];
+    const list = window.boData.paths || [];
     const byId = Object.fromEntries(list.map(p => [p.pathId, p]));
     const labels = [];
     let cur = byId[pathId];

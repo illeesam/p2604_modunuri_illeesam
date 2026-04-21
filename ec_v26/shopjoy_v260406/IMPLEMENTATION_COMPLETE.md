@@ -56,7 +56,7 @@
 ```
 총 변경 파일: 76개
 ├─ 새 파일: 2개 (safeArrayUtils.js, 문서 2개)
-├─ 수정 파일: 74개 (admin.html 포함)
+├─ 수정 파일: 74개 (bo.html 포함)
 └─ 컴포넌트: 73개
 
 라인 수 변경:
@@ -135,7 +135,7 @@ window.safeArrayUtils.safeForEach(items, item => { doSomething(item) })
 
 ## 🔧 로드 순서 (중요!)
 
-admin.html에서 반드시 이 순서를 지켜야 함:
+bo.html에서 반드시 이 순서를 지켜야 함:
 
 ```html
 <!-- Step 1: 기존 라이브러리 -->
@@ -233,7 +233,7 @@ console.log(filtered)  // [{id: 2}]
 | Computed 강화 | ✅ 완료 | 모든 필터 체크 추가 |
 | 문서화 | ✅ 완료 | 2개 상세 가이드 |
 | 문법 검증 | ✅ 완료 | 모든 파일 node -c 통과 |
-| 로드 순서 | ✅ 완료 | admin.html 수정 완료 |
+| 로드 순서 | ✅ 완료 | bo.html 수정 완료 |
 
 ---
 

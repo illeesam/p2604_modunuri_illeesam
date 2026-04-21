@@ -12,7 +12,7 @@ window.DpDispPanelDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/dp/panel/page', {
+        const res = await window.boApi.get('/bo/ec/dp/panel/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         panels.splice(0, panels.length, ...(res.data?.data?.list || []));
@@ -29,7 +29,7 @@ window.DpDispPanelDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
@@ -519,7 +519,7 @@ window.DpDispPanelDtl = {
         if (idx !== -1) Object.assign(displays.value[idx], payload);
       }
       try {
-        const res = await (isNewPanel ? window.adminApi.post(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.adminApi.put(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));
+        const res = await (isNewPanel ? window.boApi.post(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.boApi.put(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispPanelMng');

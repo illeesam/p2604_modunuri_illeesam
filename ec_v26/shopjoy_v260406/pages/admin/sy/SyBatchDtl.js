@@ -10,7 +10,7 @@ window.SyBatchDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/batch/page', {
+        const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         batches.value = res.data?.data?.list || [];
@@ -24,7 +24,7 @@ window.SyBatchDtl = {
     });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
     });
@@ -71,7 +71,7 @@ window.SyBatchDtl = {
         if (idx !== -1) Object.assign(batches.value[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }) : window.adminApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }) : window.boApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBatchMng');

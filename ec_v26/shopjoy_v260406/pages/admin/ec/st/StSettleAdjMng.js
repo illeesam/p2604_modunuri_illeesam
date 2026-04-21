@@ -7,14 +7,14 @@ window.StSettleAdjMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
 
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
     const onDateRangeChange = () => {
-      if (dateRange.value) { const r = window.adminUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
-    (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     const vendors = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
 
@@ -79,7 +79,7 @@ window.StSettleAdjMng = {
       else { const idx = adjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjList[idx], { ...form }); }
       closeForm();
       try {
-        const res = await (isNew.value ? window.adminApi.post('st/adj', { ...form }) : window.adminApi.put(`/bo/ec/st/adj/${form.adjId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post('st/adj', { ...form }) : window.boApi.put(`/bo/ec/st/adj/${form.adjId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -94,7 +94,7 @@ window.StSettleAdjMng = {
       if (!ok) return;
       const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm();
       try {
-        const res = await window.adminApi.delete(`/bo/ec/st/adj/${r.adjId}`);
+        const res = await window.boApi.delete(`/bo/ec/st/adj/${r.adjId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -109,7 +109,7 @@ window.StSettleAdjMng = {
       if (!ok) return;
       r.aprvStatus = '승인';
       try {
-        const res = await window.adminApi.put(`/bo/ec/st/adj/${r.adjId}/approve`, { aprvStatus: '승인' });
+        const res = await window.boApi.put(`/bo/ec/st/adj/${r.adjId}/approve`, { aprvStatus: '승인' });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('승인되었습니다.', 'success');
       } catch (err) {

@@ -13,7 +13,7 @@ window.OdOrderDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/od/order/page', {
+        const res = await window.boApi.get('/bo/ec/od/order/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         orders.splice(0, orders.length, ...(res.data?.data?.list || []));
@@ -107,7 +107,7 @@ window.OdOrderDtl = {
         if (idx !== -1) Object.assign(orders.value[idx], { ...form, totalPrice: Number(form.totalPrice) });
       }
       try {
-        const res = await (isNewOrder ? window.adminApi.post(`/bo/ec/od/order/${form.orderId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form }));
+        const res = await (isNewOrder ? window.boApi.post(`/bo/ec/od/order/${form.orderId}`, { ...form }) : window.boApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odOrderMng');

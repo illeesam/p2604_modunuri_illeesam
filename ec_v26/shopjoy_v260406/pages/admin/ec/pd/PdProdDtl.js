@@ -13,7 +13,7 @@ window.PdProdDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/prod/page', {
+        const res = await window.boApi.get('/bo/ec/pd/prod/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         products.splice(0, products.length, ...(res.data?.data?.list || []));
@@ -361,23 +361,23 @@ window.PdProdDtl = {
     // ── 담당MD 모달
     const mdModalOpen = ref(false);
     const mdSearch    = ref('');
-    const mdUserList  = computed(() => (adminUsers.value||[]).filter(u => u.status==='활성'));
+    const mdUserList  = computed(() => (boUsers.value||[]).filter(u => u.status==='활성'));
     const mdUserListFiltered = computed(() => {
       const q = mdSearch.value.trim().toLowerCase();
       if (!q) return mdUserList.value;
       return window.safeArrayUtils.safeFilter(mdUserList, u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
     });
     const mdSelectedNm = computed(() => {
-      const u = mdUserList.window.safeArrayUtils.safeFind(value, u => u.adminUserId === form.mdUserId);
+      const u = mdUserList.window.safeArrayUtils.safeFind(value, u => u.boUserId === form.mdUserId);
       return u ? `${u.name} (${u.dept||''})` : '';
     });
     const openMdModal  = () => { mdSearch.value = ''; mdModalOpen.value = true; };
-    const selectMdUser = (u) => { form.mdUserId = u.adminUserId; mdModalOpen.value = false; };
+    const selectMdUser = (u) => { form.mdUserId = u.boUserId; mdModalOpen.value = false; };
 
     onMounted(async () => {
       if (isNew.value) {
         // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
-        form.mdUserId = mdUserList.window.safeArrayUtils.safeGet(value, 0)?.adminUserId || '';
+        form.mdUserId = mdUserList.window.safeArrayUtils.safeGet(value, 0)?.boUserId || '';
       }
       if (!isNew.value) {
         const p = getProduct.value(props.editId);
@@ -502,7 +502,7 @@ window.PdProdDtl = {
         categoryProds.value.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.adminApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng');
@@ -696,13 +696,13 @@ window.PdProdDtl = {
                 <tr><th>이름</th><th>부서</th><th>역할</th></tr>
               </thead>
               <tbody>
-                <tr v-for="u in mdUserListFiltered" :key="u?.adminUserId"
+                <tr v-for="u in mdUserListFiltered" :key="u?.boUserId"
                   style="cursor:pointer;"
-                  :style="form.mdUserId===u.adminUserId ? 'background:#fff0f4;font-weight:700;' : ''"
+                  :style="form.mdUserId===u.boUserId ? 'background:#fff0f4;font-weight:700;' : ''"
                   @click="selectMdUser(u)">
                   <td>
                     <span style="display:flex;align-items:center;gap:6px;">
-                      <span v-if="form.mdUserId===u.adminUserId" style="color:#e8587a;font-size:12px;">✔</span>
+                      <span v-if="form.mdUserId===u.boUserId" style="color:#e8587a;font-size:12px;">✔</span>
                       {{ u.name }}
                     </span>
                   </td>

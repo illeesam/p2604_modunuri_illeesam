@@ -1,6 +1,6 @@
 /**
  * 공통 유틸 — 각 ec_v26 앱에서 동일 API로 사용합니다.
- * @see window.cmUtil
+ * @see window.foCmUtil
  */
 (function (global) {
   'use strict';
@@ -31,7 +31,7 @@
     return typeof global.imageThumbnailSrc === 'function' ? global.imageThumbnailSrc(src) : src;
   }
 
-  global.cmUtil = {
+  global.foCmUtil = {
     codesByGroup: codesByGroup,
     codesByGroupOrStringList: codesByGroupOrStringList,
     codesByGroupOrRows: codesByGroupOrRows,

@@ -10,7 +10,7 @@ window.SySiteDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/site/page', {
+        const res = await window.boApi.get('/bo/sy/site/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         sites.value = res.data?.data?.list || [];
@@ -89,7 +89,7 @@ window.SySiteDtl = {
         if (idx !== -1) Object.assign(sites.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`sites/${form.siteId}`, { ...form }) : window.adminApi.put(`sites/${form.siteId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`sites/${form.siteId}`, { ...form }) : window.boApi.put(`sites/${form.siteId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('sySiteMng');

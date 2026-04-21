@@ -4,9 +4,9 @@ window.PdSetMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const brands = ref(window.adminDataProvider?.getBrands?.() || []);
-    const categoryProds = ref((window.adminData?.categoryProds) || []);
+    const products = ref(window.boDataProvider?.getProducts?.() || []);
+    const brands = ref(window.boDataProvider?.getBrands?.() || []);
+    const categoryProds = ref((window.boData?.categoryProds) || []);
     const sets = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -15,7 +15,7 @@ window.PdSetMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/set/page', {
+        const res = await window.boApi.get('/bo/ec/pd/set/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         sets.splice(0, sets.length, ...(res.data?.data?.list || []));
@@ -277,7 +277,7 @@ window.PdSetMng = {
       });
       if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
       try {
-        const res = await (isNew ? window.adminApi.post('set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.adminApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
+        const res = await (isNew ? window.boApi.post('set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
@@ -294,7 +294,7 @@ window.PdSetMng = {
       setItems.value = (setItems.value || []).filter(s => s.setProdId !== setProdId);
       if (editSetId.value === setProdId) closeDtl();
       try {
-        const res = await window.adminApi.delete(`/bo/ec/pd/prod-set/${setProdId}`);
+        const res = await window.boApi.delete(`/bo/ec/pd/prod-set/${setProdId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

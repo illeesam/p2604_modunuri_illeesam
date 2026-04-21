@@ -12,7 +12,7 @@ window.CmNoticeDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/cm/notice/page', {
+        const res = await window.boApi.get('/bo/ec/cm/notice/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         notices.splice(0, notices.length, ...(res.data?.data?.list || []));
@@ -73,7 +73,7 @@ window.CmNoticeDtl = {
         if (idx !== -1) Object.assign(notices.value[idx], form);
       }
       try {
-        const res = await (isNewNotice ? window.adminApi.post(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }) : window.adminApi.put(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }));
+        const res = await (isNewNotice ? window.boApi.post(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }) : window.boApi.put(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('cmNoticeMng');

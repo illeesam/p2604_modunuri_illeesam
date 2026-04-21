@@ -6,14 +6,14 @@ window.StErpReconMng = {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
     const onDateRangeChange = () => {
-      if (dateRange.value) { const r = window.adminUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
-    (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     const reconList = reactive([
       { reconId: 'ERECON-001', reconDate: '2026-04-12', slipId: 'ERP-2026-0411-001', slipType: '정산',    sysAmt: 300000, erpAmt: 300000, diff: 0,     diffStatus: '일치',  remark: '' },
@@ -54,7 +54,7 @@ window.StErpReconMng = {
       if (!ok) return;
       r.erpAmt = r.sysAmt; r.diff = 0; r.diffStatus = '일치'; r.remark = '조정처리 완료';
       try {
-        const res = await window.adminApi.put(`/bo/ec/st/erp/recon/${r.reconId}/fix`, {});
+        const res = await window.boApi.put(`/bo/ec/st/erp/recon/${r.reconId}/fix`, {});
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('조정처리 되었습니다.', 'success');
       } catch (err) {

@@ -6,7 +6,7 @@ window.DpDispUiMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const codes = ref((window.adminData?.codes || []));
+    const codes = ref((window.boData?.codes || []));
     const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -15,7 +15,7 @@ window.DpDispUiMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/dp/ui/page', {
+        const res = await window.boApi.get('/bo/ec/dp/ui/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
@@ -27,7 +27,7 @@ window.DpDispUiMng = {
         loading.value = false;
       }
     });
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     const UI_TYPE_OPTS = [
@@ -43,15 +43,15 @@ window.DpDispUiMng = {
     const searchDateStart = ref('');
     const searchDateEnd   = ref('');
     const searchDateRange = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
       if (searchDateRange.value) {
-        const r = window.adminUtil.getDateRange(searchDateRange.value);
+        const r = window.boCmUtil.getDateRange(searchDateRange.value);
         searchDateStart.value = r ? r.from : '';
         searchDateEnd.value   = r ? r.to   : '';
       }
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const applied = reactive({ kw: '', uiType: '', useYn: '', dateStart: '', dateEnd: '' });
     const onSearch = () => {
@@ -146,7 +146,7 @@ window.DpDispUiMng = {
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === u.codeId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/ec/dp/ui/${u.codeId}`);
+        const res = await window.boApi.delete(`/bo/ec/dp/ui/${u.codeId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -156,7 +156,7 @@ window.DpDispUiMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(
+    const exportExcel = () => window.boCmUtil.exportCsv(
       filtered.value,
       [
         { label: 'ID', key: 'codeId' }, { label: 'UI코드', key: 'codeValue' },

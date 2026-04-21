@@ -222,7 +222,7 @@ const handleEnter = () => { search(); close(); }
 
 ### Q: 여전히 "_withKeys" 에러가 나요
 **A**: 다음을 확인하세요:
-1. admin.html 페이지 새로고침 (Ctrl+F5)
+1. bo.html 페이지 새로고침 (Ctrl+F5)
 2. 브라우저 캐시 비우기
 3. 콘솔 에러 메시지의 정확한 라인 번호 확인
 4. 해당 라인의 `:key` 또는 `@keyup.enter` 확인

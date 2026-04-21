@@ -15,7 +15,7 @@
     /* ═══════════════════════════════════════════════════════════════════
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
        ═══════════════════════════════════════════════════════════════════ */
-    const DEFAULT_FRONT_SITE_NO = '01';
+    const DEFAULT_FO_SITE_NO = '01';
 
     /* /index.html → / 로 단축 (해시/쿼리는 유지) */
     (function(){
@@ -27,36 +27,36 @@
         }
       } catch(_){}
     })();
-    /* FRONT_SITE_NO — URL ?FRONT_SITE_NO=02 로 오버라이드 가능 */
+    /* FO_SITE_NO — URL ?FO_SITE_NO=02 로 오버라이드 가능 */
     (function(){
       try {
         var qs = new URLSearchParams(window.location.search);
-        var v = qs.get('FRONT_SITE_NO');
+        var v = qs.get('FO_SITE_NO');
         if (v) {
-          window.FRONT_SITE_NO = v;
-          try { localStorage.setItem('modu-front-site_no', v); } catch(_){}
+          window.FO_SITE_NO = v;
+          try { localStorage.setItem('modu-fo-site_no', v); } catch(_){}
           try {
-            qs.delete('FRONT_SITE_NO');
+            qs.delete('FO_SITE_NO');
             var newSearch = qs.toString();
             history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
           } catch(_){}
         } else {
           var saved = null;
-          try { saved = localStorage.getItem('modu-front-site_no'); } catch(_){}
-          window.FRONT_SITE_NO = saved || DEFAULT_FRONT_SITE_NO;
+          try { saved = localStorage.getItem('modu-fo-site_no'); } catch(_){}
+          window.FO_SITE_NO = saved || DEFAULT_FO_SITE_NO;
         }
-      } catch(e) { window.FRONT_SITE_NO = DEFAULT_FRONT_SITE_NO; }
-      /* ADMIN_SITE_NO 기본값은 admin.html에서 전적으로 관리. front 진입 시 저장된 값만 읽음 (덮어쓰지 않음) */
+      } catch(e) { window.FO_SITE_NO = DEFAULT_FO_SITE_NO; }
+      /* BO_SITE_NO 기본값은 bo.html에서 전적으로 관리. front 진입 시 저장된 값만 읽음 (덮어쓰지 않음) */
       try {
         var savedA = null;
-        try { savedA = localStorage.getItem('modu-admin-site_no'); } catch(_){}
-        window.ADMIN_SITE_NO = savedA || '';
-      } catch(e) { window.ADMIN_SITE_NO = ''; }
+        try { savedA = localStorage.getItem('modu-bo-site_no'); } catch(_){}
+        window.BO_SITE_NO = savedA || '';
+      } catch(e) { window.BO_SITE_NO = ''; }
     })();
-    document.write('<link rel="stylesheet" href="assets/css/frontGlobalStyle' + window.FRONT_SITE_NO + '.css">');
+    document.write('<link rel="stylesheet" href="assets/css/foGlobalStyle' + window.FO_SITE_NO + '.css">');
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
-      if ((e.key === 'modu-front-site_no' || e.key === 'modu-admin-site_no') && e.newValue !== e.oldValue) {
+      if ((e.key === 'modu-fo-site_no' || e.key === 'modu-bo-site_no') && e.newValue !== e.oldValue) {
         location.reload();
       }
     });
@@ -82,24 +82,24 @@
   <div id="app"></div>
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
   <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
-  <script src="utils/frontAxios.js"></script>
-  <script src="utils/frontCmUtil.js"></script>
+  <script src="utils/foAxios.js"></script>
+  <script src="utils/foCmUtil.js"></script>
   <script src="base/foConfig.js"></script>
   <script src="js/index.js"></script>
   <script src="base/stores/foAuthStore.js"></script>
   <script src="base/stores/foMyStore.js"></script>
   <script src="base/foAuth.js"></script>
-  <script src="layout/frontAppHeader.js"></script>
-  <script src="layout/frontAppSidebar.js"></script>
-  <script src="layout/frontAppFooter.js"></script>
-  <script src="layout/frontMyLayout.js"></script>
+  <script src="layout/foAppHeader.js"></script>
+  <script src="layout/foAppSidebar.js"></script>
+  <script src="layout/foAppFooter.js"></script>
+  <script src="layout/foMyLayout.js"></script>
   <script src="pages/base/frontError404.js"></script>
   <script src="pages/base/frontError401.js"></script>
   <script src="pages/base/frontError500.js"></script>
   <script>
-    /* FRONT_SITE_NO 기준 동적 페이지 스크립트 로드 */
+    /* FO_SITE_NO 기준 동적 페이지 스크립트 로드 */
     (function(){
-      var n = window.FRONT_SITE_NO;
+      var n = window.FO_SITE_NO;
       ['Home'+n, 'Prod'+n+'List', 'Prod'+n+'View'].forEach(function(name){
         document.write('<script src="pages/' + name + '.js"><\/script>');
       });

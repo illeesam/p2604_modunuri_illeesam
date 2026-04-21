@@ -4,7 +4,7 @@ window.DpDispUiSimul = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     /* ── 오늘 날짜 ── */
     const today = new Date().toISOString().slice(0, 10);
@@ -703,20 +703,20 @@ window.DpDispUiSimul = {
       '/index.html#page=dispUi04',
       '/index.html#page=dispUi05',
       '/index.html#page=dispUi06',
-      '/disp-front-ui.html#page=dispUiPage',
-      '/disp-front-ui.html#page=dispUi01',
-      '/disp-front-ui.html#page=dispUi02',
-      '/disp-front-ui.html#page=dispUi03',
-      '/disp-front-ui.html#page=dispUi04',
-      '/disp-front-ui.html#page=dispUi05',
-      '/disp-front-ui.html#page=dispUi06',
-      '/disp-admin-ui.html#page=dispUiPage',
-      '/disp-admin-ui.html#page=dispUi01',
-      '/disp-admin-ui.html#page=dispUi02',
-      '/disp-admin-ui.html#page=dispUi03',
-      '/disp-admin-ui.html#page=dispUi04',
-      '/disp-admin-ui.html#page=dispUi05',
-      '/disp-admin-ui.html#page=dispUi06',
+      '/disp-fo-ui.html#page=dispUiPage',
+      '/disp-fo-ui.html#page=dispUi01',
+      '/disp-fo-ui.html#page=dispUi02',
+      '/disp-fo-ui.html#page=dispUi03',
+      '/disp-fo-ui.html#page=dispUi04',
+      '/disp-fo-ui.html#page=dispUi05',
+      '/disp-fo-ui.html#page=dispUi06',
+      '/disp-bo-ui.html#page=dispUiPage',
+      '/disp-bo-ui.html#page=dispUi01',
+      '/disp-bo-ui.html#page=dispUi02',
+      '/disp-bo-ui.html#page=dispUi03',
+      '/disp-bo-ui.html#page=dispUi04',
+      '/disp-bo-ui.html#page=dispUi05',
+      '/disp-bo-ui.html#page=dispUi06',
     ];
     const otherMenuOpen = ref(false);
     const openDispUiOther = () => { otherMenuOpen.value = !otherMenuOpen.value; };
@@ -745,7 +745,7 @@ window.DpDispUiSimul = {
         memberId:     p.memberId,
         viewOpts:     p.viewOpts,
       }).toString();
-      const file = scope === 'admin' ? 'disp-admin-ui.html' : 'disp-front-ui.html';
+      const file = scope === 'admin' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
       window.open(
         `${window.pageUrl(file)}?${qs}`,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'

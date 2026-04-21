@@ -4,8 +4,8 @@ window.PdRestockNotiMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const members = ref(window.adminDataProvider?.getMembers?.() || []);
+    const products = ref(window.boDataProvider?.getProducts?.() || []);
+    const members = ref(window.boDataProvider?.getMembers?.() || []);
     const restockNotis = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -14,7 +14,7 @@ window.PdRestockNotiMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/restock-noti/page', {
+        const res = await window.boApi.get('/bo/ec/pd/restock-noti/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         restockNotis.splice(0, restockNotis.length, ...(res.data?.data?.list || []));
@@ -61,7 +61,7 @@ window.PdRestockNotiMng = {
       if (!ok) return;
       const now = new Date().toLocaleString('sv').replace('T', ' '); window.safeArrayUtils.safeForEach(targets, r => { r.notiYn = 'Y'; r.notiDate = now; }); checkedIds.clear();
       try {
-        const res = await window.adminApi.post('pd/restock-notis/send', { ids: targets.map(r => r.restockNotiId) });
+        const res = await window.boApi.post('pd/restock-notis/send', { ids: targets.map(r => r.restockNotiId) });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(`${targets.length}건 알림이 발송되었습니다.`, 'success');
       } catch (err) {

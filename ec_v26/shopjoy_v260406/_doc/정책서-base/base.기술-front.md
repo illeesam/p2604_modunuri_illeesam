@@ -278,12 +278,12 @@ const html = marked.parse(markdownText);
 
 ---
 
-## 14. 전시 UI 미리보기 (disp-front-ui.html)
+## 14. 전시 UI 미리보기 (disp-fo-ui.html)
 
 관리자가 제작한 전시 구성을 실사용자 관점으로 독립 화면에서 검증.
 
 ```
-disp-front-ui.html
+disp-fo-ui.html
 ├─ Vue, axios, yup, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js + utils/adminUtil.js
 ├─ components/comp/BaseComp.js

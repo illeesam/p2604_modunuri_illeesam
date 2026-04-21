@@ -13,7 +13,7 @@ window.CmChattDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/cm/chatt/page', {
+        const res = await window.boApi.get('/bo/ec/cm/chatt/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         chatts.splice(0, chatts.length, ...(res.data?.data?.list || []));
@@ -125,7 +125,7 @@ window.CmChattDtl = {
         subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
       });
       try {
-        const res = await window.adminApi.post(`/bo/ec/cm/chatt/${form.chatId}`, { ...form });
+        const res = await window.boApi.post(`/bo/ec/cm/chatt/${form.chatId}`, { ...form });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng');

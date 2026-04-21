@@ -324,7 +324,7 @@ Total lines of code hardened: 846+ dangerous patterns fixed
 
 ## 7. 로드 순서
 
-admin.html에서 **반드시 이 순서**로 로드:
+bo.html에서 **반드시 이 순서**로 로드:
 
 ```html
 <!-- 기존 라이브러리들 -->
@@ -391,7 +391,7 @@ const filtered = computed(() => {
 
 ## 9. 테스트 체크리스트
 
-브라우저에서 admin.html을 열어서 확인:
+브라우저에서 bo.html을 열어서 확인:
 
 - [ ] 페이지 로딩 성공 (no console errors)
 - [ ] 회원 목록 필터 동작 (검색, 상태 필터 등)
@@ -413,7 +413,7 @@ const filtered = computed(() => {
 ## 10. 문제 해결
 
 ### Q: "window.safeArrayUtils is not defined" 에러
-**A**: admin.html에서 `<script src="base/utils/safeArrayUtils.js"></script>`가 모든 컴포넌트 로드 **전에** 있는지 확인
+**A**: bo.html에서 `<script src="base/utils/safeArrayUtils.js"></script>`가 모든 컴포넌트 로드 **전에** 있는지 확인
 
 ### Q: 특정 컴포넌트에서만 에러가 나요
 **A**: 해당 파일에서 수정되지 않은 위험한 `.filter()` 또는 `[0]` 접근이 있는지 확인. 아래 명령으로 검사:

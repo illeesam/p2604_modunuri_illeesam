@@ -11,7 +11,7 @@ window.SyBizMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/biz/page', {
+        const res = await window.boApi.get('/bo/sy/biz/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bizs.value = res.data?.data?.list || [];
@@ -30,14 +30,14 @@ window.SyBizMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPath.value = id; };
-    const tree = computed(() => window.adminUtil.buildPathTree('sy_biz'));
+    const tree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     Vue.onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const allowedPathIds = computed(() => selectedPath.value == null ? null : window.adminUtil.getPathDescendants('sy_biz', selectedPath.value));
+    const allowedPathIds = computed(() => selectedPath.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPath.value));
 
     /* 검색 */
     const kw = ref('');
@@ -66,7 +66,7 @@ window.SyBizMng = {
     const pagedRows = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     Vue.watch(selectedPath, () => pager.page = 1);
 
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
     const vendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const vendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
     /* 업체유형 → 역할구분 매핑 */
@@ -92,17 +92,17 @@ window.SyBizMng = {
     const closeForm = () => { formMode.value = ''; };
     const saveForm = async () => {
       if (!formData.bizNo || !formData.bizNm) {
-        if (window.adminToast) window.adminToast('사업자번호와 상호는 필수입니다.', 'error');
+        if (window.boToast) window.boToast('사업자번호와 상호는 필수입니다.', 'error');
         return;
       }
       if (formMode.value === 'new') {
         const newId = ((ad.bizs || []).reduce((m,x) => Math.max(m, x.bizId), 0) || 0) + 1;
         ad.bizs.push({ ...formData, bizId: newId });
-        if (window.adminToast) window.adminToast('신규 업체가 등록되었습니다.', 'success');
+        if (window.boToast) window.boToast('신규 업체가 등록되었습니다.', 'success');
       } else {
         const idx = (ad.bizs || []).findIndex(b => b.bizId === formData.bizId);
         if (idx >= 0) ad.bizs[idx] = { ...formData };
-        if (window.adminToast) window.adminToast('수정 완료', 'success');
+        if (window.boToast) window.boToast('수정 완료', 'success');
       }
       closeForm();
     };

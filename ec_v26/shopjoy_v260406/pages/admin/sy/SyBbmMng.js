@@ -11,7 +11,7 @@ window.SyBbmMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/bbm/page', {
+        const res = await window.boApi.get('/bo/sy/bbm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bbms.value = res.data?.data?.list || [];
@@ -28,20 +28,20 @@ window.SyBbmMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPath.value = id; };
-    const tree = computed(() => window.adminUtil.buildPathTree('sy_bbm'));
+    const tree = computed(() => window.boCmUtil.buildPathTree('sy_bbm'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -67,7 +67,7 @@ window.SyBbmMng = {
       if (applied.type && b.bbmType !== applied.type) return false;
       if (applied.useYn && b.useYn !== applied.useYn) return false;
       if (selectedPath.value != null) {
-        const _desc = window.adminUtil.getPathDescendants('sy_bbm', selectedPath.value);
+        const _desc = window.boCmUtil.getPathDescendants('sy_bbm', selectedPath.value);
         if (_desc && !_desc.has(b.pathId)) return false;
       }
       return true;
@@ -97,7 +97,7 @@ window.SyBbmMng = {
       if (idx !== -1) bbms.value.splice(idx, 1);
       if (selectedId.value === b.bbmId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/sy/bbm/${b.bbmId}`);
+        const res = await window.boApi.delete(`/bo/sy/bbm/${b.bbmId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -107,7 +107,7 @@ window.SyBbmMng = {
       }
     };
     const bbsCount = (bbmId) => bbss.value.filter(b => b.bbmId === bbmId).length;
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     return { bbms, loading, error, siteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,

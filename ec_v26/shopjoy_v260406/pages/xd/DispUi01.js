@@ -7,7 +7,7 @@ window.DispUi01 = {
   setup() {
     const { computed } = Vue;
 
-    const dispDataset = window.adminData || window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.boData || window.dispDataset || { displays: [], codes: [] };
     const qs = new URLSearchParams(location.search);
     const params = {
       areas: ['HOME_BANNER', 'HOME_PRODUCT', 'HOME_CHART', 'HOME_EVENT'],

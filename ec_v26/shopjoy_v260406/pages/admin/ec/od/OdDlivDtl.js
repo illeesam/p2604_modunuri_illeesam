@@ -8,13 +8,13 @@ window.OdDlivDtl = {
     const deliveries = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const claims = ref((window.adminData?.claims || []));
+    const claims = ref((window.boData?.claims || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/od/dliv/page', {
+        const res = await window.boApi.get('/bo/ec/od/dliv/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         deliveries.splice(0, deliveries.length, ...(res.data?.data?.list || []));
@@ -71,7 +71,7 @@ window.OdDlivDtl = {
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
-    const relatedOrder  = computed(() => window.safeArrayUtils.safeFind((window.adminData?.orders || []), o => o.orderId === form.orderId) || null);
+    const relatedOrder  = computed(() => window.safeArrayUtils.safeFind((window.boData?.orders || []), o => o.orderId === form.orderId) || null);
     const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims.value || [], c => c.orderId === form.orderId));
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
     const firstClaim = computed(() => window.safeArrayUtils.safeGet(relatedClaims.value || [], 0) || null);
@@ -95,7 +95,7 @@ window.OdDlivDtl = {
         if (idx !== -1) Object.assign(deliveries.value[idx], { ...form });
       }
       try {
-        const res = await (isNewDliv ? window.adminApi.post(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }));
+        const res = await (isNewDliv ? window.boApi.post(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }) : window.boApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odDlivMng');

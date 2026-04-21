@@ -10,7 +10,7 @@ window.SyCodeDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/code/page', {
+        const res = await window.boApi.get('/bo/sy/code/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         codes.value = res.data?.data?.list || [];
@@ -24,7 +24,7 @@ window.SyCodeDtl = {
     });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
     });
@@ -61,7 +61,7 @@ window.SyCodeDtl = {
         if (idx !== -1) Object.assign(codes.value[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/code/${form.codeId}`, { ...form }) : window.adminApi.put(`/bo/sy/code/${form.codeId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/code/${form.codeId}`, { ...form }) : window.boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syCodeMng');

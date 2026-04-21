@@ -93,7 +93,7 @@ window.Contact = {
     const { reactive, ref, computed } = Vue;
 
     const inquiryCodes = computed(() =>
-      window.cmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
+      window.foCmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
     );
 
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
@@ -113,8 +113,8 @@ window.Contact = {
 
     const submitForm = async () => {
       if (!validate()) return;
-      if (window.frontApi) {
-        await window.frontApi.post('/fo/inquiry/create', {
+      if (window.foApi) {
+        await window.foApi.post('/fo/inquiry/create', {
           source: 'shopjoy',
           name: form.name,
           email: form.email,

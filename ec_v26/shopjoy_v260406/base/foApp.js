@@ -12,10 +12,10 @@
   const app = createApp({
   setup() {
     /* ── Theme ── */
-    const theme = ref(localStorage.getItem('modu-front-theme') || 'light');
+    const theme = ref(localStorage.getItem('modu-fo-theme') || 'light');
     const applyTheme = t => {
       theme.value = t;
-      localStorage.setItem('modu-front-theme', t);
+      localStorage.setItem('modu-fo-theme', t);
       document.documentElement.setAttribute('data-theme', t);
     };
     applyTheme(theme.value);
@@ -248,7 +248,7 @@
       showToast('로그아웃되었습니다.', 'info');
       if (MY_PAGES.includes(page.value)) page.value = 'home';
     };
-    /* modu-front-token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
+    /* modu-fo-token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
     watch(() => auth.user, u => {
       if (!u && MY_PAGES.includes(page.value)) page.value = 'home';
     });
@@ -269,7 +269,7 @@
       const hasPageParam = rawHash.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawHash) : null;
       const isMyPage = p => ['myOrder','myClaim','myCoupon','myCache','myContact','myChatt'].includes(p);
-      const isLoggedIn = !!(localStorage.getItem('modu-front-token'));
+      const isLoggedIn = !!(localStorage.getItem('modu-fo-token'));
       if (hasPageParam) {
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;
@@ -382,8 +382,8 @@
       setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
     }
 
-    /* FRONT_SITE_NO 기준 동적 컴포넌트 참조 */
-    const _N = window.FRONT_SITE_NO;
+    /* FO_SITE_NO 기준 동적 컴포넌트 참조 */
+    const _N = window.FO_SITE_NO;
     const frontHomeComp     = window['Home' + _N];
     const frontProdListComp = window['Prod' + _N + 'List'];
     const frontProdViewComp = window['Prod' + _N + 'View'];
@@ -598,17 +598,17 @@
 `,
   })
   /* ── layout/ ── */
-  .component('FrontAppHeader',   window.frontAppHeader)
-  .component('FrontAppSidebar',  window.frontAppSidebar)
-  .component('FrontAppFooter',   window.frontAppFooter)
+  .component('FrontAppHeader',   window.foAppHeader)
+  .component('FrontAppSidebar',  window.foAppSidebar)
+  .component('FrontAppFooter',   window.foAppFooter)
   /* ── pages/base/ ── */
   .component('FrontError404',    window.frontError404)
   .component('FrontError401',    window.frontError401)
   .component('FrontError500',    window.frontError500)
-  /* ── pages/ (사용자 페이스 - FRONT_SITE_NO 기준 동적) ── */
-  .component('Home'+window.FRONT_SITE_NO,        window['Home'+window.FRONT_SITE_NO])
-  .component('Prod'+window.FRONT_SITE_NO+'List', window['Prod'+window.FRONT_SITE_NO+'List'])
-  .component('Prod'+window.FRONT_SITE_NO+'View', window['Prod'+window.FRONT_SITE_NO+'View'])
+  /* ── pages/ (사용자 페이스 - FO_SITE_NO 기준 동적) ── */
+  .component('Home'+window.FO_SITE_NO,        window['Home'+window.FO_SITE_NO])
+  .component('Prod'+window.FO_SITE_NO+'List', window['Prod'+window.FO_SITE_NO+'List'])
+  .component('Prod'+window.FO_SITE_NO+'View', window['Prod'+window.FO_SITE_NO+'View'])
   .component('Cart',         window.Cart)
   .component('Order',        window.Order)
   .component('Contact',      window.Contact)

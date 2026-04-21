@@ -12,7 +12,7 @@ window.PmDiscntMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pm/discnt/page', {
+        const res = await window.boApi.get('/bo/ec/pm/discnt/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         discounts.splice(0, discounts.length, ...(res.data?.data?.list || []));
@@ -26,12 +26,12 @@ window.PmDiscntMng = {
     });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
     const viewMode = ref('list'); // 'list' | 'card'
@@ -98,7 +98,7 @@ window.PmDiscntMng = {
       if (idx !== -1) discntList.value.splice(idx, 1);
       if (selectedId.value === d.discntId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/ec/pm/discnt/${d.discntId}`);
+        const res = await window.boApi.delete(`/bo/ec/pm/discnt/${d.discntId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -108,7 +108,7 @@ window.PmDiscntMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value,
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value,
       [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntType'},{label:'할인값',key:'discntVal'},{label:'상태',key:'discntStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '할인목록.csv');
 

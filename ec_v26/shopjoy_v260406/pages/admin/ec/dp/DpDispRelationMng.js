@@ -8,7 +8,7 @@ window.DpDispRelationMng = {
     /* 검색 */
     const searchDateStart = ref('');
     const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
 
     /* 트리 상태 */
     const expandedNodes = ref(new Set());

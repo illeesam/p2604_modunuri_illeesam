@@ -4,7 +4,7 @@ window.MyCoupon = {
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const myStore = window.useFrontMyStore();
+    const myStore = window.useFoMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
 
     const couponPager = reactive({ page: 1, size: 50 });
@@ -176,7 +176,7 @@ window.MyCoupon = {
 </FrontMyLayout>
   `,
   components: {
-    FrontMyLayout:    window.frontMyLayout,
+    FrontMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,
   }

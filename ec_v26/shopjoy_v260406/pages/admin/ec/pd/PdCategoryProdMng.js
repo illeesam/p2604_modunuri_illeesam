@@ -4,8 +4,8 @@ window.PdCategoryProdMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const categoryProds = ref((window.adminData?.categoryProds) || []);
+    const products = ref(window.boDataProvider?.getProducts?.() || []);
+    const categoryProds = ref((window.boData?.categoryProds) || []);
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
@@ -252,7 +252,7 @@ window.PdCategoryProdMng = {
       ];
       loadAllRows();
       try {
-        const res = await window.adminApi.put(`/bo/ec/pd/category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: tabRows.value });
+        const res = await window.boApi.put(`/bo/ec/pd/category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: tabRows.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {

@@ -9,7 +9,7 @@ window.DpDispWidgetLibDtl = {
     const openPathPick = () => { pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { form.pathId = pathId; };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
@@ -415,7 +415,7 @@ window.DpDispWidgetLibDtl = {
         if (idx >= 0) Object.assign(list[idx], { ...form });
       }
       try {
-        const res = await (isNewLib ? window.adminApi.post('widget-libs', { ...form }) : window.adminApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }));
+        const res = await (isNewLib ? window.boApi.post('widget-libs', { ...form }) : window.boApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispWidgetLibMng');
@@ -435,7 +435,7 @@ window.DpDispWidgetLibDtl = {
       const idx  = list.findIndex(d => d.libId == form.libId);
       if (idx >= 0) list.splice(idx, 1);
       try {
-        const res = await window.adminApi.delete(`/bo/ec/dp/widget-lib/${form.libId}`);
+        const res = await window.boApi.delete(`/bo/ec/dp/widget-lib/${form.libId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

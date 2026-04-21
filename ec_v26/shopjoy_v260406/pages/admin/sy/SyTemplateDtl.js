@@ -10,7 +10,7 @@ window.SyTemplateDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/template/page', {
+        const res = await window.boApi.get('/bo/sy/template/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         templates.value = res.data?.data?.list || [];
@@ -24,7 +24,7 @@ window.SyTemplateDtl = {
     });
     const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
       templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
@@ -103,7 +103,7 @@ window.SyTemplateDtl = {
         if (idx !== -1) Object.assign(templates.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`templates/${form.templateId}`, { ...form }) : window.adminApi.put(`templates/${form.templateId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`templates/${form.templateId}`, { ...form }) : window.boApi.put(`templates/${form.templateId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syTemplateMng');

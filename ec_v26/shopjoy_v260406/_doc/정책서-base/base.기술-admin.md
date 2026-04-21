@@ -22,10 +22,10 @@
 
 ---
 
-## 2. 진입점: admin.html
+## 2. 진입점: bo.html
 
 ```
-admin.html
+bo.html
 ├─ head: Vue, Yup, Quill, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js        (window.adminData - 모든 목업)
 ├─ utils/adminAxios.js             (window.adminApi)
@@ -44,7 +44,7 @@ admin.html
 > **3단계만 해도 에러 없이 보이지만 페이지가 렌더링되지 않음 (404 페이지 표시)**  
 > AdminApp.js 의 v-else-if 체인이 누락되기 때문.
 
-### Step 1. admin.html — script 태그 추가
+### Step 1. bo.html — script 태그 추가
 
 ```html
 <!-- 관련 파일 다음에 순서 맞춰 추가 -->

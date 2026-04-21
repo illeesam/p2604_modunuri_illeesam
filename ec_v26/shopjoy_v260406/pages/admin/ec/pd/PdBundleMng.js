@@ -4,10 +4,10 @@ window.PdBundleMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const categories = ref(window.adminDataProvider?.getCategories?.() || []);
-    const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const brands = ref(window.adminDataProvider?.getBrands?.() || []);
-    const categoryProds = ref((window.adminData?.categoryProds) || []);
+    const categories = ref(window.boDataProvider?.getCategories?.() || []);
+    const products = ref(window.boDataProvider?.getProducts?.() || []);
+    const brands = ref(window.boDataProvider?.getBrands?.() || []);
+    const categoryProds = ref((window.boData?.categoryProds) || []);
     const bundles = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -16,7 +16,7 @@ window.PdBundleMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/bundle/page', {
+        const res = await window.boApi.get('/bo/ec/pd/bundle/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bundles.splice(0, bundles.length, ...(res.data?.data?.list || []));
@@ -319,7 +319,7 @@ window.PdBundleMng = {
       });
       if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
       try {
-        const res = await (isNew ? window.adminApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.adminApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }));
+        const res = await (isNew ? window.boApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
@@ -336,7 +336,7 @@ window.PdBundleMng = {
       bundles = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
       if (editBundleId.value === bundleProdId) closeDtl();
       try {
-        const res = await window.adminApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`);
+        const res = await window.boApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

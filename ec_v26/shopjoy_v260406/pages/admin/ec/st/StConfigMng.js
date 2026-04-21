@@ -48,7 +48,7 @@ window.StConfigMng = {
       else { const idx = configs.findIndex(c => c.configId === form.configId); if (idx !== -1) Object.assign(configs[idx], { ...form }); }
       closeForm();
       try {
-        const res = await (isNew.value ? window.adminApi.post('st/config', { ...form }) : window.adminApi.put(`/bo/ec/st/config/${form.configId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post('st/config', { ...form }) : window.boApi.put(`/bo/ec/st/config/${form.configId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -63,7 +63,7 @@ window.StConfigMng = {
       if (!ok) return;
       const idx = configs.findIndex(x => x.configId === c.configId); if (idx !== -1) configs.splice(idx, 1); if (selectedId.value === c.configId) closeForm();
       try {
-        const res = await window.adminApi.delete(`/bo/ec/st/config/${c.configId}`);
+        const res = await window.boApi.delete(`/bo/ec/st/config/${c.configId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

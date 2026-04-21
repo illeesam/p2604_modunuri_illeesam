@@ -8,33 +8,33 @@
     /* ═══════════════════════════════════════════════════════════════════
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
        ═══════════════════════════════════════════════════════════════════ */
-    const DEFAULT_ADMIN_SITE_NO = '01';
-    /* ADMIN_SITE_NO — URL ?ADMIN_SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
+    const DEFAULT_BO_SITE_NO = '01';
+    /* BO_SITE_NO — URL ?BO_SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
     (function(){
       try {
         var qs = new URLSearchParams(window.location.search);
-        var v = qs.get('ADMIN_SITE_NO');
+        var v = qs.get('BO_SITE_NO');
         if (v) {
-          window.ADMIN_SITE_NO = v;
-          try { localStorage.setItem('modu-admin-site_no', v); } catch(_){}
+          window.BO_SITE_NO = v;
+          try { localStorage.setItem('modu-bo-site_no', v); } catch(_){}
           try {
-            qs.delete('ADMIN_SITE_NO');
+            qs.delete('BO_SITE_NO');
             var newSearch = qs.toString();
             history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
           } catch(_){}
         } else {
           var saved = null;
-          try { saved = localStorage.getItem('modu-admin-site_no'); } catch(_){}
-          window.ADMIN_SITE_NO = saved || DEFAULT_ADMIN_SITE_NO;
-          if (!saved) { try { localStorage.setItem('modu-admin-site_no', DEFAULT_ADMIN_SITE_NO); } catch(_){} }
+          try { saved = localStorage.getItem('modu-bo-site_no'); } catch(_){}
+          window.BO_SITE_NO = saved || DEFAULT_BO_SITE_NO;
+          if (!saved) { try { localStorage.setItem('modu-bo-site_no', DEFAULT_BO_SITE_NO); } catch(_){} }
         }
-      } catch(e) { window.ADMIN_SITE_NO = DEFAULT_ADMIN_SITE_NO; }
-      /* ADMIN_SITE_NO 기준 CSS 로드 */
-      document.write('<link rel="stylesheet" href="assets/css/adminGlobalStyle' + window.ADMIN_SITE_NO + '.css">');
+      } catch(e) { window.BO_SITE_NO = DEFAULT_BO_SITE_NO; }
+      /* BO_SITE_NO 기준 CSS 로드 */
+      document.write('<link rel="stylesheet" href="assets/css/boGlobalStyle' + window.BO_SITE_NO + '.css">');
     })();
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
-      if ((e.key === 'modu-admin-site_no' || e.key === 'modu-front-site_no') && e.newValue !== e.oldValue) {
+      if ((e.key === 'modu-bo-site_no' || e.key === 'modu-fo-site_no') && e.newValue !== e.oldValue) {
         location.reload();
       }
     });
@@ -73,10 +73,10 @@
   <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
   <script src="base/stores/boAuthStore.js"></script>
   <script src="base/stores/boConfigStore.js"></script>
-  <script src="utils/adminAxios.js"></script>
-  <script src="utils/adminUtil.js"></script>
+  <script src="utils/boAxios.js"></script>
+  <script src="utils/boCmUtil.js"></script>
   <script src="pages/admin/AdminData.js"></script>
-  <script src="base/utils/adminDataProvider.js"></script>
+  <script src="base/utils/boDataProvider.js"></script>
   <script src="base/utils/refDefaults.js"></script>
   <script src="base/utils/safeArrayUtils.js"></script>
   <script src="components/modals/BaseModal.js"></script>

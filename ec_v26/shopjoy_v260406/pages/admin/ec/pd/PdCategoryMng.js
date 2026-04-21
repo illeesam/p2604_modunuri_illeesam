@@ -4,7 +4,7 @@ window.PdCategoryMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const categories = ref(window.adminDataProvider?.getCategories?.() || []);
+    const categories = ref(window.boDataProvider?.getCategories?.() || []);
 
     /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
     const expandedSet = ref(new Set());

@@ -13,7 +13,7 @@ window.PmDiscntDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pm/discnt/page', {
+        const res = await window.boApi.get('/bo/ec/pm/discnt/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         discounts.splice(0, discounts.length, ...(res.data?.data?.list || []));
@@ -90,7 +90,7 @@ window.PmDiscntDtl = {
         if (idx !== -1) Object.assign(discntList.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }) : window.adminApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmDiscntMng');

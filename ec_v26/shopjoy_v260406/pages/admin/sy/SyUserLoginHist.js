@@ -8,14 +8,14 @@ window.SyUserLoginHist = {
     const descOpen = ref(false);
     const activeTab = ref('log'); // 'log' | 'hist' | 'token'
 
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
     const onDateRangeChange = () => {
-      if (dateRange.value) { const r = window.adminUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
-    (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     const searchKw          = ref('');
     const searchResult      = ref('');
@@ -23,7 +23,7 @@ window.SyUserLoginHist = {
     const searchTokenAction = ref('');
     const pager = reactive({ page: 1, size: 20 });
 
-    const adminUsers = computed(() => adminUsers.value || []);
+    const boUsers = computed(() => boUsers.value || []);
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17'];
     const BROWSER_LIST = ['Chrome 123','Edge 122','Safari 17','Firefox 124','Chrome 122'];
@@ -47,7 +47,7 @@ window.SyUserLoginHist = {
     const logList = computed(() => {
       const rows = [];
       LOG_DATES.forEach((dt, i) => {
-        const u = adminUsers.value[i % Math.max(1, adminUsers.value.length)];
+        const u = boUsers.value[i % Math.max(1, boUsers.value.length)];
         if (!u) return;
         const resultCd = RESULT_CODES[i % RESULT_CODES.length];
         const isSuccess = resultCd === 'SUCCESS';
@@ -55,7 +55,7 @@ window.SyUserLoginHist = {
         rows.push({
           logId:           'UL' + String(i + 1).padStart(14, '0').slice(-14),
           loginDate:       dt,
-          userId:          'USR-' + String(u.adminUserId).padStart(6, '0'),
+          userId:          'USR-' + String(u.boUserId).padStart(6, '0'),
           userNm:          u.name,
           dept:            u.dept,
           role:            u.role,

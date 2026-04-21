@@ -10,7 +10,7 @@ window.SyAlarmDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/alarm/page', {
+        const res = await window.boApi.get('/bo/sy/alarm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         alarms.value = res.data?.data?.list || [];
@@ -24,7 +24,7 @@ window.SyAlarmDtl = {
     });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       alarmId: null, title: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
       message: '', sendDate: '', statusCd: '임시',
@@ -61,7 +61,7 @@ window.SyAlarmDtl = {
         if (idx !== -1) Object.assign(alarms.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/alarm/${form.alarmId}`, { ...form }) : window.adminApi.put(`/bo/sy/alarm/${form.alarmId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/alarm/${form.alarmId}`, { ...form }) : window.boApi.put(`/bo/sy/alarm/${form.alarmId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syAlarmMng');

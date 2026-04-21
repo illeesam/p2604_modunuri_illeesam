@@ -3,10 +3,10 @@
   const { createApp, ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
   /* ── 메뉴 구조 ── */
-  /* ADMIN_SITE_NO 기준으로 상단 메뉴 필터링
+  /* BO_SITE_NO 기준으로 상단 메뉴 필터링
      - 02: 고객센터 제외
      - 03: 프로모션 제외 */
-  const _ADMIN_NO = window.ADMIN_SITE_NO || '01';
+  const _ADMIN_NO = window.BO_SITE_NO || '01';
   const _ALL_TOP_MENUS = [
     { id: 'member',    label: '회원관리' },
     { id: 'product',   label: '상품관리' },
@@ -174,7 +174,7 @@
     setup() {
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
-      const dashboardComp = computed(() => 'DashboardAdminEc' + (window.ADMIN_SITE_NO || '01'));
+      const dashboardComp = computed(() => 'DashboardAdminEc' + (window.BO_SITE_NO || '01'));
       const errorMessage = ref('');
       /* API 에러 → 오류 페이지 전환 (adminAxios 에서 window.dispatchEvent('api-error')) */
       window.addEventListener('api-error', (ev) => {
@@ -197,7 +197,7 @@
         else keptTabIds.add(tabId);
       };
       const PAGE_COMP_MAP = {
-        'dashboard':'dashboard-admin-ec'+(window.ADMIN_SITE_NO||'01'), 'mbMemberMng':'mb-member-mng', 'mbMemberDtl':'mb-member-dtl',
+        'dashboard':'dashboard-admin-ec'+(window.BO_SITE_NO||'01'), 'mbMemberMng':'mb-member-mng', 'mbMemberDtl':'mb-member-dtl',
         'mbMemGradeMng':'mb-mem-grade-mng', 'mbMemGroupMng':'mb-mem-group-mng',
         'pdProdMng':'pd-prod-mng', 'pdProdDtl':'pd-prod-dtl',
         'pdDlivTmpltMng':'pd-dliv-tmplt-mng', 'pdBundleMng':'pd-bundle-mng', 'pdSetMng':'pd-set-mng',
@@ -396,7 +396,7 @@
         }
       };
       /* 전역 노출 (BaseModal 등에서 props 없이 호출) */
-      window.adminToast = showToast;
+      window.boToast = showToast;
       const closeToast = (id) => {
         const idx = toasts.findIndex(t => t.id === id);
         if (idx !== -1) toasts.splice(idx, 1);
@@ -418,7 +418,7 @@
           resolve: r,
         }));
       /* 전역 노출 (BaseModal 등에서 props 없이 호출 가능) */
-      window.adminConfirm = showConfirm;
+      window.boConfirm = showConfirm;
       const closeConfirm = v => { confirmState.show = false; confirmState.resolve?.(v); };
 
       /* ── 참조 모달 ── */
@@ -436,7 +436,7 @@
         if      (type === 'site')      commonFilter.siteId   = item?.siteId   ?? null;
         else if (type === 'vendor')    commonFilter.vendorId = item?.vendorId  ?? null;
         else if (type === 'dlivVendor') commonFilter.dlivVendorId = item?.vendorId ?? null;
-        else if (type === 'adminUser') commonFilter.userId   = item?.adminUserId ?? null;
+        else if (type === 'adminUser') commonFilter.userId   = item?.boUserId ?? null;
         else if (type === 'member')    commonFilter.memberId = item?.memberId  ?? null;
         else if (type === 'order')     commonFilter.orderId  = item?.orderId   ?? null;
         selectModal.show = false;
@@ -472,19 +472,21 @@
       const _mkAdminToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
       const _restoreAdminUser = () => {
         try {
-          const tok = localStorage.getItem('modu-admin-token');
-          if (!tok) return { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
-          const user = JSON.parse(localStorage.getItem('modu-admin-user') || 'null');
-          return user || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
-        } catch(_) { return { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' }; }
+          const tok = localStorage.getItem('modu-bo-token');
+          if (!tok) return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          const user = JSON.parse(localStorage.getItem('modu-bo-user') || 'null');
+          return user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+        } catch(_) { return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' }; }
       };
       const currentUser = ref(_restoreAdminUser());
       const activeRoleId = ref(null);
+      const isLoggedIn = computed(() => window.isLogin?.() ?? false);
       const currentUserRoles = computed(() => {
         try {
-          const user = currentUser.value || { adminUserId: 0 };
-          const userRoles = window.adminDataProvider?.getUserRolesByUserId(user.adminUserId) || [];
-          const roles = window.adminDataProvider?.getRoles() || [];
+          if (!window.boDataProvider) return [];
+          const user = currentUser.value || { boUserId: 0 };
+          const userRoles = window.boDataProvider?.getBoUserRolesByUserId(user.boUserId) || [];
+          const roles = window.boDataProvider?.getRoles() || [];
           const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
           const result = (userRoles || []).map(ur => roleMap[ur?.roleId]).filter(Boolean);
           return result && result.length ? result : [];
@@ -495,8 +497,8 @@
       });
       const rolePath = (r, uid) => {
         try {
-          if (!r) return '';
-          const roles = window.adminDataProvider?.getRoles() || [];
+          if (!r || !window.boDataProvider) return '';
+          const roles = window.boDataProvider?.getRoles() || [];
           const m = Object.fromEntries((roles || []).map(x => [x?.roleId, x]));
           const seg = []; let cur = r; let root = r;
           while (cur) {
@@ -509,12 +511,12 @@
                          : (root?.roleCode === 'DLIV_ROOT')     ? 'DELIVERY' : null;
           if (wantType) {
             const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
-            const targetUid = uid != null ? uid : (currentUser.value?.adminUserId || 0);
+            const targetUid = uid != null ? uid : (currentUser.value?.boUserId || 0);
             let names = [];
             if (targetUid != null && targetUid > 0) {
-              const userBizs = (window.adminData?.userBizs || []);
-              const bizs = (window.adminData?.bizs || []);
-              const bus = (userBizs || []).filter(b => b?.adminUserId === targetUid);
+              const userBizs = (window.boData?.userBizs || []);
+              const bizs = (window.boData?.bizs || []);
+              const bus = (userBizs || []).filter(b => b?.boUserId === targetUid);
               const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
               names = (bus || []).map(bu => bm[bu?.bizId]).filter(b => b && b?.vendorTypeCd === wantType).map(b => b?.bizNm || '');
             }
@@ -530,8 +532,9 @@
       const onRoleChange = () => { location.reload(); };
       const rolesOfUser = (uid) => {
         try {
-          const userRoles = window.adminDataProvider?.getUserRolesByUserId(uid) || [];
-          const roles = window.adminDataProvider?.getRoles() || [];
+          if (!window.boDataProvider) return [];
+          const userRoles = window.boDataProvider?.getBoUserRolesByUserId(uid) || [];
+          const roles = window.boDataProvider?.getRoles() || [];
           const m = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
           const result = (userRoles || []).map(ur => m[ur?.roleId]).filter(Boolean);
           return result || [];
@@ -542,9 +545,10 @@
       };
       const bizInfoOfUser = (uid) => {
         try {
-          const adminUsers = window.adminDataProvider?.getAdminUsers() || [];
-          const bizs = (window.adminData?.bizs || []);
-          const bus = (adminUsers || []).filter(b => b?.adminUserId === uid);
+          if (!window.boDataProvider) return '';
+          const boUsers = window.boDataProvider?.getBoUsers() || [];
+          const bizs = (window.boData?.bizs || []);
+          const bus = (boUsers || []).filter(b => b?.boUserId === uid);
           const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
           const typeLabel = { SALES:'판매업체', DELIVERY:'배송업체', PARTNER:'제휴사', INTERNAL:'내부법인' };
           return (bus || []).map(bu => {
@@ -557,9 +561,18 @@
           return '';
         }
       };
+      const testAccounts = computed(() => {
+        try {
+          if (!window.boDataProvider) return [];
+          return window.boDataProvider?.getBoUsers?.() || [];
+        } catch (e) {
+          console.error('testAccounts error:', e);
+          return [];
+        }
+      });
       watch(currentUser, (u) => {
         try {
-          if (u && u.adminUserId) {
+          if (u && u.boUserId) {
             const roles = currentUserRoles.value || [];
             if (!roles.find(r => r?.roleId === activeRoleId.value)) {
               activeRoleId.value = (roles && roles.length) ? roles[0]?.roleId : null;
@@ -582,7 +595,7 @@
       const profileModal = reactive({ show: false });
       const profileForm  = reactive({ name: '', phone: '', dept: '', email: '' });
       const openProfile  = () => {
-        if (!currentUser.value || !currentUser.value.adminUserId) return;
+        if (!currentUser.value || !currentUser.value.boUserId) return;
         Object.assign(profileForm, {
           name: currentUser.value.name || '',
           phone: currentUser.value.phone || '',
@@ -594,7 +607,7 @@
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
         if (!currentUser.value) {
-          currentUser.value = { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
         }
         currentUser.value.name  = profileForm.name || '';
         currentUser.value.phone = profileForm.phone || '';
@@ -651,7 +664,7 @@
           const user = await authStore.login(loginForm.loginName, loginForm.loginPwd, loginForm.authMethod);
           currentUser.value = (user && typeof user === 'object')
             ? user
-            : { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+            : { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
 
           await configStore.loadCodes();
           await configStore.loadUserInfo();
@@ -677,27 +690,27 @@
             configStore.reset();
           }
 
-          currentUser.value = { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
           userMenuShow.value = false;
           openTabs.splice(0);
           navigate('dashboard');
           showToast('로그아웃되었습니다.');
         } catch (e) {
           console.error('doLogout error:', e);
-          currentUser.value = { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
           userMenuShow.value = false;
         }
       };
       /* 프로필/비번 변경 시 localStorage 갱신 */
       const _persistAdminUser = () => {
         try {
-          if (currentUser.value) localStorage.setItem('modu-admin-user', JSON.stringify(currentUser.value));
+          if (currentUser.value) localStorage.setItem('modu-bo-user', JSON.stringify(currentUser.value));
         } catch(_){}
       };
       watch(currentUser, _persistAdminUser, { deep: true });
       /* 다른 탭에서 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
-        if (e.key === 'modu-admin-token' || e.key === 'modu-admin-user') {
+        if (e.key === 'modu-bo-token' || e.key === 'modu-bo-user') {
           const u = _restoreAdminUser();
           currentUser.value = u;
         }
@@ -708,7 +721,7 @@
         if (!regForm.name || !regForm.email || !regForm.password) { loginError.value = '필수 항목을 입력하세요.'; return; }
         if (regForm.password !== regForm.confirmPw) { loginError.value = '비밀번호가 일치하지 않습니다.'; return; }
         try {
-          await window.adminApi.post('/bo/sy/user', {
+          await window.boApi.post('/bo/sy/user', {
             name: regForm.name,
             email: regForm.email,
             password: regForm.password,
@@ -731,23 +744,23 @@
         window.open(url, '_blank', 'noopener,noreferrer');
         relatedSiteOpen.value = false;
       };
-      const goFrontSite = (no) => {
-        try { localStorage.setItem('modu-front-site_no', no); } catch(_){}
-        window.open('index.html?FRONT_SITE_NO=' + no, '_blank');
+      const goFoSite = (no) => {
+        try { localStorage.setItem('modu-fo-site_no', no); } catch(_){}
+        window.open('index.html?FO_SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
-      const goAdminSite = (no) => {
-        try { localStorage.setItem('modu-admin-site_no', no); } catch(_){}
-        window.open('admin.html?ADMIN_SITE_NO=' + no, '_blank');
+      const goBoSite = (no) => {
+        try { localStorage.setItem('modu-bo-site_no', no); } catch(_){}
+        window.open('bo.html?BO_SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
-      const currentFrontNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-front-site_no')) || '01';
-      const currentAdminSiteNo = window.ADMIN_SITE_NO || '01';
+      const currentFrontNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-site_no')) || '01';
+      const currentAdminSiteNo = window.BO_SITE_NO || '01';
       const SITE_PAIR_MENU = [
-        { front:'01',   admin:'01' },
-        { front:'02',   admin:'02' },
-        { front:'03',   admin:'03' },
-        { front:'9999', admin:'9999' },
+        { fo:'01',   bo:'01' },
+        { fo:'02',   bo:'02' },
+        { fo:'03',   bo:'03' },
+        { fo:'9999', bo:'9999' },
       ];
       const DISP_LINKS = [
         { label: '통합 페이지', hash: '#page=dispUiPage', icon:'🌐' },
@@ -811,7 +824,7 @@
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
         relatedSiteOpen, toggleRelatedSite, openRelatedLink,
-        goFrontSite, goAdminSite, currentFrontNo, currentAdminSiteNo, SITE_PAIR_MENU, DISP_LINKS,
+        goFoSite, goBoSite, currentFrontNo, currentAdminSiteNo, SITE_PAIR_MENU, DISP_LINKS,
       };
     },
 
@@ -823,8 +836,8 @@
     <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
       ShopJoy
       <span class="front-site-badge"
-        :title="'FRONT_SITE_NO=' + (currentFrontNo || '-') + ' ADMIN_SITE_NO=' + (currentAdminSiteNo || '-') + ' — 클릭: 연관사이트'"
-        :data-tip="'FRONT_SITE_NO=' + (currentFrontNo || '-') + ' ADMIN_SITE_NO=' + (currentAdminSiteNo || '-')"
+        :title="'FO_SITE_NO=' + (currentFrontNo || '-') + ' BO_SITE_NO=' + (currentAdminSiteNo || '-') + ' — 클릭: 연관사이트'"
+        :data-tip="'FO_SITE_NO=' + (currentFrontNo || '-') + ' BO_SITE_NO=' + (currentAdminSiteNo || '-')"
         style="display:inline-flex;gap:4px;font-family:monospace;font-size:11px;cursor:pointer;"
         @click.stop="toggleRelatedSite">
         <span :style="{fontWeight:800,color: currentFrontNo==='03'?'#7b1fa2':currentFrontNo==='02'?'#2e7d6b':currentFrontNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentFrontNo || '-' }}</span>
@@ -839,7 +852,7 @@
 
     <!-- 로그인/유저 영역 -->
     <div class="top-nav-user" @click.stop>
-      <template v-if="currentUser">
+      <template v-if="isLoggedIn">
         <select v-if="currentUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
           :title="'역할 ' + currentUserRoles.length + '개 보유'"
           style="margin-right:4px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:480px;min-width:320px;">
@@ -850,15 +863,15 @@
           style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentUserRoles.length }}</span>
         <span v-else-if="currentUserRoles.length === 1" class="user-role-label"
           style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentUserRoles[0]) }}</span>
-        <span class="user-name-label">{{ currentUser.name }}</span>
-        <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentUser.email">
-          {{ (currentUser?.name || '')[0] || '?' }}
+        <span class="user-name-label">{{ currentUser?.name || '' }}</span>
+        <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentUser?.email || ''">
+          {{ ((currentUser?.name || '').charAt(0)) || '?' }}
         </button>
         <div v-if="userMenuShow" class="user-dropdown">
           <div class="user-dropdown-header">
-            <div class="user-dropdown-name">{{ currentUser.name }}</div>
-            <div class="user-dropdown-role">{{ currentUser.role }}</div>
-            <div class="user-dropdown-email">{{ currentUser.email }}</div>
+            <div class="user-dropdown-name">{{ currentUser?.name || '' }}</div>
+            <div class="user-dropdown-role">{{ currentUser?.role || '' }}</div>
+            <div class="user-dropdown-email">{{ currentUser?.email || '' }}</div>
           </div>
           <div class="user-dropdown-sep"></div>
           <div class="user-dropdown-item" @click="openProfile">🙍 프로필</div>
@@ -985,28 +998,28 @@
           <div style="padding:12px;">
             <!-- _SITE_NO (FRONT / ADMIN 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;margin-bottom:12px;">
-              <div style="font-size:12px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:10.5px;color:#888;font-weight:600;">(FRONT: {{ currentFrontNo || '-' }}, ADMIN: {{ currentAdminSiteNo || '-' }})</span></div>
+              <div style="font-size:12px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:10.5px;color:#888;font-weight:600;">(FO: {{ currentFrontNo || '-' }}, BO: {{ currentAdminSiteNo || '-' }})</span></div>
               <div style="display:flex;flex-direction:column;gap:4px;">
-                <div v-for="p in SITE_PAIR_MENU" :key="p.front+'_'+p.admin"
+                <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
-                  <button type="button" @click="goFrontSite(p.front)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFrontNo===p.front?'#e0f2ec':'transparent',border:'1px solid '+(currentFrontNo===p.front?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentFrontNo===p.front?'#2e7d6b':'#444',fontWeight: currentFrontNo===p.front?700:500,transition:'all .12s'}"
+                  <button type="button" @click="goFoSite(p.fo)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFrontNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFrontNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentFrontNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFrontNo===p.fo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentFrontNo===p.front?'1':'0'"
+                    :data-active="currentFrontNo===p.fo?'1':'0'"
                     title="index.html 새창 오픈">
-                    <span>{{ currentFrontNo===p.front?'●':'○' }}</span>
-                    <span>FRONT={{ p.front }}</span>
+                    <span>{{ currentFrontNo===p.fo?'●':'○' }}</span>
+                    <span>FO={{ p.fo }}</span>
                     <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
                   </button>
-                  <button type="button" @click="goAdminSite(p.admin)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminSiteNo===p.admin?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminSiteNo===p.admin?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentAdminSiteNo===p.admin?'#7b1fa2':'#444',fontWeight: currentAdminSiteNo===p.admin?700:500,transition:'all .12s'}"
+                  <button type="button" @click="goBoSite(p.bo)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminSiteNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminSiteNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentAdminSiteNo===p.bo?'#7b1fa2':'#444',fontWeight: currentAdminSiteNo===p.bo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentAdminSiteNo===p.admin?'1':'0'"
-                    title="admin.html 새창 오픈">
-                    <span>{{ currentAdminSiteNo===p.admin?'●':'○' }}</span>
-                    <span>ADMIN={{ p.admin }}</span>
+                    :data-active="currentAdminSiteNo===p.bo?'1':'0'"
+                    title="bo.html 새창 오픈">
+                    <span>{{ currentAdminSiteNo===p.bo?'●':'○' }}</span>
+                    <span>BO={{ p.bo }}</span>
                     <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
                   </button>
                 </div>
@@ -1021,10 +1034,10 @@
                   style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
                   <span style="width:18px;text-align:center;font-size:12.5px;">{{ it.icon }}</span>
                   <span style="flex:1;font-size:12.5px;color:#333;">{{ it.label }}</span>
-                  <button @click="openRelatedLink('disp-front-ui.html' + it.hash)"
+                  <button @click="openRelatedLink('disp-fo-ui.html' + it.hash)"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
                     title="사용자 미리보기">사용자 ↗</button>
-                  <button @click="openRelatedLink('disp-admin-ui.html' + it.hash)"
+                  <button @click="openRelatedLink('disp-bo-ui.html' + it.hash)"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
                     title="관리자 미리보기">관리자 ↗</button>
                 </div>
@@ -1197,7 +1210,7 @@
           <div class="popup-sel-row" @click="openSelectModal('adminUser')">
             <span v-if="filterAdminUser" class="popup-sel-name">{{ filterAdminUser.name }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterAdminUser" class="popup-sel-id">{{ filterAdminUser.adminUserId }}</span>
+            <span v-if="filterAdminUser" class="popup-sel-id">{{ filterAdminUser.boUserId }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
@@ -1321,11 +1334,11 @@
         <span class="modal-close" @click="profileModal.show=false">✕</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
-        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (currentUser?.name || '')[0] || '?' }}</div>
+        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ ((currentUser?.name || '').charAt(0)) || '?' }}</div>
         <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentUser?.name }}</div>
-          <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentUser?.role }}</div>
-          <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentUser?.regDate }}</div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentUser?.name || '' }}</div>
+          <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentUser?.role || '' }}</div>
+          <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentUser?.regDate || '' }}</div>
         </div>
       </div>
       <div class="form-row">
@@ -1420,15 +1433,15 @@
         <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;">
           <div style="font-weight:700;margin-bottom:6px;color:#555;">테스트 계정 <span style="font-weight:400;color:#aaa;">(클릭 시 자동 로그인)</span></div>
           <div style="display:flex;flex-direction:column;gap:4px;max-height:420px;overflow:auto;">
-            <button v-for="u in (window.adminDataProvider?.getAdminUsers() || [])" :key="u?.adminUserId" type="button" @click="quickLogin(u?.email)"
+            <button v-for="u in testAccounts" :key="u?.boUserId" type="button" @click="quickLogin(u?.email)"
               style="display:grid;grid-template-columns:200px 32px 1fr;align-items:center;gap:10px;padding:7px 10px;font-size:12px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
               onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';"
               onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';">
               <span style="font-weight:600;color:#374151;">{{ u.email }}</span>
-              <span style="display:inline-block;text-align:center;background:#e8587a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">{{ rolesOfUser(u.adminUserId).length }}</span>
+              <span style="display:inline-block;text-align:center;background:#e8587a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">{{ rolesOfUser(u.boUserId).length }}</span>
               <span style="color:#6b7280;font-size:10.5px;line-height:1.5;white-space:normal;display:flex;flex-direction:column;gap:2px;">
-                <span v-for="(r, i) in rolesOfUser(u.adminUserId)" :key="i">• {{ rolePath(r, u.adminUserId) }}</span>
-                <span v-if="bizInfoOfUser(u.adminUserId)" style="margin-top:2px;color:#2563eb;font-weight:600;">{{ bizInfoOfUser(u.adminUserId) }}</span>
+                <span v-for="(r, i) in rolesOfUser(u.boUserId)" :key="i">• {{ rolePath(r, u.boUserId) }}</span>
+                <span v-if="bizInfoOfUser(u.boUserId)" style="margin-top:2px;color:#2563eb;font-weight:600;">{{ bizInfoOfUser(u.boUserId) }}</span>
               </span>
             </button>
           </div>

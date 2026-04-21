@@ -60,7 +60,7 @@ window.SyI18nMng = {
         else if (msgForm[lang]) src.push({ i18nMsgId: 'IM' + Date.now() + lang, i18nId: selectedKey.value.i18nId, langCd: lang, i18nMsg: msgForm[lang] });
       });
       try {
-        const res = await window.adminApi.put(`sy/i18n/${selectedKey.value.i18nId}/msgs`, { msgs: { ...msgForm } });
+        const res = await window.boApi.put(`sy/i18n/${selectedKey.value.i18nId}/msgs`, { msgs: { ...msgForm } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {

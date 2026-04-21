@@ -19,7 +19,7 @@ I've implemented a **complete system to prevent undefined/null errors** in all a
    - Protected string indexing with optional chaining
    - All template access patterns safe
 
-4. **Integrated into Build** (`admin.html`)
+4. **Integrated into Build** (`bo.html`)
    - Added script loading in correct dependency order
    - All utilities loaded before components use them
 
@@ -67,7 +67,7 @@ I've implemented a **complete system to prevent undefined/null errors** in all a
 # Live Server at http://127.0.0.1:5501/
 
 # 2. Login to admin
-http://127.0.0.1:5501/admin.html
+http://127.0.0.1:5501/bo.html
 # Use any test account (admin1@demo.com / demo1234, etc.)
 
 # 3. Test navigation
@@ -218,7 +218,7 @@ TypeError: Cannot read properties of undefined (reading '0')
 |------|------|---------|
 | `base/utils/adminDataProvider.js` | NEW | 50+ safe data functions |
 | `base/utils/refDefaults.js` | NEW | Form defaults & utilities |
-| `admin.html` | MODIFIED | Added script loading (line 80) |
+| `bo.html` | MODIFIED | Added script loading (line 80) |
 | `base/boApp.js` | MODIFIED | 3 critical fixes (lines 284, 855, 1324) |
 
 ## 🎓 Next Steps

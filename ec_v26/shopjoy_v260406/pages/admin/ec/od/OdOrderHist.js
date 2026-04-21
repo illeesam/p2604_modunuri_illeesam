@@ -8,14 +8,14 @@ window.OdOrderHist = {
     const orders = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const claims = ref((window.adminData?.claims || []));
-    const deliveries = ref((window.adminData?.deliveries || []));
+    const claims = ref((window.boData?.claims || []));
+    const deliveries = ref((window.boData?.deliveries || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/od/order/page', {
+        const res = await window.boApi.get('/bo/ec/od/order/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         orders.splice(0, orders.length, ...(res.data?.data?.list || []));

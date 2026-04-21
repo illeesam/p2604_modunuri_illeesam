@@ -37,7 +37,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const orders = ref([]);
   const loadOrders = async () => {
     if (orders.value.length) return;
-    try { const res = await window.frontApi.get('/fo/my/order/list'); orders.value = res.data?.data || []; }
+    try { const res = await window.foApi.get('/fo/my/order/list'); orders.value = res.data?.data || []; }
     catch (e) { orders.value = []; }
   };
   const setOrderStatus = (orderId, status) => {
@@ -50,7 +50,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const claimFilter = ref('전체');
   const loadClaims = async () => {
     if (claims.value.length) return;
-    try { const res = await window.frontApi.get('/fo/my/claim/list'); claims.value = res.data?.data || []; }
+    try { const res = await window.foApi.get('/fo/my/claim/list'); claims.value = res.data?.data || []; }
     catch (e) { claims.value = []; }
   };
   const filteredClaims = computed(() =>
@@ -70,7 +70,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const couponCode = ref('');
   const loadCoupons = async () => {
     if (coupons.value.length) return;
-    try { const res = await window.frontApi.get('/fo/my/coupon/list'); coupons.value = res.data?.data || []; }
+    try { const res = await window.foApi.get('/fo/my/coupon/list'); coupons.value = res.data?.data || []; }
     catch (e) { coupons.value = []; }
   };
   const discountLabel = c => c.discountType === 'rate' ? c.discountValue + '% 할인'
@@ -84,7 +84,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const loadCash = async () => {
     if (cashHistory.value.length) return;
     try {
-      const res = await window.frontApi.get('/fo/my/cash/info');
+      const res = await window.foApi.get('/fo/my/cash/info');
       cashBalance.value = res.data?.data?.balance || 0;
       cashHistory.value = res.data?.data?.history || [];
     } catch (e) {}
@@ -95,7 +95,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const expandedInquiry = ref(null);
   const loadInquiries = async () => {
     if (inquiries.value.length) return;
-    try { const res = await window.frontApi.get('/fo/my/inquiry/list'); inquiries.value = res.data?.data || []; }
+    try { const res = await window.foApi.get('/fo/my/inquiry/list'); inquiries.value = res.data?.data || []; }
     catch (e) { inquiries.value = []; }
   };
   const inquiryStatusColor = s => ({ '요청':'#3b82f6','처리중':'#f97316','답변완료':'#22c55e','취소됨':'#9ca3af' }[s] || '#9ca3af');
@@ -105,7 +105,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const expandedChat = ref(null);
   const loadChats = async () => {
     if (chats.value.length) return;
-    try { const res = await window.frontApi.get('/fo/my/chat/list'); chats.value = res.data?.data || []; }
+    try { const res = await window.foApi.get('/fo/my/chat/list'); chats.value = res.data?.data || []; }
     catch (e) { chats.value = []; }
   };
   const openChat = chat => {

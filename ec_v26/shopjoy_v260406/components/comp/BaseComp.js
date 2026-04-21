@@ -5,7 +5,7 @@
    ─────────────────────────────────────────
    Props:
      modelValue  : attachGrpId (Number|null) — v-model 바인딩
-     adminData   : adminData 객체 (attaches, attachGrps 포함)
+     boData      : boData 객체 (attaches, attachGrps 포함)
      refId       : 참조 ID 문자열 (e.g. 'NOTICE-1')
      showToast   : 토스트 함수
      grpCode     : 그룹 코드 prefix (기본 'COMN_ATTACH')
@@ -20,7 +20,7 @@ window.BaseAttachGrp = {
   name: 'BaseAttachGrp',
   props: {
     modelValue: { default: null },
-    adminData:  { required: true },
+    boData:  { required: true },
     refId:      { default: '' },
     showToast:  { type: Function, default: () => {} },
     grpCode:    { default: 'COMN_ATTACH' },
@@ -36,7 +36,7 @@ window.BaseAttachGrp = {
     /* 현재 그룹의 파일 목록 */
     const files = computed(() =>
       props.modelValue
-        ? props.adminData.attaches.filter(a => a.attachGrpId === props.modelValue)
+        ? props.boData.attaches.filter(a => a.attachGrpId === props.modelValue)
         : []
     );
 
@@ -81,7 +81,7 @@ window.BaseAttachGrp = {
         /* 최초 첨부 → attachGrps 신규 생성 후 ID emit */
         if (!grpId) {
           const newGrp = {
-            attachGrpId:  props.adminData.nextId(props.adminData.attachGrps, 'attachGrpId'),
+            attachGrpId:  props.boData.nextId(props.boData.attachGrps, 'attachGrpId'),
             grpNm:      props.grpNm,
             grpCode:      props.grpCode + '_' + Date.now(),
             description:  props.grpNm + ' 자동생성 그룹',
@@ -91,13 +91,13 @@ window.BaseAttachGrp = {
             status:       '활성',
             regDate:      new Date().toISOString().slice(0, 10),
           };
-          props.adminData.attachGrps.push(newGrp);
+          props.boData.attachGrps.push(newGrp);
           grpId = newGrp.attachGrpId;
           emit('update:modelValue', grpId);
         }
 
-        props.adminData.attaches.push({
-          attachId:     props.adminData.nextId(props.adminData.attaches, 'attachId'),
+        props.boData.attaches.push({
+          attachId:     props.boData.nextId(props.boData.attaches, 'attachId'),
           attachGrpId:  grpId,
           attachGrpNm: props.grpNm,
           fileNm:     file.name,
@@ -117,8 +117,8 @@ window.BaseAttachGrp = {
     };
 
     const removeFile = (attachId) => {
-      const idx = props.adminData.attaches.findIndex(a => a.attachId === attachId);
-      if (idx !== -1) props.adminData.attaches.splice(idx, 1);
+      const idx = props.boData.attaches.findIndex(a => a.attachId === attachId);
+      if (idx !== -1) props.boData.attaches.splice(idx, 1);
       /* 그룹 내 파일이 모두 삭제되면 grpId 초기화 */
       if (files.value.length === 0) emit('update:modelValue', null);
     };

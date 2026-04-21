@@ -16,7 +16,7 @@ window.XsSample11 = {
     /* 카테고리 선택 */
     const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
-    const allCats = computed(() => ((window.adminData || {}).categories || []).filter(c => c.status === '활성'));
+    const allCats = computed(() => ((window.boData || {}).categories || []).filter(c => c.status === '활성'));
     const selectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = allCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const catBtnLabel = computed(() => {
       if (selectedCatIds.size === 0) return '카테고리';
@@ -25,7 +25,7 @@ window.XsSample11 = {
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
 
     /* 현재 사용자 인증 상태 */
-    const auth       = window.useFrontAuthStore ? window.useFrontAuthStore() : null;
+    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
     const isLoggedIn = auth ? auth.isLoggedIn : false;
     const userGrade  = (auth && auth.user) ? (auth.user.grade  || '일반') : '';
     const userName   = (auth && auth.user) ? (auth.user.userName || auth.user.email || '') : '';
@@ -69,7 +69,7 @@ window.XsSample11 = {
 
     /* 화면영역 코드 목록 */
     const allAreas = computed(() =>
-      ((window.adminData || {}).codes || [])
+      ((window.boData || {}).codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -115,7 +115,7 @@ window.XsSample11 = {
     };
 
     const panelsForArea = (areaCode) =>
-      ((window.adminData || {}).displays || [])
+      ((window.boData || {}).displays || [])
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 

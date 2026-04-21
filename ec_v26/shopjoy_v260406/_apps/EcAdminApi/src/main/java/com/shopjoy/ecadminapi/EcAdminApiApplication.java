@@ -20,6 +20,6 @@ public class EcAdminApiApplication {
         ConfigurableApplicationContext ctx = SpringApplication.run(EcAdminApiApplication.class, args);
         String profiles = String.join(", ", ctx.getEnvironment().getActiveProfiles());
         if (profiles.isBlank()) profiles = "default";
-        log.info("[EcAdminApi] ===== 애플리케이션 구동 완료 — active profiles: [{}] =====", profiles);
+        log.info("[EcAdminApi] ===== 애플리케이션 구동 완료 ... 2026-04-22 05:54  — active profiles: [{}] =====", profiles);
     }
 }

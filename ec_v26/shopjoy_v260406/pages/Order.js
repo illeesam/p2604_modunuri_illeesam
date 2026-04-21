@@ -17,7 +17,7 @@ window.Order = {
     const allCoupons  = reactive([]);
     const loadCoupons = async () => {
       try {
-        const res = await window.frontApi.get('/fo/my/coupon/list');
+        const res = await window.foApi.get('/fo/my/coupon/list');
         allCoupons.splice(0, allCoupons.length, ...(res.data?.data || []).filter(c => !c.used));
       } catch (e) { allCoupons.length = 0; }
     };
@@ -74,7 +74,7 @@ window.Order = {
     const cashInput   = ref(0);
     const loadCash = async () => {
       try {
-        const res = await window.frontApi.get('/fo/my/cash/info');
+        const res = await window.foApi.get('/fo/my/cash/info');
         cashBalance.value = res.data?.data?.balance || 0;
       } catch (e) {}
     };
@@ -167,7 +167,7 @@ window.Order = {
           cashUsed:           appliedCash.value,
           finalPrice:         finalPrice.value,
         };
-        if (window.frontApi) await window.frontApi.post('/fo/order/create', payload).catch(() => {});
+        if (window.foApi) await window.foApi.post('/fo/order/create', payload).catch(() => {});
         resultData.value = payload;
         view.value = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 배치 실행이력 */
 window.SyBatchHist = {
   name: 'SyBatchHist',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'batchCode'],
+  props: ['navigate', 'boData', 'showRefModal', 'showToast', 'batchCode'],
   setup(props) {    const batches = reactive([]);
     const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
@@ -11,7 +11,7 @@ window.SyBatchHist = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/batch/page', {
+        const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         batches.value = res.data?.data?.list || [];

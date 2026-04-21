@@ -11,7 +11,7 @@ window.SyBizUserMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/biz-user/page', {
+        const res = await window.boApi.get('/bo/sy/biz-user/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bizUsers.value = res.data?.data?.list || [];
@@ -74,7 +74,7 @@ window.SyBizUserMng = {
     const bizMap = computed(() => Object.fromEntries((ad.bizs || []).map(b => [b.bizId, b])));
     const bizNm = (bizId) => (bizMap.value[bizId] || {}).bizNm || '#'+bizId;
     const bizVendorType = (bizId) => (bizMap.value[bizId] || {}).vendorTypeCd || '';
-    const bizPathLabel = (bizId) => window.adminUtil.getPathLabel((bizMap.value[bizId] || {}).pathId) || '';
+    const bizPathLabel = (bizId) => window.boCmUtil.getPathLabel((bizMap.value[bizId] || {}).pathId) || '';
     const bizSummary = (bizId) => {
       const b = bizMap.value[bizId];
       if (!b) return '';
@@ -289,7 +289,7 @@ window.SyBizUserMng = {
     const openNew = () => {
       const bid = applied.bizId != null ? applied.bizId : searchBizId.value;
       if (bid == null) {
-        if (window.adminToast) window.adminToast('사업자를 먼저 선택해주세요.', 'warning');
+        if (window.boToast) window.boToast('사업자를 먼저 선택해주세요.', 'warning');
         return;
       }
       if (applied.bizId == null) { applied.bizId = bid; pager.page = 1; }
@@ -302,33 +302,33 @@ window.SyBizUserMng = {
     const closeForm = () => { formMode.value = ''; };
     const saveForm = () => {
       if (!formData.bizId) {
-        if (window.adminToast) window.adminToast('사업자가 필요합니다.', 'error');
+        if (window.boToast) window.boToast('사업자가 필요합니다.', 'error');
         return;
       }
       if (!formData.memberNm || !formData.mobile || !formData.email || !formData.birthDate) {
-        if (window.adminToast) window.adminToast('이름/휴대전화/이메일/생년월일은 필수입니다.', 'error');
+        if (window.boToast) window.boToast('이름/휴대전화/이메일/생년월일은 필수입니다.', 'error');
         return;
       }
       if (formMode.value === 'new') {
         const newId = ((ad.bizUsers || []).reduce((m,x) => Math.max(m, x.bizUserId), 0) || 0) + 1;
         ad.bizUsers.push({ ...formData, bizUserId: newId });
-        if (window.adminToast) window.adminToast('등록되었습니다.', 'success');
+        if (window.boToast) window.boToast('등록되었습니다.', 'success');
       } else {
         const idx = (ad.bizUsers || []).findIndex(u => u.bizUserId === formData.bizUserId);
         if (idx >= 0) ad.bizUsers[idx] = { ...formData };
-        if (window.adminToast) window.adminToast('수정 완료', 'success');
+        if (window.boToast) window.boToast('수정 완료', 'success');
       }
       closeForm();
     };
     const deleteRow = async (u) => {
-      const ok = window.adminConfirm
-        ? await window.adminConfirm({ title: '삭제', message: u.memberNm + ' 사용자를 삭제하시겠습니까?' })
+      const ok = window.boConfirm
+        ? await window.boConfirm({ title: '삭제', message: u.memberNm + ' 사용자를 삭제하시겠습니까?' })
         : confirm(u.memberNm + ' 사용자를 삭제하시겠습니까?');
       if (!ok) return;
       const idx = (ad.bizUsers || []).findIndex(x => x.bizUserId === u.bizUserId);
       if (idx >= 0) ad.bizUsers.splice(idx, 1);
       if (formMode.value === 'edit' && formData.bizUserId === u.bizUserId) closeForm();
-      if (window.adminToast) window.adminToast('삭제되었습니다.', 'success');
+      if (window.boToast) window.boToast('삭제되었습니다.', 'success');
     };
 
     return {
@@ -348,12 +348,12 @@ window.SyBizUserMng = {
       roleModalOpen, roleModalTemp, openRoleModal, closeRoleModal, confirmRoleModal, pickRoleInModal,
       selectedModalRole, modalMenuList, permBadgeColor,
       sendJoinMail: () => {
-        if (!formData.email) { window.adminToast && window.adminToast('이메일을 입력해주세요.', 'warning'); return; }
-        window.adminToast && window.adminToast(formData.email + ' 로 회원가입 메일을 보냈습니다.', 'success');
+        if (!formData.email) { window.boToast && window.boToast('이메일을 입력해주세요.', 'warning'); return; }
+        window.boToast && window.boToast(formData.email + ' 로 회원가입 메일을 보냈습니다.', 'success');
       },
       sendPwResetMail: () => {
-        if (!formData.email) { window.adminToast && window.adminToast('이메일을 입력해주세요.', 'warning'); return; }
-        window.adminToast && window.adminToast(formData.email + ' 로 비밀번호 초기화 메일을 보냈습니다.', 'success');
+        if (!formData.email) { window.boToast && window.boToast('이메일을 입력해주세요.', 'warning'); return; }
+        window.boToast && window.boToast(formData.email + ' 로 비밀번호 초기화 메일을 보냈습니다.', 'success');
       },
     };
   },

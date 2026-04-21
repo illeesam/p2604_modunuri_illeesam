@@ -12,7 +12,7 @@ window.CmBlogMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/cm/blog/page', {
+        const res = await window.boApi.get('/bo/ec/cm/blog/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         blogs.splice(0, blogs.length, ...(res.data?.data?.list || []));
@@ -69,7 +69,7 @@ window.CmBlogMng = {
       if (isNewPost) { form.blogId = 'BL' + String(Date.now()).slice(-6); form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...form }); selectedId.value = form.blogId; isNew.value = false; }
       else { const si = src.findIndex(p => p.blogId === form.blogId); if (si !== -1) Object.assign(src[si], form); }
       try {
-        const res = await (isNewPost ? window.adminApi.post(`/bo/ec/cm/blog/${form.blogId}`, { ...form }) : window.adminApi.put(`/bo/ec/cm/blog/${form.blogId}`, { ...form }));
+        const res = await (isNewPost ? window.boApi.post(`/bo/ec/cm/blog/${form.blogId}`, { ...form }) : window.boApi.put(`/bo/ec/cm/blog/${form.blogId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -86,7 +86,7 @@ window.CmBlogMng = {
       if (si !== -1) bltnPosts.value.splice(si, 1);
       closeDetail();
       try {
-        const res = await window.adminApi.delete(`/bo/ec/cm/blog/${selectedRow.value.blogId}`);
+        const res = await window.boApi.delete(`/bo/ec/cm/blog/${selectedRow.value.blogId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -102,7 +102,7 @@ window.CmBlogMng = {
       row.useYn = newYn;
       if (form.blogId === row.blogId) form.useYn = newYn;
       try {
-        const res = await window.adminApi.put(`/bo/ec/cm/blog/${row.blogId}/use`, { useYn: newYn });
+        const res = await window.boApi.put(`/bo/ec/cm/blog/${row.blogId}/use`, { useYn: newYn });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('처리되었습니다.', 'success');
       } catch (err) {

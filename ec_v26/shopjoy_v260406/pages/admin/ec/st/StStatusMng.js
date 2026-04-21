@@ -18,19 +18,19 @@ window.StStatusMng = {
     ];
 
     /* ── 공통 날짜 필터 ── */
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
     const onDateRangeChange = () => {
       if (dateRange.value) {
-        const r = window.adminUtil.getDateRange(dateRange.value);
+        const r = window.boCmUtil.getDateRange(dateRange.value);
         dateStart.value = r ? r.from : '';
         dateEnd.value   = r ? r.to   : '';
       }
     };
     /* 초기 날짜 설정 */
-    (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     /* ── 원본 데이터 ── */
     const orders   = computed(() => orders.value   || []);

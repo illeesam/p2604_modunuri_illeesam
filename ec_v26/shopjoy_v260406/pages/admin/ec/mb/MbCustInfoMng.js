@@ -73,7 +73,7 @@
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/mb/cust-info/page', {
+        const res = await window.boApi.get('/bo/ec/mb/cust-info/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         custInfos.splice(0, custInfos.length, ...(res.data?.data?.list || []));

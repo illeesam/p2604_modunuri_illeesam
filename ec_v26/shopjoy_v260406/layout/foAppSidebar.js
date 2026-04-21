@@ -1,5 +1,5 @@
 /* ShopJoy - AppSidebar */
-window.frontAppSidebar = {
+window.foAppSidebar = {
   name: 'FrontAppSidebar',
   props: ['page', 'sidebarOpen', 'mobileOpen', 'config', 'navigate', 'cartCount', 'auth'],
   emits: ['toggle-sidebar', 'close-mobile'],
@@ -63,8 +63,8 @@ window.frontAppSidebar = {
       emit('close-mobile');
     };
 
-    const frontSiteNo = window.FRONT_SITE_NO || '01';
-    const showSamples = frontSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
+    const foSiteNo = window.FO_SITE_NO || '01';
+    const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
     return { isMenuActive, sample0Open, sample1Open, sample2Open, dispUiOpen,
              SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, navTo,

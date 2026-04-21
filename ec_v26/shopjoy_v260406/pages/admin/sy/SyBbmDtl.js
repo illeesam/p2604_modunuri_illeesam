@@ -10,7 +10,7 @@ window.SyBbmDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/bbm/page', {
+        const res = await window.boApi.get('/bo/sy/bbm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bbms.value = res.data?.data?.list || [];
@@ -24,7 +24,7 @@ window.SyBbmDtl = {
     });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       bbmId: null, bbmCode: '', bbmNm: '', bbmType: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
@@ -38,7 +38,7 @@ window.SyBbmDtl = {
     const openPathPick = () => { pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { form.pathId = pathId; pathPickModal.show = false; };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const schema = yup.object({
       bbmCode: yup.string().required('게시판코드를 입력해주세요.'),
@@ -70,7 +70,7 @@ window.SyBbmDtl = {
         if (idx !== -1) Object.assign(bbms.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }) : window.adminApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }) : window.boApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbmMng');

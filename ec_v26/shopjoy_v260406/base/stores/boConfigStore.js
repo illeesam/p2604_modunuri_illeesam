@@ -53,7 +53,7 @@
       async loadCodes() {
         this.loading = true;
         try {
-          const res = await window.adminApi.get('/bo/sy/code');
+          const res = await window.boApi.get('/bo/sy/code');
           const codeList = res?.data?.data || [];
 
           // 코드 그룹별로 정렬
@@ -83,17 +83,17 @@
       async loadUserInfo() {
         this.loading = true;
         try {
-          const res = await window.adminApi.get('/auth/bo/auth/me');
+          const res = await window.boApi.get('/auth/bo/auth/me');
           const user = res?.data?.data || {};
 
-          this.userInfo = user || { adminUserId: 0, name: '', email: '' };
+          this.userInfo = user || { boUserId: 0, name: '', email: '' };
           this.menus = (user?.menus || []);
 
           this.error = null;
         } catch (err) {
           this.error = err?.message || '사용자 정보 로드 실패';
           console.error('[BoConfigStore] loadUserInfo error:', err);
-          this.userInfo = { adminUserId: 0, name: '', email: '' };
+          this.userInfo = { boUserId: 0, name: '', email: '' };
           this.menus = [];
         } finally {
           this.loading = false;
@@ -184,10 +184,10 @@
   window.getUserInfo = () => {
     try {
       const store = window.useConfigStore?.();
-      return store?.userInfo || { adminUserId: 0, name: '', email: '' };
+      return store?.userInfo || { boUserId: 0, name: '', email: '' };
     } catch (e) {
       console.error('getUserInfo error:', e);
-      return { adminUserId: 0, name: '', email: '' };
+      return { boUserId: 0, name: '', email: '' };
     }
   };
 })();

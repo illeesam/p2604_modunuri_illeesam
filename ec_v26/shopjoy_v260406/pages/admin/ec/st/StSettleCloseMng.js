@@ -39,7 +39,7 @@ window.StSettleCloseMng = {
         status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
       });
       try {
-        const res = await window.adminApi.post('st/close', { closeMon: thisMonth, sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value, comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value });
+        const res = await window.boApi.post('st/close', { closeMon: thisMonth, sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value, comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('정산마감이 완료되었습니다.', 'success');
       } catch (err) {
@@ -54,7 +54,7 @@ window.StSettleCloseMng = {
       if (!ok) return;
       r.status = '마감취소';
       try {
-        const res = await window.adminApi.put(`/bo/ec/st/close/${r.closeId}/reopen`, {});
+        const res = await window.boApi.put(`/bo/ec/st/close/${r.closeId}/reopen`, {});
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('마감이 취소되었습니다.', 'success');
       } catch (err) {

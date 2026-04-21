@@ -1,5 +1,5 @@
 /* ShopJoy - AppFooter */
-window.frontAppFooter = {
+window.foAppFooter = {
   name: 'FrontAppFooter',
   props: ['config', 'navigate'],
   emits: [],
@@ -15,26 +15,26 @@ window.frontAppFooter = {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');
         if (target && typeof window.navigate === 'function') window.navigate(target);
       } else if (root === 'backOffice') {
-        window.open((window.pageUrl ? window.pageUrl('admin.html') : 'admin.html') + (target ? '#page=' + target : ''), '_blank');
+        window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispFrontUi') {
-        window.open((window.pageUrl ? window.pageUrl('disp-front-ui.html') : 'disp-front-ui.html') + (target ? '#page=' + target : ''), '_blank');
+        window.open((window.pageUrl ? window.pageUrl('disp-fo-ui.html') : 'disp-fo-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispAdminUi') {
-        window.open((window.pageUrl ? window.pageUrl('disp-admin-ui.html') : 'disp-admin-ui.html') + (target ? '#page=' + target : ''), '_blank');
-      } else if (root === 'frontSite') {
-        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FRONT_SITE_NO=' + target;
-      } else if (root === 'frontOnly') {
-        /* target = FRONT 번호만, index.html 이동 */
-        try { localStorage.setItem('modu-front-site_no', target); } catch(_){}
-        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FRONT_SITE_NO=' + target;
-      } else if (root === 'backOnly') {
-        /* target = BACK 번호만, admin.html 새창 오픈 */
-        try { localStorage.setItem('modu-admin-site_no', target); } catch(_){}
-        window.open((window.pageUrl ? window.pageUrl('admin.html') : 'admin.html') + '?ADMIN_SITE_NO=' + target, '_blank');
+        window.open((window.pageUrl ? window.pageUrl('disp-bo-ui.html') : 'disp-bo-ui.html') + (target ? '#page=' + target : ''), '_blank');
+      } else if (root === 'foSite') {
+        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + target;
+      } else if (root === 'foOnly') {
+        /* target = FO 번호만, index.html 이동 */
+        try { localStorage.setItem('modu-fo-site_no', target); } catch(_){}
+        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + target;
+      } else if (root === 'boOnly') {
+        /* target = BO 번호만, bo.html 새창 오픈 */
+        try { localStorage.setItem('modu-bo-site_no', target); } catch(_){}
+        window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + '?BO_SITE_NO=' + target, '_blank');
       }
       menuOpen.value = false;
     };
-    const currentSiteNo  = window.FRONT_SITE_NO || '01';
-    const currentAdminNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-admin-site_no')) || '01';
+    const currentSiteNo  = window.FO_SITE_NO || '01';
+    const currentAdminNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-bo-site_no')) || '01';
 
     const FRONT_MENU = [
       { id:'home',       label:'홈',         icon:'🏠' },
@@ -75,16 +75,16 @@ window.frontAppFooter = {
       { id:'dispUi06',   label:'UI 샘플 06',  icon:'6️⃣' },
     ];
     const SITE_MENU = [
-      { id:'01',   label:'FRONT_SITE_NO=01' },
-      { id:'02',   label:'FRONT_SITE_NO=02' },
-      { id:'03',   label:'FRONT_SITE_NO=03' },
-      { id:'9999', label:'FRONT_SITE_NO=9999' },
+      { id:'01',   label:'FO_SITE_NO=01' },
+      { id:'02',   label:'FO_SITE_NO=02' },
+      { id:'03',   label:'FO_SITE_NO=03' },
+      { id:'9999', label:'FO_SITE_NO=9999' },
     ];
     const SITE_PAIR_MENU = [
-      { front:'01',   admin:'01' },
-      { front:'02',   admin:'02' },
-      { front:'03',   admin:'03' },
-      { front:'9999', admin:'9999' },
+      { fo:'01',   bo:'01' },
+      { fo:'02',   bo:'02' },
+      { fo:'03',   bo:'03' },
+      { fo:'9999', bo:'9999' },
     ];
     return { menuOpen, toggleMenu, closeMenu, goItem, currentSiteNo, currentAdminNo, FRONT_MENU, BACK_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
   },
@@ -179,29 +179,29 @@ window.frontAppFooter = {
           <div style="display:flex;flex-direction:column;gap:14px;">
             <!-- _SITE_NO (FRONT / BACK 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FRONT: {{ currentSiteNo }}, ADMIN: {{ currentAdminNo }})</span></div>
+              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FO: {{ currentSiteNo }}, BO: {{ currentAdminNo }})</span></div>
               <div style="display:flex;flex-direction:column;gap:4px;">
-                <div v-for="p in SITE_PAIR_MENU" :key="p.front+'_'+p.admin"
+                <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
-                  <!-- FRONT 링크 -->
-                  <button type="button" @click="goItem('frontOnly', p.front)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentSiteNo===p.front?'#e0f2ec':'transparent',border:'1px solid '+(currentSiteNo===p.front?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentSiteNo===p.front?'#2e7d6b':'#444',fontWeight: currentSiteNo===p.front?700:500,transition:'all .12s'}"
+                  <!-- FO 링크 -->
+                  <button type="button" @click="goItem('foOnly', p.fo)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentSiteNo===p.fo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentSiteNo===p.front?'1':'0'"
+                    :data-active="currentSiteNo===p.fo?'1':'0'"
                     title="index.html로 이동 (같은 창)">
-                    <span>{{ currentSiteNo===p.front?'●':'○' }}</span>
-                    <span>FRONT={{ p.front }}</span>
+                    <span>{{ currentSiteNo===p.fo?'●':'○' }}</span>
+                    <span>FO={{ p.fo }}</span>
                   </button>
-                  <!-- BACK 링크 (admin.html 새창) -->
-                  <button type="button" @click="goItem('backOnly', p.admin)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminNo===p.admin?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminNo===p.admin?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentAdminNo===p.admin?'#7b1fa2':'#444',fontWeight: currentAdminNo===p.admin?700:500,transition:'all .12s'}"
+                  <!-- BO 링크 (bo.html 새창) -->
+                  <button type="button" @click="goItem('boOnly', p.bo)"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentAdminNo===p.bo?'#7b1fa2':'#444',fontWeight: currentAdminNo===p.bo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentAdminNo===p.admin?'1':'0'"
-                    title="admin.html 새창 오픈">
-                    <span>{{ currentAdminNo===p.admin?'●':'○' }}</span>
-                    <span>ADMIN={{ p.admin }}</span>
+                    :data-active="currentAdminNo===p.bo?'1':'0'"
+                    title="bo.html 새창 오픈">
+                    <span>{{ currentAdminNo===p.bo?'●':'○' }}</span>
+                    <span>BO={{ p.bo }}</span>
                     <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
                   </button>
                 </div>

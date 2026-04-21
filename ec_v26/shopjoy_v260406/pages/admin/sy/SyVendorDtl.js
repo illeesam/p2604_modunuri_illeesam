@@ -10,7 +10,7 @@ window.SyVendorDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/vendor/page', {
+        const res = await window.boApi.get('/bo/sy/vendor/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         vendors.value = res.data?.data?.list || [];
@@ -24,7 +24,7 @@ window.SyVendorDtl = {
     });
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const form = reactive({
       vendorId: null, vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
@@ -97,7 +97,7 @@ window.SyVendorDtl = {
         if (idx !== -1) Object.assign(vendors.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`vendors/${form.vendorId}`, { ...form }) : window.adminApi.put(`vendors/${form.vendorId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`vendors/${form.vendorId}`, { ...form }) : window.boApi.put(`vendors/${form.vendorId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syVendorMng');

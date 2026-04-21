@@ -4,8 +4,8 @@ window.PdQnaMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const members = ref(window.adminDataProvider?.getMembers?.() || []);
+    const products = ref(window.boDataProvider?.getProducts?.() || []);
+    const members = ref(window.boDataProvider?.getMembers?.() || []);
     const qnas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -14,7 +14,7 @@ window.PdQnaMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/qna/page', {
+        const res = await window.boApi.get('/bo/ec/pd/qna/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         qnas.splice(0, qnas.length, ...(res.data?.data?.list || []));
@@ -69,7 +69,7 @@ window.PdQnaMng = {
       selectedRow.value.answYn = 'Y';
       selectedRow.value.answDate = new Date().toLocaleString('sv').replace('T', ' ');
       try {
-        const res = await window.adminApi.put(`/bo/ec/pd/qna/${selectedRow.value.qnaId}/answer`, { answContent: answForm.content });
+        const res = await window.boApi.put(`/bo/ec/pd/qna/${selectedRow.value.qnaId}/answer`, { answContent: answForm.content });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

@@ -144,7 +144,7 @@
 ### Code Files
 - [base/utils/adminDataProvider.js](base/utils/adminDataProvider.js) - Data provider
 - [base/utils/refDefaults.js](base/utils/refDefaults.js) - Form defaults
-- [admin.html](admin.html) - Integration point
+- [bo.html](bo.html) - Integration point
 - [base/boApp.js](base/boApp.js) - Critical fixes
 
 ### Documentation Files

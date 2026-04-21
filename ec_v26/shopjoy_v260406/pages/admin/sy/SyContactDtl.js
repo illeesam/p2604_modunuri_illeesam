@@ -11,7 +11,7 @@ window.SyContactDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/contact/page', {
+        const res = await window.boApi.get('/bo/sy/contact/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         contacts.value = res.data?.data?.list || [];
@@ -25,7 +25,7 @@ window.SyContactDtl = {
     });
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const tab = ref(window._syContactDtlState.tab || 'content');
     Vue.watch(tab, v => { window._syContactDtlState.tab = v; });
     const viewMode2 = ref(window._syContactDtlState.viewMode || 'tab');
@@ -114,7 +114,7 @@ window.SyContactDtl = {
         if (idx !== -1) Object.assign(contacts.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }) : window.adminApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }) : window.boApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syContactMng');

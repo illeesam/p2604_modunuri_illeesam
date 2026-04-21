@@ -14,8 +14,8 @@ window.OdClaimMng = {
       loading.value = true;
       try {
         const [claimsRes, membersRes] = await Promise.all([
-          window.adminApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
         claims = claimsRes.data?.data?.list || [];
         members = membersRes.data?.data?.list || [];
@@ -29,12 +29,12 @@ window.OdClaimMng = {
     });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -111,7 +111,7 @@ window.OdClaimMng = {
       if (idx !== -1) claims.value.splice(idx, 1);
       if (selectedId.value === c.claimId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/ec/od/claim/${c.claimId}`);
+        const res = await window.boApi.delete(`/bo/ec/od/claim/${c.claimId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -121,7 +121,7 @@ window.OdClaimMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
     const checked = ref(new Set());
@@ -229,7 +229,7 @@ window.OdClaimMng = {
         checked.value = new Set();
         bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('claims/bulk-status', { changes });
+          const res = await window.boApi.put('claims/bulk-status', { changes });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${totalCnt}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -247,7 +247,7 @@ window.OdClaimMng = {
         checked.value = new Set();
         bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('claims/bulk-type', { ids, type: val });
+          const res = await window.boApi.put('claims/bulk-type', { ids, type: val });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -263,7 +263,7 @@ window.OdClaimMng = {
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('claims/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
+          const res = await window.boApi.put('claims/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -283,7 +283,7 @@ window.OdClaimMng = {
         } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('claims/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          const res = await window.boApi.put('claims/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

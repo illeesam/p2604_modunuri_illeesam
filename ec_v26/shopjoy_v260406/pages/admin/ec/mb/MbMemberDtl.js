@@ -12,7 +12,7 @@ window.MbMemberDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/mb/member/page', {
+        const res = await window.boApi.get('/bo/ec/mb/member/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         members.splice(0, members.length, ...(res.data?.data?.list || []));
@@ -81,7 +81,7 @@ window.MbMemberDtl = {
         if (idx !== -1) Object.assign(members.value[idx], { ...form });
       }
       try {
-        const res = await (isNewMember ? window.adminApi.post(`/bo/ec/mb/member/${form.userId}`, { ...form }) : window.adminApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));
+        const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member/${form.userId}`, { ...form }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewMember ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('mbMemberMng');

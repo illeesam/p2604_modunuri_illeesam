@@ -104,12 +104,12 @@ window.Pagination = {
 </div>`
 };
 
-window.frontMyLayout = {
+window.foMyLayout = {
   name: 'FrontMyLayout',
   props: ['navigate', 'cartCount', 'activePage'],
   setup(props) {
     const { computed } = Vue;
-    const myStore = window.useFrontMyStore();
+    const myStore = window.useFoMyStore();
 
     const MY_TABS = [
       { pageId: 'myOrder',   label: '주문',          icon: '📦' },

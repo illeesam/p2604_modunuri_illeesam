@@ -6,14 +6,14 @@ window.StErpViewMng = {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
     const onDateRangeChange = () => {
-      if (dateRange.value) { const r = window.adminUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
-    (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     const slips = reactive([
       { slipId: 'ERP-2026-0411-001', slipDate: '2026-04-11', slipType: '정산', debit: '미지급금',  credit: '현금',      debitAmt: 300000, creditAmt: 300000, description: '2026-03 패션스타일 정산지급',  sendStatus: '전송완료', erpRef: 'ERP-JE-20260411-001' },
@@ -51,7 +51,7 @@ window.StErpViewMng = {
       if (!ok) return;
       r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
       try {
-        const res = await window.adminApi.post(`/bo/ec/st/erp/resend/${r.slipId}`, {});
+        const res = await window.boApi.post(`/bo/ec/st/erp/resend/${r.slipId}`, {});
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('재전송이 완료되었습니다.', 'success');
       } catch (err) {

@@ -4,7 +4,7 @@ window.DpDispUiDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const codes = ref((window.adminData?.codes || []));
+    const codes = ref((window.boData?.codes || []));
     const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -13,7 +13,7 @@ window.DpDispUiDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/dp/ui/page', {
+        const res = await window.boApi.get('/bo/ec/dp/ui/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
@@ -30,7 +30,7 @@ window.DpDispUiDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     const UI_TYPE_OPTS = [
@@ -249,7 +249,7 @@ window.DpDispUiDtl = {
     };
     const openAreaPreview = (scope) => {
       if (!activeArea.value) return props.showToast && props.showToast('미리볼 영역을 선택하세요.', 'error');
-      const file = scope === 'admin' ? 'disp-admin-ui.html' : 'disp-front-ui.html';
+      const file = scope === 'admin' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
       window.open(`${window.pageUrl(file)}?areas=${activeArea.value.codeValue}&date=${form.regDate}&time=00:00`,
         '_blank', 'width=1280,height=900');
     };
@@ -274,14 +274,14 @@ window.DpDispUiDtl = {
       if (!ok) return;
       const codesData = codes.value;
       if (isNewUi) {
-        const newId = window.adminUtil.nextId(codesData, 'codeId');
+        const newId = window.boCmUtil.nextId(codesData, 'codeId');
         codesData.push({ ...form, codeId: newId });
       } else {
         const idx = codesData.findIndex(c => c.codeId === form.codeId);
         if (idx !== -1) Object.assign(codesData[idx], form);
       }
       try {
-        const res = await (isNewUi ? window.adminApi.post('disp-uis', { ...form }) : window.adminApi.put(`/bo/ec/dp/ui/${form.codeId}`, { ...form }));
+        const res = await (isNewUi ? window.boApi.post('disp-uis', { ...form }) : window.boApi.put(`/bo/ec/dp/ui/${form.codeId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispUiMng');

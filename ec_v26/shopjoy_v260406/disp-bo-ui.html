@@ -8,11 +8,11 @@
     /* ═══════════════════════════════════════════════════════════════════
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
        ═══════════════════════════════════════════════════════════════════ */
-    const DEFAULT_FRONT_SITE_NO = '01';
-    window.FRONT_SITE_NO = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-front-site_no')) || DEFAULT_FRONT_SITE_NO;
+    const DEFAULT_FO_SITE_NO = '01';
+    window.FO_SITE_NO = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-site_no')) || DEFAULT_FO_SITE_NO;
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
-      if ((e.key === 'modu-front-site_no' || e.key === 'modu-admin-site_no') && e.newValue !== e.oldValue) {
+      if ((e.key === 'modu-fo-site_no' || e.key === 'modu-bo-site_no') && e.newValue !== e.oldValue) {
         location.reload();
       }
     });
@@ -22,7 +22,7 @@
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
   <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
   <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
-  <link rel="stylesheet" href="assets/css/adminGlobalStyle01.css">
+  <link rel="stylesheet" href="assets/css/boGlobalStyle01.css">
   <script src="utils/adminAxios.js"></script>
   <script src="utils/adminUtil.js"></script>
   <script src="components/comp/BaseComp.js"></script>

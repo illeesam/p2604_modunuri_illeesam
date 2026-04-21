@@ -4,7 +4,7 @@ window.MyOrder = {
   props: ['navigate', 'config', 'cart', 'cartCount', 'showToast', 'showConfirm', 'removeFromCart', 'updateCartQty'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const myStore = window.useFrontMyStore();
+    const myStore = window.useFoMyStore();
     const { orders, claimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
 
     /* ── 로컬 페이저 ── */
@@ -733,7 +733,7 @@ window.MyOrder = {
 </FrontMyLayout>
   `,
   components: {
-    FrontMyLayout:         window.frontMyLayout,
+    FrontMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

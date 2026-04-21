@@ -14,8 +14,8 @@ window.OdOrderMng = {
       loading.value = true;
       try {
         const [ordersRes, membersRes] = await Promise.all([
-          window.adminApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
         orders = ordersRes.data?.data?.list || [];
         members = membersRes.data?.data?.list || [];
@@ -29,12 +29,12 @@ window.OdOrderMng = {
     });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -110,7 +110,7 @@ window.OdOrderMng = {
       if (idx !== -1) orders.value.splice(idx, 1);
       if (selectedId.value === o.orderId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/ec/od/order/${o.orderId}`);
+        const res = await window.boApi.delete(`/bo/ec/od/order/${o.orderId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -120,7 +120,7 @@ window.OdOrderMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
     /* 클레임 조회 */
     const claimByOrder = (orderId) =>
@@ -236,7 +236,7 @@ window.OdOrderMng = {
       checked.value = new Set();
       bulkOpen.value = false;
       try {
-        const res = await window.adminApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+        const res = await window.boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
       } catch (err) {

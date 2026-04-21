@@ -4,7 +4,7 @@ window.MyClaim = {
   props: ['navigate', 'config', 'cartCount', 'showToast', 'showConfirm'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
-    const myStore = window.useFrontMyStore();
+    const myStore = window.useFoMyStore();
     const { claims, claimFilter, filteredClaims, orders } = Pinia.storeToRefs(myStore);
 
     const claimPager = reactive({ page: 1, size: 50 });
@@ -284,7 +284,7 @@ window.MyClaim = {
 </FrontMyLayout>
   `,
   components: {
-    FrontMyLayout:         window.frontMyLayout,
+    FrontMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,
     Pagination:       window.Pagination,
     OrderDetailModal: window.OrderDetailModal,

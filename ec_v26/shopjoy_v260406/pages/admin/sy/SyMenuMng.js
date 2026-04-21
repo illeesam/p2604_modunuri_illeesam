@@ -11,7 +11,7 @@ window.SyMenuMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/menu/page', {
+        const res = await window.boApi.get('/bo/sy/menu/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         menus.value = res.data?.data?.list || [];
@@ -28,16 +28,16 @@ window.SyMenuMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedTreeId.value = id; };
-    const tree = computed(() => window.adminUtil.buildMenuTree());
+    const tree = computed(() => window.boCmUtil.buildMenuTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     const allowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
-      return window.adminUtil.collectDescendantIds(menus.value, 'menuId', 'parentId', selectedTreeId.value);
+      return window.boCmUtil.collectDescendantIds(menus.value, 'menuId', 'parentId', selectedTreeId.value);
     });
     watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
@@ -224,7 +224,7 @@ window.SyMenuMng = {
       menuTreeModal.show = false;
     };
 
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
@@ -232,7 +232,7 @@ window.SyMenuMng = {
     const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const typeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
-    const exportExcel = () => window.adminUtil.exportCsv(
+    const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
       '메뉴목록.csv'

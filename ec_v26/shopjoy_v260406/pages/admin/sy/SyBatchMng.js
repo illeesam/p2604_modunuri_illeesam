@@ -11,7 +11,7 @@ window.SyBatchMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/batch/page', {
+        const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         batches.value = res.data?.data?.list || [];
@@ -34,7 +34,7 @@ window.SyBatchMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* ── 좌측 표시경로 트리 ── */
@@ -42,12 +42,12 @@ window.SyBatchMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = computed(() => window.adminUtil.buildPathTree('sy_batch'));
+    const tree = computed(() => window.boCmUtil.buildPathTree('sy_batch'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
@@ -57,9 +57,9 @@ window.SyBatchMng = {
     const searchStatus = ref('');
     const searchRunStatus = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
     };
     const applied = reactive({ kw: '', status: '', runStatus: '', dateStart: '', dateEnd: '' });
 
@@ -347,7 +347,7 @@ window.SyBatchMng = {
     const statusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const runBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
     const statusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const siteNm     = computed(() => window.adminUtil.getSiteNm());
+    const siteNm     = computed(() => window.boCmUtil.getSiteNm());
 
     const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
     const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
@@ -355,7 +355,7 @@ window.SyBatchMng = {
     const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const exportExcel = () => window.adminUtil.exportCsv(
+    const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
       '배치목록.csv'

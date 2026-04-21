@@ -14,8 +14,8 @@ window.OdDlivMng = {
       loading.value = true;
       try {
         const [delivRes, membersRes] = await Promise.all([
-          window.adminApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
+          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
         deliveries = delivRes.data?.data?.list || [];
         members = membersRes.data?.data?.list || [];
@@ -29,12 +29,12 @@ window.OdDlivMng = {
     });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -111,7 +111,7 @@ window.OdDlivMng = {
       if (idx !== -1) deliveries.value.splice(idx, 1);
       if (selectedId.value === d.dlivId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/ec/od/dliv/${d.dlivId}`);
+        const res = await window.boApi.delete(`/bo/ec/od/dliv/${d.dlivId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -121,7 +121,7 @@ window.OdDlivMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
     /* 일괄선택 */
     const checked = ref(new Set());
@@ -214,7 +214,7 @@ window.OdDlivMng = {
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('deliveries/bulk-status', { ids, status: bulkForm.status });
+          const res = await window.boApi.put('deliveries/bulk-status', { ids, status: bulkForm.status });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -234,7 +234,7 @@ window.OdDlivMng = {
         });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('deliveries/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo });
+          const res = await window.boApi.put('deliveries/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -249,7 +249,7 @@ window.OdDlivMng = {
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('deliveries/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
+          const res = await window.boApi.put('deliveries/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -268,7 +268,7 @@ window.OdDlivMng = {
         } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.adminApi.put('deliveries/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          const res = await window.boApi.put('deliveries/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

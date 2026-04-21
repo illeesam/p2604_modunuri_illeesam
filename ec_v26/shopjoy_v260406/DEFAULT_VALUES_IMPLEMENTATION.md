@@ -54,7 +54,7 @@ if (!openTabs.find(t => t.id === activeTabId.value) && openTabs.length > 0) navi
 {{ (currentUser?.name || '')[0] || '?' }}
 ```
 
-### 3. Added to Script Loading Order (admin.html)
+### 3. Added to Script Loading Order (bo.html)
 
 ```html
 <script src="pages/admin/AdminData.js"></script>
@@ -161,7 +161,7 @@ This implementation prevents errors at multiple levels:
 
 ## Files Modified
 
-1. **admin.html** - Added refDefaults.js script
+1. **bo.html** - Added refDefaults.js script
 2. **base/boApp.js** - Fixed 3 array/string index access issues
 3. **base/utils/refDefaults.js** - NEW (utility module)
 4. **base/utils/adminDataProvider.js** - Already implemented

@@ -12,7 +12,7 @@ window.MbMemGradeMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/mb/mem-grade/page', {
+        const res = await window.boApi.get('/bo/ec/mb/mem-grade/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         grades.splice(0, grades.length, ...(res.data?.data?.list || []));
@@ -70,7 +70,7 @@ window.MbMemGradeMng = {
       if (si !== -1) src.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
-        const res = await window.adminApi.delete(`/bo/ec/mb/member-grade/${row.gradeId}`);
+        const res = await window.boApi.delete(`/bo/ec/mb/member-grade/${row.gradeId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -92,7 +92,7 @@ window.MbMemGradeMng = {
         else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? window.adminApi.post(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }) : window.adminApi.put(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }));
+          const res = await (isNewRow ? window.boApi.post(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }) : window.boApi.put(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

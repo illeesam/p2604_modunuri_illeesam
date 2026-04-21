@@ -12,7 +12,7 @@ window.SyBrandMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/brand/page', {
+        const res = await window.boApi.get('/bo/sy/brand/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         brands.value = res.data?.data?.list || [];
@@ -35,7 +35,7 @@ window.SyBrandMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
@@ -45,10 +45,10 @@ window.SyBrandMng = {
     const searchKw        = ref('');
     const searchUseYn     = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
       if (searchDateRange.value) {
-        const r = window.adminUtil.getDateRange(searchDateRange.value);
+        const r = window.boCmUtil.getDateRange(searchDateRange.value);
         searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : '';
       }
     };
@@ -82,7 +82,7 @@ window.SyBrandMng = {
                  && !b.brandNm?.toLowerCase().includes(kw)
                  && !b.brandEnNm?.toLowerCase().includes(kw)) return false;
           if (applied.useYn && b.useYn !== applied.useYn) return false;
-          if (selectedPath.value != null) { const _desc = window.adminUtil.getPathDescendants('sy_brand', selectedPath.value); if (_desc && !_desc.has(b.pathId)) return false; }
+          if (selectedPath.value != null) { const _desc = window.boCmUtil.getPathDescendants('sy_brand', selectedPath.value); if (_desc && !_desc.has(b.pathId)) return false; }
           const d = String(b.regDate || '').slice(0, 10);
           if (applied.dateStart && d < applied.dateStart) return false;
           if (applied.dateEnd   && d > applied.dateEnd)   return false;
@@ -244,7 +244,7 @@ window.SyBrandMng = {
     const setPage      = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const exportExcel = () => window.adminUtil.exportCsv(
+    const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [
         { label: 'ID',       key: 'brandId' },
@@ -264,12 +264,12 @@ window.SyBrandMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => window.adminUtil.buildPathTree('sy_brand'));
+    const tree = Vue.computed(() => window.boCmUtil.buildPathTree('sy_brand'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     Vue.onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     Vue.watch(selectedPath, () => loadGrid());

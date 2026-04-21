@@ -71,7 +71,7 @@ window.OrderDetailModal = {
   props: ['show', 'order'],
   emits: ['close'],
   computed: {
-    siteNm() { return window.adminUtil.getSiteNm(); },
+    siteNm() { return window.boCmUtil.getSiteNm(); },
   },
   methods: {
     statusColor(s) {
@@ -534,7 +534,7 @@ window.SiteSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.dispDataset.sites.filter(s => {
       if (!kw.value) return true;
@@ -572,7 +572,7 @@ window.VendorSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.dispDataset.vendors.filter(v => {
       if (v.vendorType !== '판매업체') return false;
@@ -606,7 +606,7 @@ window.AdminUserSelectModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed, reactive } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     /* ── 부서 트리 (depth 1부터 시작, root는 별도 렌더) ── */
     const selectedDeptId = ref(null);
@@ -641,11 +641,11 @@ window.AdminUserSelectModal = {
     /* ── 사용자 ── */
     const userKw = ref('');
     const selectedIds = reactive(new Set());
-    const totalUsers = computed(() => props.dispDataset.adminUsers.length);
+    const totalUsers = computed(() => props.dispDataset.boUsers.length);
 
     const filtered = computed(() => {
       const k = userKw.value.trim().toLowerCase();
-      let list = props.dispDataset.adminUsers;
+      let list = props.dispDataset.boUsers;
       if (selectedDeptId.value !== null) {
         const names = getDescDeptNames(selectedDeptId.value);
         list = list.filter(u => names.has(u.dept));
@@ -656,19 +656,19 @@ window.AdminUserSelectModal = {
       return list;
     });
 
-    const isChecked = (u) => selectedIds.has(u.adminUserId);
+    const isChecked = (u) => selectedIds.has(u.boUserId);
     const toggleUser = (u) => {
-      if (selectedIds.has(u.adminUserId)) selectedIds.delete(u.adminUserId);
-      else selectedIds.add(u.adminUserId);
+      if (selectedIds.has(u.boUserId)) selectedIds.delete(u.boUserId);
+      else selectedIds.add(u.boUserId);
     };
-    const allChecked = computed(() => filtered.value.length > 0 && filtered.value.every(u => selectedIds.has(u.adminUserId)));
+    const allChecked = computed(() => filtered.value.length > 0 && filtered.value.every(u => selectedIds.has(u.boUserId)));
     const toggleAll = () => {
-      if (allChecked.value) filtered.value.forEach(u => selectedIds.delete(u.adminUserId));
-      else filtered.value.forEach(u => selectedIds.add(u.adminUserId));
+      if (allChecked.value) filtered.value.forEach(u => selectedIds.delete(u.boUserId));
+      else filtered.value.forEach(u => selectedIds.add(u.boUserId));
     };
     const selectedCount = computed(() => selectedIds.size);
     const confirm = () => {
-      const selected = props.dispDataset.adminUsers.filter(u => selectedIds.has(u.adminUserId));
+      const selected = props.dispDataset.boUsers.filter(u => selectedIds.has(u.boUserId));
       emit('select', selected);
     };
 
@@ -763,7 +763,7 @@ window.AdminUserSelectModal = {
             <div style="font-size:32px;margin-bottom:8px;">🔍</div>
             검색 결과가 없습니다.
           </div>
-          <div v-for="u in filtered" :key="u.adminUserId"
+          <div v-for="u in filtered" :key="u.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
             :style="isChecked(u)?'background:#fff5f7;':'' "
             @click="toggleUser(u)">
@@ -818,7 +818,7 @@ window.MemberSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.dispDataset.members.filter(m => {
       if (!kw.value) return true;
@@ -851,7 +851,7 @@ window.OrderSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const filtered = computed(() => props.dispDataset.orders.filter(o => {
       if (!kw.value) return true;
@@ -907,7 +907,7 @@ window.BbmSelectModal = {
     });
     const setPage = n => { if (n >= 1 && n <= totalPages.value) page.value = n; };
 
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const typeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const scopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
 
@@ -988,7 +988,7 @@ window.TemplatePreviewModal = {
 
     /* setup에서 tmpl을 반환해 템플릿에서 직접 접근 가능하게 */
     const fmtKey = k => '{{' + k + '}}';
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     return { siteNm, tmpl: computed(() => props.tmpl), renderedSubject, renderedContent, isHtml, typeBadge, paramList, fmtKey };
   },
@@ -1054,12 +1054,12 @@ window.TemplateSendModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, watch } = Vue;
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const targetType = ref('member');
     const kw = ref('');
     const selected = reactive([]);
-    const getId = (item) => targetType.value === 'member' ? item.userId : item.adminUserId;
+    const getId = (item) => targetType.value === 'member' ? item.userId : item.boUserId;
 
     /* ── 부서 트리 (관리자 탭) ── */
     const selectedDeptId = ref(null);
@@ -1099,12 +1099,12 @@ window.TemplateSendModal = {
     });
     const userList = computed(() => {
       const k = kw.value.trim().toLowerCase();
-      let list = props.dispDataset.adminUsers || [];
+      let list = props.dispDataset.boUsers || [];
       if (selectedDeptId.value !== null) {
         const names = getDescDeptNames(selectedDeptId.value);
         list = list.filter(u => names.has(u.dept));
       }
-      if (k) list = list.filter(u => u.name?.toLowerCase().includes(k) || u.email?.toLowerCase().includes(k) || String(u.adminUserId).includes(k));
+      if (k) list = list.filter(u => u.name?.toLowerCase().includes(k) || u.email?.toLowerCase().includes(k) || String(u.boUserId).includes(k));
       return list;
     });
     const list = computed(() => targetType.value === 'member' ? memberList.value : userList.value);
@@ -1268,7 +1268,7 @@ window.TemplateSendModal = {
           <div v-if="list.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
             <div style="font-size:32px;margin-bottom:8px;">🔍</div>검색 결과가 없습니다.
           </div>
-          <div v-for="item in list" :key="item.userId||item.adminUserId"
+          <div v-for="item in list" :key="item.userId||item.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
             :style="isSelected(item)?'background:#f0fff4;':''"
             @click="toggleSelect(item)">
@@ -1363,7 +1363,7 @@ window.RoleTreeModal = {
     });
     const select = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
     const selectNone = () => emit('select', { roleId: null, roleNm: '' });
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
   template: /* html */`
@@ -1457,7 +1457,7 @@ window.MenuTreeModal = {
 
     const select = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
     const selectNone = () => emit('select', { menuId: null, menuNm: '' });
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
@@ -1585,7 +1585,7 @@ window.DeptTreeModal = {
 
     const select = (dept) => emit('select', { deptId: dept.deptId, deptNm: dept.deptNm });
     const selectNone = () => emit('select', { deptId: null, deptNm: '' });
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
@@ -1715,7 +1715,7 @@ window.CategoryTreeModal = {
 
     const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
     const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
-    const siteNm   = computed(() => window.adminUtil.getSiteNm());
+    const siteNm   = computed(() => window.boCmUtil.getSiteNm());
     return { siteNm, kw, hoverId, flatTree, select, selectNone };
   },
   template: /* html */`
@@ -2948,8 +2948,8 @@ window.PathPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const ad = window.adminData;
-    const tree = computed(() => window.adminUtil.buildPathTree(props.bizCd));
+    const ad = window.boData;
+    const tree = computed(() => window.boCmUtil.buildPathTree(props.bizCd));
     const expanded = reactive(new Set([null]));
     const toggle = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const expandAll = () => { expanded.clear(); expanded.add(null); const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree.value); };
@@ -2974,7 +2974,7 @@ window.PathPickModal = {
     const doAdd = () => {
       const txt = addLabel.value.trim();
       if (!txt) {
-        if (window.adminToast) window.adminToast('새 경로명을 입력해주세요.', 'warning');
+        if (window.boToast) window.boToast('새 경로명을 입력해주세요.', 'warning');
         else alert('새 경로명을 입력해주세요.');
         return;
       }
@@ -2982,7 +2982,7 @@ window.PathPickModal = {
       /* 동일 부모 + 동일 라벨 중복 체크 */
       const dup = list.find(p => p.bizCd === props.bizCd && p.parentPathId === addParent.value && p.pathLabel === txt);
       if (dup) {
-        if (window.adminToast) window.adminToast(`'${txt}' 경로가 이미 존재합니다.`, 'error');
+        if (window.boToast) window.boToast(`'${txt}' 경로가 이미 존재합니다.`, 'error');
         else alert('이미 존재하는 경로입니다: ' + txt);
         return;
       }
@@ -2992,7 +2992,7 @@ window.PathPickModal = {
       addLabel.value = '';
       expanded.add(addParent.value);
       selectedId.value = newId;
-      if (window.adminToast) window.adminToast(`'${txt}' 경로가 추가되었습니다.`, 'success');
+      if (window.boToast) window.boToast(`'${txt}' 경로가 추가되었습니다.`, 'success');
     };
 
     /* 인라인 수정 */
@@ -3012,12 +3012,12 @@ window.PathPickModal = {
     /* 삭제 (자식 없는 경우만) — adminConfirm 디자인 다이얼로그 사용 */
     const deleteNode = async (node) => {
       if ((node.children || []).length > 0) {
-        if (window.adminConfirm) await window.adminConfirm('삭제 불가', '하위 경로가 있어 삭제할 수 없습니다.', { btnCancel: '' });
+        if (window.boConfirm) await window.boConfirm('삭제 불가', '하위 경로가 있어 삭제할 수 없습니다.', { btnCancel: '' });
         else alert('하위 경로가 있어 삭제할 수 없습니다.');
         return;
       }
-      const ok = window.adminConfirm
-        ? await window.adminConfirm('표시경로 삭제', '이 경로를 삭제하시겠습니까?', { details: node.pathLabel })
+      const ok = window.boConfirm
+        ? await window.boConfirm('표시경로 삭제', '이 경로를 삭제하시겠습니까?', { details: node.pathLabel })
         : window.confirm('이 경로를 삭제하시겠습니까?\n\n' + node.pathLabel);
       if (!ok) return;
       const idx = (ad.paths || []).findIndex(p => p.pathId === node.pathId);
@@ -3026,7 +3026,7 @@ window.PathPickModal = {
       if (addParent.value === node.pathId) addParent.value = null;
     };
 
-    const labelOf = (id) => window.adminUtil.getPathLabel(id);
+    const labelOf = (id) => window.boCmUtil.getPathLabel(id);
     return { tree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
              addParent, addLabel, setAddParent, doAdd, labelOf,
              editingId, editLabel, startEdit, saveEdit, cancelEdit, deleteNode };
@@ -3197,7 +3197,7 @@ window.BizPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const ad = window.adminData;
+    const ad = window.boData;
     const kw = ref('');
     const typeFlt = ref('');
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
@@ -3207,14 +3207,14 @@ window.BizPickModal = {
     /* 좌측 표시경로 트리 (sy_biz) */
     const selectedPathId = ref(null);
     const expanded = reactive(new Set([null]));
-    const tree = computed(() => window.adminUtil.buildPathTree('sy_biz'));
+    const tree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPathId.value = id; };
     Vue.onMounted(() => {
-      const initSet = window.adminUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const allowedPathIds = computed(() => selectedPathId.value == null ? null : window.adminUtil.getPathDescendants('sy_biz', selectedPathId.value));
+    const allowedPathIds = computed(() => selectedPathId.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPathId.value));
 
     const filtered = computed(() => (ad.bizs || []).filter(b => {
       const k = kw.value.trim().toLowerCase();
@@ -3281,7 +3281,7 @@ window.BizPickModal = {
 };
 
 /* ─────────────────────────────────────────────────────────────
-   SimpleUserPickModal — 단일 사용자 선택 (sy_user / adminUsers)
+   SimpleUserPickModal — 단일 사용자 선택 (sy_user / boUsers)
 ───────────────────────────────────────────────────────────── */
 window.SimpleUserPickModal = {
   name: 'SimpleUserPickModal',
@@ -3289,11 +3289,11 @@ window.SimpleUserPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed } = Vue;
-    const ad = window.adminData;
+    const ad = window.boData;
     const kw = ref('');
     const excl = computed(() => new Set(props.excludeIds || []));
-    const filtered = computed(() => (ad.adminUsers || []).filter(u => {
-      if (excl.value.has(u.adminUserId)) return false;
+    const filtered = computed(() => (ad.boUsers || []).filter(u => {
+      if (excl.value.has(u.boUserId)) return false;
       const k = kw.value.trim().toLowerCase();
       if (k && !(u.name||'').toLowerCase().includes(k) && !(u.loginId||'').toLowerCase().includes(k) && !(u.email||'').toLowerCase().includes(k)) return false;
       return true;
@@ -3320,7 +3320,7 @@ window.SimpleUserPickModal = {
         <thead><tr><th>이름</th><th>로그인ID</th><th>이메일</th><th>부서</th><th></th></tr></thead>
         <tbody>
           <tr v-if="filtered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">결과가 없습니다.</td></tr>
-          <tr v-for="u in filtered" :key="u.adminUserId" @dblclick="pick(u)" style="cursor:pointer;">
+          <tr v-for="u in filtered" :key="u.boUserId" @dblclick="pick(u)" style="cursor:pointer;">
             <td style="font-weight:600;">{{ u.name }}</td>
             <td><code style="font-size:11px;color:#2563eb;">{{ u.loginId }}</code></td>
             <td style="font-size:11.5px;color:#0369a1;">{{ u.email }}</td>

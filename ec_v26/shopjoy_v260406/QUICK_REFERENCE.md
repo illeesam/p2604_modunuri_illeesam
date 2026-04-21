@@ -172,7 +172,7 @@ When creating new admin component:
 |------|---------|------|
 | `base/utils/adminDataProvider.js` | 50+ safe data accessors | 7.8 KB |
 | `base/utils/refDefaults.js` | Form defaults & utilities | 5.9 KB |
-| `admin.html` | Script loading (line 80) | - |
+| `bo.html` | Script loading (line 80) | - |
 | `base/boApp.js` | 3 critical fixes | - |
 
 ## 📞 Support

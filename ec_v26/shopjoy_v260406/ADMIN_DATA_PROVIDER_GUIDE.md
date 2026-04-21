@@ -57,7 +57,7 @@ const categories = ref(window.adminDataProvider?.getCategories?.() || []);
 ## Updated Files
 
 ### Core Infrastructure
-- `admin.html` — Added script tag for `base/utils/adminDataProvider.js`
+- `bo.html` — Added script tag for `base/utils/adminDataProvider.js`
 - `base/utils/adminDataProvider.js` — NEW (function-based data provider)
 
 ### Admin Components Using Provider
@@ -162,7 +162,7 @@ const items = ref(window.adminDataProvider.getMyNewType());
 ## Troubleshooting
 
 **Issue**: "adminDataProvider is undefined"
-- **Solution**: Ensure `base/utils/adminDataProvider.js` is loaded AFTER `AdminData.js` in `admin.html`
+- **Solution**: Ensure `base/utils/adminDataProvider.js` is loaded AFTER `AdminData.js` in `bo.html`
 
 **Issue**: Component shows blank/empty lists
 - **Solution**: Check that `window.adminData` is populated before component setup()

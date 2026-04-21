@@ -12,7 +12,7 @@ window.PdCategoryDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/category/page', {
+        const res = await window.boApi.get('/bo/ec/pd/category/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         categories.splice(0, categories.length, ...(res.data?.data?.list || []));
@@ -77,7 +77,7 @@ window.PdCategoryDtl = {
         if (idx !== -1) Object.assign(categories.value[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }) : window.adminApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }) : window.boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdCategoryMng');

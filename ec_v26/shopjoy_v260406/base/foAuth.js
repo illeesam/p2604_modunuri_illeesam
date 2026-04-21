@@ -1,14 +1,14 @@
 /* ShopJoy - FO Auth Module (Pinia + localStorage token 연계) */
 (function () {
   /* ── 초기 상태: 토큰 + 유저 모두 있을 때만 로그인으로 처리 ── */
-  const _initToken = localStorage.getItem('modu-front-token');
+  const _initToken = localStorage.getItem('modu-fo-token');
   let _initUser = null;
   if (_initToken) {
-    try { _initUser = JSON.parse(localStorage.getItem('modu-front-user') || 'null'); } catch (e) {}
+    try { _initUser = JSON.parse(localStorage.getItem('modu-fo-user') || 'null'); } catch (e) {}
   }
   if (!_initToken) {
     /* 토큰 없으면 유저 정보도 정리 */
-    localStorage.removeItem('modu-front-user');
+    localStorage.removeItem('modu-fo-user');
   }
 
   /* ── 레거시 reactive state (app.js에서 auth.user 로 참조) ── */
@@ -25,7 +25,7 @@
 
   /* ── Pinia 초기화 (app.js에서 호출) ── */
   const init = pinia => {
-    _store = window.useFrontAuthStore(pinia);
+    _store = window.useFoAuthStore(pinia);
 
     /* 초기 동기화 */
     _sync();
@@ -38,7 +38,7 @@
 
     /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
     window.addEventListener('storage', e => {
-      if (e.key === 'modu-front-token' || e.key === 'modu-front-user') {
+      if (e.key === 'modu-fo-token' || e.key === 'modu-fo-user') {
         _store.syncFromStorage();
         _sync();
       }
@@ -49,8 +49,8 @@
   const login = async (loginName, loginPwd) => {
     state.loading = true;
     try {
-      if (!window.frontApi) throw new Error('no api');
-      const res = await window.frontApi.post('/auth/fo/auth/login', { loginName, loginPwd });
+      if (!window.foApi) throw new Error('no api');
+      const res = await window.foApi.post('/auth/fo/auth/login', { loginName, loginPwd });
       if (res.data?.data) {
         const d = res.data.data;
         const user  = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };
@@ -83,9 +83,9 @@
   const signup = async (memberNm, email, phone, extra = {}) => {
     state.loading = true;
     try {
-      if (!window.frontApi) throw new Error('no api');
+      if (!window.foApi) throw new Error('no api');
       const body = { memberNm, email, phone, ...extra };
-      const res = await window.frontApi.post('/auth/fo/auth/join', body);
+      const res = await window.foApi.post('/auth/fo/auth/join', body);
       if (res.data?.data) {
         const d = res.data.data;
         const user = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };

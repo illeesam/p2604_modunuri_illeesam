@@ -10,7 +10,7 @@ window.SyBbsDtl = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/sy/bbs/page', {
+        const res = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bbss.value = res.data?.data?.list || [];
@@ -24,7 +24,7 @@ window.SyBbsDtl = {
     });
     const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     /* ── 선택된 게시판 정보 ── */
     const selectedBbm = ref(null);
@@ -126,7 +126,7 @@ window.SyBbsDtl = {
         if (idx !== -1) Object.assign(bbss.value[idx], { ...form, bbmId: Number(form.bbmId) });
       }
       try {
-        const res = await (isNew.value ? window.adminApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }) : window.adminApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }) : window.boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbsMng');

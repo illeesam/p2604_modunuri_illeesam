@@ -97,8 +97,8 @@ window.XsSample04 = {
     });
 
     /* ── adminUtil mock (index.html 미포함 → 가드) ── */
-    if (!window.adminUtil) {
-      window.adminUtil = {
+    if (!window.boCmUtil) {
+      window.boCmUtil = {
         getSiteNm: () => 'ShopJoy', DATE_RANGE_OPTIONS: [],
         getDateRange: () => ({ from: '', to: '' }),
         isInRange: () => true, exportCsv: () => {},
@@ -106,7 +106,7 @@ window.XsSample04 = {
     }
 
     /* ── BaseModal 데모 상태 ── */
-    const adminData   = window.adminData || { sites: [], vendors: [], members: [], orders: [], bbms: [], adminUsers: [], depts: [], roles: [], menus: [], categories: [] };
+    const adminData   = window.boData || { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
     const bModal      = reactive({ type: null });
     const openBModal  = (type) => { bModal.type = type; };
     const closeBModal = () => { bModal.type = null; };
@@ -155,7 +155,7 @@ window.XsSample04 = {
     ];
 
     /* ② Front 전용 (1종)
-         window.adminData.categories 직접 참조, 사용자 카테고리 필터용 */
+         window.boData.categories 직접 참조, 사용자 카테고리 필터용 */
     const CATALOG2_FRONT = [
       { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: 'CategorySelectModal — 트리+멀티체크', color: '#7e22ce' },
     ];
@@ -281,7 +281,7 @@ window.XsSample04 = {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;background:#16a34a;color:#fff;padding:2px 10px;border-radius:20px;">Front 전용</span>
         <span style="font-size:11px;color:#16a34a;font-weight:600;">1종</span>
-        <span style="font-size:11px;color:#86efac;">— window.adminData.categories 직접 참조, 사용자 카테고리 필터</span>
+        <span style="font-size:11px;color:#86efac;">— window.boData.categories 직접 참조, 사용자 카테고리 필터</span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
         <div v-for="item in CATALOG2_FRONT" :key="item.id"
@@ -698,22 +698,22 @@ window.XsSample04 = {
 
   <!-- ④~⑨ 선택 모달 — 조건부 마운트 방식 -->
   <template v-if="bModal.type==='siteSelect'">
-    <site-select-modal :admin-data="adminData" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
+    <site-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='vendorSelect'">
-    <vendor-select-modal :admin-data="adminData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
+    <vendor-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='adminUserSelect'">
-    <admin-user-select-modal :admin-data="adminData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
+    <admin-user-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='memberSelect'">
-    <member-select-modal :admin-data="adminData" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />
+    <member-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='orderSelect'">
-    <order-select-modal :admin-data="adminData" @select="bShowToast('선택: '+$event.orderId,'success'); closeBModal()" @close="closeBModal" />
+    <order-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.orderId,'success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='bbmSelect'">
-    <bbm-select-modal :admin-data="adminData" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
+    <bbm-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
 
   <!-- ⑩~⑪ 템플릿 모달 -->
@@ -721,21 +721,21 @@ window.XsSample04 = {
     <template-preview-modal :tmpl="demoTmpl" :sample-params="demoSampleParams" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='tmplSend'">
-    <template-send-modal :tmpl="demoTmpl" :admin-data="adminData" :show-toast="bShowToast" :show-confirm="bShowConfirm" @close="closeBModal" />
+    <template-send-modal :tmpl="demoTmpl" :bo-data="boData" :show-toast="bShowToast" :show-confirm="bShowConfirm" @close="closeBModal" />
   </template>
 
   <!-- ⑫~⑮ 트리 모달 -->
   <template v-if="bModal.type==='roleTree'">
-    <role-tree-modal :admin-data="adminData" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
+    <role-tree-modal :bo-data="boData" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='menuTree'">
-    <menu-tree-modal :admin-data="adminData" @select="bShowToast($event.menuId?'선택: '+$event.menuNm:'상위없음 선택','success'); closeBModal()" @close="closeBModal" />
+    <menu-tree-modal :bo-data="boData" @select="bShowToast($event.menuId?'선택: '+$event.menuNm:'상위없음 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='deptTree'">
-    <dept-tree-modal :admin-data="adminData" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
+    <dept-tree-modal :bo-data="boData" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
   <template v-if="bModal.type==='categoryTree'">
-    <category-tree-modal :admin-data="adminData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
+    <category-tree-modal :bo-data="boData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
 
   <!-- ⑯ 전시 미리보기 -->
@@ -761,7 +761,7 @@ window.XsSample04 = {
     @keyframes s04_spin        { to   { transform:rotate(360deg); } }
     @keyframes s04_fadeIn      { from { opacity:0; } to { opacity:1; } }
 
-    /* ── 관리자 공통 모달 CSS (adminGlobalStyle.css 미포함 환경용) ── */
+    /* ── 관리자 공통 모달 CSS (boGlobalStyle.css 미포함 환경용) ── */
     .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9100;display:flex;align-items:center;justify-content:center;padding:20px; }
     .modal-box     { background:#fff;border-radius:12px;padding:24px;width:100%;max-width:580px;max-height:85vh;overflow-y:auto; }
     .modal-box.wide { max-width:820px; }

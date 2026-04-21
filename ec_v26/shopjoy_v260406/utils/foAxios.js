@@ -1,14 +1,14 @@
 /**
- * Admin axios 클라이언트 (window.adminApi)
- * - Bearer 토큰 자동 주입 (modu-admin-token)
- * - 401 → /auth/admin/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
+ * FO axios 클라이언트 (window.foApi)
+ * - Bearer 토큰 자동 주입 (modu-fo-token)
+ * - 401 → /auth/front/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
  * 선행: assets/cdn/pkg/axios/1.7.9/axios.min.js
  */
 (function (global) {
   'use strict';
-  if (!global.axios) throw new Error('adminAxios: load axios first');
+  if (!global.axios) throw new Error('foAxios: load axios first');
 
   /* ── URL 헬퍼 (admin/front 공통) ──────────────────────────────── */
   function appBase() {
@@ -30,10 +30,10 @@
   global.apiUrl  = global.apiUrl  || apiUrl;
 
   /* ── 설정 ────────────────────────────────────────────────────── */
-  var TAG         = '[admin]';
-  var TOKEN_KEY   = 'modu-admin-token';
-  var REFRESH_KEY = 'modu-admin-refresh';
-  var REFRESH_URL = 'auth/admin/refresh';
+  var TAG         = '[front]';
+  var TOKEN_KEY   = 'modu-fo-token';
+  var REFRESH_KEY = 'modu-fo-refresh';
+  var REFRESH_URL = 'auth/front/refresh';
   var TIMEOUT     = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });
@@ -69,11 +69,12 @@
     var status = res && res.status;
     console.error(TAG + ' ✗ ' + (status || 'NETWORK'), cfg.url, err.message);
 
+    /* 5xx / 네트워크 오류는 즉시 오류 페이지 알림 (401 은 refresh 시도 후 실패 시 onLogout 에서 처리) */
     if ((status === 0 || !status || status >= 500) && !cfg._notified) {
       cfg._notified = true;
       try {
         global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'admin', status: status || 0, url: cfg.url, message: err.message },
+          detail: { scope: 'front', status: status || 0, url: cfg.url, message: err.message },
         }));
       } catch (_) {}
     }
@@ -114,11 +115,14 @@
           try {
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(REFRESH_KEY);
-            localStorage.removeItem('modu-admin-user');
+            localStorage.removeItem('modu-fo-user');
           } catch (_) {}
+          if (global.frontAuth && typeof global.frontAuth.logout === 'function') {
+            try { global.frontAuth.logout(); } catch (_) {}
+          }
           try {
             global.dispatchEvent(new CustomEvent('api-error', {
-              detail: { scope: 'admin', status: 401, url: cfg.url, message: 'session expired' },
+              detail: { scope: 'front', status: 401, url: cfg.url, message: 'session expired' },
             }));
           } catch (_) {}
           return Promise.reject(err);
@@ -128,7 +132,7 @@
   });
 
   /* ── path → apiUrl 변환 래퍼 ── */
-  global.adminApi = {
+  global.foApi = {
     get:    function (path, cfg)       { return inst.get(apiUrl(path), cfg); },
     delete: function (path, cfg)       { return inst.delete(apiUrl(path), cfg); },
     post:   function (path, data, cfg) { return inst.post(apiUrl(path), data, cfg); },

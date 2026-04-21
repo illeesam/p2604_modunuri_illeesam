@@ -25,7 +25,7 @@ Ensure all Vue 3 `ref()` and `reactive()` state in admin components are initiali
 - **Fix #3 (Line 1324)**: Profile modal - safe string character access with fallback
 
 ### Phase 4: Integration ✓
-- **File**: `admin.html`
+- **File**: `bo.html`
 - **Added**: Script loading for both utilities in correct order
 - **Order**: AdminData.js → adminDataProvider.js → refDefaults.js
 
@@ -91,7 +91,7 @@ const form = reactive(window.refDefaults.productForm());
    - Domain-specific defaults for all components
 
 ### Modified Files (2)
-1. `admin.html`
+1. `bo.html`
    - Added script loading for refDefaults.js (line 80)
    - Maintains correct dependency order
 
@@ -142,7 +142,7 @@ form.price      // 0 (not undefined)
    ```
 
 2. **Login to Admin**
-   - Navigate to `http://127.0.0.1:5501/admin.html`
+   - Navigate to `http://127.0.0.1:5501/bo.html`
    - Use any test account credentials
 
 3. **Test Navigation**

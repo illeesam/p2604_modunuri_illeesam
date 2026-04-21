@@ -12,7 +12,7 @@ window.PmSaveMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pm/save/page', {
+        const res = await window.boApi.get('/bo/ec/pm/save/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         saves.splice(0, saves.length, ...(res.data?.data?.list || []));
@@ -26,12 +26,12 @@ window.PmSaveMng = {
     });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
     const viewMode = ref('list'); // 'list' | 'card'
@@ -98,7 +98,7 @@ window.PmSaveMng = {
       if (idx !== -1) saveList.value.splice(idx, 1);
       if (selectedId.value === s.saveId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`save/${s.saveId}`);
+        const res = await window.boApi.delete(`save/${s.saveId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -108,7 +108,7 @@ window.PmSaveMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value,
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value,
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
 

@@ -13,7 +13,7 @@ window.PdProdHist = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/pd/prod/page', {
+        const res = await window.boApi.get('/bo/ec/pd/prod/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         products.splice(0, products.length, ...(res.data?.data?.list || []));
@@ -43,13 +43,13 @@ window.PdProdHist = {
           { date: p.regDate || '2026-01-01', type: '입고', qty: p.stock, balance: p.stock, memo: '초기 입고' },
         );
         statusHistory.splice(0, statusHistory.length,
-          { date: p.regDate || '2026-01-01', before: '-', after: p.status, admin: '관리자' },
+          { date: p.regDate || '2026-01-01', before: '-', after: p.status, bo: '관리자' },
         );
         changeHistory.splice(0, changeHistory.length,
-          { date: p.regDate || '2026-01-01', field: '등록', before: '-', after: p.prodNm, admin: '관리자' },
+          { date: p.regDate || '2026-01-01', field: '등록', before: '-', after: p.prodNm, bo: '관리자' },
         );
         priceHistory.splice(0, priceHistory.length,
-          { date: p.regDate || '2026-01-01', field: '판매가', before: '-', after: String(p.price), admin: '관리자' },
+          { date: p.regDate || '2026-01-01', field: '판매가', before: '-', after: String(p.price), bo: '관리자' },
         );
       }
     });

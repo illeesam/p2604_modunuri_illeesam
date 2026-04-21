@@ -12,23 +12,23 @@ window.AdminRefModal = {
     /* ── 각 타입별 데이터 ── */
     const memberData = computed(() => {
       if (s.type !== 'member' || !s.id) return null;
-      return window.adminDataProvider?.getMemberById?.(s.id) || null;
+      return window.boDataProvider?.getMemberById?.(s.id) || null;
     });
     const productData = computed(() => {
       if (s.type !== 'product' || !s.id) return null;
-      return window.adminDataProvider?.getProductById?.(s.id) || null;
+      return window.boDataProvider?.getProductById?.(s.id) || null;
     });
     const orderData = computed(() => {
       if (s.type !== 'order' || !s.id) return null;
-      return window.adminDataProvider?.getOrderById?.(s.id) || null;
+      return window.boDataProvider?.getOrderById?.(s.id) || null;
     });
     const claimData = computed(() => {
       if (s.type !== 'claim' || !s.id) return null;
-      return window.adminDataProvider?.getClaimById?.(s.id) || null;
+      return window.boDataProvider?.getClaimById?.(s.id) || null;
     });
     const couponData = computed(() => {
       if (s.type !== 'coupon' || !s.id) return null;
-      return window.adminDataProvider?.getCouponById?.(s.id) || null;
+      return window.boDataProvider?.getCouponById?.(s.id) || null;
     });
 
     const badgeCls = (status) => {

@@ -7,14 +7,14 @@ window.DpDispPanelMng = {
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const displays = ref((window.adminData?.displays || []));
-    const codes = ref((window.adminData?.codes || []));
+    const displays = ref((window.boData?.displays || []));
+    const codes = ref((window.boData?.codes || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/dp/panel/page', {
+        const res = await window.boApi.get('/bo/ec/dp/panel/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         panels.splice(0, panels.length, ...(res.data?.data?.list || []));
@@ -26,16 +26,16 @@ window.DpDispPanelMng = {
         loading.value = false;
       }
     });
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
-    const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.adminUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchArea = ref('');
     const searchStatus = ref('');
     const searchDispDate = ref('');
@@ -243,7 +243,7 @@ window.DpDispPanelMng = {
       if (idx !== -1) displays.value.splice(idx, 1);
       if (selectedId.value === d.dispId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`disps/${d.dispId}`);
+        const res = await window.boApi.delete(`disps/${d.dispId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -253,7 +253,7 @@ window.DpDispPanelMng = {
       }
     };
 
-    const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
 
     /* 영역 레이블 조회 */
     const areaLabel = (code) => {

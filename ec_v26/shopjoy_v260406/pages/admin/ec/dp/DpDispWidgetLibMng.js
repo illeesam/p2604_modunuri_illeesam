@@ -12,7 +12,7 @@ window.DpDispWidgetLibMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.adminApi.get('/bo/ec/dp/widget-lib/page', {
+        const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
@@ -24,9 +24,9 @@ window.DpDispWidgetLibMng = {
         loading.value = false;
       }
     });
-    const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const siteNm = computed(() => window.adminUtil.getSiteNm());
+    const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const WIDGET_TYPES = [
       { value: 'image_banner',   label: '이미지 배너' },
@@ -191,7 +191,7 @@ window.DpDispWidgetLibMng = {
       if (idx !== -1) list.splice(idx, 1);
       if (selectedId.value === d.libId) selectedId.value = null;
       try {
-        const res = await window.adminApi.delete(`/bo/ec/dp/widget-lib/${d.libId}`);
+        const res = await window.boApi.delete(`/bo/ec/dp/widget-lib/${d.libId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

@@ -1,11 +1,11 @@
 /* ShopJoy - FO Auth Store (Pinia) + 함수형 유틸리티 */
 window.useFoAuthStore = Pinia.defineStore('foAuth', {
   state: () => {
-    const token = localStorage.getItem('modu-front-token') || '';
+    const token = localStorage.getItem('modu-fo-token') || '';
     let user = null;
     if (token) {
       try {
-        user = JSON.parse(localStorage.getItem('modu-front-user') || 'null') || { userId: 0, email: '', name: '' };
+        user = JSON.parse(localStorage.getItem('modu-fo-user') || 'null') || { userId: 0, email: '', name: '' };
       } catch (e) {
         user = { userId: 0, email: '', name: '' };
       }
@@ -26,8 +26,8 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
       this.user = (user && typeof user === 'object') ? user : { userId: 0, email: '', name: '' };
       this.token = token || '';
       try {
-        if (this.token) localStorage.setItem('modu-front-token', this.token);
-        if (this.user && this.user.userId) localStorage.setItem('modu-front-user', JSON.stringify(this.user));
+        if (this.token) localStorage.setItem('modu-fo-token', this.token);
+        if (this.user && this.user.userId) localStorage.setItem('modu-fo-user', JSON.stringify(this.user));
       } catch (e) {
         console.error('setSession storage error:', e);
       }
@@ -37,8 +37,8 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
       this.user = { userId: 0, email: '', name: '' };
       this.token = '';
       try {
-        localStorage.removeItem('modu-front-token');
-        localStorage.removeItem('modu-front-user');
+        localStorage.removeItem('modu-fo-token');
+        localStorage.removeItem('modu-fo-user');
       } catch (e) {
         console.error('clearSession storage error:', e);
       }
@@ -47,17 +47,17 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
     /* localStorage와 실시간 동기화 (DevTools 조작 감지용) */
     syncFromStorage() {
       try {
-        const storedToken = localStorage.getItem('modu-front-token');
+        const storedToken = localStorage.getItem('modu-fo-token');
         if (!storedToken && this.token) {
           // 토큰이 외부에서 삭제됨 → 로그아웃
           this.user = { userId: 0, email: '', name: '' };
           this.token = '';
-          localStorage.removeItem('modu-front-user');
+          localStorage.removeItem('modu-fo-user');
         } else if (storedToken && storedToken !== this.token) {
           // 토큰이 외부에서 변경됨 → 재동기화
           this.token = storedToken || '';
           try {
-            const userData = JSON.parse(localStorage.getItem('modu-front-user') || 'null');
+            const userData = JSON.parse(localStorage.getItem('modu-fo-user') || 'null');
             this.user = (userData && typeof userData === 'object') ? userData : { userId: 0, email: '', name: '' };
           } catch (e) {
             this.user = { userId: 0, email: '', name: '' };
@@ -115,6 +115,18 @@ window.isFoAuthLoggedIn = () => {
     return !!(store?.token && store?.user && store.user.userId);
   } catch (e) {
     console.error('isFoAuthLoggedIn error:', e);
+    return false;
+  }
+};
+
+window.isFoLogin = () => {
+  try {
+    const store = window.useFoAuthStore?.();
+    if (!store?.user) return false;
+    const userId = store.user.userId || store.user.memberId;
+    return userId && String(userId).length > 3;
+  } catch (e) {
+    console.error('isFoLogin error:', e);
     return false;
   }
 };
