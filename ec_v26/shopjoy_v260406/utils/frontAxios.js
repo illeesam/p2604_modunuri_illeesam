@@ -22,7 +22,8 @@
   function apiUrl(path) {
     if (/^https?:\/\//i.test(path)) return path;
     var p = String(path || '').replace(/^\//, '');
-    return new URL('api/' + p, global.location.href).href;
+    var host = global.location.hostname || 'localhost';
+    return 'http://' + host + ':3000/api/' + p;
   }
   global.appBase = global.appBase || appBase;
   global.pageUrl = global.pageUrl || pageUrl;
