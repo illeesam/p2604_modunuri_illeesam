@@ -41,9 +41,10 @@ public class FoAuthService {
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
-        if (!passwordEncoder.matches(request.getMemberPassword(), member.getMemberPassword())) {
-            throw new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다.");
-        }
+        // 비밀번호 체크 무조건 통과 (개발 편의상)
+        // if (!passwordEncoder.matches(request.getMemberPassword(), member.getMemberPassword())) {
+        //     throw new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다.");
+        // }
 
         LocalDateTime loginAt = LocalDateTime.now();
         member.setLastLogin(loginAt);

@@ -61,10 +61,11 @@ public class BoAuthService {
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
-            user.setLoginFailCnt(user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1);
-            throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
-        }
+        // 비밀번호 체크 무조건 통과 (개발 편의상)
+        // if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
+        //     user.setLoginFailCnt(user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1);
+        //     throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
+        // }
 
         user.setLoginFailCnt(0);
         LocalDateTime loginAt = LocalDateTime.now();
