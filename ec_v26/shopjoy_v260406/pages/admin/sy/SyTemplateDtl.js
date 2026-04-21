@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 템플릿 상세/등록 */
 window.SyTemplateDtl = {
   name: 'SyTemplateDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const templates = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/template/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        templates.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyTemplate 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -48,7 +67,7 @@ window.SyTemplateDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const t = props.adminData.templates.find(x => x.templateId === props.editId);
+        const t = templates.value.find(x => x.templateId === props.editId);
         if (t) Object.assign(form, { sampleParams: '{}', ...t });
       }
       if (useHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
@@ -78,10 +97,10 @@ window.SyTemplateDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.templates.push({ ...form, templateId: props.adminData.nextId(props.adminData.templates, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
+        templates.value.push({ ...form, templateId: nextId.value(templates.value, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = props.adminData.templates.findIndex(x => x.templateId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.templates[idx], { ...form });
+        const idx = templates.value.findIndex(x => x.templateId === props.editId);
+        if (idx !== -1) Object.assign(templates.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`templates/${form.templateId}`, { ...form }) : window.adminApi.put(`templates/${form.templateId}`, { ...form }));
@@ -102,7 +121,7 @@ window.SyTemplateDtl = {
     const previewOpen = ref(false);
     const sendOpen    = ref(false);
 
-    return { isNew, form, errors, save, TEMPLATE_TYPES, needSubject, isLongContent,
+    return { templates, loading, error, isNew, form, errors, save, TEMPLATE_TYPES, needSubject, isLongContent,
              useHtmlEditor, quillEditorEl, previewOpen, sendOpen, siteNm };
   },
   template: /* html */`
@@ -203,8 +222,7 @@ window.SyTemplateDtl = {
 
   <!-- 발송하기 모달 -->
   <template-send-modal v-if="sendOpen"
-    :tmpl="form" :admin-data="adminData"
-    :show-toast="showToast" :show-confirm="showConfirm"
+    :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm"
     @close="sendOpen=false" />
 </div>
 `

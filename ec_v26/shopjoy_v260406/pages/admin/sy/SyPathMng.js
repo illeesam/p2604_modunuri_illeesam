@@ -1,11 +1,11 @@
 /* ShopJoy Admin - 표시경로 관리 (sy_path) */
 window.SyPathMng = {
   name: 'SyPathMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
 
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const ad = props.adminData || window.adminData;
+    const ad = null;
 
     /* ── 검색 상태 ── */
     const kw       = ref('');

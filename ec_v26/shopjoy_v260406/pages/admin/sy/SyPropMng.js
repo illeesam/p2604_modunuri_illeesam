@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 프로퍼티 관리 (좌측 트리 + 우측 CRUD 그리드) */
 window.SyPropMng = {
   name: 'SyPropMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
 
   setup(props) {
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -18,7 +18,7 @@ window.SyPropMng = {
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const { ref, reactive, computed, watch } = Vue;
-    const ad = props.adminData || window.adminData;
+    const ad = null;
 
     /* ── 검색 ── */
     const kw       = ref('');

@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 게시글관리 상세/등록 */
 window.SyBbsDtl = {
   name: 'SyBbsDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const bbss = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/bbs/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bbss.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBbs 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -58,10 +77,10 @@ window.SyBbsDtl = {
     /* ── 초기화 ── */
     onMounted(() => {
       if (!isNew.value) {
-        const b = props.adminData.bbss.find(x => x.bbsId === props.editId);
+        const b = bbss.value.find(x => x.bbsId === props.editId);
         if (b) {
           Object.assign(form, { ...b });
-          selectedBbm.value = props.adminData.bbms.find(m => m.bbmId === b.bbmId) || null;
+          selectedBbm.value = bbms.value.find(m => m.bbmId === b.bbmId) || null;
         }
       }
       /* htmleditor 초기화는 selectedBbm 결정 후 — viewMode 일 때는 초기화 불필요 */
@@ -101,10 +120,10 @@ window.SyBbsDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.bbss.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: props.adminData.nextId(props.adminData.bbss, 'bbsId'), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
+        bbss.value.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: nextId.value(bbss.value, 'bbsId'), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = props.adminData.bbss.findIndex(x => x.bbsId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.bbss[idx], { ...form, bbmId: Number(form.bbmId) });
+        const idx = bbss.value.findIndex(x => x.bbsId === props.editId);
+        if (idx !== -1) Object.assign(bbss.value[idx], { ...form, bbmId: Number(form.bbmId) });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }) : window.adminApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }));
@@ -118,8 +137,7 @@ window.SyBbsDtl = {
       }
     };
 
-    return {
-      isNew, form, errors, selectedBbm, contentType, allowAttach, attachMaxCount,
+    return { bbss, loading, error, isNew, form, errors, selectedBbm, contentType, allowAttach, attachMaxCount,
       showBbmModal, showBbmDetail, onBbmSelect, save, siteNm,
     };
   },
@@ -207,9 +225,7 @@ window.SyBbsDtl = {
       </label>
       <base-attach-grp
         :model-value="form.attachGrpId"
-        @update:model-value="form.attachGrpId = $event"
-        :admin-data="adminData"
-        :ref-id="editId ? 'BBS-'+editId : ''"
+        @update:model-value="form.attachGrpId = $event" :ref-id="editId ? 'BBS-'+editId : ''"
         :show-toast="showToast"
         grp-code="BBS_ATTACH"
         grp-name="게시글 첨부파일"
@@ -237,9 +253,7 @@ window.SyBbsDtl = {
 
   <!-- 게시판 선택 팝업 -->
   <bbm-select-modal
-    v-if="showBbmModal"
-    :disp-dataset="adminData"
-    @select="onBbmSelect"
+    v-if="showBbmModal" @select="onBbmSelect"
     @close="showBbmModal=false"
   />
 

@@ -1,11 +1,30 @@
 /* ShopJoy Admin - 전시관리 목록 + 하단 DispDtl 임베드 */
 window.DpDispPanelMng = {
   name: 'DpDispPanelMng',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const panels = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/dp/panel/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        panels.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('DpDispPanel 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -89,7 +108,7 @@ window.DpDispPanelMng = {
 
     const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
 
-    const filtered = computed(() => props.dispDataset.displays.filter(d => {
+    const filtered = computed(() => displays.value.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
       if (applied.area && d.area !== applied.area) return false;
@@ -113,7 +132,7 @@ window.DpDispPanelMng = {
           if (d.dispId !== k.slice(6)) return false;
         } else {
           // top-level prefix or sub-group
-          const codes = props.dispDataset.codes || [];
+          const codes = codes.value || [];
           const areaNm = (code) => {
             const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
             return c ? c.codeLabel : code;
@@ -144,7 +163,7 @@ window.DpDispPanelMng = {
       return true;
     }));
     const areas = computed(() =>
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -217,8 +236,8 @@ window.DpDispPanelMng = {
     const doDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.dispDataset.displays.findIndex(x => x.dispId === d.dispId);
-      if (idx !== -1) props.dispDataset.displays.splice(idx, 1);
+      const idx = displays.value.findIndex(x => x.dispId === d.dispId);
+      if (idx !== -1) displays.value.splice(idx, 1);
       if (selectedId.value === d.dispId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`disps/${d.dispId}`);
@@ -235,7 +254,7 @@ window.DpDispPanelMng = {
 
     /* 영역 레이블 조회 */
     const areaLabel = (code) => {
-      const found = (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+      const found = (codes.value || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
       return found ? found.codeLabel : code;
     };
 
@@ -286,7 +305,7 @@ window.DpDispPanelMng = {
       const srcId = pageList.value[src]?.dispId;
       const tgtId = pageList.value[pageIdx]?.dispId;
       if (!srcId || !tgtId) { panelDragSrc.value = null; return; }
-      const arr = props.dispDataset.displays;
+      const arr = displays.value;
       const si = arr.findIndex(x => x.dispId === srcId);
       const ti = arr.findIndex(x => x.dispId === tgtId);
       if (si === -1 || ti === -1) { panelDragSrc.value = null; return; }
@@ -319,7 +338,7 @@ window.DpDispPanelMng = {
       if (widgetDragPanel.value !== dispId) return;
       const src = widgetDragSrcWi.value;
       if (src === null || src === wi) { widgetDragPanel.value = null; widgetDragSrcWi.value = null; return; }
-      const panel = props.dispDataset.displays.find(x => x.dispId === dispId);
+      const panel = displays.value.find(x => x.dispId === dispId);
       if (!panel?.rows) return;
       const moved = panel.rows.splice(src, 1)[0];
       panel.rows.splice(wi, 0, moved);
@@ -345,13 +364,13 @@ window.DpDispPanelMng = {
 
     /* 패널 목록 (영역별 그룹) */
     const panelTree = computed(() => {
-      const codes = props.dispDataset.codes || [];
+      const codes = codes.value || [];
       const areaNm = (code) => {
         const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;
       };
       const map = {};
-      (props.dispDataset.displays || []).forEach(p => {
+      (displays.value || []).forEach(p => {
         const area = p.area || '(미등록)';
         const top = area.split('_')[0] || '(기타)';
         const subKey = areaNm(area);
@@ -374,8 +393,7 @@ window.DpDispPanelMng = {
       }));
     });
 
-    return {
-      pathLabel,
+    return { panels, loading, error, pathLabel,
       panelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
@@ -486,7 +504,7 @@ window.DpDispPanelMng = {
                   <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ panel.label }}</span>
                 </span>
                 <span style="font-size:9px;background:#e8f0fe;color:#0277bd;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;margin-left:4px;white-space:nowrap;">
-                  {{ (dispDataset.displays||[]).find(d => d.dispId===panel.panelId)?.rows?.length||0 }}
+                  {{ ([]||[]).find(d => d.dispId===panel.panelId)?.rows?.length||0 }}
                 </span>
               </div>
             </div>
@@ -674,8 +692,7 @@ window.DpDispPanelMng = {
     </div>
     <dp-disp-panel-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :disp-dataset="dispDataset" :disp-opt="dispOpt"
+      :navigate="inlineNavigate" :disp-opt="dispOpt"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

@@ -136,7 +136,7 @@ const _WP_DispUiPreview = {
 /* ── 메인 컴포넌트 ── */
 window.DpDispUiPreview = {
   name: 'DpDispUiPreview',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -219,7 +219,7 @@ window.DpDispUiPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (props.dispDataset.widgetLibs || []).filter(lib => {
+      return (widgetLibs.value || []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
@@ -238,7 +238,7 @@ window.DpDispUiPreview = {
     /* ── UI 트리: uiType > codeLabel > (codeValue codeLabel) ── */
     const tree = computed(() => {
       const map = {};
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_UI')
         .forEach(u => {
           const top = u.uiType || '(미분류)';
@@ -821,13 +821,12 @@ window.DpDispUiPreview = {
                   <!-- UI 미리보기 (slot.uiCode가 있으면 disp-x01-ui로 렌더) -->
                   <disp-x01-ui v-if="slot.uiCode"
                     :params="{
-                      areas: (dispDataset.codes||[]).filter(c=>c.codeGrp==='DISP_AREA' && c.uiCode===slot.uiCode).map(c=>c.codeValue),
+                      areas: ([]||[]).filter(c=>c.codeGrp==='DISP_AREA' && c.uiCode===slot.uiCode).map(c=>c.codeValue),
                       date: previewDate, time: previewTime,
                       status: applied.status,
                       visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '',
                       siteId: null, memberId: null, viewOpts: ''
                     }"
-                    :disp-dataset="dispDataset"
                     :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
                   <widget-preview v-else :lib="slot" />
                 </template>
@@ -892,13 +891,12 @@ window.DpDispUiPreview = {
             <div style="overflow:auto;" :style="{maxHeight:(item.h-40)+'px'}">
               <disp-x01-ui v-if="item.lib.uiCode"
                 :params="{
-                  areas: (dispDataset.codes||[]).filter(c=>c.codeGrp==='DISP_AREA' && c.uiCode===item.lib.uiCode).map(c=>c.codeValue),
+                  areas: ([]||[]).filter(c=>c.codeGrp==='DISP_AREA' && c.uiCode===item.lib.uiCode).map(c=>c.codeValue),
                   date: previewDate, time: previewTime,
                   status: applied.status,
                   visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '',
                   siteId: null, memberId: null, viewOpts: ''
                 }"
-                :disp-dataset="dispDataset"
                 :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
               <widget-preview v-else :lib="item.lib" />
             </div>

@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 업체정보 상세/등록 */
 window.SyVendorDtl = {
   name: 'SyVendorDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const vendors = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/vendor/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        vendors.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyVendor 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -25,7 +44,7 @@ window.SyVendorDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const v = props.adminData.vendors.find(x => x.vendorId === props.editId);
+        const v = vendors.value.find(x => x.vendorId === props.editId);
         if (v) Object.assign(form, { ...v });
       }
       await nextTick();
@@ -72,10 +91,10 @@ window.SyVendorDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.vendors.push({ ...form, vendorId: props.adminData.nextId(props.adminData.vendors, 'vendorId') });
+        vendors.value.push({ ...form, vendorId: nextId.value(vendors.value, 'vendorId') });
       } else {
-        const idx = props.adminData.vendors.findIndex(x => x.vendorId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.vendors[idx], { ...form });
+        const idx = vendors.value.findIndex(x => x.vendorId === props.editId);
+        if (idx !== -1) Object.assign(vendors.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`vendors/${form.vendorId}`, { ...form }) : window.adminApi.put(`vendors/${form.vendorId}`, { ...form }));
@@ -89,7 +108,7 @@ window.SyVendorDtl = {
       }
     };
 
-    return { isNew, form, errors, save, siteNm, addrDetailRef, openKakaoPostcode, memoEl };
+    return { vendors, loading, error, isNew, form, errors, save, siteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
 <div>

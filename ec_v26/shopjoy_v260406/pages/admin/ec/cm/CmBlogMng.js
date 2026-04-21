@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 게시판(블로그)관리 */
 window.CmBlogMng = {
   name: 'CmBlogMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const blogs = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/cm/blog/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        blogs.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('CmBlog 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchUse    = ref('');
@@ -14,7 +33,7 @@ window.CmBlogMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (props.adminData.bltnPosts || []).filter(p => {
+      return (bltnPosts.value || []).filter(p => {
         if (kw && !p.blogTitle.toLowerCase().includes(kw) && !(p.blogAuthor||'').toLowerCase().includes(kw)) return false;
         if (applied.use && p.useYn !== applied.use) return false;
         if (applied.notice && p.isNotice !== applied.notice) return false;
@@ -26,7 +45,7 @@ window.CmBlogMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (props.adminData.bltnPosts||[]).find(p => p.blogId === selectedId.value) || null);
+    const selectedRow = computed(() => (bltnPosts.value||[]).find(p => p.blogId === selectedId.value) || null);
     const form = reactive({});
     const isNew = ref(false);
 
@@ -45,7 +64,7 @@ window.CmBlogMng = {
       const isNewPost = isNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const src = props.adminData.bltnPosts;
+      const src = bltnPosts.value;
       if (isNewPost) { form.blogId = 'BL' + String(Date.now()).slice(-6); form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...form }); selectedId.value = form.blogId; isNew.value = false; }
       else { const si = src.findIndex(p => p.blogId === form.blogId); if (si !== -1) Object.assign(src[si], form); }
       try {
@@ -62,8 +81,8 @@ window.CmBlogMng = {
       if (!selectedRow.value) return;
       const ok = await props.showConfirm('삭제', `[${selectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = props.adminData.bltnPosts.findIndex(p => p.blogId === selectedRow.value.blogId);
-      if (si !== -1) props.adminData.bltnPosts.splice(si, 1);
+      const si = bltnPosts.value.findIndex(p => p.blogId === selectedRow.value.blogId);
+      if (si !== -1) bltnPosts.value.splice(si, 1);
       closeDetail();
       try {
         const res = await window.adminApi.delete(`/bo/ec/cm/blog/${selectedRow.value.blogId}`);
@@ -97,7 +116,7 @@ window.CmBlogMng = {
     const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { searchKw, searchUse, searchNotice, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
+    return { blogs, loading, error, searchKw, searchUse, searchNotice, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
              selectedId, selectedRow, form, isNew, openDetail, openNew, closeDetail, doSave, doDelete, toggleUse, ynBadge , PAGE_SIZES , onSizeChange };
   },
   template: `

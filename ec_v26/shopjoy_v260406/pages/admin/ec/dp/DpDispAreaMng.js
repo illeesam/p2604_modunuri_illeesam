@@ -1,11 +1,30 @@
 /* ShopJoy Admin - 전시영역관리 (목록 + 하단 상세 임베드) */
 window.DpDispAreaMng = {
   name: 'DpDispAreaMng',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const areas = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/dp/area/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        areas.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('DpDispArea 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
 
     const AREA_TYPE_OPTS = [
       { value: 'FULL',    label: '전체폭' },
@@ -63,7 +82,7 @@ window.DpDispAreaMng = {
 
     const areaTree = computed(() => {
       const group = {};
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA')
         .forEach(a => {
           const top = (a.codeValue || '').split('_')[0] || '(기타)';
@@ -86,7 +105,7 @@ window.DpDispAreaMng = {
 
     /* ── 영역 목록 (codes에서 DISP_AREA 필터) ── */
     const allAreas = computed(() =>
-      (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_AREA')
+      (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA')
     );
     const filtered = computed(() => {
       const kw = applied.kw.trim().toLowerCase();
@@ -145,7 +164,7 @@ window.DpDispAreaMng = {
     const doDelete = async (a) => {
       const ok = await props.showConfirm('삭제', `[${a.codeLabel}] 영역을 삭제하시겠습니까?`);
       if (!ok) return;
-      const codes = props.dispDataset.codes;
+      const codes = codes.value;
       const idx = codes.findIndex(x => x.codeId === a.codeId);
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === a.codeId) selectedId.value = null;
@@ -197,7 +216,7 @@ window.DpDispAreaMng = {
       const srcId = pageList.value[src]?.codeId;
       const tgtId = pageList.value[pageIdx]?.codeId;
       if (!srcId || !tgtId) { dragSrc.value = null; return; }
-      const codes = props.dispDataset.codes;
+      const codes = codes.value;
       const si = codes.findIndex(x => x.codeId === srcId);
       const ti = codes.findIndex(x => x.codeId === tgtId);
       if (si === -1 || ti === -1) { dragSrc.value = null; return; }
@@ -215,7 +234,7 @@ window.DpDispAreaMng = {
 
     /* 영역 하위 패널 목록 */
     const panelsOfArea = (areaCode) =>
-      (props.dispDataset.displays || [])
+      (displays.value || [])
         .filter(p => p.area === areaCode)
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
@@ -227,8 +246,7 @@ window.DpDispAreaMng = {
     };
     const isAreaExpanded = (areaId) => expandedAreas.value.has(areaId);
 
-    return {
-      pathLabel,
+    return { areas, loading, error, pathLabel,
       searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
@@ -466,7 +484,6 @@ window.DpDispAreaMng = {
     <dp-disp-area-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
-      :disp-dataset="dispDataset"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

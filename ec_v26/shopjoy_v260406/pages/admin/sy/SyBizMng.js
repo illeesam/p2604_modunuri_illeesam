@@ -1,10 +1,29 @@
 /* ShopJoy Admin - 사업자 (sy_biz) */
 window.SyBizMng = {
   name: 'SyBizMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
-    const ad = props.adminData || window.adminData;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const bizs = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/biz/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bizs.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBiz 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
+    const ad = null;
 
     /* 좌측 표시경로 트리 */
     const selectedPath = ref(null);
@@ -93,8 +112,7 @@ window.SyBizMng = {
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { formData.pathId = pathId; };
 
-    return {
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
+    return { bizs, loading, error, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
       filtered, pagedRows, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
       pathLabel, vendorTypeLabel, vendorTypeBadge, roleCatLabel, roleCatColor, statusBadge, statusLabel,

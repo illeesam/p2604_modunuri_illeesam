@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 상품리뷰관리 */
 window.PdReviewMng = {
   name: 'PdReviewMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const reviews = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/review/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        reviews.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdReview 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchStatus = ref('');
@@ -16,12 +35,12 @@ window.PdReviewMng = {
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
     const statusBadge  = s => ({ ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' }[s] || 'badge-gray');
 
-    const getProdNm = id => { const p = (props.adminData.products||[]).find(p => p.productId === id); return p ? p.productName : id; };
-    const getMemNm  = id => { const m = (props.adminData.members||[]).find(m => m.userId === id); return m ? m.name : id; };
+    const getProdNm = id => { const p = (products.value||[]).find(p => p.productId === id); return p ? p.productName : id; };
+    const getMemNm  = id => { const m = (members.value||[]).find(m => m.userId === id); return m ? m.name : id; };
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (props.adminData.reviews || []).filter(r => {
+      return (reviews.value || []).filter(r => {
         if (kw && !r.reviewTitle.toLowerCase().includes(kw)) return false;
         if (applied.status && r.reviewStatusCd !== applied.status) return false;
         if (applied.rating) { const min = parseFloat(applied.rating); if (r.rating < min || r.rating >= min + 1) return false; }
@@ -33,7 +52,7 @@ window.PdReviewMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (props.adminData.reviews||[]).find(r => r.reviewId === selectedId.value) || null);
+    const selectedRow = computed(() => (reviews.value||[]).find(r => r.reviewId === selectedId.value) || null);
 
     const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
     const changeStatus = async (row, newStatus) => {
@@ -55,7 +74,7 @@ window.PdReviewMng = {
     const onSizeChange = () => { pager.page = 1; };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
-    return { searchKw, searchStatus, searchRating, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
+    return { reviews, loading, error, searchKw, searchStatus, searchRating, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
              selectedId, selectedRow, openDetail, changeStatus, statusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
   },
   template: `

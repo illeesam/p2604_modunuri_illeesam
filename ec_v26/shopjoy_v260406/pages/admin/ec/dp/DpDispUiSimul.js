@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시영역미리보기 (3탭: 영역미리보기 · 구조선택 · 소스) */
 window.DpDispUiSimul = {
   name: 'DpDispUiSimul',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -57,7 +57,7 @@ window.DpDispUiSimul = {
 
     /* ── 화면영역 코드 ── */
     const allAreaListRaw = computed(() =>
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -103,12 +103,12 @@ window.DpDispUiSimul = {
 
     /* ── Tab1: 영역별 필터 패널 ── */
     const panelsForArea = (areaCode) =>
-      (props.dispDataset.displays || [])
+      (displays.value || [])
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
     const totalPanels = computed(() =>
-      (props.dispDataset.displays || []).filter(p => panelFilter(p)).length
+      (displays.value || []).filter(p => panelFilter(p)).length
     );
     const resetDate = () => {
       previewDate.value = today;
@@ -129,7 +129,7 @@ window.DpDispUiSimul = {
     /* 영역별 유효 패널 목록 (날짜·영역 필터 적용) */
     const structAreaList = computed(() =>
       allAreaListRaw.value.map(area => {
-        const panels = (props.dispDataset.displays || [])
+        const panels = (displays.value || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         return { ...area, panels };
@@ -281,7 +281,7 @@ window.DpDispUiSimul = {
       lines.push({ type:'blank' });
       lines.push({ type:'ui-open', level:0 });
       areas.forEach((area, ai) => {
-        const panels = (props.dispDataset.displays || [])
+        const panels = (displays.value || [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         if (ai > 0) lines.push({ type:'blank' });
@@ -566,7 +566,7 @@ window.DpDispUiSimul = {
     const dispUiSiteSearch    = ref('');
     const dispUiSiteList = computed(() => {
       const kw = dispUiSiteSearch.value.trim().toLowerCase();
-      return (props.dispDataset.sites || []).filter(s =>
+      return (sites.value || []).filter(s =>
         !kw || s.siteNm.toLowerCase().includes(kw) || (s.domain||'').toLowerCase().includes(kw)
       );
     });
@@ -581,7 +581,7 @@ window.DpDispUiSimul = {
     const dispUiMemberSearch    = ref('');
     const dispUiMemberList = computed(() => {
       const kw = dispUiMemberSearch.value.trim().toLowerCase();
-      return (props.dispDataset.members || []).filter(m =>
+      return (members.value || []).filter(m =>
         !kw || (m.memberNm||'').toLowerCase().includes(kw) || (m.email||'').toLowerCase().includes(kw)
       ).slice(0, 30);
     });
@@ -636,7 +636,7 @@ window.DpDispUiSimul = {
         dispUiForm.status       = searchStatus.value;
         dispUiForm.visibility   = searchVisibility.value;
         const cf   = window.adminCommonFilter || {};
-        const site = (props.dispDataset.sites || []).find(s => s.siteId === cf.siteId);
+        const site = (sites.value || []).find(s => s.siteId === cf.siteId);
         dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
         dispUiForm.siteNm   = site?.siteNm || '';
         dispUiForm.memberId = '';
@@ -693,7 +693,7 @@ window.DpDispUiSimul = {
     }));
     const dispOpt = computed(() => ({ layout: viewMode.value, showBadges: true, mode: viewMode.value, showDesc: showDesc.value }));
     const areaInfo = (code) =>
-      (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+      (codes.value || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
     const DISP_UI_OTHER_PAGES = [
       '/index.html#page=dispUiPage',
@@ -754,7 +754,7 @@ window.DpDispUiSimul = {
     };
 
     return {
-      today, siteNm, dispDataset: props.dispDataset,
+      today, siteNm,
       mainTab, switchTab,
       previewDate, viewMode, showDesc, showAreaDrop,
       selectedAreas, allAreaListRaw, areaList,
@@ -1096,8 +1096,7 @@ window.DpDispUiSimul = {
   <!-- DispUi 모달 -->
   <disp-ui-modal
     :show="dispUiModalOpen"
-    :params="dispUiParamObj"
-    :disp-dataset="dispDataset" :disp-opt="dispOpt"
+    :params="dispUiParamObj" :disp-opt="dispOpt"
     title="DispUi미리보기"
     @close="dispUiModalOpen=false"
     @open-popup="(scope) => { openDispUiPopup(scope || 'front'); dispUiModalOpen=false; }"
@@ -1210,7 +1209,6 @@ window.DpDispUiSimul = {
       <div v-for="area in areaList" :key="area.codeValue" style="margin-bottom:4px;">
         <disp-x02-area
           :params="filterParams"
-          :disp-dataset="dispDataset"
           :disp-opt="dispOpt"
           :area-item="{ code: area.codeValue, label: area.codeLabel, info: areaInfo(area.codeValue), panels: panelsForArea(area.codeValue) }"
         />

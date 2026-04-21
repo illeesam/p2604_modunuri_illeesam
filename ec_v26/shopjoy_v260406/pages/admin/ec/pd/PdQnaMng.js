@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 상품Q&A관리 */
 window.PdQnaMng = {
   name: 'PdQnaMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const qnas = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/qna/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        qnas.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdQna 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw   = ref('');
     const searchAnsw = ref('');
@@ -15,12 +34,12 @@ window.PdQnaMng = {
     const TYPE_LABELS = { SIZE:'사이즈', QUALITY:'소재/품질', DLIV:'배송', ETC:'기타' };
     const typeBadge   = t => ({ SIZE:'badge-blue', QUALITY:'badge-green', DLIV:'badge-orange', ETC:'badge-gray' }[t] || 'badge-gray');
 
-    const getProdNm = id => { const p = (props.adminData.products||[]).find(p => p.productId === id); return p ? p.productName : id; };
-    const getMemNm  = id => { const m = (props.adminData.members||[]).find(m => m.userId === id); return m ? m.name : id; };
+    const getProdNm = id => { const p = (products.value||[]).find(p => p.productId === id); return p ? p.productName : id; };
+    const getMemNm  = id => { const m = (members.value||[]).find(m => m.userId === id); return m ? m.name : id; };
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (props.adminData.prodQnas || []).filter(q => {
+      return (prodQnas.value || []).filter(q => {
         if (kw && !q.qnaTitle.toLowerCase().includes(kw)) return false;
         if (applied.answ && q.answYn !== applied.answ) return false;
         return true;
@@ -31,7 +50,7 @@ window.PdQnaMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (props.adminData.prodQnas||[]).find(q => q.qnaId === selectedId.value) || null);
+    const selectedRow = computed(() => (prodQnas.value||[]).find(q => q.qnaId === selectedId.value) || null);
 
     const openDetail = (row) => {
       if (selectedId.value === row.qnaId) { selectedId.value = null; return; }
@@ -61,7 +80,7 @@ window.PdQnaMng = {
     const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-red';
 
-    return { searchKw, searchAnsw, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
+    return { qnas, loading, error, searchKw, searchAnsw, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
              selectedId, selectedRow, answForm, openDetail, doAnswer, typeBadge, ynBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `

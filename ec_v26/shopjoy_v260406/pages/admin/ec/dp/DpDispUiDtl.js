@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 전시UI 상세/등록 (탭 + 우측 미리보기) */
 window.DpDispUiDtl = {
   name: 'DpDispUiDtl',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  setup(props) {    const displays = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/dp/ui/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        displays.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('DpDispUi 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -44,7 +63,7 @@ window.DpDispUiDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const u = (props.dispDataset.codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_UI');
+        const u = (codes.value || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_UI');
         if (u) {
           Object.assign(form, {
             codeId: u.codeId, codeGrp: u.codeGrp,
@@ -56,7 +75,7 @@ window.DpDispUiDtl = {
           });
         }
       } else {
-        const uis = (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_UI');
+        const uis = (codes.value || []).filter(c => c.codeGrp === 'DISP_UI');
         form.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -69,7 +88,7 @@ window.DpDispUiDtl = {
     });
 
     const relatedAreas = computed(() =>
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === form.codeValue)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
     );
@@ -84,7 +103,7 @@ window.DpDispUiDtl = {
 
     /* 패널(displays) 조회 헬퍼 */
     const panelsOfArea = (areaCode) =>
-      (props.dispDataset.displays || [])
+      (displays.value || [])
         .filter(p => p.area === areaCode)
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
@@ -127,7 +146,7 @@ window.DpDispUiDtl = {
     const pickKw   = ref('');
     const pickSel  = ref(new Set());
     const availableAreas = computed(() => {
-      const all = (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_AREA');
+      const all = (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA');
       const kw  = pickKw.value.trim().toLowerCase();
       return all.filter(a => {
         if (a.uiCode === form.codeValue) return false;
@@ -152,7 +171,7 @@ window.DpDispUiDtl = {
       const ids = Array.from(pickSel.value);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
-      const codes = props.dispDataset.codes || [];
+      const codes = codes.value || [];
       ids.forEach(id => {
         const a = codes.find(x => x.codeId === id);
         if (a) a.uiCode = form.codeValue;
@@ -251,9 +270,9 @@ window.DpDispUiDtl = {
       const isNewUi = isNew.value;
       const ok = await props.showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
       if (!ok) return;
-      const codes = props.dispDataset.codes;
+      const codes = codes.value;
       if (isNewUi) {
-        const nextId = window.adminData.nextId(codes, 'codeId');
+        const nextId = nextId.value(codes, 'codeId');
         codes.push({ ...form, codeId: nextId });
       } else {
         const idx = codes.findIndex(c => c.codeId === form.codeId);
@@ -296,8 +315,7 @@ window.DpDispUiDtl = {
       if (t === 'base') { await nextTick(); initQuillDesc(); }
     });
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { displays, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, isNew, UI_TYPE_OPTS,
       save, doCancel, relatedAreas, panelsOfArea,
       activeTab, selectTab, activeArea, expanded, moveArea,
@@ -654,7 +672,6 @@ window.DpDispUiDtl = {
             <div style="border:1px solid #222;border-top:none;border-radius:0 0 6px 6px;padding:4px;background:#fafafa;">
               <disp-x02-area
                 :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
-                :disp-dataset="dispDataset"
                 :disp-opt="{ layout:'auto', showHeader:false, showBadges:false, mode:'area_detail', showDesc:false }"
                 :area-item="{ code: a.codeValue, label: a.codeLabel, info: a, panels: panelsOfArea(a.codeValue) }" />
             </div>
@@ -664,7 +681,6 @@ window.DpDispUiDtl = {
         <div v-else-if="activeArea" style="max-height:560px;overflow-y:auto;">
           <disp-x02-area
             :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
-            :disp-dataset="dispDataset"
             :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
             :area-item="{ code: activeArea.codeValue, label: activeArea.codeLabel, info: activeArea, panels: panelsOfArea(activeArea.codeValue) }" />
         </div>
@@ -675,7 +691,7 @@ window.DpDispUiDtl = {
   <!-- 영역 선택 팝업 -->
   <area-pick-modal v-if="pickOpen"
     :title="'전시영역 추가 [' + form.codeValue + ']'"
-    :areas="(dispDataset.codes||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"
     :exclude-ui="form.codeValue"
     @close="closePick"
     @pick="onAreaPicked" />

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 정산수집원장 */
 window.StRawMng = {
   name: 'StRawMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const descOpen = ref(false);
@@ -33,9 +33,9 @@ window.StRawMng = {
     const pager    = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const orders  = computed(() => props.adminData.orders  || []);
-    const claims  = computed(() => props.adminData.claims  || []);
-    const vendors = computed(() => props.adminData.vendors || []);
+    const orders  = computed(() => orders.value  || []);
+    const claims  = computed(() => claims.value  || []);
+    const vendors = computed(() => vendors.value || []);
 
     const PAY_METHODS = ['무통장입금','가상계좌','토스페이','카카오페이','네이버페이','핸드폰결제'];
     const PROD_NMS    = ['스탠다드 코튼 티셔츠','슬림 데님 팬츠','캐주얼 후드집업','오버핏 맨투맨','베이직 니트','린넨 셔츠','데일리 스니커즈','크로스백 미니','울 코트','레더 벨트'];

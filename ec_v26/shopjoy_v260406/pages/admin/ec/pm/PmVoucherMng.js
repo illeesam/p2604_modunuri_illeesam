@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 상품권관리 목록 + 하단 VoucherDtl 임베드 */
 window.PmVoucherMng = {
   name: 'PmVoucherMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const vouchers = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/voucher/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        vouchers.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmVoucher 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PmVoucherMng = {
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => (props.adminData.voucherList || []).filter(v => {
+    const filtered = computed(() => (voucherList.value || []).filter(v => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !v.voucherNm.toLowerCase().includes(kw) && !String(v.voucherId).includes(kw)) return false;
       if (applied.status && v.voucherStatus !== applied.status) return false;
@@ -76,8 +95,8 @@ window.PmVoucherMng = {
     const doDelete = async (v) => {
       const ok = await props.showConfirm('삭제', `[${v.voucherNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (props.adminData.voucherList || []).findIndex(x => x.voucherId === v.voucherId);
-      if (idx !== -1) props.adminData.voucherList.splice(idx, 1);
+      const idx = (voucherList.value || []).findIndex(x => x.voucherId === v.voucherId);
+      if (idx !== -1) voucherList.value.splice(idx, 1);
       if (selectedId.value === v.voucherId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`vouchers/${v.voucherId}`);
@@ -92,7 +111,7 @@ window.PmVoucherMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'voucherId'},{label:'상품권명',key:'voucherNm'},{label:'액면가',key:'voucherAmt'},{label:'판매가',key:'salePrice'},{label:'발행매수',key:'issueQty'},{label:'판매매수',key:'soldQty'},{label:'상태',key:'voucherStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '상품권목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { vouchers, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -196,9 +215,7 @@ window.PmVoucherMng = {
     </div>
     <pm-voucher-dtl
       :key="detailKey"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

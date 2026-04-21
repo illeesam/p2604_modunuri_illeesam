@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 클레임-정산 대사 */
 window.StReconClaimMng = {
   name: 'StReconClaimMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -15,7 +15,7 @@ window.StReconClaimMng = {
     };
     (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const claims  = computed(() => props.adminData.claims  || []);
+    const claims  = computed(() => claims.value  || []);
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 

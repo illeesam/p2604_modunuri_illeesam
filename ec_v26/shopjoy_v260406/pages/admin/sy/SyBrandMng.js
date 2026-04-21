@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 브랜드관리 (CRUD 그리드) */
 window.SyBrandMng = {
   name: 'SyBrandMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const brands = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/brand/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        brands.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBrand 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -16,7 +35,7 @@ window.SyBrandMng = {
     };
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
     const selectedPath = ref(null);
@@ -55,7 +74,7 @@ window.SyBrandMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      (props.adminData.brands || [])
+      (brands.value || [])
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !b.brandCode?.toLowerCase().includes(kw)
@@ -169,20 +188,20 @@ window.SyBrandMng = {
         { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
 
-      if (!props.adminData.brands) props.adminData.brands = [];
+      if (!brands.value) brands.value = [];
       dRows.forEach(r => {
-        const idx = props.adminData.brands.findIndex(b => b.brandId === r.brandId);
-        if (idx !== -1) props.adminData.brands.splice(idx, 1);
+        const idx = brands.value.findIndex(b => b.brandId === r.brandId);
+        if (idx !== -1) brands.value.splice(idx, 1);
       });
       uRows.forEach(r => {
-        const idx = props.adminData.brands.findIndex(b => b.brandId === r.brandId);
-        if (idx !== -1) Object.assign(props.adminData.brands[idx],
+        const idx = brands.value.findIndex(b => b.brandId === r.brandId);
+        if (idx !== -1) Object.assign(brands.value[idx],
           { brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
             logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark });
       });
-      let nextId = Math.max(...props.adminData.brands.map(b => b.brandId), 0);
+      let nextId = Math.max(...brands.value.map(b => b.brandId), 0);
       iRows.forEach(r => {
-        props.adminData.brands.push({
+        brands.value.push({
           brandId: ++nextId, brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
           logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark,
           regDate: new Date().toISOString().slice(0, 10),
@@ -254,8 +273,7 @@ window.SyBrandMng = {
     });
     Vue.watch(selectedPath, () => loadGrid());
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { brands, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,

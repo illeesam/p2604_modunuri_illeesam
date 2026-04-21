@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 문의관리 목록 + 하단 ContactDtl 임베드 */
 window.SyContactMng = {
   name: 'SyContactMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const contacts = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/contact/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        contacts.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyContact 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.SyContactMng = {
 
     const applied = Vue.reactive({ kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.contacts.filter(c => {
+    const filtered = computed(() => contacts.value.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.title.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw)) return false;
       if (applied.category && c.categoryCd !== applied.category) return false;
@@ -78,8 +97,8 @@ window.SyContactMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.contacts.findIndex(x => x.inquiryId === c.inquiryId);
-      if (idx !== -1) props.adminData.contacts.splice(idx, 1);
+      const idx = contacts.value.findIndex(x => x.inquiryId === c.inquiryId);
+      if (idx !== -1) contacts.value.splice(idx, 1);
       if (selectedId.value === c.inquiryId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/sy/contact/${c.inquiryId}`);
@@ -94,7 +113,7 @@ window.SyContactMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { contacts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -170,9 +189,7 @@ window.SyContactMng = {
     </div>
     <sy-contact-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

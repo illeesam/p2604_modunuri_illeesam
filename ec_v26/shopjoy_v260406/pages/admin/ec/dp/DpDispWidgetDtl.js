@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시위젯 상세/등록 */
 window.DpDispWidgetDtl = {
   name: 'DpDispWidgetDtl',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
     /* ── 표시경로 선택 모달 (sy_path, 다중) ── */
@@ -108,7 +108,7 @@ window.DpDispWidgetDtl = {
     /* ── 기존 데이터 로드 ── */
     onMounted(async () => {
       if (!isNew.value) {
-        const src = (props.dispDataset.widgetLibs || []).find(d => d.libId == props.editId);
+        const src = (widgetLibs.value || []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
       } else {
         /* 신규: 위젯코드 자동 생성 DW_YYMMDD_HHMMSS */
@@ -406,7 +406,7 @@ window.DpDispWidgetDtl = {
       const isNewWidget = isNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const list = props.dispDataset.widgetLibs || (props.dispDataset.widgetLibs = []);
+      const list = widgetLibs.value || (widgetLibs.value = []);
       if (isNewWidget) {
         const newId = Math.max(0, ...list.map(d => d.libId)) + 1;
         form.libId = newId;
@@ -432,7 +432,7 @@ window.DpDispWidgetDtl = {
       if (isNew.value) return;
       const ok = await props.showConfirm('삭제', '이 위젯를 삭제하시겠습니까?');
       if (!ok) return;
-      const list = props.dispDataset.widgetLibs || [];
+      const list = widgetLibs.value || [];
       const idx  = list.findIndex(d => d.libId == form.libId);
       if (idx >= 0) list.splice(idx, 1);
       try {
@@ -514,7 +514,7 @@ window.DpDispWidgetDtl = {
     </div>
     <!-- 위젯Lib 선택 팝업 -->
     <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
-      :widget-libs="dispDataset.widgetLibs || []"
+      :widget-libs="[] || []"
       @close="libPickOpen=false"
       @pick="onLibPicked" />
   </div>
@@ -547,9 +547,8 @@ window.DpDispWidgetDtl = {
           <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
           <disp-x04-widget
             :params="{ }"
-            :disp-dataset="dispDataset"
             :disp-opt="{ showBadges: true }"
-            :widget-item="(dispDataset.widgetLibs||[]).find(l => l.libId===form.refLibId) || {}" />
+            :widget-item="([]||[]).find(l => l.libId===form.refLibId) || {}" />
         </div>
       </div>
 
@@ -755,7 +754,6 @@ window.DpDispWidgetDtl = {
       <div :style="{ width: previewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
         <disp-x04-widget
           :params="{ }"
-          :disp-dataset="dispDataset"
           :disp-opt="{ showBadges: true }"
           :widget-item="previewWidget"
         />

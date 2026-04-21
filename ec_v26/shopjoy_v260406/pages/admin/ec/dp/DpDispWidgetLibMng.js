@@ -1,11 +1,30 @@
 /* ShopJoy Admin - 위젯라이브러리 목록 */
 window.DpDispWidgetLibMng = {
   name: 'DpDispWidgetLibMng',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const widgetLibs = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/dp/widget-lib/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        widgetLibs.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('DpDispWidgetLib 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const WIDGET_TYPES = [
@@ -73,7 +92,7 @@ window.DpDispWidgetLibMng = {
 
     /* 검색 필터만 적용한 리스트 (트리 그룹화용) */
     const searchedLibs = computed(() =>
-      (props.dispDataset.widgetLibs || []).filter(d => {
+      (widgetLibs.value || []).filter(d => {
         if (applied.kw && !d.name.toLowerCase().includes(applied.kw) && !(d.desc||'').toLowerCase().includes(applied.kw) && !(d.tags||'').toLowerCase().includes(applied.kw)) return false;
         if (applied.type   && d.widgetType !== applied.type)   return false;
         if (applied.status && d.status     !== applied.status) return false;
@@ -166,7 +185,7 @@ window.DpDispWidgetLibMng = {
     const doDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const list = props.dispDataset.widgetLibs || [];
+      const list = widgetLibs.value || [];
       const idx = list.findIndex(x => x.libId === d.libId);
       if (idx !== -1) list.splice(idx, 1);
       if (selectedId.value === d.libId) selectedId.value = null;
@@ -205,8 +224,7 @@ window.DpDispWidgetLibMng = {
 
     const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return {
-      pathLabel,
+    return { widgetLibs, loading, error, pathLabel,
       WIDGET_TYPES, wTypeLabel, wIcon, doDelete,
       searchKw, searchType, searchStatus, pager, PAGE_SIZES,
       filtered, totalCount, pageList, totalPages, pageNumbers,
@@ -413,7 +431,6 @@ window.DpDispWidgetLibMng = {
     <dp-disp-widget-lib-dtl
       :key="detailKey"
       :navigate="inlineNavigate"
-      :disp-dataset="dispDataset"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

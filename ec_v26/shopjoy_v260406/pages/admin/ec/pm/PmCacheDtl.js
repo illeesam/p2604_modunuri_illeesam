@@ -2,8 +2,27 @@
 window._pmCacheDtlState = window._pmCacheDtlState || { tab: 'info', viewMode: 'tab' };
 window.PmCacheDtl = {
   name: 'PmCacheDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const caches = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/cache/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        caches.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmCache 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmCacheDtlState.tab || 'info');
@@ -25,19 +44,19 @@ window.PmCacheDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const c = props.adminData.cacheList.find(x => x.cacheId === props.editId);
+        const c = cacheList.value.find(x => x.cacheId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
 
     /* 같은 회원의 캐쉬 내역 */
     const memberCacheHistory = computed(() =>
-      props.adminData.cacheList.filter(c => String(c.userId) === String(form.userId) && c.cacheId !== props.editId)
+      cacheList.value.filter(c => String(c.userId) === String(form.userId) && c.cacheId !== props.editId)
         .slice(0, 20)
     );
 
     const totalBalance = computed(() => {
-      const list = props.adminData.cacheList.filter(c => String(c.userId) === String(form.userId));
+      const list = cacheList.value.filter(c => String(c.userId) === String(form.userId));
       if (!list.length) return 0;
       return list.sort((a, b) => b.date.localeCompare(a.date))[0]?.balance || 0;
     });
@@ -54,16 +73,16 @@ window.PmCacheDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.cacheList.unshift({
+        cacheList.value.unshift({
           ...form,
-          cacheId: props.adminData.nextId(props.adminData.cacheList, 'cacheId'),
+          cacheId: nextId.value(cacheList.value, 'cacheId'),
           amount: Number(form.amount), balance: Number(form.balance),
           userId: Number(form.userId),
           date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
         });
       } else {
-        const idx = props.adminData.cacheList.findIndex(x => x.cacheId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.cacheList[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
+        const idx = cacheList.value.findIndex(x => x.cacheId === props.editId);
+        if (idx !== -1) Object.assign(cacheList.value[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }) : window.adminApi.put(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }));
@@ -78,7 +97,7 @@ window.PmCacheDtl = {
     };
 
     const onUserIdChange = () => {
-      const m = props.adminData.getMember(Number(form.userId));
+      const m = getMember.value(Number(form.userId));
       if (m) form.userNm = m.memberNm;
     };
 
@@ -87,7 +106,7 @@ window.PmCacheDtl = {
     const showVendorModal = ref(false);
     const selectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = props.adminData.vendors.find(x => x.vendorId === form.vendorId);
+      const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {
@@ -95,7 +114,7 @@ window.PmCacheDtl = {
       showVendorModal.value = false;
     };
 
-    return { isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge, viewMode2, showTab, showVendorModal, selectedVendorNm, selectVendor };
+    return { caches, loading, error, isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge, viewMode2, showTab, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -186,14 +205,14 @@ window.PmCacheDtl = {
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in (adminData.vendors || [])" :key="v.vendorId"
+            <div v-for="v in ([] || [])" :key="v.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
               <span style="font-weight:500;">{{ v.vendorNm }}</span>
               <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
             </div>
-            <div v-if="!adminData.vendors || adminData.vendors.length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+            <div v-if="![] || [].length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
               판매업체가 없습니다.
             </div>
           </div>

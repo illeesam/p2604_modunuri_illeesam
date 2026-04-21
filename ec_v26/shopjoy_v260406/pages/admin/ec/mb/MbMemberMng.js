@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 회원관리 목록 + 하단 MemberDtl 임베드 */
 window.MbMemberMng = {
   name: 'MbMemberMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;    const members = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/mb/member/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        members.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        props.showToast('회원 목록 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.MbMemberMng = {
 
     const applied = Vue.reactive({ kw: '', grade: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.members.filter(m => {
+    const filtered = computed(() => members.value.filter(m => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !m.memberNm.toLowerCase().includes(kw) && !m.email.toLowerCase().includes(kw) && !String(m.userId).includes(kw)) return false;
       if (applied.grade && m.gradeCd !== applied.grade) return false;
@@ -80,11 +99,11 @@ window.MbMemberMng = {
     const doDelete = async (m) => {
       const ok = await props.showConfirm('삭제', `[${m.memberNm}] 회원을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.members.findIndex(x => x.userId === m.userId);
-      if (idx !== -1) props.adminData.members.splice(idx, 1);
-      if (selectedId.value === m.userId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/mb/member/${m.userId}`);
+        const idx = members.value.findIndex(x => x.userId === m.userId);
+        if (idx !== -1) members.value.splice(idx, 1);
+        if (selectedId.value === m.userId) selectedId.value = null;
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -97,7 +116,7 @@ window.MbMemberMng = {
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'userId'},{label:'이름',key:'memberNm'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
 
     const descOpen = ref(false);
-    return { descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, gradeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { members, loading, error, descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, gradeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -171,7 +190,6 @@ window.MbMemberMng = {
     <mb-member-dtl
       :key="detailKey"
       :navigate="inlineNavigate"
-      :admin-data="adminData"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

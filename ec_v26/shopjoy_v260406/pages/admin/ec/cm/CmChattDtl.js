@@ -2,8 +2,27 @@
 window._cmChattDtlState = window._cmChattDtlState || { tab: 'chat', viewMode: 'tab' };
 window.CmChattDtl = {
   name: 'CmChattDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const chatts = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/cm/chatt/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        chatts.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('CmChatt 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._cmChattDtlState.tab || 'chat');
@@ -22,13 +41,13 @@ window.CmChattDtl = {
     const openMsgRef = (msg) => {
       if (msg.productId) {
         refModal.type = 'product'; refModal.id = msg.productId;
-        refModal.data = props.adminData.getProduct(msg.productId); refModal.show = true;
+        refModal.data = getProduct.value(msg.productId); refModal.show = true;
       } else if (msg.orderId) {
         refModal.type = 'order'; refModal.id = msg.orderId;
-        refModal.data = props.adminData.getOrder(msg.orderId); refModal.show = true;
+        refModal.data = getOrder.value(msg.orderId); refModal.show = true;
       } else if (msg.claimId) {
         refModal.type = 'claim'; refModal.id = msg.claimId;
-        refModal.data = props.adminData.getClaim(msg.claimId); refModal.show = true;
+        refModal.data = getClaim.value(msg.claimId); refModal.show = true;
       }
     };
     const closeRefModal = () => { refModal.show = false; };
@@ -47,7 +66,7 @@ window.CmChattDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        chat.value = props.adminData.chats.find(c => c.chatId === props.editId) || null;
+        chat.value = chats.value.find(c => c.chatId === props.editId) || null;
         if (chat.value) chat.value.unread = 0;
         scrollToBottom();
       } else {
@@ -58,7 +77,7 @@ window.CmChattDtl = {
     /* 회원의 다른 채팅 이력 */
     const memberChats = computed(() => {
       if (!chat.value) return [];
-      return props.adminData.chats.filter(c => c.userId === chat.value.userId && c.chatId !== chat.value.chatId);
+      return chats.value.filter(c => c.userId === chat.value.userId && c.chatId !== chat.value.chatId);
     });
 
     /* 신규 채팅 form */
@@ -97,9 +116,9 @@ window.CmChattDtl = {
       }
       const ok = await props.showConfirm('등록', '등록하시겠습니까?');
       if (!ok) return;
-      const m = props.adminData.getMember(Number(form.userId));
-      props.adminData.chats.push({
-        chatId: props.adminData.nextId(props.adminData.chats, 'chatId'),
+      const m = getMember.value(Number(form.userId));
+      chats.value.push({
+        chatId: nextId.value(chats.value, 'chatId'),
         userId: Number(form.userId), userNm: m ? m.memberNm : form.userNm,
         date: new Date().toISOString().slice(0, 16).replace('T', ' '),
         subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
@@ -117,7 +136,7 @@ window.CmChattDtl = {
     };
 
     const onUserChange = () => {
-      const m = props.adminData.getMember(Number(form.userId));
+      const m = getMember.value(Number(form.userId));
       if (m) form.userNm = m.memberNm;
     };
 
@@ -125,12 +144,11 @@ window.CmChattDtl = {
     const searchUserId = ref('');
     const userChats = computed(() => {
       if (!searchUserId.value) return [];
-      return props.adminData.chats.filter(c => String(c.userId) === String(searchUserId.value));
+      return chats.value.filter(c => String(c.userId) === String(searchUserId.value));
     });
-    const searchUser = computed(() => props.adminData.getMember(Number(searchUserId.value)));
+    const searchUser = computed(() => getMember.value(Number(searchUserId.value)));
 
-    return {
-      isNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
+    return { chatts, loading, error, isNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, saveNew, onUserChange,
       searchUserId, userChats, searchUser,

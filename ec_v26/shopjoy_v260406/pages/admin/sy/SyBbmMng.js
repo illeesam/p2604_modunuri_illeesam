@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 게시판관리 */
 window.SyBbmMng = {
   name: 'SyBbmMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const bbms = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/bbm/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bbms.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBbm 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
     const selectedPath = Vue.ref(null);
     const expanded = Vue.reactive(new Set([null]));
@@ -21,7 +40,7 @@ window.SyBbmMng = {
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });
@@ -42,7 +61,7 @@ window.SyBbmMng = {
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', useYn: '' });
-    const filtered = computed(() => props.adminData.bbms.filter(b => {
+    const filtered = computed(() => bbms.value.filter(b => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !b.bbmNm.toLowerCase().includes(kw) && !b.bbmCode.toLowerCase().includes(kw)) return false;
       if (applied.type && b.bbmType !== applied.type) return false;
@@ -74,8 +93,8 @@ window.SyBbmMng = {
     const doDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.bbmNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.bbms.findIndex(x => x.bbmId === b.bbmId);
-      if (idx !== -1) props.adminData.bbms.splice(idx, 1);
+      const idx = bbms.value.findIndex(x => x.bbmId === b.bbmId);
+      if (idx !== -1) bbms.value.splice(idx, 1);
       if (selectedId.value === b.bbmId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/sy/bbm/${b.bbmId}`);
@@ -87,10 +106,10 @@ window.SyBbmMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const bbsCount = (bbmId) => props.adminData.bbss.filter(b => b.bbmId === bbmId).length;
+    const bbsCount = (bbmId) => bbss.value.filter(b => b.bbmId === bbmId).length;
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { siteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel,
+    return { bbms, loading, error, siteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, ynBadge, commentBadge, attachBadge, contentBadge, scopeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbsCount, exportExcel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
@@ -188,7 +207,7 @@ window.SyBbmMng = {
         <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
           <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
         </div>
-        <sy-bbm-dtl :key="detailKey" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" :view-mode="isViewMode" />
+        <sy-bbm-dtl :key="detailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" :view-mode="isViewMode" />
       </div>
     </div>
   </div>

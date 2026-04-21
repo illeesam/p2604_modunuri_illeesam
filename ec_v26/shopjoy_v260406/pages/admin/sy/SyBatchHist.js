@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 배치 실행이력 */
 window.SyBatchHist = {
   name: 'SyBatchHist',
-  props: ['adminData'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: [,
+  setup(props) {    const batches = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/batch/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        batches.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBatch 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
 
     const searchBatchId = ref('');
     const searchStatus  = ref('');
@@ -11,11 +30,11 @@ window.SyBatchHist = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const batchOptions = computed(() =>
-      props.adminData.batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
+      batches.value.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
     const filtered = computed(() => {
-      const logs = [...(props.adminData.batchLogs || [])];
+      const logs = [...(batchLogs.value || [])];
       logs.sort((a, b) => (b.runAt > a.runAt ? 1 : -1));
       return logs.filter(l => {
         if (searchBatchId.value && l.batchId !== Number(searchBatchId.value)) return false;
@@ -50,8 +69,7 @@ window.SyBatchHist = {
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 
-    return {
-      searchBatchId, searchStatus, batchOptions,
+    return { batches, loading, error, searchBatchId, searchStatus, batchOptions,
       filtered, total, totalPages, pageList, pageNums, pager, PAGE_SIZES,
       setPage, onSizeChange, onFilter,
       expandedId, toggleExpand,

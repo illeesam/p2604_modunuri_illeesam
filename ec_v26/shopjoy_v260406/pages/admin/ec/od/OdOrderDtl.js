@@ -2,8 +2,27 @@
 window._odOrderDtlState = window._odOrderDtlState || { activeTab: 'info', viewMode: 'tab' };
 window.OdOrderDtl = {
   name: 'OdOrderDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const orders = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/od/order/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        orders.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
 
@@ -32,7 +51,7 @@ window.OdOrderDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const o = props.adminData.getOrder(props.editId);
+        const o = getOrder.value(props.editId);
         if (o) {
           Object.assign(form, { ...o });
           if (!form.orderId) form.orderId = props.editId;
@@ -81,10 +100,10 @@ window.OdOrderDtl = {
       const ok = await props.showConfirm(isNewOrder ? '등록' : '저장', isNewOrder ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewOrder) {
-        props.adminData.orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
+        orders.value.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
       } else {
-        const idx = props.adminData.orders.findIndex(x => x.orderId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
+        const idx = orders.value.findIndex(x => x.orderId === props.editId);
+        if (idx !== -1) Object.assign(orders.value[idx], { ...form, totalPrice: Number(form.totalPrice) });
       }
       try {
         const res = await (isNewOrder ? window.adminApi.post(`/bo/ec/od/order/${form.orderId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form }));
@@ -118,7 +137,7 @@ window.OdOrderDtl = {
         if (paid <= 0) return null;
         const sale = Math.round(paid / (1 - discRates[i]));
         const disc = sale - paid;
-        return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
+        return { orders, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
       }).filter(Boolean);
     };
     onMounted(async () => {
@@ -133,20 +152,20 @@ window.OdOrderDtl = {
 
     /* 판매업체 */
     const relatedVendor = computed(() => {
-      const o = (props.adminData.orders || []).find(x => x.orderId === props.editId);
+      const o = (orders.value || []).find(x => x.orderId === props.editId);
       if (!o || !o.vendorId) return null;
-      return (props.adminData.vendors || []).find(v => v.vendorId === o.vendorId) || null;
+      return (vendors.value || []).find(v => v.vendorId === o.vendorId) || null;
     });
 
     /* 배송 정보 (이 주문의 택배사 등) */
     const relatedDelivery = computed(() =>
-      (props.adminData.deliveries || []).find(d => d.orderId === props.editId)
+      (deliveries.value || []).find(d => d.orderId === props.editId)
     );
     /* 클레임 정보 (이 주문에 연결된 클레임) */
     const relatedClaim = computed(() =>
-      (props.adminData.claims || []).find(c => c.orderId === props.editId)
+      (claims.value || []).find(c => c.orderId === props.editId)
     );
-    const _claimStatusCodes = (props.adminData.codes || [])
+    const _claimStatusCodes = (codes.value || [])
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const _TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
@@ -574,7 +593,7 @@ window.OdOrderDtl = {
   <!-- 상태변경이력 탭 -->
   <div v-if="!isNew && showTab('hist')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ statusHistList.length }}</span></div>
-    <od-order-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
+    <od-order-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- 정보수정이력 탭 -->

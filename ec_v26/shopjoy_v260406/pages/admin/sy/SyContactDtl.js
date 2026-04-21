@@ -2,8 +2,27 @@
 window._syContactDtlState = window._syContactDtlState || { tab: 'content', viewMode: 'tab' };
 window.SyContactDtl = {
   name: 'SyContactDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const contacts = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/contact/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        contacts.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyContact 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -31,7 +50,7 @@ window.SyContactDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const c = props.adminData.contacts.find(x => x.inquiryId === props.editId);
+        const c = contacts.value.find(x => x.inquiryId === props.editId);
         if (c) Object.assign(form, { ...c });
         // 답변 있으면 답변 탭 기본 선택
         if (form.answer) tab.value = 'answer';
@@ -64,13 +83,13 @@ window.SyContactDtl = {
     });
 
     const onUserIdChange = () => {
-      const m = props.adminData.getMember(Number(form.userId));
+      const m = getMember.value(Number(form.userId));
       if (m) form.userNm = m.memberNm;
     };
 
     /* 같은 회원의 다른 문의 */
     const memberContacts = computed(() =>
-      props.adminData.contacts.filter(c => String(c.userId) === String(form.userId) && c.inquiryId !== props.editId)
+      contacts.value.filter(c => String(c.userId) === String(form.userId) && c.inquiryId !== props.editId)
     );
 
     const statusBadge = s => ({
@@ -89,10 +108,10 @@ window.SyContactDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.contacts.push({ ...form, inquiryId: props.adminData.nextId(props.adminData.contacts, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
+        contacts.value.push({ ...form, inquiryId: nextId.value(contacts.value, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
       } else {
-        const idx = props.adminData.contacts.findIndex(x => x.inquiryId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.contacts[idx], { ...form });
+        const idx = contacts.value.findIndex(x => x.inquiryId === props.editId);
+        if (idx !== -1) Object.assign(contacts.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }) : window.adminApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }));
@@ -108,16 +127,16 @@ window.SyContactDtl = {
 
     const saveAnswer = () => {
       if (!isNew.value) {
-        const idx = props.adminData.contacts.findIndex(x => x.inquiryId === props.editId);
+        const idx = contacts.value.findIndex(x => x.inquiryId === props.editId);
         if (idx !== -1) {
-          props.adminData.contacts[idx].answer = form.answer;
-          if (form.answer) props.adminData.contacts[idx].statusCd = '답변완료';
+          contacts.value[idx].answer = form.answer;
+          if (form.answer) contacts.value[idx].statusCd = '답변완료';
         }
       }
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { isNew, tab, viewMode2, showTab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteNm, contentEl, answerEl };
+    return { contacts, loading, error, isNew, tab, viewMode2, showTab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>

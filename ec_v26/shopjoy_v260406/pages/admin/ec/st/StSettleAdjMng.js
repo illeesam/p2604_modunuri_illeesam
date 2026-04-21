@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 정산조정 */
 window.StSettleAdjMng = {
   name: 'StSettleAdjMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -16,7 +16,7 @@ window.StSettleAdjMng = {
     };
     (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const vendors = computed(() => (props.adminData.vendors || []).filter(v => v.vendorType === '판매업체'));
+    const vendors = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
 
     const adjList = reactive([
       { adjId: 'ADJ-2026-001', adjDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '수수료조정', adjAmt: -5000,  reason: '4월 프로모션 참여 수수료 감면', aprvStatus: '승인', regUserNm: '이관리자' },

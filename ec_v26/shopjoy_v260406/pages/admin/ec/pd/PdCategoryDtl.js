@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 카테고리 상세/등록 */
 window.PdCategoryDtl = {
   name: 'PdCategoryDtl',
-  props: ['navigate', 'adminData', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  setup(props) {    const categories = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/category/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        categories.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdCategory 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
@@ -16,12 +35,12 @@ window.PdCategoryDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const c = props.adminData.categories.find(x => x.categoryId === props.editId);
+        const c = categories.value.find(x => x.categoryId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
 
-    const parentOptions = computed(() => props.adminData.categories.filter(c => {
+    const parentOptions = computed(() => categories.value.filter(c => {
       if (!isNew.value && c.categoryId === props.editId) return false;
       return true;
     }));
@@ -30,7 +49,7 @@ window.PdCategoryDtl = {
       if (form.parentId === null || form.parentId === '') {
         form.depth = 1;
       } else {
-        const parent = props.adminData.categories.find(c => c.categoryId === Number(form.parentId));
+        const parent = categories.value.find(c => c.categoryId === Number(form.parentId));
         form.depth = parent ? parent.depth + 1 : 1;
       }
     };
@@ -48,13 +67,13 @@ window.PdCategoryDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.categories.push({
-          ...form, parentId, categoryId: props.adminData.nextId(props.adminData.categories, 'categoryId'),
+        categories.value.push({
+          ...form, parentId, categoryId: nextId.value(categories.value, 'categoryId'),
           sortOrd: Number(form.sortOrd) || 1, depth: Number(form.depth) || 1,
         });
       } else {
-        const idx = props.adminData.categories.findIndex(x => x.categoryId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.categories[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
+        const idx = categories.value.findIndex(x => x.categoryId === props.editId);
+        if (idx !== -1) Object.assign(categories.value[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }) : window.adminApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }));
@@ -68,7 +87,7 @@ window.PdCategoryDtl = {
       }
     };
 
-    return { isNew, form, errors, save, parentOptions, onParentChange };
+    return { categories, loading, error, isNew, form, errors, save, parentOptions, onParentChange };
   },
   template: /* html */`
 <div>

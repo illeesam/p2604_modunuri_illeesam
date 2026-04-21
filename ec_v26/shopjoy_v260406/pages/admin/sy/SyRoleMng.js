@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 역할관리 (Tree CRUD 그리드 + 하단 메뉴/사용자 배분) */
 window.SyRoleMng = {
   name: 'SyRoleMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm'],
+  setup(props) {    const roles = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/role/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        roles.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -24,7 +43,7 @@ window.SyRoleMng = {
     const selectNode = (path) => { selectedPath.value = path; };
     const tree = Vue.computed(() => {
       const t = window.adminUtil.buildRoleTree();
-      const rolesById = Object.fromEntries((window.adminData.roles || []).map(r => [r.roleId, r]));
+      const rolesById = Object.fromEntries((roles.value || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
       const ROOT_BY_CAT = { ADMIN:'SUPER_ADMIN', SITE:'SITE_GROUP', SALES:'SITE_MGR_ROOT', DLIV:'DLIV_ROOT' };
@@ -48,7 +67,7 @@ window.SyRoleMng = {
     /* 선택 권한 + 자손 roleId Set */
     const allowedRoleIds = Vue.computed(() => {
       if (selectedPath.value == null) return null;
-      return window.adminUtil.collectDescendantIds(window.adminData.roles, 'roleId', 'parentId', selectedPath.value);
+      return window.adminUtil.collectDescendantIds(roles.value, 'roleId', 'parentId', selectedPath.value);
     });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -68,7 +87,7 @@ window.SyRoleMng = {
     /* 루트 역할코드 → 자동 카테고리 매핑 */
     const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
     const deriveRoleCat = (role) => {
-      const roles = props.adminData.roles || [];
+      const roles = roles.value || [];
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
       let cur = role;
       while (cur && cur.parentId) cur = m[cur.parentId];
@@ -82,7 +101,7 @@ window.SyRoleMng = {
       onCellChange(row);
     };
     window.adminUtil.__roleCatOf = (roleId) => {
-      const roles = (window.adminData && window.adminData.roles) || [];
+      const roles = roles.value || [];
       const r = roles.find(x => x.roleId === roleId);
       if (!r) return [];
       if (r.roleCat && r.roleCat.length) return r.roleCat;
@@ -141,8 +160,7 @@ window.SyRoleMng = {
 
     const makeRow = (r) => {
       const cat = Array.isArray(r.roleCat) ? [...r.roleCat] : [];
-      return {
-        ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
+      return { roles, loading, error, ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
         roleCat: cat,
         _orig: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
@@ -154,7 +172,7 @@ window.SyRoleMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      const filtered = props.adminData.roles.filter(r => {
+      const filtered = roles.value.filter(r => {
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && r.roleType !== applied.type)  return false;
@@ -279,14 +297,14 @@ window.SyRoleMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => {
-        const i = props.adminData.roles.findIndex(x => x.roleId === r.roleId);
-        if (i !== -1) props.adminData.roles.splice(i, 1);
-        props.adminData.roleMenus = props.adminData.roleMenus.filter(x => x.roleId !== r.roleId);
-        props.adminData.roleUsers = props.adminData.roleUsers.filter(x => x.roleId !== r.roleId);
+        const i = roles.value.findIndex(x => x.roleId === r.roleId);
+        if (i !== -1) roles.value.splice(i, 1);
+        roleMenus.value = roleMenus.value.filter(x => x.roleId !== r.roleId);
+        roleUsers.value = roleUsers.value.filter(x => x.roleId !== r.roleId);
       });
-      uRows.forEach(r => { const i = props.adminData.roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(props.adminData.roles[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark }); });
-      let nextId = Math.max(...props.adminData.roles.map(r => r.roleId), 0);
-      iRows.forEach(r => { props.adminData.roles.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      uRows.forEach(r => { const i = roles.value.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(roles.value[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark }); });
+      let nextId = Math.max(...roles.value.map(r => r.roleId), 0);
+      iRows.forEach(r => { roles.value.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
@@ -301,7 +319,7 @@ window.SyRoleMng = {
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
-      const p = props.adminData.roles.find(r => r.roleId === parentId);
+      const p = roles.value.find(r => r.roleId === parentId);
       return p ? p.roleNm : `ID:${parentId}`;
     };
 
@@ -326,40 +344,40 @@ window.SyRoleMng = {
     };
     const menuTree = computed(() => {
       const kw = menuSearchKw.value.trim().toLowerCase();
-      const all = props.adminData.menus;
+      const all = menus.value;
       const list = kw ? all.filter(m => m.menuNm.toLowerCase().includes(kw) || m.menuCode.toLowerCase().includes(kw)) : all;
       return flatMenuTree(buildMenuTree(list, null, 0));
     });
 
     const roleMenuIds = computed(() => {
       if (!selectedRoleId.value) return new Set();
-      return new Set(props.adminData.roleMenus.filter(x => x.roleId === selectedRoleId.value).map(x => x.menuId));
+      return new Set(roleMenus.value.filter(x => x.roleId === selectedRoleId.value).map(x => x.menuId));
     });
 
     const getMenuPerm = (menuId) => {
       if (!selectedRoleId.value) return '없음';
-      const entry = props.adminData.roleMenus.find(x => x.roleId === selectedRoleId.value && x.menuId === menuId);
+      const entry = roleMenus.value.find(x => x.roleId === selectedRoleId.value && x.menuId === menuId);
       return entry ? (entry.permLevel || '읽기') : '없음';
     };
     const setMenuPerm = (menuId, level) => {
       if (!selectedRoleId.value) return;
-      const idx = props.adminData.roleMenus.findIndex(x => x.roleId === selectedRoleId.value && x.menuId === menuId);
+      const idx = roleMenus.value.findIndex(x => x.roleId === selectedRoleId.value && x.menuId === menuId);
       if (level === '없음') {
-        if (idx !== -1) props.adminData.roleMenus.splice(idx, 1);
+        if (idx !== -1) roleMenus.value.splice(idx, 1);
       } else {
-        if (idx !== -1) props.adminData.roleMenus[idx].permLevel = level;
-        else props.adminData.roleMenus.push({ roleId: selectedRoleId.value, menuId, permLevel: level });
+        if (idx !== -1) roleMenus.value[idx].permLevel = level;
+        else roleMenus.value.push({ roleId: selectedRoleId.value, menuId, permLevel: level });
       }
     };
     const setAllMenuPerm = (level) => {
       if (!selectedRoleId.value) return;
       if (level === '없음') {
-        props.adminData.roleMenus = props.adminData.roleMenus.filter(x => x.roleId !== selectedRoleId.value);
+        roleMenus.value = roleMenus.value.filter(x => x.roleId !== selectedRoleId.value);
       } else {
         menuTree.value.forEach(m => {
-          const idx = props.adminData.roleMenus.findIndex(x => x.roleId === selectedRoleId.value && x.menuId === m.menuId);
-          if (idx !== -1) props.adminData.roleMenus[idx].permLevel = level;
-          else props.adminData.roleMenus.push({ roleId: selectedRoleId.value, menuId: m.menuId, permLevel: level });
+          const idx = roleMenus.value.findIndex(x => x.roleId === selectedRoleId.value && x.menuId === m.menuId);
+          if (idx !== -1) roleMenus.value[idx].permLevel = level;
+          else roleMenus.value.push({ roleId: selectedRoleId.value, menuId: m.menuId, permLevel: level });
         });
       }
     };
@@ -375,30 +393,30 @@ window.SyRoleMng = {
 
     const roleUsersList = computed(() => {
       if (!selectedRoleId.value) return [];
-      return props.adminData.roleUsers
+      return roleUsers.value
         .filter(x => x.roleId === selectedRoleId.value)
-        .map(x => props.adminData.adminUsers.find(u => u.adminUserId === x.adminUserId))
+        .map(x => adminUsers.value.find(u => u.adminUserId === x.adminUserId))
         .filter(Boolean);
     });
 
     const onUserSelect = (users) => {
       if (!selectedRoleId.value) return;
       users.forEach(u => {
-        const already = props.adminData.roleUsers.some(x => x.roleId === selectedRoleId.value && x.adminUserId === u.adminUserId);
-        if (!already) props.adminData.roleUsers.push({ roleId: selectedRoleId.value, adminUserId: u.adminUserId });
+        const already = roleUsers.value.some(x => x.roleId === selectedRoleId.value && x.adminUserId === u.adminUserId);
+        if (!already) roleUsers.value.push({ roleId: selectedRoleId.value, adminUserId: u.adminUserId });
       });
       userSelectOpen.value = false;
     };
 
     const removeUser = (adminUserId) => {
       if (!selectedRoleId.value) return;
-      const idx = props.adminData.roleUsers.findIndex(x => x.roleId === selectedRoleId.value && x.adminUserId === adminUserId);
-      if (idx !== -1) props.adminData.roleUsers.splice(idx, 1);
+      const idx = roleUsers.value.findIndex(x => x.roleId === selectedRoleId.value && x.adminUserId === adminUserId);
+      if (idx !== -1) roleUsers.value.splice(idx, 1);
     };
 
     const selectedRoleNm = computed(() => {
       if (!selectedRoleId.value) return '';
-      const r = props.adminData.roles.find(x => x.roleId === selectedRoleId.value);
+      const r = roles.value.find(x => x.roleId === selectedRoleId.value);
       return r ? r.roleNm : '';
     });
 
@@ -688,16 +706,12 @@ window.SyRoleMng = {
   </div>
 
   <!-- 사용자 선택 모달 -->
-  <admin-user-select-modal v-if="userSelectOpen"
-    :disp-dataset="adminData"
-    @select="onUserSelect"
+  <admin-user-select-modal v-if="userSelectOpen" @select="onUserSelect"
     @close="userSelectOpen=false" />
 
   <!-- 상위역할 선택 모달 -->
   <role-tree-modal
-    v-if="roleTreeModal && roleTreeModal.show"
-    :disp-dataset="adminData"
-    :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
+    v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
     @select="onParentSelect"
     @close="roleTreeModal.show=false" />
 </div></div>

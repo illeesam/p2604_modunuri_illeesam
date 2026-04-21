@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 공지사항관리 상세/등록 */
 window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
+  setup(props) {    const notices = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/cm/notice/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        notices.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('CmNotice 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
@@ -19,7 +38,7 @@ window.CmNoticeDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const n = props.adminData.notices.find(x => x.noticeId === props.editId);
+        const n = notices.value.find(x => x.noticeId === props.editId);
         if (n) Object.assign(form, { ...n });
       }
       if (typeof Quill !== 'undefined') {
@@ -43,14 +62,14 @@ window.CmNoticeDtl = {
       const ok = await props.showConfirm(isNewNotice ? '등록' : '저장', isNewNotice ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewNotice) {
-        props.adminData.notices.unshift({
+        notices.value.unshift({
           ...form,
-          noticeId: props.adminData.nextId(props.adminData.notices, 'noticeId'),
+          noticeId: nextId.value(notices.value, 'noticeId'),
           regDate: new Date().toISOString().slice(0, 10),
         });
       } else {
-        const idx = props.adminData.notices.findIndex(x => x.noticeId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.notices[idx], form);
+        const idx = notices.value.findIndex(x => x.noticeId === props.editId);
+        if (idx !== -1) Object.assign(notices.value[idx], form);
       }
       try {
         const res = await (isNewNotice ? window.adminApi.post(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }) : window.adminApi.put(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }));
@@ -64,7 +83,7 @@ window.CmNoticeDtl = {
       }
     };
 
-    return { isNew, form, errors, save };
+    return { notices, loading, error, isNew, form, errors, save };
   },
   template: /* html */`
 <div>
@@ -113,9 +132,7 @@ window.CmNoticeDtl = {
       <label class="form-label">첨부파일 <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">첨부그룹ID: {{ form.attachGrpId }}</span></label>
       <base-attach-grp
         :model-value="form.attachGrpId"
-        @update:model-value="form.attachGrpId = $event"
-        :admin-data="adminData"
-        :ref-id="editId ? 'NOTICE-'+editId : ''"
+        @update:model-value="form.attachGrpId = $event" :ref-id="editId ? 'NOTICE-'+editId : ''"
         :show-toast="showToast"
         grp-code="NOTICE_ATTACH"
         grp-name="공지 첨부파일"

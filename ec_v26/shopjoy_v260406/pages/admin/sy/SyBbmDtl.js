@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 게시판관리 상세/등록 */
 window.SyBbmDtl = {
   name: 'SyBbmDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const bbms = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/bbm/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bbms.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBbm 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -28,7 +47,7 @@ window.SyBbmDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const b = props.adminData.bbms.find(x => x.bbmId === props.editId);
+        const b = bbms.value.find(x => x.bbmId === props.editId);
         if (b) Object.assign(form, { ...b });
       }
     });
@@ -45,10 +64,10 @@ window.SyBbmDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.bbms.push({ ...form, bbmId: props.adminData.nextId(props.adminData.bbms, 'bbmId'), regDate: new Date().toISOString().slice(0, 10) });
+        bbms.value.push({ ...form, bbmId: nextId.value(bbms.value, 'bbmId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = props.adminData.bbms.findIndex(x => x.bbmId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.bbms[idx], { ...form });
+        const idx = bbms.value.findIndex(x => x.bbmId === props.editId);
+        if (idx !== -1) Object.assign(bbms.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }) : window.adminApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }));
@@ -62,7 +81,7 @@ window.SyBbmDtl = {
       }
     };
 
-    return { isNew, form, errors, save, siteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
+    return { bbms, loading, error, isNew, form, errors, save, siteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
 <div>

@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 회원그룹관리 */
 window.MbMemGroupMng = {
   name: 'MbMemGroupMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const groups = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/mb/mem-group/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        groups.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('MbMemGroup 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw  = ref('');
     const searchUse = ref('');
@@ -12,7 +31,7 @@ window.MbMemGroupMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (props.adminData.memGroups || []).filter(g => {
+      return (memGroups.value || []).filter(g => {
         if (kw && !g.groupNm.toLowerCase().includes(kw)) return false;
         if (applied.use && g.useYn !== applied.use) return false;
         return true;
@@ -36,8 +55,8 @@ window.MbMemGroupMng = {
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await props.showConfirm('삭제', `[${row.groupNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = props.adminData.memGroups.findIndex(g => g.groupId === row.groupId);
-      if (si !== -1) props.adminData.memGroups.splice(si, 1);
+      const si = memGroups.value.findIndex(g => g.groupId === row.groupId);
+      if (si !== -1) memGroups.value.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
         const res = await window.adminApi.delete(`/bo/ec/mb/member-group/${row.groupId}`);
@@ -57,7 +76,7 @@ window.MbMemGroupMng = {
         const ok = await props.showConfirm('저장', '저장하시겠습니까?');
         if (!ok) return;
         const isNewRow = row._row_status === 'N';
-        const src = props.adminData.memGroups;
+        const src = memGroups.value;
         if (isNewRow) src.push({ ...row });
         else { const si = src.findIndex(g => g.groupId === row.groupId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
@@ -79,7 +98,7 @@ window.MbMemGroupMng = {
     const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
+    return { groups, loading, error, searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, ynBadge , PAGE_SIZES , onSizeChange };
   },
   template: `

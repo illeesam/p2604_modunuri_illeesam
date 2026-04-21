@@ -2,8 +2,27 @@
 window._pmVoucherDtlState = window._pmVoucherDtlState || { tab: 'info', viewMode: 'tab' };
 window.PmVoucherDtl = {
   name: 'PmVoucherDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const vouchers = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/voucher/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        vouchers.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmVoucher 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmVoucherDtlState.tab || 'info');
@@ -34,7 +53,7 @@ window.PmVoucherDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const v = (props.adminData.voucherList || []).find(x => x.voucherId === props.editId);
+        const v = (voucherList.value || []).find(x => x.voucherId === props.editId);
         if (v) Object.assign(form, { ...v });
       }
       if (!form.startDate) form.startDate = DEFAULT_START;
@@ -43,15 +62,15 @@ window.PmVoucherDtl = {
 
     /* 발급내역 */
     const issuedList = computed(() => {
-      if (!props.adminData.voucherList) return [];
-      const v = props.adminData.voucherList.find(x => x.voucherId === props.editId);
+      if (!voucherList.value) return [];
+      const v = voucherList.value.find(x => x.voucherId === props.editId);
       return v ? (v.issuedList || []) : [];
     });
 
     /* 사용내역 */
     const usedList = computed(() => {
-      if (!props.adminData.voucherList) return [];
-      const v = props.adminData.voucherList.find(x => x.voucherId === props.editId);
+      if (!voucherList.value) return [];
+      const v = voucherList.value.find(x => x.voucherId === props.editId);
       return v ? (v.usedList || []) : [];
     });
 
@@ -102,7 +121,7 @@ window.PmVoucherDtl = {
     const showVendorModal = ref(false);
     const selectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = props.adminData.vendors.find(x => x.vendorId === form.vendorId);
+      const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {
@@ -143,17 +162,17 @@ window.PmVoucherDtl = {
       }
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!props.adminData.voucherList) props.adminData.voucherList = [];
+      if (!voucherList.value) voucherList.value = [];
       if (isNew.value) {
-        props.adminData.voucherList.push({
+        voucherList.value.push({
           ...form,
           voucherId: Date.now(),
           issuedList: [],
           usedList: [],
         });
       } else {
-        const idx = props.adminData.voucherList.findIndex(x => x.voucherId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.voucherList[idx], { ...form });
+        const idx = voucherList.value.findIndex(x => x.voucherId === props.editId);
+        if (idx !== -1) Object.assign(voucherList.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`vouchers/${form.voucherId}`, { ...form }) : window.adminApi.put(`vouchers/${form.voucherId}`, { ...form }));
@@ -167,7 +186,7 @@ window.PmVoucherDtl = {
       }
     };
 
-    return { isNew, form, errors, save, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, selectedVendorNm, selectVendor };
+    return { vouchers, loading, error, isNew, form, errors, save, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -274,14 +293,14 @@ window.PmVoucherDtl = {
           <span class="modal-close" @click="showVendorModal=false">×</span>
         </div>
         <div style="padding:0;max-height:400px;overflow-y:auto;">
-          <div v-for="v in (adminData.vendors || [])" :key="v.vendorId"
+          <div v-for="v in ([] || [])" :key="v.vendorId"
             style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
             :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
             @click="selectVendor(v.vendorId, v.vendorNm)">
             <span style="font-weight:500;">{{ v.vendorNm }}</span>
             <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
           </div>
-          <div v-if="!adminData.vendors || adminData.vendors.length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+          <div v-if="![] || [].length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
             판매업체가 없습니다.
           </div>
         </div>

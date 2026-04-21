@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 메뉴관리 (Tree CRUD 그리드) */
 window.SyMenuMng = {
   name: 'SyMenuMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm'],
+  setup(props) {    const menus = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/menu/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        menus.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyMenu 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* 좌측 메뉴 트리 */
     const selectedTreeId = Vue.ref(null);
     const expanded = Vue.reactive(new Set([null]));
@@ -17,11 +36,11 @@ window.SyMenuMng = {
     });
     const allowedTreeIds = Vue.computed(() => {
       if (selectedTreeId.value == null) return null;
-      return window.adminUtil.collectDescendantIds(window.adminData.menus, 'menuId', 'parentId', selectedTreeId.value);
+      return window.adminUtil.collectDescendantIds(menus.value, 'menuId', 'parentId', selectedTreeId.value);
     });
     Vue.watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
 
     /* ── 검색 ── */
     const searchKw     = ref('');
@@ -68,7 +87,7 @@ window.SyMenuMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      const filtered = props.adminData.menus.filter(m => {
+      const filtered = menus.value.filter(m => {
         if (allowedTreeIds.value && !allowedTreeIds.value.has(m.menuId)) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuNm.toLowerCase().includes(kw)) return false;
@@ -177,10 +196,10 @@ window.SyMenuMng = {
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      dRows.forEach(r => { const i = props.adminData.menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) props.adminData.menus.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(props.adminData.menus[i], { menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
-      let nextId = Math.max(...props.adminData.menus.map(m => m.menuId), 0);
-      iRows.forEach(r => { props.adminData.menus.push({ menuId: ++nextId, menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      dRows.forEach(r => { const i = menus.value.findIndex(m => m.menuId === r.menuId); if (i !== -1) menus.value.splice(i, 1); });
+      uRows.forEach(r => { const i = menus.value.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(menus.value[i], { menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
+      let nextId = Math.max(...menus.value.map(m => m.menuId), 0);
+      iRows.forEach(r => { menus.value.push({ menuId: ++nextId, menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -194,7 +213,7 @@ window.SyMenuMng = {
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
-      const p = props.adminData.menus.find(m => m.menuId === parentId);
+      const p = menus.value.find(m => m.menuId === parentId);
       return p ? p.menuNm : `ID:${parentId}`;
     };
 
@@ -219,7 +238,7 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    return { selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
+    return { menus, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       searchKw, searchType, searchUseYn, MENU_TYPES, applied,
       siteNm,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
@@ -378,9 +397,7 @@ window.SyMenuMng = {
   </div>
 
   <menu-tree-modal
-    v-if="menuTreeModal && menuTreeModal.show"
-    :disp-dataset="adminData"
-    :exclude-id="menuTreeModal.targetRow && menuTreeModal.targetRow.menuId > 0 ? menuTreeModal.targetRow.menuId : null"
+    v-if="menuTreeModal && menuTreeModal.show" :exclude-id="menuTreeModal.targetRow && menuTreeModal.targetRow.menuId > 0 ? menuTreeModal.targetRow.menuId : null"
     @select="onParentSelect"
     @close="menuTreeModal.show=false" />
 </div>

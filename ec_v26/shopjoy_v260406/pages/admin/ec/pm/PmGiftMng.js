@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 판촉사은품 관리 목록 + 하단 PmGiftDtl 임베드 */
 window.PmGiftMng = {
   name: 'PmGiftMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const gifts = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/gift/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        gifts.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmGift 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PmGiftMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => props.adminData.giftList || []);
+    const list = computed(() => giftList.value || []);
     const filtered = computed(() => list.value.filter(g => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(g.giftNm || '').toLowerCase().includes(kw) && !String(g.giftId || '').includes(kw)) return false;
@@ -74,8 +93,8 @@ window.PmGiftMng = {
     const doDelete = async (g) => {
       const ok = await props.showConfirm('삭제', `[${g.giftNm}] 사은품을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (props.adminData.giftList || []).findIndex(x => x.giftId === g.giftId);
-      if (idx !== -1) props.adminData.giftList.splice(idx, 1);
+      const idx = (giftList.value || []).findIndex(x => x.giftId === g.giftId);
+      if (idx !== -1) giftList.value.splice(idx, 1);
       if (selectedId.value === g.giftId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`gift/${g.giftId}`);
@@ -92,7 +111,7 @@ window.PmGiftMng = {
       [{label:'ID',key:'giftId'},{label:'사은품명',key:'giftNm'},{label:'유형',key:'giftType'},{label:'조건값',key:'condVal'},{label:'재고',key:'stock'},{label:'상태',key:'giftStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '사은품목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { gifts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -196,9 +215,7 @@ window.PmGiftMng = {
     </div>
     <pm-gift-dtl
       :key="detailKey"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

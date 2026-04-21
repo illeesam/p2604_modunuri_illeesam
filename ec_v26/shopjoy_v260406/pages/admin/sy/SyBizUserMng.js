@@ -1,10 +1,29 @@
 /* ShopJoy Admin - 사업자사용자 (sy_biz_user) */
 window.SyBizUserMng = {
   name: 'SyBizUserMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
-    const ad = props.adminData || window.adminData;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const bizUsers = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/biz-user/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bizUsers.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBizUser 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
+    const ad = null;
 
     /* 좌측 사용자역할 트리 (sy_path biz_cd = 'sy_biz#'+bizId) — 검색 선택된 사업자별 동적 */
     const selectedPath = ref(null);
@@ -33,7 +52,7 @@ window.SyBizUserMng = {
         const wantRoot = CAT_ROOT_MAP[treeRoleCat.value];
         kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
       }
-      return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids, count: roles.length };
+      return { bizUsers, loading, error, pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids, count: roles.length };
     });
     const expandAll = () => { expanded.add(null); (ad.roles || []).forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };

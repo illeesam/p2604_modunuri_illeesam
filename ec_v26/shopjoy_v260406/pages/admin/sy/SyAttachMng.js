@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 첨부관리 (좌30% 그룹 + 우70% 파일) */
 window.SyAttachMng = {
   name: 'SyAttachMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm'],
+  setup(props) {    const attachs = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/attach/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        attachs.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyAttach 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
@@ -30,11 +49,11 @@ window.SyAttachMng = {
     const saveGrp = () => {
       if (!grpForm.grpNm || !grpForm.grpCode) { props.showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       if (grpEditId.value === null) {
-        props.adminData.attachGrps.push({ ...grpForm, attachGrpId: props.adminData.nextId(props.adminData.attachGrps, 'attachGrpId'), regDate: new Date().toISOString().slice(0, 10) });
+        attachGrps.value.push({ ...grpForm, attachGrpId: nextId.value(attachGrps.value, 'attachGrpId'), regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('그룹이 등록되었습니다.');
       } else {
-        const idx = props.adminData.attachGrps.findIndex(x => x.attachGrpId === grpEditId.value);
-        if (idx !== -1) Object.assign(props.adminData.attachGrps[idx], grpForm);
+        const idx = attachGrps.value.findIndex(x => x.attachGrpId === grpEditId.value);
+        if (idx !== -1) Object.assign(attachGrps.value[idx], grpForm);
         props.showToast('저장되었습니다.');
       }
       grpEditMode.value = false;
@@ -42,8 +61,8 @@ window.SyAttachMng = {
     const deleteGrp = async (g) => {
       const ok = await props.showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.attachGrps.findIndex(x => x.attachGrpId === g.attachGrpId);
-      if (idx !== -1) props.adminData.attachGrps.splice(idx, 1);
+      const idx = attachGrps.value.findIndex(x => x.attachGrpId === g.attachGrpId);
+      if (idx !== -1) attachGrps.value.splice(idx, 1);
       if (selectedGrpId.value === g.attachGrpId) selectedGrpId.value = null;
       props.showToast('삭제되었습니다.');
     };
@@ -56,7 +75,7 @@ window.SyAttachMng = {
 
     const applied = Vue.reactive({ kw: '', dateStart: '', dateEnd: '' });
 
-    const filteredFiles = computed(() => props.adminData.attaches.filter(a => {
+    const filteredFiles = computed(() => attaches.value.filter(a => {
       if (selectedGrpId.value && a.attachGrpId !== selectedGrpId.value) return false;
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !a.fileNm.toLowerCase().includes(kw) && !a.refId.toLowerCase().includes(kw)) return false;
@@ -89,13 +108,13 @@ window.SyAttachMng = {
     };
     const saveFile = () => {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { props.showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
-      const grp = props.adminData.attachGrps.find(g => g.attachGrpId === fileForm.attachGrpId);
+      const grp = attachGrps.value.find(g => g.attachGrpId === fileForm.attachGrpId);
       if (fileEditId.value === null) {
-        props.adminData.attaches.push({ ...fileForm, attachId: props.adminData.nextId(props.adminData.attaches, 'attachId'), attachGrpNm: grp?.grpNm || '', regDate: new Date().toISOString().slice(0, 10) });
+        attaches.value.push({ ...fileForm, attachId: nextId.value(attaches.value, 'attachId'), attachGrpNm: grp?.grpNm || '', regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('파일이 등록되었습니다.');
       } else {
-        const idx = props.adminData.attaches.findIndex(x => x.attachId === fileEditId.value);
-        if (idx !== -1) Object.assign(props.adminData.attaches[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
+        const idx = attaches.value.findIndex(x => x.attachId === fileEditId.value);
+        if (idx !== -1) Object.assign(attaches.value[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
         props.showToast('저장되었습니다.');
       }
       fileEditMode.value = false;
@@ -103,8 +122,8 @@ window.SyAttachMng = {
     const deleteFile = async (a) => {
       const ok = await props.showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.attaches.findIndex(x => x.attachId === a.attachId);
-      if (idx !== -1) props.adminData.attaches.splice(idx, 1);
+      const idx = attaches.value.findIndex(x => x.attachId === a.attachId);
+      if (idx !== -1) attaches.value.splice(idx, 1);
       props.showToast('삭제되었습니다.');
     };
 
@@ -116,8 +135,7 @@ window.SyAttachMng = {
     };
     const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
-    return {
-      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
+    return { attachs, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, saveGrp, deleteGrp,
       searchKw, fileForm, fileEditId, fileEditMode, applied, filteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
       fmtSize, statusBadge,
@@ -174,7 +192,7 @@ window.SyAttachMng = {
         </div>
 
         <!-- 그룹 목록 -->
-        <div v-for="g in adminData.attachGrps" :key="g.attachGrpId"
+        <div v-for="g in []" :key="g.attachGrpId"
           style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:4px;transition:background .15s;"
           :style="selectedGrpId===g.attachGrpId?'background:#fff0f4;border-left:3px solid #e8587a;':'' "
           @click="selectGrp(g.attachGrpId)">
@@ -194,7 +212,7 @@ window.SyAttachMng = {
             <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ siteNm }}</span>
           </div>
         </div>
-        <div v-if="!adminData.attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">그룹이 없습니다.</div>
+        <div v-if="![].length" style="text-align:center;color:#999;padding:20px;font-size:13px;">그룹이 없습니다.</div>
       </div>
     </div>
 
@@ -204,7 +222,7 @@ window.SyAttachMng = {
         <div class="toolbar">
           <b style="font-size:14px;">첨부파일관리
             <span v-if="selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:6px;">
-              ({{ adminData.attachGrps.find(g=>g.attachGrpId===selectedGrpId)?.grpNm }})
+              ({{ [].find(g=>g.attachGrpId===selectedGrpId)?.grpNm }})
             </span>
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -227,7 +245,7 @@ window.SyAttachMng = {
               <label class="form-label" style="font-size:12px;">첨부그룹 <span class="req">*</span></label>
               <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model.number="fileForm.attachGrpId">
                 <option :value="null">그룹 선택</option>
-                <option v-for="g in adminData.attachGrps" :key="g.attachGrpId" :value="g.attachGrpId">{{ g.grpNm }}</option>
+                <option v-for="g in []" :key="g.attachGrpId" :value="g.attachGrpId">{{ g.grpNm }}</option>
               </select>
             </div>
             <div class="form-group" style="flex:2;min-width:200px;margin-bottom:6px;">

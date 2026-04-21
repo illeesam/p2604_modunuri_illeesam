@@ -1,7 +1,7 @@
 /* ShopJoy Admin - ERP 전표생성 */
 window.StErpGenMng = {
   name: 'StErpGenMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const descOpen = ref(false);
@@ -9,8 +9,8 @@ window.StErpGenMng = {
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
 
-    const orders  = computed(() => props.adminData.orders  || []);
-    const vendors = computed(() => (props.adminData.vendors || []).filter(v => v.vendorType === '판매업체'));
+    const orders  = computed(() => orders.value  || []);
+    const vendors = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
 
     const previewRows = computed(() => {
       return vendors.value.map(v => {

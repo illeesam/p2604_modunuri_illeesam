@@ -2,8 +2,27 @@
 window._ecOrderHistState = window._ecOrderHistState || { tab: 'products', viewMode: 'tab' };
 window.OdOrderHist = {
   name: 'OdOrderHist',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'orderId'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'orderId'],
+  setup(props) {    const orders = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/od/order/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        orders.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { ref, computed, onMounted } = Vue;
     const botTab = ref(window._ecOrderHistState.tab || 'products');
     Vue.watch(botTab, v => { window._ecOrderHistState.tab = v; });
@@ -13,7 +32,7 @@ window.OdOrderHist = {
 
     const orderItems = reactive([]);
     onMounted(() => {
-      const o = props.adminData.orders.find(x => x.orderId === props.orderId);
+      const o = orders.value.find(x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,
           { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
@@ -21,18 +40,18 @@ window.OdOrderHist = {
       }
     });
 
-    const relatedDliv   = computed(() => props.adminData.deliveries.find(d => d.orderId === props.orderId) || null);
-    const relatedClaims = computed(() => props.adminData.claims.filter(c => c.orderId === props.orderId));
+    const relatedDliv   = computed(() => deliveries.value.find(d => d.orderId === props.orderId) || null);
+    const relatedClaims = computed(() => claims.value.filter(c => c.orderId === props.orderId));
     const dlivHistory   = computed(() => {
       if (!relatedDliv.value) return [];
-      const o = props.adminData.orders.find(x => x.orderId === props.orderId);
+      const o = orders.value.find(x => x.orderId === props.orderId);
       return [
         { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '상품준비중', location: '물류센터', memo: '상품 포장 완료' },
         { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courierCd || '-', memo: '출고 완료' },
       ].filter(h => h.date !== '-');
     });
 
-    return { botTab, orderItems, relatedDliv, relatedClaims, dlivHistory, viewMode2, showTab };
+    return { orders, loading, error, botTab, orderItems, relatedDliv, relatedClaims, dlivHistory, viewMode2, showTab };
   },
   template: /* html */`
 <div>

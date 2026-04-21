@@ -1,36 +1,36 @@
 /* ShopJoy Admin - 대시보드 */
 window.SyDashboardMng = {
   name: 'SyDashboardMng',
-  props: ['navigate', 'adminData', 'showToast'],
+  props: ['navigate', 'showToast'],
   setup(props) {
     const { computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
 
     const stats = computed(() => [
-      { label: '전체 회원',   value: props.adminData.members?.length || 0,
+      { label: '전체 회원',   value: members.value?.length || 0,
         color: '#e8587a', icon: '👥',
-        sub: '활성 ' + (props.adminData.members?.filter(m => m.status === '활성').length || 0) + '명' },
-      { label: '전체 상품',   value: props.adminData.products?.length || 0,
+        sub: '활성 ' + (members.value?.filter(m => m.status === '활성').length || 0) + '명' },
+      { label: '전체 상품',   value: products.value?.length || 0,
         color: '#1677ff', icon: '📦',
-        sub: '판매중 ' + (props.adminData.products?.filter(p => p.status === '판매중').length || 0) + '개' },
-      { label: '전체 주문',   value: props.adminData.orders?.length || 0,
+        sub: '판매중 ' + (products.value?.filter(p => p.status === '판매중').length || 0) + '개' },
+      { label: '전체 주문',   value: orders.value?.length || 0,
         color: '#52c41a', icon: '🛒',
-        sub: '완료 ' + (props.adminData.orders?.filter(o => o.status === '주문완료').length || 0) + '건' },
-      { label: '클레임',      value: props.adminData.claims?.length || 0,
+        sub: '완료 ' + (orders.value?.filter(o => o.status === '주문완료').length || 0) + '건' },
+      { label: '클레임',      value: claims.value?.length || 0,
         color: '#ff4d4f', icon: '⚠️',
-        sub: '처리중 ' + (props.adminData.claims?.filter(c => c.status === '처리중').length || 0) + '건' },
-      { label: '배송중',      value: props.adminData.deliveries?.filter(d => d.status === '배송중').length || 0,
+        sub: '처리중 ' + (claims.value?.filter(c => c.status === '처리중').length || 0) + '건' },
+      { label: '배송중',      value: deliveries.value?.filter(d => d.status === '배송중').length || 0,
         color: '#389e0d', icon: '🚚',
-        sub: '전체 ' + (props.adminData.deliveries?.length || 0) + '건' },
-      { label: '쿠폰',        value: props.adminData.coupons?.length || 0,
+        sub: '전체 ' + (deliveries.value?.length || 0) + '건' },
+      { label: '쿠폰',        value: coupons.value?.length || 0,
         color: '#722ed1', icon: '🎫',
-        sub: '활성 ' + (props.adminData.coupons?.filter(c => c.status === '활성').length || 0) + '개' },
-      { label: '사이트',      value: props.adminData.sites?.length || 0,
+        sub: '활성 ' + (coupons.value?.filter(c => c.status === '활성').length || 0) + '개' },
+      { label: '사이트',      value: sites.value?.length || 0,
         color: '#d46b08', icon: '🌐',
-        sub: '운영중 ' + (props.adminData.sites?.filter(s => s.status === '운영중').length || 0) + '개' },
-      { label: '관리자',      value: props.adminData.adminUsers?.length || 0,
+        sub: '운영중 ' + (sites.value?.filter(s => s.status === '운영중').length || 0) + '개' },
+      { label: '관리자',      value: adminUsers.value?.length || 0,
         color: '#13c2c2', icon: '👤',
-        sub: '활성 ' + (props.adminData.adminUsers?.filter(u => u.status === '활성').length || 0) + '명' },
+        sub: '활성 ' + (adminUsers.value?.filter(u => u.status === '활성').length || 0) + '명' },
     ]);
 
     const shortcuts = [

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 사용자로그인이력 */
 window.SyUserLoginHist = {
   name: 'SyUserLoginHist',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -23,7 +23,7 @@ window.SyUserLoginHist = {
     const searchTokenAction = ref('');
     const pager = reactive({ page: 1, size: 20 });
 
-    const adminUsers = computed(() => props.adminData.adminUsers || []);
+    const adminUsers = computed(() => adminUsers.value || []);
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17'];
     const BROWSER_LIST = ['Chrome 123','Edge 122','Safari 17','Firefox 124','Chrome 122'];

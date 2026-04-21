@@ -1,7 +1,7 @@
 /* ShopJoy Admin - ERP 전표조회 */
 window.StErpViewMng = {
   name: 'StErpViewMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];

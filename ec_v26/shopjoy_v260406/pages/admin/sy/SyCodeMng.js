@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 공통코드관리 (CRUD 그리드) */
 window.SyCodeMng = {
   name: 'SyCodeMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm'],
+  setup(props) {    const codes = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/code/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        codes.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyCode 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
 
     /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
     const selectedGrp = ref('');
@@ -21,7 +40,7 @@ window.SyCodeMng = {
     };
     const searchGrp   = ref('');
     const searchUseYn = ref('');
-    const grpOptions  = computed(() => [...new Set(props.adminData.codes.map(c => c.codeGrp))].sort());
+    const grpOptions  = computed(() => [...new Set(codes.value.map(c => c.codeGrp))].sort());
     const applied     = Vue.reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
 
     /* ── CRUD 그리드 데이터 ── */
@@ -43,6 +62,23 @@ window.SyCodeMng = {
     let _grpTempId = -1;
     const GRP_FIELDS = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
 
+    // 코드그룹 (codes에서 그룹 고유값 추출)
+    const codeGroups = computed(() => {
+      const grps = new Map();
+      codes.value.forEach(c => {
+        if (c.codeGrp && !grps.has(c.codeGrp)) {
+          grps.set(c.codeGrp, {
+            codeGrp: c.codeGrp,
+            grpNm: c.codeGrp,
+            type: 'general',
+            useYn: 'Y',
+            pathId: null,
+          });
+        }
+      });
+      return Array.from(grps.values());
+    });
+
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -57,7 +93,7 @@ window.SyCodeMng = {
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const loadGrp = () => {
       grpRows.splice(0);
-      (props.adminData.codeGroups || []).forEach(g => grpRows.push({
+      (codeGroups.value || []).forEach(g => grpRows.push({
         ...g,
         _row_status: 'N',
         pathId: g.pathId == null ? null : g.pathId,
@@ -91,7 +127,7 @@ window.SyCodeMng = {
       if (!grpDirty.value) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await props.showConfirm('저장', `${grpDirty.value}건 저장하시겠습니까?`);
       if (!ok) return;
-      props.adminData.codeGroups = grpRows.filter(r => r._row_status !== 'D').map(r => ({
+      codeGroups.value = grpRows.filter(r => r._row_status !== 'D').map(r => ({
         codeGrp: r.codeGrp, grpNm: r.grpNm, pathId: r.pathId, dispPath: r.dispPath, description: r.description, type: r.type, useYn: r.useYn,
       }));
       loadGrp();
@@ -147,11 +183,11 @@ window.SyCodeMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       /* 트리 선택 시 해당 path에 속하는 codeGrp 집합 */
       const allowedGrps = grpSelectedPath.value
-        ? new Set((props.adminData.codeGroups || [])
+        ? new Set((codeGroups.value || [])
             .filter(g => (g.dispPath || '').startsWith(grpSelectedPath.value))
             .map(g => g.codeGrp))
         : null;
-      props.adminData.codes
+      codes.value
         .filter(c => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !c.codeGrp.toLowerCase().includes(kw)
@@ -189,8 +225,8 @@ window.SyCodeMng = {
 
     /* 현재 선택된 그룹이 트리형인지 여부 */
     const isTreeTypeGrp = computed(() => {
-      if (!selectedGrp.value || !props.adminData?.codeGroups) return false;
-      const grp = props.adminData.codeGroups.find(g => g.codeGrp === selectedGrp.value);
+      if (!selectedGrp.value || !codeGroups.value?.length) return false;
+      const grp = codeGroups.value.find(g => g.codeGrp === selectedGrp.value);
       return grp?.type === '트리';
     });
 
@@ -223,8 +259,7 @@ window.SyCodeMng = {
           current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
         }
         const indent = '　'.repeat(depth); // 전각 공백으로 들여쓰기
-        return {
-          label: `${r.codeLabel}(${r.codeValue})`,
+        return { codes, loading, error, label: `${r.codeLabel}(${r.codeValue})`,
           value: r.codeValue,
           path: getCodeHierarchyPath(r.codeValue),
           displayLabel: `${indent}${r.codeLabel}(${r.codeValue})`
@@ -348,18 +383,18 @@ window.SyCodeMng = {
       if (!ok) return;
 
       dRows.forEach(r => {
-        const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) props.adminData.codes.splice(idx, 1);
+        const idx = codes.value.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) codes.value.splice(idx, 1);
       });
       uRows.forEach(r => {
-        const idx = props.adminData.codes.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) Object.assign(props.adminData.codes[idx],
+        const idx = codes.value.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) Object.assign(codes.value[idx],
           { codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
             sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null });
       });
-      let nextId = Math.max(...props.adminData.codes.map(c => c.codeId), 0);
+      let nextId = Math.max(...codes.value.map(c => c.codeId), 0);
       iRows.forEach(r => {
-        props.adminData.codes.push({
+        codes.value.push({
           codeId: ++nextId, codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
           sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null,
           regDate: new Date().toISOString().slice(0, 10),
@@ -469,6 +504,7 @@ window.SyCodeMng = {
       dragSrc, onDragStart, onDragOver, onDragEnd,
       checkAll, toggleCheckAll, statusClass,
       exportExcel,
+      codeGroups,
       grpRows, grpDirty, addGrp, delGrp, cancelGrp, saveGrp, onGrpChange,
       grpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, grpSelectedPath, filteredGrpRows,
       grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
@@ -843,7 +879,7 @@ window.SyCodeMng = {
       <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">코드 상세</h3>
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-code-dtl :navigate="navigate" :admin-data="adminData" :show-toast="showToast"
+    <sy-code-dtl :navigate="navigate" :show-toast="showToast"
       :show-confirm="showConfirm" :set-api-res="() => {}" :edit-id="selectedCodeId" />
   </div>
 </div>

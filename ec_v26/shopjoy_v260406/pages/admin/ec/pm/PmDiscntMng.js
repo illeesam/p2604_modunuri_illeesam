@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 판촉할인 관리 목록 + 하단 PmDiscntDtl 임베드 */
 window.PmDiscntMng = {
   name: 'PmDiscntMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const discounts = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/discnt/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        discounts.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmDiscnt 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PmDiscntMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => props.adminData.discntList || []);
+    const list = computed(() => discntList.value || []);
     const filtered = computed(() => list.value.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(d.discntNm || '').toLowerCase().includes(kw) && !String(d.discntId || '').includes(kw)) return false;
@@ -74,8 +93,8 @@ window.PmDiscntMng = {
     const doDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.discntNm}] 할인을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (props.adminData.discntList || []).findIndex(x => x.discntId === d.discntId);
-      if (idx !== -1) props.adminData.discntList.splice(idx, 1);
+      const idx = (discntList.value || []).findIndex(x => x.discntId === d.discntId);
+      if (idx !== -1) discntList.value.splice(idx, 1);
       if (selectedId.value === d.discntId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/pm/discnt/${d.discntId}`);
@@ -92,7 +111,7 @@ window.PmDiscntMng = {
       [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntType'},{label:'할인값',key:'discntVal'},{label:'상태',key:'discntStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '할인목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { discounts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -196,9 +215,7 @@ window.PmDiscntMng = {
     </div>
     <pm-discnt-dtl
       :key="detailKey"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

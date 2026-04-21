@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 쿠폰관리 목록 + 하단 CouponDtl 임베드 */
 window.PmCouponMng = {
   name: 'PmCouponMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const coupons = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/coupon/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        coupons.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmCoupon 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PmCouponMng = {
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.coupons.filter(c => {
+    const filtered = computed(() => coupons.value.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.name.toLowerCase().includes(kw) && !c.code.toLowerCase().includes(kw)) return false;
       if (applied.status && c.statusCd !== applied.status) return false;
@@ -77,8 +96,8 @@ window.PmCouponMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.coupons.findIndex(x => x.couponId === c.couponId);
-      if (idx !== -1) props.adminData.coupons.splice(idx, 1);
+      const idx = coupons.value.findIndex(x => x.couponId === c.couponId);
+      if (idx !== -1) coupons.value.splice(idx, 1);
       if (selectedId.value === c.couponId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/pm/coupon/${c.couponId}`);
@@ -93,7 +112,7 @@ window.PmCouponMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, discountLabel, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { coupons, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, discountLabel, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -196,9 +215,7 @@ window.PmCouponMng = {
     </div>
     <pm-coupon-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

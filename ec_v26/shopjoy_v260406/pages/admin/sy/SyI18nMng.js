@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 다국어관리 */
 window.SyI18nMng = {
   name: 'SyI18nMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -19,7 +19,7 @@ window.SyI18nMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (props.adminData.i18nKeys || []).filter(k => {
+      return (i18nKeys.value || []).filter(k => {
         if (kw && !k.i18nKey.toLowerCase().includes(kw) && !(k.i18nDesc||'').toLowerCase().includes(kw)) return false;
         if (applied.scope && k.i18nScopeCd !== applied.scope) return false;
         if (applied.use && k.useYn !== applied.use) return false;
@@ -31,12 +31,12 @@ window.SyI18nMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedKey = computed(() => (props.adminData.i18nKeys||[]).find(k => k.i18nId === selectedId.value) || null);
+    const selectedKey = computed(() => (i18nKeys.value||[]).find(k => k.i18nId === selectedId.value) || null);
     const selectedMsgs = computed(() => {
       if (!selectedKey.value) return {};
       const msgs = {};
       LANGS.forEach(lang => { msgs[lang] = ''; });
-      (props.adminData.i18nMsgs||[]).filter(m => m.i18nId === selectedId.value).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
+      (i18nMsgs.value||[]).filter(m => m.i18nId === selectedId.value).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
       return msgs;
     });
     const msgForm = reactive({});
@@ -46,14 +46,14 @@ window.SyI18nMng = {
       selectedId.value = key.i18nId;
       const msgs = {};
       LANGS.forEach(lang => { msgs[lang] = ''; });
-      (props.adminData.i18nMsgs||[]).filter(m => m.i18nId === key.i18nId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
+      (i18nMsgs.value||[]).filter(m => m.i18nId === key.i18nId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
       Object.assign(msgForm, msgs);
     };
     const saveMsgs = async () => {
       if (!selectedKey.value) return;
       const ok = await props.showConfirm('저장', '번역 메시지를 저장하시겠습니까?');
       if (!ok) return;
-      const src = props.adminData.i18nMsgs;
+      const src = i18nMsgs.value;
       LANGS.forEach(lang => {
         const existing = src.find(m => m.i18nId === selectedKey.value.i18nId && m.langCd === lang);
         if (existing) existing.i18nMsg = msgForm[lang];
@@ -70,7 +70,7 @@ window.SyI18nMng = {
       }
     };
     const getLangMsg = (i18nId, lang) => {
-      const m = (props.adminData.i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
+      const m = (i18nMsgs.value||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
       return m ? m.i18nMsg : '';
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, scope: searchScope.value, use: searchUse.value }); pager.page = 1; };

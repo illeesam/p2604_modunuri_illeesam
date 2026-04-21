@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 회원등급관리 */
 window.MbMemGradeMng = {
   name: 'MbMemGradeMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const grades = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/mb/mem-grade/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        grades.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('MbMemGrade 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const GRADE_CODES = ['BASIC','SILVER','GOLD','VIP','VVIP','PLATINUM'];
 
@@ -14,7 +33,7 @@ window.MbMemGradeMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (props.adminData.memGrades || []).filter(g => {
+      return (memGrades.value || []).filter(g => {
         if (kw && !g.gradeNm.toLowerCase().includes(kw) && !g.gradeCd.toLowerCase().includes(kw)) return false;
         if (applied.use && g.useYn !== applied.use) return false;
         return true;
@@ -45,7 +64,7 @@ window.MbMemGradeMng = {
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await props.showConfirm('삭제', `[${row.gradeNm}] 등급을 삭제하시겠습니까?`);
       if (!ok) return;
-      const src = props.adminData.memGrades;
+      const src = memGrades.value;
       const si = src.findIndex(g => g.gradeId === row.gradeId);
       if (si !== -1) src.splice(si, 1);
       gridRows.splice(idx, 1);
@@ -67,7 +86,7 @@ window.MbMemGradeMng = {
         const ok = await props.showConfirm('저장', '변경 내용을 저장하시겠습니까?');
         if (!ok) return;
         const isNewRow = row._row_status === 'N';
-        const src = props.adminData.memGrades;
+        const src = memGrades.value;
         if (isNewRow) { row.gradeId = 'G' + String(Date.now()).slice(-6); src.push({ ...row }); }
         else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
@@ -89,7 +108,7 @@ window.MbMemGradeMng = {
     const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
+    return { grades, loading, error, searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, focusedIdx, ynBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
   },
   template: `

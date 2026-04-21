@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 결제-정산 대사 */
 window.StReconPayMng = {
   name: 'StReconPayMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -15,7 +15,7 @@ window.StReconPayMng = {
     };
     (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const orders = computed(() => props.adminData.orders || []);
+    const orders = computed(() => orders.value || []);
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 

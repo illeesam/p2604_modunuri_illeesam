@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 배치스케즐 상세/등록 */
 window.SyBatchDtl = {
   name: 'SyBatchDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const batches = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/batch/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        batches.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBatch 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -19,7 +38,7 @@ window.SyBatchDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const b = props.adminData.batches.find(x => x.batchId === props.editId);
+        const b = batches.value.find(x => x.batchId === props.editId);
         if (b) Object.assign(form, { batchNm: b.batchNm, batchCode: b.batchCode, description: b.description, cron: b.cron, statusCd: b.statusCd });
       }
     });
@@ -46,10 +65,10 @@ window.SyBatchDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.batches.push({ ...form, batchId: props.adminData.nextId(props.adminData.batches, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
+        batches.value.push({ ...form, batchId: nextId.value(batches.value, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = props.adminData.batches.findIndex(x => x.batchId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.batches[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
+        const idx = batches.value.findIndex(x => x.batchId === props.editId);
+        if (idx !== -1) Object.assign(batches.value[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }) : window.adminApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }));
@@ -63,7 +82,7 @@ window.SyBatchDtl = {
       }
     };
 
-    return { isNew, form, errors, save, CRON_PRESETS, siteNm };
+    return { batches, loading, error, isNew, form, errors, save, CRON_PRESETS, siteNm };
   },
   template: /* html */`
 <div>

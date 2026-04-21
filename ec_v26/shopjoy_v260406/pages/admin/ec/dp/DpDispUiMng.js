@@ -3,11 +3,30 @@
  */
 window.DpDispUiMng = {
   name: 'DpDispUiMng',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const displays = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/dp/ui/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        displays.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('DpDispUi 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
 
     const UI_TYPE_OPTS = [
       { value: 'FRONT',  label: '프론트' },
@@ -49,7 +68,7 @@ window.DpDispUiMng = {
 
     /* UI 목록 (codes DISP_UI) */
     const allUis = computed(() =>
-      (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_UI')
+      (codes.value || []).filter(c => c.codeGrp === 'DISP_UI')
     );
     /* 표시경로 (uiType 그룹 > 실제 UI 아이템) */
     const selectedTreeKey = ref('');
@@ -120,7 +139,7 @@ window.DpDispUiMng = {
     const doDelete = async (u) => {
       const ok = await props.showConfirm('삭제', `[${u.codeLabel}] UI를 삭제하시겠습니까?`);
       if (!ok) return;
-      const codes = props.dispDataset.codes;
+      const codes = codes.value;
       const idx = codes.findIndex(x => x.codeId === u.codeId);
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === u.codeId) selectedId.value = null;
@@ -151,11 +170,11 @@ window.DpDispUiMng = {
 
     /* UI 하위 영역 개수 (영역의 uiCode 필드 기준) */
     const areaCountFor = (uiCode) =>
-      (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === uiCode).length;
+      (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === uiCode).length;
 
     /* UI 하위 영역 목록 */
     const areasOfUi = (uiCode) =>
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === uiCode)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 
@@ -167,8 +186,7 @@ window.DpDispUiMng = {
     };
     const isUIExpanded = (uiId) => expandedUIs.value.has(uiId);
 
-    return {
-      pathLabel,
+    return { displays, loading, error, pathLabel,
       searchKw, searchUiType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
       UI_TYPE_OPTS,
@@ -349,7 +367,7 @@ window.DpDispUiMng = {
                     <span style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;font-weight:600;white-space:nowrap;">영역</span>
                     <span style="font-size:12px;color:#333;font-weight:600;flex:1;">{{ a.codeLabel }}</span>
                     <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;font-weight:600;">
-                      {{ (dispDataset.displays||[]).filter(d => d.area===a.codeValue).length }}개 패널
+                      {{ ([]||[]).filter(d => d.area===a.codeValue).length }}개 패널
                     </span>
                     <span :style="'font-size:10px;border-radius:8px;padding:2px 8px;font-weight:600;'+(a.useYn==='Y'?'background:#c8e6c9;color:#2e7d32;':'background:#f1f1f1;color:#666;')">
                       {{ a.useYn==='Y' ? '사용' : '미사용' }}
@@ -387,7 +405,7 @@ window.DpDispUiMng = {
     </div>
     <dp-disp-ui-dtl
       :key="selectedId"
-      :navigate="inlineNavigate" :disp-dataset="dispDataset"
+      :navigate="inlineNavigate"
       :show-ref-modal="showRefModal" :show-toast="showToast"
       :show-confirm="showConfirm" :set-api-res="setApiRes"
       :edit-id="detailEditId" />

@@ -2,17 +2,36 @@
 window._ecDlivHistState = window._ecDlivHistState || { tab: 'order', viewMode: 'tab' };
 window.OdDlivHist = {
   name: 'OdDlivHist',
-  props: ['navigate', 'adminData', 'showRefModal', 'orderId'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'orderId'],
+  setup(props) {    const deliveries = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/od/dliv/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        deliveries.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { ref, computed } = Vue;
     const botTab = ref(window._ecDlivHistState.tab || 'order');
     Vue.watch(botTab, v => { window._ecDlivHistState.tab = v; });
     const viewMode2 = ref('tab');
     
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
-    const relatedOrder  = computed(() => props.adminData.getOrder(props.orderId));
-    const relatedClaims = computed(() => props.adminData.claims.filter(c => c.orderId === props.orderId));
-    return { botTab, relatedOrder, relatedClaims, viewMode2, showTab };
+    const relatedOrder  = computed(() => getOrder.value(props.orderId));
+    const relatedClaims = computed(() => claims.value.filter(c => c.orderId === props.orderId));
+    return { deliveries, loading, error, botTab, relatedOrder, relatedClaims, viewMode2, showTab };
   },
   template: /* html */`
 <div>

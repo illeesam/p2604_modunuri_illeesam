@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 공통코드 상세/등록 */
 window.SyCodeDtl = {
   name: 'SyCodeDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  setup(props) {    const codes = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/code/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        codes.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyCode 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -19,7 +38,7 @@ window.SyCodeDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const c = props.adminData.codes.find(x => x.codeId === props.editId);
+        const c = codes.value.find(x => x.codeId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
@@ -36,10 +55,10 @@ window.SyCodeDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.codes.push({ ...form, codeId: props.adminData.nextId(props.adminData.codes, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
+        codes.value.push({ ...form, codeId: nextId.value(codes.value, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
       } else {
-        const idx = props.adminData.codes.findIndex(x => x.codeId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
+        const idx = codes.value.findIndex(x => x.codeId === props.editId);
+        if (idx !== -1) Object.assign(codes.value[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/sy/code/${form.codeId}`, { ...form }) : window.adminApi.put(`/bo/sy/code/${form.codeId}`, { ...form }));
@@ -53,7 +72,7 @@ window.SyCodeDtl = {
       }
     };
 
-    return { isNew, form, errors, save, siteNm };
+    return { codes, loading, error, isNew, form, errors, save, siteNm };
   },
   template: /* html */`
 <div>

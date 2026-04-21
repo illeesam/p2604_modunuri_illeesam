@@ -1,9 +1,31 @@
 /* ShopJoy Admin - 클레임관리 목록 + 하단 ClaimDtl 임베드 */
 window.OdClaimMng = {
   name: 'OdClaimMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const claims = ref([]);
+    const members = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const [claimsRes, membersRes] = await Promise.all([
+          window.adminApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
+        ]);
+        claims.value = claimsRes.data?.data?.list || [];
+        members.value = membersRes.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('OdClaim 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +57,7 @@ window.OdClaimMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.claims.filter(c => {
+    const filtered = computed(() => claims.value.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.claimId.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw) && !c.prodNm.toLowerCase().includes(kw)) return false;
       if (applied.type && c.type !== applied.type) return false;
@@ -84,8 +106,8 @@ window.OdClaimMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.claims.findIndex(x => x.claimId === c.claimId);
-      if (idx !== -1) props.adminData.claims.splice(idx, 1);
+      const idx = claims.value.findIndex(x => x.claimId === c.claimId);
+      if (idx !== -1) claims.value.splice(idx, 1);
       if (selectedId.value === c.claimId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/od/claim/${c.claimId}`);
@@ -111,7 +133,7 @@ window.OdClaimMng = {
       else pageList.value.forEach(c => s.add(c.claimId));
       checked.value = s;
     };
-    const claimStatusCodes = (props.adminData.codes || [])
+    const claimStatusCodes = (codes.value || [])
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const claimStatusForType = type => claimStatusCodes
@@ -131,13 +153,13 @@ window.OdClaimMng = {
       reqTarget:'추가결재', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
     const onApprToChange = () => {
-      const m = (props.adminData.members || []).find(x => String(x.userId) === String(bulkForm.apprToUserId));
+      const m = (members.value || []).find(x => String(x.userId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
     const onReqTargetChange = () => {
       const ids = Array.from(checked.value);
-      const first = props.adminData.claims.find(c => ids.includes(c.claimId));
+      const first = claims.value.find(c => ids.includes(c.claimId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')    bulkForm.reqTargetNm = first.orderId || '';
       else if (bulkForm.reqTarget === '상품') bulkForm.reqTargetNm = first.prodNm || '';
@@ -153,7 +175,7 @@ window.OdClaimMng = {
     });
     const checkedByType = computed(() => {
       const r = { '취소':[], '반품':[], '교환':[] };
-      props.adminData.claims.forEach(c => { if (checked.value.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
+      claims.value.forEach(c => { if (checked.value.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
       return r;
     });
     const openBulk = () => {
@@ -170,7 +192,7 @@ window.OdClaimMng = {
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked.value);
-      const selected = props.adminData.claims.filter(c => ids.includes(c.claimId));
+      const selected = claims.value.filter(c => ids.includes(c.claimId));
       let rows = [];
       if (bulkTab.value === 'status') {
         rows = selected
@@ -201,7 +223,7 @@ window.OdClaimMng = {
         const ok = await props.showConfirm('일괄 클레임상태 변경', `${msg}\n\n총 ${totalCnt}건을 변경하시겠습니까?`);
         if (!ok) return;
         changes.forEach(ch => {
-          props.adminData.claims.forEach(c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
+          claims.value.forEach(c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
         });
         checked.value = new Set();
         bulkOpen.value = false;
@@ -220,7 +242,7 @@ window.OdClaimMng = {
         const ids = Array.from(checked.value);
         const ok = await props.showConfirm('일괄 클레임유형 변경', `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`);
         if (!ok) return;
-        props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) c.type = val; });
+        claims.value.forEach(c => { if (ids.includes(c.claimId)) c.type = val; });
         checked.value = new Set();
         bulkOpen.value = false;
         try {
@@ -237,7 +259,7 @@ window.OdClaimMng = {
         const ids = Array.from(checked.value);
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
-        props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
+        claims.value.forEach(c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
           const res = await window.adminApi.put('claims/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
@@ -253,7 +275,7 @@ window.OdClaimMng = {
         const ids = Array.from(checked.value);
         const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
         if (!ok) return;
-        props.adminData.claims.forEach(c => { if (ids.includes(c.claimId)) {
+        claims.value.forEach(c => { if (ids.includes(c.claimId)) {
           c.apprToUserId = bulkForm.apprToUserId; c.apprToNm = bulkForm.apprToNm;
           c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
           c.reqAmount = Number(bulkForm.reqAmount||0); c.reqReason = bulkForm.reqReason;
@@ -271,7 +293,7 @@ window.OdClaimMng = {
       }
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, checkedByType, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
+    return { claims, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, checkedByType, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -360,9 +382,7 @@ window.OdClaimMng = {
     </div>
     <od-claim-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
@@ -421,7 +441,7 @@ window.OdClaimMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in adminData.members" :key="m.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
             </select>
           </div>
           <div class="form-row">

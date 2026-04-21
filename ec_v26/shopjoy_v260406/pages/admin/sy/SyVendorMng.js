@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 업체정보 목록 */
 window.SyVendorMng = {
   name: 'SyVendorMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const vendors = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/vendor/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        vendors.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyVendor 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -31,7 +50,7 @@ window.SyVendorMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -62,7 +81,7 @@ window.SyVendorMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.vendors.filter(v => {
+    const filtered = computed(() => vendors.value.filter(v => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !v.vendorNm.toLowerCase().includes(kw) && !v.bizNo.includes(kw)) return false;
       if (applied.type && v.vendorType !== applied.type) return false;
@@ -107,8 +126,8 @@ window.SyVendorMng = {
     const doDelete = async (v) => {
       const ok = await props.showConfirm('삭제', `[${v.vendorNm}] 업체를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.vendors.findIndex(x => x.vendorId === v.vendorId);
-      if (idx !== -1) props.adminData.vendors.splice(idx, 1);
+      const idx = vendors.value.findIndex(x => x.vendorId === v.vendorId);
+      if (idx !== -1) vendors.value.splice(idx, 1);
       if (selectedId.value === v.vendorId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`vendors/${v.vendorId}`);
@@ -126,8 +145,7 @@ window.SyVendorMng = {
     Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { vendors, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, typeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
@@ -219,7 +237,7 @@ window.SyVendorMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-vendor-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
+    <sy-vendor-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div></div>
 

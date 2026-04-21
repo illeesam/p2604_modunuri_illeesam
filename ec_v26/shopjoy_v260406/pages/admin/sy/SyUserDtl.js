@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 사용자관리(관리자) 상세/등록 */
 window.SyUserDtl = {
   name: 'SyUserDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const users = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/user/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        users.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyUser 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted, ref } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -24,7 +43,7 @@ window.SyUserDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const u = props.adminData.adminUsers.find(x => x.adminUserId === props.editId);
+        const u = adminUsers.value.find(x => x.adminUserId === props.editId);
         if (u) Object.assign(form, { ...u, password: '' });
       }
     });
@@ -60,9 +79,9 @@ window.SyUserDtl = {
     /* ── 현재 적용 역할 목록 ── */
     const userRoles = computed(() => {
       if (isNew.value) return [];
-      return props.adminData.roleUsers
+      return roleUsers.value
         .filter(ru => ru.adminUserId === props.editId)
-        .map(ru => props.adminData.roles.find(r => r.roleId === ru.roleId))
+        .map(ru => roles.value.find(r => r.roleId === ru.roleId))
         .filter(Boolean);
     });
 
@@ -84,12 +103,12 @@ window.SyUserDtl = {
       if (!ok) return;
       if (isNew.value) {
         const { password, ...rest } = form;
-        props.adminData.adminUsers.push({ ...rest, adminUserId: props.adminData.nextId(props.adminData.adminUsers, 'adminUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
+        adminUsers.value.push({ ...rest, adminUserId: nextId.value(adminUsers.value, 'adminUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === props.editId);
+        const idx = adminUsers.value.findIndex(x => x.adminUserId === props.editId);
         if (idx !== -1) {
           const { password, ...rest } = form;
-          Object.assign(props.adminData.adminUsers[idx], rest);
+          Object.assign(adminUsers.value[idx], rest);
         }
       }
       try {
@@ -104,7 +123,7 @@ window.SyUserDtl = {
       }
     };
 
-    return { isNew, form, errors, save, siteNm,
+    return { users, loading, error, isNew, form, errors, save, siteNm,
              addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
              userRoles, roleTypeBadge };
@@ -254,9 +273,7 @@ window.SyUserDtl = {
 
   <!-- 부서 선택 팝업 -->
   <dept-tree-modal
-    v-if="deptModal && deptModal.show"
-    :disp-dataset="adminData"
-    :exclude-id="null"
+    v-if="deptModal && deptModal.show" :exclude-id="null"
     @select="onDeptSelect"
     @close="deptModal.show=false" />
 </div>

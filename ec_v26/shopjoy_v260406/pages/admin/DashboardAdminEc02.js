@@ -28,7 +28,7 @@
 
   window.DashboardAdminEc02 = {
     name: 'DashboardAdminEc02',
-    props: ['navigate', 'adminData', 'showToast'],
+    props: ['navigate', 'showToast'],
 
     setup() {
       /* ── 필터 상태 ── */

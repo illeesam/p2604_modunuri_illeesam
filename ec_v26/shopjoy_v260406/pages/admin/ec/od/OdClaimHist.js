@@ -2,7 +2,7 @@
 window._odClaimHistState = window._odClaimHistState || { tab: 'items', viewMode: 'tab' };
 window.OdClaimHist = {
   name: 'OdClaimHist',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'claimId'],
+  props: ['navigate', 'showRefModal', 'showToast', 'claimId'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const botTab = ref(window._odClaimHistState.tab || 'items');
@@ -20,7 +20,7 @@ window.OdClaimHist = {
 
     /* 클레임 유형별 단계 — parentCodeValues 기반 동적 파생 */
     const claimType = ref('취소');
-    const _claimStatusCodes = (props.adminData.codes || [])
+    const _claimStatusCodes = (codes.value || [])
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
@@ -35,7 +35,7 @@ window.OdClaimHist = {
     const relatedDliv  = ref(null);
 
     onMounted(() => {
-      const c = props.adminData.getClaim(props.claimId);
+      const c = getClaim.value(props.claimId);
       if (c) {
         claimType.value  = c.type || '취소';
         claimStatus.value = c.statusCd || '';
@@ -51,8 +51,8 @@ window.OdClaimHist = {
             chgProdNm: '', chgOptionNm: '',
             afStatus: c.statusCd, afMemo: '', afAdmin: '', afDate: '',
           });
-        relatedOrder.value = props.adminData.getOrder(c.orderId);
-        relatedDliv.value  = props.adminData.deliveries.find(d => d.orderId === c.orderId) || null;
+        relatedOrder.value = getOrder.value(c.orderId);
+        relatedDliv.value  = deliveries.value.find(d => d.orderId === c.orderId) || null;
       }
     });
 
@@ -70,8 +70,8 @@ window.OdClaimHist = {
     };
 
     const saveProcess = () => {
-      const idx = props.adminData.claims.findIndex(c => c.claimId === props.claimId);
-      if (idx !== -1) Object.assign(props.adminData.claims[idx], {
+      const idx = claims.value.findIndex(c => c.claimId === props.claimId);
+      if (idx !== -1) Object.assign(claims.value[idx], {
         refundAmount: Number(processForm.refundAmount),
         refundMethodCd: processForm.refundMethodCd,
         memo: processForm.memo,

@@ -2515,8 +2515,7 @@
       { bizUserId: 35, siteId: 1, bizId: 12, userId: 52, memberNm: '기술차단',     positionCd: '사원', roleCd: 'PROG_BLOCKED', deptNm: '기술팀', phone: '02-9021-0052', mobile: '010-8000-0052', email: 'progblck@demo.com',   isMain: 'N', authYn: 'N', joinDate: '2025-09-20', leaveDate: '2026-03-01', statusCd: 'INACTIVE', remark: '차단됨' },
     ],
 
-    props: [
-      { propId: 1,  siteId: 1, dispPath: 'site.title', propKey: 'title',                propLabel: '사이트 제목',         propValue: 'ShopJoy',                propType: 'STRING',  sortOrd: 1, useYn: 'Y', remark: '브라우저 탭 제목' },
+    props: [{ propId: 1,  siteId: 1, dispPath: 'site.title', propKey: 'title',                propLabel: '사이트 제목',         propValue: 'ShopJoy',                propType: 'STRING',  sortOrd: 1, useYn: 'Y', remark: '브라우저 탭 제목' },
       { propId: 2,  siteId: 1, dispPath: 'site.tagline', propKey: 'tagline',              propLabel: '사이트 태그라인',     propValue: '쇼핑의 즐거움',           propType: 'STRING',  sortOrd: 2, useYn: 'Y', remark: '' },
       { propId: 3,  siteId: 1, dispPath: 'site.email.smtp.host', propKey: 'host',      propLabel: 'SMTP 호스트',         propValue: 'smtp.gmail.com',         propType: 'STRING',  sortOrd: 1, useYn: 'Y', remark: '' },
       { propId: 4,  siteId: 1, dispPath: 'site.email.smtp.port', propKey: 'port',      propLabel: 'SMTP 포트',           propValue: '587',                    propType: 'NUMBER',  sortOrd: 2, useYn: 'Y', remark: 'TLS' },
@@ -2535,8 +2534,7 @@
       { propId: 17, siteId: 1, dispPath: 'feature.coupon.use', propKey: 'use',        propLabel: '쿠폰 기능 사용',      propValue: 'true',                   propType: 'BOOLEAN', sortOrd: 2, useYn: 'Y', remark: '' },
       { propId: 18, siteId: 1, dispPath: 'feature.cache.use', propKey: 'use',         propLabel: '캐쉬 기능 사용',      propValue: 'true',                   propType: 'BOOLEAN', sortOrd: 3, useYn: 'Y', remark: '' },
       { propId: 19, siteId: 1, dispPath: 'cache.ttl.product', propKey: 'product',         propLabel: '상품 캐시 TTL(초)',   propValue: '600',                    propType: 'NUMBER',  sortOrd: 1, useYn: 'Y', remark: '' },
-      { propId: 20, siteId: 1, dispPath: 'cache.ttl.member', propKey: 'member',          propLabel: '회원 캐시 TTL(초)',   propValue: '300',                    propType: 'NUMBER',  sortOrd: 2, useYn: 'Y', remark: '' },
-    ],
+      { propId: 20, siteId: 1, dispPath: 'cache.ttl.member', propKey: 'member',          propLabel: '회원 캐시 TTL(초)',   propValue: '300',                    propType: 'NUMBER',  sortOrd: 2, useYn: 'Y', remark: '' },],
 
     alarms: [
       { alarmId: 1, title: '주문 배송 출발 알림',      alarmType: '푸시',   targetTypeCd: '전체', targetId: '', message: '고객님의 주문이 배송 출발되었습니다.',       sendDate: '2026-04-10 09:00', statusCd: '발송완료', regDate: '2026-04-10', dispPath: 'alarm.푸시' },

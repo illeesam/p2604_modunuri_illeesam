@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 전시영역 상세/등록 (탭 구성) */
 window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  setup(props) {    const areas = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/dp/area/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        areas.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('DpDispArea 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -56,7 +75,7 @@ window.DpDispAreaDtl = {
     /* ── 로드 ── */
     onMounted(async () => {
       if (!isNew.value) {
-        const a = (props.dispDataset.codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
+        const a = (codes.value || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
         if (a) {
           Object.assign(form, {
             codeId: a.codeId, codeGrp: a.codeGrp,
@@ -74,7 +93,7 @@ window.DpDispAreaDtl = {
           });
         }
       } else {
-        const areas = (props.dispDataset.codes || []).filter(c => c.codeGrp === 'DISP_AREA');
+        const areas = (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA');
         form.sortOrd = areas.length ? Math.max(...areas.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -88,7 +107,7 @@ window.DpDispAreaDtl = {
 
     /* ── 연결된 패널 ── */
     const relatedPanels = computed(() =>
-      (props.dispDataset.displays || [])
+      (displays.value || [])
         .filter(p => p.area === form.codeValue)
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     );
@@ -98,7 +117,7 @@ window.DpDispAreaDtl = {
     const pickKw   = ref('');
     const pickSel  = ref(new Set());
     const availablePanels = computed(() => {
-      const all = (props.dispDataset.displays || []);
+      const all = (displays.value || []);
       const kw  = pickKw.value.trim().toLowerCase();
       return all.filter(p => {
         if (p.area === form.codeValue) return false; /* 이미 포함된 것 제외 */
@@ -118,7 +137,7 @@ window.DpDispAreaDtl = {
     const onPanelPicked = (p) => {
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       p.area = form.codeValue;
-      const list = (props.dispDataset.displays || []).filter(x => x.area === form.codeValue);
+      const list = (displays.value || []).filter(x => x.area === form.codeValue);
       list.forEach((x, i) => { x.sortOrder = i + 1; });
       props.showToast && props.showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
       pickOpen.value = false;
@@ -133,7 +152,7 @@ window.DpDispAreaDtl = {
       const ids = Array.from(pickSel.value);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
-      const list = props.dispDataset.displays || [];
+      const list = displays.value || [];
       ids.forEach(id => {
         const p = list.find(x => x.dispId === id);
         if (p) p.area = form.codeValue;
@@ -214,9 +233,9 @@ window.DpDispAreaDtl = {
       const isNewArea = isNew.value;
       const ok = await props.showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
       if (!ok) return;
-      const codes = props.dispDataset.codes;
+      const codes = codes.value;
       if (isNewArea) {
-        const nextId = window.adminData.nextId(codes, 'codeId');
+        const nextId = nextId.value(codes, 'codeId');
         codes.push({ ...form, codeId: nextId });
       } else {
         const idx = codes.findIndex(c => c.codeId === form.codeId);
@@ -357,8 +376,7 @@ window.DpDispAreaDtl = {
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { areas, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, isNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
       save, doCancel, relatedPanels,
       pickOpen, pickKw, pickSel, availablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
@@ -760,7 +778,6 @@ window.DpDispAreaDtl = {
       <div v-if="activeTab==='base'" style="max-height:560px;overflow-y:auto;">
         <disp-x02-area v-if="form.codeValue"
           :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
-          :disp-dataset="dispDataset"
           :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
           :area-item="{ code: form.codeValue, label: form.codeLabel, info: form, panels: relatedPanels }" />
         <div v-else style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">
@@ -771,7 +788,6 @@ window.DpDispAreaDtl = {
       <div v-else-if="activePanel" style="max-height:560px;overflow-y:auto;">
         <disp-x03-panel
           :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
-          :disp-dataset="dispDataset"
           :disp-opt="{ layout:'vertical', showBadges:false }"
           :panel-item="activePanel"
           :show-header="true" />
@@ -786,8 +802,8 @@ window.DpDispAreaDtl = {
   <!-- 패널 선택 팝업 -->
   <panel-pick-modal v-if="pickOpen"
     :title="'전시패널 추가 [' + form.codeValue + ']'"
-    :displays="dispDataset.displays || []"
-    :areas="(dispDataset.codes||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :displays="[] || []"
+    :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"
     :exclude-area="form.codeValue"
     @close="closePick"
     @pick="onPanelPicked" />

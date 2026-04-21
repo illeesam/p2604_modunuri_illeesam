@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 사이트관리 상세/등록 */
 window.SySiteDtl = {
   name: 'SySiteDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const sites = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/site/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        sites.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SySite 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted, ref } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
 
@@ -26,10 +45,10 @@ window.SySiteDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const s = props.adminData.sites.find(x => x.siteId === props.editId);
+        const s = sites.value.find(x => x.siteId === props.editId);
         if (s) Object.assign(form, { ...s });
       } else {
-        const nextNum = props.adminData.nextId(props.adminData.sites, 'siteId');
+        const nextNum = nextId.value(sites.value, 'siteId');
         form.siteCode = 'ST' + String(nextNum).padStart(4, '0');
       }
     });
@@ -64,10 +83,10 @@ window.SySiteDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.sites.push({ ...form, siteId: props.adminData.nextId(props.adminData.sites, 'siteId'), regDate: new Date().toISOString().slice(0, 10) });
+        sites.value.push({ ...form, siteId: nextId.value(sites.value, 'siteId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = props.adminData.sites.findIndex(x => x.siteId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.sites[idx], { ...form });
+        const idx = sites.value.findIndex(x => x.siteId === props.editId);
+        if (idx !== -1) Object.assign(sites.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`sites/${form.siteId}`, { ...form }) : window.adminApi.put(`sites/${form.siteId}`, { ...form }));
@@ -81,7 +100,7 @@ window.SySiteDtl = {
       }
     };
 
-    return { isNew, form, errors, save, SITE_TYPES, addrDetailRef, openKakaoPostcode };
+    return { sites, loading, error, isNew, form, errors, save, SITE_TYPES, addrDetailRef, openKakaoPostcode };
   },
   template: /* html */`
 <div>

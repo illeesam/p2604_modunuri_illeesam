@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 알림관리 상세/등록 */
 window.SyAlarmDtl = {
   name: 'SyAlarmDtl',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  setup(props) {    const alarms = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/alarm/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        alarms.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyAlarm 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -19,7 +38,7 @@ window.SyAlarmDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const a = props.adminData.alarms.find(x => x.alarmId === props.editId);
+        const a = alarms.value.find(x => x.alarmId === props.editId);
         if (a) Object.assign(form, { ...a });
       }
     });
@@ -36,10 +55,10 @@ window.SyAlarmDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        props.adminData.alarms.unshift({ ...form, alarmId: props.adminData.nextId(props.adminData.alarms, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
+        alarms.value.unshift({ ...form, alarmId: nextId.value(alarms.value, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = props.adminData.alarms.findIndex(x => x.alarmId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.alarms[idx], { ...form });
+        const idx = alarms.value.findIndex(x => x.alarmId === props.editId);
+        if (idx !== -1) Object.assign(alarms.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/sy/alarm/${form.alarmId}`, { ...form }) : window.adminApi.put(`/bo/sy/alarm/${form.alarmId}`, { ...form }));
@@ -53,7 +72,7 @@ window.SyAlarmDtl = {
       }
     };
 
-    return { isNew, form, errors, save, siteNm };
+    return { alarms, loading, error, isNew, form, errors, save, siteNm };
   },
   template: /* html */`
 <div>

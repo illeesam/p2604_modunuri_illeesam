@@ -2,8 +2,27 @@
 window._pdProdDtlState = window._pdProdDtlState || { tab: 'info', viewMode: 'tab' };
 window.PdProdDtl = {
   name: 'PdProdDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const products = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/prod/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        products.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdProd 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick, watch } = Vue;
     const isNew = computed(() => !props.editId);
     const topTab = ref(window._pdProdDtlState.tab || 'info');
@@ -43,19 +62,19 @@ window.PdProdDtl = {
     let _optSeq = 1, _itemSeq = 100;
     const optGroups = reactive([]); // [{_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}]
     const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
-    // ── 옵션 공통코드 (adminData.codes 기반 — OPT_TYPE 2레벨 트리)
+    // ── 옵션 공통코드 ([] 기반 — OPT_TYPE 2레벨 트리)
     const prodOptCategoryTypeCd = ref(''); // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
     const optTypeLevel1Codes = computed(() =>
-      (props.adminData.codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && !c.parentCodeValue && c.codeValue!=='NONE')
+      (codes.value||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && !c.parentCodeValue && c.codeValue!=='NONE')
         .sort((a,b) => a.sortOrd - b.sortOrd)
     );
     const optTypeCodes = computed(() => {
       if (!prodOptCategoryTypeCd.value) return [];
-      return (props.adminData.codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===prodOptCategoryTypeCd.value)
+      return (codes.value||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===prodOptCategoryTypeCd.value)
         .sort((a,b) => a.sortOrd - b.sortOrd);
     });
-    const optInputTypeCodes = computed(() => (props.adminData.codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
-    const getOptValCodes    = (typeCd) => (props.adminData.codes||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
+    const optInputTypeCodes = computed(() => (codes.value||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
+    const getOptValCodes    = (typeCd) => (codes.value||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
 
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; prodOptCategoryTypeCd.value = ''; };
 
@@ -247,7 +266,7 @@ window.PdProdDtl = {
     const prodPickerSearch = ref('');
     const prodPickerList   = computed(() => {
       const q    = prodPickerSearch.value.trim().toLowerCase();
-      const all  = props.adminData.products || [];
+      const all  = products.value || [];
       const used = (prodPickerOpen.value === 'rel' ? relProds : codeProds).map(r => r.productId);
       return all.filter(p => {
         if (used.includes(p.productId)) return false;
@@ -293,7 +312,7 @@ window.PdProdDtl = {
     const catPickerList = computed(() => {
       const q = catPickerSearch.value.trim().toLowerCase();
       const already = new Set(prodCategories.map(c => String(c.categoryId)));
-      return (props.adminData.categories||[])
+      return (categories.value||[])
         .filter(c => {
           if (already.has(String(c.categoryId||c.id))) return false;
           if (!q) return true;
@@ -302,11 +321,11 @@ window.PdProdDtl = {
         .sort((a,b) => (a.depth||a.level||1) - (b.depth||b.level||1));
     });
     const getCategoryNm = (id) => {
-      const c = (props.adminData.categories||[]).find(x => String(x.categoryId||x.id) === String(id));
+      const c = (categories.value||[]).find(x => String(x.categoryId||x.id) === String(id));
       return c ? (c.categoryNm||c.nm||String(id)) : String(id);
     };
     const getCategoryDepth = (id) => {
-      const c = (props.adminData.categories||[]).find(x => String(x.categoryId||x.id) === String(id));
+      const c = (categories.value||[]).find(x => String(x.categoryId||x.id) === String(id));
       return c ? (c.depth||c.level||1) : 1;
     };
     const addCategory = (cat) => {
@@ -341,7 +360,7 @@ window.PdProdDtl = {
     // ── 담당MD 모달
     const mdModalOpen = ref(false);
     const mdSearch    = ref('');
-    const mdUserList  = computed(() => (props.adminData.adminUsers||[]).filter(u => u.status==='활성'));
+    const mdUserList  = computed(() => (adminUsers.value||[]).filter(u => u.status==='활성'));
     const mdUserListFiltered = computed(() => {
       const q = mdSearch.value.trim().toLowerCase();
       if (!q) return mdUserList.value;
@@ -360,7 +379,7 @@ window.PdProdDtl = {
         form.mdUserId = mdUserList.value[0]?.adminUserId || '';
       }
       if (!isNew.value) {
-        const p = props.adminData.getProduct(props.editId);
+        const p = getProduct.value(props.editId);
         if (p) {
           form.prodId         = p.productId || p.prodId;
           form.prodNm         = p.prodNm || '';
@@ -411,7 +430,7 @@ window.PdProdDtl = {
             relProds.splice(0, relProds.length, ...p.relProds.map(r => ({ ...r, _id: _relSeq++ })));
           } else if (p.relatedProductIds) {
             relProds.splice(0, relProds.length, ...p.relatedProductIds.split(',').map(s => s.trim()).filter(Boolean).map(id => {
-              const found = (props.adminData.products||[]).find(x => String(x.productId) === String(id));
+              const found = (products.value||[]).find(x => String(x.productId) === String(id));
               return found ? { _id: _relSeq++, productId: found.productId, prodNm: found.prodNm, category: found.category||'', price: found.price||0, stock: found.stock||0, status: found.status||'' }
                            : { _id: _relSeq++, productId: Number(id), prodNm: '(ID:'+id+')', category: '', price: 0, stock: 0, status: '' };
             }));
@@ -419,7 +438,7 @@ window.PdProdDtl = {
           if (p.codeProds?.length) codeProds.splice(0, codeProds.length, ...p.codeProds.map(r => ({ ...r, _id: _relSeq++ })));
           // 카테고리 N개 로드 (pd_category_prod)
           const pid = String(p.productId || p.prodId);
-          const linked = (props.adminData.categoryProds||[])
+          const linked = (categoryProds.value||[])
             .filter(cp => String(cp.prodId) === pid)
             .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
           prodCategories.splice(0, prodCategories.length, ...linked.map(cp => ({
@@ -468,18 +487,18 @@ window.PdProdDtl = {
       if (!ok) return;
       let savedProdId;
       if (isNew.value) {
-        savedProdId = props.adminData.nextId(props.adminData.products, 'productId');
-        props.adminData.products.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
+        savedProdId = nextId.value(products.value, 'productId');
+        products.value.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
       } else {
         savedProdId = props.editId;
-        const idx = props.adminData.products.findIndex(x => x.productId == props.editId);
-        if (idx !== -1) Object.assign(props.adminData.products[idx], { ...form, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
+        const idx = products.value.findIndex(x => x.productId == props.editId);
+        if (idx !== -1) Object.assign(products.value[idx], { ...form, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
       }
       // categoryProds 동기화
-      if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
-      props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(savedProdId));
+      if (!categoryProds.value) categoryProds.value = [];
+      categoryProds.value = categoryProds.value.filter(cp => String(cp.prodId) !== String(savedProdId));
       prodCategories.forEach((cat, i) => {
-        props.adminData.categoryProds.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
+        categoryProds.value.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.adminApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
@@ -493,8 +512,7 @@ window.PdProdDtl = {
       }
     };
 
-    return {
-      isNew, topTab, viewMode2, showTab, form, errors, save,
+    return { products, loading, error, isNew, topTab, viewMode2, showTab, form, errors, save,
       mdModalOpen, mdSearch, mdUserList, mdUserListFiltered, mdSelectedNm, openMdModal, selectMdUser,
       useOpt, clearOpt, optGroups, skus, totalStock, generateSkus,
       skuFilter1, skuFilter2, skuFilterStock, skuFilter1Options, skuFilter2Options, skusFiltered,
@@ -586,7 +604,7 @@ window.PdProdDtl = {
         <label class="form-label">브랜드</label>
         <select class="form-control" v-model="form.brandId">
           <option value="">-- 선택 --</option>
-          <option v-for="b in (adminData.brands||[])" :key="b.brandId||b.id" :value="b.brandId||b.id">{{ b.brandNm||b.name }}</option>
+          <option v-for="b in ([]||[])" :key="b.brandId||b.id" :value="b.brandId||b.id">{{ b.brandNm||b.name }}</option>
         </select>
       </div>
     </div>
@@ -622,7 +640,7 @@ window.PdProdDtl = {
         <label class="form-label">업체</label>
         <select class="form-control" v-model="form.vendorId">
           <option value="">-- 선택 --</option>
-          <option v-for="v in (adminData.vendors||[])" :key="v.vendorId||v.id" :value="v.vendorId||v.id">{{ v.vendorNm||v.name }}</option>
+          <option v-for="v in ([]||[])" :key="v.vendorId||v.id" :value="v.vendorId||v.id">{{ v.vendorNm||v.name }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -650,7 +668,7 @@ window.PdProdDtl = {
         <label class="form-label">배송템플릿 (dliv_tmplt_id)</label>
         <select class="form-control" v-model="form.dlvTmpltId">
           <option value="">-- 선택 --</option>
-          <option v-for="t in (adminData.dlivTmplts||[])" :key="t.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
+          <option v-for="t in ([]||[])" :key="t.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
         </select>
       </div>
     </div>
@@ -1643,7 +1661,7 @@ window.PdProdDtl = {
 
   <!-- 이력 -->
   <div v-if="!isNew" style="margin-top:20px;">
-    <pd-prod-hist :prod-id="editId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
+    <pd-prod-hist :prod-id="editId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
 </div>
 `

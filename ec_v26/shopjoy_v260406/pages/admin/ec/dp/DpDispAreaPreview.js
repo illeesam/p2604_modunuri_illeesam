@@ -136,7 +136,7 @@ const _WP_DispAreaPreview2 = {
 /* ── 메인 컴포넌트 ── */
 window.DpDispAreaPreview = {
   name: 'DpDispAreaPreview',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -219,7 +219,7 @@ window.DpDispAreaPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (props.dispDataset.widgetLibs || []).filter(lib => {
+      return (widgetLibs.value || []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
@@ -238,7 +238,7 @@ window.DpDispAreaPreview = {
     /* ── 영역 트리: prefix > codeLabel > (codeValue codeLabel) ── */
     const tree = computed(() => {
       const map = {};
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA')
         .forEach(a => {
           const top = (a.codeValue || '').split('_')[0] || '(기타)';
@@ -822,13 +822,12 @@ window.DpDispAreaPreview = {
                   <!-- 위젯미리보기 -->
                   <disp-x02-area v-if="slot.areaCode"
                     :params="{ date: previewDate, time: previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                    :disp-dataset="dispDataset"
                     :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
                     :area-item="{
                       code: slot.areaCode,
                       label: slot.areaLabel,
-                      info: (dispDataset.codes||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===slot.areaCode) || {},
-                      panels: (dispDataset.displays||[]).filter(p => p.area===slot.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))
+                      info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===slot.areaCode) || {},
+                      panels: ([]||[]).filter(p => p.area===slot.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))
                     }" />
                   <widget-preview v-else :lib="slot" />
                 </template>
@@ -893,13 +892,12 @@ window.DpDispAreaPreview = {
             <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
               <disp-x02-area v-if="item.lib.areaCode"
                 :params="{ date: previewDate, time: previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                :disp-dataset="dispDataset"
                 :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
                 :area-item="{
                   code: item.lib.areaCode,
                   label: item.lib.areaLabel,
-                  info: (dispDataset.codes||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===item.lib.areaCode) || {},
-                  panels: (dispDataset.displays||[]).filter(p => p.area===item.lib.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))
+                  info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===item.lib.areaCode) || {},
+                  panels: ([]||[]).filter(p => p.area===item.lib.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))
                 }" />
               <widget-preview v-else :lib="item.lib" />
             </div>

@@ -63,8 +63,27 @@
   window._mbCustInfoState = window._mbCustInfoState || { tab: 'orders', viewMode: '3col' };
   window.MbCustInfoMng = {
     name: 'MbCustInfoMng',
-    props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-    setup(props) {
+    props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+    setup(props) {    const custInfos = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/mb/cust-info/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        custInfos.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('MbCustInfo 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
       /* ── 검색 상태 ── */
       const searchMode   = ref('member');
       const searchInput  = ref('');
@@ -97,45 +116,45 @@
       /* ── 파생 데이터 (computed) ── */
       const custOrders = computed(() =>
         !customer.value ? [] : filtered(
-          props.adminData.orders.filter(o => o.userId === customer.value.userId), 'orderDate')
+          orders.value.filter(o => o.userId === customer.value.userId), 'orderDate')
       );
       const custClaims = computed(() =>
         !customer.value ? [] : filtered(
-          props.adminData.claims.filter(c => c.userId === customer.value.userId), 'requestDate')
+          claims.value.filter(c => c.userId === customer.value.userId), 'requestDate')
       );
       const custDeliveries = computed(() =>
         !customer.value ? [] : filtered(
-          props.adminData.deliveries.filter(d => d.userId === customer.value.userId), 'regDate')
+          deliveries.value.filter(d => d.userId === customer.value.userId), 'regDate')
       );
       const custCache = computed(() =>
         !customer.value ? [] : filtered(
-          props.adminData.cacheList.filter(c => c.userId === customer.value.userId), 'date')
+          cacheList.value.filter(c => c.userId === customer.value.userId), 'date')
       );
       const custContacts = computed(() =>
         !customer.value ? [] : filtered(
-          props.adminData.contacts.filter(c => c.userId === customer.value.userId), 'date')
+          contacts.value.filter(c => c.userId === customer.value.userId), 'date')
       );
       const custChats = computed(() =>
         !customer.value ? [] : filtered(
-          props.adminData.chats.filter(c => c.userId === customer.value.userId), 'date')
+          chats.value.filter(c => c.userId === customer.value.userId), 'date')
       );
       const custLoginHist = computed(() =>
         !customer.value ? [] : filtered(
-          (props.adminData.loginHistory || []).filter(l => l.userId === customer.value.userId), 'loginDate')
+          (loginHistory.value || []).filter(l => l.userId === customer.value.userId), 'loginDate')
       );
       const custCouponUsage = computed(() =>
         !customer.value ? [] : filtered(
-          (props.adminData.couponUsage || []).filter(u => u.userId === customer.value.userId), 'usedDate')
+          (couponUsage.value || []).filter(u => u.userId === customer.value.userId), 'usedDate')
       );
       const custSendHist = computed(() =>
         !customer.value ? [] : filtered(
-          (props.adminData.sendHistory || []).filter(s => s.userId === customer.value.userId), 'sendDate')
+          (sendHistory.value || []).filter(s => s.userId === customer.value.userId), 'sendDate')
       );
 
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */
       const custCacheBalance = computed(() => {
         if (!customer.value) return 0;
-        const all = props.adminData.cacheList.filter(c => c.userId === customer.value.userId);
+        const all = cacheList.value.filter(c => c.userId === customer.value.userId);
         if (!all.length) return 0;
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
@@ -143,15 +162,15 @@
       /* ── 고객선택 모달 ── */
       const openMemberModal = () => {
         memberModal.keyword = '';
-        memberModal.list = [...props.adminData.members];
+        memberModal.list = [...members.value];
         memberModal.show = true;
       };
       const searchMemberModal = () => {
         const kw = memberModal.keyword.trim().toLowerCase();
         memberModal.list = kw
-          ? props.adminData.members.filter(m =>
+          ? members.value.filter(m =>
               m.memberNm.includes(kw) || m.email.toLowerCase().includes(kw) || (m.phone || '').includes(kw))
-          : [...props.adminData.members];
+          : [...members.value];
       };
       const selectMember = (m) => {
         customer.value = m;
@@ -165,15 +184,15 @@
         const kw = searchInput.value.trim();
         if (!kw) { props.showToast('검색어를 입력하세요.', 'error'); return; }
         if (searchMode.value === 'order') {
-          const order = props.adminData.orders.find(o => o.orderId === kw);
+          const order = orders.value.find(o => o.orderId === kw);
           if (!order) { props.showToast('해당 주문을 찾을 수 없습니다.', 'error'); return; }
-          const mem = props.adminData.members.find(m => m.userId === order.userId);
+          const mem = members.value.find(m => m.userId === order.userId);
           if (!mem) { props.showToast('주문의 회원 정보를 찾을 수 없습니다.', 'error'); return; }
           customer.value = mem; searchInput.value = '';
         } else if (searchMode.value === 'claim') {
-          const claim = props.adminData.claims.find(c => c.claimId === kw);
+          const claim = claims.value.find(c => c.claimId === kw);
           if (!claim) { props.showToast('해당 클레임을 찾을 수 없습니다.', 'error'); return; }
-          const mem = props.adminData.members.find(m => m.userId === claim.userId);
+          const mem = members.value.find(m => m.userId === claim.userId);
           if (!mem) { props.showToast('클레임의 회원 정보를 찾을 수 없습니다.', 'error'); return; }
           customer.value = mem; searchInput.value = '';
         }
@@ -188,8 +207,7 @@
       watch(viewMode2, v => { window._mbCustInfoState.viewMode = v; });
       const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
 
-      return {
-        searchMode, searchInput, SEARCH_MODES, memberModal,
+      return { custInfos, loading, error, searchMode, searchInput, SEARCH_MODES, memberModal,
         period, customFrom, customTo, PERIOD_OPTS, dateFrom, dateTo,
         customer,
         custOrders, custClaims, custDeliveries, custCache, custCacheBalance,

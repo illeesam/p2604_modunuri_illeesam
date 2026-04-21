@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 공통 참조 모달 (회원/상품/주문/클레임/쿠폰) */
 window.AdminRefModal = {
   name: 'AdminRefModal',
-  props: ['state', 'adminData'],
+  props: ['state'],
   emits: ['close'],
   setup(props, { emit }) {
     const { computed } = Vue;
@@ -12,23 +12,23 @@ window.AdminRefModal = {
     /* ── 각 타입별 데이터 ── */
     const memberData = computed(() => {
       if (s.type !== 'member' || !s.id) return null;
-      return props.adminData.getMember(s.id);
+      return getMember.value(s.id);
     });
     const productData = computed(() => {
       if (s.type !== 'product' || !s.id) return null;
-      return props.adminData.getProduct(s.id);
+      return getProduct.value(s.id);
     });
     const orderData = computed(() => {
       if (s.type !== 'order' || !s.id) return null;
-      return props.adminData.getOrder(s.id);
+      return getOrder.value(s.id);
     });
     const claimData = computed(() => {
       if (s.type !== 'claim' || !s.id) return null;
-      return props.adminData.getClaim(s.id);
+      return getClaim.value(s.id);
     });
     const couponData = computed(() => {
       if (s.type !== 'coupon' || !s.id) return null;
-      return props.adminData.getCoupon(s.id);
+      return getCoupon.value(s.id);
     });
 
     const badgeCls = (status) => {

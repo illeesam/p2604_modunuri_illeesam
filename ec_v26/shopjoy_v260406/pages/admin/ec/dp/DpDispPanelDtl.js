@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 전시관리 상세/등록 */
 window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const panels = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/dp/panel/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        panels.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('DpDispPanel 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -182,7 +201,7 @@ window.DpDispPanelDtl = {
     ];
 
     const AREAS = computed(() =>
-      (props.dispDataset.codes || [])
+      (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -353,7 +372,7 @@ window.DpDispPanelDtl = {
     const relatedEvent = computed(() => {
       const eid = activeRow.value?.eventId;
       if (!eid) return null;
-      return (props.dispDataset.events || []).find(e => String(e.eventId) === String(eid)) || null;
+      return (events.value || []).find(e => String(e.eventId) === String(eid)) || null;
     });
 
     /* ── Quill 에디터 ── */
@@ -422,7 +441,7 @@ window.DpDispPanelDtl = {
       await nextTick();
       /* 기존 데이터 로드 */
       if (!isNew.value) {
-        const d = props.dispDataset.displays.find(x => x.dispId === props.editId);
+        const d = displays.value.find(x => x.dispId === props.editId);
         if (d) {
           form.dispId        = d.dispId;
           form.dispCode      = d.dispCode      || '';
@@ -491,12 +510,12 @@ window.DpDispPanelDtl = {
       if (!ok) return;
       const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(rows[0].sortOrder) };
       if (isNewPanel) {
-        payload.dispId  = props.dispDataset.nextId(props.dispDataset.displays, 'dispId');
+        payload.dispId  = nextId.value(displays.value, 'dispId');
         payload.regDate = new Date().toISOString().slice(0, 10);
-        props.dispDataset.displays.push(payload);
+        displays.value.push(payload);
       } else {
-        const idx = props.dispDataset.displays.findIndex(x => x.dispId === props.editId);
-        if (idx !== -1) Object.assign(props.dispDataset.displays[idx], payload);
+        const idx = displays.value.findIndex(x => x.dispId === props.editId);
+        if (idx !== -1) Object.assign(displays.value[idx], payload);
       }
       try {
         const res = await (isNewPanel ? window.adminApi.post(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.adminApi.put(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));
@@ -523,7 +542,7 @@ window.DpDispPanelDtl = {
     const openCardPreview = () => { cardPreview.show = true; };
     const closeCardPreview = () => { cardPreview.show = false; };
     const currentAreaLabel = computed(() => {
-      const found = (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
+      const found = (codes.value || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
     const wLabel = (t) => WIDGET_TYPES.find(w => w.value === t)?.label || t || '-';
@@ -560,7 +579,7 @@ window.DpDispPanelDtl = {
       if (wt === 'widget_embed')   return [{ key:'embedCode', label:'임베드 코드', type:'code', ph:'<iframe ...></iframe>' }];
       return [];
     };
-    const getRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (props.dispDataset.events || []).find(e => String(e.eventId) === String(eid)) || null; };
+    const getRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (events.value || []).find(e => String(e.eventId) === String(eid)) || null; };
     const getFileListItems = (r) => { try { return JSON.parse(r?.fileListJson || '[]'); } catch { return []; } };
     const addFileItemAt    = (r) => { r.fileListJson = JSON.stringify([...getFileListItems(r), { name: '', url: '' }]); };
     const removeFileItemAt = (r, idx) => { r.fileListJson = JSON.stringify(getFileListItems(r).filter((_, i) => i !== idx)); };
@@ -686,8 +705,7 @@ window.DpDispPanelDtl = {
       }
     };
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { panels, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       libPickOpen, libPickMode, openLibPick, onLibPicked,
       rowCopyOpen, onRowCopy,
       visibilityOptions, hasVisibility, toggleVisibility,
@@ -981,9 +999,8 @@ window.DpDispPanelDtl = {
                 <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
                 <disp-x04-widget
                   :params="{ }"
-                  :disp-dataset="dispDataset"
                   :disp-opt="{ showBadges: true }"
-                  :widget-item="(dispDataset.widgetLibs||[]).find(l => l.libId===activeRow.refLibId) || {}" />
+                  :widget-item="([]||[]).find(l => l.libId===activeRow.refLibId) || {}" />
               </div>
             </div>
 
@@ -1327,7 +1344,6 @@ window.DpDispPanelDtl = {
           <template v-if="tab==='info'">
             <disp-x03-panel
               :params="{ }"
-              :disp-dataset="dispDataset"
               :disp-opt="{ layout:'vertical', showBadges:true }"
               :panel-item="{...form, rows: rows, status:'활성', condition: form.condition||'항상 표시'}"
               :show-header="true"
@@ -1337,7 +1353,6 @@ window.DpDispPanelDtl = {
           <template v-else-if="activeRow">
             <disp-x04-widget
               :params="{ }"
-              :disp-dataset="dispDataset"
               :disp-opt="{ showBadges: true }"
               :widget-item="{...activeRow, widgetNm: activeRow.widgetNm||(TAB_LABELS.find(t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
             />
@@ -1641,7 +1656,7 @@ window.DpDispPanelDtl = {
     mode="single"
     :tab-label="preview.tabLabel"
     :area="form.area"
-    :widgets="dispDataset.displays"
+    :widgets="[]"
     :widget="previewWidget"
     @close="closePreview"
   />
@@ -1688,15 +1703,15 @@ window.DpDispPanelDtl = {
 
   <!-- 전시위젯Lib 선택 팝업 -->
   <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
-    :widget-libs="dispDataset.widgetLibs || []"
+    :widget-libs="[] || []"
     @close="libPickOpen=false"
     @pick="onLibPicked" />
 
   <!-- 전시항목 복사 팝업 -->
   <row-pick-modal v-if="rowCopyOpen"
     :title="'전시항목 복사 [' + (form.name || '현재 패널') + ']'"
-    :displays="dispDataset.displays || []"
-    :areas="(dispDataset.codes||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :displays="[] || []"
+    :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"
     :exclude-panel-id="form.dispId"
     @close="rowCopyOpen=false"
     @pick-multi="onRowCopy" />

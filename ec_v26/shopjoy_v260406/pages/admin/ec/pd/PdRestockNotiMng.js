@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 재입고알림관리 */
 window.PdRestockNotiMng = {
   name: 'PdRestockNotiMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const restockNotis = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/restock-noti/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        restockNotis.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdRestockNoti 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchProd = ref('');
     const searchNoti = ref('');
@@ -11,12 +30,12 @@ window.PdRestockNotiMng = {
     const pager      = reactive({ page: 1, size: 20 });
     const checkedIds = reactive(new Set());
 
-    const getProdNm = id => { const p = (props.adminData.products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
-    const getMemNm  = id => { const m = (props.adminData.members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
+    const getProdNm = id => { const p = (products.value||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
+    const getMemNm  = id => { const m = (members.value||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
 
     const filtered = computed(() => {
       const kw = applied.prod.toLowerCase();
-      return (props.adminData.restockNotis || []).filter(r => {
+      return (restockNotis.value || []).filter(r => {
         if (kw && !getProdNm(r.prodId).toLowerCase().includes(kw)) return false;
         if (applied.noti && r.notiYn !== applied.noti) return false;
         return true;
@@ -33,7 +52,7 @@ window.PdRestockNotiMng = {
     const checkedCount  = computed(() => checkedIds.size);
 
     const sendNoti = async () => {
-      const targets = (props.adminData.restockNotis||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
+      const targets = (restockNotis.value||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
       if (!targets.length) { props.showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
       const ok = await props.showConfirm('알림발송', `선택한 ${targets.length}건에 재입고 알림을 발송하시겠습니까?`);
       if (!ok) return;
@@ -54,7 +73,7 @@ window.PdRestockNotiMng = {
     const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { searchProd, searchNoti, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
+    return { restockNotis, loading, error, searchProd, searchNoti, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, sendNoti, ynBadge, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `

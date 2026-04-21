@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 판촉마일리지 관리 목록 + 하단 PmSaveDtl 임베드 */
 window.PmSaveMng = {
   name: 'PmSaveMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const saves = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/save/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        saves.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmSave 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PmSaveMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => props.adminData.saveList || []);
+    const list = computed(() => saveList.value || []);
     const filtered = computed(() => list.value.filter(s => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(s.saveNm || '').toLowerCase().includes(kw) && !String(s.saveId || '').includes(kw)) return false;
@@ -74,8 +93,8 @@ window.PmSaveMng = {
     const doDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (props.adminData.saveList || []).findIndex(x => x.saveId === s.saveId);
-      if (idx !== -1) props.adminData.saveList.splice(idx, 1);
+      const idx = (saveList.value || []).findIndex(x => x.saveId === s.saveId);
+      if (idx !== -1) saveList.value.splice(idx, 1);
       if (selectedId.value === s.saveId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`save/${s.saveId}`);
@@ -92,7 +111,7 @@ window.PmSaveMng = {
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { saves, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -197,9 +216,7 @@ window.PmSaveMng = {
     </div>
     <pm-save-dtl
       :key="detailKey"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

@@ -2,8 +2,27 @@
 window._pmDiscntDtlState = window._pmDiscntDtlState || { tab: 'info', viewMode: 'tab' };
 window.PmDiscntDtl = {
   name: 'PmDiscntDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const discounts = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/discnt/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        discounts.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmDiscnt 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmDiscntDtlState.tab || 'info');
@@ -33,7 +52,7 @@ window.PmDiscntDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const d = (props.adminData.discntList || []).find(x => x.discntId === props.editId);
+        const d = (discntList.value || []).find(x => x.discntId === props.editId);
         if (d) Object.assign(form, d);
       }
     });
@@ -58,16 +77,16 @@ window.PmDiscntDtl = {
       }
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!props.adminData.discntList) props.adminData.discntList = [];
+      if (!discntList.value) discntList.value = [];
       if (isNew.value) {
-        props.adminData.discntList.push({
+        discntList.value.push({
           ...form,
           discntId: Date.now(),
           regDate: new Date().toISOString().slice(0, 10),
         });
       } else {
-        const idx = props.adminData.discntList.findIndex(x => x.discntId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.discntList[idx], { ...form });
+        const idx = discntList.value.findIndex(x => x.discntId === props.editId);
+        if (idx !== -1) Object.assign(discntList.value[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.adminApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }) : window.adminApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }));
@@ -84,7 +103,7 @@ window.PmDiscntDtl = {
     const showVendorModal = ref(false);
     const selectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = props.adminData.vendors.find(x => x.vendorId === form.vendorId);
+      const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {
@@ -92,7 +111,7 @@ window.PmDiscntDtl = {
       showVendorModal.value = false;
     };
 
-    return { isNew, tab, form, errors, showTab, viewMode2, save, visibilityOptions, hasVisibility, toggleVisibility, showVendorModal, selectedVendorNm, selectVendor };
+    return { discounts, loading, error, isNew, tab, form, errors, showTab, viewMode2, save, visibilityOptions, hasVisibility, toggleVisibility, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -160,14 +179,14 @@ window.PmDiscntDtl = {
             <span class="modal-close" @click="showVendorModal=false">×</span>
           </div>
           <div style="padding:0;max-height:400px;overflow-y:auto;">
-            <div v-for="v in (adminData.vendors || [])" :key="v.vendorId"
+            <div v-for="v in ([] || [])" :key="v.vendorId"
               style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"
               :style="form.vendorId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}"
               @click="selectVendor(v.vendorId, v.vendorNm)">
               <span style="font-weight:500;">{{ v.vendorNm }}</span>
               <span v-if="form.vendorId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
             </div>
-            <div v-if="!adminData.vendors || adminData.vendors.length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
+            <div v-if="![] || [].length===0" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
               판매업체가 없습니다.
             </div>
           </div>

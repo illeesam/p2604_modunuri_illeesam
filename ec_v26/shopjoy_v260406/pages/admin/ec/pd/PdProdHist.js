@@ -2,8 +2,27 @@
 window._ecProdHistState = window._ecProdHistState || { tab: 'orders', viewMode: 'tab' };
 window.PdProdHist = {
   name: 'PdProdHist',
-  props: ['navigate', 'adminData', 'showRefModal', 'prodId'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'prodId'],
+  setup(props) {    const products = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/prod/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        products.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdProd 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { ref, computed, onMounted } = Vue;
     const botTab = ref(window._ecProdHistState.tab || 'orders');
     Vue.watch(botTab, v => { window._ecProdHistState.tab = v; });
@@ -17,7 +36,7 @@ window.PdProdHist = {
     const priceHistory  = reactive([]);
 
     onMounted(() => {
-      const p = props.adminData.getProduct(props.prodId);
+      const p = getProduct.value(props.prodId);
       if (p) {
         stockHistory.splice(0, stockHistory.length,
           { date: p.regDate || '2026-01-01', type: '입고', qty: p.stock, balance: p.stock, memo: '초기 입고' },
@@ -35,12 +54,12 @@ window.PdProdHist = {
     });
 
     const relatedOrders = computed(() => {
-      const p = props.adminData.getProduct(props.prodId);
+      const p = getProduct.value(props.prodId);
       if (!p) return [];
-      return props.adminData.orders.filter(o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
+      return orders.value.filter(o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
-    return { botTab, stockHistory, statusHistory, changeHistory, priceHistory, relatedOrders, viewMode2, showTab };
+    return { products, loading, error, botTab, stockHistory, statusHistory, changeHistory, priceHistory, relatedOrders, viewMode2, showTab };
   },
   template: /* html */`
 <div>

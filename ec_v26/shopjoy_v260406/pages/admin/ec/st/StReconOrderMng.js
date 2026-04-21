@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 주문-정산 대사 */
 window.StReconOrderMng = {
   name: 'StReconOrderMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -15,8 +15,8 @@ window.StReconOrderMng = {
     };
     (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const orders  = computed(() => props.adminData.orders  || []);
-    const vendors = computed(() => props.adminData.vendors || []);
+    const orders  = computed(() => orders.value  || []);
+    const vendors = computed(() => vendors.value || []);
 
     const searchKw   = ref('');
     const searchDiff = ref('');

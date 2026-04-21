@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 기획전관리 목록 + 하단 PlanDtl 임베드 */
 window.PmPlanMng = {
   name: 'PmPlanMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const plans = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/plan/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        plans.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmPlan 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchCategory = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
@@ -45,7 +64,7 @@ window.PmPlanMng = {
 
     const applied = Vue.reactive({ kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => (props.adminData.plans || []).filter(p => {
+    const filtered = computed(() => (plans.value || []).filter(p => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !p.planNm.toLowerCase().includes(kw) && !(p.theme||'').toLowerCase().includes(kw)) return false;
       if (applied.category && p.category !== applied.category) return false;
@@ -88,8 +107,8 @@ window.PmPlanMng = {
     const doDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.planNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.plans.findIndex(x => x.planId === p.planId);
-      if (idx !== -1) props.adminData.plans.splice(idx, 1);
+      const idx = plans.value.findIndex(x => x.planId === p.planId);
+      if (idx !== -1) plans.value.splice(idx, 1);
       if (selectedId.value === p.planId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`plans/${p.planId}`);
@@ -104,7 +123,7 @@ window.PmPlanMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCategory, searchStatus, viewMode, pager, PAGE_SIZES, CATEGORIES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { plans, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCategory, searchStatus, viewMode, pager, PAGE_SIZES, CATEGORIES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -213,9 +232,7 @@ window.PmPlanMng = {
     </div>
     <pm-plan-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

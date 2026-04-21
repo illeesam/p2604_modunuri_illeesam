@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 카테고리관리 */
 window.PdCategoryMng = {
   name: 'PdCategoryMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
@@ -11,7 +11,7 @@ window.PdCategoryMng = {
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
     onMounted(() => {
       expandedSet.value = new Set(
-        (props.adminData.categories || []).filter(c => c.depth === 1).map(c => c.categoryId)
+        (categories.value || []).filter(c => c.depth === 1).map(c => c.categoryId)
       );
     });
     const isExpanded  = id => expandedSet.value.has(id);
@@ -20,7 +20,7 @@ window.PdCategoryMng = {
       if (s.has(id)) s.delete(id); else s.add(id);
       expandedSet.value = s;
     };
-    const expandAll  = () => { expandedSet.value = new Set(props.adminData.categories.map(c => c.categoryId)); };
+    const expandAll  = () => { expandedSet.value = new Set(categories.value.map(c => c.categoryId)); };
     const collapseAll = () => { expandedSet.value = new Set(); };
 
     /* ── 선택된 카테고리 (좌측 트리 클릭) ── */
@@ -33,7 +33,7 @@ window.PdCategoryMng = {
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
     const catTreeFlat = computed(() => {
       const _ = expandedSet.value; // reactive dependency
-      const cats = props.adminData.categories;
+      const cats = categories.value;
       const map = {};
       cats.forEach(c => { map[c.categoryId] = { ...c, _children: [] }; });
       cats.forEach(c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
@@ -87,7 +87,7 @@ window.PdCategoryMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      const filtered = props.adminData.categories.filter(c => {
+      const filtered = categories.value.filter(c => {
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !(c.categoryNm || '').toLowerCase().includes(kw)) return false;
         if (applied.depth  && String(c.depth) !== applied.depth) return false;
@@ -126,7 +126,7 @@ window.PdCategoryMng = {
 
     const calcDepth = parentId => {
       if (!parentId) return 1;
-      const p = props.adminData.categories.find(c => c.categoryId === parentId);
+      const p = categories.value.find(c => c.categoryId === parentId);
       return p ? (p.depth || 1) + 1 : 1;
     };
 
@@ -231,20 +231,20 @@ window.PdCategoryMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => {
-        const i = props.adminData.categories.findIndex(c => c.categoryId === r.categoryId);
-        if (i !== -1) props.adminData.categories.splice(i, 1);
+        const i = categories.value.findIndex(c => c.categoryId === r.categoryId);
+        if (i !== -1) categories.value.splice(i, 1);
       });
       uRows.forEach(r => {
-        const i = props.adminData.categories.findIndex(c => c.categoryId === r.categoryId);
-        if (i !== -1) Object.assign(props.adminData.categories[i], {
+        const i = categories.value.findIndex(c => c.categoryId === r.categoryId);
+        if (i !== -1) Object.assign(categories.value[i], {
           categoryNm: r.categoryNm, parentId: r.parentId || null,
           depth: calcDepth(r.parentId), sortOrd: Number(r.sortOrd) || 1,
           description: r.description, status: r.status,
         });
       });
-      let nextId = Math.max(0, ...props.adminData.categories.map(c => c.categoryId));
+      let nextId = Math.max(0, ...categories.value.map(c => c.categoryId));
       iRows.forEach(r => {
-        props.adminData.categories.push({
+        categories.value.push({
           categoryId: ++nextId, categoryNm: r.categoryNm,
           parentId: r.parentId || null, depth: calcDepth(r.parentId),
           sortOrd: Number(r.sortOrd) || 1, description: r.description,
@@ -260,7 +260,7 @@ window.PdCategoryMng = {
 
     const parentNm = parentId => {
       if (!parentId) return '';
-      const p = props.adminData.categories.find(c => c.categoryId === parentId);
+      const p = categories.value.find(c => c.categoryId === parentId);
       return p ? p.categoryNm : `ID:${parentId}`;
     };
 
@@ -268,7 +268,7 @@ window.PdCategoryMng = {
     const catPickerModal = reactive({ show: false, targetRow: null, search: '' });
     const catPickerList  = computed(() => {
       const q = catPickerModal.search.trim().toLowerCase();
-      return props.adminData.categories.filter(c =>
+      return categories.value.filter(c =>
         (!q || (c.categoryNm || '').toLowerCase().includes(q)) &&
         c.categoryId !== (catPickerModal.targetRow && catPickerModal.targetRow.categoryId)
       );
@@ -386,7 +386,7 @@ window.PdCategoryMng = {
         <span class="list-title">
           카테고리 목록
           <span v-if="selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
-            — {{ adminData.categories.find(c=>c.categoryId===selectedCatId)&&adminData.categories.find(c=>c.categoryId===selectedCatId).categoryNm }} 하위
+            — {{ [].find(c=>c.categoryId===selectedCatId)&&[].find(c=>c.categoryId===selectedCatId).categoryNm }} 하위
           </span>
           <span class="list-count">{{ total }}건</span>
         </span>

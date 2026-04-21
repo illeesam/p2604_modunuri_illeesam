@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 세트상품관리 (pd_prod_set_item) */
 window.PdSetMng = {
   name: 'PdSetMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const sets = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/set/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        sets.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdSet 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* ── 검색 ── */
@@ -30,7 +49,7 @@ window.PdSetMng = {
     const catPickerList   = computed(() => {
       const q    = catPickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlCategories.map(c => String(c.categoryId)));
-      return (props.adminData.categories || []).filter(c =>
+      return (categories.value || []).filter(c =>
         !used.has(String(c.categoryId)) && (!q || (c.categoryNm || '').toLowerCase().includes(q))
       );
     });
@@ -55,8 +74,8 @@ window.PdSetMng = {
       catPickerOpen.value = false; catPickerSearch.value = '';
     };
     const removeCategory = idx => dtlCategories.splice(idx, 1);
-    const getCategoryNm  = id => { const c = (props.adminData.categories||[]).find(c=>c.categoryId==id); return c ? c.categoryNm : String(id); };
-    const getCategoryDepth = id => { const c = (props.adminData.categories||[]).find(c=>c.categoryId==id); return c ? (c.depth||1) : 1; };
+    const getCategoryNm  = id => { const c = (categories.value||[]).find(c=>c.categoryId==id); return c ? c.categoryNm : String(id); };
+    const getCategoryDepth = id => { const c = (categories.value||[]).find(c=>c.categoryId==id); return c ? (c.depth||1) : 1; };
 
     /* ── 구성품 목록 ── */
     const dtlItems = reactive([]);
@@ -85,7 +104,7 @@ window.PdSetMng = {
     const pickerList   = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
-      return (props.adminData.products || []).filter(p => {
+      return (products.value || []).filter(p => {
         if (p.productId === editSetId.value) return false;
         if (used.has(p.productId)) return false;
         if (!q) return true;
@@ -94,21 +113,21 @@ window.PdSetMng = {
     });
 
     /* ── helpers ── */
-    const getProd   = id => id ? (props.adminData.products || []).find(p => p.productId === id) : null;
+    const getProd   = id => id ? (products.value || []).find(p => p.productId === id) : null;
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : id ? '상품#' + id : ''; };
-    const getBrandNm = id => { const b = (props.adminData.brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
+    const getBrandNm = id => { const b = (brands.value||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
 
     /* ── 세트상품 목록 ── */
     const setList = computed(() => {
       const kw = applied.nm.toLowerCase();
-      const ids = [...new Set((props.adminData.setItems || []).map(s => s.setProdId))];
+      const ids = [...new Set((setItems.value || []).map(s => s.setProdId))];
       return ids
         .map(id => {
-          const items = (props.adminData.setItems || [])
+          const items = (setItems.value || [])
             .filter(s => s.setProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod = getProd(id);
-          return { setProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
+          return { sets, loading, error, setProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
         })
         .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
     });
@@ -140,7 +159,7 @@ window.PdSetMng = {
     const openDtl = setProdId => {
       dtlMode.value = 'edit';
       editSetId.value = setProdId;
-      const src = (props.adminData.setItems || [])
+      const src = (setItems.value || [])
         .filter(s => s.setProdId === setProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       dtlItems.splice(0, dtlItems.length, ...src.map((s, i) => ({
@@ -156,7 +175,7 @@ window.PdSetMng = {
         useYn:     s.useYn || 'Y',
       })));
       const pid = String(setProdId);
-      const _catArr = (props.adminData.categoryProds || [])
+      const _catArr = (categoryProds.value || [])
         .filter(cp => String(cp.prodId) === pid)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(cp => ({ categoryId: cp.categoryId, categoryNm: getCategoryNm(cp.categoryId), depth: getCategoryDepth(cp.categoryId) }));
@@ -214,13 +233,13 @@ window.PdSetMng = {
       if (hasBlankNm) { props.showToast('구성품 표시명을 모두 입력해주세요.', 'error'); return; }
 
       const isNew     = dtlMode.value === 'new';
-      const newProdId = isNew ? (Math.max(0, ...(props.adminData.products || []).map(p => p.productId)) + 1) : null;
+      const newProdId = isNew ? (Math.max(0, ...(products.value || []).map(p => p.productId)) + 1) : null;
       const setProdId = isNew ? newProdId : editSetId.value;
 
       const ok = await props.showConfirm(isNew ? '등록' : '저장', isNew ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
       if (!ok) return;
       if (isNew) {
-        props.adminData.products.push({
+        products.value.push({
           productId: newProdId, prodNm: newForm.prodNm,
           brandId: newForm.brandId, vendorId: newForm.vendorId,
           listPrice: newForm.listPrice, salePrice: newForm.salePrice,
@@ -230,8 +249,8 @@ window.PdSetMng = {
           regDate: new Date().toISOString().slice(0, 10),
         });
       }
-      const others = (props.adminData.setItems || []).filter(s => s.setProdId !== setProdId);
-      props.adminData.setItems = [
+      const others = (setItems.value || []).filter(s => s.setProdId !== setProdId);
+      setItems.value = [
         ...others,
         ...dtlItems.map((d, i) => ({
           setItemId:       d.setItemId || `SI_${setProdId}_${i + 1}`,
@@ -247,10 +266,10 @@ window.PdSetMng = {
           useYn:           d.useYn,
         })),
       ];
-      if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
-      props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(setProdId));
+      if (!categoryProds.value) categoryProds.value = [];
+      categoryProds.value = categoryProds.value.filter(cp => String(cp.prodId) !== String(setProdId));
       dtlCategories.forEach((cat, i) => {
-        props.adminData.categoryProds.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
+        categoryProds.value.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
       });
       if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
       try {
@@ -268,7 +287,7 @@ window.PdSetMng = {
     const deleteProd = async setProdId => {
       const ok = await props.showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
-      props.adminData.setItems = (props.adminData.setItems || []).filter(s => s.setProdId !== setProdId);
+      setItems.value = (setItems.value || []).filter(s => s.setProdId !== setProdId);
       if (editSetId.value === setProdId) closeDtl();
       try {
         const res = await window.adminApi.delete(`/bo/ec/pd/prod-set/${setProdId}`);
@@ -469,7 +488,7 @@ window.PdSetMng = {
           <label class="form-label">브랜드</label>
           <select class="form-control" v-model="newForm.brandId">
             <option value="">선택</option>
-            <option v-for="b in (adminData.brands||[])" :key="b.brandId" :value="b.brandId">
+            <option v-for="b in ([]||[])" :key="b.brandId" :value="b.brandId">
               {{ b.brandNm || b.brandName }}
             </option>
           </select>
@@ -478,7 +497,7 @@ window.PdSetMng = {
           <label class="form-label">판매업체</label>
           <select class="form-control" v-model="newForm.vendorId">
             <option value="">선택</option>
-            <option v-for="v in (adminData.vendors||[])" :key="v.vendorId" :value="v.vendorId">
+            <option v-for="v in ([]||[])" :key="v.vendorId" :value="v.vendorId">
               {{ v.vendorNm || v.vendorName }}
             </option>
           </select>

@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 배치스케즐관리 (CRUD 그리드) */
 window.SyBatchMng = {
   name: 'SyBatchMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const batches = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/batch/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        batches.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBatch 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -31,7 +50,7 @@ window.SyBatchMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
 
     /* ── 검색 ── */
     const searchKw = ref('');
@@ -62,7 +81,7 @@ window.SyBatchMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      props.adminData.batches
+      batches.value
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !b.batchNm.toLowerCase().includes(kw) && !b.batchCode.toLowerCase().includes(kw)) return false;
@@ -165,10 +184,10 @@ window.SyBatchMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
 
-      dRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) props.adminData.batches.splice(i, 1); });
-      uRows.forEach(r => { const i = props.adminData.batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(props.adminData.batches[i], { batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
-      let nextId = Math.max(...props.adminData.batches.map(b => b.batchId), 0);
-      iRows.forEach(r => { props.adminData.batches.push({ batchId: ++nextId, batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
+      dRows.forEach(r => { const i = batches.value.findIndex(b => b.batchId === r.batchId); if (i !== -1) batches.value.splice(i, 1); });
+      uRows.forEach(r => { const i = batches.value.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(batches.value[i], { batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
+      let nextId = Math.max(...batches.value.map(b => b.batchId), 0);
+      iRows.forEach(r => { batches.value.push({ batchId: ++nextId, batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
 
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
@@ -182,7 +201,7 @@ window.SyBatchMng = {
     const runNow = async (row) => {
       const ok = await props.showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
       if (!ok) return;
-      const src = props.adminData.batches.find(x => x.batchId === row.batchId);
+      const src = batches.value.find(x => x.batchId === row.batchId);
       row.runStatus = '실행중';
       if (src) src.runStatus = '실행중';
       props.showToast('배치 실행을 시작했습니다.');
@@ -345,8 +364,7 @@ window.SyBatchMng = {
     Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { batches, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
       siteNm, searchKw, searchStatus, searchRunStatus, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
@@ -513,7 +531,7 @@ window.SyBatchMng = {
 
   <!-- ── 배치 실행이력 ── -->
   <div class="card" style="margin-top:4px;">
-    <sy-batch-hist :admin-data="adminData" />
+    <sy-batch-hist />
   </div>
 
   <!-- ── Cron 편집 모달 ── -->

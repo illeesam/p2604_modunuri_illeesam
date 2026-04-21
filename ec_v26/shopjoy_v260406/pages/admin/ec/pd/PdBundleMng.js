@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 묶음상품관리 (pd_prod_bundle_item) */
 window.PdBundleMng = {
   name: 'PdBundleMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const bundles = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/bundle/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bundles.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdBundle 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* ── 검색 ── */
@@ -30,7 +49,7 @@ window.PdBundleMng = {
     const catPickerList   = computed(() => {
       const q    = catPickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlCategories.map(c => String(c.categoryId)));
-      return (props.adminData.categories || []).filter(c =>
+      return (categories.value || []).filter(c =>
         !used.has(String(c.categoryId)) && (!q || (c.categoryNm || '').toLowerCase().includes(q))
       );
     });
@@ -60,11 +79,11 @@ window.PdBundleMng = {
     const removeCategory = idx => dtlCategories.splice(idx, 1);
 
     const getCategoryNm = id => {
-      const c = (props.adminData.categories || []).find(c => c.categoryId == id);
+      const c = (categories.value || []).find(c => c.categoryId == id);
       return c ? (c.categoryNm || c.cateNm || id) : String(id);
     };
     const getCategoryDepth = id => {
-      const c = (props.adminData.categories || []).find(c => c.categoryId == id);
+      const c = (categories.value || []).find(c => c.categoryId == id);
       return c ? (c.depth || 1) : 1;
     };
 
@@ -81,18 +100,18 @@ window.PdBundleMng = {
     const dragoverIdx = ref(null);
 
     /* ── helpers ── */
-    const getProd     = id => (props.adminData.products || []).find(p => p.productId === id);
+    const getProd     = id => (products.value || []).find(p => p.productId === id);
     const getProdNm   = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : '상품#' + id; };
     const getProdPrice = id => { const p = getProd(id); return p ? (p.salePrice || p.price || 0) : 0; };
 
     const getBrandNm = id => {
-      const b = (props.adminData.brands || []).find(b => b.brandId == id);
+      const b = (brands.value || []).find(b => b.brandId == id);
       return b ? (b.brandNm || b.brandName || id) : id;
     };
 
     /* ── 안분율 합계 ── */
     const rateSum = bundleProdId =>
-      (props.adminData.bundles || [])
+      (bundles.value || [])
         .filter(b => b.bundleProdId === bundleProdId)
         .reduce((s, b) => s + (b.priceRate || 0), 0);
     const rateSumBadge = id => Math.abs(rateSum(id) - 100) < 0.01 ? 'badge-green' : 'badge-red';
@@ -100,14 +119,14 @@ window.PdBundleMng = {
     /* ── 묶음상품 목록 ── */
     const bundleList = computed(() => {
       const kw = applied.nm.toLowerCase();
-      const ids = [...new Set((props.adminData.bundles || []).map(b => b.bundleProdId))];
+      const ids = [...new Set((bundles.value || []).map(b => b.bundleProdId))];
       return ids
         .map(id => {
-          const items = (props.adminData.bundles || [])
+          const items = (bundles.value || [])
             .filter(b => b.bundleProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod  = getProd(id);
-          return { bundleProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
+          return { bundles, loading, error, bundleProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
         })
         .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
     });
@@ -139,7 +158,7 @@ window.PdBundleMng = {
     const openDtl = bundleProdId => {
       dtlMode.value = 'edit';
       editBundleId.value = bundleProdId;
-      const src = (props.adminData.bundles || [])
+      const src = (bundles.value || [])
         .filter(b => b.bundleProdId === bundleProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       dtlItems.splice(0, dtlItems.length, ...src.map((b, i) => ({
@@ -150,7 +169,7 @@ window.PdBundleMng = {
       })));
       // 카테고리 로드
       const pid = String(bundleProdId);
-      const _cats = (props.adminData.categoryProds || [])
+      const _cats = (categoryProds.value || [])
         .filter(cp => String(cp.prodId) === pid)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(cp => ({ categoryId: cp.categoryId, categoryNm: getCategoryNm(cp.categoryId), depth: getCategoryDepth(cp.categoryId) }));
@@ -173,7 +192,7 @@ window.PdBundleMng = {
     const pickerList = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
       const used = dtlItems.map(d => d.itemProdId);
-      return (props.adminData.products || []).filter(p => {
+      return (products.value || []).filter(p => {
         if (p.productId === currentBundleId.value) return false;
         if (used.includes(p.productId)) return false;
         if (!q) return true;
@@ -224,7 +243,7 @@ window.PdBundleMng = {
 
       const isNew = dtlMode.value === 'new';
       const newProdId = isNew
-        ? (Math.max(0, ...(props.adminData.products || []).map(p => p.productId)) + 1)
+        ? (Math.max(0, ...(products.value || []).map(p => p.productId)) + 1)
         : null;
       const bundleProdId = isNew ? newProdId : editBundleId.value;
 
@@ -232,7 +251,7 @@ window.PdBundleMng = {
       if (!ok) return;
       /* 신규: products 목록에 BUNDLE 상품 추가 */
       if (isNew) {
-        props.adminData.products.push({
+        products.value.push({
           productId: newProdId,
           prodNm: newForm.prodNm,
           category: newForm.categoryId || '-',
@@ -248,8 +267,8 @@ window.PdBundleMng = {
         });
       }
       /* bundles 데이터 반영 */
-      const others = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
-      props.adminData.bundles = [
+      const others = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
+      bundles.value = [
         ...others,
         ...dtlItems.map((d, i) => ({
           bundleItemId: d.bundleItemId || `B_${bundleProdId}_${i + 1}`,
@@ -260,10 +279,10 @@ window.PdBundleMng = {
         })),
       ];
       /* categoryProds 동기화 */
-      if (!props.adminData.categoryProds) props.adminData.categoryProds = [];
-      props.adminData.categoryProds = props.adminData.categoryProds.filter(cp => String(cp.prodId) !== String(bundleProdId));
+      if (!categoryProds.value) categoryProds.value = [];
+      categoryProds.value = categoryProds.value.filter(cp => String(cp.prodId) !== String(bundleProdId));
       dtlCategories.forEach((cat, i) => {
-        props.adminData.categoryProds.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
+        categoryProds.value.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
       });
       if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
       try {
@@ -281,7 +300,7 @@ window.PdBundleMng = {
     const deleteProd = async bundleProdId => {
       const ok = await props.showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
-      props.adminData.bundles = (props.adminData.bundles || []).filter(b => b.bundleProdId !== bundleProdId);
+      bundles.value = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
       if (editBundleId.value === bundleProdId) closeDtl();
       try {
         const res = await window.adminApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`);
@@ -485,7 +504,7 @@ window.PdBundleMng = {
           <label class="form-label">브랜드</label>
           <select class="form-control" v-model="newForm.brandId">
             <option value="">선택</option>
-            <option v-for="b in (adminData.brands||[])" :key="b.brandId" :value="b.brandId">
+            <option v-for="b in ([]||[])" :key="b.brandId" :value="b.brandId">
               {{ b.brandNm || b.brandName }}
             </option>
           </select>
@@ -494,7 +513,7 @@ window.PdBundleMng = {
           <label class="form-label">판매업체</label>
           <select class="form-control" v-model="newForm.vendorId">
             <option value="">선택</option>
-            <option v-for="v in (adminData.vendors||[])" :key="v.vendorId" :value="v.vendorId">
+            <option v-for="v in ([]||[])" :key="v.vendorId" :value="v.vendorId">
               {{ v.vendorNm || v.vendorName }}
             </option>
           </select>

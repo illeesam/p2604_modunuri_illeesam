@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 캐쉬관리 목록 + 하단 CacheDtl 임베드 */
 window.PmCacheMng = {
   name: 'PmCacheMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const caches = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/cache/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        caches.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmCache 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PmCacheMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.cacheList.filter(c => {
+    const filtered = computed(() => cacheList.value.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.userNm.toLowerCase().includes(kw) && !c.desc.toLowerCase().includes(kw) && !String(c.userId).includes(kw)) return false;
       if (applied.type && c.type !== applied.type) return false;
@@ -76,8 +95,8 @@ window.PmCacheMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.desc}] 내역을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.cacheList.findIndex(x => x.cacheId === c.cacheId);
-      if (idx !== -1) props.adminData.cacheList.splice(idx, 1);
+      const idx = cacheList.value.findIndex(x => x.cacheId === c.cacheId);
+      if (idx !== -1) cacheList.value.splice(idx, 1);
       if (selectedId.value === c.cacheId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/pm/cache/${c.cacheId}`);
@@ -92,7 +111,7 @@ window.PmCacheMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { caches, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -193,9 +212,7 @@ window.PmCacheMng = {
     </div>
     <pm-cache-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

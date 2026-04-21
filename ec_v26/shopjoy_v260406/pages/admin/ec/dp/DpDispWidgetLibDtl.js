@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 위젯라이브러리 상세/등록 */
 window.DpDispWidgetLibDtl = {
   name: 'DpDispWidgetLibDtl',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
     /* ── 표시경로 선택 모달 (sy_path, 다중) ── */
@@ -107,7 +107,7 @@ window.DpDispWidgetLibDtl = {
     /* ── 기존 데이터 로드 ── */
     onMounted(async () => {
       if (!isNew.value) {
-        const src = (props.dispDataset.widgetLibs || []).find(d => d.libId == props.editId);
+        const src = (widgetLibs.value || []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
       } else {
         /* 신규: Lib코드 자동 생성 DL_YYMMDD_HHMMSS */
@@ -405,7 +405,7 @@ window.DpDispWidgetLibDtl = {
       const isNewLib = isNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const list = props.dispDataset.widgetLibs || (props.dispDataset.widgetLibs = []);
+      const list = widgetLibs.value || (widgetLibs.value = []);
       if (isNewLib) {
         const newId = Math.max(0, ...list.map(d => d.libId)) + 1;
         form.libId = newId;
@@ -431,7 +431,7 @@ window.DpDispWidgetLibDtl = {
       if (isNew.value) return;
       const ok = await props.showConfirm('삭제', '이 위젯 Lib를 삭제하시겠습니까?');
       if (!ok) return;
-      const list = props.dispDataset.widgetLibs || [];
+      const list = widgetLibs.value || [];
       const idx  = list.findIndex(d => d.libId == form.libId);
       if (idx >= 0) list.splice(idx, 1);
       try {
@@ -485,7 +485,7 @@ window.DpDispWidgetLibDtl = {
       <button @click="$emit('close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </div>
     <widget-lib-pick-modal v-if="libPickOpen" mode="copy"
-      :widget-libs="dispDataset.widgetLibs || []"
+      :widget-libs="[] || []"
       @close="libPickOpen=false"
       @pick="onLibPicked" />
   </div>
@@ -684,7 +684,6 @@ window.DpDispWidgetLibDtl = {
       <div :style="{ width: previewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
         <disp-x04-widget
           :params="{ }"
-          :disp-dataset="dispDataset"
           :disp-opt="{ showBadges: true }"
           :widget-item="previewWidget"
         />

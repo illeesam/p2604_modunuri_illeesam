@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 상품관리 목록 + 하단 ProdDtl 임베드 */
 window.PdProdMng = {
   name: 'PdProdMng',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const products = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/prod/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        products.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdProd 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PdProdMng = {
 
     const applied = Vue.reactive({ kw: '', cate: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.dispDataset.products.filter(p => {
+    const filtered = computed(() => products.value.filter(p => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !p.prodNm.toLowerCase().includes(kw) && !String(p.productId).includes(kw)) return false;
       if (applied.cate && p.category !== applied.cate) return false;
@@ -54,7 +73,7 @@ window.PdProdMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const categories = computed(() => props.dispDataset.categories.filter(c => c.status === '활성').map(c => c.categoryNm));
+    const categories = computed(() => categories.value.filter(c => c.status === '활성').map(c => c.categoryNm));
 
     /* ── 카테고리 선택 모달 ── */
     const catModal = Vue.reactive({ show: false });
@@ -90,8 +109,8 @@ window.PdProdMng = {
     const doDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.prodNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.dispDataset.products.findIndex(x => x.productId === p.productId);
-      if (idx !== -1) props.dispDataset.products.splice(idx, 1);
+      const idx = products.value.findIndex(x => x.productId === p.productId);
+      if (idx !== -1) products.value.splice(idx, 1);
       if (selectedId.value === p.productId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/pd/prod/${p.productId}`);
@@ -111,7 +130,7 @@ window.PdProdMng = {
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'productId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'category'},{label:'가격',key:'price'},{label:'재고',key:'stock'},{label:'브랜드',key:'brand'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '상품목록.csv');
 
     const descOpen = ref(false);
-    return { descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
+    return { products, loading, error, descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, categories, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
   },
   template: /* html */`
 <div>
@@ -195,7 +214,6 @@ window.PdProdMng = {
   <!-- 카테고리 선택 모달 -->
   <category-tree-modal
     v-if="catModal && catModal.show"
-    :disp-dataset="dispDataset"
     :exclude-id="null"
     @select="onCatSelect"
     @close="catModal.show=false" />
@@ -208,7 +226,7 @@ window.PdProdMng = {
     <pd-prod-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
-      :admin-data="dispDataset"
+      
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

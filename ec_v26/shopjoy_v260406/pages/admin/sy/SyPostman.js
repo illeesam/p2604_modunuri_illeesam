@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 개발도구 > API Tester (Postman) */
 window.SyPostman = {
   name: 'SyPostman',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup() {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 

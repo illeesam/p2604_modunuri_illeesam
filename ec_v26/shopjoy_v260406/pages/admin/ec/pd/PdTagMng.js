@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 태그관리 */
 window.PdTagMng = {
   name: 'PdTagMng',
-  props: ['navigate', 'adminData', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const tags = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pd/tag/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        tags.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PdTag 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw  = ref('');
     const searchUse = ref('');
@@ -12,7 +31,7 @@ window.PdTagMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (props.adminData.tags || []).filter(t => {
+      return (tags.value || []).filter(t => {
         if (kw && !t.tagNm.toLowerCase().includes(kw)) return false;
         if (applied.use && t.useYn !== applied.use) return false;
         return true;
@@ -36,7 +55,7 @@ window.PdTagMng = {
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await props.showConfirm('삭제', `[${row.tagNm}] 태그를 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = props.adminData.tags.findIndex(t => t.tagId === row.tagId); if (si !== -1) props.adminData.tags.splice(si, 1); gridRows.splice(idx, 1);
+      const si = tags.value.findIndex(t => t.tagId === row.tagId); if (si !== -1) tags.value.splice(si, 1); gridRows.splice(idx, 1);
       try {
         const res = await window.adminApi.delete(`/bo/ec/pd/tag/${row.tagId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -54,7 +73,7 @@ window.PdTagMng = {
         const ok = await props.showConfirm('저장', '저장하시겠습니까?');
         if (!ok) return;
         const isNewRow = row._row_status === 'N';
-        const src = props.adminData.tags;
+        const src = tags.value;
         if (isNewRow) src.push({ ...row });
         else { const si = src.findIndex(t => t.tagId === row.tagId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
@@ -76,7 +95,7 @@ window.PdTagMng = {
     const onSizeChange = () => { pager.page = 1; };
     const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
+    return { tags, loading, error, searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, ynBadge , PAGE_SIZES , onSizeChange };
   },
   template: `

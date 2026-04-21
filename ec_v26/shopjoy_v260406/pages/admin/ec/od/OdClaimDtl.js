@@ -2,10 +2,35 @@
 window._odClaimDtlState = window._odClaimDtlState || { activeTab: 'info', viewMode: 'tab' };
 window.OdClaimDtl = {
   name: 'OdClaimDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const claims = ref([]);
+    const orders = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const [claimsRes, ordersRes] = await Promise.all([
+          window.adminApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.adminApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } })
+        ]);
+        claims.value = claimsRes.data?.data?.list || [];
+        orders.value = ordersRes.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('OdClaim 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
+
+    // 주문 조회 헬퍼 함수
+    const getOrder = (orderId) => orders.value?.find(o => o.orderId === orderId);
 
     const form = reactive({
       claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
@@ -20,7 +45,7 @@ window.OdClaimDtl = {
     });
 
     /* CLAIM_STEPS: parentCodeValues 기반 동적 파생 */
-    const _claimStatusCodes = (props.adminData.codes || [])
+    const _claimStatusCodes = (codes.value || [])
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
@@ -34,7 +59,7 @@ window.OdClaimDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const c = props.adminData.getClaim(props.editId);
+        const c = getClaim.value(props.editId);
         if (c) {
           Object.assign(form, { ...c });
           if (!form.claimId) form.claimId = props.editId;
@@ -55,10 +80,10 @@ window.OdClaimDtl = {
       const ok = await props.showConfirm(isNewClaim ? '등록' : '저장', isNewClaim ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewClaim) {
-        props.adminData.claims.push({ ...form, refundAmount: Number(form.refundAmount) });
+        claims.value.push({ ...form, refundAmount: Number(form.refundAmount) });
       } else {
-        const idx = props.adminData.claims.findIndex(x => x.claimId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.claims[idx], { ...form, refundAmount: Number(form.refundAmount) });
+        const idx = claims.value.findIndex(x => x.claimId === props.editId);
+        if (idx !== -1) Object.assign(claims.value[idx], { ...form, refundAmount: Number(form.refundAmount) });
       }
       try {
         const res = await (isNewClaim ? window.adminApi.post(`/bo/ec/od/claim/${form.claimId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form }));
@@ -91,7 +116,7 @@ window.OdClaimDtl = {
       return defs.map((d,i) => {
         const paid = Math.round(amount * shares[i]);
         const sale = Math.round(paid / (1 - discRates[i]));
-        return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
+        return { claims, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
     };
     onMounted(async () => {
@@ -167,7 +192,7 @@ window.OdClaimDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },
     ]);
-    return { isNew, form, errors, statusOptions, CLAIM_STEPS, currentStepIdx, save, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, tabs, editHistList, paymentList, statusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, allExpanded, toggleExpandAll, viewMode2, showTab };
+    return { isNew, form, errors, statusOptions, CLAIM_STEPS, currentStepIdx, save, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, tabs, editHistList, paymentList, statusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, allExpanded, toggleExpandAll, viewMode2, showTab, orders, getOrder };
   },
   template: /* html */`
 <div>
@@ -379,8 +404,8 @@ window.OdClaimDtl = {
           <td style="text-align:right;color:#d84315;font-weight:600;">{{ it.discAmount ? '-'+fmt(it.discAmount) : '-' }}</td>
           <td style="text-align:right;font-weight:700;color:#1a1a1a;">{{ fmt(it.price || 0) }}</td>
           <td style="text-align:center;">
-            <span v-if="adminData.getOrder && adminData.getOrder(form.orderId)" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">
-              {{ adminData.getOrder(form.orderId).status }}
+            <span v-if="getOrder(form.orderId)" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">
+              {{ getOrder(form.orderId).status }}
             </span>
             <span v-else style="color:#ccc;">-</span>
           </td>
@@ -459,7 +484,7 @@ window.OdClaimDtl = {
   <!-- 상태변경이력 탭 -->
   <div v-if="!isNew && showTab('hist')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ statusHistList.length }}</span></div>
-    <od-claim-hist :claim-id="form.claimId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" :show-toast="showToast" />
+    <od-claim-hist :claim-id="form.claimId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- 정보수정이력 탭 -->

@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 이벤트관리 목록 + 하단 EventDtl 임베드 */
 window.PmEventMng = {
   name: 'PmEventMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const events = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/pm/event/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        events.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('PmEvent 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +54,7 @@ window.PmEventMng = {
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.events.filter(e => {
+    const filtered = computed(() => events.value.filter(e => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !e.title.toLowerCase().includes(kw)) return false;
       if (applied.status && e.status !== applied.status) return false;
@@ -75,8 +94,8 @@ window.PmEventMng = {
     const doDelete = async (e) => {
       const ok = await props.showConfirm('삭제', `[${e.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.events.findIndex(x => x.eventId === e.eventId);
-      if (idx !== -1) props.adminData.events.splice(idx, 1);
+      const idx = events.value.findIndex(x => x.eventId === e.eventId);
+      if (idx !== -1) events.value.splice(idx, 1);
       if (selectedId.value === e.eventId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`events/${e.eventId}`);
@@ -91,7 +110,7 @@ window.PmEventMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'유형',key:'eventType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { events, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -196,9 +215,7 @@ window.PmEventMng = {
     </div>
     <pm-event-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

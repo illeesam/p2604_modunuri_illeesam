@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 정산기준관리 */
 window.StConfigMng = {
   name: 'StConfigMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const descOpen = ref(false);

@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 게시글관리 */
 window.SyBbsMng = {
   name: 'SyBbsMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const bbss = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/bbs/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bbss.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBbs 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -31,7 +50,7 @@ window.SyBbsMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchBbmId = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
@@ -57,11 +76,11 @@ window.SyBbsMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const bbmOptions = computed(() => props.adminData.bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
-    const bbmNm = (bbmId) => { const b = props.adminData.bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
+    const bbmOptions = computed(() => bbms.value.map(b => ({ value: b.bbmId, label: b.bbmNm })));
+    const bbmNm = (bbmId) => { const b = bbms.value.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
 
     const applied = reactive({ kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' });
-    const filtered = computed(() => props.adminData.bbss.filter(b => {
+    const filtered = computed(() => bbss.value.filter(b => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !b.title.toLowerCase().includes(kw) && !String(b.authorNm || '').toLowerCase().includes(kw)) return false;
       if (applied.bbmId && b.bbmId !== Number(applied.bbmId)) return false;
@@ -87,8 +106,8 @@ window.SyBbsMng = {
     const doDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.bbss.findIndex(x => x.bbsId === b.bbsId);
-      if (idx !== -1) props.adminData.bbss.splice(idx, 1);
+      const idx = bbss.value.findIndex(x => x.bbsId === b.bbsId);
+      if (idx !== -1) bbss.value.splice(idx, 1);
       if (selectedId.value === b.bbsId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/sy/bbs/${b.bbsId}`);
@@ -105,8 +124,7 @@ window.SyBbsMng = {
     Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { bbss, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, siteNm, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`
@@ -183,7 +201,7 @@ window.SyBbsMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-bbs-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
+    <sy-bbs-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 `

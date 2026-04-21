@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 정산현황 (업체별/주문별/클레임별/프로모션별/정산별) */
 window.StStatusMng = {
   name: 'StStatusMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -33,11 +33,11 @@ window.StStatusMng = {
     (() => { const r = window.adminUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     /* ── 원본 데이터 ── */
-    const orders   = computed(() => props.adminData.orders   || []);
-    const claims   = computed(() => props.adminData.claims   || []);
-    const vendors  = computed(() => (props.adminData.vendors || []).filter(v => v.vendorType === '판매업체'));
-    const coupons  = computed(() => props.adminData.coupons  || []);
-    const cacheList= computed(() => props.adminData.cacheList || []);
+    const orders   = computed(() => orders.value   || []);
+    const claims   = computed(() => claims.value   || []);
+    const vendors  = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
+    const coupons  = computed(() => coupons.value  || []);
+    const cacheList= computed(() => cacheList.value || []);
 
     const COMM_RATE = 0.10; // 수수료율 10%
 

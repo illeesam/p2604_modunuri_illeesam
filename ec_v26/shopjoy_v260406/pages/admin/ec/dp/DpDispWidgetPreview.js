@@ -136,7 +136,7 @@ const _WP_DispWidgetPreview = {
 /* ── 메인 컴포넌트 ── */
 window.DpDispWidgetPreview = {
   name: 'DpDispWidgetPreview',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -219,7 +219,7 @@ window.DpDispWidgetPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (props.dispDataset.widgetLibs || []).filter(lib => {
+      return (widgetLibs.value || []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;

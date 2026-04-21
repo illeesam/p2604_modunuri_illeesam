@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 회원관리 상세/등록 */
 window.MbMemberDtl = {
   name: 'MbMemberDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const members = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/mb/member/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        members.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('MbMember 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
@@ -22,7 +41,7 @@ window.MbMemberDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const m = props.adminData.getMember(props.editId);
+        const m = getMember.value(props.editId);
         if (m) Object.assign(form, { ...m });
       }
       await nextTick();
@@ -52,13 +71,13 @@ window.MbMemberDtl = {
       const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewMember) {
-        props.adminData.members.push({
-          ...form, userId: props.adminData.nextId(props.adminData.members, 'userId'),
+        members.value.push({
+          ...form, userId: nextId.value(members.value, 'userId'),
           joinDate: form.joinDate || new Date().toISOString().slice(0, 10), orderCount: 0, totalPurchase: 0,
         });
       } else {
-        const idx = props.adminData.members.findIndex(x => x.userId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.members[idx], { ...form });
+        const idx = members.value.findIndex(x => x.userId === props.editId);
+        if (idx !== -1) Object.assign(members.value[idx], { ...form });
       }
       try {
         const res = await (isNewMember ? window.adminApi.post(`/bo/ec/mb/member/${form.userId}`, { ...form }) : window.adminApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));
@@ -72,7 +91,7 @@ window.MbMemberDtl = {
       }
     };
 
-    return { isNew, form, errors, save, memoEl };
+    return { members, loading, error, isNew, form, errors, save, memoEl };
   },
   template: /* html */`
 <div>
@@ -135,9 +154,7 @@ window.MbMemberDtl = {
   <!-- 연관 이력 -->
   <div v-if="!isNew" style="margin-top:20px;">
     <mb-member-hist
-      :navigate="navigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="navigate" :show-ref-modal="showRefModal"
       :member-id="editId"
     />
   </div>

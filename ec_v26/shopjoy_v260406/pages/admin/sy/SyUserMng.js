@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 사용자관리(관리자) 목록 */
 window.SyUserMng = {
   name: 'SyUserMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const users = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/user/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        users.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyUser 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* 좌측 부서 트리 */
     const selectedDeptId = Vue.ref(null);
     const expanded = Vue.reactive(new Set([null]));
@@ -18,12 +37,12 @@ window.SyUserMng = {
     /* 선택 부서 + 자손의 dept 이름 Set */
     const allowedDeptNms = Vue.computed(() => {
       if (selectedDeptId.value == null) return null;
-      const desc = window.adminUtil.collectDescendantIds(window.adminData.depts, 'deptId', 'parentId', selectedDeptId.value);
+      const desc = window.adminUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedDeptId.value);
       if (!desc) return null;
-      return new Set((window.adminData.depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
+      return new Set((depts.value || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -54,7 +73,7 @@ window.SyUserMng = {
 
     const applied = Vue.reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => props.adminData.adminUsers.filter(u => {
+    const filtered = computed(() => adminUsers.value.filter(u => {
       if (allowedDeptNms.value && !allowedDeptNms.value.has(u.dept)) return false;
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
@@ -101,8 +120,8 @@ window.SyUserMng = {
       if (u.role === '슈퍼관리자') { props.showToast('슈퍼관리자는 삭제할 수 없습니다.', 'error'); return; }
       const ok = await props.showConfirm('삭제', `[${u.name}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.adminUsers.findIndex(x => x.adminUserId === u.adminUserId);
-      if (idx !== -1) props.adminData.adminUsers.splice(idx, 1);
+      const idx = adminUsers.value.findIndex(x => x.adminUserId === u.adminUserId);
+      if (idx !== -1) adminUsers.value.splice(idx, 1);
       if (selectedId.value === u.adminUserId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`admin-users/${u.adminUserId}`);
@@ -117,7 +136,7 @@ window.SyUserMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'ID',key:'adminUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { users, loading, error, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, roleBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -204,7 +223,7 @@ window.SyUserMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-user-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
+    <sy-user-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div>
 </div>

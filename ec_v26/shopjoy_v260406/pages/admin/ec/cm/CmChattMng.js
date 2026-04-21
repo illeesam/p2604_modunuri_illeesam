@@ -1,9 +1,28 @@
 /* ShopJoy Admin - 채팅관리 목록 + 하단 ChattDtl 임베드 */
 window.CmChattMng = {
   name: 'CmChattMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const chatts = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/cm/chatt/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        chatts.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('CmChatt 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -32,7 +51,7 @@ window.CmChattMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const sorted = computed(() => [...props.adminData.chats].sort((a, b) => b.date.localeCompare(a.date)));
+    const sorted = computed(() => [...chats.value].sort((a, b) => b.date.localeCompare(a.date)));
 
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
@@ -76,8 +95,8 @@ window.CmChattMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.subject}] 채팅을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.chats.findIndex(x => x.chatId === c.chatId);
-      if (idx !== -1) props.adminData.chats.splice(idx, 1);
+      const idx = chats.value.findIndex(x => x.chatId === c.chatId);
+      if (idx !== -1) chats.value.splice(idx, 1);
       if (selectedId.value === c.chatId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/cm/chatt/${c.chatId}`);
@@ -92,7 +111,7 @@ window.CmChattMng = {
 
     const exportExcel = () => window.adminUtil.exportCsv(filtered.value, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { chatts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -166,9 +185,7 @@ window.CmChattMng = {
     </div>
     <cm-chatt-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"

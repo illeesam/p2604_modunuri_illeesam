@@ -2,8 +2,27 @@
 window._odDlivDtlState = window._odDlivDtlState || { tab: 'info', viewMode: 'tab' };
 window.OdDlivDtl = {
   name: 'OdDlivDtl',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  setup(props) {    const deliveries = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/od/dliv/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        deliveries.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._odDlivDtlState.tab || 'info');
@@ -28,7 +47,7 @@ window.OdDlivDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const d = props.adminData.deliveries.find(x => x.dlivId === props.editId);
+        const d = deliveries.value.find(x => x.dlivId === props.editId);
         if (d) {
           Object.assign(form, { ...d });
           if (!form.dlivId) form.dlivId = props.editId;
@@ -50,8 +69,8 @@ window.OdDlivDtl = {
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
-    const relatedOrder  = computed(() => props.adminData.getOrder(form.orderId));
-    const relatedClaims = computed(() => props.adminData.claims.filter(c => c.orderId === form.orderId));
+    const relatedOrder  = computed(() => getOrder.value(form.orderId));
+    const relatedClaims = computed(() => claims.value.filter(c => c.orderId === form.orderId));
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
     const firstClaim = computed(() => relatedClaims.value[0] || null);
 
@@ -68,10 +87,10 @@ window.OdDlivDtl = {
       const ok = await props.showConfirm(isNewDliv ? '등록' : '저장', isNewDliv ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewDliv) {
-        props.adminData.deliveries.push({ ...form });
+        deliveries.value.push({ ...form });
       } else {
-        const idx = props.adminData.deliveries.findIndex(x => x.dlivId === props.editId);
-        if (idx !== -1) Object.assign(props.adminData.deliveries[idx], { ...form });
+        const idx = deliveries.value.findIndex(x => x.dlivId === props.editId);
+        if (idx !== -1) Object.assign(deliveries.value[idx], { ...form });
       }
       try {
         const res = await (isNewDliv ? window.adminApi.post(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }) : window.adminApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }));
@@ -87,7 +106,7 @@ window.OdDlivDtl = {
 
     const dlivItems = reactive([]);
     const sampleDlivItems = () => {
-      const rel = props.adminData.orders.find(x => x.orderId === form.orderId);
+      const rel = orders.value.find(x => x.orderId === form.orderId);
       const base = rel ? rel.prodNm : (form.receiver || '배송상품');
       const total = rel ? Number(rel.totalPrice || 0) : 30000;
       const shares = [0.50, 0.30, 0.20];
@@ -102,13 +121,13 @@ window.OdDlivDtl = {
         const paid = Math.round(total * shares[i]);
         if (paid <= 0) return null;
         const sale = discRates[i] > 0 ? Math.round(paid / (1 - discRates[i])) : paid;
-        return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
+        return { deliveries, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       }).filter(Boolean);
     };
     onMounted(async () => {
       try {
         const res = await window.adminApi.get('my/orders.json');
-        const oid = props.editId && props.adminData.deliveries.find(d=>d.dlivId===props.editId)?.orderId;
+        const oid = props.editId && deliveries.value.find(d=>d.dlivId===props.editId)?.orderId;
         const o = (res.data || []).find(x => x.orderId === oid);
         if (o && o.items && o.items.length) dlivItems.splice(0, dlivItems.length, ...o.items);
         else dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
@@ -419,7 +438,7 @@ window.OdDlivDtl = {
   <!-- 배송상태변경이력 탭 -->
   <div v-if="!isNew && showTab('hist')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ statusHistList.length }}</span></div>
-    <od-dliv-hist :order-id="form.orderId" :navigate="navigate" :admin-data="adminData" :show-ref-modal="showRefModal" />
+    <od-dliv-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
 
   <!-- 정보수정이력 탭 -->

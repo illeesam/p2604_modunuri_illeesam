@@ -136,7 +136,7 @@ const _WP_DispPanelPreview = {
 /* ── 메인 컴포넌트 ── */
 window.DpDispPanelPreview = {
   name: 'DpDispPanelPreview',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
@@ -219,7 +219,7 @@ window.DpDispPanelPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (props.dispDataset.widgetLibs || []).filter(lib => {
+      return (widgetLibs.value || []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
@@ -237,13 +237,13 @@ window.DpDispPanelPreview = {
     /* ── 트리 상태 ── */
     /* ── 패널 트리: prefix > 영역명 > 패널명 ── */
     const tree = computed(() => {
-      const codes = props.dispDataset.codes || [];
+      const codes = codes.value || [];
       const areaNm = (code) => {
         const c = codes.find(x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;
       };
       const map = {};
-      (props.dispDataset.displays || []).forEach(p => {
+      (displays.value || []).forEach(p => {
         const area = p.area || '(미등록)';
         const top  = area.split('_')[0] || '(기타)';
         const subKey = areaNm(area);
@@ -824,9 +824,8 @@ window.DpDispPanelPreview = {
                   <!-- 위젯미리보기 -->
                   <disp-x03-panel v-if="slot.panelId"
                     :params="{ date: previewDate, time: previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                    :disp-dataset="dispDataset"
                     :disp-opt="{ layout:'vertical', showBadges:false }"
-                    :panel-item="(dispDataset.displays||[]).find(p => p.dispId===slot.panelId) || {}"
+                    :panel-item="([]||[]).find(p => p.dispId===slot.panelId) || {}"
                     :show-header="true" />
                   <widget-preview v-else :lib="slot" />
                 </template>
@@ -891,9 +890,8 @@ window.DpDispPanelPreview = {
             <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
               <disp-x03-panel v-if="item.lib.panelId"
                 :params="{ date: previewDate, time: previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                :disp-dataset="dispDataset"
                 :disp-opt="{ layout:'vertical', showBadges:false }"
-                :panel-item="(dispDataset.displays||[]).find(p => p.dispId===item.lib.panelId) || {}"
+                :panel-item="([]||[]).find(p => p.dispId===item.lib.panelId) || {}"
                 :show-header="true" />
               <widget-preview v-else :lib="item.lib" />
             </div>

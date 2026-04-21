@@ -1,8 +1,27 @@
 /* ShopJoy Admin - 알림관리 */
 window.SyAlarmMng = {
   name: 'SyAlarmMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const alarms = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/sy/alarm/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        alarms.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyAlarm 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = Vue.reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -31,7 +50,7 @@ window.SyAlarmMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const siteNm = computed(() => window.adminUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
@@ -58,7 +77,7 @@ window.SyAlarmMng = {
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-    const filtered = computed(() => props.adminData.alarms.filter(a => {
+    const filtered = computed(() => alarms.value.filter(a => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !a.title.toLowerCase().includes(kw) && !a.message.toLowerCase().includes(kw)) return false;
       if (applied.type && a.alarmTypeCd !== applied.type) return false;
@@ -86,8 +105,8 @@ window.SyAlarmMng = {
     const doDelete = async (a) => {
       const ok = await props.showConfirm('삭제', `[${a.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.alarms.findIndex(x => x.alarmId === a.alarmId);
-      if (idx !== -1) props.adminData.alarms.splice(idx, 1);
+      const idx = alarms.value.findIndex(x => x.alarmId === a.alarmId);
+      if (idx !== -1) alarms.value.splice(idx, 1);
       if (selectedId.value === a.alarmId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/sy/alarm/${a.alarmId}`);
@@ -104,8 +123,7 @@ window.SyAlarmMng = {
     Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { alarms, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, siteNm, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, typeBadge, targetBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
   },
   template: /* html */`
@@ -192,7 +210,7 @@ window.SyAlarmMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-alarm-dtl :key="selectedId" :navigate="inlineNavigate" :admin-data="adminData" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
+    <sy-alarm-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
   </div>
 </div></div>
 

@@ -2,8 +2,27 @@
 window._ecMemberHistState = window._ecMemberHistState || { tab: 'orders', viewMode: 'tab' };
 window.MbMemberHist = {
   name: 'MbMemberHist',
-  props: ['navigate', 'adminData', 'showRefModal', 'memberId'],
-  setup(props) {
+  props: ['navigate', 'showRefModal', 'memberId'],
+  setup(props) {    const members = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.adminApi.get('/bo/ec/mb/member/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        members.value = res.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('MbMember 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
     const { ref, computed } = Vue;
     const tab = ref(window._ecMemberHistState.tab || 'orders');
     Vue.watch(tab, v => { window._ecMemberHistState.tab = v; });
@@ -11,10 +30,10 @@ window.MbMemberHist = {
     Vue.watch(viewMode2, v => { window._ecMemberHistState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
-    const memberOrders = computed(() => props.adminData.orders.filter(o => o.userId === props.memberId));
-    const memberClaims = computed(() => props.adminData.claims.filter(c => c.userId === props.memberId));
+    const memberOrders = computed(() => orders.value.filter(o => o.userId === props.memberId));
+    const memberClaims = computed(() => claims.value.filter(c => c.userId === props.memberId));
 
-    return { tab, memberOrders, memberClaims, viewMode2, showTab };
+    return { members, loading, error, tab, memberOrders, memberClaims, viewMode2, showTab };
   },
   template: /* html */`
 <div>

@@ -1,9 +1,31 @@
 /* ShopJoy Admin - 배송관리 목록 + 하단 DlivDtl 임베드 */
 window.OdDlivMng = {
   name: 'OdDlivMng',
-  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {
-    const { ref, reactive, computed } = Vue;
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  setup(props) {    const deliveries = ref([]);
+    const members = ref([]);
+    const loading = ref(false);
+    const error = ref(null);
+
+    // onMounted에서 API 로드
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const [delivRes, membersRes] = await Promise.all([
+          window.adminApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
+        ]);
+        deliveries.value = delivRes.data?.data?.list || [];
+        members.value = membersRes.data?.data?.list || [];
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    });
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.adminUtil.DATE_RANGE_OPTIONS;
@@ -38,7 +60,7 @@ window.OdDlivMng = {
     const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
     /* 목록 */
-    const filtered = computed(() => props.adminData.deliveries.filter(d => {
+    const filtered = computed(() => deliveries.value.filter(d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.dlivId.toLowerCase().includes(kw) && !d.orderId.toLowerCase().includes(kw)
             && !d.userNm.toLowerCase().includes(kw) && !d.receiver.toLowerCase().includes(kw)) return false;
@@ -84,8 +106,8 @@ window.OdDlivMng = {
     const doDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = props.adminData.deliveries.findIndex(x => x.dlivId === d.dlivId);
-      if (idx !== -1) props.adminData.deliveries.splice(idx, 1);
+      const idx = deliveries.value.findIndex(x => x.dlivId === d.dlivId);
+      if (idx !== -1) deliveries.value.splice(idx, 1);
       if (selectedId.value === d.dlivId) selectedId.value = null;
       try {
         const res = await window.adminApi.delete(`/bo/ec/od/dliv/${d.dlivId}`);
@@ -124,18 +146,18 @@ window.OdDlivMng = {
       reqTarget:'배송', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
     const onApprToChange = () => {
-      const m = (props.adminData.members || []).find(x => String(x.userId) === String(bulkForm.apprToUserId));
+      const m = (members.value || []).find(x => String(x.userId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
     const onReqTargetChange = () => {
       const ids = Array.from(checked.value);
-      const first = props.adminData.deliveries.find(d => ids.includes(d.dlivId));
+      const first = deliveries.value.find(d => ids.includes(d.dlivId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')      bulkForm.reqTargetNm = first.orderId || '';
       else if (bulkForm.reqTarget === '배송') bulkForm.reqTargetNm = first.dlivId || '';
       else if (bulkForm.reqTarget === '상품') {
-        const o = (props.adminData.orders || []).find(x => x.orderId === first.orderId);
+        const o = (orders.value || []).find(x => x.orderId === first.orderId);
         bulkForm.reqTargetNm = o ? (o.prodNm || '') : '';
       } else bulkForm.reqTargetNm = first.dlivId || '';
     };
@@ -158,7 +180,7 @@ window.OdDlivMng = {
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked.value);
-      const selected = props.adminData.deliveries.filter(d => ids.includes(d.dlivId));
+      const selected = deliveries.value.filter(d => ids.includes(d.dlivId));
       let rows = [];
       if (bulkTab.value === 'status') {
         if (!bulkForm.status) return '';
@@ -188,7 +210,7 @@ window.OdDlivMng = {
         if (!bulkForm.status) { props.showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) return;
-        props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
+        deliveries.value.forEach(d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
         checked.value = new Set(); bulkOpen.value = false;
         try {
           const res = await window.adminApi.put('deliveries/bulk-status', { ids, status: bulkForm.status });
@@ -203,7 +225,7 @@ window.OdDlivMng = {
         if (!bulkForm.courier && !bulkForm.trackingNo) { props.showToast('택배사 또는 운송장번호를 입력하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 택배정보 변경', `선택한 ${ids.length}건의 택배정보를 변경하시겠습니까?`);
         if (!ok) return;
-        props.adminData.deliveries.forEach(d => {
+        deliveries.value.forEach(d => {
           if (ids.includes(d.dlivId)) {
             if (bulkForm.courier) d.courier = bulkForm.courier;
             if (bulkForm.trackingNo) d.trackingNo = bulkForm.trackingNo;
@@ -223,7 +245,7 @@ window.OdDlivMng = {
         if (!bulkForm.apprAction) { props.showToast('결재처리 구분을 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
-        props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
+        deliveries.value.forEach(d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
           const res = await window.adminApi.put('deliveries/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
@@ -238,7 +260,7 @@ window.OdDlivMng = {
         if (!bulkForm.apprToUserId) { props.showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
         if (!ok) return;
-        props.adminData.deliveries.forEach(d => { if (ids.includes(d.dlivId)) {
+        deliveries.value.forEach(d => { if (ids.includes(d.dlivId)) {
           d.apprToUserId = bulkForm.apprToUserId; d.apprToNm = bulkForm.apprToNm;
           d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
           d.reqAmount = Number(bulkForm.reqAmount||0); d.reqReason = bulkForm.reqReason;
@@ -256,7 +278,7 @@ window.OdDlivMng = {
       }
     };
 
-    return { searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, DLIV_STATUS_OPTIONS, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
+    return { deliveries, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, DLIV_STATUS_OPTIONS, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -339,9 +361,7 @@ window.OdDlivMng = {
     </div>
     <od-dliv-dtl
       :key="selectedId"
-      :navigate="inlineNavigate"
-      :admin-data="adminData"
-      :show-ref-modal="showRefModal"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
@@ -400,7 +420,7 @@ window.OdDlivMng = {
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">
               <option value="">선택하세요</option>
-              <option v-for="m in adminData.members" :key="m.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
+              <option v-for="m in members" :key="m.userId" :value="m.userId">{{ m.userNm }} ({{ m.userId }})</option>
             </select>
           </div>
           <div class="form-row">

@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 전시관계도 (UI > 영역 > 패널 계층 구조) */
 window.DpDispRelationMng = {
   name: 'DpDispRelationMng',
-  props: ['navigate', 'dispDataset', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
 
@@ -20,18 +20,18 @@ window.DpDispRelationMng = {
 
     /* 트리 데이터 구성 */
     const treeData = computed(() => {
-      const uiCodes = (props.dispDataset.codes || [])
+      const uiCodes = (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_UI')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 
-      const areaCodes = (props.dispDataset.codes || [])
+      const areaCodes = (codes.value || [])
         .filter(c => c.codeGrp === 'DISP_AREA')
         .reduce((map, a) => {
           map[a.codeValue] = a;
           return map;
         }, {});
 
-      const panels = (props.dispDataset.displays || [])
+      const panels = (displays.value || [])
         .reduce((map, p) => {
           if (!map[p.area]) map[p.area] = [];
           map[p.area].push(p);
