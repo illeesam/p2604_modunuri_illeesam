@@ -4,6 +4,7 @@ window.PmCouponDtl = {
   name: 'PmCouponDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const coupons = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -24,7 +25,6 @@ window.PmCouponDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmCouponDtlState.tab || 'info');
     Vue.watch(tab, v => { window._pmCouponDtlState.tab = v; });

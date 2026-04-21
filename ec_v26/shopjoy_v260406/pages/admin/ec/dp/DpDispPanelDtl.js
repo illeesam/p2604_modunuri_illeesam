@@ -3,6 +3,7 @@ window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -30,7 +31,6 @@ window.DpDispPanelDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref('info');
     const showComponentTooltip = ref(false);

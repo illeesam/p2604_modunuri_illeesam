@@ -4,6 +4,7 @@ window.CmChattDtl = {
   name: 'CmChattDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -24,7 +25,6 @@ window.CmChattDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._cmChattDtlState.tab || 'chat');
     Vue.watch(tab, v => { window._cmChattDtlState.tab = v; });

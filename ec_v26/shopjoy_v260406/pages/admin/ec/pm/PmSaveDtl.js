@@ -4,6 +4,7 @@ window.PmSaveDtl = {
   name: 'PmSaveDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const saves = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -24,7 +25,6 @@ window.PmSaveDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmSaveDtlState.tab || 'info');
     Vue.watch(tab, v => { window._pmSaveDtlState.tab = v; });

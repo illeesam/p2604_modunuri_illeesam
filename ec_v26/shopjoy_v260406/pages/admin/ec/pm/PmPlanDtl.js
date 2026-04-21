@@ -4,6 +4,7 @@ window.PmPlanDtl = {
   name: 'PmPlanDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
     const plans = reactive([]);
     const loading = ref(false);
@@ -25,7 +26,6 @@ window.PmPlanDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted, onUnmounted } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._ecPlanDtlState.tab || 'info');
     Vue.watch(tab, v => { window._ecPlanDtlState.tab = v; });

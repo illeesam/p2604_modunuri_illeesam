@@ -4,6 +4,7 @@ window.PmVoucherDtl = {
   name: 'PmVoucherDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const vouchers = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -24,7 +25,6 @@ window.PmVoucherDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmVoucherDtlState.tab || 'info');
     Vue.watch(tab, v => { window._pmVoucherDtlState.tab = v; });

@@ -4,6 +4,7 @@ window.PdProdDtl = {
   name: 'PdProdDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const products = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -24,7 +25,6 @@ window.PdProdDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick, watch } = Vue;
     const isNew = computed(() => !props.editId);
     const topTab = ref(window._pdProdDtlState.tab || 'info');
     watch(topTab, v => { window._pdProdDtlState.tab = v; });

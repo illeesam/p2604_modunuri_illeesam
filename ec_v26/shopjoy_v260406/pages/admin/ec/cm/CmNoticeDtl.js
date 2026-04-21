@@ -3,6 +3,7 @@ window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const notices = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -23,7 +24,6 @@ window.CmNoticeDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted, onBeforeUnmount } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       noticeId: null, title: '', noticeType: '일반', isFixed: false,

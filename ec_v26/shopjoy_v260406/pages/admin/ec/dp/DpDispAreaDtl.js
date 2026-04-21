@@ -3,6 +3,7 @@ window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -30,7 +31,6 @@ window.DpDispAreaDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const pathLabel = (id) => window.adminUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const { reactive, computed, ref, onMounted, nextTick, watch } = Vue;
 
     const AREA_TYPE_OPTS = [
       { value: '',        label: '-' },

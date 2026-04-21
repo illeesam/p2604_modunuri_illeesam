@@ -4,6 +4,7 @@ window.OdClaimDtl = {
   name: 'OdClaimDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const claims = reactive([]);
     const orders = reactive([]);
     const loading = ref(false);
@@ -27,7 +28,6 @@ window.OdClaimDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted } = Vue;
     const isNew = computed(() => !props.editId);
 
     // 주문 조회 헬퍼 함수

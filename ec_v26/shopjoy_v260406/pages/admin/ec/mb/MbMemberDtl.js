@@ -3,6 +3,7 @@ window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -23,7 +24,6 @@ window.MbMemberDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       userId: null,

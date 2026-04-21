@@ -3,6 +3,7 @@ window.PdCategoryDtl = {
   name: 'PdCategoryDtl',
   props: ['navigate', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const categories = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -23,7 +24,6 @@ window.PdCategoryDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
