@@ -50,4 +50,4 @@ app:
     enabled: false          # 로컬 환경: 스케줄러 비활성
     jenkins:
       enabled: false
-    allowed-ips: ""
+    allowed-ips: ""        # 빈값=전체허용 | "*"=전체허용 | "127.0.0.1^10.0.0.1"=IP지정

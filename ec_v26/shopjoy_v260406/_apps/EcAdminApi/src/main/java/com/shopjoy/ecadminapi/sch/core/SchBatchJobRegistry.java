@@ -18,10 +18,10 @@ import java.util.concurrent.ScheduledFuture;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SchJobRegistry {
+public class SchBatchJobRegistry {
 
     private final ThreadPoolTaskScheduler taskScheduler;
-    private final SchExecutor executor;
+    private final SchBatchExecutor executor;
 
     private final Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 

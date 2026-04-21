@@ -50,4 +50,4 @@ app:
     enabled: true           # prod: 스케줄러 활성
     jenkins:
       enabled: true
-    allowed-ips: "192.168.1.1^192.168.1.2"
+    allowed-ips: "192.168.1.1^192.168.1.2"  # "*"=전체허용 | IP지정: "^"구분

@@ -5,9 +5,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.sch.config.SchProperties;
-import com.shopjoy.ecadminapi.sch.core.SchExecutor;
-import com.shopjoy.ecadminapi.sch.core.SchJobRegistry;
+import com.shopjoy.ecadminapi.sch.config.SchBatchProperties;
+import com.shopjoy.ecadminapi.sch.core.SchBatchExecutor;
+import com.shopjoy.ecadminapi.sch.core.SchBatchJobRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +27,12 @@ import java.util.Map;
 @RequestMapping("/sch")
 @RequiredArgsConstructor
 @BoOnly
-public class SchController {
+public class SchBatchController {
 
     private final SyBatchRepository batchRepository;
-    private final SchJobRegistry    registry;
-    private final SchExecutor       executor;
-    private final SchProperties     properties;
+    private final SchBatchJobRegistry registry;
+    private final SchBatchExecutor    executor;
+    private final SchBatchProperties  properties;
 
     @GetMapping("/batch")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> list() {

@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.sch.core;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
-import com.shopjoy.ecadminapi.sch.handler.SchJobHandler;
+import com.shopjoy.ecadminapi.sch.handler.SchBatchJobHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.support.CronExpression;
@@ -21,24 +21,24 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SchExecutor {
+public class SchBatchExecutor {
 
     private final SyBatchRepository batchRepository;
-    private final List<SchJobHandler> handlers;
+    private final List<SchBatchJobHandler> handlers;
 
-    private Map<String, SchJobHandler> handlerMap;
+    private Map<String, SchBatchJobHandler> handlerMap;
 
-    private Map<String, SchJobHandler> handlerMap() {
+    private Map<String, SchBatchJobHandler> handlerMap() {
         if (handlerMap == null) {
             handlerMap = handlers.stream()
-                .collect(Collectors.toMap(SchJobHandler::batchCode, Function.identity()));
+                .collect(Collectors.toMap(SchBatchJobHandler::batchCode, Function.identity()));
         }
         return handlerMap;
     }
 
     public void execute(SyBatch batch) {
         String code = batch.getBatchCode();
-        SchJobHandler handler = handlerMap().get(code);
+        SchBatchJobHandler handler = handlerMap().get(code);
 
         if (handler == null) {
             log.warn("[SCH] 핸들러 없음: batchCode={}", code);

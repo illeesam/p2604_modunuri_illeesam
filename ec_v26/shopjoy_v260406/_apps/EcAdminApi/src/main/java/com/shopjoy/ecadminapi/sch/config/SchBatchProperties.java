@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @ConfigurationProperties(prefix = "app.scheduler")
-public class SchProperties {
+public class SchBatchProperties {
 
     private boolean enabled = true;
     private Jenkins jenkins = new Jenkins();
@@ -25,6 +25,7 @@ public class SchProperties {
     }
 
     public boolean isIpAllowed(String ip) {
+        if ("*".equals(allowedIps != null ? allowedIps.trim() : "")) return true;
         List<String> list = getAllowedIpList();
         return list.isEmpty() || list.contains(ip);
     }

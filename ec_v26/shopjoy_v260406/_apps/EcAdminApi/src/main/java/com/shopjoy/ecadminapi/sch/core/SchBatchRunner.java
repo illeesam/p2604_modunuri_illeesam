@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.sch.core;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
-import com.shopjoy.ecadminapi.sch.config.SchProperties;
+import com.shopjoy.ecadminapi.sch.config.SchBatchProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -18,11 +18,11 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SchRunner implements ApplicationRunner {
+public class SchBatchRunner implements ApplicationRunner {
 
-    private final SchProperties properties;
+    private final SchBatchProperties properties;
     private final SyBatchRepository batchRepository;
-    private final SchJobRegistry registry;
+    private final SchBatchJobRegistry registry;
 
     @Override
     public void run(ApplicationArguments args) {

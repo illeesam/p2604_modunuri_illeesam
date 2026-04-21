@@ -8,8 +8,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 @EnableScheduling
-@EnableConfigurationProperties(SchProperties.class)
-public class SchConfig {
+@EnableConfigurationProperties(SchBatchProperties.class)
+public class SchBatchConfig {
 
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
