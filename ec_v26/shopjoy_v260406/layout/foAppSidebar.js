@@ -1,6 +1,6 @@
 /* ShopJoy - AppSidebar */
 window.foAppSidebar = {
-  name: 'FrontAppSidebar',
+  name: 'FoAppSidebar',
   props: ['page', 'sidebarOpen', 'mobileOpen', 'config', 'navigate', 'cartCount', 'auth'],
   emits: ['toggle-sidebar', 'close-mobile'],
   setup(props, { emit }) {

@@ -754,8 +754,8 @@
         window.open('bo.html?BO_SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
-      const currentFrontNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-site_no')) || '01';
-      const currentAdminSiteNo = window.BO_SITE_NO || '01';
+      const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-site_no')) || '01';
+      const currentBoSiteNo = window.BO_SITE_NO || '01';
       const SITE_PAIR_MENU = [
         { fo:'01',   bo:'01' },
         { fo:'02',   bo:'02' },
@@ -824,7 +824,7 @@
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
         relatedSiteOpen, toggleRelatedSite, openRelatedLink,
-        goFoSite, goBoSite, currentFrontNo, currentAdminSiteNo, SITE_PAIR_MENU, DISP_LINKS,
+        goFoSite, goBoSite, currentFoSiteNo, currentBoSiteNo, SITE_PAIR_MENU, DISP_LINKS,
       };
     },
 
@@ -836,12 +836,12 @@
     <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
       ShopJoy
       <span class="front-site-badge"
-        :title="'FO_SITE_NO=' + (currentFrontNo || '-') + ' BO_SITE_NO=' + (currentAdminSiteNo || '-') + ' — 클릭: 연관사이트'"
-        :data-tip="'FO_SITE_NO=' + (currentFrontNo || '-') + ' BO_SITE_NO=' + (currentAdminSiteNo || '-')"
+        :title="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-') + ' — 클릭: 연관사이트'"
+        :data-tip="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-')"
         style="display:inline-flex;gap:4px;font-family:monospace;font-size:11px;cursor:pointer;"
         @click.stop="toggleRelatedSite">
-        <span :style="{fontWeight:800,color: currentFrontNo==='03'?'#7b1fa2':currentFrontNo==='02'?'#2e7d6b':currentFrontNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentFrontNo || '-' }}</span>
-        <span :style="{fontWeight:800,color: currentAdminSiteNo==='03'?'#7b1fa2':currentAdminSiteNo==='02'?'#2e7d6b':currentAdminSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentAdminSiteNo || '-' }}</span>
+        <span :style="{fontWeight:800,color: currentFoSiteNo==='03'?'#7b1fa2':currentFoSiteNo==='02'?'#2e7d6b':currentFoSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentFoSiteNo || '-' }}</span>
+        <span :style="{fontWeight:800,color: currentBoSiteNo==='03'?'#7b1fa2':currentBoSiteNo==='02'?'#2e7d6b':currentBoSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentBoSiteNo || '-' }}</span>
       </span>
     </span>
     <div class="top-nav-menus">
@@ -977,8 +977,8 @@
             title="연관사이트 열기">
             <span>🔗 연관사이트</span>
             <span style="margin-left:auto;display:inline-flex;gap:5px;font-family:monospace;">
-              <span :style="{fontWeight:800,color: currentFrontNo==='03'?'#7b1fa2':currentFrontNo==='02'?'#2e7d6b':currentFrontNo==='9999'?'#888':'#9f2946'}">{{ currentFrontNo || '-' }}</span>
-              <span :style="{fontWeight:800,color: currentAdminSiteNo==='03'?'#7b1fa2':currentAdminSiteNo==='02'?'#2e7d6b':currentAdminSiteNo==='9999'?'#888':'#9f2946'}">{{ currentAdminSiteNo || '-' }}</span>
+              <span :style="{fontWeight:800,color: currentFoSiteNo==='03'?'#7b1fa2':currentFoSiteNo==='02'?'#2e7d6b':currentFoSiteNo==='9999'?'#888':'#9f2946'}">{{ currentFoSiteNo || '-' }}</span>
+              <span :style="{fontWeight:800,color: currentBoSiteNo==='03'?'#7b1fa2':currentBoSiteNo==='02'?'#2e7d6b':currentBoSiteNo==='9999'?'#888':'#9f2946'}">{{ currentBoSiteNo || '-' }}</span>
             </span>
             <span style="font-size:9px;color:#bbb;">▾</span>
           </button>
@@ -998,27 +998,27 @@
           <div style="padding:12px;">
             <!-- _SITE_NO (FO / BO 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;margin-bottom:12px;">
-              <div style="font-size:12px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:10.5px;color:#888;font-weight:600;">(FO: {{ currentFrontNo || '-' }}, BO: {{ currentAdminSiteNo || '-' }})</span></div>
+              <div style="font-size:12px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:10.5px;color:#888;font-weight:600;">(FO: {{ currentFoSiteNo || '-' }}, BO: {{ currentBoSiteNo || '-' }})</span></div>
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
                   <button type="button" @click="goFoSite(p.fo)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFrontNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFrontNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentFrontNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFrontNo===p.fo?700:500,transition:'all .12s'}"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFoSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFoSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentFoSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFoSiteNo===p.fo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentFrontNo===p.fo?'1':'0'"
+                    :data-active="currentFoSiteNo===p.fo?'1':'0'"
                     title="index.html 새창 오픈">
-                    <span>{{ currentFrontNo===p.fo?'●':'○' }}</span>
+                    <span>{{ currentFoSiteNo===p.fo?'●':'○' }}</span>
                     <span>FO={{ p.fo }}</span>
                     <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
                   </button>
                   <button type="button" @click="goBoSite(p.bo)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminSiteNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminSiteNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentAdminSiteNo===p.bo?'#7b1fa2':'#444',fontWeight: currentAdminSiteNo===p.bo?700:500,transition:'all .12s'}"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentBoSiteNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentBoSiteNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'11.5px',fontFamily:'monospace',color: currentBoSiteNo===p.bo?'#7b1fa2':'#444',fontWeight: currentBoSiteNo===p.bo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentAdminSiteNo===p.bo?'1':'0'"
+                    :data-active="currentBoSiteNo===p.bo?'1':'0'"
                     title="bo.html 새창 오픈">
-                    <span>{{ currentAdminSiteNo===p.bo?'●':'○' }}</span>
+                    <span>{{ currentBoSiteNo===p.bo?'●':'○' }}</span>
                     <span>BO={{ p.bo }}</span>
                     <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
                   </button>

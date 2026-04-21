@@ -598,9 +598,9 @@
 `,
   })
   /* ── layout/ ── */
-  .component('FrontAppHeader',   window.foAppHeader)
-  .component('FrontAppSidebar',  window.foAppSidebar)
-  .component('FrontAppFooter',   window.foAppFooter)
+  .component('FoAppHeader',   window.foAppHeader)
+  .component('FoAppSidebar',  window.foAppSidebar)
+  .component('FoAppFooter',   window.foAppFooter)
   /* ── pages/base/ ── */
   .component('FoError404',    window.foError404)
   .component('FoError401',    window.foError401)

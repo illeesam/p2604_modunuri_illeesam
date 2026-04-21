@@ -105,7 +105,7 @@ window.Pagination = {
 };
 
 window.foMyLayout = {
-  name: 'FrontMyLayout',
+  name: 'FoMyLayout',
   props: ['navigate', 'cartCount', 'activePage'],
   setup(props) {
     const { computed } = Vue;

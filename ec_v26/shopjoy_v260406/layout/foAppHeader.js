@@ -1,6 +1,6 @@
 /* ShopJoy - AppHeader */
 window.foAppHeader = {
-  name: 'FrontAppHeader',
+  name: 'FoAppHeader',
   props: ['page', 'theme', 'sidebarOpen', 'mobileOpen', 'config', 'navigate',
           'toggleTheme', 'cartCount', 'likeCount', 'auth', 'onShowLogin', 'onLogout'],
   emits: ['toggle-sidebar', 'toggle-mobile'],

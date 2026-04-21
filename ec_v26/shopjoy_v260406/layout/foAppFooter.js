@@ -1,6 +1,6 @@
 /* ShopJoy - AppFooter */
 window.foAppFooter = {
-  name: 'FrontAppFooter',
+  name: 'FoAppFooter',
   props: ['config', 'navigate'],
   emits: [],
   setup() {
@@ -33,10 +33,10 @@ window.foAppFooter = {
       }
       menuOpen.value = false;
     };
-    const currentSiteNo  = window.FO_SITE_NO || '01';
-    const currentAdminNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-bo-site_no')) || '01';
+    const currentFoSiteNo  = window.FO_SITE_NO || '01';
+    const currentBoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-bo-site_no')) || '01';
 
-    const FRONT_MENU = [
+    const FO_MENU = [
       { id:'home',       label:'홈',         icon:'🏠' },
       { id:'prodList', label:'상품목록',    icon:'🛍' },
       { id:'cart',       label:'장바구니',    icon:'🛒' },
@@ -53,7 +53,7 @@ window.foAppFooter = {
       { id:'myCache',    label:'마이 - 캐시',  icon:'💰' },
       { id:'myContact',  label:'마이 - 문의',  icon:'💬' },
     ];
-    const BACK_MENU = [
+    const BO_MENU = [
       { id:'dashboard',           label:'대시보드',         icon:'📊' },
       { id:'ecMemberMng',         label:'회원관리',         icon:'👥' },
       { id:'ecProdMng',           label:'상품관리',         icon:'📦' },
@@ -86,7 +86,7 @@ window.foAppFooter = {
       { fo:'03',   bo:'03' },
       { fo:'9999', bo:'9999' },
     ];
-    return { menuOpen, toggleMenu, closeMenu, goItem, currentSiteNo, currentAdminNo, FRONT_MENU, BACK_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
+    return { menuOpen, toggleMenu, closeMenu, goItem, currentFoSiteNo, currentBoSiteNo, FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
   },
   template: /* html */ `
 <footer style="padding:28px 32px;">
@@ -122,8 +122,8 @@ window.foAppFooter = {
       <button type="button" @click="toggleMenu"
         style="font-size:0.75rem;padding:5px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
         🌐 메뉴 바로가기
-        <span :style="{fontWeight:800,color: currentSiteNo==='03' ? '#7b1fa2' : currentSiteNo==='02' ? '#2e7d6b' : currentSiteNo==='9999' ? '#888' : '#9f2946'}">{{ currentSiteNo || '-' }}</span>
-        <span :style="{fontWeight:800,color: currentAdminNo==='03' ? '#7b1fa2' : currentAdminNo==='02' ? '#2e7d6b' : currentAdminNo==='9999' ? '#888' : '#9f2946'}">{{ currentAdminNo || '-' }}</span>
+        <span :style="{fontWeight:800,color: currentFoSiteNo==='03' ? '#7b1fa2' : currentFoSiteNo==='02' ? '#2e7d6b' : currentFoSiteNo==='9999' ? '#888' : '#9f2946'}">{{ currentFoSiteNo || '-' }}</span>
+        <span :style="{fontWeight:800,color: currentBoSiteNo==='03' ? '#7b1fa2' : currentBoSiteNo==='02' ? '#2e7d6b' : currentBoSiteNo==='9999' ? '#888' : '#9f2946'}">{{ currentBoSiteNo || '-' }}</span>
         <span style="font-size:9px;">▾</span>
       </button>
 
@@ -149,7 +149,7 @@ window.foAppFooter = {
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
             <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">🛍 frontOffice</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
-              <button v-for="m in FRONT_MENU" :key="m.id" type="button"
+              <button v-for="m in FO_MENU" :key="m.id" type="button"
                 @click="goItem('frontOffice', m.id)"
                 style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
                 onmouseover="this.style.background='#fff5f8';this.style.color='#e8587a';"
@@ -164,7 +164,7 @@ window.foAppFooter = {
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
             <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 backOffice (admin)</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
-              <button v-for="m in BACK_MENU" :key="m.id" type="button"
+              <button v-for="m in BO_MENU" :key="m.id" type="button"
                 @click="goItem('backOffice', m.id)"
                 style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
                 onmouseover="this.style.background='#f7f0fa';this.style.color='#7b1fa2';"
@@ -179,28 +179,28 @@ window.foAppFooter = {
           <div style="display:flex;flex-direction:column;gap:14px;">
             <!-- _SITE_NO (FO / BO 분리 링크) -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FO: {{ currentSiteNo }}, BO: {{ currentAdminNo }})</span></div>
+              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FO: {{ currentFoSiteNo }}, BO: {{ currentBoSiteNo }})</span></div>
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
                   <!-- FO 링크 -->
                   <button type="button" @click="goItem('foOnly', p.fo)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentSiteNo===p.fo?700:500,transition:'all .12s'}"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFoSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFoSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentFoSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFoSiteNo===p.fo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentSiteNo===p.fo?'1':'0'"
+                    :data-active="currentFoSiteNo===p.fo?'1':'0'"
                     title="index.html로 이동 (같은 창)">
-                    <span>{{ currentSiteNo===p.fo?'●':'○' }}</span>
+                    <span>{{ currentFoSiteNo===p.fo?'●':'○' }}</span>
                     <span>FO={{ p.fo }}</span>
                   </button>
                   <!-- BO 링크 (bo.html 새창) -->
                   <button type="button" @click="goItem('boOnly', p.bo)"
-                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentAdminNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentAdminNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentAdminNo===p.bo?'#7b1fa2':'#444',fontWeight: currentAdminNo===p.bo?700:500,transition:'all .12s'}"
+                    :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentBoSiteNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentBoSiteNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentBoSiteNo===p.bo?'#7b1fa2':'#444',fontWeight: currentBoSiteNo===p.bo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
-                    :data-active="currentAdminNo===p.bo?'1':'0'"
+                    :data-active="currentBoSiteNo===p.bo?'1':'0'"
                     title="bo.html 새창 오픈">
-                    <span>{{ currentAdminNo===p.bo?'●':'○' }}</span>
+                    <span>{{ currentBoSiteNo===p.bo?'●':'○' }}</span>
                     <span>BO={{ p.bo }}</span>
                     <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
                   </button>
