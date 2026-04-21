@@ -1506,15 +1506,15 @@
   .component('CountdownWidget', window.CountdownWidget || { template: '<div/>' })
   /* ── components/comp/ (공통 컴포넌트) ── */
   .component('BaseAttachGrp',  window.BaseAttachGrp)
-  /* ── pages/admin/ (공통) ── */
+  /* ── pages/bo/admin/ (공통) ── */
   .component('BoRefModal',  window.BoRefModal)
-  /* ── pages/admin/ec/ — 회원 ── */
+  /* ── pages/bo/admin/ec/ — 회원 ── */
   .component('MbMemberMng',    window.MbMemberMng)
   .component('MbMemberDtl',    window.MbMemberDtl)
   .component('MbMemberHist',   window.MbMemberHist)
   .component('MbMemGradeMng',  window.MbMemGradeMng)
   .component('MbMemGroupMng',  window.MbMemGroupMng)
-  /* ── pages/admin/ec/ — 상품 ── */
+  /* ── pages/bo/admin/ec/ — 상품 ── */
   .component('PdProdMng',      window.PdProdMng)
   .component('PdProdDtl',      window.PdProdDtl)
   .component('PdProdHist',     window.PdProdHist)
@@ -1525,24 +1525,24 @@
   .component('PdQnaMng',       window.PdQnaMng)
   .component('PdRestockNotiMng', window.PdRestockNotiMng)
   .component('PdTagMng',       window.PdTagMng)
-  /* ── pages/admin/ec/ — 주문 ── */
+  /* ── pages/bo/admin/ec/ — 주문 ── */
   .component('OdOrderMng',     window.OdOrderMng)
   .component('OdOrderDtl',     window.OdOrderDtl)
   .component('OdOrderHist',    window.OdOrderHist)
-  /* ── pages/admin/ec/ — 클레임 ── */
+  /* ── pages/bo/admin/ec/ — 클레임 ── */
   .component('OdClaimMng',     window.OdClaimMng)
   .component('OdClaimDtl',     window.OdClaimDtl)
   .component('OdClaimHist',    window.OdClaimHist)
-  /* ── pages/admin/ec/ — 배송 ── */
+  /* ── pages/bo/admin/ec/ — 배송 ── */
   .component('OdDlivMng',      window.OdDlivMng)
   .component('OdDlivDtl',      window.OdDlivDtl)
   .component('OdDlivHist',     window.OdDlivHist)
-  /* ── pages/admin/ec/ — 쿠폰/캐쉬 ── */
+  /* ── pages/bo/admin/ec/ — 쿠폰/캐쉬 ── */
   .component('PmCouponMng',    window.PmCouponMng)
   .component('PmCouponDtl',    window.PmCouponDtl)
   .component('PmCacheMng',     window.PmCacheMng)
   .component('PmCacheDtl',     window.PmCacheDtl)
-  /* ── pages/admin/ec/ — 전시관리 ── */
+  /* ── pages/bo/admin/ec/ — 전시관리 ── */
   .component('DpDispPanelMng',        window.DpDispPanelMng)
   .component('DpDispPanelDtl',        window.DpDispPanelDtl)
   .component('DpDispAreaMng',         window.DpDispAreaMng)
@@ -1560,11 +1560,11 @@
   .component('DpDispWidgetLibDtl',    window.DpDispWidgetLibDtl)
   .component('DpDispWidgetLibPreview',window.DpDispWidgetLibPreview)
   .component('DpDispRelationMng',      window.DpDispRelationMng)
-  /* ── pages/admin/ec/ — 카테고리 ── */
+  /* ── pages/bo/admin/ec/ — 카테고리 ── */
   .component('PdCategoryMng',  window.PdCategoryMng)
   .component('PdCategoryDtl',  window.PdCategoryDtl)
   .component('PdCategoryProdMng', window.PdCategoryProdMng)
-  /* ── pages/admin/ec/ — 이벤트/공지 ── */
+  /* ── pages/bo/admin/ec/ — 이벤트/공지 ── */
   .component('PmEventMng',     window.PmEventMng)
   .component('PmEventDtl',     window.PmEventDtl)
   .component('PmPlanMng',      window.PmPlanMng)
@@ -1577,7 +1577,7 @@
   .component('PmGiftDtl',      window.PmGiftDtl)
   .component('PmVoucherMng',   window.PmVoucherMng)
   .component('PmVoucherDtl',   window.PmVoucherDtl)
-  /* ── pages/admin/ec/st/ — 정산관리 ── */
+  /* ── pages/bo/admin/ec/st/ — 정산관리 ── */
   .component('StConfigMng',       window.StConfigMng)
   .component('StRawMng',          window.StRawMng)
   .component('StSettleAdjMng',    window.StSettleAdjMng)
@@ -1594,28 +1594,28 @@
   .component('StErpReconMng',     window.StErpReconMng)
   .component('CmNoticeMng',    window.CmNoticeMng)
   .component('CmNoticeDtl',    window.CmNoticeDtl)
-  /* ── pages/admin/ec/ — 채팅/고객 ── */
+  /* ── pages/bo/admin/ec/ — 채팅/고객 ── */
   .component('CmChattMng',     window.CmChattMng)
   .component('CmChattDtl',     window.CmChattDtl)
   .component('MbCustInfoMng',  window.MbCustInfoMng)
-  /* ── pages/admin/sy/ — 대시보드 ── */
+  /* ── pages/bo/admin/sy/ — 대시보드 ── */
   .component('SyDashboardMng', window.SyDashboardMng)
   .component('DashboardBoEc01', window.DashboardBoEc01)
   .component('DashboardBoEc02', window.DashboardBoEc02)
   .component('DashboardBoEc03', window.DashboardBoEc03)
-  /* ── pages/admin/sy/ — 사용자/권한/조직 ── */
+  /* ── pages/bo/admin/sy/ — 사용자/권한/조직 ── */
   .component('SyUserMng',      window.SyUserMng)
   .component('SyUserDtl',      window.SyUserDtl)
   .component('SyDeptMng',      window.SyDeptMng)
   .component('SyMenuMng',      window.SyMenuMng)
   .component('SyRoleMng',      window.SyRoleMng)
-  /* ── pages/admin/sy/ — 사이트/코드/브랜드 ── */
+  /* ── pages/bo/admin/sy/ — 사이트/코드/브랜드 ── */
   .component('SySiteMng',      window.SySiteMng)
   .component('SySiteDtl',      window.SySiteDtl)
   .component('SyCodeMng',      window.SyCodeMng)
   .component('SyCodeDtl',      window.SyCodeDtl)
   .component('SyBrandMng',     window.SyBrandMng)
-  /* ── pages/admin/sy/ — 템플릿/업체/첨부 ── */
+  /* ── pages/bo/admin/sy/ — 템플릿/업체/첨부 ── */
   .component('SyTemplateMng',  window.SyTemplateMng)
   .component('SyTemplateDtl',  window.SyTemplateDtl)
   .component('SyVendorMng',    window.SyVendorMng)
@@ -1623,11 +1623,11 @@
   .component('SyBizUserMng',   window.SyBizUserMng)
   .component('SyVendorDtl',    window.SyVendorDtl)
   .component('SyAttachMng',    window.SyAttachMng)
-  /* ── pages/admin/sy/ — 배치 ── */
+  /* ── pages/bo/admin/sy/ — 배치 ── */
   .component('SyBatchMng',     window.SyBatchMng)
   .component('SyBatchDtl',     window.SyBatchDtl)
   .component('SyBatchHist',    window.SyBatchHist)
-  /* ── pages/admin/sy/ — 알림/게시판/문의 ── */
+  /* ── pages/bo/admin/sy/ — 알림/게시판/문의 ── */
   .component('SyAlarmMng',     window.SyAlarmMng)
   .component('SyPropMng',      window.SyPropMng)
   .component('SyPathMng',      window.SyPathMng)

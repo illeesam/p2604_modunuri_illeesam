@@ -622,7 +622,7 @@
   .component('LikePage',     window.Like)
   .component('LocationPage', window.Location)
   .component('AboutPage',    window.About)
-  /* ── pages/my/ (마이페이지) ── */
+  /* ── pages/fo/my/ (마이페이지) ── */
   .component('MyDateFilter', window.MyDateFilter)
   .component('MyOrder',      window.MyOrder)
   .component('MyClaim',      window.MyClaim)
@@ -632,8 +632,8 @@
   .component('MyChatt',      window.MyChatt)
   /* ── components/disp/ (전시 컴포넌트) ── */
   .component('DispX04Widget', window.DispX04Widget)
-  /* ── pages/xd/ (전시 UI 데모) — 스크립트 미로드 시 건너뜀 ── */
-  /* ── pages/xs/ (샘플) — 스크립트 미로드 시 건너뜀 ── */
+  /* ── pages/fo/xd/ (전시 UI 데모) — 스크립트 미로드 시 건너뜀 ── */
+  /* ── pages/fo/xs/ (샘플) — 스크립트 미로드 시 건너뜀 ── */
   /* ── components/comp/ (공통 컴포넌트) ── */
   .component('BaseAttachGrp', window.BaseAttachGrp)
   /* ── components/modals/ — 상세 모달 ── */
