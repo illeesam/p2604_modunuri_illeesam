@@ -1494,9 +1494,9 @@
 `,
   })
   /* ── pages/base/ ── */
-  .component('AdminError404',        window.boError404)
-  .component('AdminError401',        window.boError401)
-  .component('AdminError500',        window.boError500)
+  .component('BoError404',        window.boError404)
+  .component('BoError401',        window.boError401)
+  .component('BoError500',        window.boError500)
   /* ── components/disp/ (전시 핵심 컴포넌트) ── */
   .component('DispX01Ui',        window.DispX01Ui)
   .component('DispX02Area',      window.DispX02Area)

@@ -602,9 +602,9 @@
   .component('FrontAppSidebar',  window.foAppSidebar)
   .component('FrontAppFooter',   window.foAppFooter)
   /* ── pages/base/ ── */
-  .component('FrontError404',    window.foError404)
-  .component('FrontError401',    window.foError401)
-  .component('FrontError500',    window.foError500)
+  .component('FoError404',    window.foError404)
+  .component('FoError401',    window.foError401)
+  .component('FoError500',    window.foError500)
   /* ── pages/ (사용자 페이스 - FO_SITE_NO 기준 동적) ── */
   .component('Home'+window.FO_SITE_NO,        window['Home'+window.FO_SITE_NO])
   .component('Prod'+window.FO_SITE_NO+'List', window['Prod'+window.FO_SITE_NO+'List'])
