@@ -4,7 +4,7 @@ window.PmDiscntMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const discounts = ref([]);
+    const discounts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmDiscntMng = {
         const res = await window.adminApi.get('/bo/ec/pm/discnt/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        discounts.value = res.data?.data?.list || [];
+        discounts.splice(0, discounts.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

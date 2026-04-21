@@ -5,7 +5,7 @@ window.PmPlanDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const plans = ref([]);
+    const plans = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -16,7 +16,7 @@ window.PmPlanDtl = {
         const res = await window.adminApi.get('/bo/ec/pm/plan/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        plans.value = res.data?.data?.list || [];
+        plans.splice(0, plans.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

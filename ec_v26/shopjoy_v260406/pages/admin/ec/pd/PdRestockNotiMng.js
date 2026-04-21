@@ -6,7 +6,7 @@ window.PdRestockNotiMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
     const members = ref(window.adminDataProvider?.getMembers?.() || []);
-    const restockNotis = ref([]);
+    const restockNotis = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,7 +17,7 @@ window.PdRestockNotiMng = {
         const res = await window.adminApi.get('/bo/ec/pd/restock-noti/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        restockNotis.value = res.data?.data?.list || [];
+        restockNotis.splice(0, restockNotis.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

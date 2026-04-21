@@ -2,7 +2,7 @@
 window.SyRoleMng = {
   name: 'SyRoleMng',
   props: ['navigate', 'showToast', 'showConfirm'],
-  setup(props) {    const roles = ref([]);
+  setup(props) {    const roles = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

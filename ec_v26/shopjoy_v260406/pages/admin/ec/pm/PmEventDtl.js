@@ -5,7 +5,7 @@ window.PmEventDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
-    const events = ref([]);
+    const events = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -16,7 +16,7 @@ window.PmEventDtl = {
         const res = await window.adminApi.get('/bo/ec/pm/event/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        events.value = res.data?.data?.list || [];
+        events.splice(0, events.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

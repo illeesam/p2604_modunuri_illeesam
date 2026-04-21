@@ -3,7 +3,7 @@ window.PdCategoryDtl = {
   name: 'PdCategoryDtl',
   props: ['navigate', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const categories = ref([]);
+    const categories = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -14,7 +14,7 @@ window.PdCategoryDtl = {
         const res = await window.adminApi.get('/bo/ec/pd/category/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        categories.value = res.data?.data?.list || [];
+        categories.splice(0, categories.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

@@ -2,7 +2,7 @@
 window.SyCodeMng = {
   name: 'SyCodeMng',
   props: ['navigate', 'showToast', 'showConfirm'],
-  setup(props) {    const codes = ref([]);
+  setup(props) {    const codes = reactive([]);
     const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);

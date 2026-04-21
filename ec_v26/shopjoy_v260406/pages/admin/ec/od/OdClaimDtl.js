@@ -4,8 +4,8 @@ window.OdClaimDtl = {
   name: 'OdClaimDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const claims = ref([]);
-    const orders = ref([]);
+    const claims = reactive([]);
+    const orders = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,8 +17,8 @@ window.OdClaimDtl = {
           window.adminApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.adminApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
-        claims.value = claimsRes.data?.data?.list || [];
-        orders.value = ordersRes.data?.data?.list || [];
+        claims = claimsRes.data?.data?.list || [];
+        orders = ordersRes.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;

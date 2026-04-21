@@ -6,7 +6,7 @@ window.DpDispUiMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const displays = ref([]);
+    const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,7 +17,7 @@ window.DpDispUiMng = {
         const res = await window.adminApi.get('/bo/ec/dp/ui/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        displays.value = res.data?.data?.list || [];
+        displays.splice(0, displays.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

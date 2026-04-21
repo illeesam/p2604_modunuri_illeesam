@@ -4,7 +4,7 @@ window.CmBlogMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const blogs = ref([]);
+    const blogs = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.CmBlogMng = {
         const res = await window.adminApi.get('/bo/ec/cm/blog/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        blogs.value = res.data?.data?.list || [];
+        blogs.splice(0, blogs.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

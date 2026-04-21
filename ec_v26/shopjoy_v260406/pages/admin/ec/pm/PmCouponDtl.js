@@ -4,7 +4,7 @@ window.PmCouponDtl = {
   name: 'PmCouponDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const coupons = ref([]);
+    const coupons = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmCouponDtl = {
         const res = await window.adminApi.get('/bo/ec/pm/coupon/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        coupons.value = res.data?.data?.list || [];
+        coupons.splice(0, coupons.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -190,7 +190,7 @@ window.PmCouponDtl = {
       }
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!coupons.value) coupons.value = [];
+      if (!coupons.value) coupons = [];
       if (isNew.value) {
         coupons.value.push({
           ...form,

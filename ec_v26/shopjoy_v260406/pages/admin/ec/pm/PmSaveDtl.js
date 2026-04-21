@@ -4,7 +4,7 @@ window.PmSaveDtl = {
   name: 'PmSaveDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const saves = ref([]);
+    const saves = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmSaveDtl = {
         const res = await window.adminApi.get('/bo/ec/pm/save/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        saves.value = res.data?.data?.list || [];
+        saves.splice(0, saves.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

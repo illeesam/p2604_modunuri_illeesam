@@ -4,7 +4,7 @@ window.PdProdMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = ref([]);
+    const products = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PdProdMng = {
         const res = await window.adminApi.get('/bo/ec/pd/prod/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        products.value = res.data?.data?.list || [];
+        products.splice(0, products.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

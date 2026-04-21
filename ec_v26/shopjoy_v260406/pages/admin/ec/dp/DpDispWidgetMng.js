@@ -4,7 +4,7 @@ window.DpDispWidgetMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const widgets = ref([]);
+    const widgets = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.DpDispWidgetMng = {
         const res = await window.adminApi.get('/bo/ec/dp/widget/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        widgets.value = res.data?.data?.list || [];
+        widgets.splice(0, widgets.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

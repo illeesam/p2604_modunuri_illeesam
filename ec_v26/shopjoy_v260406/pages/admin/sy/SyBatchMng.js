@@ -2,7 +2,7 @@
 window.SyBatchMng = {
   name: 'SyBatchMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const batches = ref([]);
+  setup(props) {    const batches = reactive([]);
     const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);

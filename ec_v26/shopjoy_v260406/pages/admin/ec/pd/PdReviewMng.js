@@ -6,7 +6,7 @@ window.PdReviewMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
     const members = ref(window.adminDataProvider?.getMembers?.() || []);
-    const reviews = ref([]);
+    const reviews = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,7 +17,7 @@ window.PdReviewMng = {
         const res = await window.adminApi.get('/bo/ec/pd/review/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        reviews.value = res.data?.data?.list || [];
+        reviews.splice(0, reviews.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

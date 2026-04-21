@@ -8,7 +8,7 @@ window.PdBundleMng = {
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
     const brands = ref(window.adminDataProvider?.getBrands?.() || []);
     const categoryProds = ref((window.adminData?.categoryProds) || []);
-    const bundles = ref([]);
+    const bundles = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -19,7 +19,7 @@ window.PdBundleMng = {
         const res = await window.adminApi.get('/bo/ec/pd/bundle/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        bundles.value = res.data?.data?.list || [];
+        bundles.splice(0, bundles.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -301,7 +301,7 @@ window.PdBundleMng = {
       }
       /* bundles 데이터 반영 */
       const others = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
-      bundles.value = [
+      bundles = [
         ...others,
         ...dtlItems.map((d, i) => ({
           bundleItemId: d.bundleItemId || `B_${bundleProdId}_${i + 1}`,
@@ -333,7 +333,7 @@ window.PdBundleMng = {
     const deleteProd = async bundleProdId => {
       const ok = await props.showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
-      bundles.value = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
+      bundles = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
       if (editBundleId.value === bundleProdId) closeDtl();
       try {
         const res = await window.adminApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`);

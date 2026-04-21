@@ -2,7 +2,7 @@
 window.SyTemplateMng = {
   name: 'SyTemplateMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const templates = ref([]);
+  setup(props) {    const templates = reactive([]);
     const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);

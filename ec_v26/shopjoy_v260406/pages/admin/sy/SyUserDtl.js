@@ -2,7 +2,7 @@
 window.SyUserDtl = {
   name: 'SyUserDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const users = ref([]);
+  setup(props) {    const users = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

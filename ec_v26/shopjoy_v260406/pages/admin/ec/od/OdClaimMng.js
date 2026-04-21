@@ -4,8 +4,8 @@ window.OdClaimMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const claims = ref([]);
-    const members = ref([]);
+    const claims = reactive([]);
+    const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,8 +17,8 @@ window.OdClaimMng = {
           window.adminApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
-        claims.value = claimsRes.data?.data?.list || [];
-        members.value = membersRes.data?.data?.list || [];
+        claims = claimsRes.data?.data?.list || [];
+        members = membersRes.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;

@@ -2,7 +2,7 @@
 window.SyAlarmDtl = {
   name: 'SyAlarmDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const alarms = ref([]);
+  setup(props) {    const alarms = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

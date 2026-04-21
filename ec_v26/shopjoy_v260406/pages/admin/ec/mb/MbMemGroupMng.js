@@ -4,7 +4,7 @@ window.MbMemGroupMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const groups = ref([]);
+    const groups = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.MbMemGroupMng = {
         const res = await window.adminApi.get('/bo/ec/mb/mem-group/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        groups.value = res.data?.data?.list || [];
+        groups.splice(0, groups.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

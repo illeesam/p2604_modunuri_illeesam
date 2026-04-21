@@ -4,7 +4,7 @@ window.CmChattMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const chatts = ref([]);
+    const chatts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.CmChattMng = {
         const res = await window.adminApi.get('/bo/ec/cm/chatt/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        chatts.value = res.data?.data?.list || [];
+        chatts.splice(0, chatts.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

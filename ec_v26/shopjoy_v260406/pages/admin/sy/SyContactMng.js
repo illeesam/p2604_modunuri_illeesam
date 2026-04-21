@@ -2,7 +2,7 @@
 window.SyContactMng = {
   name: 'SyContactMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const contacts = ref([]);
+  setup(props) {    const contacts = reactive([]);
     const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);

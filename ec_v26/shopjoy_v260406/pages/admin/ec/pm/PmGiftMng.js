@@ -4,7 +4,7 @@ window.PmGiftMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const gifts = ref([]);
+    const gifts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmGiftMng = {
         const res = await window.adminApi.get('/bo/ec/pm/gift/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        gifts.value = res.data?.data?.list || [];
+        gifts.splice(0, gifts.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

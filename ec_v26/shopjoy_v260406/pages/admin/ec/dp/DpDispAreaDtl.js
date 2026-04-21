@@ -3,7 +3,7 @@ window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const areas = ref([]);
+    const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -14,7 +14,7 @@ window.DpDispAreaDtl = {
         const res = await window.adminApi.get('/bo/ec/dp/area/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        areas.value = res.data?.data?.list || [];
+        areas.splice(0, areas.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

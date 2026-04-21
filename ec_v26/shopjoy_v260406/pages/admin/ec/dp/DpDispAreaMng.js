@@ -4,7 +4,7 @@ window.DpDispAreaMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const areas = ref([]);
+    const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.DpDispAreaMng = {
         const res = await window.adminApi.get('/bo/ec/dp/area/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        areas.value = res.data?.data?.list || [];
+        areas.splice(0, areas.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

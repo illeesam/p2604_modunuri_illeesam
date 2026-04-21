@@ -2,7 +2,7 @@
 window.SyTemplateDtl = {
   name: 'SyTemplateDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const templates = ref([]);
+  setup(props) {    const templates = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

@@ -2,7 +2,7 @@
 window.SyBbsDtl = {
   name: 'SyBbsDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const bbss = ref([]);
+  setup(props) {    const bbss = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

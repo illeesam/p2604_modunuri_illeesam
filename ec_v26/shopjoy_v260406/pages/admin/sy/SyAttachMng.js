@@ -2,7 +2,7 @@
 window.SyAttachMng = {
   name: 'SyAttachMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm'],
-  setup(props) {    const attachs = ref([]);
+  setup(props) {    const attachs = reactive([]);
     const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);

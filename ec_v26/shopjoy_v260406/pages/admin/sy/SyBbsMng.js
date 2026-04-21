@@ -2,7 +2,7 @@
 window.SyBbsMng = {
   name: 'SyBbsMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const bbss = ref([]);
+  setup(props) {    const bbss = reactive([]);
     const { ref, reactive, computed, onMounted } = Vue;
     const loading = ref(false);
     const error = ref(null);

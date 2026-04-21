@@ -4,8 +4,8 @@ window.OdDlivMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const deliveries = ref([]);
-    const members = ref([]);
+    const deliveries = reactive([]);
+    const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,8 +17,8 @@ window.OdDlivMng = {
           window.adminApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
-        deliveries.value = delivRes.data?.data?.list || [];
-        members.value = membersRes.data?.data?.list || [];
+        deliveries = delivRes.data?.data?.list || [];
+        members = membersRes.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;

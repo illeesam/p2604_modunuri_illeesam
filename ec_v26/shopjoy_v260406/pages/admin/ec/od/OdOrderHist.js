@@ -5,7 +5,7 @@ window.OdOrderHist = {
   props: ['navigate', 'showRefModal', 'showToast', 'orderId'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;
-    const orders = ref([]);
+    const orders = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -16,7 +16,7 @@ window.OdOrderHist = {
         const res = await window.adminApi.get('/bo/ec/od/order/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        orders.value = res.data?.data?.list || [];
+        orders.splice(0, orders.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

@@ -4,7 +4,7 @@ window.SySiteMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const sites = ref([]);
+    const sites = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

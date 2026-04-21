@@ -4,7 +4,7 @@ window.PmDiscntDtl = {
   name: 'PmDiscntDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const discounts = ref([]);
+    const discounts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmDiscntDtl = {
         const res = await window.adminApi.get('/bo/ec/pm/discnt/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        discounts.value = res.data?.data?.list || [];
+        discounts.splice(0, discounts.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

@@ -6,7 +6,7 @@ window.PdQnaMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
     const members = ref(window.adminDataProvider?.getMembers?.() || []);
-    const qnas = ref([]);
+    const qnas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,7 +17,7 @@ window.PdQnaMng = {
         const res = await window.adminApi.get('/bo/ec/pd/qna/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        qnas.value = res.data?.data?.list || [];
+        qnas.splice(0, qnas.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

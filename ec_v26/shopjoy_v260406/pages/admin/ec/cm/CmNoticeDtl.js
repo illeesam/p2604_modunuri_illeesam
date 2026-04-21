@@ -3,7 +3,7 @@ window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
   setup(props) {
-    const notices = ref([]);
+    const notices = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -14,7 +14,7 @@ window.CmNoticeDtl = {
         const res = await window.adminApi.get('/bo/ec/cm/notice/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        notices.value = res.data?.data?.list || [];
+        notices.splice(0, notices.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

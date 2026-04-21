@@ -65,7 +65,7 @@
     name: 'MbCustInfoMng',
     props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
     setup(props) {
-    const custInfos = ref([]);
+    const custInfos = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -76,7 +76,7 @@
         const res = await window.adminApi.get('/bo/ec/mb/cust-info/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        custInfos.value = res.data?.data?.list || [];
+        custInfos.splice(0, custInfos.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

@@ -4,7 +4,7 @@ window.PdTagMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const tags = ref([]);
+    const tags = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PdTagMng = {
         const res = await window.adminApi.get('/bo/ec/pd/tag/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        tags.value = res.data?.data?.list || [];
+        tags.splice(0, tags.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

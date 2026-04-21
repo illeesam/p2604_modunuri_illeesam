@@ -7,7 +7,7 @@ window.PdSetMng = {
     const products = ref(window.adminDataProvider?.getProducts?.() || []);
     const brands = ref(window.adminDataProvider?.getBrands?.() || []);
     const categoryProds = ref((window.adminData?.categoryProds) || []);
-    const sets = ref([]);
+    const sets = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -18,7 +18,7 @@ window.PdSetMng = {
         const res = await window.adminApi.get('/bo/ec/pd/set/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        sets.value = res.data?.data?.list || [];
+        sets.splice(0, sets.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

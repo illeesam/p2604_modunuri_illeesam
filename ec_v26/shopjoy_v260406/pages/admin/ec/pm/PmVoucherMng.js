@@ -4,7 +4,7 @@ window.PmVoucherMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const vouchers = ref([]);
+    const vouchers = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmVoucherMng = {
         const res = await window.adminApi.get('/bo/ec/pm/voucher/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        vouchers.value = res.data?.data?.list || [];
+        vouchers.splice(0, vouchers.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

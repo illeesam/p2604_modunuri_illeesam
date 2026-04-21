@@ -2,7 +2,7 @@
 window.SyVendorDtl = {
   name: 'SyVendorDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const vendors = ref([]);
+  setup(props) {    const vendors = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

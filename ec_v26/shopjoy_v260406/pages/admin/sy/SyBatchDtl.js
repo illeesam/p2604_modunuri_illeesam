@@ -2,7 +2,7 @@
 window.SyBatchDtl = {
   name: 'SyBatchDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const batches = ref([]);
+  setup(props) {    const batches = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

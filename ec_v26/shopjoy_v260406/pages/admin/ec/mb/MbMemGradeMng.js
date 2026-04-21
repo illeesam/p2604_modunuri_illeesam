@@ -4,7 +4,7 @@ window.MbMemGradeMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const grades = ref([]);
+    const grades = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.MbMemGradeMng = {
         const res = await window.adminApi.get('/bo/ec/mb/mem-grade/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        grades.value = res.data?.data?.list || [];
+        grades.splice(0, grades.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

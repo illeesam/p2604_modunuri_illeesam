@@ -4,8 +4,8 @@ window.OdOrderMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const orders = ref([]);
-    const members = ref([]);
+    const orders = reactive([]);
+    const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -17,8 +17,8 @@ window.OdOrderMng = {
           window.adminApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.adminApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
-        orders.value = ordersRes.data?.data?.list || [];
-        members.value = membersRes.data?.data?.list || [];
+        orders = ordersRes.data?.data?.list || [];
+        members = membersRes.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;

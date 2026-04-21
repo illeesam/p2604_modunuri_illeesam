@@ -4,7 +4,7 @@ window.PmVoucherDtl = {
   name: 'PmVoucherDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const vouchers = ref([]);
+    const vouchers = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmVoucherDtl = {
         const res = await window.adminApi.get('/bo/ec/pm/voucher/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        vouchers.value = res.data?.data?.list || [];
+        vouchers.splice(0, vouchers.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

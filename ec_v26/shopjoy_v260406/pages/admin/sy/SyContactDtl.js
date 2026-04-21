@@ -3,7 +3,7 @@ window._syContactDtlState = window._syContactDtlState || { tab: 'content', viewM
 window.SyContactDtl = {
   name: 'SyContactDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const contacts = ref([]);
+  setup(props) {    const contacts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

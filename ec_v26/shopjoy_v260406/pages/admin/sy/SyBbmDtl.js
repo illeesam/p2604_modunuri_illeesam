@@ -2,7 +2,7 @@
 window.SyBbmDtl = {
   name: 'SyBbmDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const bbms = ref([]);
+  setup(props) {    const bbms = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

@@ -4,7 +4,7 @@ window.PmCouponMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const coupons = ref([]);
+    const coupons = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.PmCouponMng = {
         const res = await window.adminApi.get('/bo/ec/pm/coupon/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        coupons.value = res.data?.data?.list || [];
+        coupons.splice(0, coupons.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

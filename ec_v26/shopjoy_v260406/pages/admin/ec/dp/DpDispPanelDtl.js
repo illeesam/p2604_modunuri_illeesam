@@ -3,7 +3,7 @@ window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const panels = ref([]);
+    const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -14,7 +14,7 @@ window.DpDispPanelDtl = {
         const res = await window.adminApi.get('/bo/ec/dp/panel/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        panels.value = res.data?.data?.list || [];
+        panels.splice(0, panels.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

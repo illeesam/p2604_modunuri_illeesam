@@ -4,7 +4,7 @@ window.MbMemberMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const members = ref([]);
+    const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -15,7 +15,7 @@ window.MbMemberMng = {
         const res = await window.adminApi.get('/bo/ec/mb/member/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        members.value = res.data?.data?.list || [];
+        members.splice(0, members.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

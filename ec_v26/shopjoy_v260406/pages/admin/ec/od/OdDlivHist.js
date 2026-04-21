@@ -5,7 +5,7 @@ window.OdDlivHist = {
   props: ['navigate', 'showRefModal', 'orderId'],
   setup(props) {
     const { ref, computed } = Vue;
-    const deliveries = ref([]);
+    const deliveries = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -16,7 +16,7 @@ window.OdDlivHist = {
         const res = await window.adminApi.get('/bo/ec/od/dliv/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        deliveries.value = res.data?.data?.list || [];
+        deliveries.splice(0, deliveries.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
