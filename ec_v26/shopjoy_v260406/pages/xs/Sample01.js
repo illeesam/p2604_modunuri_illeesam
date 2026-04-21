@@ -53,11 +53,8 @@ window.XsSample01 = {
     };
 
     onMounted(async () => {
-      try {
-        const r = await window.frontApi.get('xs/sample01.json');
-        (r.data || []).forEach(d => allData.push(d));
-        loadGrid();
-      } catch { showToast('데이터 로딩 실패', 'error'); }
+      /* 샘플 데이터: 빈 상태로 시작 */
+      loadGrid();
     });
 
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, grade: searchGrade.value, status: searchStatus.value }); loadGrid(); };

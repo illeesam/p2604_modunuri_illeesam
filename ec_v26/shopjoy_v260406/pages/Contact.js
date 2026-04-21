@@ -57,18 +57,10 @@ window.Contact = {
         <div v-if="errors.desc" class="form-error">{{ errors.desc }}</div>
       </div>
       <div style="margin-bottom:22px;">
-        <label class="form-label">첨부파일</label>
-        <base-attach-grp
-          :model-value="form.attachGrpId"
-          @update:model-value="form.attachGrpId = $event"
-          :admin-data="contactData"
-          ref-id="CONTACT"
-          :show-toast="showToast"
-          grp-code="CONTACT_ATTACH"
-          grp-nm="문의 첨부파일"
-          :max-count="5"
-          :max-size-mb="10"
-        />
+        <label class="form-label">첨부파일 (준비중)</label>
+        <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#666;font-size:0.9rem;">
+          파일 업로드 기능은 별도로 구현 예정입니다.
+        </div>
       </div>
       <button class="btn-blue" @click="submitForm" style="width:100%;padding:13px;">문의 접수하기</button>
     </div>
@@ -104,18 +96,9 @@ window.Contact = {
       window.cmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
     );
 
-    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', attachGrpId: null });
+    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     const errors = reactive({});
     const openFaq = ref(null);
-
-    /* BaseAttachGrp 용 로컬 데이터 저장소 */
-    const contactData = reactive({
-      attaches:   [],
-      attachGrps: [],
-      nextId(arr, key) {
-        return arr.length ? Math.max(...arr.map(x => x[key])) + 1 : 1;
-      },
-    });
 
     const clearErr = k => { if (errors[k] !== undefined) delete errors[k]; };
 
@@ -131,7 +114,7 @@ window.Contact = {
     const submitForm = async () => {
       if (!validate()) return;
       if (window.frontApi) {
-        await window.frontApi.post('contact-intake.json', {
+        await window.frontApi.post('/fo/inquiry/create', {
           source: 'shopjoy',
           name: form.name,
           email: form.email,
@@ -142,11 +125,9 @@ window.Contact = {
         }).catch(() => {});
       }
       props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
-      Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', attachGrpId: null });
-      contactData.attaches.splice(0);
-      contactData.attachGrps.splice(0);
+      Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 
-    return { form, errors, openFaq, clearErr, submitForm, inquiryCodes, contactData };
+    return { form, errors, openFaq, clearErr, submitForm, inquiryCodes };
   }
 };

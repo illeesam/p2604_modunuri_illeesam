@@ -1,5 +1,5 @@
 /* ============================================
-   ShopJoy - Vue 3 SPA (의류 쇼핑몰)
+   ShopJoy - FO Vue 3 SPA (의류 쇼핑몰)
    ============================================ */
 (async function () {
   await window.__SITE_CONFIG_READY__;
@@ -7,7 +7,7 @@
 
   /* ── Pinia 생성 및 Auth 초기화 ── */
   const pinia = Pinia.createPinia();
-  window.frontAuth.init(pinia);
+  window.foAuth.init(pinia);
 
   const app = createApp({
   setup() {
@@ -239,12 +239,12 @@
     };
 
     /* ── Auth ── */
-    const auth = window.frontAuth.state;
+    const auth = window.foAuth.state;
     const showLogin = ref(false);
     const onShowLogin = () => { showLogin.value = true; };
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
     const onLogout = () => {
-      window.frontAuth.logout();
+      window.foAuth.logout();
       showToast('로그아웃되었습니다.', 'info');
       if (MY_PAGES.includes(page.value)) page.value = 'home';
     };

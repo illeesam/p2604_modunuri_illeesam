@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.ZzSample2Mapper">
+
+    <sql id="zzSample2Cond">
+        <where>
+            <if test="p.sample2Id != null and p.sample2Id != ''">AND sample2_id = #{p.sample2Id}</if>
+            <if test="p.itemName != null and p.itemName != ''">AND item_name ILIKE '%' || #{p.itemName} || '%'</if>
+            <if test="p.itemCode != null and p.itemCode != ''">AND item_code = #{p.itemCode}</if>
+            <if test="p.isActive != null">AND is_active = #{p.isActive}</if>
+            <if test="p.regDateStart != null and p.regDateStart != ''">AND reg_date >= #{p.regDateStart}::DATE</if>
+            <if test="p.regDateEnd != null and p.regDateEnd != ''">AND reg_date &lt; (#{p.regDateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample2Dto">
+        SELECT  /* base.sy :: ZzSample2 :: selectById */
+              *
+        FROM shopjoy_2604.zz_sample2
+        WHERE sample2_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample2Dto">
+        SELECT  /* base.sy :: ZzSample2 :: selectList */
+              *
+        FROM shopjoy_2604.zz_sample2
+            <include refid="zzSample2Cond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY sample2_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY sample2_id DESC</when>
+            <when test="p.sort == 'item_asc'">ORDER BY item_name ASC</when>
+            <when test="p.sort == 'item_desc'">ORDER BY item_name DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY reg_date DESC</when>
+            <otherwise>ORDER BY reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample2Dto">
+        SELECT  /* base.sy :: ZzSample2 :: selectPageList */
+              *
+        FROM shopjoy_2604.zz_sample2
+            <include refid="zzSample2Cond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY sample2_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY sample2_id DESC</when>
+            <when test="p.sort == 'item_asc'">ORDER BY item_name ASC</when>
+            <when test="p.sort == 'item_desc'">ORDER BY item_name DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY reg_date DESC</when>
+            <otherwise>ORDER BY reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)  /* base.sy :: ZzSample2 :: selectPageCount */
+        FROM shopjoy_2604.zz_sample2
+            <include refid="zzSample2Cond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample2">
+        UPDATE shopjoy_2604.zz_sample2  /* base.sy :: ZzSample2 :: updateSelective */
+        <set>
+            <if test="itemName != null">item_name = #{itemName},</if>
+            <if test="itemCode != null">item_code = #{itemCode},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="isActive != null">is_active = #{isActive},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE sample2_id = #{sample2Id}
+    </update>
+
+</mapper>

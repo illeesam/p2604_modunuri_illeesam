@@ -125,13 +125,7 @@ window.OdDlivDtl = {
       }).filter(Boolean);
     };
     onMounted(async () => {
-      try {
-        const res = await window.adminApi.get('my/orders.json');
-        const oid = props.editId && deliveries.value.find(d=>d.dlivId===props.editId)?.orderId;
-        const o = (res.data || []).find(x => x.orderId === oid);
-        if (o && o.items && o.items.length) dlivItems.splice(0, dlivItems.length, ...o.items);
-        else dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
-      } catch (_) { dlivItems.splice(0, dlivItems.length, ...sampleDlivItems()); }
+      dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 

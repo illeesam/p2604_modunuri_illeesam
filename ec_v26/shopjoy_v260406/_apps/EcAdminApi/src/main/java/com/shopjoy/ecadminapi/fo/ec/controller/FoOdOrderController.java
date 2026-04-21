@@ -18,6 +18,7 @@ import java.util.Map;
  * GET  /api/fo/ec/od/order/page      — 내 주문 페이징
  * GET  /api/fo/ec/od/order/{orderId} — 주문 상세
  * POST /api/fo/ec/od/order           — 주문 생성
+ * POST /api/fo/order/create          — 주문 생성 (프론트엔드 경로)
  *
  * 인가: GET → USER or MEMBER / POST → USER or MEMBER (SecurityConfig 전역 룰)
  */

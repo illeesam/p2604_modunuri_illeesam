@@ -109,7 +109,7 @@ window.MyOrder = {
     };
 
     /* ── 공유 모달 ── */
-    const authUser = computed(() => window.frontAuth.state.user);
+    const authUser = computed(() => window.foAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);

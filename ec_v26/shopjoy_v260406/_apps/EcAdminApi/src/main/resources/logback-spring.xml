@@ -37,14 +37,15 @@
          ================================================================ -->
     <springProfile name="local,dev">
 
-        <!-- 앱 시작 시 logback 내부 상태(파일 경로 포함)를 콘솔에 출력 -->
-        <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+        <!-- 앱 시작 시 logback 내부 상태(파일 경로 포함)를 콘솔에 출력 — dev 에서는 비활성 -->
+        <!-- <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/> -->
 
         <!-- ─── CONSOLE: 컬러 + (%파일:%라인) 클릭 링크 ──────────────── -->
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder>
-                <pattern>%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level){highlight} %clr([%X{userType}:%X{userId}]){magenta} %clr(%-40.40logger{39}){cyan} : %msg %clr((%F:%L)){yellow}%n%wex</pattern>
-                <charset>UTF-8</charset>
+            <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{userType}:%X{userId}]){magenta} %logger{39} : %msg%n</pattern>
+                </layout>
             </encoder>
         </appender>
 
@@ -103,12 +104,20 @@
         <logger name="p6spy"                  level="INFO"/>
         <!-- 프레임워크 노이즈 억제 -->
         <logger name="org.springframework"    level="WARN"/>
+        <logger name="org.springframework.boot.logging" level="WARN"/>
+        <logger name="org.springframework.web.servlet.mvc.method.annotation" level="WARN"/>
+        <logger name="org.springframework.web.servlet.handler" level="WARN"/>
         <logger name="org.hibernate"          level="WARN"/>
         <logger name="org.mybatis"            level="WARN"/>
+        <logger name="org.apache.ibatis"      level="WARN"/>
         <logger name="com.zaxxer.hikari"      level="WARN"/>
         <logger name="org.apache.catalina"    level="WARN"/>
+        <logger name="org.jboss.logging"      level="WARN"/>
+        <logger name="io.netty"               level="WARN"/>
+        <logger name="reactor"                level="WARN"/>
+        <logger name="com.ulisesbocchio.jasypt" level="WARN"/>
 
-        <root level="DEBUG">
+        <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="ASYNC_FILE"/>
             <appender-ref ref="ASYNC_ERR"/>

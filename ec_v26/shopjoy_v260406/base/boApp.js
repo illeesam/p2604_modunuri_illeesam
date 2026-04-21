@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 메인 앱 (Top + Left Nav + 탭 라우팅 + 로그인) */
+/* ShopJoy BO Admin - 메인 앱 (Top + Left Nav + 탭 라우팅 + 로그인) */
 (function () {
   const { createApp, ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 

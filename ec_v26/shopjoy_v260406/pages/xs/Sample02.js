@@ -59,12 +59,9 @@ window.XsSample02 = {
     };
 
     onMounted(async () => {
-      try {
-        const r = await window.frontApi.get('xs/sample02.json');
-        (r.data || []).forEach(d => allData.push(d));
-        loadGrid();
-        Vue.nextTick(setupObserver);
-      } catch { showToast('데이터 로딩 실패', 'error'); }
+      /* 샘플 데이터: 빈 상태로 시작 */
+      loadGrid();
+      Vue.nextTick(setupObserver);
     });
 
     onUnmounted(() => {

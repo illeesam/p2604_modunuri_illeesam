@@ -1,4 +1,4 @@
-/* ShopJoy - Auth Module (Pinia + localStorage token 연계) */
+/* ShopJoy - FO Auth Module (Pinia + localStorage token 연계) */
 (function () {
   /* ── 초기 상태: 토큰 + 유저 모두 있을 때만 로그인으로 처리 ── */
   const _initToken = localStorage.getItem('modu-front-token');
@@ -50,18 +50,18 @@
     state.loading = true;
     try {
       if (!window.frontApi) throw new Error('no api');
-      const res = await window.frontApi.get('base/users.json');
-      const u = res.data.find(x => x.email === email && x.password === password);
-      if (u) {
-        const user  = { userId: u.userId, email: u.email, memberNm: u.memberNm, phone: u.phone };
-        const token = _mkToken();
+      const res = await window.frontApi.post('/auth/fo/auth/login', { email, password });
+      if (res.data?.data) {
+        const d = res.data.data;
+        const user  = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };
+        const token = d.accessToken;
         _store.setSession(user, token);
         _sync();
         return { ok: true };
       }
-      return { ok: false, msg: '이메일 또는 비밀번호를 확인하세요.' };
+      return { ok: false, msg: res.data?.message || '로그인 실패' };
     } catch (e) {
-      return { ok: false, msg: '로그인 중 오류가 발생했습니다.' };
+      return { ok: false, msg: e.response?.data?.message || '로그인 중 오류가 발생했습니다.' };
     } finally { state.loading = false; }
   };
 
@@ -80,11 +80,24 @@
   };
 
   /* ── 회원가입 ── */
-  const signup = (memberNm, email, phone, extra = {}) => {
-    const user = { userId: 'u_' + Date.now(), email, memberNm, phone, ...extra };
-    _store.setSession(user, _mkToken());
-    _sync();
-    return { ok: true };
+  const signup = async (memberNm, email, phone, extra = {}) => {
+    state.loading = true;
+    try {
+      if (!window.frontApi) throw new Error('no api');
+      const body = { memberNm, email, phone, ...extra };
+      const res = await window.frontApi.post('/auth/fo/auth/join', body);
+      if (res.data?.data) {
+        const d = res.data.data;
+        const user = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };
+        const token = d.accessToken;
+        _store.setSession(user, token);
+        _sync();
+        return { ok: true };
+      }
+      return { ok: false, msg: res.data?.message || '회원가입 실패' };
+    } catch (e) {
+      return { ok: false, msg: e.response?.data?.message || '회원가입 중 오류가 발생했습니다.' };
+    } finally { state.loading = false; }
   };
 
   /* ── 로그아웃 ── */
@@ -93,5 +106,5 @@
     _sync();
   };
 
-  window.frontAuth = { state, init, login, loginSocial, signup, logout };
+  window.foAuth = { state, init, login, loginSocial, signup, logout };
 })();

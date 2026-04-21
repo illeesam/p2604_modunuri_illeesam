@@ -1,6 +1,10 @@
 spring:
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
 
 # ════════════════════════════════════════════════════════════════
 # Swagger/OpenAPI 설정
@@ -17,11 +21,6 @@ springdoc:
 # ════════════════════════════════════════════════════════════════
 # 파일 업로드 설정 (Spring MultipartFile)
 # ════════════════════════════════════════════════════════════════
-spring:
-  servlet:
-    multipart:
-      max-file-size: 50MB
-      max-request-size: 100MB
 
 # ════════════════════════════════════════════════════════════════
 # 파일 업로드 정책 및 스토리지 설정

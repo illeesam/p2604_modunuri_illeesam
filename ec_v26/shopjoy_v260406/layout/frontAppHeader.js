@@ -63,14 +63,20 @@ window.frontAppHeader = {
       if (!pw.current) { pw.err = '현재 비밀번호를 입력하세요.'; return; }
       if (pw.next.length < 6) { pw.err = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
       if (pw.next !== pw.next2) { pw.err = '새 비밀번호가 일치하지 않습니다.'; return; }
-      /* 데모: users.json에서 현재 비번 확인 */
-      try {
-        const res = await window.frontApi.get('base/users.json');
-        const u = res.data.find(x => x.email === props.auth.user?.email);
-        if (u && u.password !== pw.current) { pw.err = '현재 비밀번호가 올바르지 않습니다.'; return; }
-      } catch (e) {}
-      pw.ok = true;
-      setTimeout(() => { pwOpen.value = false; }, 1400);
+      /* TODO: API 호출로 비밀번호 변경 */
+      if (window.frontApi) {
+        try {
+          await window.frontApi.post('/auth/fo/change-password', {
+            email: props.auth.user?.email,
+            currentPassword: pw.current,
+            newPassword: pw.next,
+          });
+          pw.ok = true;
+          setTimeout(() => { pwOpen.value = false; }, 1400);
+        } catch (e) {
+          pw.err = e.response?.data?.message || '비밀번호 변경 실패';
+        }
+      }
     };
 
     /* ── 공통 인풋 스타일 ── */

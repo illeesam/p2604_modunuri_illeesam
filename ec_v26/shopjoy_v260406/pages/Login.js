@@ -17,9 +17,9 @@ window.Login = {
     const doLogin = async () => {
       loginErr.value = '';
       if (!form.email || !form.password) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
-      const r = await window.frontAuth.login(form.email, form.password);
+      const r = await window.foAuth.login(form.email, form.password);
       if (r.ok) {
-        props.showToast(window.frontAuth.state.user.memberNm + '님, 환영합니다!', 'success');
+        props.showToast(window.foAuth.state.user.memberNm + '님, 환영합니다!', 'success');
         emit('close');
       } else { loginErr.value = r.msg; }
     };
@@ -27,8 +27,8 @@ window.Login = {
     /* 소셜 로그인 (기존 회원) vs 소셜 회원가입 분기 */
     const doSocial = provider => {
       // 로그인 탭에서 클릭 → 바로 로그인
-      window.frontAuth.loginSocial(provider);
-      props.showToast(window.frontAuth.state.user.memberNm + '님, 환영합니다!', 'success');
+      window.foAuth.loginSocial(provider);
+      props.showToast(window.foAuth.state.user.memberNm + '님, 환영합니다!', 'success');
       emit('close');
     };
 
@@ -94,19 +94,24 @@ window.Login = {
     };
 
     /* ── 일반 회원가입 제출 ── */
-    const doSignup = () => {
+    const doSignup = async () => {
       signupErr.value = '';
       if (!sf.memberNm.trim())      { signupErr.value = '이름을 입력하세요.'; return; }
       if (!sf.emailVerified)    { signupErr.value = '이메일 인증이 필요합니다.'; return; }
       if (!sf.phoneVerified)    { signupErr.value = '휴대폰 인증이 필요합니다.'; return; }
       if (sf.password.length < 6){ signupErr.value = '비밀번호는 6자 이상이어야 합니다.'; return; }
       if (sf.password !== sf.password2){ signupErr.value = '비밀번호가 일치하지 않습니다.'; return; }
-      window.frontAuth.signup(sf.memberNm, sf.email, sf.phone, {
+      const r = await window.foAuth.signup(sf.memberNm, sf.email, sf.phone, {
+        password: sf.password,
         postcode: sf.postcode, address: sf.address, addressDetail: sf.addressDetail,
         birthdate: sf.birthdate, gender: sf.gender,
       });
-      props.showToast('회원가입이 완료되었습니다!', 'success');
-      emit('close');
+      if (r.ok) {
+        props.showToast('회원가입이 완료되었습니다!', 'success');
+        emit('close');
+      } else {
+        signupErr.value = r.msg || '회원가입 실패';
+      }
     };
 
     /* ── SNS 회원가입 제출 ── */
@@ -140,18 +145,22 @@ window.Login = {
       }).open();
     };
 
-    const doSnsSignup = () => {
+    const doSnsSignup = async () => {
       snsErr.value = '';
       if (!snsNickname.value.trim()) { snsErr.value = '이름/닉네임을 입력하세요.'; return; }
       if (!snsPhoneVerified.value)   { snsErr.value = '휴대폰 인증이 필요합니다.'; return; }
       const demos = { google: 'google.sns@gmail.com', kakao: 'kakao.sns@kakao.com', naver: 'naver.sns@naver.com' };
-      window.frontAuth.signup(snsNickname.value, demos[snsProvider.value] || 'sns@demo.com', snsPhone.value, {
+      const r = await window.foAuth.signup(snsNickname.value, demos[snsProvider.value] || 'sns@demo.com', snsPhone.value, {
         provider: snsProvider.value,
         postcode: snsSf.postcode, address: snsSf.address, addressDetail: snsSf.addressDetail,
         birthdate: snsSf.birthdate, gender: snsSf.gender,
       });
-      props.showToast(snsNickname.value + '님, 환영합니다!', 'success');
-      emit('close');
+      if (r.ok) {
+        props.showToast(snsNickname.value + '님, 환영합니다!', 'success');
+        emit('close');
+      } else {
+        snsErr.value = r.msg || '회원가입 실패';
+      }
     };
 
     /* ── 공통 인풋 스타일 ── */
@@ -166,7 +175,7 @@ window.Login = {
       providerLabel, providerColor, providerTextColor, IS,
     };
   },
-  computed: { frontAuth() { return window.frontAuth; } },
+  computed: { foAuth() { return window.foAuth; } },
   template: /* html */ `
 <div class="modal-overlay" @click.self="$emit('close')" style="z-index:200;">
   <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">
@@ -183,8 +192,8 @@ window.Login = {
         <input v-model="form.email" type="email" placeholder="이메일" @keyup.enter="doLogin" :style="IS">
         <input v-model="form.password" type="password" placeholder="비밀번호" @keyup.enter="doLogin" :style="IS">
         <div v-if="loginErr" style="color:#e8587a;font-size:0.82rem;text-align:center;">{{ loginErr }}</div>
-        <button @click="doLogin" :disabled="frontAuth.state.loading" class="btn-blue" style="width:100%;padding:12px;">
-          {{ frontAuth.state.loading ? '로그인 중...' : '로그인' }}
+        <button @click="doLogin" :disabled="foAuth.state.loading" class="btn-blue" style="width:100%;padding:12px;">
+          {{ foAuth.state.loading ? '로그인 중...' : '로그인' }}
         </button>
       </div>
 

@@ -1,12 +1,12 @@
 /**
- * 관리자 인증 Pinia 스토어
+ * BO Admin 인증 Pinia 스토어
  * - 토큰 관리
  * - 로그인 사용자 정보
  * - 로그인/로그아웃
  */
 (function () {
   if (!window.Pinia) {
-    console.warn('[authStore] Pinia not loaded');
+    console.warn('[boAuthStore] Pinia not loaded');
     return;
   }
 

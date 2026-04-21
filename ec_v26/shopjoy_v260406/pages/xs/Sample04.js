@@ -93,10 +93,7 @@ window.XsSample04 = {
     }[v] || { icon: 'ℹ️', label: '안내', bg: '#3b82f6', bar: '#3b82f6' });
 
     onMounted(async () => {
-      try {
-        const r = await window.frontApi.get('xs/sample04.json');
-        (r.data || []).forEach(d => members.push(d));
-      } catch {}
+      /* 샘플 데이터: 빈 상태로 시작 */
     });
 
     /* ── adminUtil mock (index.html 미포함 → 가드) ── */

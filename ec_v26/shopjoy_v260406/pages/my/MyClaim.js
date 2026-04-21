@@ -23,7 +23,7 @@ window.MyClaim = {
       .filter(c => !claimStatusFilter.value.length || claimStatusFilter.value.includes(c.status))
     );
 
-    const authUser = computed(() => window.frontAuth.state.user);
+    const authUser = computed(() => window.foAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);

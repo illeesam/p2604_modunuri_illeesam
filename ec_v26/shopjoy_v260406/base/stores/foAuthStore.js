@@ -1,5 +1,5 @@
-/* ShopJoy - Auth Store (Pinia) */
-window.useFrontAuthStore = Pinia.defineStore('frontAuth', {
+/* ShopJoy - FO Auth Store (Pinia) */
+window.useFoAuthStore = Pinia.defineStore('foAuth', {
   state: () => {
     const token = localStorage.getItem('modu-front-token') || null;
     let user = null;

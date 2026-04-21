@@ -119,7 +119,7 @@ window.OdOrderDtl = {
 
     const activeTab = ref(window._odOrderDtlState.activeTab || 'info');
     Vue.watch(activeTab, v => { window._odOrderDtlState.activeTab = v; });
-    /* 주문 항목 (frontoffice orders.json 데이터에서 로드) */
+    /* 주문 항목 (샘플 데이터) */
     const orderItems = reactive([]);
     const sampleOrderItems = () => {
       const base = form.prodNm || '주문상품';
@@ -141,12 +141,7 @@ window.OdOrderDtl = {
       }).filter(Boolean);
     };
     onMounted(async () => {
-      try {
-        const res = await window.adminApi.get('my/orders.json');
-        const o = (res.data || []).find(x => x.orderId === props.editId);
-        if (o && o.items && o.items.length) orderItems.splice(0, orderItems.length, ...o.items);
-        else orderItems.splice(0, orderItems.length, ...sampleOrderItems());
-      } catch (_) { orderItems.splice(0, orderItems.length, ...sampleOrderItems()); }
+      orderItems.splice(0, orderItems.length, ...sampleOrderItems());
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 

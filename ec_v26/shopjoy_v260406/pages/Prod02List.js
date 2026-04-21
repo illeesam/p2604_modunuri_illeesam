@@ -33,7 +33,7 @@ window.Prod02List = {
     const loadProducts = async () => {
       loading.value = true;
       try {
-        const res = await window.frontApi.get('products/list.json');
+        const res = await window.frontApi.get('/fo/product/list');
         allProducts.splice(0, allProducts.length, ...res.data.map(p => assignImage({
           ...p,
           priceNum: p.price,

@@ -508,16 +508,10 @@ window.SyPostman = {
     /* ===== Mount ===== */
     onMounted(async () => {
       loadSettings(); refreshLs();
-      try {
-        const res = await window.adminApi.get('xs/sample07.json');
-        (res.data || []).forEach(n => treeRoot.push(makeNode(n)));
-        treeLoaded.value = true;
-        treeRoot.push(buildAutoCrudNodes());
-        treeRoot.push(buildAutoCrudRestNodes());
-      } catch {
-        treeRoot.push(makeNode({ id:'err', label:'데이터 로딩 실패', type:'folder', open:false, appId:'admin' }));
-        treeLoaded.value = true;
-      }
+      /* 샘플 데이터: 빈 상태로 시작 */
+      treeLoaded.value = true;
+      treeRoot.push(buildAutoCrudNodes());
+      treeRoot.push(buildAutoCrudRestNodes());
     });
 
     return {

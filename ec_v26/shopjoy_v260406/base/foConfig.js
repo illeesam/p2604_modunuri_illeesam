@@ -1,4 +1,4 @@
-/* ShopJoy - 의류 쇼핑몰 site config */
+/* ShopJoy - FO site config */
 
 /* ── 프론트 사이트 번호 (실제 컴포넌트/파일 결정용. URL ID는 generic 사용) ── */
 window.FRONT_SITE_NO = window.FRONT_SITE_NO || '01';

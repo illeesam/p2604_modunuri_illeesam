@@ -20,8 +20,8 @@ window.DispUi02 = {
       siteId:       qs.get('siteId')       || '',
       memberId:     qs.get('memberId')     || '',
       viewOpts:     qs.get('viewOpts')     || 'content,struct,source',
-      isLoggedIn:   qs.get('isLoggedIn') === 'true' || (window.frontAuth?.isLoggedIn ?? false),
-      userGrade:    qs.get('userGrade')    || (window.frontAuth?.userGrade ?? ''),
+      isLoggedIn:   qs.get('isLoggedIn') === 'true' || (window.foAuth?.isLoggedIn ?? false),
+      userGrade:    qs.get('userGrade')    || (window.foAuth?.userGrade ?? ''),
     };
 
     const dispOpt = {

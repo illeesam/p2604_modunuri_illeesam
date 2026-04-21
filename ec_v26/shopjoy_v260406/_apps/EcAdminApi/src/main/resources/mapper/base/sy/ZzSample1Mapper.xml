@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.ZzSample1Mapper">
+
+    <sql id="zzSample1Cond">
+        <where>
+            <if test="p.sample1Id != null and p.sample1Id != ''">AND sample1_id = #{p.sample1Id}</if>
+            <if test="p.category != null and p.category != ''">AND category = #{p.category}</if>
+            <if test="p.title != null and p.title != ''">AND title ILIKE '%' || #{p.title} || '%'</if>
+            <if test="p.status != null and p.status != ''">AND status = #{p.status}</if>
+            <if test="p.regDateStart != null and p.regDateStart != ''">AND reg_date >= #{p.regDateStart}::DATE</if>
+            <if test="p.regDateEnd != null and p.regDateEnd != ''">AND reg_date &lt; (#{p.regDateEnd}::DATE + INTERVAL '1 day')</if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
+        SELECT  /* base.sy :: ZzSample1 :: selectById */
+              *
+        FROM shopjoy_2604.zz_sample1
+        WHERE sample1_id = #{id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
+        SELECT  /* base.sy :: ZzSample1 :: selectList */
+              *
+        FROM shopjoy_2604.zz_sample1
+            <include refid="zzSample1Cond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY sample1_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY sample1_id DESC</when>
+            <when test="p.sort == 'title_asc'">ORDER BY title ASC</when>
+            <when test="p.sort == 'title_desc'">ORDER BY title DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY reg_date DESC</when>
+            <otherwise>ORDER BY reg_date DESC</otherwise>
+        </choose>
+        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
+        SELECT  /* base.sy :: ZzSample1 :: selectPageList */
+              *
+        FROM shopjoy_2604.zz_sample1
+            <include refid="zzSample1Cond"/>
+        <choose>
+            <when test="p.sort == 'id_asc'">ORDER BY sample1_id ASC</when>
+            <when test="p.sort == 'id_desc'">ORDER BY sample1_id DESC</when>
+            <when test="p.sort == 'title_asc'">ORDER BY title ASC</when>
+            <when test="p.sort == 'title_desc'">ORDER BY title DESC</when>
+            <when test="p.sort == 'reg_asc'">ORDER BY reg_date ASC</when>
+            <when test="p.sort == 'reg_desc'">ORDER BY reg_date DESC</when>
+            <otherwise>ORDER BY reg_date DESC</otherwise>
+        </choose>
+        LIMIT #{p.limit} OFFSET #{p.offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(*)  /* base.sy :: ZzSample1 :: selectPageCount */
+        FROM shopjoy_2604.zz_sample1
+            <include refid="zzSample1Cond"/>
+    </select>
+
+    <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.ZzSample1">
+        UPDATE shopjoy_2604.zz_sample1  /* base.sy :: ZzSample1 :: updateSelective */
+        <set>
+            <if test="category != null">category = #{category},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="viewCount != null">view_count = #{viewCount},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE sample1_id = #{sample1Id}
+    </update>
+
+</mapper>

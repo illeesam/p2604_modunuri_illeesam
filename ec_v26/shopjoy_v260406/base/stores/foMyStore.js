@@ -1,5 +1,5 @@
-/* ShopJoy - My Page Store (Pinia) */
-window.useFrontMyStore = Pinia.defineStore('frontMy', () => {
+/* ShopJoy - FO My Page Store (Pinia) */
+window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const { ref, reactive, computed } = Vue;
 
   /* ── 클레임 상수 ── */
@@ -37,7 +37,7 @@ window.useFrontMyStore = Pinia.defineStore('frontMy', () => {
   const orders = ref([]);
   const loadOrders = async () => {
     if (orders.value.length) return;
-    try { const res = await window.frontApi.get('my/orders.json'); orders.value = res.data; }
+    try { const res = await window.frontApi.get('/fo/my/order/list'); orders.value = res.data?.data || []; }
     catch (e) { orders.value = []; }
   };
   const setOrderStatus = (orderId, status) => {
@@ -50,7 +50,7 @@ window.useFrontMyStore = Pinia.defineStore('frontMy', () => {
   const claimFilter = ref('전체');
   const loadClaims = async () => {
     if (claims.value.length) return;
-    try { const res = await window.frontApi.get('my/claims.json'); claims.value = res.data; }
+    try { const res = await window.frontApi.get('/fo/my/claim/list'); claims.value = res.data?.data || []; }
     catch (e) { claims.value = []; }
   };
   const filteredClaims = computed(() =>
@@ -70,7 +70,7 @@ window.useFrontMyStore = Pinia.defineStore('frontMy', () => {
   const couponCode = ref('');
   const loadCoupons = async () => {
     if (coupons.value.length) return;
-    try { const res = await window.frontApi.get('my/coupons.json'); coupons.value = res.data; }
+    try { const res = await window.frontApi.get('/fo/my/coupon/list'); coupons.value = res.data?.data || []; }
     catch (e) { coupons.value = []; }
   };
   const discountLabel = c => c.discountType === 'rate' ? c.discountValue + '% 할인'
@@ -84,9 +84,9 @@ window.useFrontMyStore = Pinia.defineStore('frontMy', () => {
   const loadCash = async () => {
     if (cashHistory.value.length) return;
     try {
-      const res = await window.frontApi.get('my/cash.json');
-      cashBalance.value = res.data.balance;
-      cashHistory.value = res.data.history;
+      const res = await window.frontApi.get('/fo/my/cash/info');
+      cashBalance.value = res.data?.data?.balance || 0;
+      cashHistory.value = res.data?.data?.history || [];
     } catch (e) {}
   };
 
@@ -95,7 +95,7 @@ window.useFrontMyStore = Pinia.defineStore('frontMy', () => {
   const expandedInquiry = ref(null);
   const loadInquiries = async () => {
     if (inquiries.value.length) return;
-    try { const res = await window.frontApi.get('my/inquiries.json'); inquiries.value = res.data; }
+    try { const res = await window.frontApi.get('/fo/my/inquiry/list'); inquiries.value = res.data?.data || []; }
     catch (e) { inquiries.value = []; }
   };
   const inquiryStatusColor = s => ({ '요청':'#3b82f6','처리중':'#f97316','답변완료':'#22c55e','취소됨':'#9ca3af' }[s] || '#9ca3af');
@@ -105,7 +105,7 @@ window.useFrontMyStore = Pinia.defineStore('frontMy', () => {
   const expandedChat = ref(null);
   const loadChats = async () => {
     if (chats.value.length) return;
-    try { const res = await window.frontApi.get('my/chats.json'); chats.value = res.data; }
+    try { const res = await window.frontApi.get('/fo/my/chat/list'); chats.value = res.data?.data || []; }
     catch (e) { chats.value = []; }
   };
   const openChat = chat => {

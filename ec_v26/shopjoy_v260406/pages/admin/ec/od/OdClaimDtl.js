@@ -120,13 +120,7 @@ window.OdClaimDtl = {
       });
     };
     onMounted(async () => {
-      try {
-        const res = await window.adminApi.get('my/claims.json');
-        const c = (res.data || []).find(x => x.claimId === props.editId);
-        if (c && c.items && c.items.length) claimItems.splice(0, claimItems.length, ...c.items);
-        else if (c && c.prodNm) claimItems.splice(0, claimItems.length, { prodNm: c.prodNm, qty: 1, price: c.refundAmount || 0 });
-        else claimItems.splice(0, claimItems.length, ...sampleClaimItems());
-      } catch (_) { claimItems.splice(0, claimItems.length, ...sampleClaimItems()); }
+      claimItems.splice(0, claimItems.length, ...sampleClaimItems());
     });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
