@@ -473,79 +473,113 @@
       const _restoreAdminUser = () => {
         try {
           const tok = localStorage.getItem('modu-admin-token');
-          if (!tok) return null;
-          return JSON.parse(localStorage.getItem('modu-admin-user') || 'null');
-        } catch(_) { return null; }
+          if (!tok) return { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          const user = JSON.parse(localStorage.getItem('modu-admin-user') || 'null');
+          return user || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+        } catch(_) { return { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' }; }
       };
       const currentUser = ref(_restoreAdminUser());
       const activeRoleId = ref(null);
       const currentUserRoles = computed(() => {
-        if (!currentUser.value) return [];
-        const data = window.adminData || {};
-        const userRoles = (data.userRoles || []);
-        const ids = userRoles
-          .filter(ru => ru?.adminUserId === currentUser.value?.adminUserId)
-          .map(ru => ru?.roleId)
-          .filter(Boolean);
-        const roles = (data.roles || []);
-        const roleMap = Object.fromEntries(roles.map(r => [r?.roleId, r]));
-        return ids.map(id => roleMap[id]).filter(Boolean);
+        try {
+          const data = window.adminData || {};
+          const user = currentUser.value || { adminUserId: 0 };
+          const userRoles = (data.userRoles || []);
+          const ids = userRoles
+            .filter(ru => ru?.adminUserId === user?.adminUserId)
+            .map(ru => ru?.roleId)
+            .filter(Boolean);
+          const roles = (data.roles || []);
+          const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
+          const result = ids.map(id => roleMap[id]).filter(Boolean);
+          return result && result.length ? result : [];
+        } catch (e) {
+          console.error('currentUserRoles error:', e);
+          return [];
+        }
       });
       const rolePath = (r, uid) => {
-        if (!r) return '';
-        const data = window.adminData || {};
-        const roles = (data.roles || []);
-        const m = Object.fromEntries(roles.map(x => [x?.roleId, x]));
-        const seg = []; let cur = r; let root = r;
-        while (cur) { seg.unshift(cur.roleNm); root = cur; cur = cur.parentId ? m[cur.parentId] : null; }
-        const path = seg.join(' > ');
-        const wantType = root.roleCode === 'SITE_MGR_ROOT' ? 'SALES'
-                       : root.roleCode === 'DLIV_ROOT'     ? 'DELIVERY' : null;
-        if (wantType) {
-          const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
-          const targetUid = uid != null ? uid : currentUser.value?.adminUserId;
-          let names = [];
-          if (targetUid != null) {
-            const data = window.adminData || {};
-            const userBizs = (data.userBizs || []);
-            const bizs = (data.bizs || []);
-            const bus = userBizs.filter(b => b?.adminUserId === targetUid);
-            const bm = Object.fromEntries(bizs.map(b => [b?.bizId, b]));
-            names = bus.map(bu => bm[bu?.bizId]).filter(b => b && b?.vendorTypeCd === wantType).map(b => b?.bizNm);
+        try {
+          if (!r) return '';
+          const data = window.adminData || {};
+          const roles = (data.roles || []);
+          const m = Object.fromEntries((roles || []).map(x => [x?.roleId, x]));
+          const seg = []; let cur = r; let root = r;
+          while (cur) {
+            seg.unshift(cur?.roleNm || '');
+            root = cur;
+            cur = (cur?.parentId && m[cur.parentId]) ? m[cur.parentId] : null;
           }
-          const nameStr = names.length ? names.join(', ') : '(소속없음)';
-          return '[' + typeLabel + '] ' + nameStr + ' :: ' + path;
+          const path = seg.join(' > ');
+          const wantType = (root?.roleCode === 'SITE_MGR_ROOT') ? 'SALES'
+                         : (root?.roleCode === 'DLIV_ROOT')     ? 'DELIVERY' : null;
+          if (wantType) {
+            const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
+            const targetUid = uid != null ? uid : (currentUser.value?.adminUserId || 0);
+            let names = [];
+            if (targetUid != null && targetUid > 0) {
+              const userBizs = (data.userBizs || []);
+              const bizs = (data.bizs || []);
+              const bus = (userBizs || []).filter(b => b?.adminUserId === targetUid);
+              const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
+              names = (bus || []).map(bu => bm[bu?.bizId]).filter(b => b && b?.vendorTypeCd === wantType).map(b => b?.bizNm || '');
+            }
+            const nameStr = (names && names.length) ? names.join(', ') : '(소속없음)';
+            return '[' + typeLabel + '] ' + nameStr + ' :: ' + path;
+          }
+          return path;
+        } catch (e) {
+          console.error('rolePath error:', e);
+          return '';
         }
-        return path;
       };
       const onRoleChange = () => { location.reload(); };
       const rolesOfUser = (uid) => {
-        const data = window.adminData || {};
-        const userRoles = (data.userRoles || []);
-        const roles = (data.roles || []);
-        const ids = userRoles.filter(ru => ru?.adminUserId === uid).map(ru => ru?.roleId);
-        const m = Object.fromEntries(roles.map(r => [r?.roleId, r]));
-        return ids.map(id => m[id]).filter(Boolean);
+        try {
+          const data = window.adminData || {};
+          const userRoles = (data.userRoles || []);
+          const roles = (data.roles || []);
+          const ids = (userRoles || []).filter(ru => ru?.adminUserId === uid).map(ru => ru?.roleId).filter(Boolean);
+          const m = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
+          const result = (ids || []).map(id => m[id]).filter(Boolean);
+          return result || [];
+        } catch (e) {
+          console.error('rolesOfUser error:', e);
+          return [];
+        }
       };
       const bizInfoOfUser = (uid) => {
-        const data = window.adminData || {};
-        const users = (data.adminUsers || []);
-        const bizs = (data.bizs || []);
-        const bus = users.filter(b => b?.adminUserId === uid);
-        const bm = Object.fromEntries(bizs.map(b => [b?.bizId, b]));
-        const typeLabel = { SALES:'판매업체', DELIVERY:'배송업체', PARTNER:'제휴사', INTERNAL:'내부법인' };
-        return bus.map(bu => {
-          const b = bm[bu.bizId]; if (!b) return '';
-          return '[' + (typeLabel[b.vendorTypeCd] || b.vendorTypeCd) + '] ' + b.bizNm;
-        }).filter(Boolean).join(' / ');
+        try {
+          const data = window.adminData || {};
+          const users = (data.adminUsers || []);
+          const bizs = (data.bizs || []);
+          const bus = (users || []).filter(b => b?.adminUserId === uid);
+          const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
+          const typeLabel = { SALES:'판매업체', DELIVERY:'배송업체', PARTNER:'제휴사', INTERNAL:'내부법인' };
+          return (bus || []).map(bu => {
+            const b = bm[bu?.bizId];
+            if (!b) return '';
+            return '[' + (typeLabel[b?.vendorTypeCd] || b?.vendorTypeCd) + '] ' + b?.bizNm;
+          }).filter(Boolean).join(' / ');
+        } catch (e) {
+          console.error('bizInfoOfUser error:', e);
+          return '';
+        }
       };
       watch(currentUser, (u) => {
-        if (u) {
-          const roles = currentUserRoles.value;
-          if (!roles.find(r => r.roleId === activeRoleId.value)) {
-            activeRoleId.value = roles[0]?.roleId || null;
+        try {
+          if (u && u.adminUserId) {
+            const roles = currentUserRoles.value || [];
+            if (!roles.find(r => r?.roleId === activeRoleId.value)) {
+              activeRoleId.value = (roles && roles.length) ? roles[0]?.roleId : null;
+            }
+          } else {
+            activeRoleId.value = null;
           }
-        } else { activeRoleId.value = null; }
+        } catch (e) {
+          console.error('watch currentUser error:', e);
+          activeRoleId.value = null;
+        }
       }, { immediate: true });
       const loginModal  = reactive({ show: false, tab: 'login' });
       const loginForm   = reactive({ loginName: 'admin1@demo.com', loginPwd: 'demo1234', authMethod: '메인' });
@@ -557,15 +591,23 @@
       const profileModal = reactive({ show: false });
       const profileForm  = reactive({ name: '', phone: '', dept: '', email: '' });
       const openProfile  = () => {
-        if (!currentUser.value) return;
-        Object.assign(profileForm, { name: currentUser.value.name, phone: currentUser.value.phone, dept: currentUser.value.dept, email: currentUser.value.email });
+        if (!currentUser.value || !currentUser.value.adminUserId) return;
+        Object.assign(profileForm, {
+          name: currentUser.value.name || '',
+          phone: currentUser.value.phone || '',
+          dept: currentUser.value.dept || '',
+          email: currentUser.value.email || ''
+        });
         profileModal.show = true; userMenuShow.value = false;
       };
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
-        currentUser.value.name  = profileForm.name;
-        currentUser.value.phone = profileForm.phone;
-        currentUser.value.dept  = profileForm.dept;
+        if (!currentUser.value) {
+          currentUser.value = { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+        }
+        currentUser.value.name  = profileForm.name || '';
+        currentUser.value.phone = profileForm.phone || '';
+        currentUser.value.dept  = profileForm.dept || '';
         profileModal.show = false;
         showToast('프로필이 저장되었습니다.');
       };
@@ -581,10 +623,13 @@
       const savePwChange = () => {
         pwError.value = '';
         if (!pwForm.current || !pwForm.next || !pwForm.confirm) { pwError.value = '모든 항목을 입력하세요.'; return; }
-        if (currentUser.value.password !== pwForm.current) { pwError.value = '현재 비밀번호가 올바르지 않습니다.'; return; }
+        if (!currentUser.value) {
+          pwError.value = '사용자 정보가 없습니다.'; return;
+        }
+        if ((currentUser.value.password || '') !== pwForm.current) { pwError.value = '현재 비밀번호가 올바르지 않습니다.'; return; }
         if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
         if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
-        currentUser.value.password = pwForm.next;
+        currentUser.value.password = pwForm.next || '';
         pwModal.show = false;
         showToast('비밀번호가 변경되었습니다.');
       };
@@ -607,28 +652,35 @@
           const authStore = window.useAuthStore();
           const configStore = window.useConfigStore();
           const user = await authStore.login(loginForm.loginName, loginForm.loginPwd, loginForm.authMethod);
-          currentUser.value = user;
+          currentUser.value = user || { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
           await configStore.loadCodes();
           await configStore.loadUserInfo();
           openTabs.splice(0);
           loginForm.loginName = ''; loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
-          showToast(`${user.name}님 환영합니다.`);
+          showToast(`${(currentUser.value?.name || '사용자')}님 환영합니다.`);
         } catch (err) {
-          loginError.value = err.response?.data?.message || err.message || '로그인 실패';
+          loginError.value = err?.response?.data?.message || err?.message || '로그인 실패';
         }
       };
 
       const doLogout = async () => {
-        const authStore = window.useAuthStore();
-        const configStore = window.useConfigStore();
-        await authStore.logout();
-        configStore.reset();
-        currentUser.value = null; userMenuShow.value = false;
-        openTabs.splice(0);
-        navigate('dashboard');
-        showToast('로그아웃되었습니다.');
+        try {
+          const authStore = window.useAuthStore();
+          const configStore = window.useConfigStore();
+          await authStore.logout();
+          configStore.reset();
+          currentUser.value = { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          userMenuShow.value = false;
+          openTabs.splice(0);
+          navigate('dashboard');
+          showToast('로그아웃되었습니다.');
+        } catch (e) {
+          console.error('doLogout error:', e);
+          currentUser.value = { adminUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          userMenuShow.value = false;
+        }
       };
       /* 프로필/비번 변경 시 localStorage 갱신 */
       const _persistAdminUser = () => {
