@@ -161,14 +161,14 @@ window.OdDlivDtl = {
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-',     to:'준비중',   memo:'배송 등록' },
       ];
-      if (['출고완료','배송중','배송완료'].includes(form.statusCd)) rows.push({ date:d+' 10:00', user:'admin', from:'준비중', to:'출고완료', memo:(form.courierCd||'-')+' 출고' });
+      if (['출고완료','배송중','배송완료'].includes(form.statusCd)) rows.push({ date:d+' 10:00', user:'bo', from:'준비중', to:'출고완료', memo:(form.courierCd||'-')+' 출고' });
       if (['배송중','배송완료'].includes(form.statusCd)) rows.push({ date:d+' 11:30', user:'시스템', from:'출고완료', to:'배송중', memo:'배송 중' });
       if (form.statusCd === '배송완료') rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' });
       return rows;
     });
     const editHistList = computed(() => form.dlivId ? [
-      { date: String(form.regDate||'').slice(0,10)+' 10:05', user:'admin', field:'운송장번호', before:'-', after: form.trackingNo || '-' },
-      { date: String(form.regDate||'').slice(0,10)+' 10:08', user:'admin', field:'택배사',     before:'-', after: form.courierCd || '-' },
+      { date: String(form.regDate||'').slice(0,10)+' 10:05', user:'bo', field:'운송장번호', before:'-', after: form.trackingNo || '-' },
+      { date: String(form.regDate||'').slice(0,10)+' 10:08', user:'bo', field:'택배사',     before:'-', after: form.courierCd || '-' },
     ] : []);
     const tabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },

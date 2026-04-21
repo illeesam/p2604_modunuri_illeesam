@@ -198,10 +198,10 @@ window.OdOrderDtl = {
       const d = String(form.orderDate || '').slice(0,10) || '-';
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-', to:'입금대기', memo:'주문 접수' },
-        { date: d+' 10:15', user:'admin', from:'입금대기', to:'결제완료', memo:'결제 승인' },
+        { date: d+' 10:15', user:'bo', from:'입금대기', to:'결제완료', memo:'결제 승인' },
       ];
       if (form.status && !['입금대기','결제완료'].includes(form.status)) {
-        rows.push({ date: d+' 14:30', user:'admin', from:'결제완료', to: form.status, memo:'상태 변경' });
+        rows.push({ date: d+' 14:30', user:'bo', from:'결제완료', to: form.status, memo:'상태 변경' });
       }
       return rows;
     });
@@ -231,8 +231,8 @@ window.OdOrderDtl = {
       };
     };
     const editHistList = computed(() => form.orderId ? [
-      { date: String(form.orderDate||'').slice(0,10)+' 11:02', user:'admin', field:'수령인 연락처', before:'010-0000-0000', after: form.phone || '010-1234-5678' },
-      { date: String(form.orderDate||'').slice(0,10)+' 13:45', user:'admin', field:'메모',          before:'-',              after:'(수정됨)' },
+      { date: String(form.orderDate||'').slice(0,10)+' 11:02', user:'bo', field:'수령인 연락처', before:'010-0000-0000', after: form.phone || '010-1234-5678' },
+      { date: String(form.orderDate||'').slice(0,10)+' 13:45', user:'bo', field:'메모',          before:'-',              after:'(수정됨)' },
     ] : []);
     const tabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },

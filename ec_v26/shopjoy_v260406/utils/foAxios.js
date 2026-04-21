@@ -74,7 +74,7 @@
       cfg._notified = true;
       try {
         global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'front', status: status || 0, url: cfg.url, message: err.message },
+          detail: { scope: 'fo', status: status || 0, url: cfg.url, message: err.message },
         }));
       } catch (_) {}
     }
@@ -122,7 +122,7 @@
           }
           try {
             global.dispatchEvent(new CustomEvent('api-error', {
-              detail: { scope: 'front', status: 401, url: cfg.url, message: 'session expired' },
+              detail: { scope: 'fo', status: 401, url: cfg.url, message: 'session expired' },
             }));
           } catch (_) {}
           return Promise.reject(err);

@@ -745,7 +745,7 @@ window.DpDispUiSimul = {
         memberId:     p.memberId,
         viewOpts:     p.viewOpts,
       }).toString();
-      const file = scope === 'admin' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
+      const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
       window.open(
         `${window.pageUrl(file)}?${qs}`,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'
@@ -1062,11 +1062,11 @@ window.DpDispUiSimul = {
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
           🗔 모달오픈
         </button>
-        <button @click="openDispUiPopup('front')"
+        <button @click="openDispUiPopup('fo')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #bae6fd;background:#e0f2fe;color:#0369a1;cursor:pointer;font-weight:600;">
           🔗 사용자 팝업
         </button>
-        <button @click="openDispUiPopup('admin')"
+        <button @click="openDispUiPopup('bo')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #f5e8de;background:#fef3eb;color:#c2410c;cursor:pointer;font-weight:600;">
           🔗 관리자 팝업
         </button>
@@ -1099,7 +1099,7 @@ window.DpDispUiSimul = {
     :params="dispUiParamObj" :disp-opt="dispOpt"
     title="DispUi미리보기"
     @close="dispUiModalOpen=false"
-    @open-popup="(scope) => { openDispUiPopup(scope || 'front'); dispUiModalOpen=false; }"
+    @open-popup="(scope) => { openDispUiPopup(scope || 'fo'); dispUiModalOpen=false; }"
   />
 
   <!-- DispUi 사이트 선택 모달 -->

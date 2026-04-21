@@ -174,7 +174,7 @@
     setup() {
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
-      const dashboardComp = computed(() => 'DashboardAdminEc' + (window.BO_SITE_NO || '01'));
+      const dashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
       const errorMessage = ref('');
       /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
       window.addEventListener('api-error', (ev) => {
@@ -469,8 +469,8 @@
       };
 
       /* ── 로그인 상태 (localStorage 영속화) ── */
-      const _mkAdminToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
-      const _restoreAdminUser = () => {
+      const _mkBoToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+      const _restoreBoUser = () => {
         try {
           const tok = localStorage.getItem('modu-bo-token');
           if (!tok) return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
@@ -478,7 +478,7 @@
           return user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
         } catch(_) { return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' }; }
       };
-      const currentUser = ref(_restoreAdminUser());
+      const currentUser = ref(_restoreBoUser());
       const activeRoleId = ref(null);
       const isLoggedIn = computed(() => window.isLogin?.() ?? false);
       const currentUserRoles = computed(() => {
@@ -702,16 +702,16 @@
         }
       };
       /* 프로필/비번 변경 시 localStorage 갱신 */
-      const _persistAdminUser = () => {
+      const _persistBoUser = () => {
         try {
           if (currentUser.value) localStorage.setItem('modu-bo-user', JSON.stringify(currentUser.value));
         } catch(_){}
       };
-      watch(currentUser, _persistAdminUser, { deep: true });
+      watch(currentUser, _persistBoUser, { deep: true });
       /* 다른 탭에서 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
         if (e.key === 'modu-bo-token' || e.key === 'modu-bo-user') {
-          const u = _restoreAdminUser();
+          const u = _restoreBoUser();
           currentUser.value = u;
         }
       });

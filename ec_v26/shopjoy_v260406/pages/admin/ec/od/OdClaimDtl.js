@@ -172,13 +172,13 @@ window.OdClaimDtl = {
       const d = String(form.requestDate || '').slice(0,10) || '-';
       return [
         { date: d+' 09:10', user:'회원',   from:'-',           to: form.type+'요청', memo: form.type+' 접수' },
-        { date: d+' 11:30', user:'admin',  from: form.type+'요청', to:'처리중',        memo:'검토 후 처리 시작' },
-        { date: d+' 15:00', user:'admin',  from:'처리중',      to: form.statusCd,  memo:'상태 갱신' },
+        { date: d+' 11:30', user:'bo',  from: form.type+'요청', to:'처리중',        memo:'검토 후 처리 시작' },
+        { date: d+' 15:00', user:'bo',  from:'처리중',      to: form.statusCd,  memo:'상태 갱신' },
       ];
     });
     const editHistList = computed(() => form.claimId ? [
-      { date: String(form.requestDate||'').slice(0,10)+' 10:00', user:'admin', field:'사유',      before:'-', after: form.reasonCd || '-' },
-      { date: String(form.requestDate||'').slice(0,10)+' 12:20', user:'admin', field:'환불금액',  before:'0', after: (form.refundAmount||0).toLocaleString() },
+      { date: String(form.requestDate||'').slice(0,10)+' 10:00', user:'bo', field:'사유',      before:'-', after: form.reasonCd || '-' },
+      { date: String(form.requestDate||'').slice(0,10)+' 12:20', user:'bo', field:'환불금액',  before:'0', after: (form.refundAmount||0).toLocaleString() },
     ] : []);
     const tabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },

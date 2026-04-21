@@ -73,7 +73,7 @@
       cfg._notified = true;
       try {
         global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'admin', status: status || 0, url: cfg.url, message: err.message },
+          detail: { scope: 'bo', status: status || 0, url: cfg.url, message: err.message },
         }));
       } catch (_) {}
     }
@@ -118,7 +118,7 @@
           } catch (_) {}
           try {
             global.dispatchEvent(new CustomEvent('api-error', {
-              detail: { scope: 'admin', status: 401, url: cfg.url, message: 'session expired' },
+              detail: { scope: 'bo', status: 401, url: cfg.url, message: 'session expired' },
             }));
           } catch (_) {}
           return Promise.reject(err);
