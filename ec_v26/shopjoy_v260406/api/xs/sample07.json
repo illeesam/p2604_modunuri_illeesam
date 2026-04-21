@@ -5,10 +5,10 @@
       {
         "id": "sf_auth", "label": "FO 인증", "type": "folder", "open": false,
         "children": [
-          {"id":"sf_auth_login",   "label":"로그인",    "type":"req","method":"POST","url":"/api/auth/fo/login",   "desc":"FO 회원 로그인 (JWT 발급)","body":"{\n  \"email\": \"test@example.com\",\n  \"password\": \"1234\"\n}"},
-          {"id":"sf_auth_join",    "label":"회원가입",  "type":"req","method":"POST","url":"/api/auth/fo/join",    "desc":"FO 회원가입","body":"{\n  \"email\": \"new@example.com\",\n  \"password\": \"1234\",\n  \"memberNm\": \"홍길동\",\n  \"phone\": \"010-1234-5678\"\n}"},
-          {"id":"sf_auth_refresh", "label":"토큰 갱신", "type":"req","method":"POST","url":"/api/auth/fo/refresh", "desc":"액세스 토큰 갱신","body":"{\n  \"refreshToken\": \"\"\n}"},
-          {"id":"sf_auth_logout",  "label":"로그아웃",  "type":"req","method":"POST","url":"/api/auth/fo/logout",  "desc":"FO 로그아웃"}
+          {"id":"sf_auth_login",   "label":"로그인",    "type":"req","method":"POST","url":"/api/auth/fo/auth/login",   "desc":"FO 회원 로그인 (JWT 발급)","body":"{\n  \"email\": \"test@example.com\",\n  \"password\": \"1234\"\n}"},
+          {"id":"sf_auth_join",    "label":"회원가입",  "type":"req","method":"POST","url":"/api/auth/fo/auth/join",    "desc":"FO 회원가입","body":"{\n  \"email\": \"new@example.com\",\n  \"password\": \"1234\",\n  \"memberNm\": \"홍길동\",\n  \"phone\": \"010-1234-5678\"\n}"},
+          {"id":"sf_auth_refresh", "label":"토큰 갱신", "type":"req","method":"POST","url":"/api/auth/fo/auth/refresh", "desc":"액세스 토큰 갱신","body":"{\n  \"refreshToken\": \"\"\n}"},
+          {"id":"sf_auth_logout",  "label":"로그아웃",  "type":"req","method":"POST","url":"/api/auth/fo/auth/logout",  "desc":"FO 로그아웃"}
         ]
       },
       {
@@ -101,10 +101,10 @@
       {
         "id": "sa_auth", "label": "BO 인증", "type": "folder", "open": false,
         "children": [
-          {"id":"sa_auth_login",   "label":"로그인",    "type":"req","method":"POST","url":"/api/auth/bo/login",   "desc":"BO 관리자 로그인 (JWT 발급)","body":"{\n  \"loginId\": \"admin\",\n  \"password\": \"1234\"\n}"},
-          {"id":"sa_auth_join",    "label":"관리자 등록","type":"req","method":"POST","url":"/api/auth/bo/join",    "desc":"BO 관리자 계정 생성","body":"{\n  \"loginId\": \"newadmin\",\n  \"password\": \"1234\",\n  \"userNm\": \"신규관리자\"\n}"},
-          {"id":"sa_auth_refresh", "label":"토큰 갱신", "type":"req","method":"POST","url":"/api/auth/bo/refresh", "desc":"액세스 토큰 갱신","body":"{\n  \"refreshToken\": \"\"\n}"},
-          {"id":"sa_auth_logout",  "label":"로그아웃",  "type":"req","method":"POST","url":"/api/auth/bo/logout",  "desc":"BO 관리자 로그아웃"}
+          {"id":"sa_auth_login",   "label":"로그인",    "type":"req","method":"POST","url":"/api/auth/bo/auth/login",   "desc":"BO 관리자 로그인 (JWT 발급)","body":"{\n  \"loginId\": \"admin\",\n  \"password\": \"1234\"\n}"},
+          {"id":"sa_auth_join",    "label":"관리자 등록","type":"req","method":"POST","url":"/api/auth/bo/auth/join",    "desc":"BO 관리자 계정 생성","body":"{\n  \"loginId\": \"newadmin\",\n  \"password\": \"1234\",\n  \"userNm\": \"신규관리자\"\n}"},
+          {"id":"sa_auth_refresh", "label":"토큰 갱신", "type":"req","method":"POST","url":"/api/auth/bo/auth/refresh", "desc":"액세스 토큰 갱신","body":"{\n  \"refreshToken\": \"\"\n}"},
+          {"id":"sa_auth_logout",  "label":"로그아웃",  "type":"req","method":"POST","url":"/api/auth/bo/auth/logout",  "desc":"BO 관리자 로그아웃"}
         ]
       },
       {
@@ -286,17 +286,17 @@
       {
         "id": "sa_sch", "label": "스케줄러", "type": "folder", "open": false,
         "children": [
-          {"id":"sa_sch_list",    "label":"배치 목록+등록상태", "type":"req","method":"GET",  "url":"/sch/batch",                   "desc":"전체 배치 목록 + 스케줄 등록 상태"},
-          {"id":"sa_sch_run",     "label":"즉시 실행",         "type":"req","method":"POST", "url":"/sch/batch/{batchCode}/run",   "desc":"배치 즉시 실행 (batchCode 변경 필요)"},
-          {"id":"sa_sch_on",      "label":"스케줄 등록",       "type":"req","method":"POST", "url":"/sch/batch/{batchCode}/on",    "desc":"배치 스케줄 등록 (cron 자동 사용)"},
-          {"id":"sa_sch_off",     "label":"스케줄 해제",       "type":"req","method":"POST", "url":"/sch/batch/{batchCode}/off",   "desc":"배치 스케줄 해제"},
-          {"id":"sa_sch_reload",  "label":"전체 재등록",       "type":"req","method":"POST", "url":"/sch/reload",                  "desc":"DB 재로드 후 전체 스케줄 재등록"}
+          {"id":"sa_sch_list",    "label":"배치 목록+등록상태", "type":"req","method":"GET",  "url":"/api/sch/batch",                   "desc":"전체 배치 목록 + 스케줄 등록 상태"},
+          {"id":"sa_sch_run",     "label":"즉시 실행",         "type":"req","method":"POST", "url":"/api/sch/batch/{batchCode}/run",   "desc":"배치 즉시 실행 (batchCode 변경 필요)"},
+          {"id":"sa_sch_on",      "label":"스케줄 등록",       "type":"req","method":"POST", "url":"/api/sch/batch/{batchCode}/on",    "desc":"배치 스케줄 등록 (cron 자동 사용)"},
+          {"id":"sa_sch_off",     "label":"스케줄 해제",       "type":"req","method":"POST", "url":"/api/sch/batch/{batchCode}/off",   "desc":"배치 스케줄 해제"},
+          {"id":"sa_sch_reload",  "label":"전체 재등록",       "type":"req","method":"POST", "url":"/api/sch/reload",                  "desc":"DB 재로드 후 전체 스케줄 재등록"}
         ]
       },
       {
         "id": "sa_sys_info", "label": "시스템 정보", "type": "folder", "open": false,
         "children": [
-          {"id":"sa_app_info","label":"애플리케이션 환경 정보","type":"req","method":"GET","url":"/api/cm/info","desc":"activeProfile, Java/JVM/OS/메모리, DB/JWT/Redis/스케줄러 설정 (비밀번호 마스킹)"}
+          {"id":"sa_app_info","label":"애플리케이션 환경 정보","type":"req","method":"GET","url":"/api/cm/app-info/info","desc":"activeProfile, Java/JVM/OS/메모리, DB/JWT/Redis/스케줄러 설정 (비밀번호 마스킹)"}
         ]
       }
     ]

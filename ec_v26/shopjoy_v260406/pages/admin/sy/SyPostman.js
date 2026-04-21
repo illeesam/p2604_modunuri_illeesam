@@ -98,7 +98,7 @@ window.SyPostman = {
             id: `ar_${tbl}_${++_arSeq}`,
             label: `${op.label} (${op.method})`,
             type: 'req', method: op.method,
-            url: `/autoRest/${domain}/${sub}/${op.urlFn(tbl)}`,
+            url: `/api/autoRest/${domain}/${sub}/${op.urlFn(tbl)}`,
             desc: `${tbl} ${op.label}`,
             params: [], body: '',
           })),
