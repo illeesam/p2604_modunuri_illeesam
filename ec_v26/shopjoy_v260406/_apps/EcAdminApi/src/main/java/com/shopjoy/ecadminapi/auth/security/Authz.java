@@ -35,6 +35,14 @@ public class Authz {
         return false;
     }
 
+    public boolean isExt(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) return false;
+        if (auth.getPrincipal() instanceof AuthPrincipal p) {
+            return AuthPrincipal.EXT.equals(p.userType());
+        }
+        return false;
+    }
+
     public boolean isBoOrFo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {

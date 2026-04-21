@@ -46,9 +46,10 @@ import java.util.List;
  *   /autoRest/**   POST/PUT/PATCH/DELETE → USER만
  *
  * 어노테이션 방식 (개별 메서드 예외 처리):
- *   @BoOnly      → USER만
- *   @FoOnly    → MEMBER만
+ *   @BoOnly  → USER만
+ *   @FoOnly  → MEMBER만
  *   @BoOrFo  → USER 또는 MEMBER
+ *   @ExtOnly → EXT(외부 시스템)만
  *
  * 필터 순서: JwtAuthFilter → UsernamePasswordAuthenticationFilter
  */
@@ -78,6 +79,10 @@ public class SecurityConfig {
     private static final AuthorizationManager<RequestAuthorizationContext> FO_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.MEMBER));
 
+    /** EXT(외부 시스템)만 허용 */
+    private static final AuthorizationManager<RequestAuthorizationContext> EXT_ONLY =
+        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.EXT));
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -104,6 +109,9 @@ public class SecurityConfig {
 
                 // /api/fo/ec/** — 누구나 (my/** 제외한 FO EC 전체)
                 .requestMatchers("/api/fo/ec/**").permitAll()
+
+                // /api/ext/** — EXT(외부 시스템)만 허용
+                .requestMatchers("/api/ext/**").access(EXT_ONLY)
 
                 // /api/**, /autoRest/** — GET: USER or MEMBER / 변경: USER만
                 .requestMatchers(HttpMethod.GET,    "/api/**", "/autoRest/**").access(BO_OR_FO)

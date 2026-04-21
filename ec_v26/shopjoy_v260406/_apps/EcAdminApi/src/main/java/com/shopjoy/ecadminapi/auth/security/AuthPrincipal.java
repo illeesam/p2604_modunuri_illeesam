@@ -12,11 +12,13 @@ package com.shopjoy.ecadminapi.auth.security;
  * userType 값:
  * - "USER"   → sy_user  (관리자, Back Office)
  * - "MEMBER" → ec_member (고객, Front Office)
+ * - "EXT"    → 외부 시스템 (External)
  *
- * 사용: SecurityUtil.currentUserId() / currentUserType() / isBo() / isFo()
+ * 사용: SecurityUtil.currentUserId() / currentUserType() / isBo() / isFo() / isExt()
  */
 public record AuthPrincipal(String userId, String userType, String roleId) {
 
     public static final String USER   = "USER";
     public static final String MEMBER = "MEMBER";
+    public static final String EXT    = "EXT";
 }

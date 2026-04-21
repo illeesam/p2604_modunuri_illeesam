@@ -44,3 +44,10 @@ management:
     web:
       exposure:
         include: health,info
+
+app:
+  scheduler:
+    enabled: false          # 로컬 환경: 스케줄러 비활성
+    jenkins:
+      enabled: false
+    allowed-ips: ""

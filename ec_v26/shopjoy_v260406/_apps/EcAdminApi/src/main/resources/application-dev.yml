@@ -44,3 +44,10 @@ management:
     web:
       exposure:
         include: health,info
+
+app:
+  scheduler:
+    enabled: true           # dev: 스케줄러 활성
+    jenkins:
+      enabled: false
+    allowed-ips: "127.0.0.1"
