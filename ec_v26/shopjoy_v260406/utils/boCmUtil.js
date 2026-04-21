@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 공통 유틸리티 + 공통 필터 전역 상태 */
+/* ShopJoy BO - 공통 유틸리티 + 공통 필터 전역 상태 */
 (function () {
   const { reactive } = Vue;
 

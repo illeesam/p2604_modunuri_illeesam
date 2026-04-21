@@ -162,7 +162,7 @@ window.foAppFooter = {
 
           <!-- backOffice -->
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 backOffice (admin)</div>
+            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 backOffice (bo)</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in BO_MENU" :key="m.id" type="button"
                 @click="goItem('backOffice', m.id)"
