@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 배치 실행이력 */
 window.SyBatchHist = {
   name: 'SyBatchHist',
-  props: [,
+  props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'batchCode'],
   setup(props) {    const batches = ref([]);
     const loading = ref(false);
     const error = ref(null);

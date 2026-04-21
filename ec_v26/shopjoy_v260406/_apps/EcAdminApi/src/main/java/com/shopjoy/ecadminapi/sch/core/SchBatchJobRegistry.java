@@ -45,7 +45,7 @@ public class SchBatchJobRegistry {
                 new CronTrigger(springCron)
             );
             futures.put(code, future);
-            log.info("[SCH] 등록: batchCode={} cron={}", code, springCron);
+            log.info("[SCH] 등록: batchCode={} springCron={} (초 분 시 일 월 요일)", code, springCron);
         } catch (Exception e) {
             log.error("[SCH] 등록 실패: batchCode={} cron={} error={}", code, springCron, e.getMessage());
         }
