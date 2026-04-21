@@ -124,22 +124,34 @@ window.PdBundleMng = {
 
     /* ── 묶음상품 목록 ── */
     const bundleList = computed(() => {
-      const kw = applied.nm.toLowerCase();
-      const ids = [...new Set((bundles.value || []).map(b => b.bundleProdId))];
-      return ids
-        .map(id => {
-          const items = (bundles.value || [])
-            .filter(b => b.bundleProdId === id)
-            .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-          const prod  = getProd(id);
-          return { bundleProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
-        })
-        .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
+      try {
+        const kw = (applied?.nm || '').toLowerCase();
+        const bundleArray = bundles.value || [];
+        if (!Array.isArray(bundleArray) || bundleArray.length === 0) return [];
+        const ids = [...new Set(bundleArray.map(b => b?.bundleProdId).filter(Boolean))];
+        return ids
+          .map(id => {
+            const items = bundleArray
+              .filter(b => b?.bundleProdId === id)
+              .sort((a, b) => (a?.sortOrd || 0) - (b?.sortOrd || 0));
+            const prod  = getProd(id);
+            const prodNm = getProdNm(id);
+            return { bundleProdId: id, prodNm, prod, items, itemCount: items.length };
+          })
+          .filter(g => !kw || (g?.prodNm || '').toLowerCase().includes(kw));
+      } catch (e) {
+        console.error('bundleList error:', e);
+        return [];
+      }
     });
 
-    const totalCnt   = computed(() => bundleList.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(totalCnt.value / pager.size)));
-    const pageList   = computed(() => bundleList.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const totalCnt   = computed(() => (bundleList.value || []).length);
+    const totalPages = computed(() => Math.max(1, Math.ceil((totalCnt.value || 0) / (pager.size || 10))));
+    const pageList   = computed(() => {
+      const list = bundleList.value || [];
+      if (!Array.isArray(list)) return [];
+      return list.slice((pager.page - 1) * pager.size, pager.page * pager.size);
+    });
     const pageNums   = computed(() => {
       const c = pager.page, l = totalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
