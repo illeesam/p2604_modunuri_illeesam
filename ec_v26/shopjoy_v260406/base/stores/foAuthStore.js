@@ -1,46 +1,120 @@
-/* ShopJoy - FO Auth Store (Pinia) */
+/* ShopJoy - FO Auth Store (Pinia) + 함수형 유틸리티 */
 window.useFoAuthStore = Pinia.defineStore('foAuth', {
   state: () => {
-    const token = localStorage.getItem('modu-front-token') || null;
+    const token = localStorage.getItem('modu-front-token') || '';
     let user = null;
     if (token) {
-      try { user = JSON.parse(localStorage.getItem('modu-front-user') || 'null'); } catch (e) {}
+      try {
+        user = JSON.parse(localStorage.getItem('modu-front-user') || 'null') || { userId: 0, email: '', name: '' };
+      } catch (e) {
+        user = { userId: 0, email: '', name: '' };
+      }
+    } else {
+      user = { userId: 0, email: '', name: '' };
     }
     return { token, user };
   },
 
   getters: {
-    isLoggedIn: s => !!(s.token && s.user),
+    isLoggedIn: (s) => !!(s?.token && s?.user && s.user.userId),
+    currentUser: (s) => (s?.user || { userId: 0, email: '', name: '' }),
+    authToken: (s) => (s?.token || ''),
   },
 
   actions: {
     setSession(user, token) {
-      this.user  = user;
-      this.token = token;
-      localStorage.setItem('modu-front-token', token);
-      localStorage.setItem('modu-front-user',  JSON.stringify(user));
+      this.user = (user && typeof user === 'object') ? user : { userId: 0, email: '', name: '' };
+      this.token = token || '';
+      try {
+        if (this.token) localStorage.setItem('modu-front-token', this.token);
+        if (this.user && this.user.userId) localStorage.setItem('modu-front-user', JSON.stringify(this.user));
+      } catch (e) {
+        console.error('setSession storage error:', e);
+      }
     },
 
     clearSession() {
-      this.user  = null;
-      this.token = null;
-      localStorage.removeItem('modu-front-token');
-      localStorage.removeItem('modu-front-user');
+      this.user = { userId: 0, email: '', name: '' };
+      this.token = '';
+      try {
+        localStorage.removeItem('modu-front-token');
+        localStorage.removeItem('modu-front-user');
+      } catch (e) {
+        console.error('clearSession storage error:', e);
+      }
     },
 
-    /** localStorage와 실시간 동기화 (DevTools 조작 감지용) */
+    /* localStorage와 실시간 동기화 (DevTools 조작 감지용) */
     syncFromStorage() {
-      const storedToken = localStorage.getItem('modu-front-token');
-      if (!storedToken && this.token) {
-        // 토큰이 외부에서 삭제됨 → 로그아웃
-        this.user  = null;
-        this.token = null;
-        localStorage.removeItem('modu-front-user');
-      } else if (storedToken && storedToken !== this.token) {
-        // 토큰이 외부에서 변경됨 → 재동기화
-        this.token = storedToken;
-        try { this.user = JSON.parse(localStorage.getItem('modu-front-user') || 'null'); } catch (e) {}
+      try {
+        const storedToken = localStorage.getItem('modu-front-token');
+        if (!storedToken && this.token) {
+          // 토큰이 외부에서 삭제됨 → 로그아웃
+          this.user = { userId: 0, email: '', name: '' };
+          this.token = '';
+          localStorage.removeItem('modu-front-user');
+        } else if (storedToken && storedToken !== this.token) {
+          // 토큰이 외부에서 변경됨 → 재동기화
+          this.token = storedToken || '';
+          try {
+            const userData = JSON.parse(localStorage.getItem('modu-front-user') || 'null');
+            this.user = (userData && typeof userData === 'object') ? userData : { userId: 0, email: '', name: '' };
+          } catch (e) {
+            this.user = { userId: 0, email: '', name: '' };
+          }
+        }
+      } catch (e) {
+        console.error('syncFromStorage error:', e);
       }
     },
   },
 });
+
+/* 함수형 유틸리티 제공 */
+window.getFoAuthStore = () => {
+  try {
+    const store = window.useFoAuthStore?.();
+    return store || {
+      token: '',
+      user: { userId: 0, email: '', name: '' },
+      isLoggedIn: false,
+    };
+  } catch (e) {
+    console.error('getFoAuthStore error:', e);
+    return {
+      token: '',
+      user: { userId: 0, email: '', name: '' },
+      isLoggedIn: false,
+    };
+  }
+};
+
+window.getFoAuthUser = () => {
+  try {
+    const store = window.useFoAuthStore?.();
+    return (store?.user || { userId: 0, email: '', name: '' });
+  } catch (e) {
+    console.error('getFoAuthUser error:', e);
+    return { userId: 0, email: '', name: '' };
+  }
+};
+
+window.getFoAuthToken = () => {
+  try {
+    const store = window.useFoAuthStore?.();
+    return (store?.token || '');
+  } catch (e) {
+    console.error('getFoAuthToken error:', e);
+    return '';
+  }
+};
+
+window.isFoAuthLoggedIn = () => {
+  try {
+    const store = window.useFoAuthStore?.();
+    return !!(store?.token && store?.user && store.user.userId);
+  } catch (e) {
+    console.error('isFoAuthLoggedIn error:', e);
+    return false;
+  }
+};
