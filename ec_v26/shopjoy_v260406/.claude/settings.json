@@ -41,7 +41,8 @@
       "Bash(psql -h illeesam.synology.me -p 17632 -U postgres -d postgres -c \"SELECT COUNT\\(*\\) as grp_count FROM shopjoy_2604.sy_attach_grp;\")",
       "Bash(git commit -m ' *)",
       "Bash(cat \"_doc/sample_insert_pgsql/sy_attach.sql\" /tmp/prod_images.sql)",
-      "Bash(mv /tmp/sy_attach_new.sql \"_doc/sample_insert_pgsql/sy_attach.sql\")"
+      "Bash(mv /tmp/sy_attach_new.sql \"_doc/sample_insert_pgsql/sy_attach.sql\")",
+      "Read(//c/Users/illee/.claude/projects/c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406/pages/admin/sy/**)"
     ],
     "additionalDirectories": [
       "C:\\Users\\illee\\.claude\\projects\\c---pjt-github-p2604-modunuri-illeesam-ec-v26-shopjoy-v260406\\memory"
