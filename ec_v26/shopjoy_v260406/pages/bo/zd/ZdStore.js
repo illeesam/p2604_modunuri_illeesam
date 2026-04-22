@@ -161,7 +161,7 @@ window.ZdStore = {
     <div style="margin-bottom: 16px;">
       <label style="display: block; margin-bottom: 8px; font-weight: 600;">Store State (JSON)</label>
       <textarea
-        v-model="editedStoreInfo[selectedStore] || ''"
+        :value="editedStoreInfo[selectedStore] || ''"
         @input="editedStoreInfo[selectedStore] = $event.target.value"
         style="width: 100%; height: 400px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; background: #f5f5f5;">
       </textarea>
