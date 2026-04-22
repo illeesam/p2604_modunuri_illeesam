@@ -19,6 +19,8 @@ public class StoreRole {
     private String roleCd;            // 역할 코드
     private String roleSortOrd;       // 정렬 순서
     private String roleRemark;        // 비고
+    private String vendorId;          // 업체 ID (sy_vendor_user 기반)
+    private String vendorNm;          // 업체명 (sy_vendor 기반)
     private String regDate;           // 등록 일시
     private String modDate;           // 수정 일시
 }

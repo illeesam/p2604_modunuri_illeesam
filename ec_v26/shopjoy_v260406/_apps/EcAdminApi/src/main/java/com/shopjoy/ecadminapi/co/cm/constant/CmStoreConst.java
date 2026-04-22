@@ -17,6 +17,7 @@ public class CmStoreConst {
     public static final String DP_DISP = "dpDisp"; // 전시
     public static final String DP_DISP_STRUCTS = "dpDispStructs"; // 전시 구조 목록
     public static final String DP_DISP_DATAS = "dpDispDatas"; // 전시 데이터 목록
+    public static final String DP_DISP_WIDGETS = "dpDispWidgets"; // 전시 위젯 목록
     public static final String SY_APP = "syApp"; // 앱 정보
 
 }

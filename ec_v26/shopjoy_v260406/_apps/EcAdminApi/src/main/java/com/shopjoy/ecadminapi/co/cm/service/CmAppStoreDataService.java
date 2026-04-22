@@ -14,13 +14,45 @@ import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMember;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreDispData;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreDispStruct;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreDispWidgets;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
+import com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyCodeRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
+import com.shopjoy.ecadminapi.base.sy.repository.SyUserRoleRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
+import com.shopjoy.ecadminapi.base.sy.repository.SyVendorUserRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser;
+import com.shopjoy.ecadminapi.base.sy.repository.SyVendorRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanelItem;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidget;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
+import com.shopjoy.ecadminapi.base.ec.dp.repository.DpUiRepository;
+import com.shopjoy.ecadminapi.base.ec.dp.repository.DpAreaRepository;
+import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelRepository;
+import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelItemRepository;
+import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetRepository;
+import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 애플리케이션 Store 데이터 Service (BO/FO 통합)
@@ -35,315 +67,487 @@ import java.util.List;
 public class CmAppStoreDataService {
 
     private final MbMemberRepository memberRepository;
+    private final SyUserRepository syUserRepository;
+    private final SyRoleRepository syRoleRepository;
+    private final SyMenuRepository syMenuRepository;
+    private final SyCodeRepository syCodeRepository;
+    private final SyDeptRepository syDeptRepository;
+    private final SyPropRepository syPropRepository;
+    private final SyRoleMenuRepository syRoleMenuRepository;
+    private final SyUserRoleRepository syUserRoleRepository;
+    private final SyVendorUserRepository syVendorUserRepository;
+    private final SyVendorRepository syVendorRepository;
+    private final DpUiRepository dpUiRepository;
+    private final DpAreaRepository dpAreaRepository;
+    private final DpPanelRepository dpPanelRepository;
+    private final DpPanelItemRepository dpPanelItemRepository;
+    private final DpWidgetRepository dpWidgetRepository;
+    private final DpWidgetLibRepository dpWidgetLibRepository;
 
     // ════════════════════════════════════════════════════════════════════
     // BO (Back Office) Methods
     // ════════════════════════════════════════════════════════════════════
 
     /**
-     * BO: 인증 정보 조회
+     * 인증 정보 조회 - AuthPrincipal의 토큰 정보 반환
      */
     @Transactional(readOnly = true)
-    public StoreAuth getBoAuth(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildAuthInfo();
-    }
-
-    /**
-     * BO: 관리자 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreUser getBoUser(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildBoUserInfo(userId);
-    }
-
-    /**
-     * BO: 권한 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public List<StoreRole> getBoRole(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildRoles();
-    }
-
-    /**
-     * BO: 메뉴 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public List<StoreMenu> getBoMenu(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildMenus();
-    }
-
-    /**
-     * BO: 코드 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreCode getBoCode(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildCodes();
-    }
-
-    /**
-     * BO: 속성 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreProp getBoProps(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildProps();
-    }
-
-    /**
-     * BO: 앱 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreApp getBoApp(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildBoAppInfo();
-    }
-
-    // ════════════════════════════════════════════════════════════════════
-    // FO (Front Office) Methods
-    // ════════════════════════════════════════════════════════════════════
-
-    /**
-     * FO: 인증 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreAuth getFoAuth(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildAuthInfo();
-    }
-
-    /**
-     * FO: 회원 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreMember getFoUser(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        String memberId = getCurrentMemberId();
-        MbMember member = null;
-        if (memberId != null) {
-            member = memberRepository.findById(memberId).orElse(null);
-        }
-        return buildFoMemberInfo(member);
-    }
-
-    /**
-     * FO: 권한 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public List<StoreRole> getFoRole(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildRoles();
-    }
-
-    /**
-     * FO: 메뉴 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public List<StoreMenu> getFoMenu(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildMenus();
-    }
-
-    /**
-     * FO: 코드 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreCode getFoCode(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildCodes();
-    }
-
-    /**
-     * FO: 속성 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreProp getFoProps(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildProps();
-    }
-
-    /**
-     * FO: 전시 구조 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreDispStruct getFoDispStruc(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildDispStruc();
-    }
-
-    /**
-     * FO: 전시 데이터 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreDispData getFoDispData(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildDispData();
-    }
-
-    /**
-     * FO: 앱 정보 조회
-     */
-    @Transactional(readOnly = true)
-    public StoreApp getFoApp(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
-        return buildFoAppInfo();
-    }
-
-    // ════════════════════════════════════════════════════════════════════
-    // Common Builder Methods
-    // ════════════════════════════════════════════════════════════════════
-
-    /**
-     * 토큰 정보 생성
-     */
-    private StoreAuth buildAuthInfo() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
+    public StoreAuth getAuth(AuthPrincipal authUser) {
+        if (authUser == null) {
             return StoreAuth.builder().build();
         }
         return StoreAuth.builder()
-                .accessToken("")
-                .refreshToken("")
-                .accessExpiresIn(3600L)
-                .refreshExpiresIn(604800L)
+                .accessToken(CmUtil.nvl(authUser.accessToken())) // 액세스 토큰
+                .refreshToken(CmUtil.nvl(authUser.refreshToken())) // 리프레시 토큰
+                .accessExpiresIn(3600L) // 액세스 토큰 만료시간(초)
+                .refreshExpiresIn(604800L) // 리프레시 토큰 만료시간(초, 7일)
                 .build();
     }
 
     /**
-     * 권한 정보 생성
+     * 사용자 정보 조회 - BO: sy_user(관리자), FO: ec_member(회원)
      */
-    private List<StoreRole> buildRoles() {
-        return List.of();
-    }
+    @Transactional(readOnly = true)
+    public Object getBoUser(AuthPrincipal authUser) {
+        if (authUser == null || authUser.userId() == null) {
+            return "BO".equals(authUser.userTypeCd()) ? StoreUser.builder().build() : StoreMember.builder().build();
+        }
 
-    /**
-     * 메뉴 정보 생성
-     */
-    private List<StoreMenu> buildMenus() {
-        return List.of();
-    }
+        if ("BO".equals(authUser.userTypeCd())) {
+            SyUser user = syUserRepository.findById(authUser.userId()).orElse(null);
+            if (user == null) {
+                return StoreUser.builder().build();
+            }
 
-    /**
-     * 코드 정보 생성
-     */
-    private StoreCode buildCodes() {
-        return StoreCode.builder().build();
-    }
+            String deptNm = "";
+            if (user.getDeptId() != null) {
+                SyDept dept = syDeptRepository.findById(user.getDeptId()).orElse(null);
+                if (dept != null) {
+                    deptNm = dept.getDeptNm();
+                }
+            }
 
-    /**
-     * 속성 정보 생성
-     */
-    private StoreProp buildProps() {
-        return StoreProp.builder().build();
-    }
+            String roleNm = "";
+            if (user.getRoleId() != null) {
+                SyRole role = syRoleRepository.findById(user.getRoleId()).orElse(null);
+                if (role != null) {
+                    roleNm = role.getRoleNm();
+                }
+            }
 
-    /**
-     * 전시 구조 생성
-     */
-    private StoreDispStruct buildDispStruc() {
-        return StoreDispStruct.builder().build();
-    }
+            return StoreUser.builder()
+                    .userId(user.getUserId()) // 사용자ID
+                    .userName(CmUtil.nvl(user.getUserNm())) // 사용자명
+                    .userEmail(CmUtil.nvl(user.getUserEmail())) // 이메일
+                    .userHpNo(CmUtil.nvl(user.getUserPhone())) // 휴대폰
+                    .deptId(CmUtil.nvl(user.getDeptId())) // 부서ID
+                    .deptNm(deptNm) // 부서명
+                    .roleId(CmUtil.nvl(user.getRoleId())) // 역할ID
+                    .roleNm(roleNm) // 역할명
+                    .userStatusCd(CmUtil.nvl(user.getUserStatusCd(), "ACTIVE")) // 상태
+                    .isAdminYn("N") // 관리자여부
+                    .companyId("") // 회사ID
+                    .companyNm("") // 회사명
+                    .boBookmarks("") // 즐겨찾기
+                    .build();
+        }
 
-    /**
-     * 전시 데이터 생성
-     */
-    private StoreDispData buildDispData() {
-        return StoreDispData.builder().build();
-    }
-
-    // ════════════════════════════════════════════════════════════════════
-    // BO Builder Methods
-    // ════════════════════════════════════════════════════════════════════
-
-    /**
-     * BO 사용자(관리자) 정보 생성
-     */
-    private StoreUser buildBoUserInfo(String userId) {
-        return StoreUser.builder()
-                .userId(userId)
-                .userName("")
-                .userEmail("")
-                .userHpNo("")
-                .deptId("")
-                .deptNm("")
-                .roleId("")
-                .roleNm("")
-                .userStatusCd("ACTIVE")
-                .isAdminYn("N")
-                .companyId("")
-                .companyNm("")
-                .boBookmarks("")
-                .build();
-    }
-
-    /**
-     * BO 앱 정보 생성
-     */
-    private StoreApp buildBoAppInfo() {
-        return StoreApp.builder()
-                .boSiteNo("01")
-                .foSiteNo("01")
-                .appVersion("2.6.0")
-                .lastUpdateDate(java.time.LocalDate.now().toString())
-                .build();
-    }
-
-    // ════════════════════════════════════════════════════════════════════
-    // FO Builder Methods
-    // ════════════════════════════════════════════════════════════════════
-
-    /**
-     * FO 회원 정보 생성
-     */
-    private StoreMember buildFoMemberInfo(MbMember member) {
+        MbMember member = memberRepository.findById(authUser.userId()).orElse(null);
         if (member == null) {
             return StoreMember.builder().build();
         }
+
         return StoreMember.builder()
-                .memberId(member.getMemberId())
-                .memberEmail(member.getLoginId())
-                .memberNm(member.getMemberNm())
-                .siteId(CmUtil.nvl(member.getSiteId()))
-                .memberTypeCd("")
-                .memberHpNo(CmUtil.nvl(member.getMemberPhone()))
-                .memberGrade(CmUtil.nvl(member.getGradeCd()))
-                .memberStaffYn("N")
-                .memberBirthDt(CmUtil.nvl(member.getBirthDate() != null ? member.getBirthDate().toString() : null))
-                .memberStatusCd(CmUtil.nvl(member.getMemberStatusCd()))
-                .cartCount(0L)
-                .likeCount(0L)
+                .memberId(member.getMemberId()) // 회원ID
+                .memberEmail(member.getLoginId()) // 이메일(로그인ID)
+                .memberNm(member.getMemberNm()) // 회원명
+                .siteId(CmUtil.nvl(member.getSiteId())) // 사이트ID
+                .memberTypeCd("") // 회원유형
+                .memberHpNo(CmUtil.nvl(member.getMemberPhone())) // 휴대폰
+                .memberGrade(CmUtil.nvl(member.getGradeCd())) // 회원등급
+                .memberStaffYn("N") // 직원여부
+                .memberBirthDt(CmUtil.nvl(member.getBirthDate() != null ? member.getBirthDate().toString() : null)) // 생년월일
+                .memberStatusCd(CmUtil.nvl(member.getMemberStatusCd())) // 상태
+                .cartCount(0L) // 장바구니수
+                .likeCount(0L) // 찜한상품수
                 .build();
     }
 
     /**
-     * FO 앱 정보 생성
+     * 권한 정보 조회
+     * BO/SO: sy_user_role(역할ID) + sy_vendor_user(업체ID) + sy_vendor(업체명) + sy_role(역할정보)
+     * FO: 빈 리스트
      */
-    private StoreApp buildFoAppInfo() {
+    @Transactional(readOnly = true)
+    public List<StoreRole> getRoles(AuthPrincipal authUser) {
+        if (authUser == null) {
+            return List.of();
+        }
+
+        Map<String, String> roleVendorMap = new java.util.HashMap<>();
+
+        if ("BO".equals(authUser.userTypeCd()) || "SO".equals(authUser.userTypeCd())) {
+            List<SyUserRole> userRoles = syUserRoleRepository.findAll().stream()
+                    .filter(ur -> ur.getUserId().equals(authUser.userId()))
+                    .toList();
+            for (SyUserRole userRole : userRoles) {
+                roleVendorMap.put(userRole.getRoleId(), null);
+            }
+
+            List<SyVendorUser> vendorUsers = syVendorUserRepository.findAll().stream()
+                    .filter(vu -> vu.getUserId().equals(authUser.userId()) && vu.getRoleId() != null)
+                    .toList();
+            for (SyVendorUser vendorUser : vendorUsers) {
+                roleVendorMap.put(vendorUser.getRoleId(), vendorUser.getVendorId());
+            }
+        } else {
+            return List.of();
+        }
+
+        return roleVendorMap.entrySet().stream()
+                .map(entry -> {
+                    SyRole role = syRoleRepository.findById(entry.getKey()).orElse(null);
+                    if (role == null) return null;
+
+                    String vendorNm = null;
+                    if (entry.getValue() != null) {
+                        SyVendor vendor = syVendorRepository.findById(entry.getValue()).orElse(null);
+                        if (vendor != null) {
+                            vendorNm = vendor.getVendorNm();
+                        }
+                    }
+
+                    return StoreRole.builder()
+                            .roleId(role.getRoleId())
+                            .roleNm(role.getRoleNm())
+                            .roleCd(role.getRoleCode())
+                            .roleSortOrd(String.valueOf(role.getSortOrd() != null ? role.getSortOrd() : 0))
+                            .roleRemark(CmUtil.nvl(role.getRoleRemark()))
+                            .vendorId(entry.getValue())
+                            .vendorNm(vendorNm)
+                            .regDate(role.getRegDate() != null ? role.getRegDate().toString() : null)
+                            .modDate(role.getUpdDate() != null ? role.getUpdDate().toString() : null)
+                            .build();
+                })
+                .filter(role -> role != null)
+                .toList();
+    }
+
+    /**
+     * 메뉴 정보 조회 - sy_role_menu, sy_menu + 상위 메뉴 포함
+     */
+    @Transactional(readOnly = true)
+    public List<StoreMenu> getMenus(AuthPrincipal authUser) {
+        if (authUser == null || authUser.roleId() == null) {
+            return List.of();
+        }
+
+        List<SyRoleMenu> roleMenus = syRoleMenuRepository.findAll().stream()
+                .filter(rm -> rm.getRoleId().equals(authUser.roleId()))
+                .toList();
+
+        java.util.Set<String> menuIds = new java.util.HashSet<>();
+        for (SyRoleMenu roleMenu : roleMenus) {
+            menuIds.add(roleMenu.getMenuId());
+            addParentMenus(roleMenu.getMenuId(), menuIds);
+        }
+
+        return menuIds.stream()
+                .map(menuId -> syMenuRepository.findById(menuId).orElse(null))
+                .filter(menu -> menu != null)
+                .map(menu -> {
+                    int menuLevel = getMenuLevel(menu);
+                    return StoreMenu.builder()
+                            .menuId(menu.getMenuId()) // 메뉴ID
+                            .menuNm(menu.getMenuNm()) // 메뉴명
+                            .menuPath(CmUtil.nvl(menu.getMenuUrl())) // 메뉴경로
+                            .parentMenuId(CmUtil.nvl(menu.getParentMenuId())) // 상위메뉴ID
+                            .menuLevel(menuLevel) // 메뉴레벨(1,2,3...)
+                            .menuSortOrd(String.valueOf(menu.getSortOrd() != null ? menu.getSortOrd() : 0)) // 정렬순서
+                            .menuIconCd(CmUtil.nvl(menu.getIconClass())) // 아이콘코드
+                            .menuStatusCd(CmUtil.nvl(menu.getUseYn(), "Y")) // 상태
+                            .menuRemark(CmUtil.nvl(menu.getMenuRemark())) // 비고
+                            .regDate(menu.getRegDate() != null ? menu.getRegDate().toString() : null) // 등록일시
+                            .modDate(menu.getUpdDate() != null ? menu.getUpdDate().toString() : null) // 수정일시
+                            .build();
+                })
+                .toList();
+    }
+
+    private void addParentMenus(String menuId, java.util.Set<String> menuIds) {
+        SyMenu menu = syMenuRepository.findById(menuId).orElse(null);
+        if (menu != null && menu.getParentMenuId() != null) {
+            menuIds.add(menu.getParentMenuId());
+            addParentMenus(menu.getParentMenuId(), menuIds);
+        }
+    }
+
+    private int getMenuLevel(SyMenu menu) {
+        int level = 1;
+        SyMenu parent = menu;
+        while (parent.getParentMenuId() != null) {
+            parent = syMenuRepository.findById(parent.getParentMenuId()).orElse(null);
+            if (parent == null) break;
+            level++;
+        }
+        return level;
+    }
+
+    /**
+     * 코드 정보 조회 - sy_code (공통코드)
+     */
+    @Transactional(readOnly = true)
+    public StoreCode getCodes(AuthPrincipal authUser) {
+        syCodeRepository.findAll().stream()
+                .map(code -> StoreCode.CodeInfo.builder()
+                        .codeGrp(code.getCodeGrp())
+                        .codeId(code.getCodeId())
+                        .codeNm(code.getCodeLabel())
+                        .codeVal(CmUtil.nvl(code.getCodeValue()))
+                        .codeSortOrd(String.valueOf(code.getSortOrd() != null ? code.getSortOrd() : 0))
+                        .codeRemark(CmUtil.nvl(code.getCodeRemark()))
+                        .build())
+                .toList();
+        return StoreCode.builder().codesByGroup(new java.util.HashMap<>()).build();
+    }
+
+    /**
+     * 속성 정보 조회 - sy_prop (시스템속성)
+     */
+    @Transactional(readOnly = true)
+    public StoreProp getProps(AuthPrincipal authUser) {
+        Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
+                .filter(prop -> prop.getSiteId().equals(authUser.siteId()))
+                .collect(Collectors.toMap(
+                        SyProp::getPropKey,
+                        prop -> StoreProp.PropInfo.builder()
+                                .propKey(prop.getPropKey()) // 속성키
+                                .propVal(CmUtil.nvl(prop.getPropValue())) // 속성값
+                                .propNm(CmUtil.nvl(prop.getPropLabel())) // 속성명
+                                .propRemark(CmUtil.nvl(prop.getPropRemark())) // 비고
+                                .build()
+                ));
+        return StoreProp.builder().propsByKey(propsByKey).build();
+    }
+
+    /**
+     * 앱 정보 조회 - 버전 및 사이트정보
+     */
+    @Transactional(readOnly = true)
+    public StoreApp getApp(AuthPrincipal authUser) {
+        if ("BO".equals(authUser.userTypeCd())) {
+            return StoreApp.builder()
+                    .boSiteNo("01") // 관리자사이트번호
+                    .foSiteNo("01") // 사용자사이트번호
+                    .appVersion("2.6.0") // 앱버전
+                    .lastUpdateDate(java.time.LocalDate.now().toString()) // 최종업데이트일
+                    .build();
+        }
         return StoreApp.builder()
-                .foSiteNo(System.getProperty("fo.site.no", "01"))
-                .appVersion("2.6.0")
-                .lastUpdateDate(java.time.LocalDate.now().toString())
+                .foSiteNo(System.getProperty("fo.site.no", "01")) // 사용자사이트번호
+                .appVersion("2.6.0") // 앱버전
+                .lastUpdateDate(java.time.LocalDate.now().toString()) // 최종업데이트일
                 .build();
     }
 
-    // ════════════════════════════════════════════════════════════════════
-    // Helper Methods
-    // ════════════════════════════════════════════════════════════════════
-
     /**
-     * 현재 로그인 BO 사용자 ID 추출
+     * FO 회원 정보 조회 - ec_member (회원정보)
      */
-    private String getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            Object principal = auth.getPrincipal();
-            if (principal instanceof AuthPrincipal) {
-                return ((AuthPrincipal) principal).userId();
-            }
+    @Transactional(readOnly = true)
+    public StoreMember getFoUser(AuthPrincipal authUser) {
+        if (authUser == null || authUser.userId() == null) {
+            return StoreMember.builder().build();
         }
-        return null;
+
+        MbMember member = memberRepository.findById(authUser.userId()).orElse(null);
+        if (member == null) {
+            return StoreMember.builder().build();
+        }
+
+        return StoreMember.builder()
+                .memberId(member.getMemberId()) // 회원ID
+                .memberEmail(member.getLoginId()) // 이메일(로그인ID)
+                .memberNm(member.getMemberNm()) // 회원명
+                .siteId(CmUtil.nvl(member.getSiteId())) // 사이트ID
+                .memberTypeCd("") // 회원유형
+                .memberHpNo(CmUtil.nvl(member.getMemberPhone())) // 휴대폰
+                .memberGrade(CmUtil.nvl(member.getGradeCd())) // 회원등급
+                .memberStaffYn("N") // 직원여부
+                .memberBirthDt(CmUtil.nvl(member.getBirthDate() != null ? member.getBirthDate().toString() : null)) // 생년월일
+                .memberStatusCd(CmUtil.nvl(member.getMemberStatusCd())) // 상태
+                .cartCount(0L) // 장바구니수
+                .likeCount(0L) // 찜한상품수
+                .build();
     }
 
     /**
-     * 현재 로그인 FO 사용자(회원) ID 추출
+     * 전시 구조 조회 - dp_ui, dp_area, dp_panel, dp_panel_item (content 제외)
      */
-    private String getCurrentMemberId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            Object principal = auth.getPrincipal();
-            if (principal instanceof AuthPrincipal) {
-                return ((AuthPrincipal) principal).userId();
+    @Transactional(readOnly = true)
+    public StoreDispStruct getDispStruc(AuthPrincipal authUser) {
+        List<DpUi> uis = dpUiRepository.findAll().stream()
+                .filter(ui -> ui.getSiteId().equals(authUser.siteId()) && "Y".equals(ui.getUseYn()))
+                .toList();
+
+        List<StoreDispStruct.UiInfo> uiInfos = uis.stream()
+                .map(ui -> {
+                    List<DpArea> areas = dpAreaRepository.findAll().stream()
+                            .filter(area -> area.getUiId().equals(ui.getUiId()) && "Y".equals(area.getUseYn()))
+                            .toList();
+
+                    List<StoreDispStruct.UiInfo.AreaInfo> areaInfos = areas.stream()
+                            .map(area -> {
+                                List<DpPanel> panels = dpPanelRepository.findAll().stream()
+                                        .filter(panel -> panel.getSiteId().equals(authUser.siteId()) && "Y".equals(panel.getUseYn()))
+                                        .toList();
+
+                                List<StoreDispStruct.UiInfo.AreaInfo.PanelInfo> panelInfos = panels.stream()
+                                        .map(panel -> {
+                                            List<DpPanelItem> items = dpPanelItemRepository.findAll().stream()
+                                                    .filter(item -> item.getPanelId().equals(panel.getPanelId()))
+                                                    .toList();
+
+                                            List<StoreDispStruct.WidgetInfo> widgets = items.stream()
+                                                    .map(item -> StoreDispStruct.WidgetInfo.builder()
+                                                            .widgetId(item.getPanelItemId())
+                                                            .widgetNm(CmUtil.nvl(item.getWidgetTitle()))
+                                                            .widgetTypeCd(CmUtil.nvl(item.getWidgetTypeCd()))
+                                                            .widgetStatusCd("ACTIVE")
+                                                            .widgetSortOrd(String.valueOf(item.getItemSortOrd() != null ? item.getItemSortOrd() : 0))
+                                                            .build())
+                                                    .toList();
+
+                                            return StoreDispStruct.UiInfo.AreaInfo.PanelInfo.builder()
+                                                    .panelId(panel.getPanelId())
+                                                    .panelNm(panel.getPanelNm())
+                                                    .panelStatusCd(CmUtil.nvl(panel.getDispPanelStatusCd(), "ACTIVE"))
+                                                    .panelSortOrd(String.valueOf(0))
+                                                    .widgets(widgets)
+                                                    .build();
+                                        })
+                                        .toList();
+
+                                return StoreDispStruct.UiInfo.AreaInfo.builder()
+                                        .areaId(area.getAreaId())
+                                        .areaNm(area.getAreaNm())
+                                        .areaStatusCd("ACTIVE")
+                                        .areaSortOrd(String.valueOf(0))
+                                        .panels(panelInfos)
+                                        .build();
+                            })
+                            .toList();
+
+                    return StoreDispStruct.UiInfo.builder()
+                            .uiId(ui.getUiId())
+                            .uiNm(ui.getUiNm())
+                            .uiStatusCd("ACTIVE")
+                            .uiSortOrd(String.valueOf(ui.getSortOrd() != null ? ui.getSortOrd() : 0))
+                            .areas(areaInfos)
+                            .build();
+                })
+                .toList();
+
+        return StoreDispStruct.builder().uis(uiInfos).build();
+    }
+
+    /**
+     * 전시 데이터 조회 - dp_panel_item content + dp_widget_lib (참조일경우)
+     */
+    @Transactional(readOnly = true)
+    public StoreDispData getDispData(AuthPrincipal authUser) {
+        Map<String, Object> dataByArea = new java.util.HashMap<>();
+
+        List<DpUi> uis = dpUiRepository.findAll().stream()
+                .filter(ui -> ui.getSiteId().equals(authUser.siteId()) && "Y".equals(ui.getUseYn()))
+                .toList();
+
+        for (DpUi ui : uis) {
+            List<DpArea> areas = dpAreaRepository.findAll().stream()
+                    .filter(area -> area.getUiId().equals(ui.getUiId()) && "Y".equals(area.getUseYn()))
+                    .toList();
+
+            for (DpArea area : areas) {
+                Map<String, Object> areaData = new java.util.HashMap<>();
+                List<DpPanel> panels = dpPanelRepository.findAll().stream()
+                        .filter(panel -> panel.getSiteId().equals(authUser.siteId()) && "Y".equals(panel.getUseYn()))
+                        .toList();
+
+                List<Map<String, Object>> panelDataList = new java.util.ArrayList<>();
+                for (DpPanel panel : panels) {
+                    List<DpPanelItem> items = dpPanelItemRepository.findAll().stream()
+                            .filter(item -> item.getPanelId().equals(panel.getPanelId()))
+                            .toList();
+
+                    List<Map<String, Object>> widgetDataList = new java.util.ArrayList<>();
+                    for (DpPanelItem item : items) {
+                        Map<String, Object> widgetData = new java.util.HashMap<>();
+                        widgetData.put("widgetId", item.getPanelItemId()); // 위젯ID
+                        widgetData.put("widgetTypeCd", CmUtil.nvl(item.getWidgetTypeCd())); // 위젯타입
+                        widgetData.put("widgetTitle", CmUtil.nvl(item.getWidgetTitle())); // 위젯제목
+
+                        String content = CmUtil.nvl(item.getWidgetContent()); // 위젯컨텐츠
+                        if ("Y".equals(item.getWidgetLibRefYn()) && item.getWidgetLibId() != null) {
+                            DpWidgetLib widgetLib = dpWidgetLibRepository.findById(item.getWidgetLibId()).orElse(null);
+                            if (widgetLib != null) {
+                                content = CmUtil.nvl(widgetLib.getWidgetLibDesc()); // 라이브러리참조시 라이브러리컨텐츠
+                            }
+                        }
+                        widgetData.put("content", content); // 최종컨텐츠
+                        widgetDataList.add(widgetData);
+                    }
+
+                    Map<String, Object> panelData = new java.util.HashMap<>();
+                    panelData.put("panelId", panel.getPanelId()); // 패널ID
+                    panelData.put("panelNm", panel.getPanelNm()); // 패널명
+                    panelData.put("widgets", widgetDataList); // 위젯목록
+                    panelDataList.add(panelData);
+                }
+
+                areaData.put("areaId", area.getAreaId()); // 영역ID
+                areaData.put("areaNm", area.getAreaNm()); // 영역명
+                areaData.put("panels", panelDataList); // 패널목록
+                dataByArea.put(area.getAreaId(), areaData);
             }
         }
-        return null;
+
+        return StoreDispData.builder().dataByArea(dataByArea).build();
+    }
+
+    /**
+     * 전시 위젯 목록 조회 - dp_widget (유효한 위젯 목록, 참조형식이면 dp_widget_lib content 포함)
+     */
+    @Transactional(readOnly = true)
+    public StoreDispWidgets getDispWidgets(AuthPrincipal authUser) {
+        List<DpWidget> widgets = dpWidgetRepository.findAll().stream()
+                .filter(widget -> "Y".equals(widget.getUseYn()))
+                .toList();
+
+        List<StoreDispWidgets.WidgetInfo> widgetInfos = widgets.stream()
+                .map(widget -> {
+                    String content = CmUtil.nvl(widget.getWidgetContent()); // 위젯 자체 content
+                    // 참조형식(widgetLibRefYn='Y')이면 dp_widget_lib에서 content 조회
+                    if ("Y".equals(widget.getWidgetLibRefYn()) && widget.getWidgetLibId() != null) {
+                        DpWidgetLib widgetLib = dpWidgetLibRepository.findById(widget.getWidgetLibId()).orElse(null);
+                        if (widgetLib != null) {
+                            content = CmUtil.nvl(widgetLib.getWidgetLibDesc()); // 라이브러리 content로 대체
+                        }
+                    }
+
+                    return StoreDispWidgets.WidgetInfo.builder()
+                            .widgetLibId(widget.getWidgetLibId()) // 위젯라이브러리ID (참조시에만)
+                            .widgetLibNm(widget.getWidgetNm()) // 위젯명
+                            .widgetTypeCd(CmUtil.nvl(widget.getWidgetTypeCd())) // 위젯타입코드
+                            .widgetLibDesc(content) // 위젯 content (참조형식이면 라이브러리 content)
+                            .widgetLibStatusCd(CmUtil.nvl(widget.getUseYn(), "Y")) // 위젯상태코드
+                            .widgetLibSortOrd(String.valueOf(widget.getSortOrd() != null ? widget.getSortOrd() : 0)) // 정렬순서
+                            .usageCount("") // 사용횟수
+                            .regDate(widget.getRegDate() != null ? widget.getRegDate().toString() : null) // 등록일시
+                            .modDate(widget.getUpdDate() != null ? widget.getUpdDate().toString() : null) // 수정일시
+                            .build();
+                })
+                .toList();
+
+        return StoreDispWidgets.builder().widgets(widgetInfos).build();
     }
 
 }
