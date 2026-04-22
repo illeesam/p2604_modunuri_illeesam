@@ -277,6 +277,7 @@
       'sample01','sample02','sample03','sample04','sample05','sample06','sample07',
       'sample08','sample09','sample10','sample11','sample12','sample13','sample14',
       'sample21','sample22','sample23',
+      'xsStore', 'xsLocalStorage',
       'error401','error404','error500'];
     try {
       const rawHash = String(window.location.hash || '').replace(/^#/, '');
@@ -562,6 +563,14 @@
       <xs-sample21 v-else-if="page==='sample21'" />
       <xs-sample22 v-else-if="page==='sample22'" />
       <xs-sample23 v-else-if="page==='sample23'" />
+      <xs-store
+        v-else-if="page==='xsStore'"
+        :navigate="navigate" :show-toast="showToast"
+      />
+      <xs-local-storage
+        v-else-if="page==='xsLocalStorage'"
+        :navigate="navigate" :show-toast="showToast"
+      />
 
       <!-- Error Pages -->
       <fo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
@@ -684,6 +693,9 @@
    'XsSample08','XsSample09','XsSample10','XsSample11','XsSample12','XsSample13','XsSample14',
    'XsSample21','XsSample22','XsSample23',
   ].forEach(name => { if (window[name]) app.component(name, window[name]); });
+  /* ■■■ xs/ 개발도구 ■■■ */
+  if (window.XsStore) app.component('XsStore', window.XsStore);
+  if (window.XsLocalStorage) app.component('XsLocalStorage', window.XsLocalStorage);
 
   /* 페이지 ID 헬퍼 — 모든 템플릿에서 'home' 등으로 접근 가능 */
   app.use(pinia).mount('#app');

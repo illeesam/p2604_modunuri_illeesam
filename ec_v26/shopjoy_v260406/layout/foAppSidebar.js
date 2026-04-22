@@ -17,6 +17,7 @@ window.foAppSidebar = {
     const sample1Open = ref(false);
     const sample2Open = ref(false);
     const dispUiOpen  = ref(false);
+    const devToolsOpen = ref(false);
 
     const SAMPLE0_ITEMS = [
       { menuId: 'sample01', menuNm: '01.gridCrud' },
@@ -49,6 +50,10 @@ window.foAppSidebar = {
       { menuId: 'dispUi05', menuNm: '전시ui05' },
       { menuId: 'dispUi06', menuNm: '전시ui06' },
     ];
+    const DEV_TOOLS_ITEMS = [
+      { menuId: 'xsStore', menuNm: 'Store 정보관리' },
+      { menuId: 'xsLocalStorage', menuNm: 'localStorage 정보관리' },
+    ];
 
     /* 현재 페이지가 속한 그룹 자동 펼침 */
     watch(() => props.page, (p) => {
@@ -56,6 +61,7 @@ window.foAppSidebar = {
       if (SAMPLE1_ITEMS.some(i => i.menuId === p)) sample1Open.value = true;
       if (SAMPLE2_ITEMS.some(i => i.menuId === p)) sample2Open.value = true;
       if (DISP_UI_ITEMS.some(i => i.menuId === p)) dispUiOpen.value  = true;
+      if (DEV_TOOLS_ITEMS.some(i => i.menuId === p)) devToolsOpen.value = true;
     }, { immediate: true });
 
     const navTo = (menuId) => {
@@ -66,8 +72,8 @@ window.foAppSidebar = {
     const foSiteNo = window.FO_SITE_NO || '01';
     const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
-    return { isMenuActive, sample0Open, sample1Open, sample2Open, dispUiOpen,
-             SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, navTo,
+    return { isMenuActive, sample0Open, sample1Open, sample2Open, dispUiOpen, devToolsOpen,
+             SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, navTo,
              showSamples };
   },
   template: /* html */ `
@@ -96,6 +102,24 @@ window.foAppSidebar = {
           </button>
         </template>
       </template>
+    </template>
+
+    <!-- 개발도구 섹션 -->
+    <div v-if="sidebarOpen" style="padding:12px 8px 0;">
+      <button type="button" @click.stop="devToolsOpen=!devToolsOpen"
+        style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
+        <span>개발도구</span>
+        <span style="font-size:0.6rem;">{{ devToolsOpen ? '▲' : '▼' }}</span>
+      </button>
+    </div>
+    <template v-if="devToolsOpen">
+      <button v-for="item in DEV_TOOLS_ITEMS" :key="item.menuId" type="button"
+        @click.stop="navTo(item.menuId)"
+        class="sidebar-link" :class="{active: page === item.menuId}"
+        :data-tip="item.menuNm" :aria-label="item.menuNm">
+        <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">🔧</span>
+        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
+      </button>
     </template>
 
     <!-- 샘플 섹션 — Site 01은 전체 숨김 -->
