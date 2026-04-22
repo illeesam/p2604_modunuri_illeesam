@@ -14,7 +14,7 @@ window.useFoMemberStore = Pinia.defineStore('foMember', {
         memberStaffYn: 'N',
         memberBirthDt: '',
         memberStatusCd: '',
-        userTypeCd: 'FO',
+        userTypeCd: 'FO', // BO:관리자, FO:회원, SO:판매자, DO:배달, CO:고객사용자
         cartCount: 0,
         likeCount: 0,
       },

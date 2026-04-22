@@ -16,7 +16,7 @@ window.useBoUserStore = Pinia.defineStore('boUser', {
         roleId: '',
         roleNm: '',
         userStatusCd: '',
-        userTypeCd: '',
+        userTypeCd: '', // BO:관리자, FO:회원, SO:판매자, DO:배달, CO:고객사용자
         isAdminYn: 'N',
         companyId: '',
         companyNm: '',
