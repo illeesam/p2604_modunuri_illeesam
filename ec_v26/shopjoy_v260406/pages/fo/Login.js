@@ -11,13 +11,13 @@ window.Login = {
     const snsProvider = ref(null); // sns 회원가입 시 provider 저장
 
     /* ── 로그인 ── */
-    const form     = reactive({ loginName: 'user1@demo.com', loginPwd: 'demo1234' });
+    const form     = reactive({ loginId: 'user1@demo.com', loginPwd: 'demo1234' });
     const loginErr = ref('');
 
     const doLogin = async () => {
       loginErr.value = '';
-      if (!form.loginName || !form.loginPwd) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
-      const r = await window.foAuth.login(form.loginName, form.loginPwd);
+      if (!form.loginId || !form.loginPwd) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
+      const r = await window.foAuth.login(form.loginId, form.loginPwd);
       if (r.ok) {
         props.showToast(window.foAuth.state.user.memberNm + '님, 환영합니다!', 'success');
         emit('close');
@@ -101,8 +101,9 @@ window.Login = {
       if (!sf.phoneVerified)    { signupErr.value = '휴대폰 인증이 필요합니다.'; return; }
       if (sf.password.length < 6){ signupErr.value = '비밀번호는 6자 이상이어야 합니다.'; return; }
       if (sf.password !== sf.password2){ signupErr.value = '비밀번호가 일치하지 않습니다.'; return; }
+      const passwordHash = window.CryptoJS ? CryptoJS.SHA256(sf.password).toString() : sf.password;
       const r = await window.foAuth.signup(sf.memberNm, sf.email, sf.phone, {
-        password: sf.password,
+        password: passwordHash,
         postcode: sf.postcode, address: sf.address, addressDetail: sf.addressDetail,
         birthdate: sf.birthdate, gender: sf.gender,
       });

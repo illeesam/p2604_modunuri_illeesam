@@ -15,7 +15,7 @@ public class MbMemberDto {
     // ── mb_member ────────────────────────────────────────────────
     private String memberId;
     private String siteId;
-    private String memberEmail;
+    private String loginId;
     private String memberNm;
     private String memberPhone;
     private String memberGender;

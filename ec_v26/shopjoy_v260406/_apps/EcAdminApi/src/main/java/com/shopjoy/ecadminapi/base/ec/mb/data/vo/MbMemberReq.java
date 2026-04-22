@@ -16,8 +16,8 @@ public class MbMemberReq {
 
     private String memberId;
     private String siteId;
-    private String memberEmail;
-    private String memberPassword;
+    private String loginId;
+    private String loginPwd;
     private String memberNm;
     private String memberPhone;
     private String memberGender;
@@ -43,8 +43,8 @@ public class MbMemberReq {
         return MbMember.builder()
                 .memberId(memberId)
                 .siteId(siteId)
-                .memberEmail(memberEmail)
-                .memberPassword(memberPassword)
+                .loginId(loginId)
+                .loginPwd(loginPwd)
                 .memberNm(memberNm)
                 .memberPhone(memberPhone)
                 .memberGender(memberGender)

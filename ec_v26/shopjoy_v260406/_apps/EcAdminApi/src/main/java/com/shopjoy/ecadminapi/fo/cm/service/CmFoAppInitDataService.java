@@ -134,7 +134,7 @@ public class CmFoAppInitDataService {
 
         return FoAppInitDataRes.MemberInfo.builder()
                 .memberId(member.getMemberId())
-                .memberEmail(member.getMemberEmail())
+                .memberEmail(member.getLoginId())
                 .memberNm(member.getMemberNm())
                 .siteId(member.getSiteId() != null ? member.getSiteId() : "")
                 .memberTypeCd("")  // mb_member 테이블에 memberTypeCd 필드 없음

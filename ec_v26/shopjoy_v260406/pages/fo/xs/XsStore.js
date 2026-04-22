@@ -15,15 +15,16 @@ window.XsStore = {
 
     const storeList = computed(() => {
       const stores = [];
-      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'FO App Init Store' });
-      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'FO App Store' });
-      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'FO Auth Store' });
-      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'FO Code Store' });
-      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'FO Member Store' });
-      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'FO Role Store' });
-      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'FO Menu Store' });
-      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'FO Prop Store' });
-      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'FO Disp Store' });
+      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'FO App Init Store', hasLocalStorage: false });
+      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'FO App Store', hasLocalStorage: false });
+      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'FO Auth Store 💾', hasLocalStorage: true });
+      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'FO Code Store', hasLocalStorage: false });
+      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'FO Disp Store', hasLocalStorage: false });
+      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'FO Member Store 💾', hasLocalStorage: true });
+      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'FO Menu Store', hasLocalStorage: false });
+      if (window.useFoMyStore) stores.push({ name: 'useFoMyStore', label: 'FO My Store', hasLocalStorage: false });
+      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'FO Prop Store', hasLocalStorage: false });
+      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'FO Role Store', hasLocalStorage: false });
       return stores;
     });
 

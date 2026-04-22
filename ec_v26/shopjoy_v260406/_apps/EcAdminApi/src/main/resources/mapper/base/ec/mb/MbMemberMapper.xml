@@ -15,7 +15,7 @@
             <if test="p.grade != null and p.grade != ''">AND m.grade_cd = #{p.grade}</if>
             <if test="p.kw != null and p.kw != ''">
                 AND (m.member_nm    ILIKE '%' || #{p.kw} || '%'
-                  OR m.member_email ILIKE '%' || #{p.kw} || '%'
+                  OR m.login_id ILIKE '%' || #{p.kw} || '%'
                   OR m.member_phone ILIKE '%' || #{p.kw} || '%')
             </if>
             <if test="p.dateStart != null and p.dateStart != ''">AND m.join_date &gt;= #{p.dateStart}::DATE</if>

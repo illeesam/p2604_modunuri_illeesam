@@ -23,11 +23,11 @@ public class MbMember {
     @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "member_email", length = 100, nullable = false)
-    private String memberEmail;
+    @Column(name = "login_id", length = 100, nullable = false)
+    private String loginId;
 
-    @Column(name = "member_password", length = 255, nullable = false)
-    private String memberPassword;
+    @Column(name = "login_pwd", length = 255, nullable = false)
+    private String loginPwd;
 
     @Column(name = "member_nm", length = 50, nullable = false)
     private String memberNm;

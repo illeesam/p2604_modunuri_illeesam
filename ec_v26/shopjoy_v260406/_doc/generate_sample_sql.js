@@ -207,7 +207,7 @@ D.adminUsers.forEach((u, i) => {
   const roleId = roleNmMap[roleNm] || roleNmMap[u.role] || null;
   const deptId = deptNmMap[u.dept] || null;
   insert('sy_user',
-    ['user_id','site_id','login_id','user_password','user_nm','user_email','user_phone',
+    ['user_id','site_id','login_id','login_pwd','user_nm','user_email','user_phone',
      'dept_id','role_id','user_status_cd','reg_by','reg_date'],
     [id, siteId1, u.loginId, DEMO_PW_HASH, u.name, u.email, u.phone,
      deptId, roleId, userStatusMap[u.status] || 'ACTIVE', REG_BY, REG_DATE]
@@ -223,7 +223,7 @@ const memStMap  = { '활성':'ACTIVE','정지':'SUSPENDED','탈퇴':'WITHDRAWN' 
 D.members.forEach((m, i) => {
   const id = mkId('MB', i + 1);
   insert('mb_member',
-    ['member_id','site_id','member_email','member_password','member_nm','member_phone',
+    ['member_id','site_id','login_id','login_pwd','member_nm','member_phone',
      'grade_cd','member_status_cd','order_count','total_purchase_amt','reg_by','reg_date'],
     [id, siteId1, m.email, DEMO_PW_HASH, m.memberNm, m.phone,
      gradeMap[m.grade] || 'BASIC', memStMap[m.status] || 'ACTIVE',

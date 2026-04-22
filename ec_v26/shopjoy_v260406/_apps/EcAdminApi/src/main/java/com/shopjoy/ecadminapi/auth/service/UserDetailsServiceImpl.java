@@ -53,6 +53,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             new SimpleGrantedAuthority("ROLE_ADMIN")
         );
 
-        return new User(syUser.getUserId(), syUser.getUserPassword(), authorities);
+        return new User(syUser.getUserId(), syUser.getLoginPwd(), authorities);
     }
 }

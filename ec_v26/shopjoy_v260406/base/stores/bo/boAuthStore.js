@@ -21,21 +21,22 @@
 
     getters: {
       isLoggedIn: (state) => !!state.user && !!state.token,
-      currentUser: (state) => state.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' },
+      currentUser: (state) => state.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
       authHeader: (state) => (state.token ? { Authorization: `Bearer ${state.token}` } : {}),
     },
 
     actions: {
       // 로그인
-      async login(loginName, loginPwd, authMethod = '메인') {
+      async login(loginId, loginPwd, authMethod = '메인') {
         try {
+          const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
           const res = await window.boApi.post('/auth/bo/auth/login', {
-            loginName,
-            loginPwd,
+            loginId,
+            loginPwd: loginPwdHash,
             authMethod,
           });
 
-          this.user = res.data || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          this.user = res.data || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
           this.token = res.data?.accessToken || '';
           this.refreshToken = res.data?.refreshToken || '';
 
@@ -115,7 +116,7 @@
           if (token && userJson) {
             this.token = token || '';
             this.refreshToken = refreshToken || '';
-            this.user = JSON.parse(userJson) || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+            this.user = JSON.parse(userJson) || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
             return true;
           }
         } catch (_) {}
@@ -152,7 +153,7 @@
         token: null,
         refreshToken: null,
         isLoggedIn: false,
-        currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' },
+        currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
         authHeader: {},
       };
     } catch (e) {
@@ -162,7 +163,7 @@
         token: null,
         refreshToken: null,
         isLoggedIn: false,
-        currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' },
+        currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
         authHeader: {},
       };
     }
@@ -171,10 +172,10 @@
   window.getAuthUser = () => {
     try {
       const store = window.useAuthStore?.();
-      return store?.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+      return store?.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
     } catch (e) {
       console.error('getAuthUser error:', e);
-      return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+      return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
     }
   };
 

@@ -78,10 +78,10 @@ public class FoMyPageService {
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
-        if (!passwordEncoder.matches(currentPassword, member.getMemberPassword())) {
+        if (!passwordEncoder.matches(currentPassword, member.getLoginPwd())) {
             throw new CmBizException("현재 비밀번호가 올바르지 않습니다.");
         }
-        member.setMemberPassword(passwordEncoder.encode(newPassword));
+        member.setLoginPwd(passwordEncoder.encode(newPassword));
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
     }

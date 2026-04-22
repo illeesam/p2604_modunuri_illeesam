@@ -12,7 +12,7 @@ public class FoLoginRes {
     private String refreshToken;
     private long expiresIn;
     private String memberId;
-    private String memberEmail;
+    private String loginId;
     private String memberNm;
     private String siteId;
     private String roleId;

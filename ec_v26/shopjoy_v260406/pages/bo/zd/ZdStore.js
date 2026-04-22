@@ -15,24 +15,24 @@ window.ZdStore = {
 
     const storeList = computed(() => {
       const stores = [];
-      if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'BO App Init Store' });
-      if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'BO App Store' });
-      if (window.useAuthStore) stores.push({ name: 'useAuthStore', label: 'BO Auth Store' });
-      if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'BO Code Store' });
-      if (window.useConfigStore) stores.push({ name: 'useConfigStore', label: 'BO Config Store' });
-      if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'BO Menu Store' });
-      if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'BO Prop Store' });
-      if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'BO Role Store' });
-      if (window.useBoUserStore) stores.push({ name: 'useBoUserStore', label: 'BO User Store' });
-      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'FO App Init Store' });
-      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'FO Auth Store' });
-      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'FO Member Store' });
-      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'FO Role Store' });
-      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'FO Menu Store' });
-      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'FO Code Store' });
-      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'FO Prop Store' });
-      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'FO Disp Store' });
-      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'FO App Store' });
+      if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'BO App Init Store', hasLocalStorage: false });
+      if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'BO App Store', hasLocalStorage: false });
+      if (window.useAuthStore) stores.push({ name: 'useAuthStore', label: 'BO Auth Store 💾', hasLocalStorage: true });
+      if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'BO Code Store', hasLocalStorage: false });
+      if (window.useConfigStore) stores.push({ name: 'useConfigStore', label: 'BO Config Store', hasLocalStorage: false });
+      if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'BO Menu Store', hasLocalStorage: false });
+      if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'BO Prop Store', hasLocalStorage: false });
+      if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'BO Role Store', hasLocalStorage: false });
+      if (window.useBoUserStore) stores.push({ name: 'useBoUserStore', label: 'BO User Store 💾', hasLocalStorage: true });
+      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'FO App Init Store', hasLocalStorage: false });
+      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'FO Auth Store 💾', hasLocalStorage: true });
+      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'FO Member Store 💾', hasLocalStorage: true });
+      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'FO Role Store', hasLocalStorage: false });
+      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'FO Menu Store', hasLocalStorage: false });
+      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'FO Code Store', hasLocalStorage: false });
+      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'FO Prop Store', hasLocalStorage: false });
+      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'FO Disp Store', hasLocalStorage: false });
+      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'FO App Store', hasLocalStorage: false });
       return stores;
     });
 

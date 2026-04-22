@@ -46,11 +46,12 @@
   };
 
   /* ── 이메일/비밀번호 로그인 ── */
-  const login = async (loginName, loginPwd) => {
+  const login = async (loginId, loginPwd) => {
     state.loading = true;
     try {
       if (!window.foApi) throw new Error('no api');
-      const res = await window.foApi.post('/auth/fo/auth/login', { loginName, loginPwd });
+      const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
+      const res = await window.foApi.post('/auth/fo/auth/login', { loginId, loginPwd: loginPwdHash });
       if (res.data?.data) {
         const d = res.data.data;
         const user  = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };

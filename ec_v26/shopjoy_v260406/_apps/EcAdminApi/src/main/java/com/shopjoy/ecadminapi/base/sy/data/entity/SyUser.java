@@ -25,8 +25,8 @@ public class SyUser {
     @Column(name = "login_id", length = 50, nullable = false)
     private String loginId;
 
-    @Column(name = "user_password", length = 255, nullable = false)
-    private String userPassword;
+    @Column(name = "login_pwd", length = 255, nullable = false)
+    private String loginPwd;
 
     @Column(name = "user_nm", length = 50, nullable = false)
     private String userNm;

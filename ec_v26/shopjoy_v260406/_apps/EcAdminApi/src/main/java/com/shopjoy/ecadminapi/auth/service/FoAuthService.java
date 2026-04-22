@@ -34,23 +34,23 @@ public class FoAuthService {
 
     @Transactional
     public FoLoginRes login(FoLoginReq request) {
-        MbMember member = memberRepository.findByMemberEmail(request.getLoginName())
-                .orElseThrow(() -> new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다."));
+        MbMember member = memberRepository.findByLoginId(request.getLoginId())
+                .orElseThrow(() -> new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다."));
 
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
-        // 비밀번호 체크 무조건 통과 (개발 편의상)
-        // if (!passwordEncoder.matches(request.getLoginPwd(), member.getMemberPassword())) {
-        //     throw new CmBizException("이메일 또는 비밀번호가 올바르지 않습니다.");
-        // }
+        // 클라이언트에서 SHA256 해시된 비밀번호를 받아 BCrypt로 재해시하여 검증
+        if (!passwordEncoder.matches(request.getLoginPwd(), member.getLoginPwd())) {
+            throw new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다.");
+        }
 
         LocalDateTime loginAt = LocalDateTime.now();
         member.setLastLogin(loginAt);
 
         String accessToken  = jwtProvider.createAccessToken(
-                member.getMemberId(), member.getMemberEmail(),
+                member.getMemberId(), member.getLoginId(),
                 List.of("ROLE_MEMBER"), AuthPrincipal.MEMBER, null);
         String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), AuthPrincipal.MEMBER);
 
@@ -59,7 +59,7 @@ public class FoAuthService {
                 .refreshToken(refreshToken)
                 .expiresIn(jwtProvider.getAccessExpiryMinutes() * 60)
                 .memberId(member.getMemberId())
-                .memberEmail(member.getMemberEmail())
+                .loginId(member.getLoginId())
                 .memberNm(member.getMemberNm())
                 .siteId(member.getSiteId() != null ? member.getSiteId() : "")
                 .roleId(null)
@@ -71,15 +71,15 @@ public class FoAuthService {
 
     @Transactional
     public FoJoinRes join(MbMember body) {
-        if (memberRepository.findByMemberEmail(body.getMemberEmail()).isPresent()) {
-            throw new CmBizException("이미 사용 중인 이메일입니다.");
+        if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
+            throw new CmBizException("이미 사용 중인 로그인 ID입니다.");
         }
 
         String newId = "MB" + LocalDateTime.now().format(ID_FMT)
                 + String.format("%04d", (int) (Math.random() * 10000));
 
         body.setMemberId(newId);
-        body.setMemberPassword(passwordEncoder.encode(body.getMemberPassword()));
+        body.setLoginPwd(passwordEncoder.encode(body.getLoginPwd()));
         body.setMemberStatusCd("ACTIVE");
         body.setJoinDate(LocalDateTime.now());
         body.setRegBy(newId);
@@ -87,7 +87,7 @@ public class FoAuthService {
 
         memberRepository.save(body);
 
-        return new FoJoinRes(newId, body.getMemberEmail());
+        return new FoJoinRes(newId, body.getLoginId());
     }
 
     @Transactional(readOnly = true)
@@ -108,7 +108,7 @@ public class FoAuthService {
         revokedTokens.add(refreshToken);
 
         String newAccess  = jwtProvider.createAccessToken(
-                memberId, member.getMemberEmail(),
+                memberId, member.getLoginId(),
                 List.of("ROLE_MEMBER"), AuthPrincipal.MEMBER, null);
         String newRefresh = jwtProvider.createRefreshToken(memberId, AuthPrincipal.MEMBER);
 

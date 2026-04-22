@@ -3,7 +3,7 @@ CREATE TABLE sy_user (
     user_id         VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),                            -- sy_site.site_id
     login_id        VARCHAR(50)     NOT NULL,
-    user_password   VARCHAR(255)    NOT NULL,
+    login_pwd       VARCHAR(255)    NOT NULL,
     user_nm         VARCHAR(50)     NOT NULL,
     user_email      VARCHAR(100),
     user_phone      VARCHAR(20),
@@ -30,7 +30,7 @@ COMMENT ON TABLE  sy_user                  IS '관리자 사용자';
 COMMENT ON COLUMN sy_user.user_id          IS '사용자ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN sy_user.site_id          IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN sy_user.login_id         IS '로그인 아이디';
-COMMENT ON COLUMN sy_user.user_password    IS '비밀번호 (bcrypt)';
+COMMENT ON COLUMN sy_user.login_pwd        IS '로그인 비밀번호 (bcrypt)';
 COMMENT ON COLUMN sy_user.user_nm          IS '사용자명';
 COMMENT ON COLUMN sy_user.user_email       IS '이메일';
 COMMENT ON COLUMN sy_user.user_phone       IS '연락처';

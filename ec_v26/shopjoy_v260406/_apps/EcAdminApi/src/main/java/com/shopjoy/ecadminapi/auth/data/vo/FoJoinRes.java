@@ -7,5 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class FoJoinRes {
     private String memberId;
-    private String memberEmail;
+    private String loginId;
 }

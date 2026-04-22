@@ -494,10 +494,10 @@
       const _restoreBoUser = () => {
         try {
           const tok = localStorage.getItem('modu-bo-token');
-          if (!tok) return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          if (!tok) return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
           const user = JSON.parse(localStorage.getItem('modu-bo-user') || 'null');
-          return user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
-        } catch(_) { return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' }; }
+          return user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+        } catch(_) { return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' }; }
       };
       const currentUser = ref(_restoreBoUser());
       const activeRoleId = ref(null);
@@ -607,7 +607,7 @@
         }
       }, { immediate: true });
       const loginModal  = reactive({ show: false, tab: 'login' });
-      const loginForm   = reactive({ loginName: 'bo1@demo.com', loginPwd: 'demo1234', authMethod: '메인' });
+      const loginForm   = reactive({ loginId: 'admin2', loginPwd: 'demo1234', authMethod: '메인' });
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
       const loginError  = ref('');
       const userMenuShow = ref(false);
@@ -628,7 +628,7 @@
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
         if (!currentUser.value) {
-          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
         }
         currentUser.value.name  = profileForm.name || '';
         currentUser.value.phone = profileForm.phone || '';
@@ -664,15 +664,15 @@
       };
       const closeLogin = () => { loginModal.show = false; loginError.value = ''; };
 
-      const quickLogin = (loginName) => {
-        loginForm.loginName = loginName;
+      const quickLogin = (loginId) => {
+        loginForm.loginId = loginId;
         loginForm.loginPwd = 'demo1234';
         loginForm.authMethod = '메인';
         doLogin();
       };
       const doLogin = async () => {
         loginError.value = '';
-        if (!loginForm.loginName || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
+        if (!loginForm.loginId || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
         try {
           const authStore = window.useAuthStore?.();
           const configStore = window.useConfigStore?.();
@@ -682,15 +682,15 @@
             return;
           }
 
-          const user = await authStore.login(loginForm.loginName, loginForm.loginPwd, loginForm.authMethod);
+          const user = await authStore.login(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
           currentUser.value = (user && typeof user === 'object')
             ? user
-            : { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+            : { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
 
           await configStore.loadCodes();
           await configStore.loadUserInfo();
           openTabs.splice(0);
-          loginForm.loginName = ''; loginForm.loginPwd = '';
+          loginForm.loginId = ''; loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
           showToast(`${(currentUser.value?.name || '사용자')}님 환영합니다.`);
@@ -711,14 +711,14 @@
             configStore.reset();
           }
 
-          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
           userMenuShow.value = false;
           openTabs.splice(0);
           navigate('dashboard');
           showToast('로그아웃되었습니다.');
         } catch (e) {
           console.error('doLogout error:', e);
-          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '', password: '' };
+          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
           userMenuShow.value = false;
         }
       };
@@ -1431,7 +1431,7 @@
       <div v-if="loginModal.tab==='login'">
         <div class="form-group">
           <label class="form-label">로그인 ID</label>
-          <input class="form-control" v-model="loginForm.loginName" placeholder="로그인 ID 입력" @keyup.enter="doLogin" autocomplete="username" />
+          <input class="form-control" v-model="loginForm.loginId" placeholder="로그인 ID 입력" @keyup.enter="doLogin" autocomplete="username" />
         </div>
         <div class="form-group">
           <label class="form-label">비밀번호</label>

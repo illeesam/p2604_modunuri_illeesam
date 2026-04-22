@@ -46,7 +46,7 @@ public class BoAuthService {
 
         body.setUserId("US" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyMMddHHmmss"))
             + String.format("%04d", (int)(Math.random() * 10000)));
-        body.setUserPassword(passwordEncoder.encode(body.getUserPassword()));
+        body.setLoginPwd(passwordEncoder.encode(body.getLoginPwd()));
         body.setUserStatusCd("ACTIVE");
         body.setRegDate(LocalDateTime.now());
         em.persist(body);
@@ -55,17 +55,17 @@ public class BoAuthService {
 
     @Transactional
     public BoLoginRes login(BoLoginReq request) {
-        SyUser user = findUserByLoginId(request.getLoginName());
+        SyUser user = findUserByLoginId(request.getLoginId());
 
         if (!"ACTIVE".equals(user.getUserStatusCd())) {
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
-        // 비밀번호 체크 무조건 통과 (개발 편의상)
-        // if (!passwordEncoder.matches(request.getLoginPwd(), user.getUserPassword())) {
-        //     user.setLoginFailCnt(user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1);
-        //     throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
-        // }
+        // 클라이언트에서 SHA256 해시된 비밀번호를 받아 BCrypt로 재해시하여 검증
+        if (!passwordEncoder.matches(request.getLoginPwd(), user.getLoginPwd())) {
+            user.setLoginFailCnt(user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1);
+            throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
+        }
 
         user.setLoginFailCnt(0);
         LocalDateTime loginAt = LocalDateTime.now();

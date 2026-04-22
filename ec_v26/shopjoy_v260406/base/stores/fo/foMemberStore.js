@@ -6,7 +6,7 @@ window.useFoMemberStore = Pinia.defineStore('foMember', {
     return {
       member: {
         memberId: '',
-        memberEmail: '',
+        loginId: '',
         memberNm: '',
         siteId: '',
         memberHpNo: '',
@@ -30,7 +30,7 @@ window.useFoMemberStore = Pinia.defineStore('foMember', {
       if (memberData) {
         this.member = {
           memberId: memberData.memberId || '',
-          memberEmail: memberData.memberEmail || '',
+          loginId: memberData.loginId || '',
           memberNm: memberData.memberNm || '',
           siteId: memberData.siteId || '',
           memberHpNo: memberData.memberHpNo || '',
@@ -69,7 +69,7 @@ window.useFoMemberStore = Pinia.defineStore('foMember', {
     clear() {
       this.member = {
         memberId: '',
-        memberEmail: '',
+        loginId: '',
         memberNm: '',
         siteId: '',
         memberHpNo: '',
