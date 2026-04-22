@@ -73,8 +73,8 @@ public class BoAuthService {
         user.setLastLoginDate(loginAt);
 
         List<String> roles = List.of("ROLE_ADMIN");
-        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getLoginId(), roles, AuthPrincipal.USER, user.getRoleId());
-        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), AuthPrincipal.USER);
+        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getLoginId(), roles, AuthPrincipal.BO, user.getRoleId());
+        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), AuthPrincipal.BO);
 
         return BoLoginRes.builder()
             .accessToken(accessToken)

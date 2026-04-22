@@ -67,33 +67,58 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 if ("access".equals(tokenType)) {
                     try {
                         Claims claims    = jwtProvider.getClaims(token);
+                        String siteId    = claims.get("siteId",    String.class);
                         String userId    = claims.getSubject();
-                        String userType  = claims.get("userType",  String.class);
+                        String userTypeCd  = claims.get("userTypeCd",  String.class);
                         String roleId    = claims.get("roleId",    String.class);
                         String deptId    = claims.get("deptId",    String.class);
                         String vendorId  = claims.get("vendorId",  String.class);
-
-                        AuthPrincipal principal = new AuthPrincipal(userId, userType, roleId);
+                        String userNm  = claims.get("userNm",  String.class);
+                        String accessToken = claims.get("accessToken", String.class);
+                        String refreshToken = claims.get("refreshToken", String.class);
+                        String memberId  = claims.get("memberId",  String.class);
+                        String memberGrade = claims.get("memberGrade", String.class);
+                        String isAdminYn = claims.get("isAdminYn", String.class);
+                        String isStaffYn = claims.get("isStaffYn", String.class);
 
                         @SuppressWarnings("unchecked")
                         List<String> roles = claims.get("roles", List.class);
-                        List<SimpleGrantedAuthority> authorities = roles == null ? List.of() :
+
+                        AuthPrincipal principal = new AuthPrincipal(
+                                userId,                                 // userId
+                                userTypeCd,                             // userTypeCd
+                                null,                                   // loginTime은 클레임에서 추출하지 않고 null (필요시 수정)
+                                roleId != null ? roleId : "",           // roleId
+                                userNm != null ? userNm : "",           // userNm
+                                accessToken != null ? accessToken : "", // accessToken
+                                refreshToken != null ? refreshToken : "",// refreshToken
+                                siteId != null ? siteId : "",           // siteId
+                                roles != null ? roles : List.of(),      // roles
+                                memberId != null ? memberId : "",       // memberId
+                                vendorId != null ? vendorId : "",       // vendorId
+                                memberGrade != null ? memberGrade : "", // memberGrade
+                                isAdminYn != null ? isAdminYn : "N",    // isAdminYn
+                                isStaffYn != null ? isStaffYn : "N"     // isStaffYn
+                        );
+
+                        List<SimpleGrantedAuthority> grantedAuthorities = roles == null ? List.of() :
                             roles.stream().map(SimpleGrantedAuthority::new).toList();
 
                         UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(principal, null, authorities);
+                            new UsernamePasswordAuthenticationToken(principal, null, grantedAuthorities);
                         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(auth);
 
                         // MDC — 로그에 인증 사용자 정보 삽입
+                        MDC.put("siteId",   siteId != null ? siteId : "-");
                         MDC.put("userId",   userId);
-                        MDC.put("userType", userType  != null ? userType  : "-");
+                        MDC.put("userTypeCd", userTypeCd  != null ? userTypeCd  : "-");
                         MDC.put("roleId",   roleId    != null ? roleId    : "-");
                         MDC.put("deptId",   deptId    != null ? deptId    : "-");
                         MDC.put("vendorId", vendorId  != null ? vendorId  : "-");
                         // request attribute — AccessLogFilter 가 체인 종료 후 읽음 (MDC는 finally 에서 clear)
                         request.setAttribute(AccessLogFilter.ATTR_USER_ID,   userId);
-                        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE, userType  != null ? userType  : "-");
+                        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE, userTypeCd  != null ? userTypeCd  : "-");
                         request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   roleId    != null ? roleId    : "-");
                         request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   deptId    != null ? deptId    : null);
                         request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, vendorId  != null ? vendorId  : null);
@@ -128,8 +153,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private static void mdcAnonymous(HttpServletRequest request) {
+        MDC.put("siteId",   "-");
         MDC.put("userId",   "-");
-        MDC.put("userType", "-");
+        MDC.put("userTypeCd", "-");
         MDC.put("roleId",   "-");
         MDC.put("deptId",   "-");
         MDC.put("vendorId", "-");

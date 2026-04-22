@@ -39,17 +39,17 @@ import java.util.List;
  *
  * URL 인가 규칙:
  *   /api/base/**   GET              → 누구나 (permitAll)
- *   /api/base/**   POST/PUT/DELETE  → USER만
- *   /api/fo/ec/my/**               → MEMBER만
- *   /api/**        GET              → USER 또는 MEMBER
- *   /api/**        POST/PUT/PATCH/DELETE → USER만
- *   /autoRest/**   GET              → USER 또는 MEMBER
- *   /autoRest/**   POST/PUT/PATCH/DELETE → USER만
+ *   /api/base/**   POST/PUT/DELETE  → BO만
+ *   /api/fo/ec/my/**               → FO만
+ *   /api/**        GET              → BO 또는 FO
+ *   /api/**        POST/PUT/PATCH/DELETE → BO만
+ *   /autoRest/**   GET              → BO 또는 FO
+ *   /autoRest/**   POST/PUT/PATCH/DELETE → BO만
  *
  * 어노테이션 방식 (개별 메서드 예외 처리):
- *   @BoOnly  → USER만
- *   @FoOnly  → MEMBER만
- *   @BoOrFo  → USER 또는 MEMBER
+ *   @BoOnly  → BO만
+ *   @FoOnly  → FO만
+ *   @BoOrFo  → BO 또는 FO
  *   @ExtOnly → EXT(외부 시스템)만
  *
  * 필터 순서: JwtAuthFilter → UsernamePasswordAuthenticationFilter
@@ -64,22 +64,22 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
-    /** USER만 허용 */
+    /** BO만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> BO_ONLY =
-        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.USER));
+        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.BO));
 
-    /** USER 또는 MEMBER 허용 */
+    /** BO 또는 FO 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> BO_OR_FO =
         (supplier, ctx) -> {
             Authentication auth = supplier.get();
             return new AuthorizationDecision(
-                isUserType(auth, AuthPrincipal.USER) || isUserType(auth, AuthPrincipal.MEMBER)
+                isUserType(auth, AuthPrincipal.BO) || isUserType(auth, AuthPrincipal.FO)
             );
         };
 
-    /** MEMBER만 허용 */
+    /** FO만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> FO_ONLY =
-        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.MEMBER));
+        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.FO));
 
     /** EXT(외부 시스템)만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> EXT_ONLY =
@@ -173,7 +173,7 @@ public class SecurityConfig {
     private static boolean isUserType(Authentication auth, String type) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
-            return type.equals(p.userType());
+            return type.equals(p.userTypeCd());
         }
         return false;
     }

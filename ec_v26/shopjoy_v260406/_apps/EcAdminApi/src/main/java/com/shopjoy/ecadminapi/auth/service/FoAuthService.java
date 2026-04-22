@@ -52,8 +52,8 @@ public class FoAuthService {
 
         String accessToken  = jwtProvider.createAccessToken(
                 member.getMemberId(), member.getLoginId(),
-                List.of("ROLE_MEMBER"), AuthPrincipal.MEMBER, null);
-        String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), AuthPrincipal.MEMBER);
+                List.of("ROLE_MEMBER"), AuthPrincipal.FO, null);
+        String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), AuthPrincipal.FO);
 
         return FoLoginRes.builder()
                 .accessToken(accessToken)
@@ -99,7 +99,7 @@ public class FoAuthService {
             throw new CmBizException("유효하지 않거나 만료된 refreshToken입니다.");
         if (!"refresh".equals(jwtProvider.getTokenType(refreshToken)))
             throw new CmBizException("refreshToken이 아닙니다.");
-        if (!AuthPrincipal.MEMBER.equals(jwtProvider.getUserType(refreshToken)))
+        if (!AuthPrincipal.FO.equals(jwtProvider.getUserType(refreshToken)))
             throw new CmBizException("회원 토큰이 아닙니다.");
 
         String memberId = jwtProvider.getUserId(refreshToken);
@@ -110,8 +110,8 @@ public class FoAuthService {
 
         String newAccess  = jwtProvider.createAccessToken(
                 memberId, member.getLoginId(),
-                List.of("ROLE_MEMBER"), AuthPrincipal.MEMBER, null);
-        String newRefresh = jwtProvider.createRefreshToken(memberId, AuthPrincipal.MEMBER);
+                List.of("ROLE_MEMBER"), AuthPrincipal.FO, null);
+        String newRefresh = jwtProvider.createRefreshToken(memberId, AuthPrincipal.FO);
 
         return new TokenPair(newAccess, newRefresh,
                 LocalDateTime.now(), jwtProvider.getAccessExpiryMinutes(), jwtProvider.getRefreshExpiryMinutes());

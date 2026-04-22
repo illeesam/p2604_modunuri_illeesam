@@ -12,8 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
  *
  * 반환 값:
  * - getUserId()       : 인증된 사용자 ID, 미인증 시 "SYSTEM"
- * - getUserTypeCd()   : "USER"(관리자) | "MEMBER"(고객), 미인증 시 null
- * - getRoleId()       : 관리자 역할 ID (sy_user.role_id), MEMBER/미인증 시 null
+ * - getUserTypeCd()   : "BO"(관리자) | "FO"(고객) | "SO"(판매자), 미인증 시 null
+ * - getRoleId()       : 관리자 역할 ID (sy_user.role_id), FO/미인증 시 null
  * - isBo()            : sy_user 관리자 여부
  * - isFo()            : ec_member 고객 여부
  * - isSo()            : Super Owner 여부
@@ -40,7 +40,7 @@ public final class SecurityUtil {
 
     public static String getUserTypeCd() {
         AuthPrincipal p = currentPrincipal();
-        return p != null ? p.userType() : null;
+        return p != null ? p.userTypeCd() : null;
     }
 
     public static String getRoleId() {
@@ -55,12 +55,12 @@ public final class SecurityUtil {
 
     /** sy_user 테이블 사용자 여부 */
     public static boolean isBo() {
-        return AuthPrincipal.USER.equals(getUserTypeCd());
+        return AuthPrincipal.BO.equals(getUserTypeCd());
     }
 
     /** ec_member 테이블 사용자 여부 */
     public static boolean isFo() {
-        return AuthPrincipal.MEMBER.equals(getUserTypeCd());
+        return AuthPrincipal.FO.equals(getUserTypeCd());
     }
 
     /** So 테이블 사용자 여부 (Super Owner) */
