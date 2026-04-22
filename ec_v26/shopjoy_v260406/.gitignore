@@ -27,11 +27,20 @@ package-lock.json.bak
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/launch.json
+.history/
 .idea/
+.idea_modules/
+*.iml
+*.iws
+*.ipr
 *.sublime-project
 *.sublime-workspace
 *.code-workspace
-.history/
+.classpath
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
 
 # ─── OS 자동 생성 ─────────────────────────────────────────────────────────
 .DS_Store
@@ -137,6 +146,69 @@ stats.json
 *.7z
 *.iso
 
+# ─── 파일 업로드 (로컬 임시 저장소) ────────────────────────────────────────
+static/uploads/
+static/cdn/uploads/
+uploads/
+_uploads/
+
+# ─── 이미지 파일 ──────────────────────────────────────────────────────────
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+*.webp
+*.ico
+*.tiff
+*.tif
+
+# ─── 동영상 파일 ──────────────────────────────────────────────────────────
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.flv
+*.wmv
+*.m4v
+*.mpg
+*.mpeg
+*.3gp
+*.ogv
+
+# ─── 오피스 문서 ──────────────────────────────────────────────────────────
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.hwp
+*.hwpx
+*.odt
+*.ods
+*.odp
+
+# ─── 텍스트 / 데이터 파일 ────────────────────────────────────────────────
+*.txt
+*.csv
+*.tsv
+*.json
+*.xml
+*.json.bak
+*.xml.bak
+
+# ─── 오디오 파일 ──────────────────────────────────────────────────────────
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.m4a
+*.wma
+
 # ─── Python (스크립트 실행 시) ────────────────────────────────────────────
 __pycache__/
 *.py[cod]
@@ -160,6 +232,53 @@ __pycache__/
 .stylelintcache
 .prettiercache
 *.tsbuildinfo
+
+# ─── Java / Gradle 빌드 결과물 ────────────────────────────────────────────
+build/
+.gradle/
+*.class
+target/
+*.jar
+*.war
+*.ear
+*.zip
+
+# ─── Spring Boot / 런타임 ─────────────────────────────────────────────────
+spring.log
+application.log
+application-*.log
+LOG_DIR_IS_UNDEFINED/
+
+# ─── IntelliJ 콘솔 / 디버그 출력 ──────────────────────────────────────────
+.idea/workspace.xml.bak
+.idea/shelf/
+.idea/dictionaries/
+.idea/sonarlint/
+.idea/vcs.xml
+.idea/libraries/
+.idea/artifacts/
+.idea/gradle.xml
+.idea/codeStyles/
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/modules/
+.idea/uiDesigner.xml
+.idea/dataSources.ids
+.idea/dataSources.local.xml
+.idea/dataSources/
+.idea/dataSources.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/tasks.xml
+.idea/jarRepositories.xml
+.idea/runConfigurations/
+.idea/deployment.xml
+out/
+console.log
+debug.log
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  ✅ 포함(커밋) 대상 — 명시적 허용

@@ -110,7 +110,7 @@ public class CmAppStoreDataService {
     @Transactional(readOnly = true)
     public Object getBoUser(AuthPrincipal authUser) {
         if (authUser == null || authUser.userId() == null) {
-            return "BO".equals(authUser.userTypeCd()) ? StoreUser.builder().build() : StoreMember.builder().build();
+            return authUser != null && "BO".equals(authUser.userTypeCd()) ? StoreUser.builder().build() : StoreMember.builder().build();
         }
 
         if ("BO".equals(authUser.userTypeCd())) {
@@ -298,17 +298,23 @@ public class CmAppStoreDataService {
      */
     @Transactional(readOnly = true)
     public StoreCode getCodes(AuthPrincipal authUser) {
-        syCodeRepository.findAll().stream()
-                .map(code -> StoreCode.CodeInfo.builder()
-                        .codeGrp(code.getCodeGrp())
-                        .codeId(code.getCodeId())
-                        .codeNm(code.getCodeLabel())
-                        .codeVal(CmUtil.nvl(code.getCodeValue()))
-                        .codeSortOrd(String.valueOf(code.getSortOrd() != null ? code.getSortOrd() : 0))
-                        .codeRemark(CmUtil.nvl(code.getCodeRemark()))
-                        .build())
-                .toList();
-        return StoreCode.builder().codesByGroup(new java.util.HashMap<>()).build();
+        Map<String, java.util.List<StoreCode.CodeInfo>> codesByGroup = new java.util.HashMap<>();
+
+        syCodeRepository.findAll().forEach(code -> {
+            StoreCode.CodeInfo codeInfo = StoreCode.CodeInfo.builder()
+                    .codeGrp(code.getCodeGrp())
+                    .codeId(code.getCodeId())
+                    .codeNm(code.getCodeLabel())
+                    .codeVal(CmUtil.nvl(code.getCodeValue()))
+                    .codeSortOrd(String.valueOf(code.getSortOrd() != null ? code.getSortOrd() : 0))
+                    .codeRemark(CmUtil.nvl(code.getCodeRemark()))
+                    .build();
+
+            codesByGroup.computeIfAbsent(code.getCodeGrp(), k -> new java.util.ArrayList<>())
+                    .add(codeInfo);
+        });
+
+        return StoreCode.builder().codesByGroup(codesByGroup).build();
     }
 
     /**
@@ -316,15 +322,16 @@ public class CmAppStoreDataService {
      */
     @Transactional(readOnly = true)
     public StoreProp getProps(AuthPrincipal authUser) {
+        String siteId = authUser != null ? authUser.siteId() : null;
         Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
-                .filter(prop -> prop.getSiteId().equals(authUser.siteId()))
+                .filter(prop -> siteId == null || prop.getSiteId().equals(siteId))
                 .collect(Collectors.toMap(
                         SyProp::getPropKey,
                         prop -> StoreProp.PropInfo.builder()
-                                .propKey(prop.getPropKey()) // 속성키
-                                .propVal(CmUtil.nvl(prop.getPropValue())) // 속성값
-                                .propNm(CmUtil.nvl(prop.getPropLabel())) // 속성명
-                                .propRemark(CmUtil.nvl(prop.getPropRemark())) // 비고
+                                .propKey(prop.getPropKey())
+                                .propVal(CmUtil.nvl(prop.getPropValue()))
+                                .propNm(CmUtil.nvl(prop.getPropLabel()))
+                                .propRemark(CmUtil.nvl(prop.getPropRemark()))
                                 .build()
                 ));
         return StoreProp.builder().propsByKey(propsByKey).build();
@@ -335,18 +342,18 @@ public class CmAppStoreDataService {
      */
     @Transactional(readOnly = true)
     public StoreApp getApp(AuthPrincipal authUser) {
-        if ("BO".equals(authUser.userTypeCd())) {
+        if (authUser != null && "BO".equals(authUser.userTypeCd())) {
             return StoreApp.builder()
-                    .boSiteNo("01") // 관리자사이트번호
-                    .foSiteNo("01") // 사용자사이트번호
-                    .appVersion("2.6.0") // 앱버전
-                    .lastUpdateDate(java.time.LocalDate.now().toString()) // 최종업데이트일
+                    .boSiteNo("01")
+                    .foSiteNo("01")
+                    .appVersion("2.6.0")
+                    .lastUpdateDate(java.time.LocalDate.now().toString())
                     .build();
         }
         return StoreApp.builder()
-                .foSiteNo(System.getProperty("fo.site.no", "01")) // 사용자사이트번호
-                .appVersion("2.6.0") // 앱버전
-                .lastUpdateDate(java.time.LocalDate.now().toString()) // 최종업데이트일
+                .foSiteNo(System.getProperty("fo.site.no", "01"))
+                .appVersion("2.6.0")
+                .lastUpdateDate(java.time.LocalDate.now().toString())
                 .build();
     }
 

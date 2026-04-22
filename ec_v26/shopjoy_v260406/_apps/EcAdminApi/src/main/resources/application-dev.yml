@@ -1,12 +1,16 @@
 spring:
   datasource:
-    url: jdbc:postgresql://illeesam.synology.me:17632/postgres?currentSchema=shopjoy_2604
+    url: jdbc:postgresql://illeesam.synology.me:17632/postgres?currentSchema=shopjoy_2604&tcpKeepAlives=true&connectTimeout=30
     username: postgres
     password: postgresilleesam
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: true
+      connection-test-query: "SELECT 1"
 
   jpa:
     hibernate:
