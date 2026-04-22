@@ -16,13 +16,14 @@ window.ZdStore = {
     const storeList = computed(() => {
       const stores = [];
       if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'BO App Init Store' });
-      if (window.useBoAuthStore) stores.push({ name: 'useBoAuthStore', label: 'BO Auth Store' });
-      if (window.useBoUserStore) stores.push({ name: 'useBoUserStore', label: 'BO User Store' });
-      if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'BO Role Store' });
-      if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'BO Menu Store' });
-      if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'BO Code Store' });
-      if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'BO Prop Store' });
       if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'BO App Store' });
+      if (window.useBoAuthStore) stores.push({ name: 'useBoAuthStore', label: 'BO Auth Store' });
+      if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'BO Code Store' });
+      if (window.useBoConfigStore) stores.push({ name: 'useBoConfigStore', label: 'BO Config Store' });
+      if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'BO Menu Store' });
+      if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'BO Prop Store' });
+      if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'BO Role Store' });
+      if (window.useBoUserStore) stores.push({ name: 'useBoUserStore', label: 'BO User Store' });
       if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'FO App Init Store' });
       if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'FO Auth Store' });
       if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'FO Member Store' });
