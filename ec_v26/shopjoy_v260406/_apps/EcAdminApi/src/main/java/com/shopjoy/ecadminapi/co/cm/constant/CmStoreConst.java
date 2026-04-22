@@ -19,4 +19,7 @@ public class CmStoreConst {
     public static final String DP_DISP_DATA = "dpDispData";
     public static final String SY_APP = "syApp";
 
+    // Request Parameters
+    public static final String REQ_PARAM = "reqParam";
+
 }

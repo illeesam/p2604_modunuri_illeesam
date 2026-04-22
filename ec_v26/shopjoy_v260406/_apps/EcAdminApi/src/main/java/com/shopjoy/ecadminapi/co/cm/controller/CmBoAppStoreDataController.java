@@ -11,12 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreCode;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMenu;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreRole;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreProp;
+import com.shopjoy.ecadminapi.co.cm.data.req.CmAppStoreDataReq;
 import com.shopjoy.ecadminapi.co.cm.service.CmAppStoreDataService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import jakarta.validation.Valid;
 
 /**
  * BO (Back Office) 애플리케이션 Store 데이터 API
@@ -43,98 +41,105 @@ public class CmBoAppStoreDataController {
     /**
      * BO 애플리케이션 초기화 데이터 조회 (통합)
      *
-     * @param names 조회할 항목 ('^' 구분자, 예: "auth^user^role^menu^code^props^app")
-     *              빈 값 또는 null 시 모든 항목 반환
+     * @param req 요청 정보 (siteId, userId, roleId 필수, names 선택)
      * @return 토큰, 사용자, 권한, 메뉴, 코드, 속성, 앱 정보 포함
      */
-    @GetMapping("/getInitData")
+    @PostMapping("/getInitData")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(
-            @RequestParam(value = "names", required = false, defaultValue = "") String names) {
-        java.util.List<String> requestedItems = parseNames(names);
+            @Valid @RequestBody CmAppStoreDataReq req) {
+        java.util.List<String> requestedItems = parseNames(req.getNames());
         boolean requestAll = requestedItems.isEmpty();
 
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
 
         if (requestAll || requestedItems.contains(CmStoreConst.SY_AUTH)) {
-            result.put(CmStoreConst.SY_AUTH, storeDataService.getBoAuth());
+            resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getBoAuth());
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_USER)) {
-            result.put(CmStoreConst.SY_USER, storeDataService.getBoUser());
+            resultMap.put(CmStoreConst.SY_USER, storeDataService.getBoUser());
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_ROLES)) {
-            result.put(CmStoreConst.SY_ROLES, storeDataService.getBoRole());
+            resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getBoRole());
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_MENUS)) {
-            result.put(CmStoreConst.SY_MENUS, storeDataService.getBoMenu());
+            resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getBoMenu());
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_CODES)) {
-            result.put(CmStoreConst.SY_CODES, storeDataService.getBoCode());
+            resultMap.put(CmStoreConst.SY_CODES, storeDataService.getBoCode());
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_PROPS)) {
-            result.put(CmStoreConst.SY_PROPS, storeDataService.getBoProps());
+            resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getBoProps());
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_APP)) {
-            result.put(CmStoreConst.SY_APP, storeDataService.getBoApp());
+            resultMap.put(CmStoreConst.SY_APP, storeDataService.getBoApp());
         }
 
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
-    @GetMapping("/getAuth")
+    @PostMapping("/getAuth")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Object>> getAuth() {
-        Map<String, Object> result = new HashMap<>();
-        result.put(CmStoreConst.SY_AUTH, storeDataService.getBoAuth());
-        return ResponseEntity.ok(ApiResponse.ok(result.get(CmStoreConst.SY_AUTH)));
-    }
-
-    @GetMapping("/getUser")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Object>> getUser() {
-        Map<String, Object> result = new HashMap<>();
-        result.put(CmStoreConst.SY_USER, storeDataService.getBoUser());
-        return ResponseEntity.ok(ApiResponse.ok(result.get(CmStoreConst.SY_USER)));
-    }
-
-    @GetMapping("/getRole")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<StoreRole>>> getRole() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@Valid @RequestBody CmAppStoreDataReq req) {
         Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
+        resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getBoAuth());
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    }
+
+    @PostMapping("/getUser")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@Valid @RequestBody CmAppStoreDataReq req) {
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
+        resultMap.put(CmStoreConst.SY_USER, storeDataService.getBoUser());
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    }
+
+    @PostMapping("/getRole")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRole(@Valid @RequestBody CmAppStoreDataReq req) {
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
         resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getBoRole());
-        return ResponseEntity.ok(ApiResponse.ok((List<StoreRole>) resultMap.get(CmStoreConst.SY_ROLES)));
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
-    @GetMapping("/getMenu")
+    @PostMapping("/getMenu")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<StoreMenu>>> getMenu() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenu(@Valid @RequestBody CmAppStoreDataReq req) {
         Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
         resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getBoMenu());
-        return ResponseEntity.ok(ApiResponse.ok((List<StoreMenu>) resultMap.get(CmStoreConst.SY_MENUS)));
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
-    @GetMapping("/getCode")
+    @PostMapping("/getCode")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<StoreCode>> getCode() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCode(@Valid @RequestBody CmAppStoreDataReq req) {
         Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
         resultMap.put(CmStoreConst.SY_CODES, storeDataService.getBoCode());
-        return ResponseEntity.ok(ApiResponse.ok((StoreCode) resultMap.get(CmStoreConst.SY_CODES)));
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
-    @GetMapping("/getProps")
+    @PostMapping("/getProps")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<StoreProp>> getProps() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@Valid @RequestBody CmAppStoreDataReq req) {
         Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
         resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getBoProps());
-        return ResponseEntity.ok(ApiResponse.ok((StoreProp) resultMap.get(CmStoreConst.SY_PROPS)));
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
-    @GetMapping("/getApp")
+    @PostMapping("/getApp")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Object>> getApp() {
-        Map<String, Object> result = new HashMap<>();
-        result.put(CmStoreConst.SY_APP, storeDataService.getBoApp());
-        return ResponseEntity.ok(ApiResponse.ok(result.get(CmStoreConst.SY_APP)));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@Valid @RequestBody CmAppStoreDataReq req) {
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.REQ_PARAM, req);
+        resultMap.put(CmStoreConst.SY_APP, storeDataService.getBoApp());
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     private List<String> parseNames(String names) {
