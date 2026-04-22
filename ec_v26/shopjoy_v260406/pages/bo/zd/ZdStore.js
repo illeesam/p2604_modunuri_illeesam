@@ -114,9 +114,9 @@ window.ZdStore = {
 <div>
   <div class="page-title">Store 정보 관리</div>
 
-  <!-- Store 선택 탭 -->
-  <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px;">
-    <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #e5e7eb;">
+  <!-- Store 선택 탭 + 뷰모드 버튼 -->
+  <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
+    <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; flex: 1; border-bottom: 1px solid #e5e7eb;">
       <div v-for="store in storeList" :key="store.name"
         :class="['tab-btn', {active: selectedStore === store.name}]"
         @click="selectStore(store.name)"
@@ -124,11 +124,9 @@ window.ZdStore = {
         {{ store.label }}
       </div>
     </div>
-  </div>
 
-  <!-- 뷰모드 버튼 -->
-  <div style="display: flex; gap: 8px; padding: 12px 16px; background: #f9fafb; align-items: center; justify-content: flex-end;">
-    <div class="tab-view-modes" style="display: flex; gap: 2px;">
+    <!-- 뷰모드 버튼 (탭바 우측) -->
+    <div class="tab-view-modes" style="display: flex; gap: 2px; padding-left: 16px;">
       <button
         :class="{active: viewMode === 'tab'}"
         @click="viewMode = 'tab'"
