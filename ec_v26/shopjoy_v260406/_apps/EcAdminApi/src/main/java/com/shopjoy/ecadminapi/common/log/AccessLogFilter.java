@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.common.log;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessLog;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -142,7 +143,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
         if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
             ip = request.getRemoteAddr();
         if (ip != null && ip.contains(",")) ip = ip.split(",")[0].trim();
-        return ip != null ? ip : "-";
+        return CmUtil.nvl(ip, "-");
     }
 
     private static String generateId() {

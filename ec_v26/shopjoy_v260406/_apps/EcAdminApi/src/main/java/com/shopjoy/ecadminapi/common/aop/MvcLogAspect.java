@@ -14,172 +14,191 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class MvcLogAspect {
     private static final Logger logger = LoggerFactory.getLogger(MvcLogAspect.class);
+    private static final String BASE_PKG = "com.shopjoy";
+    private static final int OUTPUT_MAX_LEN = 300;
+    private static final int OUTPUT_TRUNCATE_THRESHOLD = 400;
 
-    // 컴포넌트 스캔
-    @Around("execution(* com.shopjoy..controller..*Controller.*(..)) || " +
-            "execution(* com.shopjoy..client..*Client.*(..)) || " +
-            "execution(* com.shopjoy..service..*ServiceImpl.*(..)) || " +
-            "execution(* com.shopjoy..service..*Service.*(..)) || " +
-            "execution(* com.shopjoy..repository..*Repository.*(..)) || " +
-            "execution(* com.shopjoy..mapper..*Mapper.*(..)) || " +
-            "execution(* com.shopjoy..xxxxxxxxx..*Service.*(..))")
-    public Object logging(ProceedingJoinPoint thisJoinPoint) throws Throwable {
-        Object target = thisJoinPoint.getTarget();
-        String simpleName = (target != null) ? target.getClass().getSimpleName()
-                : thisJoinPoint.getSignature().getDeclaringTypeName();
-        String simpleNameUpper = simpleName.toUpperCase();
-        String methodName = thisJoinPoint.getSignature().getName();
+    enum ComponentType {
+        CONTROLLER("■■ ▶", "■■ ◀"),
+        CLIENT("■■ ■", "■■ ◀"),
+        SERVICE("■■ ▶▶", "■■ ◀◀"),
+        MAPPER("■■ ▶▶▶", "■■ ◀◀◀"),
+        REPOSITORY("■■ ▶▶▶", "■■ ▶▶▶"),
+        DEFAULT("■■ ▶", "■■ ◀");
 
-        Object[] signatureArgs = thisJoinPoint.getArgs();
-        int idx = 0;
-        String strInParams = "";
-        String strOutParams = "";
-        String outObjName = "";
-        String reqInfo = "";
+        private final String inPrefix;
+        private final String outPrefix;
 
-        if (signatureArgs != null) {
-            for (Object signatureArg : signatureArgs) {
-                if (signatureArgs.length == 1) {
-                    strInParams = String.valueOf(signatureArg);
-                } else {
-                    strInParams += "\n    args[" + idx++ + "] " + signatureArg;
-                }
-            }
+        ComponentType(String inPrefix, String outPrefix) {
+            this.inPrefix = inPrefix;
+            this.outPrefix = outPrefix;
         }
 
-        if (simpleNameUpper.indexOf("TOKENSERVICE") > -1) {
-            ;
-        } else if (simpleNameUpper.indexOf("CONTROLLER") > -1) {
-
-            for (Object obj : thisJoinPoint.getArgs()) {
-                if (obj instanceof HttpServletRequest || obj instanceof MultipartHttpServletRequest) {
-                    HttpServletRequest request = (HttpServletRequest) obj;
-                    reqInfo += request.getMethod();
-                    reqInfo += " " + request.getRequestURL().toString()
-                            + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
-                    String token = request.getHeader("Authorization");
-                    reqInfo += (token != null ? " [" + token + "]" : "");
-                    break;
-                }
-            }
-
-            if (-1 < strInParams.indexOf("{") && -1 < strInParams.indexOf("}")) {
-                strInParams = strInParams.replace(", ", "\n ____ ");
-                strInParams = strInParams.replace("{", "\n ____ ");
-                strInParams = strInParams.replace("}", "");
-                strInParams = strInParams.replace("=", " = ");
-            }
-            logger.info("■■ ▶ : [" + simpleName + " | " + methodName + "] " + outObjName + " : " + reqInfo + "\n"
-                    + strInParams);
-        } else if (simpleNameUpper.indexOf("CLIENT") > -1) {
-
-            for (Object obj : thisJoinPoint.getArgs()) {
-                if (obj instanceof HttpServletRequest || obj instanceof MultipartHttpServletRequest) {
-                    HttpServletRequest request = (HttpServletRequest) obj;
-                    reqInfo += request.getMethod();
-                    reqInfo += " " + request.getRequestURL().toString()
-                            + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
-                    String token = request.getHeader("Authorization");
-                    reqInfo += (token != null ? " [" + token + "]" : "");
-                    break;
-                }
-            }
-
-            if (-1 < strInParams.indexOf("{") && -1 < strInParams.indexOf("}")) {
-                strInParams = strInParams.replace(", ", "\n ____ ");
-                strInParams = strInParams.replace("{", "\n ____ ");
-                strInParams = strInParams.replace("}", "");
-                strInParams = strInParams.replace("=", " = ");
-            }
-            logger.info("■■ ■ : [" + simpleName + " | " + methodName + "] " + outObjName + " : " + reqInfo + "\n"
-                    + strInParams);
-        } else if (simpleNameUpper.indexOf("SERVICE") > -1) {
-            logger.info("■■ ▶▶ : [" + simpleName + " | " + methodName + "] " + outObjName + " : " + strInParams);
-        } else if (simpleNameUpper.indexOf("$PROXY") > -1) {
-            logger.info("■■ ▶▶▶ [" + simpleName + " | " + methodName + "] " + outObjName + " : " + strInParams);
-        } else if (simpleNameUpper.indexOf("DAO") > -1) {
-            logger.info("■■ ▶▶▶ [" + simpleName + " | " + methodName + "] " + outObjName + " : " + strInParams);
-        } else if (simpleNameUpper.indexOf("MAPPER") > -1) {
-            logger.info("■■ ▶▶▶ [" + simpleName + " | " + methodName + "] " + outObjName + " : " + strInParams);
-        } else if (simpleNameUpper.indexOf("REPOSITORY") > -1) {
-            logger.info("■■ ▶▶▶ [" + simpleName + " | " + methodName + "] " + outObjName + " : " + strInParams);
-        } else {
-            logger.info("■■ ▶ : ELSE [" + simpleName + " | " + methodName + "] " + outObjName + " : " + strInParams);
+        String getInPrefix() {
+            return inPrefix;
         }
+
+        String getOutPrefix() {
+            return outPrefix;
+        }
+
+        static ComponentType fromClassName(String className) {
+            String upper = className.toUpperCase();
+            if (upper.contains("CONTROLLER")) return CONTROLLER;
+            if (upper.contains("CLIENT")) return CLIENT;
+            if (upper.contains("SERVICE")) return SERVICE;
+            if (upper.contains("MAPPER")) return MAPPER;
+            if (upper.contains("REPOSITORY")) return REPOSITORY;
+            return DEFAULT;
+        }
+    }
+
+    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Controller.*(..))")
+    private void controllerLayer() {}
+
+    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Client.*(..))")
+    private void clientLayer() {}
+
+    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Service*.*(..))")
+    private void serviceLayer() {}
+
+    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Repository.*(..))")
+    private void repositoryLayer() {}
+
+    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Mapper.*(..))")
+    private void mapperLayer() {}
+
+    @Around("controllerLayer() || clientLayer() || serviceLayer() || repositoryLayer() || mapperLayer()")
+    public Object logging(ProceedingJoinPoint pjp) throws Throwable {
+        String simpleName = getComponentName(pjp);
+        String methodName = pjp.getSignature().getName();
+        ComponentType type = ComponentType.fromClassName(simpleName);
+
+        String strInParams = formatInputParams(pjp);
+        String reqInfo = extractRequestInfo(pjp);
+
+        logMethodIn(type, simpleName, methodName, strInParams, reqInfo);
+
         Object result = null;
+        String outObjName = "";
+        String strOutParams = "";
+
         try {
-            result = thisJoinPoint.proceed();
+            result = pjp.proceed();
         } catch (Throwable ex) {
             logger.error("Exception in AOP around [" + simpleName + "] " + methodName, ex);
             throw ex;
         }
+
         if (result != null) {
             outObjName = result.getClass().getSimpleName();
             if (result instanceof String) {
                 strOutParams = (String) result;
-                // }else if (result instanceof List) {
-                // strOutParams = ((List) result).toString();
-                // }else if (result instanceof ArrayList) {
-                // strOutParams = ((ArrayList) result).toString();
-                // }else if (result instanceof Map) {
-                // strOutParams = ((Map) result).toString();
-                // }else if (result instanceof HashMap) {
-                // strOutParams = ((HashMap) result).toString();
-                // }else if (result instanceof JSONArray) {
-                // strOutParams = ((JSONArray) result).toString();
-                // }else if (result instanceof AjaxResult) {
-                // strOutParams = ((AjaxResult) result).toString();
             }
         }
 
-        if (simpleNameUpper.indexOf("TOKENSERVICE") > -1) {
-            ;
-        } else if (simpleNameUpper.indexOf("CONTROLLER") > -1) {
-            // logger.info("■■ ◀ " + simpleName + " " + methodName + "(), oc:" + outObjName
-            // + ", od:" + strOutParams);
-                logger.info("■■ ◀ : " + simpleName + " " + methodName + "(), oc:" + outObjName + ", od:"
-                    + (strOutParams != null && strOutParams.length() > 400 ? strOutParams.substring(0, 300) : strOutParams)
-                    + ", " + reqInfo);
-        } else if (simpleNameUpper.indexOf("SERVICE") > -1) {
-            // logger.info("■■ ◀◀ " + simpleName + " " + methodName + "(), oc:" +
-            // outObjName + ", od:" + strOutParams);
-                logger.info("■■ ◀◀ : " + simpleName + " " + methodName + "(), oc:" + outObjName + ", od:"
-                    + (strOutParams != null && strOutParams.length() > 400 ? strOutParams.substring(0, 300) : strOutParams));
-        } else if (simpleNameUpper.indexOf("$PROXY") > -1) {
-            // logger.info("■■ ◀◀◀ " + simpleName + " " + methodName + "(), oc:" +
-            // outObjName + ", od:" + strOutParams);
-                logger.info("■■ ◀◀◀ : " + simpleName + " " + methodName + "(), oc:" + outObjName + ", od:"
-                    + (strOutParams != null && strOutParams.length() > 400 ? strOutParams.substring(0, 300) : strOutParams));
-        } else if (simpleNameUpper.indexOf("DAO") > -1) {
-            // logger.info("■■ ◀◀◀ " + simpleName + " " + methodName + "(), oc:" +
-            // outObjName + ", od:" + strOutParams);
-                logger.info("■■ ◀◀◀ : " + simpleName + " " + methodName + "(), oc:" + outObjName + ", od:"
-                    + (strOutParams != null && strOutParams.length() > 400 ? strOutParams.substring(0, 300) : strOutParams));
-        } else if (simpleNameUpper.indexOf("MAPPER") > -1) {
-            // logger.info("■■ ◀◀◀ " + simpleName + " " + methodName + "(), oc:" +
-            // outObjName + ", od:" + strOutParams);
-                logger.info("■■ ◀◀◀ : " + simpleName + " " + methodName + "(), oc:" + outObjName + ", od:"
-                    + (strOutParams != null && strOutParams.length() > 400 ? strOutParams.substring(0, 300) : strOutParams));
-        } else if (simpleNameUpper.indexOf("REPOSITORY") > -1) {
-            // logger.info("■■ ◀◀◀ " + simpleName + " " + methodName + "(), oc:" +
-            // outObjName + ", od:" + strOutParams);
-            logger.info("■■ ▶▶▶ : " + simpleName + " " + methodName + "(), oc:" + outObjName + ", od:"
-                    + (strOutParams != null && strOutParams.length() > 400 ? strOutParams.substring(0, 300) : strOutParams));
-        } else {
-            // logger.info("■■ ◀ : ELSE " + simpleName + " " + methodName + "(), oc:" +
-            // outObjName + ", od:" + strOutParams);
-                logger.info("■■ ◀ : ELSE " + simpleName + " " + methodName + "(), oc:" + outObjName + ", od:"
-                    + (strOutParams != null && strOutParams.length() > 400 ? strOutParams.substring(0, 300) : strOutParams));
-        }
+        logMethodOut(type, simpleName, methodName, outObjName, strOutParams, reqInfo);
+
         return result;
     }
 
-    // @AfterReturning(" execution(* ssi.itg..controller.*Controller.*(..)) or
-    // execution(* ssi.itg..service.*.*(..)) or execution(*
-    // ssi.itg..repository.*.*(..)) or execution(* ssi.itg..dao.*Dao.*(..)) ")
-    // public void afterReturning(JoinPoint joinPoint) {
-    // System.out.println("### " + joinPoint.getSignature().getName() + " : after
-    // returning execute");
-    // }
+    private String getComponentName(ProceedingJoinPoint pjp) {
+        Object target = pjp.getTarget();
+        return target != null ? target.getClass().getSimpleName()
+                : pjp.getSignature().getDeclaringTypeName();
+    }
 
+    private String formatInputParams(ProceedingJoinPoint pjp) {
+        Object[] args = pjp.getArgs();
+        if (args == null || args.length == 0) return "";
+
+        if (args.length == 1) {
+            return String.valueOf(args[0]);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            sb.append("\n    args[").append(i).append("] ").append(args[i]);
+        }
+
+        String result = sb.toString();
+        if (result.contains("{") && result.contains("}")) {
+            result = result.replace(", ", "\n ____ ")
+                    .replace("{", "\n ____ ")
+                    .replace("}", "")
+                    .replace("=", " = ");
+        }
+
+        return result;
+    }
+
+    private String extractRequestInfo(ProceedingJoinPoint pjp) {
+        Object[] args = pjp.getArgs();
+        if (args == null) return "";
+
+        for (Object obj : args) {
+            if (obj instanceof HttpServletRequest || obj instanceof MultipartHttpServletRequest) {
+                HttpServletRequest request = (HttpServletRequest) obj;
+                StringBuilder sb = new StringBuilder();
+                sb.append(request.getMethod()).append(" ")
+                  .append(request.getRequestURL());
+
+                String qs = request.getQueryString();
+                if (qs != null) {
+                    sb.append("?").append(qs);
+                }
+
+                String token = request.getHeader("Authorization");
+                if (token != null) {
+                    sb.append(" [").append(token).append("]");
+                }
+
+                return sb.toString();
+            }
+        }
+
+        return "";
+    }
+
+    private void logMethodIn(ComponentType type, String className, String methodName,
+                             String params, String reqInfo) {
+        if (className.toUpperCase().contains("TOKENSERVICE")) {
+            return;
+        }
+
+        String msg = type.getInPrefix() + " : [" + className + " | " + methodName + "]";
+        if (!reqInfo.isEmpty()) {
+            msg += " : " + reqInfo + "\n" + params;
+        } else {
+            msg += " : " + params;
+        }
+
+        logger.info(msg);
+    }
+
+    private void logMethodOut(ComponentType type, String className, String methodName,
+                              String outObjName, String strOutParams, String reqInfo) {
+        if (className.toUpperCase().contains("TOKENSERVICE")) {
+            return;
+        }
+
+        String truncatedOutput = truncateOutput(strOutParams);
+        String msg = type.getOutPrefix() + " : " + className + " " + methodName + "(), oc:"
+                     + outObjName + ", od:" + truncatedOutput;
+
+        if (!reqInfo.isEmpty() && type == ComponentType.CONTROLLER) {
+            msg += ", " + reqInfo;
+        }
+
+        logger.info(msg);
+    }
+
+    private String truncateOutput(String output) {
+        if (output == null || output.isEmpty()) {
+            return output;
+        }
+        return output.length() > OUTPUT_TRUNCATE_THRESHOLD
+                ? output.substring(0, OUTPUT_MAX_LEN)
+                : output;
+    }
 }

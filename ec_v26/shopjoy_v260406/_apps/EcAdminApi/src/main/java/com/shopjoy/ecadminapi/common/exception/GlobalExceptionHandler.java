@@ -126,9 +126,9 @@ public class GlobalExceptionHandler {
         String siteId      = "01";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         String userId      = authUser.userId();
-        String userTypeCd  = authUser.userTypeCd() != null ? authUser.userTypeCd() : "-";
-        String roleId      = authUser.roleId() != null ? authUser.roleId() : "-";
-        String vendorId    = authUser.vendorId() != null ? authUser.vendorId() : "-";
+        String userTypeCd  = CmUtil.nvl(authUser.userTypeCd(), "-");
+        String roleId      = CmUtil.nvl(authUser.roleId(), "-");
+        String vendorId    = CmUtil.nvl(authUser.vendorId(), "-");
         String host        = CmUtil.nvl(req.getRemoteAddr(), "-");
         String url         = CmUtil.nvl(req.getRequestURI(), "-");
         String method      = CmUtil.nvl(req.getMethod(), "-");
