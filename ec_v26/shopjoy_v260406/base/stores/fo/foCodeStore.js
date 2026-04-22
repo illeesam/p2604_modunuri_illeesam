@@ -1,17 +1,23 @@
 /**
- * FO (Front Office) 공통 코드 Pinia 스토어
+ * FO (Front Office) 공통 코드 Pinia 스토어 (그리드 형식)
  */
 window.useFoCodeStore = Pinia.defineStore('foCode', {
   state: () => {
     return {
-      codes: {},
+      codes: [], // 배열: [{ codeGrp, codeId, codeNm, codeVal, ... }, ...]
     };
   },
 
   actions: {
     setCodes(codesData) {
+      console.log('[foCodeStore.setCodes] called with:', codesData);
+      console.log('[foCodeStore.setCodes] isArray?', Array.isArray(codesData));
+      console.log('[foCodeStore.setCodes] length?', codesData?.length);
       if (codesData) {
-        this.codes = codesData;
+        this.codes = Array.isArray(codesData) ? codesData : [];
+        console.log('[foCodeStore.setCodes] after assignment, this.codes:', this.codes);
+      } else {
+        console.log('[foCodeStore.setCodes] codesData is falsy!');
       }
     },
 
@@ -55,7 +61,7 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
     },
 
     clear() {
-      this.codes = {};
+      this.codes = [];
     },
   },
 });

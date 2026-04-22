@@ -15,16 +15,16 @@ window.XsStore = {
 
     const storeList = computed(() => {
       const stores = [];
-      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'stores/fo/foAppInitStore.js', hasLocalStorage: false });
-      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'stores/fo/foAppStore.js', hasLocalStorage: false });
-      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'stores/fo/foAuthStore.js 💾', hasLocalStorage: true });
-      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'stores/fo/foCodeStore.js', hasLocalStorage: false });
-      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'stores/fo/foDispStore.js', hasLocalStorage: false });
-      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'stores/fo/foMemberStore.js 💾', hasLocalStorage: true });
-      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'stores/fo/foMenuStore.js', hasLocalStorage: false });
-      if (window.useFoMyStore) stores.push({ name: 'useFoMyStore', label: 'stores/fo/foMyStore.js', hasLocalStorage: false });
-      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'stores/fo/foPropStore.js', hasLocalStorage: false });
-      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'stores/fo/foRoleStore.js', hasLocalStorage: false });
+      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'foAppInitStore.js', api: null, hasLocalStorage: false });
+      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'foAppStore.js', api: null, hasLocalStorage: false });
+      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'foAuthStore.js 💾', api: 'getAuth', hasLocalStorage: true });
+      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'foCodeStore.js', api: 'getCodes', hasLocalStorage: false });
+      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'foDispStore.js', api: 'getDisp', hasLocalStorage: false });
+      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'foMemberStore.js 💾', api: 'getMember', hasLocalStorage: true });
+      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'foMenuStore.js', api: 'getMenus', hasLocalStorage: false });
+      if (window.useFoMyStore) stores.push({ name: 'useFoMyStore', label: 'foMyStore.js', api: null, hasLocalStorage: false });
+      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'foPropStore.js', api: 'getProps', hasLocalStorage: false });
+      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'foRoleStore.js', api: 'getRoles', hasLocalStorage: false });
       return stores;
     });
 
@@ -105,6 +105,40 @@ window.XsStore = {
       }
     };
 
+    const refreshStoreData = async (storeName) => {
+      if (!storeName) return;
+      const store = storeList.value.find(s => s.name === storeName);
+      if (!store || !store.api) {
+        props.showToast('조회 불가능한 스토어입니다.', 'info');
+        return;
+      }
+      try {
+        const api = window.foApi;
+        if (!api) {
+          props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
+          return;
+        }
+        const res = await api.post(`/co/cm/fo-app-store/${store.api}`, '');
+        if (res?.data?.data) {
+          const storeFunc = window[storeName];
+          if (storeFunc) {
+            const storeInst = storeFunc();
+            const responseData = res.data.data;
+            if (responseData) {
+              Object.assign(storeInst.$state, Object.values(responseData)[0]);
+              const jsonStr = JSON.stringify(storeInst.$state, null, 2);
+              editedStoreInfo[storeName] = jsonStr;
+              selectedStore.value = storeName;
+              storeInfo.value = jsonStr;
+              props.showToast('조회되었습니다.', 'success');
+            }
+          }
+        }
+      } catch (e) {
+        props.showToast('조회 실패: ' + e.message, 'error');
+      }
+    };
+
     onMounted(() => {
       loadAllStoreData();
       if (storeList.value.length > 0 && !selectedStore.value) {
@@ -113,14 +147,17 @@ window.XsStore = {
     });
 
     return {
-      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData
+      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
     };
   },
   template: `
 <div style="padding: 20px;">
-  <div style="margin-bottom: 24px;">
-    <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">Store 정보 관리</h1>
-    <p style="margin: 0; font-size: 13px; color: #666;">Pinia 스토어 상태 조회 및 편집</p>
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+    <div>
+      <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">Store 정보 관리</h1>
+      <p style="margin: 0; font-size: 13px; color: #666;">Pinia 스토어 상태 조회 및 편집</p>
+    </div>
+    <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">🔄 재로드</button>
   </div>
 
   <!-- Store 선택 탭 + 뷰모드 버튼 -->
@@ -239,7 +276,8 @@ window.XsStore = {
   <div :style="{
     display: 'grid',
     gridTemplateColumns: viewMode === 'col1' ? '1fr' : viewMode === 'col2' ? 'repeat(2, 1fr)' : viewMode === 'col3' ? 'repeat(3, 1fr)' : viewMode === 'col4' ? 'repeat(4, 1fr)' : viewMode === 'col5' ? 'repeat(5, 1fr)' : '1fr',
-    gap: '12px',
+    gap: '8px',
+    padding: '2px 1px',
     marginTop: '0'
   }">
 
@@ -259,8 +297,7 @@ window.XsStore = {
       </div>
 
       <div style="display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fafafa;">
-        <button @click="selectedStore = store.name; copyToClipboard()" style="flex: 1; padding: 8px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s; hover: {background: '#f5f5f5'};">복사</button>
-        <button @click="selectedStore = store.name; clearStore()" style="flex: 1; padding: 8px 12px; font-size: 12px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">초기화</button>
+        <button v-if="store.api" @click="refreshStoreData(store.name)" style="flex: 1; padding: 8px 12px; font-size: 12px; border: 1px solid #d0e8f2; background: #f0f8fc; color: #0369a1; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">조회</button>
         <button @click="selectedStore = store.name; saveStore()" style="flex: 1; padding: 8px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">저장</button>
       </div>
     </div>

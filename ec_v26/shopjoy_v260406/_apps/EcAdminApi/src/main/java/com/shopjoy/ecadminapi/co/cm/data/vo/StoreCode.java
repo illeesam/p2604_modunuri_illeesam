@@ -6,12 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 공통 코드 데이터 VO
- * - sy_code_grp, sy_code 테이블 기반
- * - 코드 그룹별로 코드 목록을 저장
+ * - sy_code 테이블 기반
+ * - 그리드 형식으로 모든 코드를 배열로 저장 (codeGrp | codeId | codeNm | codeVal | ...)
  */
 @Getter
 @Builder
@@ -19,9 +18,9 @@ import java.util.Map;
 @AllArgsConstructor
 public class StoreCode {
 
-    // 코드 그룹별로 코드 목록 저장
-    // 예: { "ORDER_STATUS": [{ codeId, codeNm, codeVal, ... }], ... }
-    private Map<String, List<CodeInfo>> codesByGroup;
+    // 그리드 형식: 모든 코드를 하나의 배열로 저장 (codeGrp별 구분 없이 선형 배열)
+    // 예: [{ codeGrp: "ORDER_STATUS", codeId: "...", codeNm: "...", ... }, ...]
+    private List<CodeInfo> codes;
 
     @Getter
     @Builder

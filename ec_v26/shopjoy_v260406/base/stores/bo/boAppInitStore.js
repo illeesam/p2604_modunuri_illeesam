@@ -33,45 +33,45 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
       this.error = null;
 
       try {
-        const params = {};
-        if (names) {
-          params.names = names;
-        }
-
         const res = await window.boApi.post('/co/cm/bo-app-store/getInitData', names || '');
 
         if (res?.data?.data) {
           const data = res.data.data;
 
-          // 각 항목을 해당 store에 분산 저장
-          if (data.user) {
+          // 각 항목을 해당 store에 분산 저장 (백엔드 응답 키: syAuth, syUser, syRoles, syMenus, syCodes, syProps, syApp)
+          if (data.syAuth) {
+            const authStore = window.useBoAuthStore?.();
+            authStore?.setAuth(data.syAuth);
+          }
+
+          if (data.syUser) {
             const userStore = window.useBoUserStore?.();
-            userStore?.setUser(data.user);
+            userStore?.setUser(data.syUser);
           }
 
-          if (data.roles) {
+          if (data.syRoles) {
             const roleStore = window.useBoRoleStore?.();
-            roleStore?.setRoles(data.roles);
+            roleStore?.setRoles(data.syRoles);
           }
 
-          if (data.menus) {
+          if (data.syMenus) {
             const menuStore = window.useBoMenuStore?.();
-            menuStore?.setMenus(data.menus);
+            menuStore?.setMenus(data.syMenus);
           }
 
-          if (data.codes) {
+          if (data.syCodes) {
             const codeStore = window.useBoCodeStore?.();
-            codeStore?.setCodes(data.codes);
+            codeStore?.setCodes(data.syCodes?.codes);
           }
 
-          if (data.props) {
+          if (data.syProps) {
             const propStore = window.useBoPropStore?.();
-            propStore?.setProps(data.props);
+            propStore?.setProps(data.syProps);
           }
 
-          if (data.app) {
+          if (data.syApp) {
             const appStore = window.useBoAppStore?.();
-            appStore?.setApp(data.app);
+            appStore?.setApp(data.syApp);
           }
 
           this.lastFetchTime = new Date().getTime();

@@ -93,7 +93,7 @@ public class CmBoAppStoreDataController {
     }
 
     @PostMapping("/getRoles")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getRoles(authUser));
@@ -101,7 +101,7 @@ public class CmBoAppStoreDataController {
     }
 
     @PostMapping("/getMenus")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getMenus(authUser));
@@ -109,7 +109,7 @@ public class CmBoAppStoreDataController {
     }
 
     @PostMapping("/getCodes")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_CODES, storeDataService.getCodes(authUser));
@@ -117,7 +117,7 @@ public class CmBoAppStoreDataController {
     }
 
     @PostMapping("/getProps")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getProps(authUser));
@@ -125,7 +125,7 @@ public class CmBoAppStoreDataController {
     }
 
     @PostMapping("/getApp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_APP, storeDataService.getApp(authUser));

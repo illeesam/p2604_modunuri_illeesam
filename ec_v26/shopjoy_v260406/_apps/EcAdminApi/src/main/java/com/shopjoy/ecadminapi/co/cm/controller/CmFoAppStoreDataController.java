@@ -78,7 +78,6 @@ public class CmFoAppStoreDataController {
             dispMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getDispStruc(authUser));
             dispMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getDispData(authUser));
             dispMap.put(CmStoreConst.DP_DISP_WIDGETS, storeDataService.getDispWidgets(authUser));
-        resultMap.put(CmStoreConst.DP_DISP_WIDGETS, storeDataService.getDispWidgets(authUser));
             resultMap.put(CmStoreConst.DP_DISP, dispMap);
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_APP)) {
@@ -98,7 +97,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getUser")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
@@ -107,7 +106,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getMember")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
@@ -116,7 +115,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getRoles")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
@@ -125,7 +124,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getMenus")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
@@ -134,7 +133,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getCodes")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
@@ -143,7 +142,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getProps")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
@@ -152,7 +151,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getDisp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
@@ -163,7 +162,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getApp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp() {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();

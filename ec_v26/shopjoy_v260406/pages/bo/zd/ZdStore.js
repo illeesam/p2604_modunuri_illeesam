@@ -15,24 +15,24 @@ window.ZdStore = {
 
     const storeList = computed(() => {
       const stores = [];
-      if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'stores/bo/boAppInitStore.js', hasLocalStorage: false });
-      if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'stores/bo/boAppStore.js', hasLocalStorage: false });
-      if (window.useAuthStore) stores.push({ name: 'useAuthStore', label: 'stores/bo/boAuthStore.js 💾', hasLocalStorage: true });
-      if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'stores/bo/boCodeStore.js', hasLocalStorage: false });
-      if (window.useConfigStore) stores.push({ name: 'useConfigStore', label: 'stores/bo/boConfigStore.js', hasLocalStorage: false });
-      if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'stores/bo/boMenuStore.js', hasLocalStorage: false });
-      if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'stores/bo/boPropStore.js', hasLocalStorage: false });
-      if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'stores/bo/boRoleStore.js', hasLocalStorage: false });
-      if (window.useBoUserStore) stores.push({ name: 'useBoUserStore', label: 'stores/bo/boUserStore.js 💾', hasLocalStorage: true });
-      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'stores/fo/foAppInitStore.js', hasLocalStorage: false });
-      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'stores/fo/foAuthStore.js 💾', hasLocalStorage: true });
-      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'stores/fo/foMemberStore.js 💾', hasLocalStorage: true });
-      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'stores/fo/foRoleStore.js', hasLocalStorage: false });
-      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'stores/fo/foMenuStore.js', hasLocalStorage: false });
-      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'stores/fo/foCodeStore.js', hasLocalStorage: false });
-      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'stores/fo/foPropStore.js', hasLocalStorage: false });
-      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'stores/fo/foDispStore.js', hasLocalStorage: false });
-      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'stores/fo/foAppStore.js', hasLocalStorage: false });
+      if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'boAppInitStore.js', api: null, hasLocalStorage: false });
+      if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'boAppStore.js', api: null, hasLocalStorage: false });
+      if (window.useAuthStore) stores.push({ name: 'useAuthStore', label: 'boAuthStore.js 💾', api: 'getAuth', hasLocalStorage: true });
+      if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'boCodeStore.js', api: 'getCodes', hasLocalStorage: false });
+      if (window.useConfigStore) stores.push({ name: 'useConfigStore', label: 'boConfigStore.js', api: null, hasLocalStorage: false });
+      if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'boMenuStore.js', api: 'getMenus', hasLocalStorage: false });
+      if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'boPropStore.js', api: 'getProps', hasLocalStorage: false });
+      if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'boRoleStore.js', api: 'getRoles', hasLocalStorage: false });
+      if (window.useBoUserStore) stores.push({ name: 'useBoUserStore', label: 'boUserStore.js 💾', api: 'getUser', hasLocalStorage: true });
+      if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'foAppInitStore.js', api: null, hasLocalStorage: false });
+      if (window.useFoAuthStore) stores.push({ name: 'useFoAuthStore', label: 'foAuthStore.js 💾', api: 'getAuth', hasLocalStorage: true });
+      if (window.useFoMemberStore) stores.push({ name: 'useFoMemberStore', label: 'foMemberStore.js 💾', api: 'getMember', hasLocalStorage: true });
+      if (window.useFoRoleStore) stores.push({ name: 'useFoRoleStore', label: 'foRoleStore.js', api: 'getRoles', hasLocalStorage: false });
+      if (window.useFoMenuStore) stores.push({ name: 'useFoMenuStore', label: 'foMenuStore.js', api: 'getMenus', hasLocalStorage: false });
+      if (window.useFoCodeStore) stores.push({ name: 'useFoCodeStore', label: 'foCodeStore.js', api: 'getCodes', hasLocalStorage: false });
+      if (window.useFoPropStore) stores.push({ name: 'useFoPropStore', label: 'foPropStore.js', api: 'getProps', hasLocalStorage: false });
+      if (window.useFoDispStore) stores.push({ name: 'useFoDispStore', label: 'foDispStore.js', api: 'getDisp', hasLocalStorage: false });
+      if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'foAppStore.js', api: null, hasLocalStorage: false });
       return stores;
     });
 
@@ -113,6 +113,41 @@ window.ZdStore = {
       }
     };
 
+    const refreshStoreData = async (storeName) => {
+      if (!storeName) return;
+      const store = storeList.value.find(s => s.name === storeName);
+      if (!store || !store.api) {
+        props.showToast('조회 불가능한 스토어입니다.', 'info');
+        return;
+      }
+      try {
+        const apiName = storeName.startsWith('useFo') ? 'window.foApi' : 'window.boApi';
+        const api = storeName.startsWith('useFo') ? window.foApi : window.boApi;
+        if (!api) {
+          props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
+          return;
+        }
+        const res = await api.post(`/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`, '');
+        if (res?.data?.data) {
+          const storeFunc = window[storeName];
+          if (storeFunc) {
+            const storeInst = storeFunc();
+            const responseData = res.data.data;
+            if (responseData) {
+              Object.assign(storeInst.$state, Object.values(responseData)[0]);
+              const jsonStr = JSON.stringify(storeInst.$state, null, 2);
+              editedStoreInfo[storeName] = jsonStr;
+              selectedStore.value = storeName;
+              storeInfo.value = jsonStr;
+              props.showToast('조회되었습니다.', 'success');
+            }
+          }
+        }
+      } catch (e) {
+        props.showToast('조회 실패: ' + e.message, 'error');
+      }
+    };
+
     onMounted(() => {
       loadAllStoreData();
       if (storeList.value.length > 0 && !selectedStore.value) {
@@ -121,12 +156,15 @@ window.ZdStore = {
     });
 
     return {
-      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData
+      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
     };
   },
   template: `
 <div>
-  <div class="page-title">Store 정보 관리</div>
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <div class="page-title" style="margin: 0;">Store 정보 관리</div>
+    <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">🔄 재로드</button>
+  </div>
 
   <!-- Store 선택 탭 + 뷰모드 버튼 -->
   <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
@@ -176,7 +214,7 @@ window.ZdStore = {
 
   <!-- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) -->
   <div :class="['dtl-tab-grid', 'cols-' + (viewMode === 'col1' ? '1' : viewMode === 'col2' ? '2' : viewMode === 'col3' ? '3' : viewMode === 'col4' ? '4' : viewMode === 'col5' ? '5' : 'tab')]"
-    style="display: grid; gap: 16px; padding: 16px; auto-flow: row;">
+    style="display: grid; gap: 8px; padding: 2px 1px; auto-flow: row;">
 
     <div v-for="store in storeList" :key="store.name"
       v-show="viewMode === 'tab' ? selectedStore === store.name : true"
@@ -194,8 +232,7 @@ window.ZdStore = {
       </div>
 
       <div style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-        <button @click="selectedStore = store.name; copyToClipboard()" class="btn btn-blue" style="padding: 6px 12px; font-size: 12px;">복사</button>
-        <button @click="selectedStore = store.name; clearStore()" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">초기화</button>
+        <button v-if="store.api" @click="refreshStoreData(store.name)" class="btn btn-blue" style="padding: 6px 12px; font-size: 12px;">조회</button>
         <button @click="selectedStore = store.name; saveStore()" class="btn btn-primary" style="padding: 6px 16px; font-size: 12px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">저장</button>
       </div>
     </div>

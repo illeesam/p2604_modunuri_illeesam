@@ -294,11 +294,11 @@ public class CmAppStoreDataService {
     }
 
     /**
-     * 코드 정보 조회 - sy_code (공통코드)
+     * 코드 정보 조회 - sy_code (공통코드, 그리드 형식)
      */
     @Transactional(readOnly = true)
     public StoreCode getCodes(AuthPrincipal authUser) {
-        Map<String, java.util.List<StoreCode.CodeInfo>> codesByGroup = new java.util.HashMap<>();
+        java.util.List<StoreCode.CodeInfo> codes = new java.util.ArrayList<>();
 
         syCodeRepository.findAll().forEach(code -> {
             StoreCode.CodeInfo codeInfo = StoreCode.CodeInfo.builder()
@@ -310,11 +310,10 @@ public class CmAppStoreDataService {
                     .codeRemark(CmUtil.nvl(code.getCodeRemark()))
                     .build();
 
-            codesByGroup.computeIfAbsent(code.getCodeGrp(), k -> new java.util.ArrayList<>())
-                    .add(codeInfo);
+            codes.add(codeInfo);
         });
 
-        return StoreCode.builder().codesByGroup(codesByGroup).build();
+        return StoreCode.builder().codes(codes).build();
     }
 
     /**

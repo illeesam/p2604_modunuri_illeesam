@@ -38,48 +38,49 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
         if (res?.data?.data) {
           const data = res.data.data;
 
-          // 각 항목을 해당 store에 분산 저장
-          if (data.auth) {
+          // 각 항목을 해당 store에 분산 저장 (백엔드 응답 키: syAuth, mbMember, syRoles, syMenus, syCodes, syProps, dpDisp, syApp)
+          if (data.syAuth) {
             const authStore = window.useFoAuthStore?.();
-            authStore?.setAuth(data.auth);
+            authStore?.setAuth(data.syAuth);
           }
 
-          if (data.member) {
+          if (data.mbMember) {
             const memberStore = window.useFoMemberStore?.();
-            memberStore?.setMember(data.member);
+            memberStore?.setMember(data.mbMember);
           }
 
-          if (data.roles) {
+          if (data.syRoles) {
             const roleStore = window.useFoRoleStore?.();
-            roleStore?.setRoles(data.roles);
+            roleStore?.setRoles(data.syRoles);
           }
 
-          if (data.menus) {
+          if (data.syMenus) {
             const menuStore = window.useFoMenuStore?.();
-            menuStore?.setMenus(data.menus);
+            menuStore?.setMenus(data.syMenus);
           }
 
-          if (data.codes) {
+          if (data.syCodes) {
             const codeStore = window.useFoCodeStore?.();
-            codeStore?.setCodes(data.codes);
+            codeStore?.setCodes(data.syCodes?.codes);
           }
 
-          if (data.props) {
+          if (data.syProps) {
             const propStore = window.useFoPropStore?.();
-            propStore?.setProps(data.props);
+            propStore?.setProps(data.syProps);
           }
 
-          if (data.dispStruc || data.dispData) {
+          if (data.dpDisp) {
             const dispStore = window.useFoDispStore?.();
             dispStore?.setDispData({
-              dispStruc: data.dispStruc,
-              dispData: data.dispData,
+              dispStruc: data.dpDisp.dpDispStructs,
+              dispData: data.dpDisp.dpDispDatas,
+              widgets: data.dpDisp.dpDispWidgets,
             });
           }
 
-          if (data.app) {
+          if (data.syApp) {
             const appStore = window.useFoAppStore?.();
-            appStore?.setApp(data.app);
+            appStore?.setApp(data.syApp);
           }
 
           this.lastFetchTime = new Date().getTime();
