@@ -10,7 +10,7 @@ window.ZdStore = {
     const storeInfo = ref('');
     const selectedStore = ref(null);
     const openStores = reactive([]);
-    const viewMode = ref('tab');
+    const viewMode = ref('col5');
     const editedStoreInfo = reactive({});
 
     const storeList = computed(() => {
@@ -150,27 +150,32 @@ window.ZdStore = {
         :class="{active: viewMode === 'col1'}"
         @click="viewMode = 'col1'"
         title="1열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">1</button>
       <button
         :class="{active: viewMode === 'col2'}"
         @click="viewMode = 'col2'"
         title="2열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">2</button>
       <button
         :class="{active: viewMode === 'col3'}"
         @click="viewMode = 'col3'"
         title="3열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭▭▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">3</button>
       <button
         :class="{active: viewMode === 'col4'}"
         @click="viewMode = 'col4'"
         title="4열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭▭▭▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">4</button>
+      <button
+        :class="{active: viewMode === 'col5'}"
+        @click="viewMode = 'col5'"
+        title="5열 보기"
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">5</button>
     </div>
   </div>
 
   <!-- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) -->
-  <div :class="['dtl-tab-grid', 'cols-' + (viewMode === 'col1' ? '1' : viewMode === 'col2' ? '2' : viewMode === 'col3' ? '3' : viewMode === 'col4' ? '4' : 'tab')]"
+  <div :class="['dtl-tab-grid', 'cols-' + (viewMode === 'col1' ? '1' : viewMode === 'col2' ? '2' : viewMode === 'col3' ? '3' : viewMode === 'col4' ? '4' : viewMode === 'col5' ? '5' : 'tab')]"
     style="display: grid; gap: 16px; padding: 16px; auto-flow: row;">
 
     <div v-for="store in storeList" :key="store.name"
