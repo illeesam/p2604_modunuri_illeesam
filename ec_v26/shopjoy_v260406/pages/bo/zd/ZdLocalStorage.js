@@ -9,8 +9,8 @@ window.ZdLocalStorage = {
 
     const storageData = ref([]);
     const filterKey = ref('');
-    const editKey = ref('');
-    const editValue = ref('');
+    const editingKey = ref(null);
+    const editingValue = ref('');
 
     const loadStorageData = () => {
       const data = [];
@@ -36,22 +36,27 @@ window.ZdLocalStorage = {
       }
     };
 
-    const editItem = (key, value) => {
-      editKey.value = key;
-      editValue.value = value;
+    const startEdit = (key, value) => {
+      editingKey.value = key;
+      editingValue.value = value;
     };
 
-    const saveEdit = () => {
-      if (!editKey.value) return;
+    const saveEdit = (key) => {
+      if (!key) return;
       try {
-        localStorage.setItem(editKey.value, editValue.value);
+        localStorage.setItem(key, editingValue.value);
         props.showToast('저장되었습니다.', 'success');
-        editKey.value = '';
-        editValue.value = '';
+        editingKey.value = null;
+        editingValue.value = '';
         loadStorageData();
       } catch (e) {
         props.showToast('저장 실패: ' + e.message, 'error');
       }
+    };
+
+    const cancelEdit = () => {
+      editingKey.value = null;
+      editingValue.value = '';
     };
 
     const deleteItem = (key) => {
@@ -87,8 +92,8 @@ window.ZdLocalStorage = {
     loadStorageData();
 
     return {
-      storageData, filterKey, filteredData, editKey, editValue,
-      loadStorageData, copyValue, editItem, saveEdit, deleteItem, clearAllStorage, parseValue
+      storageData, filterKey, filteredData, editingKey, editingValue,
+      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue
     };
   },
   template: `
@@ -110,35 +115,38 @@ window.ZdLocalStorage = {
       </div>
     </div>
 
-    <div v-if="editKey" style="margin-bottom: 16px; padding: 16px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
-      <h3 style="margin: 0 0 12px 0;">수정: {{ editKey }}</h3>
-      <textarea 
-        v-model="editValue"
-        style="width: 100%; height: 200px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; margin-bottom: 12px;">
-      </textarea>
-      <div style="display: flex; gap: 8px;">
-        <button @click="saveEdit" class="btn btn-blue">저장</button>
-        <button @click="editKey = ''" class="btn btn-secondary">취소</button>
-      </div>
-    </div>
-
     <div style="overflow-x: auto;">
       <table class="admin-table" style="width: 100%;">
         <thead>
           <tr>
-            <th style="width: 30%; text-align: left;">Key</th>
-            <th style="width: 60%; text-align: left;">Value</th>
+            <th style="width: 25%; text-align: left;">Key</th>
+            <th style="width: 65%; text-align: left;">Value</th>
             <th style="width: 10%; text-align: center;">작업</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in filteredData" :key="item.key" style="border-bottom: 1px solid #eee;">
             <td style="padding: 12px; word-break: break-all;">{{ item.key }}</td>
-            <td style="padding: 12px; max-height: 100px; overflow-y: auto; background: #f9f9f9; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all;">{{ parseValue(item.value) }}</td>
-            <td style="padding: 12px; text-align: center;">
-              <button @click="copyValue(item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;">복사</button>
-              <button @click="editItem(item.key, item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;">수정</button>
-              <button @click="deleteItem(item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;">삭제</button>
+            <td style="padding: 12px;">
+              <template v-if="editingKey === item.key">
+                <textarea
+                  :value="editingValue"
+                  @input="editingValue = $event.target.value"
+                  style="width: 100%; height: 80px; padding: 8px; border: 1px solid #0066cc; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical;">
+                </textarea>
+                <div style="display: flex; gap: 6px; margin-top: 8px;">
+                  <button @click="saveEdit(item.key)" class="btn btn-blue" style="padding: 4px 12px; font-size: 12px;">저장</button>
+                  <button @click="cancelEdit" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">취소</button>
+                </div>
+              </template>
+              <template v-else>
+                <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 8px; border-radius: 3px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; border: 1px solid #eee;">{{ parseValue(item.value) }}</div>
+              </template>
+            </td>
+            <td style="padding: 12px; text-align: center; white-space: nowrap;">
+              <button @click="copyValue(item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">복사</button>
+              <button v-if="editingKey !== item.key" @click="startEdit(item.key, item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">수정</button>
+              <button @click="deleteItem(item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">삭제</button>
             </td>
           </tr>
           <tr v-if="filteredData.length === 0">
