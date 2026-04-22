@@ -281,7 +281,7 @@ window.DpDispUiDtl = {
         if (idx !== -1) Object.assign(codesData[idx], form);
       }
       try {
-        const res = await (isNewUi ? window.boApi.post('disp-uis', { ...form }) : window.boApi.put(`/bo/ec/dp/ui/${form.codeId}`, { ...form }));
+        const res = await (isNewUi ? window.boApi.post('/bo/ec/dp/ui', { ...form }) : window.boApi.put(`/bo/ec/dp/ui/${form.codeId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispUiMng');

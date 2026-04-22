@@ -159,7 +159,7 @@ window.PmEventDtl = {
         if (idx !== -1) Object.assign(events.value[idx], { ...form, targetProducts: [...form.targetProducts] });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`events/${form.eventId}`, { ...form }) : window.boApi.put(`events/${form.eventId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/event`, { ...form }) : window.boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmEventMng');

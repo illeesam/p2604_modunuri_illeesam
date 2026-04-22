@@ -33,12 +33,7 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
       this.error = null;
 
       try {
-        const params = {};
-        if (names) {
-          params.names = names;
-        }
-
-        const res = await window.foApi.get('/api/cm/fo-app-init/getInitData', { params });
+        const res = await window.foApi.post('/cm/fo-app-store/getInitData', names || '');
 
         if (res?.data?.data) {
           const data = res.data.data;

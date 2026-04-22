@@ -108,7 +108,7 @@ window.PmGiftDtl = {
         if (idx !== -1) Object.assign(giftList.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`gift/${form.giftId}`, { ...form }) : window.boApi.put(`gift/${form.giftId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/gift`, { ...form }) : window.boApi.put(`/bo/ec/pm/gift/${form.giftId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmGiftMng');

@@ -519,7 +519,7 @@ window.DpDispPanelDtl = {
         if (idx !== -1) Object.assign(displays.value[idx], payload);
       }
       try {
-        const res = await (isNewPanel ? window.boApi.post(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.boApi.put(`disps/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));
+        const res = await (isNewPanel ? window.boApi.post(`/bo/ec/dp/panel`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.boApi.put(`/bo/ec/dp/panel/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispPanelMng');

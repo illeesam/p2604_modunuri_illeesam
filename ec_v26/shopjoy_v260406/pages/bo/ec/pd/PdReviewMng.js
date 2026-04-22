@@ -63,7 +63,7 @@ window.PdReviewMng = {
       if (!ok) return;
       row.reviewStatusCd = newStatus; if (selectedRow.value) selectedRow.value.reviewStatusCd = newStatus;
       try {
-        const res = await window.boApi.put(`pd/reviews/${row.reviewId}/status`, { reviewStatusCd: newStatus });
+        const res = await window.boApi.put(`/bo/ec/pd/review/${row.reviewId}/status`, { reviewStatusCd: newStatus });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

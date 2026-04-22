@@ -130,7 +130,7 @@ window.SyVendorMng = {
       if (idx !== -1) vendors.value.splice(idx, 1);
       if (selectedId.value === v.vendorId) selectedId.value = null;
       try {
-        const res = await window.boApi.delete(`vendors/${v.vendorId}`);
+        const res = await window.boApi.delete(`/bo/sy/vendor/${v.vendorId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

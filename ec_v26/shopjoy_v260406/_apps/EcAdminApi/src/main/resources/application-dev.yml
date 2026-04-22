@@ -131,3 +131,6 @@ app:
 logging:
   file:
     path: logs
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

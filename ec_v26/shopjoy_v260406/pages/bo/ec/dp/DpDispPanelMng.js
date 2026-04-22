@@ -243,7 +243,7 @@ window.DpDispPanelMng = {
       if (idx !== -1) displays.value.splice(idx, 1);
       if (selectedId.value === d.dispId) selectedId.value = null;
       try {
-        const res = await window.boApi.delete(`disps/${d.dispId}`);
+        const res = await window.boApi.delete(`/bo/ec/dp/panel/${d.dispId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

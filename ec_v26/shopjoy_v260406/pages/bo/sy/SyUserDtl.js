@@ -112,7 +112,7 @@ window.SyUserDtl = {
         }
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`bo-users/${form.boUserId}`, { ...form }) : window.boApi.put(`bo-users/${form.boUserId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/user`, { ...form }) : window.boApi.put(`/bo/sy/user/${form.boUserId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syUserMng');

@@ -40,14 +40,16 @@ public class CmFoAppStoreDataController {
     private final CmAppStoreDataService storeDataService;
 
     /**
-     * FO 애플리케이션 초기화 데이터 조회 (통합)
+     * FO 애플리케이션 초기화 데이터 조회 (통합) - POST 요청
+     * 누구나 접근 가능 (공개 설정)
      *
-     * @param req 요청 정보 (siteId, userId, roleId 필수, names 선택)
+     * @param names 조회할 항목 ('^' 구분자, 선택)
      * @return 토큰, 사용자, 권한, 메뉴, 코드, 속성, 전시 구조, 전시 데이터, 앱 정보 포함
      */
     @PostMapping("/getInitData")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 데이터만 반환)
         List<String> requestedItems = CmUtil.parseNames(names);
         boolean requestAll = requestedItems.isEmpty();
 
@@ -55,6 +57,9 @@ public class CmFoAppStoreDataController {
 
         if (requestAll || requestedItems.contains(CmStoreConst.SY_AUTH)) {
             resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getAuth(authUser));
+        }
+        if (requestAll || requestedItems.contains(CmStoreConst.MB_MEMBER)) {
+            resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(authUser));
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_ROLES)) {
             resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getRoles(authUser));
@@ -73,6 +78,7 @@ public class CmFoAppStoreDataController {
             dispMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getDispStruc(authUser));
             dispMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getDispData(authUser));
             dispMap.put(CmStoreConst.DP_DISP_WIDGETS, storeDataService.getDispWidgets(authUser));
+        resultMap.put(CmStoreConst.DP_DISP_WIDGETS, storeDataService.getDispWidgets(authUser));
             resultMap.put(CmStoreConst.DP_DISP, dispMap);
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_APP)) {
@@ -85,6 +91,7 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getAuth")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getAuth(authUser));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
@@ -93,6 +100,16 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getUser")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(authUser));
+        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    }
+
+    @PostMapping("/getMember")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember(@RequestBody String names) {
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(authUser));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
@@ -101,6 +118,7 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getRoles")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getRoles(authUser));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
@@ -109,6 +127,7 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getMenus")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getMenus(authUser));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
@@ -117,6 +136,7 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getCodes")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_CODES, storeDataService.getCodes(authUser));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
@@ -125,6 +145,7 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getProps")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getProps(authUser));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
@@ -133,6 +154,7 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getDisp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getDispStruc(authUser));
         resultMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getDispData(authUser));
@@ -143,6 +165,7 @@ public class CmFoAppStoreDataController {
     @PostMapping("/getApp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_APP, storeDataService.getApp(authUser));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));

@@ -89,7 +89,7 @@ window.SySiteDtl = {
         if (idx !== -1) Object.assign(sites.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`sites/${form.siteId}`, { ...form }) : window.boApi.put(`sites/${form.siteId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/site`, { ...form }) : window.boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('sySiteMng');

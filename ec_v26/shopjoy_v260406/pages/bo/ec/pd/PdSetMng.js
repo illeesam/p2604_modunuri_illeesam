@@ -277,7 +277,7 @@ window.PdSetMng = {
       });
       if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
       try {
-        const res = await (isNew ? window.boApi.post('set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
+        const res = await (isNew ? window.boApi.post('/bo/ec/pd/prod-set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {

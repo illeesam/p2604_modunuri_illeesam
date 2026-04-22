@@ -214,7 +214,7 @@ window.OdDlivMng = {
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('deliveries/bulk-status', { ids, status: bulkForm.status });
+          const res = await window.boApi.put('/bo/ec/od/dliv/bulk-status', { ids, status: bulkForm.status });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -234,7 +234,7 @@ window.OdDlivMng = {
         });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('deliveries/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo });
+          const res = await window.boApi.put('/bo/ec/od/dliv/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -249,7 +249,7 @@ window.OdDlivMng = {
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('deliveries/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
+          const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -268,7 +268,7 @@ window.OdDlivMng = {
         } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('deliveries/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

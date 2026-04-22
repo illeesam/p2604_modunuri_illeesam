@@ -147,7 +147,7 @@ window.SyTemplateMng = {
       if (idx !== -1) templates.value.splice(idx, 1);
       if (selectedId.value === t.templateId) selectedId.value = null;
       try {
-        const res = await window.boApi.delete(`templates/${t.templateId}`);
+        const res = await window.boApi.delete(`/bo/sy/template/${t.templateId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

@@ -5,6 +5,7 @@
 window.useFoAuthStore = Pinia.defineStore('foAuth', {
   state: () => {
     return {
+      user: null,
       accessToken: '',
       refreshToken: '',
       accessExpiresIn: 0,
@@ -58,6 +59,7 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
     },
 
     setSession(user, accessToken) {
+      this.user = user || null;
       this.accessToken = accessToken || '';
       try {
         if (this.accessToken) {
@@ -72,6 +74,7 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
     },
 
     clearSession() {
+      this.user = null;
       this.accessToken = '';
       this.refreshToken = '';
       this.accessExpiresIn = 0;

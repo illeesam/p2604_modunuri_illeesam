@@ -11,6 +11,9 @@
     localStorage.removeItem('modu-fo-user');
   }
 
+  console.log('[foAuth] init _initToken:', !!_initToken);
+  console.log('[foAuth] init _initUser:', _initUser);
+
   /* ── 레거시 reactive state (app.js에서 auth.user 로 참조) ── */
   const state = Vue.reactive({ user: _initToken ? _initUser : null, loading: false });
 
@@ -21,11 +24,23 @@
   const _mkToken = () => 'sjt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
 
   /* ── store → state 동기화 ── */
-  const _sync = () => { if (_store) state.user = _store.user; };
+  const _sync = () => {
+    if (_store) {
+      state.user = _store.user ? { ...(_store.user) } : null;
+      console.log('[foAuth._sync] state.user updated:', state.user);
+    }
+  };
 
   /* ── Pinia 초기화 (app.js에서 호출) ── */
   const init = pinia => {
     _store = window.useFoAuthStore(pinia);
+
+    /* 초기 사용자 정보 로드 */
+    if (_initUser && _initToken) {
+      _store.user = _initUser;
+      _store.accessToken = _initToken;
+      console.log('[foAuth.init] restored user from localStorage:', _initUser);
+    }
 
     /* 초기 동기화 */
     _sync();
@@ -52,16 +67,30 @@
       if (!window.foApi) throw new Error('no api');
       const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
       const res = await window.foApi.post('/auth/fo/auth/login', { loginId, loginPwd: loginPwdHash });
+      console.log('[foAuth.login] full response:', res);
+      console.log('[foAuth.login] response.data:', res.data);
+      console.log('[foAuth.login] response.data.data:', res.data?.data);
       if (res.data?.data) {
         const d = res.data.data;
-        const user  = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };
+        console.log('[foAuth.login] data fields:', Object.keys(d));
+        const user  = {
+          userId: d.userId,
+          loginId: d.loginId || d.userId,
+          memberNm: d.userNm || '사용자',
+          siteId: d.siteId,
+          userTypeCd: d.userTypeCd
+        };
         const token = d.accessToken;
+        console.log('[foAuth.login] user object:', user);
+        console.log('[foAuth.login] token:', token);
         _store.setSession(user, token);
         _sync();
+        console.log('[foAuth.login] state.user after sync:', state.user);
         return { ok: true };
       }
       return { ok: false, msg: res.data?.message || '로그인 실패' };
     } catch (e) {
+      console.error('[foAuth.login] error:', e);
       return { ok: false, msg: e.response?.data?.message || '로그인 중 오류가 발생했습니다.' };
     } finally { state.loading = false; }
   };
@@ -81,15 +110,23 @@
   };
 
   /* ── 회원가입 ── */
-  const signup = async (memberNm, email, phone, extra = {}) => {
+  const signup = async (memberNm, loginId, phone, extra = {}) => {
     state.loading = true;
     try {
       if (!window.foApi) throw new Error('no api');
-      const body = { memberNm, email, phone, ...extra };
+      const passwordHash = window.CryptoJS ? CryptoJS.SHA256(extra.password || '').toString() : extra.password;
+      const body = { memberNm, loginId, loginPwdHash: passwordHash, ...extra };
       const res = await window.foApi.post('/auth/fo/auth/join', body);
+      console.log('[foAuth.signup] response:', res.data);
       if (res.data?.data) {
         const d = res.data.data;
-        const user = { userId: d.userId, email: d.email, memberNm: d.memberNm, phone: d.phone, gradeCd: d.gradeCd };
+        const user = {
+          userId: d.userId,
+          loginId: d.loginId || loginId,
+          memberNm: d.userNm || memberNm || '사용자',
+          siteId: d.siteId,
+          userTypeCd: d.userTypeCd
+        };
         const token = d.accessToken;
         _store.setSession(user, token);
         _sync();
@@ -97,6 +134,7 @@
       }
       return { ok: false, msg: res.data?.message || '회원가입 실패' };
     } catch (e) {
+      console.error('[foAuth.signup] error:', e);
       return { ok: false, msg: e.response?.data?.message || '회원가입 중 오류가 발생했습니다.' };
     } finally { state.loading = false; }
   };
@@ -107,5 +145,9 @@
     _sync();
   };
 
-  window.foAuth = { state, init, login, loginSocial, signup, logout };
+  /* ── 로그인 상태 체크 ── */
+  const isFoLogin = () => !!state.user && !!localStorage.getItem('modu-fo-access_token');
+
+  window.foAuth = { state, init, login, loginSocial, signup, logout, isFoLogin };
+  window.isFoLogin = isFoLogin;
 })();

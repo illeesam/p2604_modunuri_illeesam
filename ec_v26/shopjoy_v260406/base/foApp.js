@@ -15,8 +15,13 @@
     try {
       foAppInitStore.restoreFromStorage();
       const authStore = window.useFoAuthStore?.();
-      if (authStore && authStore.isTokenValid) {
+      const hasToken = !!(authStore?.accessToken || localStorage.getItem('modu-fo-access_token'));
+      console.log('[foApp] hasToken:', hasToken, 'accessToken:', authStore?.accessToken);
+      if (hasToken) {
+        console.log('[foApp] fetching init data...');
         foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
+      } else {
+        console.log('[foApp] no token, skipping init data fetch');
       }
     } catch (e) {
       console.warn('[foApp] Init store restore error:', e);

@@ -11,15 +11,27 @@ window.Login = {
     const snsProvider = ref(null); // sns 회원가입 시 provider 저장
 
     /* ── 로그인 ── */
-    const form     = reactive({ loginId: 'user1@demo.com', loginPwd: 'demo1234' });
+    const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
     const loginErr = ref('');
 
     const doLogin = async () => {
       loginErr.value = '';
-      if (!form.loginId || !form.loginPwd) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
-      const r = await window.foAuth.login(form.loginId, form.loginPwd);
+      if (!form.email || !form.password) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
+      const r = await window.foAuth.login(form.email, form.password);
       if (r.ok) {
-        props.showToast(window.foAuth.state.user.memberNm + '님, 환영합니다!', 'success');
+        const userName = window.foAuth.state.user?.memberNm || '사용자';
+        props.showToast(userName + '님, 환영합니다!', 'success');
+
+        /* 로그인 후 초기화 데이터 조회 */
+        try {
+          const initStore = window.useFoAppInitStore?.();
+          if (initStore) {
+            await initStore.fetchFoAppInitData();
+          }
+        } catch (e) {
+          console.warn('[Login] fetchFoAppInitData error:', e);
+        }
+
         emit('close');
       } else { loginErr.value = r.msg; }
     };

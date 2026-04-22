@@ -101,7 +101,7 @@ window.PmSaveDtl = {
         if (idx !== -1) Object.assign(saveList.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`save/${form.saveId}`, { ...form }) : window.boApi.put(`save/${form.saveId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/save`, { ...form }) : window.boApi.put(`/bo/ec/pm/save/${form.saveId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmSaveMng');

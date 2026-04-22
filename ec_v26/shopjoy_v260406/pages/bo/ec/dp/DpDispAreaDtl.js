@@ -244,7 +244,7 @@ window.DpDispAreaDtl = {
         if (idx !== -1) Object.assign(codesData[idx], form);
       }
       try {
-        const res = await (isNewArea ? window.boApi.post('disp-areas', { ...form }) : window.boApi.put(`/bo/ec/dp/area/${form.codeId}`, { ...form }));
+        const res = await (isNewArea ? window.boApi.post('/bo/ec/dp/area', { ...form }) : window.boApi.put(`/bo/ec/dp/area/${form.codeId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispAreaMng');

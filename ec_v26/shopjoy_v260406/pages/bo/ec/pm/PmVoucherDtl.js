@@ -142,7 +142,7 @@ window.PmVoucherDtl = {
       if (!ok) return;
       snsModal.value.show = false;
       try {
-        const res = await window.boApi.post(`vouchers/${form.voucherId}/send-sns`, { channel: snsModal.value.channel, message: snsMsg.value });
+        const res = await window.boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.value.channel, message: snsMsg.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('SNS전송되었습니다.', 'success');
       } catch (err) {
@@ -176,7 +176,7 @@ window.PmVoucherDtl = {
         if (idx !== -1) Object.assign(voucherList.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`vouchers/${form.voucherId}`, { ...form }) : window.boApi.put(`vouchers/${form.voucherId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/voucher`, { ...form }) : window.boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmVoucherMng');

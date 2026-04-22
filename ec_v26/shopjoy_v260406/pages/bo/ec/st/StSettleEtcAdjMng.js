@@ -74,7 +74,7 @@ window.StSettleEtcAdjMng = {
       else { const idx = etcAdjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(etcAdjList[idx], { ...form }); }
       closeForm();
       try {
-        const res = await (isNew.value ? window.boApi.post('st/etc-adj', { ...form }) : window.boApi.put(`/bo/ec/st/etc-adj/${form.adjId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post('/bo/ec/st/etc-adj', { ...form }) : window.boApi.put(`/bo/ec/st/etc-adj/${form.adjId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {

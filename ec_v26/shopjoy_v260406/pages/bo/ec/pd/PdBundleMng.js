@@ -319,7 +319,7 @@ window.PdBundleMng = {
       });
       if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
       try {
-        const res = await (isNew ? window.boApi.post('bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }));
+        const res = await (isNew ? window.boApi.post('/bo/ec/pd/prod-bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {

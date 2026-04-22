@@ -203,7 +203,7 @@ window.PmPlanDtl = {
         if (idx !== -1) Object.assign(plans.value[idx], { ...form, productIds: [...form.productIds] });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`plans`, form) : window.boApi.put(`plans/${props.editId}`, form));
+        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/plan`, form) : window.boApi.put(`/bo/ec/pm/plan/${props.editId}`, form));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmPlanMng');

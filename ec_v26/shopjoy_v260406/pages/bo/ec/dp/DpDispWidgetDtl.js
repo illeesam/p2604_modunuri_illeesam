@@ -416,7 +416,7 @@ window.DpDispWidgetDtl = {
         if (idx >= 0) Object.assign(list[idx], { ...form });
       }
       try {
-        const res = await (isNewWidget ? window.boApi.post('widget-libs', { ...form }) : window.boApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }));
+        const res = await (isNewWidget ? window.boApi.post('/bo/ec/dp/widget-lib', { ...form }) : window.boApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispWidgetLibMng');

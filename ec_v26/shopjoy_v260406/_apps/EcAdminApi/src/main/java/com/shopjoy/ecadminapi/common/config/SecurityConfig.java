@@ -102,6 +102,10 @@ public class SecurityConfig {
                 // static 리소스 — 인증 없이 허용
                 .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll()
 
+                // /api/cm/fo-app-store/**, /api/cm/bo-app-store/** — 누구나 허용 (초기화 데이터 조회)
+                .requestMatchers("/api/cm/fo-app-store/**").permitAll()
+                .requestMatchers("/api/cm/bo-app-store/**").permitAll()
+
                 // /api/base/** — GET 누구나, 변경(POST/PUT/PATCH/DELETE) USER만
                 .requestMatchers(HttpMethod.GET,    "/api/base/**").permitAll()
                 .requestMatchers(HttpMethod.POST,   "/api/base/**").access(BO_ONLY)

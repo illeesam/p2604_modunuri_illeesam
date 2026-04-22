@@ -97,7 +97,7 @@ window.SyVendorDtl = {
         if (idx !== -1) Object.assign(vendors.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`vendors/${form.vendorId}`, { ...form }) : window.boApi.put(`vendors/${form.vendorId}`, { ...form }));
+        const res = await (isNew.value ? window.boApi.post(`/bo/sy/vendor`, { ...form }) : window.boApi.put(`/bo/sy/vendor/${form.vendorId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syVendorMng');

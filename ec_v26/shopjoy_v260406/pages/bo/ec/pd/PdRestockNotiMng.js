@@ -61,7 +61,7 @@ window.PdRestockNotiMng = {
       if (!ok) return;
       const now = new Date().toLocaleString('sv').replace('T', ' '); window.safeArrayUtils.safeForEach(targets, r => { r.notiYn = 'Y'; r.notiDate = now; }); checkedIds.clear();
       try {
-        const res = await window.boApi.post('pd/restock-notis/send', { ids: targets.map(r => r.restockNotiId) });
+        const res = await window.boApi.post('/bo/ec/pd/restock-noti/send', { ids: targets.map(r => r.restockNotiId) });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(`${targets.length}건 알림이 발송되었습니다.`, 'success');
       } catch (err) {

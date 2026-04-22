@@ -229,7 +229,7 @@ window.OdClaimMng = {
         checked.value = new Set();
         bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('claims/bulk-status', { changes });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-status', { changes });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${totalCnt}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -247,7 +247,7 @@ window.OdClaimMng = {
         checked.value = new Set();
         bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('claims/bulk-type', { ids, type: val });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -263,7 +263,7 @@ window.OdClaimMng = {
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('claims/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -283,7 +283,7 @@ window.OdClaimMng = {
         } });
         checked.value = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('claims/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

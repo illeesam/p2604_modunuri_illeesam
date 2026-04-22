@@ -100,7 +100,7 @@ window.PmVoucherMng = {
       if (idx !== -1) voucherList.value.splice(idx, 1);
       if (selectedId.value === v.voucherId) selectedId.value = null;
       try {
-        const res = await window.boApi.delete(`vouchers/${v.voucherId}`);
+        const res = await window.boApi.delete(`/bo/ec/pm/voucher/${v.voucherId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

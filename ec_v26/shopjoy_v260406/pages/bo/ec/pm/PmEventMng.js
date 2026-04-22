@@ -99,7 +99,7 @@ window.PmEventMng = {
       if (idx !== -1) events.value.splice(idx, 1);
       if (selectedId.value === e.eventId) selectedId.value = null;
       try {
-        const res = await window.boApi.delete(`events/${e.eventId}`);
+        const res = await window.boApi.delete(`/bo/ec/pm/event/${e.eventId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

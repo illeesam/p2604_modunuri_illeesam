@@ -53,7 +53,16 @@ window.foAppSidebar = {
     const DEV_TOOLS_ITEMS = [
       { menuId: 'xsStore', menuNm: 'Store 정보관리' },
       { menuId: 'xsLocalStorage', menuNm: 'localStorage 정보관리' },
+      { siteNo: '01', siteNm: 'FO=01' },
+      { siteNo: '02', siteNm: 'FO=02' },
+      { siteNo: '03', siteNm: 'FO=03' },
+      { siteNo: '9999', siteNm: 'FO=9999' },
     ];
+
+    const navToSite = (siteNo) => {
+      try { localStorage.setItem('modu-fo-site_no', siteNo); } catch(_){}
+      window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + siteNo;
+    };
 
     /* 현재 페이지가 속한 그룹 자동 펼침 */
     watch(() => props.page, (p) => {
@@ -73,8 +82,8 @@ window.foAppSidebar = {
     const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
     return { isMenuActive, sample0Open, sample1Open, sample2Open, dispUiOpen, devToolsOpen,
-             SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, navTo,
-             showSamples };
+             SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, navTo, navToSite,
+             showSamples, foSiteNo };
   },
   template: /* html */ `
 <div id="sidebar" :class="[sidebarOpen?'':'collapsed', mobileOpen?'open':'']" @click.stop>
@@ -113,12 +122,12 @@ window.foAppSidebar = {
       </button>
     </div>
     <template v-if="devToolsOpen">
-      <button v-for="item in DEV_TOOLS_ITEMS" :key="item.menuId" type="button"
-        @click.stop="navTo(item.menuId)"
-        class="sidebar-link" :class="{active: page === item.menuId}"
-        :data-tip="item.menuNm" :aria-label="item.menuNm">
-        <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">🔧</span>
-        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
+      <button v-for="item in DEV_TOOLS_ITEMS" :key="item.menuId || item.siteNo" type="button"
+        @click.stop="item.menuId ? navTo(item.menuId) : navToSite(item.siteNo)"
+        class="sidebar-link" :class="{active: item.menuId && page === item.menuId}"
+        :data-tip="item.menuNm || item.siteNm" :aria-label="item.menuNm || item.siteNm">
+        <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">{{ item.menuId ? '🔧' : '🌐' }}</span>
+        <span v-if="sidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm || item.siteNm }}</span>
       </button>
     </template>
 
