@@ -47,6 +47,18 @@
             if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
           } catch (_) {}
 
+          /* 로그인 후 추가 관리자 정보 조회 */
+          try {
+            const userRes = await window.boApi.post('/co/cm/bo-app-store/getUser', '');
+            if (userRes?.data?.data?.user) {
+              const userStore = window.useUserStore?.();
+              userStore?.setUser(userRes.data.data.user);
+              console.log('[boAuthStore.login] admin user info updated from getUser');
+            }
+          } catch (e) {
+            console.warn('[boAuthStore.login] getUser fetch failed:', e);
+          }
+
           return this.user || {};
         } catch (err) {
           this.reset();

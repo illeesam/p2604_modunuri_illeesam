@@ -93,7 +93,7 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // /api/auth/bo/me, /api/auth/fo/me 는 인증 필수
-                .requestMatchers("/api/auth/bo/me", "/api/auth/fo/me").access(BO_OR_FO)
+                // .requestMatchers("/api/auth/bo/me", "/api/auth/fo/me").access(BO_OR_FO)
                 // 나머지 인증 엔드포인트는 누구나 (login/join/refresh/logout)
                 .requestMatchers("/api/auth/bo/**", "/api/auth/fo/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
@@ -102,9 +102,10 @@ public class SecurityConfig {
                 // static 리소스 — 인증 없이 허용
                 .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll()
 
-                // /api/cm/fo-app-store/**, /api/cm/bo-app-store/** — 누구나 허용 (초기화 데이터 조회)
-                .requestMatchers("/api/cm/fo-app-store/**").permitAll()
-                .requestMatchers("/api/cm/bo-app-store/**").permitAll()
+                // /api/co/cm/fo-app-store/**, /api/co/cm/bo-app-store/** — 누구나 허용 (초기화 데이터 조회)
+                // ⭐ 더 구체적이므로 일반 /api/** 규칙보다 먼저 배치
+                .requestMatchers("/api/co/cm/fo-app-store/**").permitAll()
+                .requestMatchers("/api/co/cm/bo-app-store/**").permitAll()
 
                 // /api/base/** — GET 누구나, 변경(POST/PUT/PATCH/DELETE) USER만
                 .requestMatchers(HttpMethod.GET,    "/api/base/**").permitAll()
@@ -116,9 +117,8 @@ public class SecurityConfig {
                 // /api/fo/ec/my/** — MEMBER만 (더 구체적인 경로 먼저)
                 .requestMatchers("/api/fo/ec/my/**").access(FO_ONLY)
 
-                // /api/fo/ec/**, /api/bo/cm/**, /api/base/cm/** — 누구나 허용
+                // /api/fo/ec/**, /api/bo/cm/** (초기화 제외), /api/base/cm/** — 누구나 허용
                 .requestMatchers("/api/fo/ec/**").permitAll()
-                .requestMatchers("/api/bo/cm/**").permitAll()
                 .requestMatchers("/api/base/cm/**").permitAll()
 
                 // /api/ext/** — EXT(외부 시스템)만 허용

@@ -82,7 +82,7 @@ window.foAppHeader = {
     /* ── 안전한 사용자 정보 접근 ── */
     const authUser = computed(() => props?.auth?.user || { userId: 0, memberNm: '', email: '' });
     const userFirstChar = computed(() => ((authUser.value?.memberNm || '').charAt(0)) || '?');
-    const isLogin = computed(() => window.isFoLogin?.() ?? false);
+    const isLogin = computed(() => !!(props?.auth?.user || props?.auth?.accessToken));
 
     /* ── 공통 인풋 스타일 ── */
     const IS = 'width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;';

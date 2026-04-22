@@ -19,21 +19,21 @@ import com.shopjoy.ecadminapi.common.util.SecurityUtil;
  * FO (Front Office - 사용자) 애플리케이션 Store 데이터 API
  *
  * Store별 개별 엔드포인트:
- * GET /api/cm/fo-app-store/getInitData   - 통합 초기화 데이터 (names 파라미터로 선택)
- * GET /api/cm/fo-app-store/getAuth       - 인증 정보 (토큰)
- * GET /api/cm/fo-app-store/getUser       - 회원 정보
- * GET /api/cm/fo-app-store/getMember     - 회원 정보 (별칭)
- * GET /api/cm/fo-app-store/getRole       - 권한 정보
- * GET /api/cm/fo-app-store/getMenu       - 메뉴 정보
- * GET /api/cm/fo-app-store/getCode       - 공통 코드
- * GET /api/cm/fo-app-store/getProps      - 시스템 속성
- * GET /api/cm/fo-app-store/getDisp       - 전시 정보 (구조 + 데이터)
- * GET /api/cm/fo-app-store/getApp        - 앱 정보
+ * GET /api/co/cm/fo-app-store/getInitData   - 통합 초기화 데이터 (names 파라미터로 선택)
+ * GET /api/co/cm/fo-app-store/getAuth       - 인증 정보 (토큰)
+ * GET /api/co/cm/fo-app-store/getUser       - 회원 정보
+ * GET /api/co/cm/fo-app-store/getMember     - 회원 정보 (별칭)
+ * GET /api/co/cm/fo-app-store/getRole       - 권한 정보
+ * GET /api/co/cm/fo-app-store/getMenu       - 메뉴 정보
+ * GET /api/co/cm/fo-app-store/getCode       - 공통 코드
+ * GET /api/co/cm/fo-app-store/getProps      - 시스템 속성
+ * GET /api/co/cm/fo-app-store/getDisp       - 전시 정보 (구조 + 데이터)
+ * GET /api/co/cm/fo-app-store/getApp        - 앱 정보
  *
  * @author ShopJoy
  */
 @RestController
-@RequestMapping("/api/cm/fo-app-store")
+@RequestMapping("/api/co/cm/fo-app-store")
 @RequiredArgsConstructor
 public class CmFoAppStoreDataController {
 
@@ -89,7 +89,7 @@ public class CmFoAppStoreDataController {
     }
 
     @PostMapping("/getAuth")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody(required = false) String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         // authUser가 null이면 비인증 사용자 (공개 설정)
         Map<String, Object> resultMap = new HashMap<>();

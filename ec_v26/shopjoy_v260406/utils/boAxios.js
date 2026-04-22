@@ -69,6 +69,17 @@
     var status = res && res.status;
     console.error(TAG + ' ✗ ' + (status || 'NETWORK'), cfg.url, err.message);
 
+    /* 200-299 범위가 아닌 모든 응답 → toast 출력 */
+    if ((status && (status < 200 || status >= 300)) || !status) {
+      cfg._notified = true;
+      var errMsg = (res && res.data && res.data.message) || err.message || '오류가 발생했습니다.';
+      try {
+        global.dispatchEvent(new CustomEvent('api-validation-error', {
+          detail: { scope: 'bo', status: status || 0, url: cfg.url, message: errMsg },
+        }));
+      } catch (_) {}
+    }
+
     if ((status === 0 || !status || status >= 500) && !cfg._notified) {
       cfg._notified = true;
       try {

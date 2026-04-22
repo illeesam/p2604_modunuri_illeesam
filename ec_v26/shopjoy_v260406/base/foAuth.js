@@ -86,6 +86,19 @@
         _store.setSession(user, token);
         _sync();
         console.log('[foAuth.login] state.user after sync:', state.user);
+
+        /* 로그인 후 추가 사용자 정보 조회 */
+        try {
+          const userRes = await window.foApi.post('/co/cm/fo-app-store/getUser', '');
+          if (userRes?.data?.data?.member) {
+            const memberStore = window.useFoMemberStore?.();
+            memberStore?.setMember(userRes.data.data.member);
+            console.log('[foAuth.login] user info updated from getUser');
+          }
+        } catch (e) {
+          console.warn('[foAuth.login] getUser fetch failed:', e);
+        }
+
         return { ok: true };
       }
       return { ok: false, msg: res.data?.message || '로그인 실패' };

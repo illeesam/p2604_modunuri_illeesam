@@ -38,7 +38,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
           params.names = names;
         }
 
-        const res = await window.boApi.post('/cm/bo-app-store/getInitData', names || '');
+        const res = await window.boApi.post('/co/cm/bo-app-store/getInitData', names || '');
 
         if (res?.data?.data) {
           const data = res.data.data;

@@ -18,19 +18,19 @@ import com.shopjoy.ecadminapi.common.util.SecurityUtil;
  * BO (Back Office) 애플리케이션 Store 데이터 API
  *
  * Store별 개별 엔드포인트:
- * GET /api/cm/bo-app-store/getInitData   - 통합 초기화 데이터 (names 파라미터로 선택)
- * GET /api/cm/bo-app-store/getAuth       - 인증 정보 (토큰)
- * GET /api/cm/bo-app-store/getUser       - 관리자 정보
- * GET /api/cm/bo-app-store/getRole       - 권한 정보
- * GET /api/cm/bo-app-store/getMenu       - 메뉴 정보
- * GET /api/cm/bo-app-store/getCode       - 공통 코드
- * GET /api/cm/bo-app-store/getProps      - 시스템 속성
- * GET /api/cm/bo-app-store/getApp        - 앱 정보
+ * GET /api/co/cm/bo-app-store/getInitData   - 통합 초기화 데이터 (names 파라미터로 선택)
+ * GET /api/co/cm/bo-app-store/getAuth       - 인증 정보 (토큰)
+ * GET /api/co/cm/bo-app-store/getUser       - 관리자 정보
+ * GET /api/co/cm/bo-app-store/getRole       - 권한 정보
+ * GET /api/co/cm/bo-app-store/getMenu       - 메뉴 정보
+ * GET /api/co/cm/bo-app-store/getCode       - 공통 코드
+ * GET /api/co/cm/bo-app-store/getProps      - 시스템 속성
+ * GET /api/co/cm/bo-app-store/getApp        - 앱 정보
  *
  * @author ShopJoy
  */
 @RestController
-@RequestMapping("/api/cm/bo-app-store")
+@RequestMapping("/api/co/cm/bo-app-store")
 @RequiredArgsConstructor
 public class CmBoAppStoreDataController {
 
@@ -44,7 +44,7 @@ public class CmBoAppStoreDataController {
      */
 
     @PostMapping("/getInitData")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
         boolean requestAll = requestedItems.isEmpty();
@@ -77,7 +77,7 @@ public class CmBoAppStoreDataController {
     }
 
     @PostMapping("/getAuth")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody(required = false) String names) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getAuth(authUser));

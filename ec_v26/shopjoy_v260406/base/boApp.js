@@ -182,10 +182,8 @@
       if (boAppInitStore) {
         try {
           boAppInitStore.restoreFromStorage();
-          const authStore = window.useAuthStore?.();
-          if (authStore?.isLoggedIn) {
-            boAppInitStore.fetchBoAppInitData().catch(e => console.warn('[boApp] fetchBoAppInitData error:', e));
-          }
+          console.log('[boApp] Fetching BO init data (공개 + 인증 데이터)...');
+          boAppInitStore.fetchBoAppInitData().catch(e => console.warn('[boApp] fetchBoAppInitData error:', e));
         } catch (e) {
           console.warn('[boApp] App init store restore error:', e);
         }
@@ -195,6 +193,13 @@
       const page   = ref('dashboard');
       const dashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
       const errorMessage = ref('');
+      /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
+      window.addEventListener('api-validation-error', (ev) => {
+        const d = ev.detail || {};
+        const msg = d.message || '오류가 발생했습니다.';
+        showToast(msg, 'error', 0);
+      });
+
       /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
       window.addEventListener('api-error', (ev) => {
         const d = ev.detail || {};

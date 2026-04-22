@@ -16,13 +16,8 @@
       foAppInitStore.restoreFromStorage();
       const authStore = window.useFoAuthStore?.();
       const hasToken = !!(authStore?.accessToken || localStorage.getItem('modu-fo-access_token'));
-      console.log('[foApp] hasToken:', hasToken, 'accessToken:', authStore?.accessToken);
-      if (hasToken) {
-        console.log('[foApp] fetching init data...');
-        foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
-      } else {
-        console.log('[foApp] no token, skipping init data fetch');
-      }
+      console.log('[foApp] Fetching FO init data (공개 + 인증 데이터)...');
+      foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
     } catch (e) {
       console.warn('[foApp] Init store restore error:', e);
     }
@@ -43,6 +38,13 @@
     /* ── Navigation ── */
     const page = ref('home');
     const errorMessage = ref('');
+    /* API Validation 에러 → toast 출력 (foAxios 에서 window.dispatchEvent('api-validation-error')) */
+    window.addEventListener('api-validation-error', (ev) => {
+      const d = ev.detail || {};
+      const msg = d.message || '오류가 발생했습니다.';
+      showToast(msg, 'error');
+    });
+
     /* API 에러 → 오류 페이지 이동 (baseAxios 계열에서 window dispatchEvent 호출) */
     window.addEventListener('api-error', (ev) => {
       const d = ev.detail || {};
