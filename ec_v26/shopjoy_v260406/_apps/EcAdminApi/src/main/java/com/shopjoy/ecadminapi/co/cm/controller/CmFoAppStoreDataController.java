@@ -76,8 +76,8 @@ public class CmFoAppStoreDataController {
         }
         if (requestAll || requestedItems.contains(CmStoreConst.DP_DISP)) {
             Map<String, Object> dispMap = new HashMap<>();
-            dispMap.put(CmStoreConst.DP_DISP_STRUCT, storeDataService.getFoDispStruc());
-            dispMap.put(CmStoreConst.DP_DISP_DATA, storeDataService.getFoDispData());
+            dispMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getFoDispStruc());
+            dispMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getFoDispData());
             resultMap.put(CmStoreConst.DP_DISP, dispMap);
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_APP)) {
@@ -155,8 +155,8 @@ public class CmFoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp(@Valid @RequestBody CmAppStoreDataReq req) {
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.DP_DISP_STRUCT, storeDataService.getFoDispStruc());
-        resultMap.put(CmStoreConst.DP_DISP_DATA, storeDataService.getFoDispData());
+        resultMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getFoDispStruc());
+        resultMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getFoDispData());
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
