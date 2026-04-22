@@ -16,6 +16,7 @@
     { id: 'customer',   label: '고객센터' },
     { id: 'settle',     label: '정산' },
     { id: 'system',     label: '시스템' },
+    { id: 'devtools',   label: '개발도구' },
   ];
   const TOP_MENUS = _ALL_TOP_MENUS.filter(m => {
     if (_BO_SITE_NO === '02' && m.id === 'customer')  return false;
@@ -138,8 +139,10 @@
       { group: '이력조회' },
       { id: 'syMemberLoginHist', label: '회원로그인이력' },
       { id: 'syUserLoginHist',   label: '사용자로그인이력' },
-      { group: '개발도구' },
       { id: 'syPostman',         label: 'postman' },
+    ],
+    devtools:  [
+      { group: '스토어' },
       { id: 'zdStore',           label: 'store정보관리' },
       { id: 'zdLocalStorage',    label: 'localstorage정보관리' },
     ],

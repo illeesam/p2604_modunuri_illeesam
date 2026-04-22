@@ -8,7 +8,7 @@ import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,8 +52,8 @@ public class ZzSample2Service {
     @Transactional
     public ZzSample2 create(ZzSample2 entity) {
         entity.setSample2Id(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
-        entity.setRegDate(LocalDateTime.now());
+        entity.setRgtr(SecurityUtil.currentUserId());
+        entity.setRegDt(LocalDate.now());
         return repository.save(entity);
     }
 
@@ -61,8 +61,8 @@ public class ZzSample2Service {
     public ZzSample2 save(ZzSample2 entity) {
         if (!repository.existsById(entity.getSample2Id()))
             throw new CmBizException("존재하지 않는 ZzSample2입니다: " + entity.getSample2Id());
-        entity.setUpdBy(SecurityUtil.currentUserId());
-        entity.setUpdDate(LocalDateTime.now());
+        entity.setMdfr(SecurityUtil.currentUserId());
+        entity.setMdfcnDt(LocalDate.now());
         return repository.save(entity);
     }
 
@@ -74,6 +74,6 @@ public class ZzSample2Service {
     }
 
     private String generateId() {
-        return "ZS2" + LocalDateTime.now().format(ID_FMT) + (int)(Math.random() * 9000 + 1000);
+        return "ZS2" + LocalDate.now().format(ID_FMT) + (int)(Math.random() * 9000 + 1000);
     }
 }
