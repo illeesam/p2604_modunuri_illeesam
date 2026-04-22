@@ -45,8 +45,8 @@ public class SchBatchController {
                 "cronExpr",       CmUtil.nvl(b.getCronExpr()),
                 "batchStatusCd",  CmUtil.nvl(b.getBatchStatusCd()),
                 "batchRunStatus", CmUtil.nvl(b.getBatchRunStatus()),
-                "batchLastRun",   b.getBatchLastRun() != null ? b.getBatchLastRun().toString() : "",
-                "batchNextRun",   b.getBatchNextRun() != null ? b.getBatchNextRun().toString() : "",
+                "batchLastRun",   CmUtil.nvl(b.getBatchLastRun() != null ? b.getBatchLastRun().toString() : null),
+                "batchNextRun",   CmUtil.nvl(b.getBatchNextRun() != null ? b.getBatchNextRun().toString() : null),
                 "batchRunCount",  CmUtil.nvlInt(b.getBatchRunCount()),
                 "registered",     registry.isRegistered(b.getBatchCode())
             ))

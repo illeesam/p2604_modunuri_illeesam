@@ -296,7 +296,7 @@ public class CmAppStoreDataService {
                 .memberHpNo(CmUtil.nvl(member.getMemberPhone()))
                 .memberGrade(CmUtil.nvl(member.getGradeCd()))
                 .memberStaffYn("N")
-                .memberBirthDt(member.getBirthDate() != null ? member.getBirthDate().toString() : "")
+                .memberBirthDt(CmUtil.nvl(member.getBirthDate() != null ? member.getBirthDate().toString() : null))
                 .memberStatusCd(CmUtil.nvl(member.getMemberStatusCd()))
                 .cartCount(0L)
                 .likeCount(0L)
