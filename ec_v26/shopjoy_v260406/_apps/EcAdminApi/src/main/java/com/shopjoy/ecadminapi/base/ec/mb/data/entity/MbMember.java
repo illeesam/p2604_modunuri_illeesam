@@ -26,8 +26,8 @@ public class MbMember {
     @Column(name = "login_id", length = 100, nullable = false)
     private String loginId;
 
-    @Column(name = "login_pwd", length = 255, nullable = false)
-    private String loginPwd;
+    @Column(name = "login_pwd_hash", length = 255, nullable = false)
+    private String loginPwdHash;
 
     @Column(name = "member_nm", length = 50, nullable = false)
     private String memberNm;

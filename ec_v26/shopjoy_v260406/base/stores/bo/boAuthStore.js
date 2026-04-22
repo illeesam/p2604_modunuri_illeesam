@@ -15,14 +15,14 @@
   window.useAuthStore = defineStore('auth', {
     state: () => ({
       user: null,
-      token: null,
+      accessToken: null,
       refreshToken: null,
     }),
 
     getters: {
-      isLoggedIn: (state) => !!state.user && !!state.token,
+      isLoggedIn: (state) => !!state.user && !!state.accessToken,
       currentUser: (state) => state.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
-      authHeader: (state) => (state.token ? { Authorization: `Bearer ${state.token}` } : {}),
+      authHeader: (state) => (state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : {}),
     },
 
     actions: {
@@ -37,13 +37,13 @@
           });
 
           this.user = res.data || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
-          this.token = res.data?.accessToken || '';
+          this.accessToken = res.data?.accessToken || '';
           this.refreshToken = res.data?.refreshToken || '';
 
           // localStorage 저장
           try {
-            if (this.token) localStorage.setItem('modu-bo-token', this.token);
-            if (this.refreshToken) localStorage.setItem('modu-bo-refresh', this.refreshToken);
+            if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
+            if (this.refreshToken) localStorage.setItem('modu-bo-refresh_token', this.refreshToken);
             if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
           } catch (_) {}
 
@@ -66,12 +66,12 @@
             refreshToken: this.refreshToken,
           });
 
-          this.token = res.data?.accessToken || '';
+          this.accessToken = res.data?.accessToken || '';
           this.refreshToken = res.data?.refreshToken || '';
 
           try {
-            if (this.token) localStorage.setItem('modu-bo-token', this.token);
-            if (this.refreshToken) localStorage.setItem('modu-bo-refresh', this.refreshToken);
+            if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
+            if (this.refreshToken) localStorage.setItem('modu-bo-refresh_token', this.refreshToken);
           } catch (_) {}
 
           return true;
@@ -96,12 +96,12 @@
       // 초기화
       reset() {
         this.user = null;
-        this.token = null;
+        this.accessToken = null;
         this.refreshToken = null;
 
         try {
-          localStorage.removeItem('modu-bo-token');
-          localStorage.removeItem('modu-bo-refresh');
+          localStorage.removeItem('modu-bo-access_token');
+          localStorage.removeItem('modu-bo-refresh_token');
           localStorage.removeItem('modu-bo-user');
         } catch (_) {}
       },
@@ -109,12 +109,12 @@
       // localStorage에서 복원
       restoreFromStorage() {
         try {
-          const token = localStorage.getItem('modu-bo-token');
-          const refreshToken = localStorage.getItem('modu-bo-refresh');
+          const accessToken = localStorage.getItem('modu-bo-access_token');
+          const refreshToken = localStorage.getItem('modu-bo-refresh_token');
           const userJson = localStorage.getItem('modu-bo-user');
 
-          if (token && userJson) {
-            this.token = token || '';
+          if (accessToken && userJson) {
+            this.accessToken = accessToken || '';
             this.refreshToken = refreshToken || '';
             this.user = JSON.parse(userJson) || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
             return true;
@@ -128,11 +128,11 @@
   // localStorage 변화 실시간 감지 (같은 탭 또는 다른 탭에서 토큰 삭제 시)
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', (e) => {
-      if (e.key === 'modu-bo-token' || e.key === 'modu-bo-user' || e.key === 'modu-bo-refresh') {
+      if (e.key === 'modu-bo-access_token' || e.key === 'modu-bo-user' || e.key === 'modu-bo-refresh_token') {
         const store = window.useAuthStore?.();
         if (store) {
-          const token = localStorage.getItem('modu-bo-token');
-          if (!token) {
+          const accessToken = localStorage.getItem('modu-bo-access_token');
+          if (!accessToken) {
             // 토큰 삭제됨 → 스토어 초기화
             store.reset();
           } else {
@@ -150,7 +150,7 @@
       const store = window.useAuthStore?.();
       return store || {
         user: null,
-        token: null,
+        accessToken: null,
         refreshToken: null,
         isLoggedIn: false,
         currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
@@ -160,7 +160,7 @@
       console.error('getAuthStore error:', e);
       return {
         user: null,
-        token: null,
+        accessToken: null,
         refreshToken: null,
         isLoggedIn: false,
         currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
@@ -182,7 +182,7 @@
   window.getAuthToken = () => {
     try {
       const store = window.useAuthStore?.();
-      return store?.token || '';
+      return store?.accessToken || '';
     } catch (e) {
       console.error('getAuthToken error:', e);
       return '';
@@ -192,7 +192,7 @@
   window.isAuthLoggedIn = () => {
     try {
       const store = window.useAuthStore?.();
-      return !!(store?.user && store?.token);
+      return !!(store?.user && store?.accessToken);
     } catch (e) {
       console.error('isAuthLoggedIn error:', e);
       return false;

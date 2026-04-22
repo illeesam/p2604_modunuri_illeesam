@@ -3,7 +3,7 @@ CREATE TABLE mb_member (
     member_id       VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),                            -- sy_site.site_id
     login_id        VARCHAR(100)    NOT NULL,
-    login_pwd       VARCHAR(255)    NOT NULL,
+    login_pwd_hash  VARCHAR(255)    NOT NULL,
     member_nm       VARCHAR(50)     NOT NULL,
     member_phone    VARCHAR(20),
     member_gender   VARCHAR(1),                             -- M/F
@@ -32,7 +32,7 @@ COMMENT ON TABLE mb_member IS '회원';
 COMMENT ON COLUMN mb_member.member_id      IS '회원ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN mb_member.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN mb_member.login_id       IS '로그인 ID (이메일)';
-COMMENT ON COLUMN mb_member.login_pwd      IS '로그인 비밀번호 (bcrypt)';
+COMMENT ON COLUMN mb_member.login_pwd_hash IS '로그인 비밀번호 해시 (BCrypt)';
 COMMENT ON COLUMN mb_member.member_nm      IS '회원명';
 COMMENT ON COLUMN mb_member.member_phone   IS '연락처';
 COMMENT ON COLUMN mb_member.member_gender  IS '성별 M/F';

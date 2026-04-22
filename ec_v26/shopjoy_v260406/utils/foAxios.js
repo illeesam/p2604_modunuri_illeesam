@@ -1,6 +1,6 @@
 /**
  * FO axios 클라이언트 (window.foApi)
- * - Bearer 토큰 자동 주입 (modu-fo-token)
+ * - Bearer 토큰 자동 주입 (modu-fo-access_token)
  * - 401 → /auth/fo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
@@ -30,18 +30,18 @@
   global.apiUrl  = global.apiUrl  || apiUrl;
 
   /* ── 설정 ────────────────────────────────────────────────────── */
-  var TAG         = '[fo]';
-  var TOKEN_KEY   = 'modu-fo-token';
-  var REFRESH_KEY = 'modu-fo-refresh';
-  var REFRESH_URL = 'auth/fo/refresh';
-  var TIMEOUT     = 15000;
+  var TAG              = '[fo]';
+  var ACCESS_TOKEN_KEY = 'modu-fo-access_token';
+  var REFRESH_TOKEN_KEY = 'modu-fo-refresh_token';
+  var REFRESH_URL      = 'auth/fo/refresh';
+  var TIMEOUT          = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });
 
   /* ── Request: 토큰 주입 + 로그 ── */
   inst.interceptors.request.use(function (cfg) {
     try {
-      var t = localStorage.getItem(TOKEN_KEY);
+      var t = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (t) {
         cfg.headers = cfg.headers || {};
         cfg.headers.Authorization = 'Bearer ' + t;
@@ -93,15 +93,15 @@
       }
       isRefreshing = true;
       var refresh = null;
-      try { refresh = localStorage.getItem(REFRESH_KEY); } catch (_) {}
+      try { refresh = localStorage.getItem(REFRESH_TOKEN_KEY); } catch (_) {}
       return global.axios.post(apiUrl(REFRESH_URL), { refresh: refresh })
         .then(function (r) {
-          var newTok = r && r.data && (r.data.token || r.data.accessToken);
+          var newTok = r && r.data && (r.data.accessToken || r.data.token);
           if (!newTok) throw new Error('no token in refresh response');
-          try { localStorage.setItem(TOKEN_KEY, newTok); } catch (_) {}
-          var newRefresh = r.data.refresh || r.data.refreshToken;
-          if (newRefresh) { try { localStorage.setItem(REFRESH_KEY, newRefresh); } catch (_) {} }
-          console.log(TAG + ' ↻ token refreshed');
+          try { localStorage.setItem(ACCESS_TOKEN_KEY, newTok); } catch (_) {}
+          var newRefresh = r.data.refreshToken || r.data.refresh;
+          if (newRefresh) { try { localStorage.setItem(REFRESH_TOKEN_KEY, newRefresh); } catch (_) {} }
+          console.log(TAG + ' ↻ accessToken refreshed');
           flush(newTok);
           isRefreshing = false;
           cfg.headers = cfg.headers || {};
@@ -113,8 +113,8 @@
           flush(null);
           isRefreshing = false;
           try {
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(REFRESH_KEY);
+            localStorage.removeItem(ACCESS_TOKEN_KEY);
+            localStorage.removeItem(REFRESH_TOKEN_KEY);
             localStorage.removeItem('modu-fo-user');
           } catch (_) {}
           if (global.foAuth && typeof global.foAuth.logout === 'function') {

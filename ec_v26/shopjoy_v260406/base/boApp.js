@@ -493,7 +493,7 @@
       const _mkBoToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
       const _restoreBoUser = () => {
         try {
-          const tok = localStorage.getItem('modu-bo-token');
+          const tok = localStorage.getItem('modu-bo-access_token');
           if (!tok) return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
           const user = JSON.parse(localStorage.getItem('modu-bo-user') || 'null');
           return user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
@@ -731,7 +731,7 @@
       watch(currentUser, _persistBoUser, { deep: true });
       /* 다른 탭에서 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
-        if (e.key === 'modu-bo-token' || e.key === 'modu-bo-user') {
+        if (e.key === 'modu-bo-access_token' || e.key === 'modu-bo-user') {
           const u = _restoreBoUser();
           currentUser.value = u;
         }

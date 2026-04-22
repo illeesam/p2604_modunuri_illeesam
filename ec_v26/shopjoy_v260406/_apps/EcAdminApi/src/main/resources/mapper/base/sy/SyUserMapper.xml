@@ -98,7 +98,7 @@
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="loginId != null">login_id = #{loginId},</if>
-            <if test="loginPwd != null">login_pwd = #{loginPwd},</if>
+            <if test="loginPwdHash != null">login_pwd_hash = #{loginPwdHash},</if>
             <if test="userNm != null">user_nm = #{userNm},</if>
             <if test="userEmail != null">user_email = #{userEmail},</if>
             <if test="userPhone != null">user_phone = #{userPhone},</if>

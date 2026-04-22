@@ -12,7 +12,7 @@ public class SyUserDto {
     private String userId;
     private String siteId;
     private String loginId;
-    private String loginPwd;
+    private String loginPwdHash;
     private String userNm;
     private String userEmail;
     private String userPhone;

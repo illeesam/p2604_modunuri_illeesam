@@ -16,7 +16,7 @@ public class SyUserReq {
     private String userId;
     private String siteId;
     private String loginId;
-    private String loginPwd;
+    private String loginPwdHash;
     private String userNm;
     private String userEmail;
     private String userPhone;
@@ -38,7 +38,7 @@ public class SyUserReq {
                 .userId(userId)
                 .siteId(siteId)
                 .loginId(loginId)
-                .loginPwd(loginPwd)
+                .loginPwdHash(loginPwdHash)
                 .userNm(userNm)
                 .userEmail(userEmail)
                 .userPhone(userPhone)

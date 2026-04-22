@@ -46,7 +46,7 @@ public class BoAuthService {
 
         body.setUserId("US" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyMMddHHmmss"))
             + String.format("%04d", (int)(Math.random() * 10000)));
-        body.setLoginPwd(passwordEncoder.encode(body.getLoginPwd()));
+        body.setLoginPwdHash(passwordEncoder.encode(body.getLoginPwdHash()));
         body.setUserStatusCd("ACTIVE");
         body.setRegDate(LocalDateTime.now());
         em.persist(body);
@@ -62,7 +62,7 @@ public class BoAuthService {
         }
 
         // 클라이언트에서 SHA256 해시된 비밀번호를 받아 BCrypt로 재해시하여 검증
-        if (!passwordEncoder.matches(request.getLoginPwd(), user.getLoginPwd())) {
+        if (!passwordEncoder.matches(request.getLoginPwd(), user.getLoginPwdHash())) {
             user.setLoginFailCnt(user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1);
             throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }

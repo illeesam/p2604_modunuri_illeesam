@@ -42,7 +42,7 @@ public class FoAuthService {
         }
 
         // 클라이언트에서 SHA256 해시된 비밀번호를 받아 BCrypt로 재해시하여 검증
-        if (!passwordEncoder.matches(request.getLoginPwd(), member.getLoginPwd())) {
+        if (!passwordEncoder.matches(request.getLoginPwd(), member.getLoginPwdHash())) {
             throw new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다.");
         }
 
@@ -79,7 +79,7 @@ public class FoAuthService {
                 + String.format("%04d", (int) (Math.random() * 10000));
 
         body.setMemberId(newId);
-        body.setLoginPwd(passwordEncoder.encode(body.getLoginPwd()));
+        body.setLoginPwdHash(passwordEncoder.encode(body.getLoginPwdHash()));
         body.setMemberStatusCd("ACTIVE");
         body.setJoinDate(LocalDateTime.now());
         body.setRegBy(newId);

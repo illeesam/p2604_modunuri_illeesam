@@ -17,7 +17,7 @@ public class MbMemberReq {
     private String memberId;
     private String siteId;
     private String loginId;
-    private String loginPwd;
+    private String loginPwdHash;
     private String memberNm;
     private String memberPhone;
     private String memberGender;
@@ -44,7 +44,7 @@ public class MbMemberReq {
                 .memberId(memberId)
                 .siteId(siteId)
                 .loginId(loginId)
-                .loginPwd(loginPwd)
+                .loginPwdHash(loginPwdHash)
                 .memberNm(memberNm)
                 .memberPhone(memberPhone)
                 .memberGender(memberGender)

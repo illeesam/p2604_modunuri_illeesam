@@ -26,10 +26,10 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
 
         try {
           if (this.accessToken) {
-            localStorage.setItem('modu-fo-token', this.accessToken);
+            localStorage.setItem('modu-fo-access_token', this.accessToken);
           }
           if (this.refreshToken) {
-            localStorage.setItem('modu-fo-refresh', this.refreshToken);
+            localStorage.setItem('modu-fo-refresh_token', this.refreshToken);
           }
         } catch (e) {
           console.error('[foAuthStore] setAuth localStorage error:', e);
@@ -46,14 +46,43 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
 
         try {
           if (this.accessToken) {
-            localStorage.setItem('modu-fo-token', this.accessToken);
+            localStorage.setItem('modu-fo-access_token', this.accessToken);
           }
           if (this.refreshToken) {
-            localStorage.setItem('modu-fo-refresh', this.refreshToken);
+            localStorage.setItem('modu-fo-refresh_token', this.refreshToken);
           }
         } catch (e) {
           console.error('[foAuthStore] updateAuth localStorage error:', e);
         }
+      }
+    },
+
+    setSession(user, accessToken) {
+      this.accessToken = accessToken || '';
+      try {
+        if (this.accessToken) {
+          localStorage.setItem('modu-fo-access_token', this.accessToken);
+        }
+        if (user) {
+          localStorage.setItem('modu-fo-user', JSON.stringify(user));
+        }
+      } catch (e) {
+        console.error('[foAuthStore] setSession localStorage error:', e);
+      }
+    },
+
+    clearSession() {
+      this.accessToken = '';
+      this.refreshToken = '';
+      this.accessExpiresIn = 0;
+      this.refreshExpiresIn = 0;
+
+      try {
+        localStorage.removeItem('modu-fo-access_token');
+        localStorage.removeItem('modu-fo-refresh_token');
+        localStorage.removeItem('modu-fo-user');
+      } catch (e) {
+        console.error('[foAuthStore] clearSession localStorage error:', e);
       }
     },
 
@@ -64,17 +93,40 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
       this.refreshExpiresIn = 0;
 
       try {
-        localStorage.removeItem('modu-fo-token');
-        localStorage.removeItem('modu-fo-refresh');
+        localStorage.removeItem('modu-fo-access_token');
+        localStorage.removeItem('modu-fo-refresh_token');
       } catch (e) {
         console.error('[foAuthStore] clear localStorage error:', e);
       }
     },
 
+    syncFromStorage() {
+      try {
+        const token = localStorage.getItem('modu-fo-access_token');
+        const refreshToken = localStorage.getItem('modu-fo-refresh_token');
+
+        if (token) {
+          this.accessToken = token;
+        } else {
+          this.accessToken = '';
+          this.refreshToken = '';
+        }
+
+        if (refreshToken) {
+          this.refreshToken = refreshToken;
+        }
+
+        return !!token;
+      } catch (e) {
+        console.error('[foAuthStore] syncFromStorage error:', e);
+        return false;
+      }
+    },
+
     restoreFromStorage() {
       try {
-        const token = localStorage.getItem('modu-fo-token');
-        const refreshToken = localStorage.getItem('modu-fo-refresh');
+        const token = localStorage.getItem('modu-fo-access_token');
+        const refreshToken = localStorage.getItem('modu-fo-refresh_token');
 
         if (token) {
           this.accessToken = token;
