@@ -5,7 +5,7 @@ window.ZdStore = {
   name: 'ZdStore',
   props: ['navigate', 'adminData', 'showToast'],
   setup(props) {
-    const { ref, computed, reactive } = Vue;
+    const { ref, computed, reactive, onMounted } = Vue;
 
     const storeInfo = ref('');
     const selectedStore = ref(null);
@@ -41,6 +41,12 @@ window.ZdStore = {
         openStores.push(storeName);
       }
       loadStoreData(storeName);
+    };
+
+    const loadAllStoreData = () => {
+      storeList.value.forEach(store => {
+        loadStoreData(store.name);
+      });
     };
 
     const loadStoreData = (storeName) => {
@@ -106,8 +112,15 @@ window.ZdStore = {
       }
     };
 
+    onMounted(() => {
+      loadAllStoreData();
+      if (storeList.value.length > 0 && !selectedStore.value) {
+        selectStore(storeList.value[0].name);
+      }
+    });
+
     return {
-      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore
+      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData
     };
   },
   template: `
