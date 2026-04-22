@@ -155,20 +155,30 @@ window.ZdStore = {
     </div>
   </div>
 
-  <div class="card" style="margin: 16px;">
-    <div style="margin-bottom: 16px;">
-      <label style="display: block; margin-bottom: 8px; font-weight: 600;">Store State (JSON)</label>
-      <textarea
-        :value="editedStoreInfo[selectedStore] || ''"
-        @input="editedStoreInfo[selectedStore] = $event.target.value"
-        style="width: 100%; height: 400px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; background: #f5f5f5;">
-      </textarea>
-    </div>
+  <!-- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) -->
+  <div :class="['dtl-tab-grid', 'cols-' + (viewMode === 'col1' ? '1' : viewMode === 'col2' ? '2' : viewMode === 'col3' ? '3' : viewMode === 'col4' ? '4' : 'tab')]"
+    style="display: grid; gap: 16px; padding: 16px; auto-flow: row;">
 
-    <div style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-      <button @click="copyToClipboard" class="btn btn-blue" style="padding: 8px 16px;">복사</button>
-      <button @click="clearStore" class="btn btn-danger" style="padding: 8px 16px;">초기화</button>
-      <button @click="saveStore" class="btn btn-primary" style="padding: 8px 24px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">저장</button>
+    <div v-for="store in storeList" :key="store.name"
+      v-show="viewMode === 'tab' ? selectedStore === store.name : true"
+      class="card" style="display: flex; flex-direction: column; height: 100%;">
+
+      <div v-if="viewMode !== 'tab'" class="dtl-tab-card-title" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 13px;">{{ store.label }}</div>
+
+      <div style="flex: 1; margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 12px;">Store State (JSON)</label>
+        <textarea
+          :value="editedStoreInfo[store.name] || ''"
+          @input="editedStoreInfo[store.name] = $event.target.value"
+          style="width: 100%; height: 300px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 11px; background: #f5f5f5; resize: vertical;">
+        </textarea>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+        <button @click="selectedStore = store.name; copyToClipboard()" class="btn btn-blue" style="padding: 6px 12px; font-size: 12px;">복사</button>
+        <button @click="selectedStore = store.name; clearStore()" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">초기화</button>
+        <button @click="selectedStore = store.name; saveStore()" class="btn btn-primary" style="padding: 6px 16px; font-size: 12px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">저장</button>
+      </div>
     </div>
   </div>
 </div>
