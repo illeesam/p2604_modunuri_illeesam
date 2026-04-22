@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class BoSyMenuService {
     @Transactional
     public SyMenu create(SyMenu body) {
         body.setMenuId("MN" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getUserId());
+        body.setRegBy(SecurityUtil.getAuthUser().userId());
         body.setRegDate(LocalDateTime.now());
         SyMenu saved = repository.save(body);
         menuCache.evictAll();
@@ -58,7 +59,7 @@ public class BoSyMenuService {
     @Transactional
     public SyMenuDto update(String id, SyMenu body) {
         SyMenu entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         menuCache.evictAll();

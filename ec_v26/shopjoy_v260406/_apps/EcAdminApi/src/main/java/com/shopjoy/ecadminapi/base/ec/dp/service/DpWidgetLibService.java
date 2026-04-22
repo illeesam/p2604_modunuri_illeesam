@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class DpWidgetLibService {
     @Transactional
     public DpWidgetLib create(DpWidgetLib entity) {
         entity.setWidgetLibId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         DpWidgetLib result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class DpWidgetLibService {
     public DpWidgetLib save(DpWidgetLib entity) {
         if (!repository.existsById(entity.getWidgetLibId()))
             throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         DpWidgetLib result = repository.save(entity);
         return result;

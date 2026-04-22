@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PmEventService {
     @Transactional
     public PmEvent create(PmEvent entity) {
         entity.setEventId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PmEvent result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PmEventService {
     public PmEvent save(PmEvent entity) {
         if (!repository.existsById(entity.getEventId()))
             throw new CmBizException("존재하지 않는 PmEvent입니다: " + entity.getEventId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PmEvent result = repository.save(entity);
         return result;

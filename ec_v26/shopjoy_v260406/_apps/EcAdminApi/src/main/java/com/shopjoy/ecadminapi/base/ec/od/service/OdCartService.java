@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class OdCartService {
     @Transactional
     public OdCart create(OdCart entity) {
         entity.setCartId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         OdCart result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class OdCartService {
     public OdCart save(OdCart entity) {
         if (!repository.existsById(entity.getCartId()))
             throw new CmBizException("존재하지 않는 OdCart입니다: " + entity.getCartId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         OdCart result = repository.save(entity);
         return result;

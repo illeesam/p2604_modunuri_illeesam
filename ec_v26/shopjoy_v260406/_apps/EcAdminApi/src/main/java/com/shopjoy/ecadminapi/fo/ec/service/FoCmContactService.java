@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 /**
  * FO 문의(Contact) 서비스 — 1:1 문의 / 고객 문의 폼 접수
@@ -37,7 +38,7 @@ public class FoCmContactService {
         entity.setBlogAuthor((String) body.getOrDefault("name", ""));
         entity.setUseYn("Y");
         entity.setViewCount(0);
-        String userId = SecurityUtil.isLogin() ? SecurityUtil.getUserId() : "GUEST";
+        String userId = SecurityUtil.isLogin() ? SecurityUtil.getAuthUser().userId() : "GUEST";
         entity.setRegBy(userId);
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);

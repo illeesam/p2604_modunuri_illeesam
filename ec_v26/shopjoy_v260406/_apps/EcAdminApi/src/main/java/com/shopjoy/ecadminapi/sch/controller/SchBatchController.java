@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.sch.config.SchBatchProperties;
 import com.shopjoy.ecadminapi.sch.core.SchBatchExecutor;
 import com.shopjoy.ecadminapi.sch.core.SchBatchJobRegistry;
@@ -40,13 +41,13 @@ public class SchBatchController {
             .map(b -> Map.<String, Object>of(
                 "batchId",        b.getBatchId(),
                 "batchCode",      b.getBatchCode(),
-                "batchNm",        b.getBatchNm() != null ? b.getBatchNm() : "",
-                "cronExpr",       b.getCronExpr() != null ? b.getCronExpr() : "",
-                "batchStatusCd",  b.getBatchStatusCd() != null ? b.getBatchStatusCd() : "",
-                "batchRunStatus", b.getBatchRunStatus() != null ? b.getBatchRunStatus() : "",
+                "batchNm",        CmUtil.nvl(b.getBatchNm()),
+                "cronExpr",       CmUtil.nvl(b.getCronExpr()),
+                "batchStatusCd",  CmUtil.nvl(b.getBatchStatusCd()),
+                "batchRunStatus", CmUtil.nvl(b.getBatchRunStatus()),
                 "batchLastRun",   b.getBatchLastRun() != null ? b.getBatchLastRun().toString() : "",
                 "batchNextRun",   b.getBatchNextRun() != null ? b.getBatchNextRun().toString() : "",
-                "batchRunCount",  b.getBatchRunCount() != null ? b.getBatchRunCount() : 0,
+                "batchRunCount",  CmUtil.nvlInt(b.getBatchRunCount()),
                 "registered",     registry.isRegistered(b.getBatchCode())
             ))
             .toList();

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +57,7 @@ public class PmSaveItemService {
     @Transactional
     public PmSaveItem create(PmSaveItem entity) {
         entity.setSaveItemId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }
@@ -65,7 +66,7 @@ public class PmSaveItemService {
     public PmSaveItem save(PmSaveItem entity) {
         if (!repository.existsById(entity.getSaveItemId()))
             throw new CmBizException("존재하지 않는 PmSaveItem입니다: " + entity.getSaveItemId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }

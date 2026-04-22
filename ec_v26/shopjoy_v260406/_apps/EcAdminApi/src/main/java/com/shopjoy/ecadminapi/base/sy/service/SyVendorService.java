@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyVendorService {
     @Transactional
     public SyVendor create(SyVendor entity) {
         entity.setVendorId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyVendor result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyVendorService {
     public SyVendor save(SyVendor entity) {
         if (!repository.existsById(entity.getVendorId()))
             throw new CmBizException("존재하지 않는 SyVendor입니다: " + entity.getVendorId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendor result = repository.save(entity);
         return result;

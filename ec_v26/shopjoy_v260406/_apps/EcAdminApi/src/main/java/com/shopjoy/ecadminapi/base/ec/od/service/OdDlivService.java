@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class OdDlivService {
     @Transactional
     public OdDliv create(OdDliv entity) {
         entity.setDlivId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         OdDliv result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class OdDlivService {
     public OdDliv save(OdDliv entity) {
         if (!repository.existsById(entity.getDlivId()))
             throw new CmBizException("존재하지 않는 OdDliv입니다: " + entity.getDlivId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         OdDliv result = repository.save(entity);
         return result;

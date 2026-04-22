@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.common.exception;
 
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -117,17 +119,19 @@ public class GlobalExceptionHandler {
 
     /**
      * 현재 사용자·요청 정보 문자열 생성.
-     * 형태: siteId=01 | userId=xxx | userTypeCd=USER | roleId=R01 | host=127.0.0.1
+     * 형태: siteId=01 | userId=xxx | userTypeCd=BO | roleId=R01 | vendorId=V01 | host=127.0.0.1
      *       | url=/api/... | method=POST | params=...(최대200자) | token=~xxxxxxxxxx
      */
     private String buildUserInfo(HttpServletRequest req) {
         String siteId      = "01";
-        String userId      = SecurityUtil.getUserId();
-        String userTypeCd  = nvl(SecurityUtil.getUserTypeCd()); // 사용자유형 {FO:frontend회원,BO:backend사용자,SO:판매,DO:배송,CO:고객}
-        String roleId      = nvl(SecurityUtil.getRoleId());
-        String host        = nvl(req.getRemoteAddr());
-        String url         = nvl(req.getRequestURI());
-        String method      = nvl(req.getMethod());
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId      = authUser.userId();
+        String userTypeCd  = authUser.userTypeCd() != null ? authUser.userTypeCd() : "-";
+        String roleId      = authUser.roleId() != null ? authUser.roleId() : "-";
+        String vendorId    = authUser.vendorId() != null ? authUser.vendorId() : "-";
+        String host        = CmUtil.nvl(req.getRemoteAddr(), "-");
+        String url         = CmUtil.nvl(req.getRequestURI(), "-");
+        String method      = CmUtil.nvl(req.getMethod(), "-");
 
         String qs = req.getQueryString();
         String params = qs != null ? qs : "";
@@ -142,12 +146,8 @@ public class GlobalExceptionHandler {
         }
 
         return String.format(
-            "siteId=%s | userId=%s | userTypeCd=%s | roleId=%s | host=%s | url=%s | method=%s | params=%s | token=%s",
-            siteId, userId, userTypeCd, roleId, host, url, method, params, tokenTail
+            "siteId=%s | userId=%s | userTypeCd=%s | roleId=%s | vendorId=%s | host=%s | url=%s | method=%s | params=%s | token=%s",
+            siteId, userId, userTypeCd, roleId, vendorId, host, url, method, params, tokenTail
         );
-    }
-
-    private String nvl(String v) {
-        return v != null ? v : "-";
     }
 }

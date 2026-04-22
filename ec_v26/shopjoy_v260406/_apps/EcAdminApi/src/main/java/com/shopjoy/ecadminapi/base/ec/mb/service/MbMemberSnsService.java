@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class MbMemberSnsService {
     @Transactional
     public MbMemberSns create(MbMemberSns entity) {
         entity.setMemberSnsId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberSns result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class MbMemberSnsService {
     public MbMemberSns save(MbMemberSns entity) {
         if (!repository.existsById(entity.getMemberSnsId()))
             throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberSns result = repository.save(entity);
         return result;

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 /**
  * FO 쿠폰 서비스 — 현재 회원의 사용 가능 쿠폰 조회
@@ -22,7 +23,7 @@ public class FoPmCouponService {
 
     @Transactional(readOnly = true)
     public List<PmCouponIssueDto> getAvailableCoupons(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getUserId());
+        p.put("memberId", SecurityUtil.getAuthUser().userId());
         p.put("useYn", "N");
         return mapper.selectList(p);
     }

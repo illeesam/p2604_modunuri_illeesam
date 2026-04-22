@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import com.shopjoy.ecadminapi.common.log.AccessLogFilter;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -18,6 +19,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -87,18 +89,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         AuthPrincipal principal = new AuthPrincipal(
                                 userId,                                 // userId
                                 userTypeCd,                             // userTypeCd
-                                null,                                   // loginTime은 클레임에서 추출하지 않고 null (필요시 수정)
-                                roleId != null ? roleId : "",           // roleId
-                                userNm != null ? userNm : "",           // userNm
-                                accessToken != null ? accessToken : "", // accessToken
-                                refreshToken != null ? refreshToken : "",// refreshToken
-                                siteId != null ? siteId : "",           // siteId
-                                roles != null ? roles : List.of(),      // roles
-                                memberId != null ? memberId : "",       // memberId
-                                vendorId != null ? vendorId : "",       // vendorId
-                                memberGrade != null ? memberGrade : "", // memberGrade
-                                isAdminYn != null ? isAdminYn : "N",    // isAdminYn
-                                isStaffYn != null ? isStaffYn : "N"     // isStaffYn
+                                LocalDateTime.now(),                    // loginTime
+                                CmUtil.nvl(roleId),                     // roleId
+                                CmUtil.nvl(userNm),                     // userNm
+                                CmUtil.nvl(accessToken),                // accessToken
+                                CmUtil.nvl(refreshToken),               // refreshToken
+                                CmUtil.nvl(siteId),                     // siteId
+                                CmUtil.nvlList(roles),                  // roles
+                                CmUtil.nvl(memberId),                   // memberId
+                                CmUtil.nvl(vendorId),                   // vendorId
+                                CmUtil.nvl(memberGrade),                // memberGrade
+                                CmUtil.nvl(isAdminYn, "N"),             // isAdminYn
+                                CmUtil.nvl(isStaffYn, "N")              // isStaffYn
                         );
 
                         List<SimpleGrantedAuthority> grantedAuthorities = roles == null ? List.of() :
@@ -110,18 +112,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(auth);
 
                         // MDC — 로그에 인증 사용자 정보 삽입
-                        MDC.put("siteId",   siteId != null ? siteId : "-");
+                        MDC.put("siteId",   CmUtil.nvl(siteId, "-"));
                         MDC.put("userId",   userId);
-                        MDC.put("userTypeCd", userTypeCd  != null ? userTypeCd  : "-");
-                        MDC.put("roleId",   roleId    != null ? roleId    : "-");
-                        MDC.put("deptId",   deptId    != null ? deptId    : "-");
-                        MDC.put("vendorId", vendorId  != null ? vendorId  : "-");
+                        MDC.put("userTypeCd", CmUtil.nvl(userTypeCd, "-"));
+                        MDC.put("roleId",   CmUtil.nvl(roleId, "-"));
+                        MDC.put("deptId",   CmUtil.nvl(deptId, "-"));
+                        MDC.put("vendorId", CmUtil.nvl(vendorId, "-"));
                         // request attribute — AccessLogFilter 가 체인 종료 후 읽음 (MDC는 finally 에서 clear)
                         request.setAttribute(AccessLogFilter.ATTR_USER_ID,   userId);
-                        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE, userTypeCd  != null ? userTypeCd  : "-");
-                        request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   roleId    != null ? roleId    : "-");
-                        request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   deptId    != null ? deptId    : null);
-                        request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, vendorId  != null ? vendorId  : null);
+                        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE, CmUtil.nvl(userTypeCd, "-"));
+                        request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   CmUtil.nvl(roleId, "-"));
+                        request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   deptId);
+                        request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, vendorId);
 
                     } catch (Exception e) {
                         log.warn("Failed to build principal from token: {}", e.getMessage());

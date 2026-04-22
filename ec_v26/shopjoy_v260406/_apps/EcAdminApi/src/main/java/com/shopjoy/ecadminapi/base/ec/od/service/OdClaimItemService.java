@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class OdClaimItemService {
     @Transactional
     public OdClaimItem create(OdClaimItem entity) {
         entity.setClaimItemId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         OdClaimItem result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class OdClaimItemService {
     public OdClaimItem save(OdClaimItem entity) {
         if (!repository.existsById(entity.getClaimItemId()))
             throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + entity.getClaimItemId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         OdClaimItem result = repository.save(entity);
         return result;

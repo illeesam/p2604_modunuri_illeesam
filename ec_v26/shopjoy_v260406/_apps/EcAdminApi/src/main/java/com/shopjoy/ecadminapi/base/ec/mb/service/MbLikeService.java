@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class MbLikeService {
     @Transactional
     public MbLike create(MbLike entity) {
         entity.setLikeId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         MbLike result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class MbLikeService {
     public MbLike save(MbLike entity) {
         if (!repository.existsById(entity.getLikeId()))
             throw new CmBizException("존재하지 않는 MbLike입니다: " + entity.getLikeId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         MbLike result = repository.save(entity);
         return result;

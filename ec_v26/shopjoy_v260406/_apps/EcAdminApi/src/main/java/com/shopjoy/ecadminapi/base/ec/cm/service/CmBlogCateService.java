@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,7 @@ public class CmBlogCateService {
     @Transactional
     public CmBlogCate create(CmBlogCate entity) {
         entity.setBlogCateId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         CmBlogCate result = repository.save(entity);
         return result;
@@ -71,7 +72,7 @@ public class CmBlogCateService {
         if (!repository.existsById(entity.getBlogCateId())) {
             throw new CmBizException("존재하지 않는 카테고리입니다: " + entity.getBlogCateId());
         }
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogCate result = repository.save(entity);
         return result;

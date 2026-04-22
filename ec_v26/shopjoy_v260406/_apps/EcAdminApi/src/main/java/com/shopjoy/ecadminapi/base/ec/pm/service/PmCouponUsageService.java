@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PmCouponUsageService {
     @Transactional
     public PmCouponUsage create(PmCouponUsage entity) {
         entity.setUsageId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PmCouponUsage result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PmCouponUsageService {
     public PmCouponUsage save(PmCouponUsage entity) {
         if (!repository.existsById(entity.getUsageId()))
             throw new CmBizException("존재하지 않는 PmCouponUsage입니다: " + entity.getUsageId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PmCouponUsage result = repository.save(entity);
         return result;

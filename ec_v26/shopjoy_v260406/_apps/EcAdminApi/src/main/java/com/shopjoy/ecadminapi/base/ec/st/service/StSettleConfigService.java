@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class StSettleConfigService {
     @Transactional
     public StSettleConfig create(StSettleConfig entity) {
         entity.setSettleConfigId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         StSettleConfig result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class StSettleConfigService {
     public StSettleConfig save(StSettleConfig entity) {
         if (!repository.existsById(entity.getSettleConfigId()))
             throw new CmBizException("존재하지 않는 StSettleConfig입니다: " + entity.getSettleConfigId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleConfig result = repository.save(entity);
         return result;

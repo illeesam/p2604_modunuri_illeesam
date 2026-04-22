@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyPropService {
     @Transactional
     public SyProp create(SyProp entity) {
         entity.setSiteId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyProp result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyPropService {
     public SyProp save(SyProp entity) {
         if (!repository.existsById(entity.getSiteId()))
             throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getSiteId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyProp result = repository.save(entity);
         return result;

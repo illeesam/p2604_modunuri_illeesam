@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyAttachGrpService {
     @Transactional
     public SyAttachGrp create(SyAttachGrp entity) {
         entity.setAttachGrpId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyAttachGrp result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyAttachGrpService {
     public SyAttachGrp save(SyAttachGrp entity) {
         if (!repository.existsById(entity.getAttachGrpId()))
             throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyAttachGrp result = repository.save(entity);
         return result;

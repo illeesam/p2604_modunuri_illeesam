@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
 import com.shopjoy.ecadminapi.co.cm.service.CmAppStoreDataService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -47,8 +48,9 @@ public class CmBoAppStoreDataController {
             @RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 
@@ -86,8 +88,9 @@ public class CmBoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 
@@ -100,8 +103,9 @@ public class CmBoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 
@@ -114,8 +118,9 @@ public class CmBoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRole(@RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 
@@ -128,8 +133,9 @@ public class CmBoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getMenu(@RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 
@@ -142,8 +148,9 @@ public class CmBoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCode(@RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 
@@ -156,8 +163,9 @@ public class CmBoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 
@@ -170,8 +178,9 @@ public class CmBoAppStoreDataController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody String names) {
         String siteId = "01";
         String userTypeCd = "BO";
-        String userId = SecurityUtil.getUserId();
-        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String userId = authUser.userId();
+        String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
         boolean isAdmin = SecurityUtil.isBo();
 

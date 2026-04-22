@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 /**
  * FO 찜(Like) 서비스 — 현재 회원의 찜 목록 관리
@@ -32,14 +33,14 @@ public class FoMbLikeService {
 
     @Transactional(readOnly = true)
     public List<MbLikeDto> getMyLikes(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getUserId());
+        p.put("memberId", SecurityUtil.getAuthUser().userId());
         return mapper.selectList(p);
     }
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */
     @Transactional
     public boolean toggle(String targetTypeCd, String targetId, Map<String, Object> p) {
-        String memberId = SecurityUtil.getUserId();
+        String memberId = SecurityUtil.getAuthUser().userId();
         Optional<MbLike> existing = repository.findAll().stream()
             .filter(l -> memberId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
@@ -66,7 +67,7 @@ public class FoMbLikeService {
 
     @Transactional
     public void unlike(String targetTypeCd, String targetId, Map<String, Object> p) {
-        String memberId = SecurityUtil.getUserId();
+        String memberId = SecurityUtil.getAuthUser().userId();
         repository.findAll().stream()
             .filter(l -> memberId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())

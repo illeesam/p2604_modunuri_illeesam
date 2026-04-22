@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +58,7 @@ public class MbDeviceTokenService {
     @Transactional
     public MbDeviceToken create(MbDeviceToken entity) {
         entity.setDeviceTokenId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }
@@ -68,7 +69,7 @@ public class MbDeviceTokenService {
                 .orElseThrow(() -> new CmBizException("존재하지 않는 디바이스 토큰입니다: " + entity.getDeviceTokenId()));
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }

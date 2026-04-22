@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,7 @@ public class SyAlarmService {
     @Transactional
     public SyAlarm create(SyAlarm entity) {
         entity.setAlarmId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyAlarm result = repository.save(entity);
         return result;
@@ -71,7 +72,7 @@ public class SyAlarmService {
         if (!repository.existsById(entity.getAlarmId())) {
             throw new CmBizException("존재하지 않는 알람입니다: " + entity.getAlarmId());
         }
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyAlarm result = repository.save(entity);
         return result;

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PmDiscntItemService {
     @Transactional
     public PmDiscntItem create(PmDiscntItem entity) {
         entity.setDiscntItemId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PmDiscntItem result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PmDiscntItemService {
     public PmDiscntItem save(PmDiscntItem entity) {
         if (!repository.existsById(entity.getDiscntItemId()))
             throw new CmBizException("존재하지 않는 PmDiscntItem입니다: " + entity.getDiscntItemId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PmDiscntItem result = repository.save(entity);
         return result;

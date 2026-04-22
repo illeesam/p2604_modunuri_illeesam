@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 /**
  * FO 대시보드 API (로그인 회원용)
  * GET /api/fo/ec/cm/dashboard/my — 내 활동 요약
  *
  * 인가: FO_ONLY (로그인 회원)
- * TODO: 더미 데이터 → 실 서비스(SecurityUtil.getUserId() 기반) 연결 필요
+ * TODO: 더미 데이터 → 실 서비스(SecurityUtil.getAuthUser().userId() 기반) 연결 필요
  */
 @RestController
 @RequestMapping("/api/fo/ec/cm/dashboard")

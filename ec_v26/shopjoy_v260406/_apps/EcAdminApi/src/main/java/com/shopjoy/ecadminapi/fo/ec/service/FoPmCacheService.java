@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 /**
  * FO 캐쉬(충전금) 서비스 — 현재 회원의 잔액 조회
@@ -23,7 +24,7 @@ public class FoPmCacheService {
     /** 현재 회원의 최신 잔액 (balance_amt 기준) */
     @Transactional(readOnly = true)
     public long getBalance(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getUserId());
+        p.put("memberId", SecurityUtil.getAuthUser().userId());
         List<PmCacheDto> list = mapper.selectList(p);
         return list.isEmpty() ? 0L : (list.get(0).getBalanceAmt() != null ? list.get(0).getBalanceAmt() : 0L);
     }

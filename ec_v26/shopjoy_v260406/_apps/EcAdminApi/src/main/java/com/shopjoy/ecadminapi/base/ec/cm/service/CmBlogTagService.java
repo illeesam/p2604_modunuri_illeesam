@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class CmBlogTagService {
     @Transactional
     public CmBlogTag create(CmBlogTag entity) {
         entity.setBlogTagId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         CmBlogTag result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class CmBlogTagService {
     public CmBlogTag save(CmBlogTag entity) {
         if (!repository.existsById(entity.getBlogTagId()))
             throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogTag result = repository.save(entity);
         return result;

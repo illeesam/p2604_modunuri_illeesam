@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class CmChattRoomService {
     @Transactional
     public CmChattRoom create(CmChattRoom entity) {
         entity.setChattRoomId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         CmChattRoom result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class CmChattRoomService {
     public CmChattRoom save(CmChattRoom entity) {
         if (!repository.existsById(entity.getChattRoomId()))
             throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + entity.getChattRoomId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattRoom result = repository.save(entity);
         return result;

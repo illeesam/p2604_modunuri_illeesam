@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PmGiftIssueService {
     @Transactional
     public PmGiftIssue create(PmGiftIssue entity) {
         entity.setGiftIssueId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PmGiftIssue result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PmGiftIssueService {
     public PmGiftIssue save(PmGiftIssue entity) {
         if (!repository.existsById(entity.getGiftIssueId()))
             throw new CmBizException("존재하지 않는 PmGiftIssue입니다: " + entity.getGiftIssueId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PmGiftIssue result = repository.save(entity);
         return result;

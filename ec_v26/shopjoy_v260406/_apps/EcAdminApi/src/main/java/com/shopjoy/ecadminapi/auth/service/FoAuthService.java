@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.auth.data.vo.FoLoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -62,7 +63,7 @@ public class FoAuthService {
                 .memberId(member.getMemberId())
                 .loginId(member.getLoginId())
                 .memberNm(member.getMemberNm())
-                .siteId(member.getSiteId() != null ? member.getSiteId() : "")
+                .siteId(CmUtil.nvl(member.getSiteId()))
                 .roleId(null)
                 .loginAt(loginAt)
                 .accessExpiresIn(jwtProvider.getAccessExpiryMinutes())
@@ -133,7 +134,7 @@ public class FoAuthService {
                 .memberId(member.getMemberId())
                 .loginId(member.getLoginId())
                 .memberNm(member.getMemberNm())
-                .siteId(member.getSiteId() != null ? member.getSiteId() : "")
+                .siteId(CmUtil.nvl(member.getSiteId()))
                 .roleId(null)
                 .build();
     }

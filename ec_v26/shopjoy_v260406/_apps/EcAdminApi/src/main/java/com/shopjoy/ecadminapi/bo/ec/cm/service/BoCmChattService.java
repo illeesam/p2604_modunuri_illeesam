@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,7 @@ public class BoCmChattService {
     @Transactional
     public CmChattRoom create(CmChattRoom body) {
         body.setChattRoomId("CR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getUserId());
+        body.setRegBy(SecurityUtil.getAuthUser().userId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
@@ -54,7 +55,7 @@ public class BoCmChattService {
     @Transactional
     public CmChattRoomDto update(String id, CmChattRoom body) {
         CmChattRoom entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);
@@ -70,7 +71,7 @@ public class BoCmChattService {
     public CmChattRoomDto changeStatus(String id, String statusCd) {
         CmChattRoom entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setChattStatusCd(statusCd);
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);

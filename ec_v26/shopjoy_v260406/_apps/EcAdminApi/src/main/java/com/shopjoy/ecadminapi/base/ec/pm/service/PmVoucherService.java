@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PmVoucherService {
     @Transactional
     public PmVoucher create(PmVoucher entity) {
         entity.setVoucherId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PmVoucher result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PmVoucherService {
     public PmVoucher save(PmVoucher entity) {
         if (!repository.existsById(entity.getVoucherId()))
             throw new CmBizException("존재하지 않는 PmVoucher입니다: " + entity.getVoucherId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PmVoucher result = repository.save(entity);
         return result;

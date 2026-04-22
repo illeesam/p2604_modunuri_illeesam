@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyContactService {
     @Transactional
     public SyContact create(SyContact entity) {
         entity.setContactId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyContact result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyContactService {
     public SyContact save(SyContact entity) {
         if (!repository.existsById(entity.getContactId()))
             throw new CmBizException("존재하지 않는 SyContact입니다: " + entity.getContactId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyContact result = repository.save(entity);
         return result;

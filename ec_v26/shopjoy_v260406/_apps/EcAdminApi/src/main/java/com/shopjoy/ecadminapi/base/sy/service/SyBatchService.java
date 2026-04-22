@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyBatchService {
     @Transactional
     public SyBatch create(SyBatch entity) {
         entity.setBatchId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyBatch result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyBatchService {
     public SyBatch save(SyBatch entity) {
         if (!repository.existsById(entity.getBatchId()))
             throw new CmBizException("존재하지 않는 SyBatch입니다: " + entity.getBatchId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyBatch result = repository.save(entity);
         return result;

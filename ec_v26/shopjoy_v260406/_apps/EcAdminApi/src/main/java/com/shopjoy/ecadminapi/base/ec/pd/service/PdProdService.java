@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PdProdService {
     @Transactional
     public PdProd create(PdProd entity) {
         entity.setProdId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PdProd result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PdProdService {
     public PdProd save(PdProd entity) {
         if (!repository.existsById(entity.getProdId()))
             throw new CmBizException("존재하지 않는 PdProd입니다: " + entity.getProdId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PdProd result = repository.save(entity);
         return result;

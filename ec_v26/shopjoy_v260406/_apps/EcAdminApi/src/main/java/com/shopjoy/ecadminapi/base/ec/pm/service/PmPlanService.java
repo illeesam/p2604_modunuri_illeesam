@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PmPlanService {
     @Transactional
     public PmPlan create(PmPlan entity) {
         entity.setPlanId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PmPlan result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PmPlanService {
     public PmPlan save(PmPlan entity) {
         if (!repository.existsById(entity.getPlanId()))
             throw new CmBizException("존재하지 않는 PmPlan입니다: " + entity.getPlanId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PmPlan result = repository.save(entity);
         return result;

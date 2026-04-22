@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class BoSyCodeService {
     @Transactional
     public SyCode create(SyCode body) {
         body.setCodeId("CD" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getUserId());
+        body.setRegBy(SecurityUtil.getAuthUser().userId());
         body.setRegDate(LocalDateTime.now());
         SyCode saved = repository.save(body);
         codeCache.evictAll();
@@ -58,7 +59,7 @@ public class BoSyCodeService {
     @Transactional
     public SyCodeDto update(String id, SyCode body) {
         SyCode entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         codeCache.evictAll();

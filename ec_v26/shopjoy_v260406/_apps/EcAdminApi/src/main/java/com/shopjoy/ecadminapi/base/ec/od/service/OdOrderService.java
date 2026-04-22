@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class OdOrderService {
     @Transactional
     public OdOrder create(OdOrder entity) {
         entity.setOrderId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         OdOrder result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class OdOrderService {
     public OdOrder save(OdOrder entity) {
         if (!repository.existsById(entity.getOrderId()))
             throw new CmBizException("존재하지 않는 OdOrder입니다: " + entity.getOrderId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrder result = repository.save(entity);
         return result;

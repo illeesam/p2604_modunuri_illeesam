@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class DpPanelItemService {
     @Transactional
     public DpPanelItem create(DpPanelItem entity) {
         entity.setPanelItemId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         DpPanelItem result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class DpPanelItemService {
     public DpPanelItem save(DpPanelItem entity) {
         if (!repository.existsById(entity.getPanelItemId()))
             throw new CmBizException("존재하지 않는 DpPanelItem입니다: " + entity.getPanelItemId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         DpPanelItem result = repository.save(entity);
         return result;

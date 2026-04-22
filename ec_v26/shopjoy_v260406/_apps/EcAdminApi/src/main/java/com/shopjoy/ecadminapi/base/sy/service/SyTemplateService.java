@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyTemplateService {
     @Transactional
     public SyTemplate create(SyTemplate entity) {
         entity.setTemplateId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyTemplate result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyTemplateService {
     public SyTemplate save(SyTemplate entity) {
         if (!repository.existsById(entity.getTemplateId()))
             throw new CmBizException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyTemplate result = repository.save(entity);
         return result;

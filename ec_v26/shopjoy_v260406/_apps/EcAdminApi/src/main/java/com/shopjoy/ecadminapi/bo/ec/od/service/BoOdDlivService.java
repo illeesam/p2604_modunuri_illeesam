@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,7 @@ public class BoOdDlivService {
     @Transactional
     public OdDliv create(OdDliv body) {
         body.setDlivId("DL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getUserId());
+        body.setRegBy(SecurityUtil.getAuthUser().userId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
@@ -54,7 +55,7 @@ public class BoOdDlivService {
     @Transactional
     public OdDlivDto update(String id, OdDliv body) {
         OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);
@@ -71,7 +72,7 @@ public class BoOdDlivService {
         OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setDlivStatusCdBefore(entity.getDlivStatusCd());
         entity.setDlivStatusCd(statusCd);
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);

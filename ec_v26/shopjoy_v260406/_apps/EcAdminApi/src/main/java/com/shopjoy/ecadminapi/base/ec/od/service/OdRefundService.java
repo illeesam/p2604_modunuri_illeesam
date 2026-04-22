@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class OdRefundService {
     @Transactional
     public OdRefund create(OdRefund entity) {
         entity.setRefundId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         OdRefund result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class OdRefundService {
     public OdRefund save(OdRefund entity) {
         if (!repository.existsById(entity.getRefundId()))
             throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         OdRefund result = repository.save(entity);
         return result;

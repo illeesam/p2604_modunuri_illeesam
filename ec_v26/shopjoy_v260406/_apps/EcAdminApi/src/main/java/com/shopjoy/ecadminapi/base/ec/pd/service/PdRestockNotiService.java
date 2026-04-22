@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PdRestockNotiService {
     @Transactional
     public PdRestockNoti create(PdRestockNoti entity) {
         entity.setRestockNotiId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PdRestockNoti result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PdRestockNotiService {
     public PdRestockNoti save(PdRestockNoti entity) {
         if (!repository.existsById(entity.getRestockNotiId()))
             throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PdRestockNoti result = repository.save(entity);
         return result;

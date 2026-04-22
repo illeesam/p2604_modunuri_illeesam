@@ -4,6 +4,8 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.List;
+
 /**
  * SecurityContext에서 현재 인증 정보를 꺼내는 유틸.
  *
@@ -14,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * - getUserId()       : 인증된 사용자 ID, 미인증 시 "SYSTEM"
  * - getUserTypeCd()   : "BO"(관리자) | "FO"(고객) | "SO"(판매자), 미인증 시 null
  * - getRoleId()       : 관리자 역할 ID (sy_user.role_id), FO/미인증 시 null
+ * - getVendorId()     : 업체 ID
  * - isBo()            : sy_user 관리자 여부
  * - isFo()            : ec_member 고객 여부
  * - isSo()            : Super Owner 여부
@@ -33,39 +36,37 @@ public final class SecurityUtil {
         return null;
     }
 
-    public static String getUserId() {
+    /** 현재 인증된 사용자의 전체 AuthPrincipal 객체 반환 (미인증 시 기본값) */
+    public static AuthPrincipal getAuthUser() {
         AuthPrincipal p = currentPrincipal();
-        return p != null ? p.userId() : "SYSTEM";
-    }
-
-    public static String getUserTypeCd() {
-        AuthPrincipal p = currentPrincipal();
-        return p != null ? p.userTypeCd() : null;
-    }
-
-    public static String getRoleId() {
-        AuthPrincipal p = currentPrincipal();
-        return p != null ? p.roleId() : null;
+        if (p != null) return p;
+        return new AuthPrincipal(
+            "", "", null, "", "", "", "", "", List.of(), "", "", "", "", ""
+        );
     }
 
     /** 로그인 여부 (userType 관계없이 인증된 상태면 true) */
     public static boolean isLogin() {
-        return currentPrincipal() != null;
+        AuthPrincipal p = currentPrincipal();
+        return p != null;
     }
 
     /** sy_user 테이블 사용자 여부 */
     public static boolean isBo() {
-        return AuthPrincipal.BO.equals(getUserTypeCd());
+        AuthPrincipal p = currentPrincipal();
+        return p != null && AuthPrincipal.BO.equals(p.userTypeCd());
     }
 
     /** ec_member 테이블 사용자 여부 */
     public static boolean isFo() {
-        return AuthPrincipal.FO.equals(getUserTypeCd());
+        AuthPrincipal p = currentPrincipal();
+        return p != null && AuthPrincipal.FO.equals(p.userTypeCd());
     }
 
     /** So 테이블 사용자 여부 (Super Owner) */
     public static boolean isSo() {
-        return "SO".equals(getUserTypeCd());
+        AuthPrincipal p = currentPrincipal();
+        return p != null && "SO".equals(p.userTypeCd());
     }
 
     /** ROLE_ADMIN 권한 보유 여부 (isBo()와 별개로 권한 기반 체크) */

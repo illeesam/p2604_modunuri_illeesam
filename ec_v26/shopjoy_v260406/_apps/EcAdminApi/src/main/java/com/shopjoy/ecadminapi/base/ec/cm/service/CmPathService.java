@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class CmPathService {
     @Transactional
     public CmPath create(CmPath entity) {
         entity.setBizCd(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         CmPath result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class CmPathService {
     public CmPath save(CmPath entity) {
         if (!repository.existsById(entity.getBizCd()))
             throw new CmBizException("존재하지 않는 CmPath입니다: " + entity.getBizCd());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         CmPath result = repository.save(entity);
         return result;

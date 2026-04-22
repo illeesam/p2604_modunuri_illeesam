@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PdTagService {
     @Transactional
     public PdTag create(PdTag entity) {
         entity.setTagId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PdTag result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PdTagService {
     public PdTag save(PdTag entity) {
         if (!repository.existsById(entity.getTagId()))
             throw new CmBizException("존재하지 않는 PdTag입니다: " + entity.getTagId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PdTag result = repository.save(entity);
         return result;

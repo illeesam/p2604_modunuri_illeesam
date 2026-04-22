@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.co.cm.service;
 
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreAuth;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreCode;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMenu;
@@ -290,13 +291,13 @@ public class CmAppStoreDataService {
                 .memberId(member.getMemberId())
                 .memberEmail(member.getLoginId())
                 .memberNm(member.getMemberNm())
-                .siteId(member.getSiteId() != null ? member.getSiteId() : "")
+                .siteId(CmUtil.nvl(member.getSiteId()))
                 .memberTypeCd("")
-                .memberHpNo(member.getMemberPhone() != null ? member.getMemberPhone() : "")
-                .memberGrade(member.getGradeCd() != null ? member.getGradeCd() : "")
+                .memberHpNo(CmUtil.nvl(member.getMemberPhone()))
+                .memberGrade(CmUtil.nvl(member.getGradeCd()))
                 .memberStaffYn("N")
                 .memberBirthDt(member.getBirthDate() != null ? member.getBirthDate().toString() : "")
-                .memberStatusCd(member.getMemberStatusCd() != null ? member.getMemberStatusCd() : "")
+                .memberStatusCd(CmUtil.nvl(member.getMemberStatusCd()))
                 .cartCount(0L)
                 .likeCount(0L)
                 .build();

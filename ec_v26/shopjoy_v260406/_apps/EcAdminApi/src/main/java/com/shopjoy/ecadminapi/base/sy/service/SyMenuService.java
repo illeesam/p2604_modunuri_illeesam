@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyMenuService {
     @Transactional
     public SyMenu create(SyMenu entity) {
         entity.setMenuId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyMenu result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyMenuService {
     public SyMenu save(SyMenu entity) {
         if (!repository.existsById(entity.getMenuId()))
             throw new CmBizException("존재하지 않는 SyMenu입니다: " + entity.getMenuId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyMenu result = repository.save(entity);
         return result;

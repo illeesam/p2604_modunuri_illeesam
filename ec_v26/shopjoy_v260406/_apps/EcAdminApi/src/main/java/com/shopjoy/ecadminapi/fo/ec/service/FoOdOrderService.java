@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 /**
  * FO 주문 서비스 — 주문 생성 및 내 주문 조회
@@ -33,13 +34,13 @@ public class FoOdOrderService {
 
     @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getUserId());
+        p.put("memberId", SecurityUtil.getAuthUser().userId());
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getMyOrderPage(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getUserId());
+        p.put("memberId", SecurityUtil.getAuthUser().userId());
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
@@ -48,7 +49,7 @@ public class FoOdOrderService {
     public OdOrderDto getById(String orderId) {
         OdOrderDto dto = mapper.selectById(orderId);
         if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId);
-        if (!dto.getMemberId().equals(SecurityUtil.getUserId()))
+        if (!dto.getMemberId().equals(SecurityUtil.getAuthUser().userId()))
             throw new CmBizException("접근 권한이 없습니다.");
         return dto;
     }
@@ -56,9 +57,9 @@ public class FoOdOrderService {
     @Transactional
     public OdOrder placeOrder(OdOrder entity) {
         entity.setOrderId(generateId());
-        entity.setMemberId(SecurityUtil.getUserId());
+        entity.setMemberId(SecurityUtil.getAuthUser().userId());
         entity.setOrderStatusCd("PENDING");
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SyBbsService {
     @Transactional
     public SyBbs create(SyBbs entity) {
         entity.setBbsId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         SyBbs result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class SyBbsService {
     public SyBbs save(SyBbs entity) {
         if (!repository.existsById(entity.getBbsId()))
             throw new CmBizException("존재하지 않는 SyBbs입니다: " + entity.getBbsId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbs result = repository.save(entity);
         return result;

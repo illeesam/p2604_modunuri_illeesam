@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryMapper;
 import com.shopjoy.ecadminapi.base.sy.mapper.*;
 import com.shopjoy.ecadminapi.cache.config.RedisUtil;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.cache.redisstore.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -173,7 +174,7 @@ public class CacheRedisReloadService {
             .filter(dto -> dto.getPropKey() != null)
             .collect(Collectors.toMap(
                 dto -> dto.getPropKey(),
-                dto -> dto.getPropValue() != null ? dto.getPropValue() : "",
+                dto -> CmUtil.nvl(dto.getPropValue()),
                 (a, b) -> b,
                 LinkedHashMap::new
             ));
@@ -195,7 +196,7 @@ public class CacheRedisReloadService {
                 LinkedHashMap::new,
                 Collectors.toMap(
                     dto -> dto.getI18nId(),
-                    dto -> dto.getI18nMsg() != null ? dto.getI18nMsg() : "",
+                    dto -> CmUtil.nvl(dto.getI18nMsg()),
                     (a, b) -> b,
                     LinkedHashMap::new
                 )

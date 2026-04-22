@@ -68,4 +68,76 @@ public class CmUtil {
         return items;
     }
 
+    /**
+     * null·빈 값을 기본값으로 치환. null이거나 empty면 defaultValue 반환.
+     * 사용: CmUtil.nvl(value, ""), CmUtil.nvl(value)
+     */
+    public static String nvl(String value, String defaultValue) {
+        return (value == null || value.isEmpty()) ? defaultValue : value;
+    }
+
+    public static String nvl(String value) {
+        return nvl(value, "");
+    }
+
+    /**
+     * List null 체크. null이면 defaultValue 반환.
+     * 사용: CmUtil.nvlList(value, List.of()), CmUtil.nvlList(value)
+     */
+    public static <T> List<T> nvlList(List<T> value, List<T> defaultValue) {
+        return (value == null) ? defaultValue : value;
+    }
+
+    public static <T> List<T> nvlList(List<T> value) {
+        return nvlList(value, new ArrayList<>());
+    }
+
+    /**
+     * int null 체크. null이면 defaultValue 반환.
+     * 사용: CmUtil.nvlInt(value, 0), CmUtil.nvlInt(value)
+     */
+    public static Integer nvlInt(Integer value, Integer defaultValue) {
+        return (value == null) ? defaultValue : value;
+    }
+
+    public static Integer nvlInt(Integer value) {
+        return nvlInt(value, 0);
+    }
+
+    /**
+     * long null 체크. null이면 defaultValue 반환.
+     * 사용: CmUtil.nvlLong(value, 0L), CmUtil.nvlLong(value)
+     */
+    public static Long nvlLong(Long value, Long defaultValue) {
+        return (value == null) ? defaultValue : value;
+    }
+
+    public static Long nvlLong(Long value) {
+        return nvlLong(value, 0L);
+    }
+
+    /**
+     * boolean null 체크. null이면 defaultValue 반환.
+     * 사용: CmUtil.nvlBool(value, false), CmUtil.nvlBool(value)
+     */
+    public static Boolean nvlBool(Boolean value, Boolean defaultValue) {
+        return (value == null) ? defaultValue : value;
+    }
+
+    public static Boolean nvlBool(Boolean value) {
+        return nvlBool(value, false);
+    }
+
+    /**
+     * Map null 체크. null이면 defaultValue 반환.
+     * 사용: CmUtil.nvlMap(value, new HashMap<>()), CmUtil.nvlMap(value)
+     */
+    public static <K, V> Map<K, V> nvlMap(Map<K, V> value, Map<K, V> defaultValue) {
+        return (value == null) ? defaultValue : value;
+    }
+
+    public static <K, V> Map<K, V> nvlMap(Map<K, V> value) {
+        return nvlMap(value, new HashMap<>());
+    }
+
 }

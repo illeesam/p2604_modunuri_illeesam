@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class OdPayMethodService {
     @Transactional
     public OdPayMethod create(OdPayMethod entity) {
         entity.setPayMethodId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         OdPayMethod result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class OdPayMethodService {
     public OdPayMethod save(OdPayMethod entity) {
         if (!repository.existsById(entity.getPayMethodId()))
             throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + entity.getPayMethodId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         OdPayMethod result = repository.save(entity);
         return result;

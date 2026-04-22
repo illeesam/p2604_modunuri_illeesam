@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +53,7 @@ public class ZzSample0Service {
     @Transactional
     public ZzSample0 create(ZzSample0 entity) {
         entity.setSample0Id(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }
@@ -61,7 +62,7 @@ public class ZzSample0Service {
     public ZzSample0 save(ZzSample0 entity) {
         if (!repository.existsById(entity.getSample0Id()))
             throw new CmBizException("존재하지 않는 ZzSample0입니다: " + entity.getSample0Id());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }

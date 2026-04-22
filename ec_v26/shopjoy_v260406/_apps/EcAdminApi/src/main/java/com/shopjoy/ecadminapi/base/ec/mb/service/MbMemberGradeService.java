@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class MbMemberGradeService {
     @Transactional
     public MbMemberGrade create(MbMemberGrade entity) {
         entity.setMemberGradeId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class MbMemberGradeService {
     public MbMemberGrade save(MbMemberGrade entity) {
         if (!repository.existsById(entity.getMemberGradeId()))
             throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);
         return result;

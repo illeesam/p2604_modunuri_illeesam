@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class PdProdSetItemService {
     @Transactional
     public PdProdSetItem create(PdProdSetItem entity) {
         entity.setSetItemId(generateId());
-        entity.setRegBy(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
         PdProdSetItem result = repository.save(entity);
         return result;
@@ -68,7 +69,7 @@ public class PdProdSetItemService {
     public PdProdSetItem save(PdProdSetItem entity) {
         if (!repository.existsById(entity.getSetItemId()))
             throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getSetItemId());
-        entity.setUpdBy(SecurityUtil.getUserId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdSetItem result = repository.save(entity);
         return result;
