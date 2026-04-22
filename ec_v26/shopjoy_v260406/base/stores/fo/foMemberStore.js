@@ -14,6 +14,7 @@ window.useFoMemberStore = Pinia.defineStore('foMember', {
         memberStaffYn: 'N',
         memberBirthDt: '',
         memberStatusCd: '',
+        userTypeCd: 'FO',
         cartCount: 0,
         likeCount: 0,
       },
@@ -37,6 +38,7 @@ window.useFoMemberStore = Pinia.defineStore('foMember', {
           memberStaffYn: memberData.memberStaffYn || 'N',
           memberBirthDt: memberData.memberBirthDt || '',
           memberStatusCd: memberData.memberStatusCd || '',
+          userTypeCd: memberData.userTypeCd || 'FO',
           cartCount: memberData.cartCount || 0,
           likeCount: memberData.likeCount || 0,
         };
@@ -75,6 +77,7 @@ window.useFoMemberStore = Pinia.defineStore('foMember', {
         memberStaffYn: 'N',
         memberBirthDt: '',
         memberStatusCd: '',
+        userTypeCd: 'FO',
         cartCount: 0,
         likeCount: 0,
       };
