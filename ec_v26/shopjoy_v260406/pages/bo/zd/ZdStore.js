@@ -11,6 +11,7 @@ window.ZdStore = {
     const selectedStore = ref(null);
     const openStores = reactive([]);
     const viewMode = ref('tab');
+    const editedStoreInfo = reactive({});
 
     const storeList = computed(() => {
       const stores = [];
@@ -47,7 +48,9 @@ window.ZdStore = {
         const storeFunc = window[storeName];
         if (storeFunc) {
           const store = storeFunc();
-          storeInfo.value = JSON.stringify(store.$state, null, 2);
+          const jsonStr = JSON.stringify(store.$state, null, 2);
+          storeInfo.value = jsonStr;
+          editedStoreInfo[storeName] = jsonStr;
         }
       } catch (e) {
         storeInfo.value = `Error: ${e.message}`;
@@ -86,81 +89,88 @@ window.ZdStore = {
       }
     };
 
+    const saveStore = () => {
+      if (!selectedStore.value) return;
+      try {
+        const jsonStr = editedStoreInfo[selectedStore.value];
+        const newState = JSON.parse(jsonStr);
+        const storeFunc = window[selectedStore.value];
+        if (storeFunc) {
+          const store = storeFunc();
+          Object.assign(store.$state, newState);
+          props.showToast('스토어가 저장되었습니다.', 'success');
+          loadStoreData(selectedStore.value);
+        }
+      } catch (e) {
+        props.showToast('저장 실패: ' + e.message, 'error');
+      }
+    };
+
     return {
-      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab
+      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore
     };
   },
   template: `
 <div>
   <div class="page-title">Store 정보 관리</div>
 
-  <!-- 탭바 -->
-  <div class="tab-bar-row" style="display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
-    <div class="tab-nav" style="display: flex; gap: 4px; flex: 1; overflow-x: auto;">
-      <div v-for="storeName in openStores" :key="storeName"
-        :class="['tab-btn', {active: selectedStore === storeName}]"
-        @click="selectStore(storeName)"
-        style="position: relative; padding: 8px 12px; background: white; border: 1px solid #d1d5db; border-radius: 4px 4px 0 0; cursor: pointer; min-width: 120px; display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px;">
-          {{ storeList.find(s => s.name === storeName)?.label || storeName }}
-        </span>
-        <span @click.stop="closeTab(storeName)" style="cursor: pointer; font-size: 10px; opacity: 0.6;">✕</span>
+  <!-- Store 선택 탭 -->
+  <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px;">
+    <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #e5e7eb;">
+      <div v-for="store in storeList" :key="store.name"
+        :class="['tab-btn', {active: selectedStore === store.name}]"
+        @click="selectStore(store.name)"
+        style="padding: 12px 16px; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; transition: all 0.15s;">
+        {{ store.label }}
       </div>
     </div>
+  </div>
 
-    <div class="tab-view-modes" style="display: flex; gap: 2px; padding: 8px 0;">
+  <!-- 뷰모드 버튼 -->
+  <div style="display: flex; gap: 8px; padding: 12px 16px; background: #f9fafb; align-items: center; justify-content: flex-end;">
+    <div class="tab-view-modes" style="display: flex; gap: 2px;">
       <button
         :class="{active: viewMode === 'tab'}"
         @click="viewMode = 'tab'"
         title="탭 뷰"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px;">📑</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">📑</button>
       <button
         :class="{active: viewMode === 'col1'}"
         @click="viewMode = 'col1'"
         title="1열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px;">▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭</button>
       <button
         :class="{active: viewMode === 'col2'}"
         @click="viewMode = 'col2'"
         title="2열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px;">▭▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭▭</button>
       <button
         :class="{active: viewMode === 'col3'}"
         @click="viewMode = 'col3'"
         title="3열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px;">▭▭▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭▭▭</button>
       <button
         :class="{active: viewMode === 'col4'}"
         @click="viewMode = 'col4'"
         title="4열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px;">▭▭▭▭</button>
+        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">▭▭▭▭</button>
     </div>
   </div>
 
-  <div class="card">
-    <div style="display: flex; gap: 16px; margin-bottom: 16px;">
-      <div style="flex: 1;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Store 추가 선택</label>
-        <select
-          @change="selectStore($event.target.value); $event.target.value = ''"
-          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-          <option value="">-- 추가 선택 --</option>
-          <option v-for="s in storeList" :key="s.name" :value="s.name" :disabled="openStores.includes(s.name)">{{ s.label }}</option>
-        </select>
-      </div>
-      <div style="flex: 0 0 auto; display: flex; gap: 8px; align-items: flex-end;">
-        <button @click="copyToClipboard" class="btn btn-blue" style="padding: 8px 16px;">복사</button>
-        <button @click="clearStore" class="btn btn-danger" style="padding: 8px 16px;">초기화</button>
-      </div>
-    </div>
-
+  <div class="card" style="margin: 16px;">
     <div style="margin-bottom: 16px;">
       <label style="display: block; margin-bottom: 8px; font-weight: 600;">Store State (JSON)</label>
       <textarea
-        v-model="storeInfo"
-        readonly
-        style="width: 100%; height: 500px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; background: #f5f5f5;">
+        v-model="editedStoreInfo[selectedStore] || ''"
+        @input="editedStoreInfo[selectedStore] = $event.target.value"
+        style="width: 100%; height: 400px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; background: #f5f5f5;">
       </textarea>
+    </div>
+
+    <div style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+      <button @click="copyToClipboard" class="btn btn-blue" style="padding: 8px 16px;">복사</button>
+      <button @click="clearStore" class="btn btn-danger" style="padding: 8px 16px;">초기화</button>
+      <button @click="saveStore" class="btn btn-primary" style="padding: 8px 24px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">저장</button>
     </div>
   </div>
 </div>
