@@ -117,9 +117,16 @@ public class SecurityConfig {
                 // /api/fo/ec/my/** — MEMBER만 (더 구체적인 경로 먼저)
                 .requestMatchers("/api/fo/ec/my/**").access(FO_ONLY)
 
-                // /api/fo/ec/**, /api/bo/cm/** (초기화 제외), /api/base/cm/** — 누구나 허용
+                // /api/fo/ec/**, /api/bo/cm/**, /api/base/cm/** — 누구나 허용
                 .requestMatchers("/api/fo/ec/**").permitAll()
                 .requestMatchers("/api/base/cm/**").permitAll()
+
+                // /api/bo/sy/** (BO 시스템) — GET: 누구나 / 변경: BO만
+                .requestMatchers(HttpMethod.GET,    "/api/bo/sy/**").permitAll()
+                .requestMatchers(HttpMethod.POST,   "/api/bo/sy/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PUT,    "/api/bo/sy/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.PATCH,  "/api/bo/sy/**").access(BO_ONLY)
+                .requestMatchers(HttpMethod.DELETE, "/api/bo/sy/**").access(BO_ONLY)
 
                 // /api/ext/** — EXT(외부 시스템)만 허용
                 .requestMatchers("/api/ext/**").access(EXT_ONLY)
