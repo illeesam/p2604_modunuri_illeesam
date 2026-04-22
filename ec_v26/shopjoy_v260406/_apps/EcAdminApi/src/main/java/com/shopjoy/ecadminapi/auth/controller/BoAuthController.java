@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * BO 관리자 인증 API (sy_user)
+ * GET  /api/auth/bo/auth/me      — 현재 사용자 정보 조회
  * POST /api/auth/bo/auth/login   — 로그인 (JWT 발급)
  * POST /api/auth/bo/auth/join    — 관리자 등록
  * POST /api/auth/bo/auth/refresh — 토큰 갱신
  * POST /api/auth/bo/auth/logout  — 로그아웃
  *
- * 인가: 전체 permitAll
+ * 인가: /me 는 인증 필수, 나머지는 permitAll
  */
 @RestController
 @RequestMapping("/api/auth/bo/auth")
@@ -28,6 +29,12 @@ import org.springframework.web.bind.annotation.*;
 public class BoAuthController {
 
     private final BoAuthService authService;
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<BoLoginRes>> getCurrentUser() {
+        BoLoginRes result = authService.getCurrentUserInfo();
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<BoLoginRes>> login(@RequestBody @Valid BoLoginReq request) {

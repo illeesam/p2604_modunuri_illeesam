@@ -10,6 +10,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,5 +121,20 @@ public class FoAuthService {
         if (refreshToken != null && !refreshToken.isBlank()) {
             revokedTokens.add(refreshToken);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public FoLoginRes getCurrentUserInfo() {
+        String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MbMember member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
+
+        return FoLoginRes.builder()
+                .memberId(member.getMemberId())
+                .loginId(member.getLoginId())
+                .memberNm(member.getMemberNm())
+                .siteId(member.getSiteId() != null ? member.getSiteId() : "")
+                .roleId(null)
+                .build();
     }
 }

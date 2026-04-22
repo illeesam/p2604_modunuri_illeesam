@@ -5,12 +5,16 @@ window.XsLocalStorage = {
   name: 'XsLocalStorage',
   props: ['navigate', 'showToast'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted, onUnmounted } = Vue;
 
     const storageData = ref([]);
     const filterKey = ref('');
     const editingKey = ref(null);
     const editingValue = ref('');
+    const valueColWidth = ref(65);
+    const isResizing = ref(false);
+    const startX = ref(0);
+    const startWidth = ref(0);
 
     const loadStorageData = () => {
       const data = [];
@@ -89,11 +93,41 @@ window.XsLocalStorage = {
       }
     };
 
+    const startResize = (e) => {
+      isResizing.value = true;
+      startX.value = e.clientX;
+      startWidth.value = valueColWidth.value;
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isResizing.value) return;
+      const delta = e.clientX - startX.value;
+      const newWidth = Math.max(30, startWidth.value + (delta / window.innerWidth * 100));
+      const keyWidth = 25;
+      const actionWidth = 10;
+      const maxValue = 100 - keyWidth - actionWidth;
+      valueColWidth.value = Math.min(maxValue, newWidth);
+    };
+
+    const stopResize = () => {
+      isResizing.value = false;
+    };
+
+    onMounted(() => {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', stopResize);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', stopResize);
+    });
+
     loadStorageData();
 
     return {
-      storageData, filterKey, filteredData, editingKey, editingValue,
-      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue
+      storageData, filterKey, filteredData, editingKey, editingValue, valueColWidth, isResizing,
+      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue, startResize
     };
   },
   template: `
@@ -123,13 +157,20 @@ window.XsLocalStorage = {
 
   <!-- 테이블 -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-    <div style="overflow-x: auto;">
+    <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: isResizing ? 'col-resize' : 'auto' }">
       <table style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr style="background: #fafafa; border-bottom: 1px solid #e5e7eb;">
             <th style="width: 25%; text-align: left; padding: 12px 16px; font-weight: 600; font-size: 13px; color: #666;">Key</th>
-            <th style="width: 65%; text-align: left; padding: 12px 16px; font-weight: 600; font-size: 13px; color: #666;">Value</th>
-            <th style="width: 10%; text-align: center; padding: 12px 16px; font-weight: 600; font-size: 13px; color: #666;">작업</th>
+            <th :style="{ width: valueColWidth + '%', textAlign: 'left', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666', position: 'relative' }">
+              Value
+              <div
+                @mousedown="startResize"
+                style="position: absolute; right: -5px; top: 0; width: 10px; height: 100%; cursor: col-resize; background: transparent; display: flex; align-items: center;">
+                <div style="width: 1px; height: 80%; background: #ff6b9d; opacity: 0; transition: opacity 0.2s;"></div>
+              </div>
+            </th>
+            <th :style="{ width: (100 - 25 - valueColWidth) + '%', textAlign: 'center', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666' }">작업</th>
           </tr>
         </thead>
         <tbody>

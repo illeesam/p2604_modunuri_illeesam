@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * FO 회원 인증 API (ec_member)
+ * GET  /api/auth/fo/auth/me      — 현재 회원 정보 조회
  * POST /api/auth/fo/auth/login   — 로그인 (JWT 발급)
  * POST /api/auth/fo/auth/join    — 회원가입
  * POST /api/auth/fo/auth/refresh — 토큰 갱신
  * POST /api/auth/fo/auth/logout  — 로그아웃
  *
- * 인가: 전체 permitAll
+ * 인가: /me 는 인증 필수, 나머지는 permitAll
  */
 @RestController
 @RequestMapping("/api/auth/fo/auth")
@@ -28,6 +29,12 @@ import org.springframework.web.bind.annotation.*;
 public class FoAuthController {
 
     private final FoAuthService authService;
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<FoLoginRes>> getCurrentUser() {
+        FoLoginRes result = authService.getCurrentUserInfo();
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<FoLoginRes>> login(@RequestBody @Valid FoLoginReq request) {

@@ -13,6 +13,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -127,6 +128,24 @@ public class BoAuthService {
         if (refreshToken != null && !refreshToken.isBlank()) {
             revokedTokens.add(refreshToken);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public BoLoginRes getCurrentUserInfo() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        SyUser user = em.find(SyUser.class, userId);
+        if (user == null) {
+            throw new CmBizException("사용자를 찾을 수 없습니다.");
+        }
+
+        return BoLoginRes.builder()
+            .userId(user.getUserId())
+            .loginId(user.getLoginId())
+            .userNm(user.getUserNm())
+            .userEmail(user.getUserEmail())
+            .siteId(user.getSiteId())
+            .roleId(user.getRoleId())
+            .build();
     }
 
     private SyUser findUserByLoginId(String loginId) {
