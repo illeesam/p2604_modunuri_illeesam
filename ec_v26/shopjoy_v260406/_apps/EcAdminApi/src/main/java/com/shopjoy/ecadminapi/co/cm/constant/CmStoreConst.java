@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.co.cm.data.constant;
+package com.shopjoy.ecadminapi.co.cm.constant;
 
 /**
  * Store 데이터 상수
@@ -15,7 +15,7 @@ public class CmStoreConst {
     public static final String SY_CODES = "syCodes";
     public static final String SY_PROPS = "syProps";
     public static final String DP_DISP = "dpDisp";
-    public static final String DP_DISP_STRUC = "dpDispStruc";
+    public static final String DP_DISP_STRUCT = "dpDispStruct";
     public static final String DP_DISP_DATA = "dpDispData";
     public static final String SY_APP = "syApp";
 

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreAppInfo {
+public class StoreApp {
     private String boSiteNo;          // BO 사이트 번호
     private String foSiteNo;          // FO 사이트 번호
     private String appVersion;        // 앱 버전

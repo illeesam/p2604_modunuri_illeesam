@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreAuthInfo {
+public class StoreAuth {
     private String accessToken;
     private String refreshToken;
     private Long accessExpiresIn;      // 초 단위

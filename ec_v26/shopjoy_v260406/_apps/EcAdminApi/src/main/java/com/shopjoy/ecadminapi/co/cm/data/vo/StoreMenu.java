@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreMenuInfo {
+public class StoreMenu {
     private String menuId;            // 메뉴 ID
     private String menuNm;            // 메뉴명
     private String menuPath;          // 메뉴 경로

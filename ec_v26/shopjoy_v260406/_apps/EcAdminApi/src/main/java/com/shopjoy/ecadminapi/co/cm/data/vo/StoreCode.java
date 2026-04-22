@@ -17,7 +17,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreCodeData {
+public class StoreCode {
 
     // 코드 그룹별로 코드 목록 저장
     // 예: { "ORDER_STATUS": [{ codeId, codeNm, codeVal, ... }], ... }

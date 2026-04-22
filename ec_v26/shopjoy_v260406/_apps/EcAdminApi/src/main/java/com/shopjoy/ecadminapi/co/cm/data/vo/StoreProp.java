@@ -16,7 +16,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StorePropData {
+public class StoreProp {
 
     private Map<String, PropInfo> propsByKey;
 

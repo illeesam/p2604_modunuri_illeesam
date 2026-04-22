@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreUserInfo {
+public class StoreUser {
     private String userId;
     private String userName;
     private String userEmail;

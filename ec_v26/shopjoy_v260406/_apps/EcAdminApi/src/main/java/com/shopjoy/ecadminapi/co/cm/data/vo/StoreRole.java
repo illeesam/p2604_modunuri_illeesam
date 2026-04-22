@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreRoleInfo {
+public class StoreRole {
     private String roleId;            // 역할 ID
     private String roleNm;            // 역할명
     private String roleCd;            // 역할 코드

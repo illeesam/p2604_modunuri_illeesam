@@ -1,18 +1,18 @@
 package com.shopjoy.ecadminapi.co.cm.service;
 
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreAuthInfo;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreCodeData;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMenuInfo;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StorePropData;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreRoleInfo;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreAppInfo;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreUserInfo;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreAuth;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreCode;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMenu;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreProp;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreRole;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreApp;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreUser;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMemberInfo;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMember;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreDispData;
-import com.shopjoy.ecadminapi.co.cm.data.vo.StoreDispStructure;
+import com.shopjoy.ecadminapi.co.cm.data.vo.StoreDispStruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 애플리케이션 Store 데이터 Service (BO/FO 통합)
@@ -44,7 +43,7 @@ public class CmAppStoreDataService {
      * BO: 인증 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreAuthInfo getBoAuth() {
+    public StoreAuth getBoAuth() {
         return buildAuthInfo();
     }
 
@@ -52,7 +51,7 @@ public class CmAppStoreDataService {
      * BO: 관리자 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreUserInfo getBoUser() {
+    public StoreUser getBoUser() {
         String userId = getCurrentUserId();
         return buildBoUserInfo(userId);
     }
@@ -61,7 +60,7 @@ public class CmAppStoreDataService {
      * BO: 권한 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreRoleInfo> getBoRole() {
+    public List<StoreRole> getBoRole() {
         return buildRoles();
     }
 
@@ -69,7 +68,7 @@ public class CmAppStoreDataService {
      * BO: 메뉴 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreMenuInfo> getBoMenu() {
+    public List<StoreMenu> getBoMenu() {
         return buildMenus();
     }
 
@@ -77,7 +76,7 @@ public class CmAppStoreDataService {
      * BO: 코드 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreCodeData getBoCode() {
+    public StoreCode getBoCode() {
         return buildCodes();
     }
 
@@ -85,7 +84,7 @@ public class CmAppStoreDataService {
      * BO: 속성 정보 조회
      */
     @Transactional(readOnly = true)
-    public StorePropData getBoProps() {
+    public StoreProp getBoProps() {
         return buildProps();
     }
 
@@ -93,7 +92,7 @@ public class CmAppStoreDataService {
      * BO: 앱 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreAppInfo getBoApp() {
+    public StoreApp getBoApp() {
         return buildBoAppInfo();
     }
 
@@ -105,7 +104,7 @@ public class CmAppStoreDataService {
      * FO: 인증 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreAuthInfo getFoAuth() {
+    public StoreAuth getFoAuth() {
         return buildAuthInfo();
     }
 
@@ -113,7 +112,7 @@ public class CmAppStoreDataService {
      * FO: 회원 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreMemberInfo getFoUser() {
+    public StoreMember getFoUser() {
         String memberId = getCurrentMemberId();
         MbMember member = null;
         if (memberId != null) {
@@ -126,7 +125,7 @@ public class CmAppStoreDataService {
      * FO: 권한 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreRoleInfo> getFoRole() {
+    public List<StoreRole> getFoRole() {
         return buildRoles();
     }
 
@@ -134,7 +133,7 @@ public class CmAppStoreDataService {
      * FO: 메뉴 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreMenuInfo> getFoMenu() {
+    public List<StoreMenu> getFoMenu() {
         return buildMenus();
     }
 
@@ -142,7 +141,7 @@ public class CmAppStoreDataService {
      * FO: 코드 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreCodeData getFoCode() {
+    public StoreCode getFoCode() {
         return buildCodes();
     }
 
@@ -150,7 +149,7 @@ public class CmAppStoreDataService {
      * FO: 속성 정보 조회
      */
     @Transactional(readOnly = true)
-    public StorePropData getFoProps() {
+    public StoreProp getFoProps() {
         return buildProps();
     }
 
@@ -158,7 +157,7 @@ public class CmAppStoreDataService {
      * FO: 전시 구조 조회
      */
     @Transactional(readOnly = true)
-    public StoreDispStructure getFoDispStruc() {
+    public StoreDispStruct getFoDispStruc() {
         return buildDispStruc();
     }
 
@@ -174,7 +173,7 @@ public class CmAppStoreDataService {
      * FO: 앱 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreAppInfo getFoApp() {
+    public StoreApp getFoApp() {
         return buildFoAppInfo();
     }
 
@@ -185,12 +184,12 @@ public class CmAppStoreDataService {
     /**
      * 토큰 정보 생성
      */
-    private StoreAuthInfo buildAuthInfo() {
+    private StoreAuth buildAuthInfo() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            return StoreAuthInfo.builder().build();
+            return StoreAuth.builder().build();
         }
-        return StoreAuthInfo.builder()
+        return StoreAuth.builder()
                 .accessToken("")
                 .refreshToken("")
                 .accessExpiresIn(3600L)
@@ -201,36 +200,36 @@ public class CmAppStoreDataService {
     /**
      * 권한 정보 생성
      */
-    private List<StoreRoleInfo> buildRoles() {
+    private List<StoreRole> buildRoles() {
         return List.of();
     }
 
     /**
      * 메뉴 정보 생성
      */
-    private List<StoreMenuInfo> buildMenus() {
+    private List<StoreMenu> buildMenus() {
         return List.of();
     }
 
     /**
      * 코드 정보 생성
      */
-    private StoreCodeData buildCodes() {
-        return StoreCodeData.builder().build();
+    private StoreCode buildCodes() {
+        return StoreCode.builder().build();
     }
 
     /**
      * 속성 정보 생성
      */
-    private StorePropData buildProps() {
-        return StorePropData.builder().build();
+    private StoreProp buildProps() {
+        return StoreProp.builder().build();
     }
 
     /**
      * 전시 구조 생성
      */
-    private StoreDispStructure buildDispStruc() {
-        return StoreDispStructure.builder().build();
+    private StoreDispStruct buildDispStruc() {
+        return StoreDispStruct.builder().build();
     }
 
     /**
@@ -247,8 +246,8 @@ public class CmAppStoreDataService {
     /**
      * BO 사용자(관리자) 정보 생성
      */
-    private StoreUserInfo buildBoUserInfo(String userId) {
-        return StoreUserInfo.builder()
+    private StoreUser buildBoUserInfo(String userId) {
+        return StoreUser.builder()
                 .userId(userId)
                 .userName("")
                 .userEmail("")
@@ -268,8 +267,8 @@ public class CmAppStoreDataService {
     /**
      * BO 앱 정보 생성
      */
-    private StoreAppInfo buildBoAppInfo() {
-        return StoreAppInfo.builder()
+    private StoreApp buildBoAppInfo() {
+        return StoreApp.builder()
                 .boSiteNo("01")
                 .foSiteNo("01")
                 .appVersion("2.6.0")
@@ -284,11 +283,11 @@ public class CmAppStoreDataService {
     /**
      * FO 회원 정보 생성
      */
-    private StoreMemberInfo buildFoMemberInfo(MbMember member) {
+    private StoreMember buildFoMemberInfo(MbMember member) {
         if (member == null) {
-            return StoreMemberInfo.builder().build();
+            return StoreMember.builder().build();
         }
-        return StoreMemberInfo.builder()
+        return StoreMember.builder()
                 .memberId(member.getMemberId())
                 .memberEmail(member.getLoginId())
                 .memberNm(member.getMemberNm())
@@ -307,8 +306,8 @@ public class CmAppStoreDataService {
     /**
      * FO 앱 정보 생성
      */
-    private StoreAppInfo buildFoAppInfo() {
-        return StoreAppInfo.builder()
+    private StoreApp buildFoAppInfo() {
+        return StoreApp.builder()
                 .foSiteNo(System.getProperty("fo.site.no", "01"))
                 .appVersion("2.6.0")
                 .lastUpdateDate(java.time.LocalDate.now().toString())

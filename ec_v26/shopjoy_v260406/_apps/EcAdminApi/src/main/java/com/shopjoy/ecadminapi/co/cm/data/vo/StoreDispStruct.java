@@ -17,7 +17,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreDispStructure {
+public class StoreDispStruct {
 
     // 전시 UI 구조: ui > area > panel > widget
     private List<UiInfo> uis;
