@@ -140,6 +140,8 @@
       { id: 'syUserLoginHist',   label: '사용자로그인이력' },
       { group: '개발도구' },
       { id: 'syPostman',         label: 'postman' },
+      { id: 'zdStore',           label: 'store정보관리' },
+      { id: 'zdLocalStorage',    label: 'localstorage정보관리' },
     ],
   };
 
@@ -261,6 +263,8 @@
         'syMemberLoginHist':'sy-member-login-hist',
         'syUserLoginHist':'sy-user-login-hist',
         'syPostman':'sy-postman',
+        'zdStore':'zd-store',
+        'zdLocalStorage':'zd-local-storage',
       };
 
       const addTab = (mngId) => {
@@ -1179,6 +1183,8 @@
         <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-user-login-hist   v-else-if="page==='syUserLoginHist'"   :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <sy-postman           v-else-if="page==='syPostman'"         :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+        <zd-store             v-else-if="page==='zdStore'"           :navigate="navigate"  :show-toast="showToast" />
+        <zd-local-storage     v-else-if="page==='zdLocalStorage'"    :navigate="navigate"  :show-toast="showToast" />
         <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
         <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
         <bo-error-404 v-else :navigate="navigate" :page-id="page" />
@@ -1685,6 +1691,9 @@
   .component('SyMemberLoginHist',     window.SyMemberLoginHist)
   .component('SyUserLoginHist',       window.SyUserLoginHist)
   .component('SyPostman',             window.SyPostman)
+  /* ── pages/bo/zd/ — 개발도구 ── */
+  .component('ZdStore',               window.ZdStore)
+  .component('ZdLocalStorage',        window.ZdLocalStorage)
   .use(Pinia.createPinia())
   .mount('#app');
 
