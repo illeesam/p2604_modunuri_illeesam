@@ -52,7 +52,7 @@ public class ZzSample2Service {
     @Transactional
     public ZzSample2 create(ZzSample2 entity) {
         entity.setSample2Id(generateId());
-        entity.setRgtr(SecurityUtil.currentUserId());
+        entity.setRgtr(SecurityUtil.getUserId());
         entity.setRegDt(LocalDate.now());
         return repository.save(entity);
     }
@@ -61,7 +61,7 @@ public class ZzSample2Service {
     public ZzSample2 save(ZzSample2 entity) {
         if (!repository.existsById(entity.getSample2Id()))
             throw new CmBizException("존재하지 않는 ZzSample2입니다: " + entity.getSample2Id());
-        entity.setMdfr(SecurityUtil.currentUserId());
+        entity.setMdfr(SecurityUtil.getUserId());
         entity.setMdfcnDt(LocalDate.now());
         return repository.save(entity);
     }

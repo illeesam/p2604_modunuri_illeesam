@@ -58,7 +58,7 @@ public class SyBbmService {
     @Transactional
     public SyBbm create(SyBbm entity) {
         entity.setBbmId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyBbm result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyBbmService {
     public SyBbm save(SyBbm entity) {
         if (!repository.existsById(entity.getBbmId()))
             throw new CmBizException("존재하지 않는 SyBbm입니다: " + entity.getBbmId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbm result = repository.save(entity);
         return result;

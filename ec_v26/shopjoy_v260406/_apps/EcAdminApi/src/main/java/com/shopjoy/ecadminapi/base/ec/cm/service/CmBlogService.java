@@ -58,7 +58,7 @@ public class CmBlogService {
     @Transactional
     public CmBlog create(CmBlog entity) {
         entity.setBlogId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         CmBlog result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class CmBlogService {
     public CmBlog save(CmBlog entity) {
         if (!repository.existsById(entity.getBlogId()))
             throw new CmBizException("존재하지 않는 CmBlog입니다: " + entity.getBlogId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlog result = repository.save(entity);
         return result;

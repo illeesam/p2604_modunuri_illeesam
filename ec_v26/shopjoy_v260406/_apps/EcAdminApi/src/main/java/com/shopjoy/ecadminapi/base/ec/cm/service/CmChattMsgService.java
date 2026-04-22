@@ -58,7 +58,7 @@ public class CmChattMsgService {
     @Transactional
     public CmChattMsg create(CmChattMsg entity) {
         entity.setChattMsgId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         CmChattMsg result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class CmChattMsgService {
     public CmChattMsg save(CmChattMsg entity) {
         if (!repository.existsById(entity.getChattMsgId()))
             throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattMsg result = repository.save(entity);
         return result;

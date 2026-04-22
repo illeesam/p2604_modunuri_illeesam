@@ -32,14 +32,14 @@ public class FoMbLikeService {
 
     @Transactional(readOnly = true)
     public List<MbLikeDto> getMyLikes(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         return mapper.selectList(p);
     }
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */
     @Transactional
     public boolean toggle(String targetTypeCd, String targetId, Map<String, Object> p) {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         Optional<MbLike> existing = repository.findAll().stream()
             .filter(l -> memberId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
@@ -66,7 +66,7 @@ public class FoMbLikeService {
 
     @Transactional
     public void unlike(String targetTypeCd, String targetId, Map<String, Object> p) {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         repository.findAll().stream()
             .filter(l -> memberId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())

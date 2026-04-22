@@ -47,7 +47,7 @@ public class FoMyPageService {
 
     @Transactional(readOnly = true)
     public MbMemberDto getMyInfo() {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         MbMemberDto dto = memberMapper.selectById(memberId);
         if (dto == null) throw new CmBizException("회원 정보를 찾을 수 없습니다.");
         return dto;
@@ -55,7 +55,7 @@ public class FoMyPageService {
 
     @Transactional
     public MbMemberDto updateMyInfo(MbMember body) {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
@@ -74,7 +74,7 @@ public class FoMyPageService {
 
     @Transactional
     public void changePassword(String currentPassword, String newPassword) {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
@@ -88,13 +88,13 @@ public class FoMyPageService {
 
     @Transactional(readOnly = true)
     public List<MbMemberAddrDto> getMyAddrs() {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         return addrMapper.selectList(Map.of("memberId", memberId));
     }
 
     @Transactional
     public MbMemberAddr saveAddr(MbMemberAddr body) {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         body.setMemberId(memberId);
         body.setRegBy(memberId);
         body.setRegDate(LocalDateTime.now());
@@ -103,7 +103,7 @@ public class FoMyPageService {
 
     @Transactional
     public void deleteAddr(String addrId) {
-        String memberId = SecurityUtil.currentUserId();
+        String memberId = SecurityUtil.getUserId();
         MbMemberAddr addr = addrRepository.findById(addrId)
                 .orElseThrow(() -> new CmBizException("주소를 찾을 수 없습니다."));
         if (!memberId.equals(addr.getMemberId()))
@@ -113,25 +113,25 @@ public class FoMyPageService {
 
     @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         return orderMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public List<OdClaimDto> getMyClaims(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         return claimMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public List<PmCouponDto> getMyCoupons(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         return couponMapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public List<PmCacheDto> getMyCacheHistory(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         return cacheMapper.selectList(p);
     }
 }

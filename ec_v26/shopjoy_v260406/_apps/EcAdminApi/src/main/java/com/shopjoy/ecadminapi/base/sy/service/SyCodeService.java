@@ -58,7 +58,7 @@ public class SyCodeService {
     @Transactional
     public SyCode create(SyCode entity) {
         entity.setCodeId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyCode result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyCodeService {
     public SyCode save(SyCode entity) {
         if (!repository.existsById(entity.getCodeId()))
             throw new CmBizException("존재하지 않는 SyCode입니다: " + entity.getCodeId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyCode result = repository.save(entity);
         return result;

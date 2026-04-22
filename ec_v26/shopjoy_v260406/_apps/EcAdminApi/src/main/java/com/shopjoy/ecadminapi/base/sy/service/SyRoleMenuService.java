@@ -61,7 +61,7 @@ public class SyRoleMenuService {
     @Transactional
     public SyRoleMenu create(SyRoleMenu entity) {
         entity.setRoleMenuId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyRoleMenu result = repository.save(entity);
         roleMenuCache.evict(entity.getRoleId());
@@ -72,7 +72,7 @@ public class SyRoleMenuService {
     public SyRoleMenu save(SyRoleMenu entity) {
         if (!repository.existsById(entity.getRoleMenuId()))
             throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + entity.getRoleMenuId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyRoleMenu result = repository.save(entity);
         roleMenuCache.evict(entity.getRoleId());

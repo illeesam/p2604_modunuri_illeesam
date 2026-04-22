@@ -58,7 +58,7 @@ public class StSettleCloseService {
     @Transactional
     public StSettleClose create(StSettleClose entity) {
         entity.setSettleCloseId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         StSettleClose result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class StSettleCloseService {
     public StSettleClose save(StSettleClose entity) {
         if (!repository.existsById(entity.getSettleCloseId()))
             throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleClose result = repository.save(entity);
         return result;

@@ -58,7 +58,7 @@ public class PdProdSkuService {
     @Transactional
     public PdProdSku create(PdProdSku entity) {
         entity.setSkuId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PdProdSku result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PdProdSkuService {
     public PdProdSku save(PdProdSku entity) {
         if (!repository.existsById(entity.getSkuId()))
             throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getSkuId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdSku result = repository.save(entity);
         return result;

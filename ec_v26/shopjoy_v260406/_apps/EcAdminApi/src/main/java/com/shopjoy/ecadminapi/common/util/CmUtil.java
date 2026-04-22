@@ -1,7 +1,9 @@
 package com.shopjoy.ecadminapi.common.util;
 
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +48,24 @@ public class CmUtil {
                 throw new CmBizException("필수 파라미터 누락: " + key);
             }
         }
+    }
+
+    /**
+     * '^' 구분자로 이름 파싱 (예: "auth^user^role" → ["auth", "user", "role"])
+     */
+    public static List<String> parseNames(String names) {
+        List<String> items = new ArrayList<>();
+        if (names == null || names.trim().isEmpty()) {
+            return items;
+        }
+        String[] parts = names.split("\\^");
+        for (String part : parts) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                items.add(trimmed);
+            }
+        }
+        return items;
     }
 
 }

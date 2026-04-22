@@ -58,7 +58,7 @@ public class SyVendorContentService {
     @Transactional
     public SyVendorContent create(SyVendorContent entity) {
         entity.setVendorContentId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyVendorContent result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyVendorContentService {
     public SyVendorContent save(SyVendorContent entity) {
         if (!repository.existsById(entity.getVendorContentId()))
             throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + entity.getVendorContentId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorContent result = repository.save(entity);
         return result;

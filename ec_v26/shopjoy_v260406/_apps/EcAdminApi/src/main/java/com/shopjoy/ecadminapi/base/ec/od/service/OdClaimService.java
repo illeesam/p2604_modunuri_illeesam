@@ -58,7 +58,7 @@ public class OdClaimService {
     @Transactional
     public OdClaim create(OdClaim entity) {
         entity.setClaimId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         OdClaim result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class OdClaimService {
     public OdClaim save(OdClaim entity) {
         if (!repository.existsById(entity.getClaimId()))
             throw new CmBizException("존재하지 않는 OdClaim입니다: " + entity.getClaimId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdClaim result = repository.save(entity);
         return result;

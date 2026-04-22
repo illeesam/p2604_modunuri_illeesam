@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.auth.service;
 
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.auth.data.vo.BoJoinRes;
-import com.shopjoy.ecadminapi.auth.data.vo.BoLoginReq;
+import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.auth.data.vo.BoLoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
@@ -55,7 +55,7 @@ public class BoAuthService {
     }
 
     @Transactional
-    public BoLoginRes login(BoLoginReq request) {
+    public BoLoginRes login(LoginReq request) {
         SyUser user = findUserByLoginId(request.getLoginId());
 
         if (!"ACTIVE".equals(user.getUserStatusCd())) {

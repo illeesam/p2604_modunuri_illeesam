@@ -58,7 +58,7 @@ public class OdCartService {
     @Transactional
     public OdCart create(OdCart entity) {
         entity.setCartId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         OdCart result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class OdCartService {
     public OdCart save(OdCart entity) {
         if (!repository.existsById(entity.getCartId()))
             throw new CmBizException("존재하지 않는 OdCart입니다: " + entity.getCartId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdCart result = repository.save(entity);
         return result;

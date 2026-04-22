@@ -58,7 +58,7 @@ public class PdProdTagService {
     @Transactional
     public PdProdTag create(PdProdTag entity) {
         entity.setProdTagId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PdProdTag result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PdProdTagService {
     public PdProdTag save(PdProdTag entity) {
         if (!repository.existsById(entity.getProdTagId()))
             throw new CmBizException("존재하지 않는 PdProdTag입니다: " + entity.getProdTagId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdTag result = repository.save(entity);
         return result;

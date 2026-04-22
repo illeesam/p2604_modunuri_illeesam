@@ -37,7 +37,7 @@ public class FoCmContactService {
         entity.setBlogAuthor((String) body.getOrDefault("name", ""));
         entity.setUseYn("Y");
         entity.setViewCount(0);
-        String userId = SecurityUtil.isLogin() ? SecurityUtil.currentUserId() : "GUEST";
+        String userId = SecurityUtil.isLogin() ? SecurityUtil.getUserId() : "GUEST";
         entity.setRegBy(userId);
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);

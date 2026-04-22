@@ -105,7 +105,7 @@ public class AutoRestService {
 
         String newId = generateId(table);
         body.put(cfg.getPkColumn(), newId);
-        body.put("reg_by", SecurityUtil.currentUserId());
+        body.put("reg_by", SecurityUtil.getUserId());
         body.put("reg_date", LocalDateTime.now());
         body.remove("upd_by");
         body.remove("upd_date");
@@ -122,7 +122,7 @@ public class AutoRestService {
         validateRequired(cfg, body);
 
         body.remove(cfg.getPkColumn());
-        body.put("upd_by", SecurityUtil.currentUserId());
+        body.put("upd_by", SecurityUtil.getUserId());
         body.put("upd_date", LocalDateTime.now());
 
         updateByJdbc(table, cfg.getPkColumn(), id, body, false);
@@ -136,7 +136,7 @@ public class AutoRestService {
         TableConfig cfg = registry.getConfig(table);
 
         body.remove(cfg.getPkColumn());
-        body.put("upd_by", SecurityUtil.currentUserId());
+        body.put("upd_by", SecurityUtil.getUserId());
         body.put("upd_date", LocalDateTime.now());
 
         updateByJdbc(table, cfg.getPkColumn(), id, body, true);

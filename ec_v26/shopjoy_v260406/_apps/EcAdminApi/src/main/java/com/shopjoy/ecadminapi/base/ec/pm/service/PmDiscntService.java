@@ -58,7 +58,7 @@ public class PmDiscntService {
     @Transactional
     public PmDiscnt create(PmDiscnt entity) {
         entity.setDiscntId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmDiscnt result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmDiscntService {
     public PmDiscnt save(PmDiscnt entity) {
         if (!repository.existsById(entity.getDiscntId()))
             throw new CmBizException("존재하지 않는 PmDiscnt입니다: " + entity.getDiscntId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmDiscnt result = repository.save(entity);
         return result;

@@ -30,15 +30,15 @@ public class FoOdCartService {
 
     @Transactional(readOnly = true)
     public List<OdCartDto> getMyCart(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         return mapper.selectList(p);
     }
 
     @Transactional
     public OdCart addToCart(OdCart entity) {
         entity.setCartId(generateId());
-        entity.setMemberId(SecurityUtil.currentUserId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setMemberId(SecurityUtil.getUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }
@@ -47,10 +47,10 @@ public class FoOdCartService {
     public OdCart updateQty(String cartId, int qty) {
         OdCart cart = repository.findById(cartId)
                 .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
-        if (!cart.getMemberId().equals(SecurityUtil.currentUserId()))
+        if (!cart.getMemberId().equals(SecurityUtil.getUserId()))
             throw new CmBizException("접근 권한이 없습니다.");
         cart.setOrderQty(qty);
-        cart.setUpdBy(SecurityUtil.currentUserId());
+        cart.setUpdBy(SecurityUtil.getUserId());
         cart.setUpdDate(LocalDateTime.now());
         return repository.save(cart);
     }
@@ -59,7 +59,7 @@ public class FoOdCartService {
     public void removeFromCart(String cartId) {
         OdCart cart = repository.findById(cartId)
                 .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId));
-        if (!cart.getMemberId().equals(SecurityUtil.currentUserId()))
+        if (!cart.getMemberId().equals(SecurityUtil.getUserId()))
             throw new CmBizException("접근 권한이 없습니다.");
         repository.deleteById(cartId);
     }

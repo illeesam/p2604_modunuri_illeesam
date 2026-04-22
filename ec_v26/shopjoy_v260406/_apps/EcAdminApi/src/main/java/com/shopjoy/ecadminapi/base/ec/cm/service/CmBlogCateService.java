@@ -60,7 +60,7 @@ public class CmBlogCateService {
     @Transactional
     public CmBlogCate create(CmBlogCate entity) {
         entity.setBlogCateId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         CmBlogCate result = repository.save(entity);
         return result;
@@ -71,7 +71,7 @@ public class CmBlogCateService {
         if (!repository.existsById(entity.getBlogCateId())) {
             throw new CmBizException("존재하지 않는 카테고리입니다: " + entity.getBlogCateId());
         }
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogCate result = repository.save(entity);
         return result;

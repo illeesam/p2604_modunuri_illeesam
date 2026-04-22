@@ -46,7 +46,7 @@ public class BoOdDlivService {
     @Transactional
     public OdDliv create(OdDliv body) {
         body.setDlivId("DL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.currentUserId());
+        body.setRegBy(SecurityUtil.getUserId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
@@ -54,7 +54,7 @@ public class BoOdDlivService {
     @Transactional
     public OdDlivDto update(String id, OdDliv body) {
         OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);
@@ -71,7 +71,7 @@ public class BoOdDlivService {
         OdDliv entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setDlivStatusCdBefore(entity.getDlivStatusCd());
         entity.setDlivStatusCd(statusCd);
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);

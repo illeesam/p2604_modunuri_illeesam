@@ -20,13 +20,13 @@
     <property name="ERR_LOG"     value="${LOG_DIR}/${APP_NAME}-error.log"/>
     <property name="ARCH_DIR"    value="${LOG_DIR}/archived"/>
 
-    <!-- 일반 파일 패턴 — [userType:userId:roleId] -->
+    <!-- 일반 파일 패턴 — [siteId:userTypeCd:userId:roleId] -->
     <property name="FILE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{userType}:%X{userId}:%X{roleId}] [%thread] %logger{50} : %msg%n%wex"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{siteId}:%X{userTypeCd}:%X{userId}:%X{roleId}] [%thread] %logger{50} : %msg%n%wex"/>
 
-    <!-- 에러 파일 패턴 — [userType:userId:roleId] + [method host/path] -->
+    <!-- 에러 파일 패턴 — [siteId:userTypeCd:userId:roleId] + [method host/path] -->
     <property name="ERROR_FILE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{userType}:%X{userId}:%X{roleId}] [%X{req}] [%thread] %logger{50} : %msg%n%wex"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{siteId}:%X{userTypeCd}:%X{userId}:%X{roleId}] [%X{req}] [%thread] %logger{50} : %msg%n%wex"/>
 
 
     <!-- ================================================================
@@ -44,7 +44,7 @@
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
                 <layout class="ch.qos.logback.classic.PatternLayout">
-                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{userType}:%X{userId}]){magenta} %logger{39} : %msg%n</pattern>
+                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{siteId}:%X{userTypeCd}:%X{userId}]){magenta} %logger{39} : %msg%n</pattern>
                 </layout>
             </encoder>
         </appender>

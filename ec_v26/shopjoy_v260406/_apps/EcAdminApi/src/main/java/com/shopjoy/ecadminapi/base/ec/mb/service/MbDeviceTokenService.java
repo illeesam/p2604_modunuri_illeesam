@@ -57,7 +57,7 @@ public class MbDeviceTokenService {
     @Transactional
     public MbDeviceToken create(MbDeviceToken entity) {
         entity.setDeviceTokenId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }
@@ -68,7 +68,7 @@ public class MbDeviceTokenService {
                 .orElseThrow(() -> new CmBizException("존재하지 않는 디바이스 토큰입니다: " + entity.getDeviceTokenId()));
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }

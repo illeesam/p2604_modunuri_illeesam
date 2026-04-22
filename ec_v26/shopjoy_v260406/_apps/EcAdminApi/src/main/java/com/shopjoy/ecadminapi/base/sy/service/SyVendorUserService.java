@@ -58,7 +58,7 @@ public class SyVendorUserService {
     @Transactional
     public SyVendorUser create(SyVendorUser entity) {
         entity.setVendorUserId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyVendorUser result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyVendorUserService {
     public SyVendorUser save(SyVendorUser entity) {
         if (!repository.existsById(entity.getVendorUserId()))
             throw new CmBizException("존재하지 않는 SyVendorUser입니다: " + entity.getVendorUserId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorUser result = repository.save(entity);
         return result;

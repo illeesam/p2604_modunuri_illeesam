@@ -58,7 +58,7 @@ public class PdProdQnaService {
     @Transactional
     public PdProdQna create(PdProdQna entity) {
         entity.setQnaId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PdProdQna result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PdProdQnaService {
     public PdProdQna save(PdProdQna entity) {
         if (!repository.existsById(entity.getQnaId()))
             throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getQnaId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdQna result = repository.save(entity);
         return result;

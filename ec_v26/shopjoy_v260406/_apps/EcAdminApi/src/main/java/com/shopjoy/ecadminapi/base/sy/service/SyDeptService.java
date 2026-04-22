@@ -58,7 +58,7 @@ public class SyDeptService {
     @Transactional
     public SyDept create(SyDept entity) {
         entity.setDeptId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyDept result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyDeptService {
     public SyDept save(SyDept entity) {
         if (!repository.existsById(entity.getDeptId()))
             throw new CmBizException("존재하지 않는 SyDept입니다: " + entity.getDeptId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyDept result = repository.save(entity);
         return result;

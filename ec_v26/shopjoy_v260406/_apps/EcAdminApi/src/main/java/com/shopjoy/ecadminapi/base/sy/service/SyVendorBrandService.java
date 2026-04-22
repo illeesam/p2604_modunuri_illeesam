@@ -58,7 +58,7 @@ public class SyVendorBrandService {
     @Transactional
     public SyVendorBrand create(SyVendorBrand entity) {
         entity.setVendorBrandId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyVendorBrand result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyVendorBrandService {
     public SyVendorBrand save(SyVendorBrand entity) {
         if (!repository.existsById(entity.getVendorBrandId()))
             throw new CmBizException("존재하지 않는 SyVendorBrand입니다: " + entity.getVendorBrandId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyVendorBrand result = repository.save(entity);
         return result;

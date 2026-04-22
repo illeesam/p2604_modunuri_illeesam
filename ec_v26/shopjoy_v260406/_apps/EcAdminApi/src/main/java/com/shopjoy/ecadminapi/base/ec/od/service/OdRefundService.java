@@ -58,7 +58,7 @@ public class OdRefundService {
     @Transactional
     public OdRefund create(OdRefund entity) {
         entity.setRefundId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         OdRefund result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class OdRefundService {
     public OdRefund save(OdRefund entity) {
         if (!repository.existsById(entity.getRefundId()))
             throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdRefund result = repository.save(entity);
         return result;

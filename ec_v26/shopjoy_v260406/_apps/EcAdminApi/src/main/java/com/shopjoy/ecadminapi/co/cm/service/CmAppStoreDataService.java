@@ -43,7 +43,7 @@ public class CmAppStoreDataService {
      * BO: 인증 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreAuth getBoAuth() {
+    public StoreAuth getBoAuth(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildAuthInfo();
     }
 
@@ -51,8 +51,7 @@ public class CmAppStoreDataService {
      * BO: 관리자 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreUser getBoUser() {
-        String userId = getCurrentUserId();
+    public StoreUser getBoUser(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildBoUserInfo(userId);
     }
 
@@ -60,7 +59,7 @@ public class CmAppStoreDataService {
      * BO: 권한 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreRole> getBoRole() {
+    public List<StoreRole> getBoRole(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildRoles();
     }
 
@@ -68,7 +67,7 @@ public class CmAppStoreDataService {
      * BO: 메뉴 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreMenu> getBoMenu() {
+    public List<StoreMenu> getBoMenu(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildMenus();
     }
 
@@ -76,7 +75,7 @@ public class CmAppStoreDataService {
      * BO: 코드 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreCode getBoCode() {
+    public StoreCode getBoCode(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildCodes();
     }
 
@@ -84,7 +83,7 @@ public class CmAppStoreDataService {
      * BO: 속성 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreProp getBoProps() {
+    public StoreProp getBoProps(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildProps();
     }
 
@@ -92,7 +91,7 @@ public class CmAppStoreDataService {
      * BO: 앱 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreApp getBoApp() {
+    public StoreApp getBoApp(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildBoAppInfo();
     }
 
@@ -104,7 +103,7 @@ public class CmAppStoreDataService {
      * FO: 인증 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreAuth getFoAuth() {
+    public StoreAuth getFoAuth(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildAuthInfo();
     }
 
@@ -112,7 +111,7 @@ public class CmAppStoreDataService {
      * FO: 회원 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreMember getFoUser() {
+    public StoreMember getFoUser(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         String memberId = getCurrentMemberId();
         MbMember member = null;
         if (memberId != null) {
@@ -125,7 +124,7 @@ public class CmAppStoreDataService {
      * FO: 권한 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreRole> getFoRole() {
+    public List<StoreRole> getFoRole(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildRoles();
     }
 
@@ -133,7 +132,7 @@ public class CmAppStoreDataService {
      * FO: 메뉴 정보 조회
      */
     @Transactional(readOnly = true)
-    public List<StoreMenu> getFoMenu() {
+    public List<StoreMenu> getFoMenu(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildMenus();
     }
 
@@ -141,7 +140,7 @@ public class CmAppStoreDataService {
      * FO: 코드 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreCode getFoCode() {
+    public StoreCode getFoCode(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildCodes();
     }
 
@@ -149,7 +148,7 @@ public class CmAppStoreDataService {
      * FO: 속성 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreProp getFoProps() {
+    public StoreProp getFoProps(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildProps();
     }
 
@@ -157,7 +156,7 @@ public class CmAppStoreDataService {
      * FO: 전시 구조 조회
      */
     @Transactional(readOnly = true)
-    public StoreDispStruct getFoDispStruc() {
+    public StoreDispStruct getFoDispStruc(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildDispStruc();
     }
 
@@ -165,7 +164,7 @@ public class CmAppStoreDataService {
      * FO: 전시 데이터 조회
      */
     @Transactional(readOnly = true)
-    public StoreDispData getFoDispData() {
+    public StoreDispData getFoDispData(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildDispData();
     }
 
@@ -173,7 +172,7 @@ public class CmAppStoreDataService {
      * FO: 앱 정보 조회
      */
     @Transactional(readOnly = true)
-    public StoreApp getFoApp() {
+    public StoreApp getFoApp(String siteId, String userTypeCd, String userId, String roleId, boolean isLogin, boolean isAdmin) {
         return buildFoAppInfo();
     }
 

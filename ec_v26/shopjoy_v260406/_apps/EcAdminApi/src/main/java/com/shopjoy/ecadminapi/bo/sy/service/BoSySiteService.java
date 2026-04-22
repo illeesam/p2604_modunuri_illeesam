@@ -46,7 +46,7 @@ public class BoSySiteService {
     @Transactional
     public SySite create(SySite body) {
         body.setSiteId("SI" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.currentUserId());
+        body.setRegBy(SecurityUtil.getUserId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
@@ -54,7 +54,7 @@ public class BoSySiteService {
     @Transactional
     public SySiteDto update(String id, SySite body) {
         SySite entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);

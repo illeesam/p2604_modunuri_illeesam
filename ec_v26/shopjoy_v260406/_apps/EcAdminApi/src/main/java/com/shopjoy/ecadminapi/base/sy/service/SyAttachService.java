@@ -58,7 +58,7 @@ public class SyAttachService {
     @Transactional
     public SyAttach create(SyAttach entity) {
         entity.setAttachId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyAttach result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyAttachService {
     public SyAttach save(SyAttach entity) {
         if (!repository.existsById(entity.getAttachId()))
             throw new CmBizException("존재하지 않는 SyAttach입니다: " + entity.getAttachId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyAttach result = repository.save(entity);
         return result;

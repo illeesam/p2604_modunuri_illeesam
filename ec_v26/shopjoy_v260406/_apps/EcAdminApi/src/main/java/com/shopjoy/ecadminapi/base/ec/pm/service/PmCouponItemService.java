@@ -58,7 +58,7 @@ public class PmCouponItemService {
     @Transactional
     public PmCouponItem create(PmCouponItem entity) {
         entity.setCouponItemId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmCouponItem result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmCouponItemService {
     public PmCouponItem save(PmCouponItem entity) {
         if (!repository.existsById(entity.getCouponItemId()))
             throw new CmBizException("존재하지 않는 PmCouponItem입니다: " + entity.getCouponItemId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmCouponItem result = repository.save(entity);
         return result;

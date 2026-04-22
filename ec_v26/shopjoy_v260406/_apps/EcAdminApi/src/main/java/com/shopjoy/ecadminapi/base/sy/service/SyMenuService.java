@@ -58,7 +58,7 @@ public class SyMenuService {
     @Transactional
     public SyMenu create(SyMenu entity) {
         entity.setMenuId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyMenu result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyMenuService {
     public SyMenu save(SyMenu entity) {
         if (!repository.existsById(entity.getMenuId()))
             throw new CmBizException("존재하지 않는 SyMenu입니다: " + entity.getMenuId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyMenu result = repository.save(entity);
         return result;

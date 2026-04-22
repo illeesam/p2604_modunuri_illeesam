@@ -58,7 +58,7 @@ public class SyI18nService {
     @Transactional
     public SyI18n create(SyI18n entity) {
         entity.setI18nId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyI18n result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyI18nService {
     public SyI18n save(SyI18n entity) {
         if (!repository.existsById(entity.getI18nId()))
             throw new CmBizException("존재하지 않는 SyI18n입니다: " + entity.getI18nId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyI18n result = repository.save(entity);
         return result;

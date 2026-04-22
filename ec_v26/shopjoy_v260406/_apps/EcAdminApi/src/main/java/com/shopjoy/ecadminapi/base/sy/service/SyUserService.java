@@ -58,7 +58,7 @@ public class SyUserService {
     @Transactional
     public SyUser create(SyUser entity) {
         entity.setUserId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyUser result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyUserService {
     public SyUser save(SyUser entity) {
         if (!repository.existsById(entity.getUserId()))
             throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyUser result = repository.save(entity);
         return result;

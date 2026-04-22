@@ -58,7 +58,7 @@ public class StSettleRawService {
     @Transactional
     public StSettleRaw create(StSettleRaw entity) {
         entity.setSettleRawId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         StSettleRaw result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class StSettleRawService {
     public StSettleRaw save(StSettleRaw entity) {
         if (!repository.existsById(entity.getSettleRawId()))
             throw new CmBizException("존재하지 않는 StSettleRaw입니다: " + entity.getSettleRawId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleRaw result = repository.save(entity);
         return result;

@@ -58,7 +58,7 @@ public class PdReviewAttachService {
     @Transactional
     public PdReviewAttach create(PdReviewAttach entity) {
         entity.setReviewAttachId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PdReviewAttach result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PdReviewAttachService {
     public PdReviewAttach save(PdReviewAttach entity) {
         if (!repository.existsById(entity.getReviewAttachId()))
             throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdReviewAttach result = repository.save(entity);
         return result;

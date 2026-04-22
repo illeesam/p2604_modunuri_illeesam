@@ -58,7 +58,7 @@ public class PdProdBundleItemService {
     @Transactional
     public PdProdBundleItem create(PdProdBundleItem entity) {
         entity.setBundleItemId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PdProdBundleItem result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PdProdBundleItemService {
     public PdProdBundleItem save(PdProdBundleItem entity) {
         if (!repository.existsById(entity.getBundleItemId()))
             throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + entity.getBundleItemId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdBundleItem result = repository.save(entity);
         return result;

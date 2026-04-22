@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.auth.controller;
 
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.auth.data.vo.FoJoinRes;
-import com.shopjoy.ecadminapi.auth.data.vo.FoLoginReq;
+import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.auth.data.vo.FoLoginRes;
 import com.shopjoy.ecadminapi.auth.data.vo.RefreshReq;
 import com.shopjoy.ecadminapi.auth.service.FoAuthService;
@@ -37,7 +37,7 @@ public class FoAuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<FoLoginRes>> login(@RequestBody @Valid FoLoginReq request) {
+    public ResponseEntity<ApiResponse<FoLoginRes>> login(@RequestBody @Valid LoginReq request) {
         FoLoginRes result = authService.login(request);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

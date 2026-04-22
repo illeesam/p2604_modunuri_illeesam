@@ -58,7 +58,7 @@ public class StSettleAdjService {
     @Transactional
     public StSettleAdj create(StSettleAdj entity) {
         entity.setSettleAdjId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         StSettleAdj result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class StSettleAdjService {
     public StSettleAdj save(StSettleAdj entity) {
         if (!repository.existsById(entity.getSettleAdjId()))
             throw new CmBizException("존재하지 않는 StSettleAdj입니다: " + entity.getSettleAdjId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleAdj result = repository.save(entity);
         return result;

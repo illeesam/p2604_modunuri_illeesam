@@ -58,7 +58,7 @@ public class PmDiscntUsageService {
     @Transactional
     public PmDiscntUsage create(PmDiscntUsage entity) {
         entity.setDiscntUsageId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmDiscntUsage result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmDiscntUsageService {
     public PmDiscntUsage save(PmDiscntUsage entity) {
         if (!repository.existsById(entity.getDiscntUsageId()))
             throw new CmBizException("존재하지 않는 PmDiscntUsage입니다: " + entity.getDiscntUsageId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmDiscntUsage result = repository.save(entity);
         return result;

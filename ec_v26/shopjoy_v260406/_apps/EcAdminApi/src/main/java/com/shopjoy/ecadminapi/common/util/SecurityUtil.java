@@ -11,11 +11,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * 어디서든 정적 메서드로 호출할 수 있다.
  *
  * 반환 값:
- * - currentUserId()   : 인증된 사용자 ID, 미인증 시 "SYSTEM"
- * - currentUserType() : "USER"(관리자) | "MEMBER"(고객), 미인증 시 null
- * - currentRoleId()   : 관리자 역할 ID (sy_user.role_id), MEMBER/미인증 시 null
- * - isBo()          : sy_user 관리자 여부
- * - isFo()        : ec_member 고객 여부
+ * - getUserId()       : 인증된 사용자 ID, 미인증 시 "SYSTEM"
+ * - getUserTypeCd()   : "USER"(관리자) | "MEMBER"(고객), 미인증 시 null
+ * - getRoleId()       : 관리자 역할 ID (sy_user.role_id), MEMBER/미인증 시 null
+ * - isBo()            : sy_user 관리자 여부
+ * - isFo()            : ec_member 고객 여부
+ * - isSo()            : Super Owner 여부
  *
  * 주의: @Transactional 메서드 내부에서도 동일 스레드이므로 SecurityContext가 유지된다.
  *       비동기(@Async) 처리 시에는 SecurityContext가 전파되지 않으므로 별도 처리 필요.
@@ -32,17 +33,17 @@ public final class SecurityUtil {
         return null;
     }
 
-    public static String currentUserId() {
+    public static String getUserId() {
         AuthPrincipal p = currentPrincipal();
         return p != null ? p.userId() : "SYSTEM";
     }
 
-    public static String currentUserType() {
+    public static String getUserTypeCd() {
         AuthPrincipal p = currentPrincipal();
         return p != null ? p.userType() : null;
     }
 
-    public static String currentRoleId() {
+    public static String getRoleId() {
         AuthPrincipal p = currentPrincipal();
         return p != null ? p.roleId() : null;
     }
@@ -54,12 +55,17 @@ public final class SecurityUtil {
 
     /** sy_user 테이블 사용자 여부 */
     public static boolean isBo() {
-        return AuthPrincipal.USER.equals(currentUserType());
+        return AuthPrincipal.USER.equals(getUserTypeCd());
     }
 
     /** ec_member 테이블 사용자 여부 */
     public static boolean isFo() {
-        return AuthPrincipal.MEMBER.equals(currentUserType());
+        return AuthPrincipal.MEMBER.equals(getUserTypeCd());
+    }
+
+    /** So 테이블 사용자 여부 (Super Owner) */
+    public static boolean isSo() {
+        return "SO".equals(getUserTypeCd());
     }
 
     /** ROLE_ADMIN 권한 보유 여부 (isBo()와 별개로 권한 기반 체크) */

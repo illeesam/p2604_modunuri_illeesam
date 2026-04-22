@@ -19,7 +19,4 @@ public class CmStoreConst {
     public static final String DP_DISP_DATAS = "dpDispDatas"; // 전시 데이터 목록
     public static final String SY_APP = "syApp"; // 앱 정보
 
-    // Request Parameters
-    public static final String REQ_PARAM = "reqParam"; // 요청 파라미터
-
 }

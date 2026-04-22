@@ -58,7 +58,7 @@ public class OdDlivItemService {
     @Transactional
     public OdDlivItem create(OdDlivItem entity) {
         entity.setDlivItemId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         OdDlivItem result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class OdDlivItemService {
     public OdDlivItem save(OdDlivItem entity) {
         if (!repository.existsById(entity.getDlivItemId()))
             throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         OdDlivItem result = repository.save(entity);
         return result;

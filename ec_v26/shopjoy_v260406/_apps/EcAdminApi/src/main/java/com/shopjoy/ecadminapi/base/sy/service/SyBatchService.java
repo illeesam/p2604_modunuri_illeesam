@@ -58,7 +58,7 @@ public class SyBatchService {
     @Transactional
     public SyBatch create(SyBatch entity) {
         entity.setBatchId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyBatch result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyBatchService {
     public SyBatch save(SyBatch entity) {
         if (!repository.existsById(entity.getBatchId()))
             throw new CmBizException("존재하지 않는 SyBatch입니다: " + entity.getBatchId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyBatch result = repository.save(entity);
         return result;

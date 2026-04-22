@@ -58,7 +58,7 @@ public class PmGiftCondService {
     @Transactional
     public PmGiftCond create(PmGiftCond entity) {
         entity.setGiftCondId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmGiftCond result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmGiftCondService {
     public PmGiftCond save(PmGiftCond entity) {
         if (!repository.existsById(entity.getGiftCondId()))
             throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmGiftCond result = repository.save(entity);
         return result;

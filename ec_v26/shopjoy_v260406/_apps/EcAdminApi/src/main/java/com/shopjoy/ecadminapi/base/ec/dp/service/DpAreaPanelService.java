@@ -58,7 +58,7 @@ public class DpAreaPanelService {
     @Transactional
     public DpAreaPanel create(DpAreaPanel entity) {
         entity.setAreaPanelId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         DpAreaPanel result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class DpAreaPanelService {
     public DpAreaPanel save(DpAreaPanel entity) {
         if (!repository.existsById(entity.getAreaPanelId()))
             throw new CmBizException("존재하지 않는 DpAreaPanel입니다: " + entity.getAreaPanelId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         DpAreaPanel result = repository.save(entity);
         return result;

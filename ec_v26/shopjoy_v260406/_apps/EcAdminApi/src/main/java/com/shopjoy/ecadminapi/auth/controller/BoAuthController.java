@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.auth.controller;
 
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.auth.data.vo.BoJoinRes;
-import com.shopjoy.ecadminapi.auth.data.vo.BoLoginReq;
+import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.auth.data.vo.BoLoginRes;
 import com.shopjoy.ecadminapi.auth.data.vo.RefreshReq;
 import com.shopjoy.ecadminapi.auth.service.BoAuthService;
@@ -37,7 +37,7 @@ public class BoAuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<BoLoginRes>> login(@RequestBody @Valid BoLoginReq request) {
+    public ResponseEntity<ApiResponse<BoLoginRes>> login(@RequestBody @Valid LoginReq request) {
         BoLoginRes result = authService.login(request);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

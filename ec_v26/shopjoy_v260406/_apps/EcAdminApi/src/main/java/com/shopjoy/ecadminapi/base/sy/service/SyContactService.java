@@ -58,7 +58,7 @@ public class SyContactService {
     @Transactional
     public SyContact create(SyContact entity) {
         entity.setContactId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyContact result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyContactService {
     public SyContact save(SyContact entity) {
         if (!repository.existsById(entity.getContactId()))
             throw new CmBizException("존재하지 않는 SyContact입니다: " + entity.getContactId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyContact result = repository.save(entity);
         return result;

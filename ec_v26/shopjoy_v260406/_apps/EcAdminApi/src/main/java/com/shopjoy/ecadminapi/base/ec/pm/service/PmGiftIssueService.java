@@ -58,7 +58,7 @@ public class PmGiftIssueService {
     @Transactional
     public PmGiftIssue create(PmGiftIssue entity) {
         entity.setGiftIssueId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmGiftIssue result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmGiftIssueService {
     public PmGiftIssue save(PmGiftIssue entity) {
         if (!repository.existsById(entity.getGiftIssueId()))
             throw new CmBizException("존재하지 않는 PmGiftIssue입니다: " + entity.getGiftIssueId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmGiftIssue result = repository.save(entity);
         return result;

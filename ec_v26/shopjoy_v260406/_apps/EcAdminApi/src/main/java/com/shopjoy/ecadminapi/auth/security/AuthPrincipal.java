@@ -14,7 +14,7 @@ package com.shopjoy.ecadminapi.auth.security;
  * - "MEMBER" → ec_member (고객, Front Office)
  * - "EXT"    → 외부 시스템 (External)
  *
- * 사용: SecurityUtil.currentUserId() / currentUserType() / isBo() / isFo() / isExt()
+ * 사용: SecurityUtil.getUserId() / currentUserType() / isBo() / isFo() / isExt()
  */
 public record AuthPrincipal(String userId, String userType, String roleId) {
 

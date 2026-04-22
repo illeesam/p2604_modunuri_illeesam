@@ -58,7 +58,7 @@ public class CmPathService {
     @Transactional
     public CmPath create(CmPath entity) {
         entity.setBizCd(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         CmPath result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class CmPathService {
     public CmPath save(CmPath entity) {
         if (!repository.existsById(entity.getBizCd()))
             throw new CmBizException("존재하지 않는 CmPath입니다: " + entity.getBizCd());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmPath result = repository.save(entity);
         return result;

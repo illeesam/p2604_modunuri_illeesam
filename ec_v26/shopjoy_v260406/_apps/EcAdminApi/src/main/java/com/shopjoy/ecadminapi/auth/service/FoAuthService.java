@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.auth.service;
 
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.auth.data.vo.FoJoinRes;
-import com.shopjoy.ecadminapi.auth.data.vo.FoLoginReq;
+import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.auth.data.vo.FoLoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
@@ -34,7 +34,7 @@ public class FoAuthService {
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
     @Transactional
-    public FoLoginRes login(FoLoginReq request) {
+    public FoLoginRes login(LoginReq request) {
         MbMember member = memberRepository.findByLoginId(request.getLoginId())
                 .orElseThrow(() -> new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다."));
 

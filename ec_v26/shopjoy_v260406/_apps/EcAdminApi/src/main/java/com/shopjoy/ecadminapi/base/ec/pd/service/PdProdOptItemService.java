@@ -58,7 +58,7 @@ public class PdProdOptItemService {
     @Transactional
     public PdProdOptItem create(PdProdOptItem entity) {
         entity.setOptItemId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PdProdOptItem result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PdProdOptItemService {
     public PdProdOptItem save(PdProdOptItem entity) {
         if (!repository.existsById(entity.getOptItemId()))
             throw new CmBizException("존재하지 않는 PdProdOptItem입니다: " + entity.getOptItemId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdOptItem result = repository.save(entity);
         return result;

@@ -58,7 +58,7 @@ public class DpAreaService {
     @Transactional
     public DpArea create(DpArea entity) {
         entity.setAreaId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         DpArea result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class DpAreaService {
     public DpArea save(DpArea entity) {
         if (!repository.existsById(entity.getAreaId()))
             throw new CmBizException("존재하지 않는 DpArea입니다: " + entity.getAreaId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         DpArea result = repository.save(entity);
         return result;

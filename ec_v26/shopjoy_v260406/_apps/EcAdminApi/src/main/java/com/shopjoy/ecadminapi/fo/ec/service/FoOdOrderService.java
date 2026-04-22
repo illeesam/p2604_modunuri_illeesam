@@ -33,13 +33,13 @@ public class FoOdOrderService {
 
     @Transactional(readOnly = true)
     public List<OdOrderDto> getMyOrders(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<OdOrderDto> getMyOrderPage(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
@@ -48,7 +48,7 @@ public class FoOdOrderService {
     public OdOrderDto getById(String orderId) {
         OdOrderDto dto = mapper.selectById(orderId);
         if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId);
-        if (!dto.getMemberId().equals(SecurityUtil.currentUserId()))
+        if (!dto.getMemberId().equals(SecurityUtil.getUserId()))
             throw new CmBizException("접근 권한이 없습니다.");
         return dto;
     }
@@ -56,9 +56,9 @@ public class FoOdOrderService {
     @Transactional
     public OdOrder placeOrder(OdOrder entity) {
         entity.setOrderId(generateId());
-        entity.setMemberId(SecurityUtil.currentUserId());
+        entity.setMemberId(SecurityUtil.getUserId());
         entity.setOrderStatusCd("PENDING");
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }

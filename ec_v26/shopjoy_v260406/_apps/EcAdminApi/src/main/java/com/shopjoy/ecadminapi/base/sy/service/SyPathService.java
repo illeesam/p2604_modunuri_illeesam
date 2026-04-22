@@ -58,7 +58,7 @@ public class SyPathService {
     @Transactional
     public SyPath create(SyPath entity) {
         entity.setBizCd(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyPath result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyPathService {
     public SyPath save(SyPath entity) {
         if (!repository.existsById(entity.getBizCd()))
             throw new CmBizException("존재하지 않는 SyPath입니다: " + entity.getBizCd());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyPath result = repository.save(entity);
         return result;

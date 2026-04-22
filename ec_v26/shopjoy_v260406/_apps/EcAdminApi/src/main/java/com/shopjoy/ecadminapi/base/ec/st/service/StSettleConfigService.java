@@ -58,7 +58,7 @@ public class StSettleConfigService {
     @Transactional
     public StSettleConfig create(StSettleConfig entity) {
         entity.setSettleConfigId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         StSettleConfig result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class StSettleConfigService {
     public StSettleConfig save(StSettleConfig entity) {
         if (!repository.existsById(entity.getSettleConfigId()))
             throw new CmBizException("존재하지 않는 StSettleConfig입니다: " + entity.getSettleConfigId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleConfig result = repository.save(entity);
         return result;

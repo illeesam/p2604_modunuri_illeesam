@@ -46,7 +46,7 @@ public class BoSyBbmService {
     @Transactional
     public SyBbm create(SyBbm body) {
         body.setBbmId("BB" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.currentUserId());
+        body.setRegBy(SecurityUtil.getUserId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
@@ -54,7 +54,7 @@ public class BoSyBbmService {
     @Transactional
     public SyBbmDto update(String id, SyBbm body) {
         SyBbm entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);

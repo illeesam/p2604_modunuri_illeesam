@@ -58,7 +58,7 @@ public class PmPlanItemService {
     @Transactional
     public PmPlanItem create(PmPlanItem entity) {
         entity.setPlanItemId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmPlanItem result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmPlanItemService {
     public PmPlanItem save(PmPlanItem entity) {
         if (!repository.existsById(entity.getPlanItemId()))
             throw new CmBizException("존재하지 않는 PmPlanItem입니다: " + entity.getPlanItemId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmPlanItem result = repository.save(entity);
         return result;

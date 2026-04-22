@@ -1,20 +1,18 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
-import com.shopjoy.ecadminapi.co.cm.data.req.CmAppStoreDataReq;
 import com.shopjoy.ecadminapi.co.cm.service.CmAppStoreDataService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import jakarta.validation.Valid;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 
 /**
  * FO (Front Office - 사용자) 애플리케이션 Store 데이터 API
@@ -47,140 +45,176 @@ public class CmFoAppStoreDataController {
      * @return 토큰, 사용자, 권한, 메뉴, 코드, 속성, 전시 구조, 전시 데이터, 앱 정보 포함
      */
     @PostMapping("/getInitData")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(
-            @Valid @RequestBody CmAppStoreDataReq req) {
-        List<String> requestedItems = parseNames(req.getNames());
+            @RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
+        List<String> requestedItems = CmUtil.parseNames(names);
         boolean requestAll = requestedItems.isEmpty();
 
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
 
         if (requestAll || requestedItems.contains(CmStoreConst.SY_AUTH)) {
-            resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getFoAuth());
+            resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getFoAuth(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         }
         if (requestAll || requestedItems.contains(CmStoreConst.MB_MEMBER)) {
-            resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser());
+            resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_ROLES)) {
-            resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getFoRole());
+            resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getFoRole(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_MENUS)) {
-            resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getFoMenu());
+            resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getFoMenu(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_CODES)) {
-            resultMap.put(CmStoreConst.SY_CODES, storeDataService.getFoCode());
+            resultMap.put(CmStoreConst.SY_CODES, storeDataService.getFoCode(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_PROPS)) {
-            resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getFoProps());
+            resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getFoProps(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         }
         if (requestAll || requestedItems.contains(CmStoreConst.DP_DISP)) {
             Map<String, Object> dispMap = new HashMap<>();
-            dispMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getFoDispStruc());
-            dispMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getFoDispData());
+            dispMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getFoDispStruc(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
+            dispMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getFoDispData(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
             resultMap.put(CmStoreConst.DP_DISP, dispMap);
         }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_APP)) {
-            resultMap.put(CmStoreConst.SY_APP, storeDataService.getFoApp());
+            resultMap.put(CmStoreConst.SY_APP, storeDataService.getFoApp(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         }
 
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getAuth")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getFoAuth());
+        resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getFoAuth(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getUser")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser());
+        resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getMember")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser());
+        resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getRole")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getRole(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRole(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getFoRole());
+        resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getFoRole(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getMenu")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenu(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenu(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getFoMenu());
+        resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getFoMenu(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getCode")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCode(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCode(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.SY_CODES, storeDataService.getFoCode());
+        resultMap.put(CmStoreConst.SY_CODES, storeDataService.getFoCode(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getProps")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getFoProps());
+        resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getFoProps(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getDisp")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getFoDispStruc());
-        resultMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getFoDispData());
+        resultMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getFoDispStruc(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
+        resultMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getFoDispData(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getApp")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@Valid @RequestBody CmAppStoreDataReq req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody String names) {
+        String siteId = "01";
+        String userTypeCd = "FO";
+        String userId = SecurityUtil.getUserId();
+        String roleId = SecurityUtil.getRoleId() != null ? SecurityUtil.getRoleId() : "";
+        boolean isLogin = SecurityUtil.isLogin();
+        boolean isAdmin = false;
+
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.REQ_PARAM, req);
-        resultMap.put(CmStoreConst.SY_APP, storeDataService.getFoApp());
+        resultMap.put(CmStoreConst.SY_APP, storeDataService.getFoApp(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
-    private List<String> parseNames(String names) {
-        List<String> items = new ArrayList<>();
-        if (names == null || names.trim().isEmpty()) {
-            return items;
-        }
-        String[] parts = names.split("\\^");
-        for (String part : parts) {
-            String trimmed = part.trim();
-            if (!trimmed.isEmpty()) {
-                items.add(trimmed);
-            }
-        }
-        return items;
-    }
 }

@@ -46,7 +46,7 @@ public class BoCmChattService {
     @Transactional
     public CmChattRoom create(CmChattRoom body) {
         body.setChattRoomId("CR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.currentUserId());
+        body.setRegBy(SecurityUtil.getUserId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
@@ -54,7 +54,7 @@ public class BoCmChattService {
     @Transactional
     public CmChattRoomDto update(String id, CmChattRoom body) {
         CmChattRoom entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);
@@ -70,7 +70,7 @@ public class BoCmChattService {
     public CmChattRoomDto changeStatus(String id, String statusCd) {
         CmChattRoom entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setChattStatusCd(statusCd);
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);

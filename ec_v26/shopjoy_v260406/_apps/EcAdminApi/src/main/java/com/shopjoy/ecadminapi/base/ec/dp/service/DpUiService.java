@@ -58,7 +58,7 @@ public class DpUiService {
     @Transactional
     public DpUi create(DpUi entity) {
         entity.setUiId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         DpUi result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class DpUiService {
     public DpUi save(DpUi entity) {
         if (!repository.existsById(entity.getUiId()))
             throw new CmBizException("존재하지 않는 DpUi입니다: " + entity.getUiId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         DpUi result = repository.save(entity);
         return result;

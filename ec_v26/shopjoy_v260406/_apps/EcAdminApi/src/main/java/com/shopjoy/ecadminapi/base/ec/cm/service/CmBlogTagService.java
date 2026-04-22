@@ -58,7 +58,7 @@ public class CmBlogTagService {
     @Transactional
     public CmBlogTag create(CmBlogTag entity) {
         entity.setBlogTagId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         CmBlogTag result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class CmBlogTagService {
     public CmBlogTag save(CmBlogTag entity) {
         if (!repository.existsById(entity.getBlogTagId()))
             throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogTag result = repository.save(entity);
         return result;

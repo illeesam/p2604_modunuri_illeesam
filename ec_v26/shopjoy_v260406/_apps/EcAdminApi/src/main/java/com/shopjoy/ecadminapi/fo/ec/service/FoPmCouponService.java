@@ -22,7 +22,7 @@ public class FoPmCouponService {
 
     @Transactional(readOnly = true)
     public List<PmCouponIssueDto> getAvailableCoupons(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.currentUserId());
+        p.put("memberId", SecurityUtil.getUserId());
         p.put("useYn", "N");
         return mapper.selectList(p);
     }

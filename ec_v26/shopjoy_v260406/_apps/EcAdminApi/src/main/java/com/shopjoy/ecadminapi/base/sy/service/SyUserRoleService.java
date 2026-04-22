@@ -58,7 +58,7 @@ public class SyUserRoleService {
     @Transactional
     public SyUserRole create(SyUserRole entity) {
         entity.setUserRoleId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyUserRole result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyUserRoleService {
     public SyUserRole save(SyUserRole entity) {
         if (!repository.existsById(entity.getUserRoleId()))
             throw new CmBizException("존재하지 않는 SyUserRole입니다: " + entity.getUserRoleId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyUserRole result = repository.save(entity);
         return result;

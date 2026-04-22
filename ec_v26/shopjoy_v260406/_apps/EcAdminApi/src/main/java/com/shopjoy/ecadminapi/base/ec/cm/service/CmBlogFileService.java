@@ -57,7 +57,7 @@ public class CmBlogFileService {
     @Transactional
     public CmBlogFile create(CmBlogFile entity) {
         entity.setBlogImgId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         return repository.save(entity);
     }
@@ -68,7 +68,7 @@ public class CmBlogFileService {
                 .orElseThrow(() -> new CmBizException("존재하지 않는 파일입니다: " + entity.getBlogImgId()));
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }

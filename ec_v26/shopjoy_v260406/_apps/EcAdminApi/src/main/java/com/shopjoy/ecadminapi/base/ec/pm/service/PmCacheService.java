@@ -58,7 +58,7 @@ public class PmCacheService {
     @Transactional
     public PmCache create(PmCache entity) {
         entity.setCacheId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmCache result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmCacheService {
     public PmCache save(PmCache entity) {
         if (!repository.existsById(entity.getCacheId()))
             throw new CmBizException("존재하지 않는 PmCache입니다: " + entity.getCacheId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmCache result = repository.save(entity);
         return result;

@@ -58,7 +58,7 @@ public class PdProdImgService {
     @Transactional
     public PdProdImg create(PdProdImg entity) {
         entity.setProdImgId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PdProdImg result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PdProdImgService {
     public PdProdImg save(PdProdImg entity) {
         if (!repository.existsById(entity.getProdImgId()))
             throw new CmBizException("존재하지 않는 PdProdImg입니다: " + entity.getProdImgId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdImg result = repository.save(entity);
         return result;

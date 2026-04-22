@@ -117,16 +117,17 @@ public class GlobalExceptionHandler {
 
     /**
      * 현재 사용자·요청 정보 문자열 생성.
-     * 형태: userId=xxx | userType=USER | roleId=R01 | host=127.0.0.1
+     * 형태: siteId=01 | userId=xxx | userTypeCd=USER | roleId=R01 | host=127.0.0.1
      *       | url=/api/... | method=POST | params=...(최대200자) | token=~xxxxxxxxxx
      */
     private String buildUserInfo(HttpServletRequest req) {
-        String userId   = SecurityUtil.currentUserId();
-        String userType = nvl(SecurityUtil.currentUserType());
-        String roleId   = nvl(SecurityUtil.currentRoleId());
-        String host     = nvl(req.getRemoteAddr());
-        String url      = nvl(req.getRequestURI());
-        String method   = nvl(req.getMethod());
+        String siteId      = "01";
+        String userId      = SecurityUtil.getUserId();
+        String userTypeCd  = nvl(SecurityUtil.getUserTypeCd()); // 사용자유형 {FO:frontend회원,BO:backend사용자,SO:판매,DO:배송,CO:고객}
+        String roleId      = nvl(SecurityUtil.getRoleId());
+        String host        = nvl(req.getRemoteAddr());
+        String url         = nvl(req.getRequestURI());
+        String method      = nvl(req.getMethod());
 
         String qs = req.getQueryString();
         String params = qs != null ? qs : "";
@@ -141,8 +142,8 @@ public class GlobalExceptionHandler {
         }
 
         return String.format(
-            "userId=%s | userType=%s | roleId=%s | host=%s | url=%s | method=%s | params=%s | token=%s",
-            userId, userType, roleId, host, url, method, params, tokenTail
+            "siteId=%s | userId=%s | userTypeCd=%s | roleId=%s | host=%s | url=%s | method=%s | params=%s | token=%s",
+            siteId, userId, userTypeCd, roleId, host, url, method, params, tokenTail
         );
     }
 

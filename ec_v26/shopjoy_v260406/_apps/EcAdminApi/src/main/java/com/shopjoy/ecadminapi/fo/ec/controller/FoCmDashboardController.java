@@ -14,7 +14,7 @@ import java.util.Map;
  * GET /api/fo/ec/cm/dashboard/my — 내 활동 요약
  *
  * 인가: FO_ONLY (로그인 회원)
- * TODO: 더미 데이터 → 실 서비스(SecurityUtil.currentUserId() 기반) 연결 필요
+ * TODO: 더미 데이터 → 실 서비스(SecurityUtil.getUserId() 기반) 연결 필요
  */
 @RestController
 @RequestMapping("/api/fo/ec/cm/dashboard")

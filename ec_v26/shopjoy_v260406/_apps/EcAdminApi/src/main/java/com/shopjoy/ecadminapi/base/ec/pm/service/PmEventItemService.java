@@ -58,7 +58,7 @@ public class PmEventItemService {
     @Transactional
     public PmEventItem create(PmEventItem entity) {
         entity.setEventItemId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmEventItem result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmEventItemService {
     public PmEventItem save(PmEventItem entity) {
         if (!repository.existsById(entity.getEventItemId()))
             throw new CmBizException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmEventItem result = repository.save(entity);
         return result;

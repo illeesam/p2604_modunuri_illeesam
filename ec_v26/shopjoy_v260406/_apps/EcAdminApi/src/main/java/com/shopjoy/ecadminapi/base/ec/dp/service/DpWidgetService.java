@@ -58,7 +58,7 @@ public class DpWidgetService {
     @Transactional
     public DpWidget create(DpWidget entity) {
         entity.setWidgetId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         DpWidget result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class DpWidgetService {
     public DpWidget save(DpWidget entity) {
         if (!repository.existsById(entity.getWidgetId()))
             throw new CmBizException("존재하지 않는 DpWidget입니다: " + entity.getWidgetId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         DpWidget result = repository.save(entity);
         return result;

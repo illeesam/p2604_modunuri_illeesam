@@ -58,7 +58,7 @@ public class SySiteService {
     @Transactional
     public SySite create(SySite entity) {
         entity.setSiteId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SySite result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SySiteService {
     public SySite save(SySite entity) {
         if (!repository.existsById(entity.getSiteId()))
             throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SySite result = repository.save(entity);
         return result;

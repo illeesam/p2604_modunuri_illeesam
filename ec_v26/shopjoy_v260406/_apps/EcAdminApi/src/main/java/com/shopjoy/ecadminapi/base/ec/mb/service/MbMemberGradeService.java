@@ -58,7 +58,7 @@ public class MbMemberGradeService {
     @Transactional
     public MbMemberGrade create(MbMemberGrade entity) {
         entity.setMemberGradeId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class MbMemberGradeService {
     public MbMemberGrade save(MbMemberGrade entity) {
         if (!repository.existsById(entity.getMemberGradeId()))
             throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);
         return result;

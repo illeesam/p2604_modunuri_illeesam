@@ -58,7 +58,7 @@ public class PmSaveUsageService {
     @Transactional
     public PmSaveUsage create(PmSaveUsage entity) {
         entity.setSaveUsageId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         PmSaveUsage result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class PmSaveUsageService {
     public PmSaveUsage save(PmSaveUsage entity) {
         if (!repository.existsById(entity.getSaveUsageId()))
             throw new CmBizException("존재하지 않는 PmSaveUsage입니다: " + entity.getSaveUsageId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         PmSaveUsage result = repository.save(entity);
         return result;

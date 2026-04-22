@@ -58,7 +58,7 @@ public class SyNoticeService {
     @Transactional
     public SyNotice create(SyNotice entity) {
         entity.setNoticeId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         SyNotice result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class SyNoticeService {
     public SyNotice save(SyNotice entity) {
         if (!repository.existsById(entity.getNoticeId()))
             throw new CmBizException("존재하지 않는 SyNotice입니다: " + entity.getNoticeId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         SyNotice result = repository.save(entity);
         return result;

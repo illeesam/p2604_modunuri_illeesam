@@ -58,7 +58,7 @@ public class MbMemberSnsService {
     @Transactional
     public MbMemberSns create(MbMemberSns entity) {
         entity.setMemberSnsId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberSns result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class MbMemberSnsService {
     public MbMemberSns save(MbMemberSns entity) {
         if (!repository.existsById(entity.getMemberSnsId()))
             throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberSns result = repository.save(entity);
         return result;

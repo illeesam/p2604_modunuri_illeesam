@@ -58,7 +58,7 @@ public class CmBlogGoodService {
     @Transactional
     public CmBlogGood create(CmBlogGood entity) {
         entity.setLikeId(generateId());
-        entity.setRegBy(SecurityUtil.currentUserId());
+        entity.setRegBy(SecurityUtil.getUserId());
         entity.setRegDate(LocalDateTime.now());
         CmBlogGood result = repository.save(entity);
         return result;
@@ -68,7 +68,7 @@ public class CmBlogGoodService {
     public CmBlogGood save(CmBlogGood entity) {
         if (!repository.existsById(entity.getLikeId()))
             throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getLikeId());
-        entity.setUpdBy(SecurityUtil.currentUserId());
+        entity.setUpdBy(SecurityUtil.getUserId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogGood result = repository.save(entity);
         return result;
