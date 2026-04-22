@@ -17,9 +17,9 @@ window.ZdStore = {
       const stores = [];
       if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'BO App Init Store' });
       if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'BO App Store' });
-      if (window.useBoAuthStore) stores.push({ name: 'useBoAuthStore', label: 'BO Auth Store' });
+      if (window.useAuthStore) stores.push({ name: 'useAuthStore', label: 'BO Auth Store' });
       if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'BO Code Store' });
-      if (window.useBoConfigStore) stores.push({ name: 'useBoConfigStore', label: 'BO Config Store' });
+      if (window.useConfigStore) stores.push({ name: 'useConfigStore', label: 'BO Config Store' });
       if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'BO Menu Store' });
       if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'BO Prop Store' });
       if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'BO Role Store' });
