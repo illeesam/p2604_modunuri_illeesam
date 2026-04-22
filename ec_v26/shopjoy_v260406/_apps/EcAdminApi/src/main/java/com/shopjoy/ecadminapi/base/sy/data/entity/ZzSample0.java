@@ -44,4 +44,31 @@ public class ZzSample0 {
 
     @Column(name = "upd_date")
     private LocalDateTime updDate;
+
+    @Column(name = "col01", length = 200)
+    private String col01;
+
+    @Column(name = "col02", length = 200)
+    private String col02;
+
+    @Column(name = "col03", length = 200)
+    private String col03;
+
+    @Column(name = "col04", length = 200)
+    private String col04;
+
+    @Column(name = "col05", length = 200)
+    private String col05;
+
+    @Column(name = "col06", length = 200)
+    private String col06;
+
+    @Column(name = "col07", length = 200)
+    private String col07;
+
+    @Column(name = "col08", length = 200)
+    private String col08;
+
+    @Column(name = "col09", length = 200)
+    private String col09;
 }
