@@ -9,6 +9,20 @@
   const pinia = Pinia.createPinia();
   window.foAuth.init(pinia);
 
+  /* ── Init Data Store 초기화 ── */
+  const foAppInitStore = window.useFoAppInitStore?.();
+  if (foAppInitStore) {
+    try {
+      foAppInitStore.restoreFromStorage();
+      const authStore = window.useFoAuthStore?.();
+      if (authStore && authStore.isTokenValid) {
+        foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
+      }
+    } catch (e) {
+      console.warn('[foApp] Init store restore error:', e);
+    }
+  }
+
   const app = createApp({
   setup() {
     /* ── Theme ── */

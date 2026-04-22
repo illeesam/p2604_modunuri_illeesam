@@ -109,8 +109,10 @@ public class SecurityConfig {
                 // /api/fo/ec/my/** — MEMBER만 (더 구체적인 경로 먼저)
                 .requestMatchers("/api/fo/ec/my/**").access(FO_ONLY)
 
-                // /api/fo/ec/** — 누구나 (my/** 제외한 FO EC 전체)
+                // /api/fo/ec/**, /api/bo/cm/**, /api/base/cm/** — 누구나 허용
                 .requestMatchers("/api/fo/ec/**").permitAll()
+                .requestMatchers("/api/bo/cm/**").permitAll()
+                .requestMatchers("/api/base/cm/**").permitAll()
 
                 // /api/ext/** — EXT(외부 시스템)만 허용
                 .requestMatchers("/api/ext/**").access(EXT_ONLY)

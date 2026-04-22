@@ -172,6 +172,20 @@
 
   const app = createApp({
     setup() {
+      /* ── App Init Data Store 초기화 ── */
+      const boAppInitStore = window.useBoAppInitStore?.();
+      if (boAppInitStore) {
+        try {
+          boAppInitStore.restoreFromStorage();
+          const authStore = window.useAuthStore?.();
+          if (authStore?.isLoggedIn) {
+            boAppInitStore.fetchBoAppInitData().catch(e => console.warn('[boApp] fetchBoAppInitData error:', e));
+          }
+        } catch (e) {
+          console.warn('[boApp] App init store restore error:', e);
+        }
+      }
+
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
       const dashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
