@@ -46,13 +46,13 @@ public class CmBoAppStoreDataController {
     @PostMapping("/getInitData")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(
             @RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
         boolean requestAll = requestedItems.isEmpty();
@@ -86,13 +86,13 @@ public class CmBoAppStoreDataController {
 
     @PostMapping("/getAuth")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getBoAuth(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
@@ -101,13 +101,13 @@ public class CmBoAppStoreDataController {
 
     @PostMapping("/getUser")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_USER, storeDataService.getBoUser(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
@@ -116,13 +116,13 @@ public class CmBoAppStoreDataController {
 
     @PostMapping("/getRole")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRole(@RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getBoRole(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
@@ -131,13 +131,13 @@ public class CmBoAppStoreDataController {
 
     @PostMapping("/getMenu")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getMenu(@RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getBoMenu(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
@@ -146,13 +146,13 @@ public class CmBoAppStoreDataController {
 
     @PostMapping("/getCode")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCode(@RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_CODES, storeDataService.getBoCode(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
@@ -161,13 +161,13 @@ public class CmBoAppStoreDataController {
 
     @PostMapping("/getProps")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getBoProps(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));
@@ -176,13 +176,13 @@ public class CmBoAppStoreDataController {
 
     @PostMapping("/getApp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody String names) {
-        String siteId = "01";
-        String userTypeCd = "BO";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String siteId = authUser.siteId();
+        String userTypeCd = CmUtil.nvl(authUser.userTypeCd(), "BO");
         String userId = authUser.userId();
         String roleId = CmUtil.nvl(authUser.roleId());
         boolean isLogin = SecurityUtil.isLogin();
-        boolean isAdmin = SecurityUtil.isBo();
+        boolean isAdmin = SecurityUtil.isAdmin();
 
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(CmStoreConst.SY_APP, storeDataService.getBoApp(siteId, userTypeCd, userId, roleId, isLogin, isAdmin));

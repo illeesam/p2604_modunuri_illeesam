@@ -3,7 +3,7 @@ package com.shopjoy.ecadminapi.auth.controller;
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.auth.data.vo.BoJoinRes;
 import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.auth.data.vo.BoLoginRes;
+import com.shopjoy.ecadminapi.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.auth.data.vo.RefreshReq;
 import com.shopjoy.ecadminapi.auth.service.BoAuthService;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser; // @RequestBody 파라미터 타입
@@ -31,14 +31,14 @@ public class BoAuthController {
     private final BoAuthService authService;
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<BoLoginRes>> getCurrentUser() {
-        BoLoginRes result = authService.getCurrentUserInfo();
+    public ResponseEntity<ApiResponse<LoginRes>> getCurrentUser() {
+        LoginRes result = authService.getCurrentUserInfo();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<BoLoginRes>> login(@RequestBody @Valid LoginReq request) {
-        BoLoginRes result = authService.login(request);
+    public ResponseEntity<ApiResponse<LoginRes>> login(@RequestBody @Valid LoginReq request) {
+        LoginRes result = authService.login(request);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

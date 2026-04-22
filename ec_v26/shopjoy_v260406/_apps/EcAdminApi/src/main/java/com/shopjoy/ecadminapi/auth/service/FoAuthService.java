@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.auth.service;
 
+import com.shopjoy.ecadminapi.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.auth.data.vo.FoJoinRes;
 import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.auth.data.vo.FoLoginRes;
+import com.shopjoy.ecadminapi.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -35,9 +36,9 @@ public class FoAuthService {
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
     @Transactional
-    public FoLoginRes login(LoginReq request) {
+    public LoginRes login(LoginReq request) {
         MbMember member = memberRepository.findByLoginId(request.getLoginId())
-                .orElseThrow(() -> new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다."));
 
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
             throw new CmBizException("비활성화된 계정입니다.");
@@ -52,22 +53,28 @@ public class FoAuthService {
         member.setLastLogin(loginAt);
 
         String accessToken  = jwtProvider.createAccessToken(
-                member.getMemberId(), member.getLoginId(),
-                List.of("ROLE_MEMBER"), AuthPrincipal.FO, null);
+            AccessTokenClaims.builder()
+                .userId(member.getMemberId())
+                .loginId(member.getLoginId())
+                .roles(List.of("ROLE_MEMBER"))
+                .userType(AuthPrincipal.FO)
+                .roleId(null)
+                .vendorId(null)
+                .siteId(CmUtil.nvl(member.getSiteId()))
+                .memberId(member.getMemberId())
+                .memberGrade(CmUtil.nvl(member.getGradeCd()))
+                .isStaffYn("N")
+                .isAdminYn("N")
+                .build()
+        );
         String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), AuthPrincipal.FO);
 
-        return FoLoginRes.builder()
+        return LoginRes.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .expiresIn(jwtProvider.getAccessExpiryMinutes() * 60)
-                .memberId(member.getMemberId())
-                .loginId(member.getLoginId())
-                .memberNm(member.getMemberNm())
+                .userId(member.getMemberId())
                 .siteId(CmUtil.nvl(member.getSiteId()))
-                .roleId(null)
-                .loginAt(loginAt)
-                .accessExpiresIn(jwtProvider.getAccessExpiryMinutes())
-                .refreshExpiresIn(jwtProvider.getRefreshExpiryMinutes())
+                .userTypeCd(AuthPrincipal.FO)
                 .build();
     }
 
@@ -110,8 +117,20 @@ public class FoAuthService {
         revokedTokens.add(refreshToken);
 
         String newAccess  = jwtProvider.createAccessToken(
-                memberId, member.getLoginId(),
-                List.of("ROLE_MEMBER"), AuthPrincipal.FO, null);
+            AccessTokenClaims.builder()
+                .userId(memberId)
+                .loginId(member.getLoginId())
+                .roles(List.of("ROLE_MEMBER"))
+                .userType(AuthPrincipal.FO)
+                .roleId(null)
+                .vendorId(null)
+                .siteId(CmUtil.nvl(member.getSiteId()))
+                .memberId(member.getMemberId())
+                .memberGrade(CmUtil.nvl(member.getGradeCd()))
+                .isStaffYn("N")
+                .isAdminYn("N")
+                .build()
+        );
         String newRefresh = jwtProvider.createRefreshToken(memberId, AuthPrincipal.FO);
 
         return new TokenPair(newAccess, newRefresh,
@@ -125,17 +144,15 @@ public class FoAuthService {
     }
 
     @Transactional(readOnly = true)
-    public FoLoginRes getCurrentUserInfo() {
+    public LoginRes getCurrentUserInfo() {
         String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
-        return FoLoginRes.builder()
-                .memberId(member.getMemberId())
-                .loginId(member.getLoginId())
-                .memberNm(member.getMemberNm())
+        return LoginRes.builder()
+                .userId(member.getMemberId())
                 .siteId(CmUtil.nvl(member.getSiteId()))
-                .roleId(null)
+                .userTypeCd(AuthPrincipal.FO)
                 .build();
     }
 }

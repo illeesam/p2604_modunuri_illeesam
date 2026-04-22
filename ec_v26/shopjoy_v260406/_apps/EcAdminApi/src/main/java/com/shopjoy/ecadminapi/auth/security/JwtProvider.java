@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.auth.security;
 
+import com.shopjoy.ecadminapi.auth.data.dto.AccessTokenClaims;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -29,31 +30,33 @@ public class JwtProvider {
     }
 
     /**
-     * Access Token 생성.
-     * userType을 클레임에 포함시켜 JwtAuthFilter에서 DB 없이 AuthPrincipal을 복원할 수 있게 한다.
-     * 클레임 구조: sub=userId, loginId, roles, type="access", userType
+     * Access Token 생성 (DTO 사용).
+     * JWT 클레임에 AuthPrincipal 구성에 필요한 모든 정보를 포함시켜
+     * JwtAuthFilter에서 DB 없이 AuthPrincipal을 완벽하게 복원할 수 있게 한다.
      */
-    /**
-     * Access Token 생성.
-     * userType을 클레임에 포함시켜 JwtAuthFilter에서 DB 없이 AuthPrincipal을 복원할 수 있게 한다.
-     * 클레임 구조: sub=userId, loginId, roles, type="access", userType, roleId
-     */
-    public String createAccessToken(String userId, String loginId, List<String> roles, String userType, String roleId) {
+    public String createAccessToken(AccessTokenClaims claims) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessExpiry);
 
         return Jwts.builder()
-            .subject(userId)
-            .claim("loginId", loginId)
-            .claim("roles", roles)
+            .subject(claims.getUserId())
+            .claim("loginId", claims.getLoginId())
+            .claim("roles", claims.getRoles())
             .claim("type", "access")
-            .claim("userType", userType)
-            .claim("roleId", roleId)
+            .claim("userType", claims.getUserType())
+            .claim("roleId", claims.getRoleId())
+            .claim("vendorId", claims.getVendorId())
+            .claim("siteId", claims.getSiteId())
+            .claim("memberId", claims.getMemberId())
+            .claim("memberGrade", claims.getMemberGrade())
+            .claim("isStaffYn", claims.getIsStaffYn())
+            .claim("isAdminYn", claims.getIsAdminYn())
             .issuedAt(now)
             .expiration(expiry)
             .signWith(secretKey)
             .compact();
     }
+
 
     /**
      * Refresh Token 생성.
@@ -121,5 +124,33 @@ public class JwtProvider {
     @SuppressWarnings("unchecked")
     public List<String> getRoles(String token) {
         return getClaims(token).get("roles", List.class);
+    }
+
+    public String getLoginId(String token) {
+        return getClaims(token).get("loginId", String.class);
+    }
+
+    public String getVendorId(String token) {
+        return getClaims(token).get("vendorId", String.class);
+    }
+
+    public String getSiteId(String token) {
+        return getClaims(token).get("siteId", String.class);
+    }
+
+    public String getMemberId(String token) {
+        return getClaims(token).get("memberId", String.class);
+    }
+
+    public String getMemberGrade(String token) {
+        return getClaims(token).get("memberGrade", String.class);
+    }
+
+    public String getIsStaffYn(String token) {
+        return getClaims(token).get("isStaffYn", String.class);
+    }
+
+    public String getIsAdminYn(String token) {
+        return getClaims(token).get("isAdminYn", String.class);
     }
 }

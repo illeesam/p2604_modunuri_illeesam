@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.auth.service;
 
+import com.shopjoy.ecadminapi.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.auth.data.vo.BoJoinRes;
 import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.auth.data.vo.BoLoginRes;
+import com.shopjoy.ecadminapi.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -55,8 +56,16 @@ public class BoAuthService {
     }
 
     @Transactional
-    public BoLoginRes login(LoginReq request) {
-        SyUser user = findUserByLoginId(request.getLoginId());
+    public LoginRes login(LoginReq request) {
+        SyUser user;
+        try {
+            user = em.createQuery(
+                "SELECT u FROM SyUser u WHERE u.loginId = :loginId", SyUser.class)
+                .setParameter("loginId", request.getLoginId())
+                .getSingleResult();
+        } catch (NoResultException e) {
+            throw new CmBizException("사용자 로그인ID가 올바르지 않습니다.");
+        }
 
         if (!"ACTIVE".equals(user.getUserStatusCd())) {
             throw new CmBizException("비활성화된 계정입니다.");
@@ -73,22 +82,30 @@ public class BoAuthService {
         user.setLastLoginDate(loginAt);
 
         List<String> roles = List.of("ROLE_ADMIN");
-        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getLoginId(), roles, AuthPrincipal.BO, user.getRoleId());
+        String accessToken = jwtProvider.createAccessToken(
+            AccessTokenClaims.builder()
+                .userId(user.getUserId())
+                .loginId(user.getLoginId())
+                .roles(roles)
+                .userType(AuthPrincipal.BO)
+                .roleId(user.getRoleId())
+                .vendorId(null)
+                .siteId(user.getSiteId())
+                .memberId(null)
+                .memberGrade(null)
+                .isStaffYn("N")
+                .isAdminYn("N")
+                .build()
+        );
         String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), AuthPrincipal.BO);
 
-        return BoLoginRes.builder()
+        return LoginRes.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .expiresIn(jwtProvider.getAccessExpiryMinutes() * 60)
             .userId(user.getUserId())
-            .loginId(user.getLoginId())
-            .userNm(user.getUserNm())
-            .userEmail(user.getUserEmail())
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
-            .loginAt(loginAt)
-            .accessExpiresIn(jwtProvider.getAccessExpiryMinutes())
-            .refreshExpiresIn(jwtProvider.getRefreshExpiryMinutes())
+            .userTypeCd(AuthPrincipal.BO)
             .build();
     }
 
@@ -117,7 +134,21 @@ public class BoAuthService {
         revokedTokens.add(refreshToken);
 
         List<String> roles = List.of("ROLE_ADMIN");
-        String newAccessToken = jwtProvider.createAccessToken(userId, user.getLoginId(), roles, userType, user.getRoleId());
+        String newAccessToken = jwtProvider.createAccessToken(
+            AccessTokenClaims.builder()
+                .userId(userId)
+                .loginId(user.getLoginId())
+                .roles(roles)
+                .userType(userType)
+                .roleId(user.getRoleId())
+                .vendorId(null)
+                .siteId(user.getSiteId())
+                .memberId(null)
+                .memberGrade(null)
+                .isStaffYn("N")
+                .isAdminYn("Y")
+                .build()
+        );
         String newRefreshToken = jwtProvider.createRefreshToken(userId, userType);
 
         return new TokenPair(newAccessToken, newRefreshToken,
@@ -131,31 +162,19 @@ public class BoAuthService {
     }
 
     @Transactional(readOnly = true)
-    public BoLoginRes getCurrentUserInfo() {
+    public LoginRes getCurrentUserInfo() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         SyUser user = em.find(SyUser.class, userId);
         if (user == null) {
             throw new CmBizException("사용자를 찾을 수 없습니다.");
         }
 
-        return BoLoginRes.builder()
+        return LoginRes.builder()
             .userId(user.getUserId())
-            .loginId(user.getLoginId())
-            .userNm(user.getUserNm())
-            .userEmail(user.getUserEmail())
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
+            .userTypeCd(AuthPrincipal.BO)
             .build();
     }
 
-    private SyUser findUserByLoginId(String loginId) {
-        try {
-            return em.createQuery(
-                "SELECT u FROM SyUser u WHERE u.loginId = :loginId", SyUser.class)
-                .setParameter("loginId", loginId)
-                .getSingleResult();
-        } catch (NoResultException e) {
-            throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
-        }
-    }
 }
