@@ -1,6 +1,15 @@
 {
     "liveServer.settings.port": 5501,
     "java.compile.nullAnalysis.mode": "automatic",
-    // "java.configuration.updateBuildConfiguration": "automatic",
-    // "java.compile.nullAnalysis.mode": "automatic"
+    "java.jdt.ls.java.home": "C:\\Users\\illee\\.jdks\\corretto-17.0.18",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "C:\\Users\\illee\\.jdks\\corretto-17.0.18",
+            "default": true
+        }
+    ],
+    "java.test.config": {
+        "vmargs": ["-Duser.timezone=Asia/Seoul"]
+    }
 }
