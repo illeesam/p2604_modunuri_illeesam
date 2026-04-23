@@ -15,7 +15,7 @@ window.ZdStore = {
 
     const storeList = computed(() => {
       const stores = [];
-      if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'boAppInitStore.js', api: null, hasLocalStorage: false });
+      if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'boAppInitStore.js', api: 'getInitData', hasLocalStorage: false });
       if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'boAppStore.js', api: 'getApp', hasLocalStorage: false });
       if (window.useAuthStore) stores.push({ name: 'useAuthStore', label: 'boAuthStore.js 💾', api: 'getAuth', hasLocalStorage: true });
       if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'boCodeStore.js', api: 'getCodes', hasLocalStorage: false });
@@ -119,20 +119,25 @@ window.ZdStore = {
         return;
       }
       try {
-        const apiName = storeName.startsWith('useFo') ? 'window.foApi' : 'window.boApi';
         const api = storeName.startsWith('useFo') ? window.foApi : window.boApi;
         if (!api) {
           props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }
-        const res = await api.get(`/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`);
+        const endpoint = `/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`;
+        const url = store.api === 'getInitData' ? `${endpoint}?names=ALL` : endpoint;
+        const res = await api.get(url);
         if (res?.data?.data) {
           const storeFunc = window[storeName];
           if (storeFunc) {
             const storeInst = storeFunc();
             const responseData = res.data.data;
             if (responseData) {
-              Object.assign(storeInst.$state, Object.values(responseData)[0]);
+              if (store.api === 'getInitData') {
+                Object.assign(storeInst.$state, responseData);
+              } else {
+                Object.assign(storeInst.$state, Object.values(responseData)[0]);
+              }
               const jsonStr = JSON.stringify(storeInst.$state, null, 2);
               editedStoreInfo[storeName] = jsonStr;
               selectedStore.value = storeName;
