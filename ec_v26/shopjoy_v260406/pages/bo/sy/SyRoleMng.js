@@ -2,28 +2,33 @@
 window.SyRoleMng = {
   name: 'SyRoleMng',
   props: ['navigate', 'showToast', 'showConfirm'],
-  setup(props) {    const roles = reactive([]);
+  setup(props) {
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const roles = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
-    // onMounted에서 API 로드
+    // adminData 참조
+    const ad = window.boData || { roles: [] };
+
+    // onMounted에서 API 로드 (currently using adminData)
     onMounted(async () => {
-      loading.value = true;
-      try {
-        const res = await window.boApi.get('/bo/sy/role/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        roles = res.data?.data?.list || [];
-        error.value = null;
-      } catch (err) {
-        error.value = err.message;
-        if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
-      } finally {
-        loading.value = false;
-      }
+      // loading.value = true;
+      // try {
+      //   const res = await window.boApi.get('/bo/sy/role/page', {
+      //     params: { pageNo: 1, pageSize: 10000 }
+      //   });
+      //   window.safeArrayUtils.updateArray(roles, res.data?.data?.list || []);
+      //   error.value = null;
+      // } catch (err) {
+      //   error.value = err.message;
+      //   if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
+      // } finally {
+      //   loading.value = false;
+      // }
     });
     /* ── 표시경로 선택 모달 (sy_path) ── */
-    const pathPickModal = Vue.reactive({ show: false, row: null });
+    const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => {
@@ -37,11 +42,11 @@ window.SyRoleMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = Vue.ref(null);
-    const expanded = Vue.reactive(new Set(['']));
+    const selectedPath = ref(null);
+    const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => {
+    const tree = computed(() => {
       const t = window.boCmUtil.buildRoleTree();
       const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
@@ -65,19 +70,17 @@ window.SyRoleMng = {
       return t;
     });
     /* 선택 권한 + 자손 roleId Set */
-    const allowedRoleIds = Vue.computed(() => {
+    const allowedRoleIds = computed(() => {
       if (selectedPath.value == null) return null;
       return window.boCmUtil.collectDescendantIds(roles, 'roleId', 'parentId', selectedPath.value);
     });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-
-    const { ref, reactive, computed, watch } = Vue;
 
     const siteNm  = computed(() => window.boCmUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
@@ -125,7 +128,7 @@ window.SyRoleMng = {
     const searchUseYn = ref('');
     const searchCat   = ref('');
     const treeCatFilter = ref('');
-    const applied = Vue.reactive({ kw: '', type: '', useYn: '', cat: '' });
+    const applied = reactive({ kw: '', type: '', useYn: '', cat: '' });
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -426,8 +429,8 @@ window.SyRoleMng = {
       '역할목록.csv'
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
-    Vue.watch(treeCatFilter, () => loadGrid());
+    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(treeCatFilter, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return {
