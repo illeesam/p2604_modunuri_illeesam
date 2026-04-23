@@ -7,7 +7,7 @@ window.XsLocalStorage = {
   setup(props) {
     const { ref, computed, onMounted, onUnmounted } = Vue;
 
-    const storageData = ref([]);
+    const storageData = reactive([]);
     const filterKey = ref('');
     const editingKey = ref(null);
     const editingValue = ref('');
@@ -23,12 +23,12 @@ window.XsLocalStorage = {
         const value = localStorage.getItem(key);
         data.push({ key, value });
       }
-      storageData.value = data.sort((a, b) => a.key.localeCompare(b.key));
+      storageData = data.sort((a, b) => a.key.localeCompare(b.key));
     };
 
     const filteredData = computed(() => {
-      if (!filterKey.value) return storageData.value;
-      return storageData.value.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
+      if (!filterKey.value) return storageData;
+      return storageData.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
     });
 
     const copyValue = (value) => {

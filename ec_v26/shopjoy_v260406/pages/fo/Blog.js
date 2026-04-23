@@ -3,7 +3,7 @@ window.Blog = {
   name: 'Blog',
   props: ['navigate', 'config'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, reactive, computed } = Vue;
 
     const searchText = ref('');
     const selectedCat = ref('all');
@@ -16,7 +16,7 @@ window.Blog = {
       { id: 'howto', name: '스타일링 팁' },
     ];
 
-    const posts = ref([
+    const posts = reactive([
       { id: 1, title: 'Anteposuerit litterarum formas.', category: 'fashion', author: '김민지', date: '2026.04.10', readTime: '5분',
         excerpt: '고급 코튼 소재로 제작된 프리미엄 티셔츠. 통기성이 우수하고 세탁 후에도 형태가 유지됩니다. 올봄 스타일링의 핵심 아이템을 만나보세요.',
         thumb: 'assets/cdn/prod/img/blog/blog-1.jpg', tags: ['패션', '신상품', '코튼100%'], viewCount: 1240, commentCount: 8 },
@@ -38,7 +38,7 @@ window.Blog = {
     ]);
 
     const filteredPosts = computed(() => {
-      let list = posts.value;
+      let list = posts;
       if (selectedCat.value !== 'all') list = list.filter(p => p.category === selectedCat.value);
       const q = searchText.value.trim().toLowerCase();
       if (q) list = list.filter(p => p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q) || (p.tags || []).some(t => t.includes(q)));
@@ -55,7 +55,7 @@ window.Blog = {
     ];
     const postBg = (id) => thumbBgs[(id - 1) % thumbBgs.length];
 
-    const latestPosts = computed(() => [...posts.value].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
+    const latestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
 
     return { searchText, selectedCat, categories, filteredPosts, latestPosts, postBg };
   },

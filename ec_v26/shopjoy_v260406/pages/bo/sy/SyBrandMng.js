@@ -4,7 +4,7 @@ window.SyBrandMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const brands = ref([]);
+    const brands = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -25,7 +25,7 @@ window.SyBrandMng = {
         const res = await window.boApi.get('/bo/sy/brand/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        brands.value = res.data?.data?.list || [];
+        brands = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -85,7 +85,7 @@ window.SyBrandMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      (brands.value || [])
+      (brands || [])
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !b.brandCode?.toLowerCase().includes(kw)
@@ -199,20 +199,20 @@ window.SyBrandMng = {
         { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
 
-      if (!brands.value) brands.value = [];
+      if (!brands) brands = [];
       dRows.forEach(r => {
-        const idx = brands.value.findIndex(b => b.brandId === r.brandId);
-        if (idx !== -1) brands.value.splice(idx, 1);
+        const idx = brands.findIndex(b => b.brandId === r.brandId);
+        if (idx !== -1) brands.splice(idx, 1);
       });
       uRows.forEach(r => {
-        const idx = brands.value.findIndex(b => b.brandId === r.brandId);
-        if (idx !== -1) Object.assign(brands.value[idx],
+        const idx = brands.findIndex(b => b.brandId === r.brandId);
+        if (idx !== -1) Object.assign(brands[idx],
           { brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
             logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark });
       });
-      let nextId = Math.max(...brands.value.map(b => b.brandId), 0);
+      let nextId = Math.max(...brands.map(b => b.brandId), 0);
       iRows.forEach(r => {
-        brands.value.push({
+        brands.push({
           brandId: ++nextId, brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
           logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark,
           regDate: new Date().toISOString().slice(0, 10),

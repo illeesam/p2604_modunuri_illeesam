@@ -3,12 +3,12 @@ window.Event = {
   name: 'Event',
   props: ['navigate', 'config'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, reactive, computed } = Vue;
 
     const activeTab = ref('ongoing'); // ongoing | ended
     const sortBy    = ref('latest');  // latest | deadline
 
-    const events = ref([
+    const events = reactive([
       {
         id: 1, title: '봄 베스트 상품 달력이벤트 70% 혜택',
         status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.30',
@@ -68,7 +68,7 @@ window.Event = {
     ]);
 
     const filteredEvents = computed(() => {
-      let list = events.value.filter(e =>
+      let list = events.filter(e =>
         activeTab.value === 'ongoing' ? e.status === 'ongoing' : e.status === 'ended'
       );
       if (sortBy.value === 'deadline') {
@@ -77,8 +77,8 @@ window.Event = {
       return list;
     });
 
-    const ongoingCount = computed(() => events.value.filter(e => e.status === 'ongoing').length);
-    const endedCount   = computed(() => events.value.filter(e => e.status === 'ended').length);
+    const ongoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
+    const endedCount   = computed(() => events.filter(e => e.status === 'ended').length);
 
     return { activeTab, sortBy, filteredEvents, ongoingCount, endedCount };
   },
