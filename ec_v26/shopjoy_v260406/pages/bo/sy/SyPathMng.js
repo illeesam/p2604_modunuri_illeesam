@@ -5,7 +5,7 @@ window.SyPathMng = {
 
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const ad = null;
+    const ad = window.boData || { bizCdCodes: [], paths: [] };
 
     /* ── 검색 상태 ── */
     const kw       = ref('');
@@ -13,14 +13,23 @@ window.SyPathMng = {
     const bizFlt   = ref('');
 
     /* ── biz_cd 옵션 (공통코드 등록 항목) ── */
-    const BIZ_OPTIONS = computed(() => ad.bizCdCodes || []);
-    const bizLabel = (cd) => (BIZ_OPTIONS.value.find(b => b.codeValue === cd) || {}).codeLabel || cd;
+    const BIZ_OPTIONS = computed(() => {
+      const opts = ad.bizCdCodes || [];
+      return Array.isArray(opts) ? opts : [];
+    });
+    const bizLabel = (cd) => {
+      const opts = BIZ_OPTIONS.value || [];
+      return (Array.isArray(opts) && opts.find(b => b.codeValue === cd) || {}).codeLabel || cd;
+    };
 
     /* ── 데이터 로드 ── */
     const rows = reactive([]);
     let _newId = -1;
     const reload = () => {
-      rows.splice(0, rows.length, ...(ad.paths || []).map(p => ({ ...p, _status: '' })));
+      const paths = ad.paths || [];
+      if (Array.isArray(paths)) {
+        rows.splice(0, rows.length, ...paths.map(p => ({ ...p, _status: '' })));
+      }
     };
     reload();
 

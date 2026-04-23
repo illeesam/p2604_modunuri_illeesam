@@ -18,7 +18,7 @@ window.SyPropMng = {
     };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const ad = null;
+    const ad = window.boData || { props: [] };
 
     /* ── 검색 ── */
     const kw       = ref('');
@@ -30,7 +30,10 @@ window.SyPropMng = {
     const rows = reactive([]);
     const _newId = ref(-1);
     const reload = () => {
-      rows.splice(0, rows.length, ...(ad.props || []).map(p => ({ ...p, _status: '' })));
+      const props = ad.props || [];
+      if (Array.isArray(props)) {
+        rows.splice(0, rows.length, ...props.map(p => ({ ...p, _status: '' })));
+      }
     };
     reload();
 

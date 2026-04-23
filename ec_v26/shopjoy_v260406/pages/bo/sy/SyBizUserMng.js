@@ -8,23 +8,25 @@ window.SyBizUserMng = {
     const loading = ref(false);
     const error = ref(null);
 
-    // onMounted에서 API 로드
+    // adminData 참조
+    const ad = window.boData || { bizUsers: [], roles: [] };
+
+    // onMounted에서 API 로드 (필요시)
     onMounted(async () => {
-      loading.value = true;
-      try {
-        const res = await window.boApi.get('/bo/sy/biz-user/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        bizUsers.value = res.data?.data?.list || [];
-        error.value = null;
-      } catch (err) {
-        error.value = err.message;
-        if (props.showToast) props.showToast('SyBizUser 로드 실패', 'error');
-      } finally {
-        loading.value = false;
-      }
+      // Currently using adminData directly
+      // loading.value = true;
+      // try {
+      //   const res = await window.boApi.get('/bo/sy/biz-user/page', {
+      //     params: { pageNo: 1, pageSize: 10000 }
+      //   });
+      //   window.safeArrayUtils.updateArray(bizUsers, res.data?.data?.list || []);
+      // } catch (err) {
+      //   error.value = err.message;
+      //   if (props.showToast) props.showToast('SyBizUser 로드 실패', 'error');
+      // } finally {
+      //   loading.value = false;
+      // }
     });
-    const ad = null;
 
     /* 좌측 사용자역할 트리 (sy_path biz_cd = 'sy_biz#'+bizId) — 검색 선택된 사업자별 동적 */
     const selectedPath = ref(null);
