@@ -5,7 +5,7 @@ window.SyBatchHist = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const batches = reactive([]);
-    const batchLogs = ref((window.boData?.batchLogs || []));
+    const batchLogs = reactive((window.boData?.batchLogs || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -36,7 +36,7 @@ window.SyBatchHist = {
     );
 
     const filtered = computed(() => {
-      const logs = [...(batchLogs.value || [])];
+      const logs = [...(batchLogs || [])];
       logs.sort((a, b) => (b.runAt > a.runAt ? 1 : -1));
       return logs.filter(l => {
         if (searchBatchId.value && l.batchId !== Number(searchBatchId.value)) return false;

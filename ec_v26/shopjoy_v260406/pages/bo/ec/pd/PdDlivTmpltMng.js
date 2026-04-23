@@ -4,7 +4,7 @@ window.PdDlivTmpltMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const dlivTmplts = ref((window.boData?.dlivTmplts || []));
+    const dlivTmplts = reactive((window.boData?.dlivTmplts || []));
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchMethod = ref('');
@@ -21,7 +21,7 @@ window.PdDlivTmpltMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (dlivTmplts.value || []).filter(t => {
+      return (dlivTmplts || []).filter(t => {
         if (kw && !t.dlivTmpltNm.toLowerCase().includes(kw)) return false;
         if (applied.method && t.dlivMethodCd !== applied.method) return false;
         if (applied.use && t.useYn !== applied.use) return false;
@@ -33,7 +33,7 @@ window.PdDlivTmpltMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (dlivTmplts.value||[]).find(t => t.dlivTmpltId === selectedId.value) || null);
+    const selectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === selectedId.value) || null);
     const form = reactive({});
     const isNew = ref(false);
 
@@ -54,7 +54,7 @@ window.PdDlivTmpltMng = {
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       const isNewTmplt = isNew.value;
-      const src = dlivTmplts.value;
+      const src = dlivTmplts;
       if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); selectedId.value = form.dlivTmpltId; isNew.value = false; }
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
@@ -70,7 +70,7 @@ window.PdDlivTmpltMng = {
       if (!selectedRow.value) return;
       const ok = await props.showConfirm('삭제', `[${selectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = dlivTmplts.value.findIndex(t => t.dlivTmpltId === selectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.value.splice(si, 1); closeDetail();
+      const si = dlivTmplts.findIndex(t => t.dlivTmpltId === selectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); closeDetail();
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/dliv-tmplt/${selectedRow.value.dlivTmpltId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

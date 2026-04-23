@@ -5,7 +5,7 @@ window.PmVoucherMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const vouchers = reactive([]);
-    const voucherList = ref((window.boData?.vouchers || []));
+    const voucherList = reactive((window.boData?.vouchers || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -56,7 +56,7 @@ window.PmVoucherMng = {
 
     const applied = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => (voucherList.value || []).filter(v => {
+    const filtered = computed(() => (voucherList || []).filter(v => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !v.voucherNm.toLowerCase().includes(kw) && !String(v.voucherId).includes(kw)) return false;
       if (applied.status && v.voucherStatus !== applied.status) return false;
@@ -97,8 +97,8 @@ window.PmVoucherMng = {
     const doDelete = async (v) => {
       const ok = await props.showConfirm('삭제', `[${v.voucherNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (voucherList.value || []).findIndex(x => x.voucherId === v.voucherId);
-      if (idx !== -1) voucherList.value.splice(idx, 1);
+      const idx = (voucherList || []).findIndex(x => x.voucherId === v.voucherId);
+      if (idx !== -1) voucherList.splice(idx, 1);
       if (selectedId.value === v.voucherId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/pm/voucher/${v.voucherId}`);

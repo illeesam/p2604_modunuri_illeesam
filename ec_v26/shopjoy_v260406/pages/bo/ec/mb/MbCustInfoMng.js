@@ -68,9 +68,9 @@
     const custInfos = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const loginHistory = ref((window.boData?.loginHistory || []));
-    const couponUsage = ref((window.boData?.couponUsage || []));
-    const sendHistory = ref((window.boData?.sendHistory || []));
+    const loginHistory = reactive((window.boData?.loginHistory || []));
+    const couponUsage = reactive((window.boData?.couponUsage || []));
+    const sendHistory = reactive((window.boData?.sendHistory || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -144,15 +144,15 @@
       );
       const custLoginHist = computed(() =>
         !customer.value ? [] : filtered(
-          (loginHistory.value || []).filter(l => l.userId === customer.value.userId), 'loginDate')
+          (loginHistory || []).filter(l => l.userId === customer.value.userId), 'loginDate')
       );
       const custCouponUsage = computed(() =>
         !customer.value ? [] : filtered(
-          (couponUsage.value || []).filter(u => u.userId === customer.value.userId), 'usedDate')
+          (couponUsage || []).filter(u => u.userId === customer.value.userId), 'usedDate')
       );
       const custSendHist = computed(() =>
         !customer.value ? [] : filtered(
-          (sendHistory.value || []).filter(s => s.userId === customer.value.userId), 'sendDate')
+          (sendHistory || []).filter(s => s.userId === customer.value.userId), 'sendDate')
       );
 
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */

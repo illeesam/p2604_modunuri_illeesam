@@ -6,7 +6,7 @@ window.PmVoucherDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const vouchers = reactive([]);
-    const voucherList = ref((window.boData?.vouchers || []));
+    const voucherList = reactive((window.boData?.vouchers || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -55,7 +55,7 @@ window.PmVoucherDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const v = (voucherList.value || []).find(x => x.voucherId === props.editId);
+        const v = (voucherList || []).find(x => x.voucherId === props.editId);
         if (v) Object.assign(form, { ...v });
       }
       if (!form.startDate) form.startDate = DEFAULT_START;
@@ -64,14 +64,14 @@ window.PmVoucherDtl = {
 
     /* 발급내역 */
     const issuedList = computed(() => {
-      if (!voucherList.value) return [];
+      if (!voucherList) return [];
       const v = voucherList.window.safeArrayUtils.safeFind(value, x => x.voucherId === props.editId);
       return v ? (v.issuedList || []) : [];
     });
 
     /* 사용내역 */
     const usedList = computed(() => {
-      if (!voucherList.value) return [];
+      if (!voucherList) return [];
       const v = voucherList.window.safeArrayUtils.safeFind(value, x => x.voucherId === props.editId);
       return v ? (v.usedList || []) : [];
     });
@@ -165,17 +165,17 @@ window.PmVoucherDtl = {
       }
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!voucherList.value) voucherList.value = [];
+      if (!voucherList) voucherList = [];
       if (isNew.value) {
-        voucherList.value.push({
+        voucherList.push({
           ...form,
           voucherId: Date.now(),
           issuedList: [],
           usedList: [],
         });
       } else {
-        const idx = voucherList.value.findIndex(x => x.voucherId === props.editId);
-        if (idx !== -1) Object.assign(voucherList.value[idx], { ...form });
+        const idx = voucherList.findIndex(x => x.voucherId === props.editId);
+        if (idx !== -1) Object.assign(voucherList[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/voucher`, { ...form }) : window.boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }));

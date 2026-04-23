@@ -6,7 +6,7 @@ window.PmSaveDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const saves = reactive([]);
-    const saveList = ref((window.boData?.saves || []));
+    const saveList = reactive((window.boData?.saves || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -54,7 +54,7 @@ window.PmSaveDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const s = (saveList.value || []).find(x => x.saveId === props.editId);
+        const s = (saveList || []).find(x => x.saveId === props.editId);
         if (s) Object.assign(form, s);
       }
     });
@@ -90,16 +90,16 @@ window.PmSaveDtl = {
       }
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!saveList.value) saveList.value = [];
+      if (!saveList) saveList = [];
       if (isNew.value) {
-        saveList.value.push({
+        saveList.push({
           ...form,
           saveId: Date.now(),
           regDate: new Date().toISOString().slice(0, 10),
         });
       } else {
-        const idx = saveList.value.findIndex(x => x.saveId === props.editId);
-        if (idx !== -1) Object.assign(saveList.value[idx], { ...form });
+        const idx = saveList.findIndex(x => x.saveId === props.editId);
+        if (idx !== -1) Object.assign(saveList[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/save`, { ...form }) : window.boApi.put(`/bo/ec/pm/save/${form.saveId}`, { ...form }));

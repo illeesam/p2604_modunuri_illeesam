@@ -5,7 +5,7 @@ window.SyUserMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const users = reactive([]);
-    const depts = ref((window.boData?.depts || []));
+    const depts = reactive((window.boData?.depts || []));
     const boUsers = ref((window.boData?.boUsers || []));
     const loading = ref(false);
     const error = ref(null);
@@ -41,9 +41,9 @@ window.SyUserMng = {
     /* 선택 부서 + 자손의 dept 이름 Set */
     const allowedDeptNms = computed(() => {
       if (selectedDeptId.value == null) return null;
-      const desc = window.boCmUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedDeptId.value);
+      const desc = window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', selectedDeptId.value);
       if (!desc) return null;
-      return new Set((depts.value || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
+      return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
 
     const searchKw = ref('');
