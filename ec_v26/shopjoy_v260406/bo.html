@@ -38,6 +38,12 @@
         location.reload();
       }
     });
+    /* 개발 시 기본 페이지 자동 이동 */
+    (function(){
+      if (!window.location.hash) {
+        window.location.hash = '#page=zdStore';
+      }
+    })();
   </script>
   <!-- ═══════════════════════════════════════════════════════════════════════════
        📌 리소스 로드 우선순위 정렬 기준 (가나다순 보조)
@@ -320,6 +326,7 @@
   <script src="pages/bo/sy/SyDashboardMng.js"></script>
 
   <!-- ■ B5.3: Developer Tools (ZD) ■ -->
+  <script src="pages/bo/zd/ZdApiLog.js"></script>
   <script src="pages/bo/zd/ZdLocalStorage.js"></script>
   <script src="pages/bo/zd/ZdStore.js"></script>
 

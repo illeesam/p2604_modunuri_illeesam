@@ -500,6 +500,92 @@
       const filterMember    = computed(() => null);
       const filterOrder     = computed(() => null);
 
+      /* ── API 로그 (최대 10건, localStorage 저장) ── */
+      const apiLogs = reactive([]);
+      const apiLogHoverDetail = ref(null);
+
+      const _loadApiLogsFromStorage = () => {
+        try {
+          const stored = localStorage.getItem('modu-bo-api_log');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              apiLogs.push(...parsed);
+            }
+          }
+        } catch (_) {}
+      };
+
+      const _saveApiLogsToStorage = () => {
+        try {
+          localStorage.setItem('modu-bo-api_log', JSON.stringify(apiLogs.slice(0, 10)));
+        } catch (_) {}
+      };
+
+      const addApiLog = (method, url, status, duration, hasError = false, reqData = null, resData = null) => {
+        const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+        let reqStr = '', resStr = '';
+        try {
+          if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
+          if (resData) resStr = JSON.stringify(typeof resData === 'string' ? JSON.parse(resData) : resData, null, 2);
+        } catch (_) {
+          reqStr = String(reqData || '');
+          resStr = String(resData || '');
+        }
+        apiLogs.unshift({ method, url, status, duration, time, hasError, reqData: reqStr, resData: resStr });
+        if (apiLogs.length > 10) apiLogs.pop();
+        _saveApiLogsToStorage();
+      };
+
+      const clearApiLogs = () => {
+        apiLogs.length = 0;
+        try { localStorage.removeItem('modu-bo-api_log'); } catch (_) {}
+        showToast('API 로그가 초기화되었습니다.', 'success');
+      };
+
+      const getApiStatusColor = (status) => {
+        if (status >= 200 && status < 300) return '#10b981';
+        if (status >= 300 && status < 400) return '#3b82f6';
+        if (status >= 400 && status < 500) return '#f59e0b';
+        if (status >= 500) return '#ef4444';
+        return '#6b7280';
+      };
+
+      /* boApi 인터셉터로 로그 수집 */
+      onMounted(() => {
+        _loadApiLogsFromStorage();
+        setTimeout(() => {
+          if (window.boApi && window.boApi.raw) {
+            const inst = window.boApi.raw;
+            const startTime = {};
+            const reqData = {};
+            inst.interceptors.request.use((cfg) => {
+              const key = cfg.url + cfg.method;
+              startTime[key] = Date.now();
+              reqData[key] = cfg.data || cfg.params || null;
+              return cfg;
+            });
+            inst.interceptors.response.use(
+              (res) => {
+                const key = res.config.url + res.config.method;
+                const duration = Date.now() - (startTime[key] || 0);
+                addApiLog(res.config.method.toUpperCase(), res.config.url, res.status, duration, false, reqData[key], res.data);
+                delete startTime[key]; delete reqData[key];
+                return res;
+              },
+              (err) => {
+                const cfg = err.config || {};
+                const key = cfg.url + cfg.method;
+                const duration = Date.now() - (startTime[key] || 0);
+                addApiLog(cfg.method.toUpperCase(), cfg.url, err.response?.status || 0, duration, true, reqData[key], err.response?.data);
+                delete startTime[key]; delete reqData[key];
+                return Promise.reject(err);
+              }
+            );
+          }
+        }, 100);
+      });
+
       /* ── 반응형: 화면 크기에 따라 사이드바 자동 열기/닫기 ── */
       const checkWidth = () => { leftMenuOpen.value = window.innerWidth >= 920; };
       onMounted(() => { checkWidth(); window.addEventListener('resize', checkWidth); });
@@ -857,6 +943,7 @@
         confirmState, showConfirm, closeConfirm,
         refModal, showRefModal, closeRefModal,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
+        apiLogs, apiLogHoverDetail, clearApiLogs, getApiStatusColor,
         tabBarRef, scrollTabs,
         currentUser, currentUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, userMenuShow,
@@ -1292,6 +1379,46 @@
             <span v-if="filterOrder" class="popup-sel-id">{{ filterOrder.userNm }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
+        </div>
+
+        <!-- API 로그 섹션 -->
+        <div style="padding: 12px 8px; border-top: 1px solid #e5e7eb; margin-top: 12px;">
+          <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+            <span>📡 API 로그</span>
+            <button v-if="apiLogs.length" @click="clearApiLogs" style="font-size: 10px; padding: 2px 6px; background: #ef4444; color: white; border: none; border-radius: 2px; cursor: pointer; font-weight: 600;">Clear</button>
+          </div>
+          <div v-if="apiLogs.length === 0" style="font-size: 11px; color: #9ca3af; padding: 8px; text-align: center;">로그 없음</div>
+          <div v-else style="max-height: 250px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 3px; background: white;">
+            <div v-for="(log, idx) in apiLogs" :key="idx"
+              @mouseenter="apiLogHoverDetail = log"
+              @mouseleave="apiLogHoverDetail = null"
+              style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
+              :style="{ background: apiLogHoverDetail === log ? '#f9fafb' : 'white' }">
+              <div style="display: grid; grid-template-columns: 45px 35px 1fr 40px; gap: 4px; align-items: center;">
+                <div style="color: #6b7280; white-space: nowrap;">{{ log.time }}</div>
+                <div :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight: '600', textAlign: 'center' }">{{ log.method }}</div>
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: log.hasError ? '#ef4444' : '#374151';">{{ log.url }}</div>
+                <div :style="{ background: getApiStatusColor(log.status) + '20', color: getApiStatusColor(log.status), padding: '2px 4px', borderRadius: '2px', fontWeight: '600', textAlign: 'center', fontSize: '9px' }">{{ log.status }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API 로그 호버 상세 레이어 -->
+        <div v-if="apiLogHoverDetail" style="position: fixed; top: 300px; right: 20px; width: 400px; max-height: 350px; background: white; border: 1px solid #d1d5db; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: auto;">
+          <div style="padding: 8px; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151;">
+            {{ apiLogHoverDetail.method }} {{ apiLogHoverDetail.url }}
+            <span style="float: right; color: #6b7280;">{{ apiLogHoverDetail.time }}</span>
+          </div>
+          <div style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
+            <div style="color: #6b7280; font-weight: 600; margin-bottom: 4px;">📤 Request</div>
+            <div style="background: #fafbfc; padding: 6px; border-radius: 2px; border: 1px solid #e5e7eb; max-height: 80px; overflow-y: auto; word-break: break-all; line-height: 1.4; color: #374151;">{{ apiLogHoverDetail.reqData || 'N/A' }}</div>
+          </div>
+          <div style="padding: 8px;">
+            <div style="color: #6b7280; font-weight: 600; margin-bottom: 4px;">📥 Response</div>
+            <div style="background: #fafbfc; padding: 6px; border-radius: 2px; border: 1px solid #e5e7eb; max-height: 80px; overflow-y: auto; word-break: break-all; line-height: 1.4; color: #374151;">{{ apiLogHoverDetail.resData || 'N/A' }}</div>
+          </div>
+          <div style="padding: 6px 8px; background: #f9fafb; border-top: 1px solid #e5e7eb; color: #6b7280; text-align: right;">⏱ {{ apiLogHoverDetail.duration }}ms</div>
         </div>
       </div>
     </div>
