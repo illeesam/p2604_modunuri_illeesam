@@ -16,10 +16,10 @@ window.ZdStore = {
     const storeList = computed(() => {
       const stores = [];
       if (window.useBoAppInitStore) stores.push({ name: 'useBoAppInitStore', label: 'boAppInitStore.js', api: null, hasLocalStorage: false });
-      if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'boAppStore.js', api: null, hasLocalStorage: false });
+      if (window.useBoAppStore) stores.push({ name: 'useBoAppStore', label: 'boAppStore.js', api: 'getApp', hasLocalStorage: false });
       if (window.useAuthStore) stores.push({ name: 'useAuthStore', label: 'boAuthStore.js 💾', api: 'getAuth', hasLocalStorage: true });
       if (window.useBoCodeStore) stores.push({ name: 'useBoCodeStore', label: 'boCodeStore.js', api: 'getCodes', hasLocalStorage: false });
-      if (window.useConfigStore) stores.push({ name: 'useConfigStore', label: 'boConfigStore.js', api: null, hasLocalStorage: false });
+      if (window.useConfigStore) stores.push({ name: 'useConfigStore', label: 'boConfigStore.js', api: 'getProps', hasLocalStorage: false });
       if (window.useBoMenuStore) stores.push({ name: 'useBoMenuStore', label: 'boMenuStore.js', api: 'getMenus', hasLocalStorage: false });
       if (window.useBoPropStore) stores.push({ name: 'useBoPropStore', label: 'boPropStore.js', api: 'getProps', hasLocalStorage: false });
       if (window.useBoRoleStore) stores.push({ name: 'useBoRoleStore', label: 'boRoleStore.js', api: 'getRoles', hasLocalStorage: false });
