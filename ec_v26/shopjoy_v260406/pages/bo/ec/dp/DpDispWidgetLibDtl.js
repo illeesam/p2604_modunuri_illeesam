@@ -4,14 +4,14 @@ window.DpDispWidgetLibDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   emits: ['close'],
   setup(props, { emit }) {
+    const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
+
     /* ── 표시경로 선택 모달 (sy_path, 다중) ── */
     const pathPickModal = reactive({ show: false });
     const openPathPick = () => { pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { form.pathId = pathId; };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-
-    const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const widgetLibs = reactive((window.boData?.widgetLibs || []));
     const isNew = computed(() => !props.editId);
 

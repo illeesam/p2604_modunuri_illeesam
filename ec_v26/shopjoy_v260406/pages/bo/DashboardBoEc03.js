@@ -31,6 +31,8 @@
     props: ['navigate', 'showToast'],
 
     setup() {
+      const { ref, reactive, computed } = Vue;
+
       /* ── 필터 상태 ── */
       const today   = new Date();
       const endDef  = toYmd(endOfMonth(today));

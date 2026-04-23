@@ -2,7 +2,10 @@
 window.SyBbmDtl = {
   name: 'SyBbmDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const bbms = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const bbms = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +25,6 @@ window.SyBbmDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({

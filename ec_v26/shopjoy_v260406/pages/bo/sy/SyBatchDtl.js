@@ -2,7 +2,10 @@
 window.SyBatchDtl = {
   name: 'SyBatchDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const batches = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const batches = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +25,6 @@ window.SyBatchDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({

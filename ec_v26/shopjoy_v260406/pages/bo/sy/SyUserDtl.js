@@ -2,7 +2,11 @@
 window.SyUserDtl = {
   name: 'SyUserDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const users = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const users = reactive([]);
+    const { reactive, computed, onMounted, ref } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +26,6 @@ window.SyUserDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted, ref } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 

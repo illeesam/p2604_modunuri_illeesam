@@ -2,7 +2,11 @@
 window.SyTemplateDtl = {
   name: 'SyTemplateDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const templates = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const templates = reactive([]);
+    const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +26,6 @@ window.SyTemplateDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];

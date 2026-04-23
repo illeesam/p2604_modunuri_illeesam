@@ -3,7 +3,11 @@ window._syContactDtlState = window._syContactDtlState || { tab: 'content', viewM
 window.SyContactDtl = {
   name: 'SyContactDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const contacts = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const contacts = reactive([]);
+    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -23,7 +27,6 @@ window.SyContactDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const isNew = computed(() => !props.editId);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const tab = ref(window._syContactDtlState.tab || 'content');

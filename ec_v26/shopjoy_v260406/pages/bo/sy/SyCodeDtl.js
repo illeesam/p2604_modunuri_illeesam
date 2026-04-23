@@ -2,7 +2,10 @@
 window.SyCodeDtl = {
   name: 'SyCodeDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
-  setup(props) {    const codes = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const codes = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +25,6 @@ window.SyCodeDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({

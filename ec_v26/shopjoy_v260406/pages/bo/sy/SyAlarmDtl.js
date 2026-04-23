@@ -2,7 +2,10 @@
 window.SyAlarmDtl = {
   name: 'SyAlarmDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const alarms = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const alarms = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +25,6 @@ window.SyAlarmDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({

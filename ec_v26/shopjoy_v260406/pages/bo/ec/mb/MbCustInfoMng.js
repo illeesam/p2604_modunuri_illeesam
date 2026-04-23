@@ -65,6 +65,8 @@
     name: 'MbCustInfoMng',
     props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
     setup(props) {
+    const { reactive, ref, computed, watch, onMounted } = Vue;
+
     const custInfos = reactive([]);
     const loading = ref(false);
     const error = ref(null);

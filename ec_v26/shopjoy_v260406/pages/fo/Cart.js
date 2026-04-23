@@ -4,7 +4,7 @@ window.Cart = {
   props: ['navigate', 'config', 'cart', 'cartCount', 'removeFromCart', 'updateCartQty', 'showConfirm', 'clearCart'],
   emits: [],
   setup(props) {
-    const { computed, ref } = Vue;
+    const { computed, ref, reactive } = Vue;
 
     /* ── 체크박스 ── */
     const checkedIdxs = reactive(new Set());

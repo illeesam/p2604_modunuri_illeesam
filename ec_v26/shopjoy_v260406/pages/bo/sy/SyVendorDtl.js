@@ -2,7 +2,11 @@
 window.SyVendorDtl = {
   name: 'SyVendorDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const vendors = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const vendors = reactive([]);
+    const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +26,6 @@ window.SyVendorDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 

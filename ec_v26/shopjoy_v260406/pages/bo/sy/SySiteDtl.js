@@ -2,7 +2,11 @@
 window.SySiteDtl = {
   name: 'SySiteDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
-  setup(props) {    const sites = reactive([]);
+  setup(props) {
+    const { reactive, computed, onMounted, ref } = Vue;
+
+    const sites = reactive([]);
+    const { reactive, computed, onMounted, ref } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
@@ -22,7 +26,6 @@ window.SySiteDtl = {
         loading.value = false;
       }
     });
-    const { reactive, computed, onMounted, ref } = Vue;
     const isNew = computed(() => props.editId === null || props.editId === undefined);
 
     const SITE_TYPES = ['이커머스', '숙박공유', '전문가연결', 'IT매칭', '부동산', '교육', '중고거래', '영화예매', '음식배달', '가격비교', '시각화', '홈페이지', '기타'];
