@@ -187,7 +187,7 @@ window.DpDispWidgetMng = {
     const doDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const list = widgetLibs.value || [];
+      const list = widgetLibs || [];
       const idx = list.findIndex(x => x.libId === d.libId);
       if (idx !== -1) list.splice(idx, 1);
       if (selectedId.value === d.libId) selectedId.value = null;

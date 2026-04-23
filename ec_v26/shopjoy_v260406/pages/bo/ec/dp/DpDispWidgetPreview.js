@@ -139,6 +139,8 @@ window.DpDispWidgetPreview = {
   name: 'DpDispWidgetPreview',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const { reactive, computed, ref, watch, onMounted, nextTick, watchEffect } = Vue;
+    const widgetLibs = reactive((window.boData?.widgetLibs || []));
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
@@ -219,7 +221,7 @@ window.DpDispWidgetPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (widgetLibs.value || []).filter(lib => {
+      return (widgetLibs || []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;

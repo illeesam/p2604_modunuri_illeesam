@@ -432,7 +432,7 @@ window.DpDispWidgetLibDtl = {
       if (isNew.value) return;
       const ok = await props.showConfirm('삭제', '이 위젯 Lib를 삭제하시겠습니까?');
       if (!ok) return;
-      const list = widgetLibs.value || [];
+      const list = widgetLibs || [];
       const idx  = list.findIndex(d => d.libId == form.libId);
       if (idx >= 0) list.splice(idx, 1);
       try {
