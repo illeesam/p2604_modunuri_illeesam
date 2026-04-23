@@ -6,11 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
 import com.shopjoy.ecadminapi.co.cm.service.CmAppStoreDataService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 
 /**
  * FO (Front Office - 사용자) 애플리케이션 Store 데이터 API
@@ -45,10 +43,8 @@ public class CmFoAppStoreDataController {
      */
     @PostMapping("/getInitData")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
         String names = req != null ? (String) req.get("names") : "";
 
-        // "ALL"인 경우 FO에서 필요한 모든 항목 설정
         if ("ALL".equalsIgnoreCase(names)) {
             names = CmStoreConst.SY_AUTH;
             names += "^" + CmStoreConst.SY_ROLES;
@@ -59,80 +55,52 @@ public class CmFoAppStoreDataController {
             names += "^" + CmStoreConst.SY_APP;
         }
 
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(names)));
     }
 
     @PostMapping("/getAuth")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.SY_AUTH;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_AUTH)));
     }
 
     @PostMapping("/getUser")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.SY_USER;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_USER)));
     }
 
 //    @PostMapping("/getMember")
-//    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember(@RequestBody(required = false) Map<String, Object> req) {
-//        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-//        String names = CmStoreConst.MB_MEMBER;
-//        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-//        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+//    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember() {
+//        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.MB_MEMBER)));
 //    }
 
     @PostMapping("/getRoles")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.SY_ROLES;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_ROLES)));
     }
 
     @PostMapping("/getMenus")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.SY_MENUS;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_MENUS)));
     }
 
     @PostMapping("/getCodes")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.SY_CODES;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_CODES)));
     }
 
     @PostMapping("/getProps")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.SY_PROPS;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_PROPS)));
     }
 
     @PostMapping("/getDisp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.DP_DISP;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.DP_DISP)));
     }
 
     @PostMapping("/getApp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody(required = false) Map<String, Object> req) {
-        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        String names = CmStoreConst.SY_APP;
-        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
-        return ResponseEntity.ok(ApiResponse.ok(resultMap));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp() {
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_APP)));
     }
 
 }

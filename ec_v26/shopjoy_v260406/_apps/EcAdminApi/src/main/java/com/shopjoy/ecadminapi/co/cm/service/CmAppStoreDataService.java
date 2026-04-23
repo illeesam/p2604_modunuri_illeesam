@@ -93,11 +93,10 @@ public class CmAppStoreDataService {
      * 통합 인증/앱 초기화 데이터 조회 - CmStoreConst 상수값으로 선택적 반환
      *
      * @param names CmStoreConst 상수값 ('^' 구분자로 선택, 예: "syAuth^syRoles^syMenus")
-     * @param authUser 인증된 사용자 정보
      * @return 요청된 데이터만 포함된 Map
      */
-    @Transactional(readOnly = true)
-    public Map<String, Object> getAuthData(String names, AuthPrincipal authUser) {
+    public Map<String, Object> getAuthData(String names) {
+        AuthPrincipal authUser = com.shopjoy.ecadminapi.common.util.SecurityUtil.getAuthUser();
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
         Map<String, Object> resultMap = new java.util.HashMap<>();
 
@@ -141,8 +140,7 @@ public class CmAppStoreDataService {
      * 인증 정보 조회 - 토큰 정보 + 사용자 정보 반환
      * BO: StoreUser (관리자), FO: StoreMember (회원)
      */
-    @Transactional(readOnly = true)
-    public StoreAuth getAuth(AuthPrincipal authUser) {
+    private StoreAuth getAuth(AuthPrincipal authUser) {
         if (authUser == null) {
             return StoreAuth.builder().build();
         }
@@ -166,8 +164,7 @@ public class CmAppStoreDataService {
     /**
      * 관리자 정보 조회 - BO: sy_user(관리자)
      */
-    @Transactional(readOnly = true)
-    public StoreUser getBoUser(AuthPrincipal authUser) {
+    private StoreUser getBoUser(AuthPrincipal authUser) {
         if (authUser == null || authUser.userId() == null) {
             return StoreUser.builder().build();
         }
@@ -213,8 +210,7 @@ public class CmAppStoreDataService {
     /**
      * 회원 정보 조회 - FO: ec_member(회원)
      */
-    @Transactional(readOnly = true)
-    public StoreMember getFoUser(AuthPrincipal authUser) {
+    private StoreMember getFoUser(AuthPrincipal authUser) {
         if (authUser == null || authUser.userId() == null) {
             return StoreMember.builder().build();
         }
@@ -245,8 +241,7 @@ public class CmAppStoreDataService {
      * BO/SO: sy_user_role(역할ID) + sy_vendor_user(업체ID) + sy_vendor(업체명) + sy_role(역할정보)
      * FO: 빈 리스트
      */
-    @Transactional(readOnly = true)
-    public List<StoreRole> getRoles(AuthPrincipal authUser) {
+    private List<StoreRole> getRoles(AuthPrincipal authUser) {
         if (authUser == null) {
             return List.of();
         }
@@ -303,8 +298,7 @@ public class CmAppStoreDataService {
     /**
      * 메뉴 정보 조회 - sy_role_menu, sy_menu + 상위 메뉴 포함
      */
-    @Transactional(readOnly = true)
-    public List<StoreMenu> getMenus(AuthPrincipal authUser) {
+    private List<StoreMenu> getMenus(AuthPrincipal authUser) {
         if (authUser == null || authUser.roleId() == null) {
             return List.of();
         }
@@ -363,8 +357,7 @@ public class CmAppStoreDataService {
     /**
      * 코드 정보 조회 - sy_code (공통코드, 그리드 형식)
      */
-    @Transactional(readOnly = true)
-    public StoreCode getCodes(AuthPrincipal authUser) {
+    private StoreCode getCodes(AuthPrincipal authUser) {
         java.util.List<StoreCode.CodeInfo> codes = new java.util.ArrayList<>();
 
         syCodeRepository.findAll().forEach(code -> {
@@ -386,8 +379,7 @@ public class CmAppStoreDataService {
     /**
      * 속성 정보 조회 - sy_prop (시스템속성)
      */
-    @Transactional(readOnly = true)
-    public StoreProp getProps(AuthPrincipal authUser) {
+    private StoreProp getProps(AuthPrincipal authUser) {
         String siteId = authUser != null ? authUser.siteId() : null;
         Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
                 .filter(prop -> siteId == null || prop.getSiteId().equals(siteId))
@@ -406,8 +398,7 @@ public class CmAppStoreDataService {
     /**
      * 앱 정보 조회 - 버전 및 사이트정보
      */
-    @Transactional(readOnly = true)
-    public StoreApp getApp(AuthPrincipal authUser) {
+    private StoreApp getApp(AuthPrincipal authUser) {
         if (authUser != null && "BO".equals(authUser.userTypeCd())) {
             return StoreApp.builder()
                     .boSiteNo("01")
@@ -427,8 +418,7 @@ public class CmAppStoreDataService {
     /**
      * 전시 구조 조회 - dp_ui, dp_area, dp_panel, dp_panel_item (content 제외)
      */
-    @Transactional(readOnly = true)
-    public StoreDispStruct getDispStruc(AuthPrincipal authUser) {
+    private StoreDispStruct getDispStruc(AuthPrincipal authUser) {
         List<DpUi> uis = dpUiRepository.findAll().stream()
                 .filter(ui -> ui.getSiteId().equals(authUser.siteId()) && "Y".equals(ui.getUseYn()))
                 .toList();
@@ -497,8 +487,7 @@ public class CmAppStoreDataService {
     /**
      * 전시 데이터 조회 - dp_panel_item content + dp_widget_lib (참조일경우)
      */
-    @Transactional(readOnly = true)
-    public StoreDispData getDispData(AuthPrincipal authUser) {
+    private StoreDispData getDispData(AuthPrincipal authUser) {
         Map<String, Object> dataByArea = new java.util.HashMap<>();
 
         List<DpUi> uis = dpUiRepository.findAll().stream()
@@ -560,8 +549,7 @@ public class CmAppStoreDataService {
     /**
      * 전시 위젯 목록 조회 - dp_widget (유효한 위젯 목록, 참조형식이면 dp_widget_lib content 포함)
      */
-    @Transactional(readOnly = true)
-    public StoreDispWidgets getDispWidgets(AuthPrincipal authUser) {
+    private StoreDispWidgets getDispWidgets(AuthPrincipal authUser) {
         List<DpWidget> widgets = dpWidgetRepository.findAll().stream()
                 .filter(widget -> "Y".equals(widget.getUseYn()))
                 .toList();
