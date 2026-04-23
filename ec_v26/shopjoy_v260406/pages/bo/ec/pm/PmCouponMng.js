@@ -97,8 +97,9 @@ window.PmCouponMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = coupons.value.findIndex(x => x.couponId === c.couponId);
-      if (idx !== -1) coupons.value.splice(idx, 1);
+      if (!Array.isArray(coupons)) return;
+      const idx = coupons.findIndex(x => x.couponId === c.couponId);
+      if (idx !== -1) coupons.splice(idx, 1);
       if (selectedId.value === c.couponId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/pm/coupon/${c.couponId}`);

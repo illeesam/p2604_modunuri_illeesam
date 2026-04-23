@@ -57,12 +57,13 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
       catch (e) { claims.splice(0, claims.length); }
     }
   };
-  const filteredClaims = computed(() =>
-    claimFilter.value === '전체' ? claims : claims.filter(c => c.type === claimFilter.value)
-  );
+  const filteredClaims = computed(() => {
+    if (!Array.isArray(claims)) return [];
+    return claimFilter.value === '전체' ? claims : claims.filter(c => c.type === claimFilter.value);
+  });
   const claimsByOrderId = computed(() => {
     const map = {};
-    claims.forEach(c => { map[c.orderId] = c; });
+    if (Array.isArray(claims)) claims.forEach(c => { map[c.orderId] = c; });
     return map;
   });
   const removeClaim = (claimId) => {
@@ -129,7 +130,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 공유 모달 ── */
   const orderDetailModal = reactive({ show: false, order: null });
   const openOrderModal = (orderId) => {
-    const o = orders.value.find(x => x.orderId === orderId);
+    if (!Array.isArray(orders)) return false;
+    const o = orders.find(x => x.orderId === orderId);
     if (!o) return false;
     orderDetailModal.order = o;
     orderDetailModal.show = true;

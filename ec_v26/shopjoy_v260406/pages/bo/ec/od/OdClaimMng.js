@@ -107,8 +107,9 @@ window.OdClaimMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = claims.value.findIndex(x => x.claimId === c.claimId);
-      if (idx !== -1) claims.value.splice(idx, 1);
+      if (!Array.isArray(claims)) return;
+      const idx = claims.findIndex(x => x.claimId === c.claimId);
+      if (idx !== -1) claims.splice(idx, 1);
       if (selectedId.value === c.claimId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/od/claim/${c.claimId}`);
@@ -160,7 +161,7 @@ window.OdClaimMng = {
     };
     const onReqTargetChange = () => {
       const ids = Array.from(checked);
-      const first = claims.window.safeArrayUtils.safeFind(value, c => ids.includes(c.claimId));
+      const first = window.safeArrayUtils.safeFind(Array.isArray(claims) ? claims : [], c => ids.includes(c.claimId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')    bulkForm.reqTargetNm = first.orderId || '';
       else if (bulkForm.reqTarget === '상품') bulkForm.reqTargetNm = first.prodNm || '';

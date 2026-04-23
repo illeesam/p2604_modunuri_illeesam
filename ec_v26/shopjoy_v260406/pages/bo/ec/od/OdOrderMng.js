@@ -106,8 +106,9 @@ window.OdOrderMng = {
     const doDelete = async (o) => {
       const ok = await props.showConfirm('삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = orders.value.findIndex(x => x.orderId === o.orderId);
-      if (idx !== -1) orders.value.splice(idx, 1);
+      if (!Array.isArray(orders)) return;
+      const idx = orders.findIndex(x => x.orderId === o.orderId);
+      if (idx !== -1) orders.splice(idx, 1);
       if (selectedId.value === o.orderId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/od/order/${o.orderId}`);
@@ -124,7 +125,7 @@ window.OdOrderMng = {
 
     /* 클레임 조회 */
     const claimByOrder = (orderId) =>
-      (claims.value || []).find(c => c.orderId === orderId);
+      (Array.isArray(claims) ? claims : []).find(c => c.orderId === orderId);
     const claimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
     const getItemCount = (o) => {
       const m = (o.prodNm || '').match(/외\s*(\d+)/);
@@ -166,12 +167,12 @@ window.OdOrderMng = {
     };
     const onReqTargetChange = () => {
       const ids = Array.from(checked);
-      const first = orders.window.safeArrayUtils.safeFind(value, o => ids.includes(o.orderId));
+      const first = window.safeArrayUtils.safeFind(Array.isArray(orders) ? orders : [], o => ids.includes(o.orderId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')      bulkForm.reqTargetNm = first.orderId || '';
       else if (bulkForm.reqTarget === '상품') bulkForm.reqTargetNm = first.prodNm || '';
       else if (bulkForm.reqTarget === '배송') {
-        const d = (deliveries.value || []).find(x => x.orderId === first.orderId);
+        const d = (Array.isArray(deliveries) ? deliveries : []).find(x => x.orderId === first.orderId);
         bulkForm.reqTargetNm = d ? d.dlivId : ('배송('+first.orderId+')');
       } else bulkForm.reqTargetNm = first.orderId || '';
     };

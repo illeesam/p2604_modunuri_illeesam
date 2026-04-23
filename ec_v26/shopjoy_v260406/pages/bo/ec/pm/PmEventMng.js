@@ -95,8 +95,9 @@ window.PmEventMng = {
     const doDelete = async (e) => {
       const ok = await props.showConfirm('삭제', `[${e.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = events.value.findIndex(x => x.eventId === e.eventId);
-      if (idx !== -1) events.value.splice(idx, 1);
+      if (!Array.isArray(events)) return;
+      const idx = events.findIndex(x => x.eventId === e.eventId);
+      if (idx !== -1) events.splice(idx, 1);
       if (selectedId.value === e.eventId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/pm/event/${e.eventId}`);

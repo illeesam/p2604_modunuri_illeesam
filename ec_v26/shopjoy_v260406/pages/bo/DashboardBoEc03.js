@@ -201,15 +201,19 @@
 
       /* ── 월별 레이블 (14개월) ── */
       const monthLabels = computed(() => {
-        const s = new Date(filters.startDt);
-        const e = new Date(filters.endDt);
-        const months = [];
-        let cur = new Date(s.getFullYear(), s.getMonth(), 1);
-        while (cur <= e) {
-          months.push(toYm(cur));
-          cur = addMonths(cur, 1);
+        try {
+          const s = new Date(filters.startDt);
+          const e = new Date(filters.endDt);
+          const months = [];
+          let cur = new Date(s.getFullYear(), s.getMonth(), 1);
+          while (cur <= e) {
+            months.push(toYm(cur));
+            cur = addMonths(cur, 1);
+          }
+          return months.slice(-14);
+        } catch (e) {
+          return [];
         }
-        return months.slice(-14);
       });
 
       /* ── 필터 강도 계수 (0~1) — 필터를 줄일수록 값 감소 ── */
@@ -287,7 +291,7 @@
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
     <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
     <span style="flex:1;"></span>
-    <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ monthLabels[0] }} ~ {{ monthLabels[monthLabels.length-1] }}</span>
+    <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ monthLabels.length > 0 ? (monthLabels[0] + ' ~ ' + monthLabels[monthLabels.length-1]) : '-' }}</span>
   </div>
 
   <!-- 필터 바: 조회기간 + 상세필터 토글 -->

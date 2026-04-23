@@ -95,11 +95,11 @@
     /* URL 해시 파라미터 → instantOrder 재구성 */
     const _instantOrderFromParams = (params) => {
       const prodId = Number(params.get('prodId'));
-      if (!prodId) return null;
+      if (!prodId || !Array.isArray(products)) return null;
       const product = products.find(p => Number(p.productId) === prodId);
       if (!product) return null;
       const opt1Nm = params.get('opt1Nm') || '';
-      const color  = product.opt1s?.find(c => c.name === opt1Nm) || null;
+      const color  = Array.isArray(product.opt1s) ? product.opt1s.find(c => c.name === opt1Nm) || null : null;
       const size   = params.get('opt2Id') || null;
       const qty    = Math.max(1, Number(params.get('qty')) || 1);
       return { product, color, size, qty };
@@ -179,9 +179,9 @@
       }
       return p;
     };
-    const products = window.SITE_CONFIG.products;
-    products.forEach(_assignImg);
-    const selectedProduct = ref(products[0]);
+    const products = window.SITE_CONFIG?.products || [];
+    if (Array.isArray(products)) products.forEach(_assignImg);
+    const selectedProduct = ref(Array.isArray(products) && products.length > 0 ? products[0] : null);
     const selectProduct = p => {
       selectedProduct.value = p;
       navigate('prodView');
@@ -219,10 +219,10 @@
       const saved = localStorage.getItem('shopjoy_cart');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && Array.isArray(products)) {
           parsed.forEach(item => {
             const p = products.find(x => x.productId === item.productId);
-            if (p && item.color && item.size) {
+            if (p && item.color && item.size && Array.isArray(p.opt1s)) {
               const color = p.opt1s.find(c => c.name === item.color.name) || item.color;
               cart.push({ cartId: item.cartId || genId(), product: p, color, size: item.size, qty: item.qty || 1 });
             }
@@ -331,7 +331,7 @@
       }
       const hpid = hasPageParam ? params?.get('pid') : null;
       const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
-      if (!Number.isNaN(pid)) {
+      if (!Number.isNaN(pid) && Array.isArray(products)) {
         const f = products.find(x => Number(x.productId) === pid);
         if (f) selectedProduct.value = f;
       }
