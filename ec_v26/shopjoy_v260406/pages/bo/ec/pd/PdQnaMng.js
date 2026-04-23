@@ -5,6 +5,7 @@ window.PdQnaMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const products = reactive(window.boDataProvider?.getProducts?.() || []);
+    const prodQnas = ref((window.boData?.prodQnas || []));
     const members = reactive(window.boDataProvider?.getMembers?.() || []);
     const qnas = reactive([]);
     const loading = ref(false);
@@ -42,7 +43,7 @@ window.PdQnaMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (prodQnas.value || []).filter(q => {
+      return (prodQnas).filter(q => {
         if (kw && !q.qnaTitle.toLowerCase().includes(kw)) return false;
         if (applied.answ && q.answYn !== applied.answ) return false;
         return true;

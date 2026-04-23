@@ -5,6 +5,7 @@ window.PmGiftMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const gifts = reactive([]);
+    const giftList = ref((window.boData?.gifts || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -55,7 +56,7 @@ window.PmGiftMng = {
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => giftList.value || []);
+    const list = computed(() => giftList);
     const filtered = computed(() => window.safeArrayUtils.safeFilter(list, g => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(g.giftNm || '').toLowerCase().includes(kw) && !String(g.giftId || '').includes(kw)) return false;
@@ -94,7 +95,7 @@ window.PmGiftMng = {
     const doDelete = async (g) => {
       const ok = await props.showConfirm('삭제', `[${g.giftNm}] 사은품을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (giftList.value || []).findIndex(x => x.giftId === g.giftId);
+      const idx = (giftList).findIndex(x => x.giftId === g.giftId);
       if (idx !== -1) giftList.value.splice(idx, 1);
       if (selectedId.value === g.giftId) selectedId.value = null;
       try {

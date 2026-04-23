@@ -43,7 +43,7 @@ window.PdReviewMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (reviews.value || []).filter(r => {
+      return (reviews).filter(r => {
         if (kw && !r.reviewTitle.toLowerCase().includes(kw)) return false;
         if (applied.status && r.reviewStatusCd !== applied.status) return false;
         if (applied.rating) { const min = parseFloat(applied.rating); if (r.rating < min || r.rating >= min + 1) return false; }

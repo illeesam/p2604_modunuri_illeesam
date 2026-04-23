@@ -8,6 +8,7 @@ window.OdClaimMng = {
     const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
+    const codes = ref((window.boData?.codes || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -135,7 +136,7 @@ window.OdClaimMng = {
       else window.safeArrayUtils.safeForEach(pageList, c => s.add(c.claimId));
       checked = s;
     };
-    const claimStatusCodes = (codes.value || [])
+    const claimStatusCodes = (codes)
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const claimStatusForType = type => claimStatusCodes
@@ -155,7 +156,7 @@ window.OdClaimMng = {
       reqTarget:'추가결재', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
     const onApprToChange = () => {
-      const m = (members.value || []).find(x => String(x.userId) === String(bulkForm.apprToUserId));
+      const m = (members).find(x => String(x.userId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.userNm || ''; bulkForm.apprToPhone = m.phone || ''; bulkForm.apprToEmail = m.email || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };

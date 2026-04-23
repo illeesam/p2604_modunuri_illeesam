@@ -8,6 +8,7 @@ window.OdClaimHist = {
     const botTab = ref(window._odClaimHistState.tab || 'items');
     watch(botTab, v => { window._odClaimHistState.tab = v; });
     const viewMode2 = ref('tab');
+    const codes = ref((window.boData?.codes || []));
     
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
@@ -20,7 +21,7 @@ window.OdClaimHist = {
 
     /* 클레임 유형별 단계 — parentCodeValues 기반 동적 파생 */
     const claimType = ref('취소');
-    const _claimStatusCodes = (codes.value || [])
+    const _claimStatusCodes = (codes)
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };

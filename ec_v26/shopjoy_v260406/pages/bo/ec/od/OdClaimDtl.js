@@ -8,6 +8,7 @@ window.OdClaimDtl = {
     const claims = reactive([]);
     const orders = reactive([]);
     const loading = ref(false);
+    const codes = ref((window.boData?.codes || []));
     const error = ref(null);
 
     // onMounted에서 API 로드
@@ -46,7 +47,7 @@ window.OdClaimDtl = {
     });
 
     /* CLAIM_STEPS: parentCodeValues 기반 동적 파생 */
-    const _claimStatusCodes = (codes.value || [])
+    const _claimStatusCodes = (codes)
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };

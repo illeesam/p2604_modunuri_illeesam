@@ -5,6 +5,7 @@ window.PmSaveMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const saves = reactive([]);
+    const saveList = ref((window.boData?.saves || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -55,7 +56,7 @@ window.PmSaveMng = {
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => saveList.value || []);
+    const list = computed(() => saveList);
     const filtered = computed(() => window.safeArrayUtils.safeFilter(list, s => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(s.saveNm || '').toLowerCase().includes(kw) && !String(s.saveId || '').includes(kw)) return false;
@@ -94,7 +95,7 @@ window.PmSaveMng = {
     const doDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (saveList.value || []).findIndex(x => x.saveId === s.saveId);
+      const idx = (saveList).findIndex(x => x.saveId === s.saveId);
       if (idx !== -1) saveList.value.splice(idx, 1);
       if (selectedId.value === s.saveId) selectedId.value = null;
       try {

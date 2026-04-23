@@ -68,6 +68,9 @@
     const custInfos = reactive([]);
     const loading = ref(false);
     const error = ref(null);
+    const loginHistory = ref((window.boData?.loginHistory || []));
+    const couponUsage = ref((window.boData?.couponUsage || []));
+    const sendHistory = ref((window.boData?.sendHistory || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {

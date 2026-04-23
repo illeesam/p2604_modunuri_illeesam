@@ -5,6 +5,7 @@ window.PdSetMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const products = reactive(window.boDataProvider?.getProducts?.() || []);
+    const setItems = ref((window.boData?.setItems || []));
     const brands = reactive(window.boDataProvider?.getBrands?.() || []);
     const categoryProds = reactive((window.boData?.categoryProds) || []);
     const sets = reactive([]);
@@ -124,10 +125,10 @@ window.PdSetMng = {
     /* ── 세트상품 목록 ── */
     const setList = computed(() => {
       const kw = applied.nm.toLowerCase();
-      const ids = [...new Set((setItems.value || []).map(s => s.setProdId))];
+      const ids = [...new Set((setItems).map(s => s.setProdId))];
       return ids
         .map(id => {
-          const items = (setItems.value || [])
+          const items = (setItems)
             .filter(s => s.setProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod = getProd(id);
@@ -163,7 +164,7 @@ window.PdSetMng = {
     const openDtl = setProdId => {
       dtlMode.value = 'edit';
       editSetId.value = setProdId;
-      const src = (setItems.value || [])
+      const src = (setItems)
         .filter(s => s.setProdId === setProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       dtlItems.splice(0, dtlItems.length, ...src.map((s, i) => ({
@@ -253,7 +254,7 @@ window.PdSetMng = {
           regDate: new Date().toISOString().slice(0, 10),
         });
       }
-      const others = (setItems.value || []).filter(s => s.setProdId !== setProdId);
+      const others = (setItems).filter(s => s.setProdId !== setProdId);
       setItems.value = [
         ...others,
         ...dtlItems.map((d, i) => ({
@@ -291,7 +292,7 @@ window.PdSetMng = {
     const deleteProd = async setProdId => {
       const ok = await props.showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
-      setItems.value = (setItems.value || []).filter(s => s.setProdId !== setProdId);
+      setItems.value = (setItems).filter(s => s.setProdId !== setProdId);
       if (editSetId.value === setProdId) closeDtl();
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/prod-set/${setProdId}`);

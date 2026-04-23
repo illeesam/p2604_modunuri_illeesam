@@ -5,6 +5,7 @@ window.PmDiscntDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const discntList = ref((window.boData?.discounts || []));
     const discounts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -53,7 +54,7 @@ window.PmDiscntDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const d = (discntList.value || []).find(x => x.discntId === props.editId);
+        const d = (discntList).find(x => x.discntId === props.editId);
         if (d) Object.assign(form, d);
       }
     });

@@ -5,6 +5,7 @@ window.PmGiftDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const giftList = ref((window.boData?.gifts || []));
     const gifts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -53,7 +54,7 @@ window.PmGiftDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const g = (giftList.value || []).find(x => x.giftId === props.editId);
+        const g = (giftList).find(x => x.giftId === props.editId);
         if (g) Object.assign(form, g);
       }
     });

@@ -126,7 +126,7 @@ window.PmPlanDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const p = (plans.value || []).find(x => x.planId === props.editId);
+        const p = (plans).find(x => x.planId === props.editId);
         if (p) {
           Object.assign(form, { ...p, productIds: [...(p.productIds || [])] });
           if (!form.visibilityTargets) form.visibilityTargets = '^PUBLIC^';
@@ -191,7 +191,7 @@ window.PmPlanDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        const newId = Math.max(...(plans.value || []).map(p => p.planId), 0) + 1;
+        const newId = Math.max(...(plans).map(p => p.planId), 0) + 1;
         plans.value.push({
           ...form, planId: newId,
           productIds: [...form.productIds],
