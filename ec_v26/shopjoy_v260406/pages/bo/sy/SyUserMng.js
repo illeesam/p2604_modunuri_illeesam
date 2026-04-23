@@ -2,8 +2,9 @@
 window.SyUserMng = {
   name: 'SyUserMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const users = reactive([]);
+  setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const users = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

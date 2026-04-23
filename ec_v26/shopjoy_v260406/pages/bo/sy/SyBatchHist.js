@@ -2,8 +2,9 @@
 window.SyBatchHist = {
   name: 'SyBatchHist',
   props: ['navigate', 'boData', 'showRefModal', 'showToast', 'batchCode'],
-  setup(props) {    const batches = reactive([]);
+  setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const batches = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

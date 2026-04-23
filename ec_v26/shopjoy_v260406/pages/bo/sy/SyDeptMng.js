@@ -2,8 +2,9 @@
 window.SyDeptMng = {
   name: 'SyDeptMng',
   props: ['navigate', 'showToast', 'showConfirm'],
-  setup(props) {    const depts = reactive([]);
+  setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const depts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

@@ -2,8 +2,9 @@
 window.SyBizMng = {
   name: 'SyBizMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const bizs = reactive([]);
+  setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const bizs = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

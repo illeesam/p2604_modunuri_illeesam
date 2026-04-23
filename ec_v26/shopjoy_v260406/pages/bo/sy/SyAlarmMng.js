@@ -2,8 +2,9 @@
 window.SyAlarmMng = {
   name: 'SyAlarmMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const alarms = reactive([]);
+  setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const alarms = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 

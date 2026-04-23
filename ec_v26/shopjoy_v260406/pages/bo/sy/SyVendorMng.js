@@ -2,8 +2,9 @@
 window.SyVendorMng = {
   name: 'SyVendorMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-  setup(props) {    const vendors = reactive([]);
+  setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const vendors = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
