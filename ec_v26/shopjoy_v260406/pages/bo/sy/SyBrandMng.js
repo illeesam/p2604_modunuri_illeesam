@@ -8,6 +8,16 @@ window.SyBrandMng = {
     const loading = ref(false);
     const error = ref(null);
 
+    // 현재 환경이 local인지 확인
+    const isLocalMode = computed(() => {
+      try {
+        const appStore = window.useBoAppStore?.();
+        return appStore?.active === 'local';
+      } catch (_) {
+        return false;
+      }
+    });
+
     // onMounted에서 API 로드
     onMounted(async () => {
       loading.value = true;
@@ -278,7 +288,7 @@ window.SyBrandMng = {
       searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
       gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onSearch, onReset, onCellChange,
+      focusedIdx, setFocused, onSearch, onReset, onCellChange, isLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
       checkAll, toggleCheckAll, statusClass, exportExcel,
@@ -351,16 +361,16 @@ window.SyBrandMng = {
       <thead>
         <tr>
           <th class="col-drag"></th>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
-          <th style="min-width:140px;">표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
-          <th style="min-width:110px;">브랜드코드</th>
-          <th style="min-width:130px;">브랜드명</th>
-          <th style="min-width:130px;">영문명</th>
-          <th style="min-width:200px;">로고 URL</th>
-          <th class="col-ord">순서</th>
-          <th class="col-use">사용여부</th>
+          <th class="col-id" :title="isLocalMode ? 'ID' : ''">ID</th>
+          <th class="col-status" :title="isLocalMode ? '상태' : ''">상태</th>
+          <th class="col-check" :title="isLocalMode ? '체크' : ''"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th style="min-width:140px;" :title="isLocalMode ? '표시경로' : ''"​>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
+          <th style="min-width:110px;" :title="isLocalMode ? '브랜드코드' : ''">브랜드코드</th>
+          <th style="min-width:130px;" :title="isLocalMode ? '브랜드명' : ''">브랜드명</th>
+          <th style="min-width:130px;" :title="isLocalMode ? '영문명' : ''">영문명</th>
+          <th style="min-width:200px;" :title="isLocalMode ? '로고 URL' : ''">로고 URL</th>
+          <th class="col-ord" :title="isLocalMode ? '순서' : ''">순서</th>
+          <th class="col-use" :title="isLocalMode ? '사용여부' : ''">사용여부</th>
           <th class="col-act-cancel"></th>
           <th class="col-act-delete"></th>
         </tr>
@@ -397,23 +407,23 @@ window.SyBrandMng = {
           <td>
             <input class="grid-input grid-mono" v-model="row.brandCode"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="BRAND_CODE" />
+              placeholder="BRAND_CODE" :title="isLocalMode ? '브랜드코드' : ''" />
           </td>
           <td>
             <input class="grid-input" v-model="row.brandNm"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="브랜드명" />
+              placeholder="브랜드명" :title="isLocalMode ? '브랜드명' : ''" />
           </td>
           <td>
             <input class="grid-input" v-model="row.brandEnNm"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="Brand Name" />
+              placeholder="Brand Name" :title="isLocalMode ? '영문명' : ''" />
           </td>
           <td>
             <div style="display:flex;align-items:center;gap:4px;">
               <input class="grid-input grid-mono" v-model="row.logoUrl"
                 :disabled="row._row_status==='D'" @input="onCellChange(row)"
-                placeholder="/images/brand/logo.png" style="flex:1;" />
+                placeholder="/images/brand/logo.png" style="flex:1;" :title="isLocalMode ? '로고 URL' : ''" />
               <img v-if="row.logoUrl"
                 :src="row.logoUrl"
                 style="height:22px;max-width:44px;object-fit:contain;border-radius:3px;border:1px solid #e8e8e8;"
@@ -423,11 +433,11 @@ window.SyBrandMng = {
           </td>
           <td>
             <input class="grid-input grid-num" type="number" v-model.number="row.sortOrd"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)" />
+              :disabled="row._row_status==='D'" @input="onCellChange(row)" :title="isLocalMode ? '순서' : ''" />
           </td>
           <td>
             <select class="grid-select" v-model="row.useYn"
-              :disabled="row._row_status==='D'" @change="onCellChange(row)">
+              :disabled="row._row_status==='D'" @change="onCellChange(row)" :title="isLocalMode ? '사용여부' : ''">
               <option value="Y">사용</option><option value="N">미사용</option>
             </select>
           </td>

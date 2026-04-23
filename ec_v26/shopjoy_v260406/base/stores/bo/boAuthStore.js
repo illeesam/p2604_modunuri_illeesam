@@ -19,12 +19,20 @@
       refreshToken: '',
       accessExpiresIn: 0,
       refreshExpiresIn: 0,
+      get accessTokenInfo() {
+        return this.accessToken ? `(${this.accessToken.length} bytes)` : '(empty)';
+      },
+      get refreshTokenInfo() {
+        return this.refreshToken ? `(${this.refreshToken.length} bytes)` : '(empty)';
+      },
     }),
 
     getters: {
       isLoggedIn: (state) => !!state.user && !!state.accessToken,
       currentUser: (state) => state.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
       authHeader: (state) => (state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : {}),
+      accessTokenInfo: (state) => state.accessToken ? `(${state.accessToken.length} bytes)` : '(empty)',
+      refreshTokenInfo: (state) => state.refreshToken ? `(${state.refreshToken.length} bytes)` : '(empty)',
     },
 
     actions: {
@@ -38,12 +46,39 @@
             authMethod,
           });
 
-          const loginData = res.data?.data || res.data || {};
-          this.user = loginData.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
-          this.accessToken = loginData.accessToken || '';
-          this.refreshToken = loginData.refreshToken || '';
-          this.accessExpiresIn = loginData.accessExpiresIn || 0;
-          this.refreshExpiresIn = loginData.refreshExpiresIn || 0;
+          // 응답 구조: res.data = { ok: true, data: {...}, status: 200 }
+          // ApiResponse<LoginRes> 형식이므로 res.data.data에 LoginRes가 있음
+          const loginData = res.data?.data || {};
+          console.log('[boAuthStore.login] full response:', JSON.stringify(res.data, null, 2));
+          console.log('[boAuthStore.login] loginData:', JSON.stringify(loginData, null, 2));
+
+          // LoginRes에서 토큰 추출
+          if (loginData.accessToken) {
+            this.accessToken = loginData.accessToken;
+            console.log('[boAuthStore.login] accessToken set:', this.accessToken.substring(0, 20) + '...');
+          }
+          if (loginData.refreshToken) {
+            this.refreshToken = loginData.refreshToken;
+            console.log('[boAuthStore.login] refreshToken set:', this.refreshToken.substring(0, 20) + '...');
+          }
+
+          // user 정보: LoginRes에는 userId, siteId, roleId 등이 있음
+          this.user = {
+            boUserId: loginData.userId || 0,
+            name: loginData.userName || '',
+            email: loginData.userEmail || '',
+            role: loginData.roleId || '',
+            phone: loginData.userPhone || '',
+            dept: loginData.userDept || '',
+            siteId: loginData.siteId || '',
+            roleId: loginData.roleId || '',
+            userTypeCd: loginData.userTypeCd || ''
+          };
+
+          this.accessExpiresIn = loginData.accessExpiresIn || 3600;
+          this.refreshExpiresIn = loginData.refreshExpiresIn || 604800;
+
+          console.log('[boAuthStore.login] final state - accessToken length:', this.accessToken.length, 'refreshToken length:', this.refreshToken.length, 'user:', this.user);
 
           // localStorage 저장
           try {
@@ -171,10 +206,19 @@
       // 인증 정보 설정 (토큰 + 사용자 정보)
       setAuth(authData) {
         if (authData) {
-          this.accessToken = authData.accessToken || '';
-          this.refreshToken = authData.refreshToken || '';
-          this.accessExpiresIn = authData.accessExpiresIn || 0;
-          this.refreshExpiresIn = authData.refreshExpiresIn || 0;
+          // 기존 토큰이 있으면 유지, 새 토큰이 있으면 업데이트
+          if (authData.accessToken) {
+            this.accessToken = authData.accessToken;
+          }
+          if (authData.refreshToken) {
+            this.refreshToken = authData.refreshToken;
+          }
+          if (authData.accessExpiresIn) {
+            this.accessExpiresIn = authData.accessExpiresIn;
+          }
+          if (authData.refreshExpiresIn) {
+            this.refreshExpiresIn = authData.refreshExpiresIn;
+          }
 
           if (authData.user) {
             this.user = authData.user;
