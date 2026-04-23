@@ -3,26 +3,29 @@ window.SyAlarmMng = {
   name: 'SyAlarmMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const alarms = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
-    // onMounted에서 API 로드
+    // adminData 참조
+    const ad = window.boData || { alarms: [] };
+
+    // onMounted에서 API 로드 (currently using adminData)
     onMounted(async () => {
-      loading.value = true;
-      try {
-        const res = await window.boApi.get('/bo/sy/alarm/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        alarms = res.data?.data?.list || [];
-        error.value = null;
-      } catch (err) {
-        error.value = err.message;
-        if (props.showToast) props.showToast('SyAlarm 로드 실패', 'error');
-      } finally {
-        loading.value = false;
-      }
+      // loading.value = true;
+      // try {
+      //   const res = await window.boApi.get('/bo/sy/alarm/page', {
+      //     params: { pageNo: 1, pageSize: 10000 }
+      //   });
+      //   window.safeArrayUtils.updateArray(alarms, res.data?.data?.list || []);
+      //   error.value = null;
+      // } catch (err) {
+      //   error.value = err.message;
+      //   if (props.showToast) props.showToast('SyAlarm 로드 실패', 'error');
+      // } finally {
+      //   loading.value = false;
+      // }
     });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
@@ -78,16 +81,20 @@ window.SyAlarmMng = {
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-    const filtered = computed(() => alarms.filter(a => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !a.title.toLowerCase().includes(kw) && !a.message.toLowerCase().includes(kw)) return false;
-      if (applied.type && a.alarmTypeCd !== applied.type) return false;
-      if (applied.status && a.statusCd !== applied.status) return false;
-      const d = String(a.sendDate || a.regDate || '').slice(0, 10);
-      if (applied.dateStart && d < applied.dateStart) return false;
-      if (applied.dateEnd && d > applied.dateEnd) return false;
-      return true;
-    }));
+    const filtered = computed(() => {
+      const items = ad.alarms || [];
+      if (!Array.isArray(items)) return [];
+      return items.filter(a => {
+        const kw = applied.kw.trim().toLowerCase();
+        if (kw && !a.title.toLowerCase().includes(kw) && !a.message.toLowerCase().includes(kw)) return false;
+        if (applied.type && a.alarmTypeCd !== applied.type) return false;
+        if (applied.status && a.statusCd !== applied.status) return false;
+        const d = String(a.sendDate || a.regDate || '').slice(0, 10);
+        if (applied.dateStart && d < applied.dateStart) return false;
+        if (applied.dateEnd && d > applied.dateEnd) return false;
+        return true;
+      });
+    });
     const total = computed(() => filtered.value.length);
     const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
     const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
