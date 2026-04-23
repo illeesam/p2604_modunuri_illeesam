@@ -122,13 +122,17 @@ window.PdBundleMng = {
     const rateSumBadge = id => Math.abs(rateSum(id) - 100) < 0.01 ? 'badge-green' : 'badge-red';
 
     /* ── 묶음상품 목록 ── */
-    const bundleList = computed(() => {
+    const bundleList = reactive([]);
+    const updateBundleList = () => {
       try {
         const kw = (applied?.nm || '').toLowerCase();
         const bundleArray = bundles;
-        if (!Array.isArray(bundleArray) || bundleArray.length === 0) return [];
+        if (!Array.isArray(bundleArray) || bundleArray.length === 0) {
+          bundleList.splice(0, bundleList.length);
+          return;
+        }
         const ids = [...new Set(bundleArray.map(b => b?.bundleProdId).filter(Boolean))];
-        return ids
+        const result = ids
           .map(id => {
             const items = bundleArray
               .filter(b => b?.bundleProdId === id)
@@ -138,17 +142,21 @@ window.PdBundleMng = {
             return { bundleProdId: id, prodNm, prod, items, itemCount: items.length };
           })
           .filter(g => !kw || (g?.prodNm || '').toLowerCase().includes(kw));
+        bundleList.splice(0, bundleList.length, ...result);
       } catch (e) {
         console.error('bundleList error:', e);
-        return [];
+        bundleList.splice(0, bundleList.length);
       }
-    });
+    };
+    updateBundleList();
+    watch(() => applied.nm, updateBundleList);
+    watch(bundles, updateBundleList);
 
-    const totalCnt   = computed(() => (bundleList.value || []).length);
+    const totalCnt   = computed(() => (bundleList || []).length);
     const totalPages = computed(() => Math.max(1, Math.ceil((totalCnt.value || 0) / (pager.size || 10))));
     const pageList   = computed(() => {
       try {
-        const list = bundleList.value || [];
+        const list = bundleList || [];
         if (!Array.isArray(list)) return [];
         const start = ((pager.page || 1) - 1) * (pager.size || 10);
         const end = start + (pager.size || 10);

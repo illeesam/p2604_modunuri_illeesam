@@ -8,7 +8,6 @@ const _WP_DispPanelPreview = {
     const { ref, reactive, computed, watchEffect } = Vue;
     const codes = reactive((window.boData?.codes || []));
     const widgetLibs = reactive((window.boData?.widgetLibs || []));
-    const codes = reactive((window.boData?.codes || []));
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;

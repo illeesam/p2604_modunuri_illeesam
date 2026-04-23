@@ -5,7 +5,7 @@ window.PdQnaMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const products = reactive(window.boDataProvider?.getProducts?.() || []);
-    const prodQnas = ref((window.boData?.prodQnas || []));
+    const prodQnas = reactive((window.boData?.prodQnas || []));
     const members = reactive(window.boDataProvider?.getMembers?.() || []);
     const qnas = reactive([]);
     const loading = ref(false);
@@ -54,7 +54,7 @@ window.PdQnaMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (prodQnas.value||[]).find(q => q.qnaId === selectedId.value) || null);
+    const selectedRow = computed(() => (prodQnas||[]).find(q => q.qnaId === selectedId.value) || null);
 
     const openDetail = (row) => {
       if (selectedId.value === row.qnaId) { selectedId.value = null; return; }

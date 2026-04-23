@@ -5,6 +5,7 @@ window.SyBbsMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bbss = reactive([]);
+    const bbms = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -12,10 +13,16 @@ window.SyBbsMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/sy/bbs/page', {
+        const resBbs = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        bbss = res.data?.data?.list || [];
+        bbss.splice(0, bbss.length, ...(resBbs.data?.data?.list || []));
+
+        const resBbm = await window.boApi.get('/bo/sy/bbm/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bbms.splice(0, bbms.length, ...(resBbm.data?.data?.list || []));
+
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -77,8 +84,8 @@ window.SyBbsMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const bbmOptions = computed(() => bbms.value.map(b => ({ value: b.bbmId, label: b.bbmNm })));
-    const bbmNm = (bbmId) => { const b = bbms.value.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
+    const bbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
+    const bbmNm = (bbmId) => { const b = bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
 
     const applied = reactive({ kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' });
     const filtered = computed(() => bbss.filter(b => {

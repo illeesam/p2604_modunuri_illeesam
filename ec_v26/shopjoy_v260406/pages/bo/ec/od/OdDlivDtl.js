@@ -72,9 +72,15 @@ window.OdDlivDtl = {
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const relatedOrder  = computed(() => window.safeArrayUtils.safeFind((window.boData?.orders || []), o => o.orderId === form.orderId) || null);
-    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === form.orderId));
+    const relatedClaims = reactive([]);
+    const updateRelatedClaims = () => {
+      const filtered = window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === form.orderId);
+      relatedClaims.splice(0, relatedClaims.length, ...filtered);
+    };
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
-    const firstClaim = computed(() => window.safeArrayUtils.safeGet(relatedClaims.value || [], 0) || null);
+    const firstClaim = computed(() => window.safeArrayUtils.safeGet(relatedClaims || [], 0) || null);
+    watch(() => form.orderId, updateRelatedClaims);
+    watch(claims, updateRelatedClaims);
 
     const save = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);

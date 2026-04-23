@@ -55,7 +55,7 @@ window.PdReviewMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (reviews.value||[]).find(r => r.reviewId === selectedId.value) || null);
+    const selectedRow = computed(() => (reviews||[]).find(r => r.reviewId === selectedId.value) || null);
 
     const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
     const changeStatus = async (row, newStatus) => {

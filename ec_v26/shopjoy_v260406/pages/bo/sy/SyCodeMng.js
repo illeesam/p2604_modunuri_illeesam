@@ -64,7 +64,8 @@ window.SyCodeMng = {
     const GRP_FIELDS = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
 
     // 코드그룹 (codes에서 그룹 고유값 추출)
-    const codeGroups = computed(() => {
+    const codeGroups = reactive([]);
+    const updateCodeGroups = () => {
       const grps = new Map();
       codes.forEach(c => {
         if (c.codeGrp && !grps.has(c.codeGrp)) {
@@ -77,8 +78,9 @@ window.SyCodeMng = {
           });
         }
       });
-      return Array.from(grps.values());
-    });
+      codeGroups.splice(0, codeGroups.length, ...Array.from(grps.values()));
+    };
+    updateCodeGroups();
 
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
@@ -94,7 +96,7 @@ window.SyCodeMng = {
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const loadGrp = () => {
       grpRows.splice(0);
-      (codeGroups.value || []).forEach(g => grpRows.push({
+      (codeGroups || []).forEach(g => grpRows.push({
         ...g,
         _row_status: 'N',
         pathId: g.pathId == null ? null : g.pathId,
@@ -128,9 +130,9 @@ window.SyCodeMng = {
       if (!grpDirty.value) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await props.showConfirm('저장', `${grpDirty.value}건 저장하시겠습니까?`);
       if (!ok) return;
-      codeGroups.value = grpRows.filter(r => r._row_status !== 'D').map(r => ({
+      codeGroups.splice(0, codeGroups.length, ...grpRows.filter(r => r._row_status !== 'D').map(r => ({
         codeGrp: r.codeGrp, grpNm: r.grpNm, pathId: r.pathId, dispPath: r.dispPath, description: r.description, type: r.type, useYn: r.useYn,
-      }));
+      })));
       loadGrp();
       props.showToast('저장되었습니다.', 'success');
     };
@@ -184,7 +186,7 @@ window.SyCodeMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       /* 트리 선택 시 해당 path에 속하는 codeGrp 집합 */
       const allowedGrps = grpSelectedPath.value
-        ? new Set((codeGroups.value || [])
+        ? new Set((codeGroups || [])
             .filter(g => (g.dispPath || '').startsWith(grpSelectedPath.value))
             .map(g => g.codeGrp))
         : null;
@@ -226,8 +228,8 @@ window.SyCodeMng = {
 
     /* 현재 선택된 그룹이 트리형인지 여부 */
     const isTreeTypeGrp = computed(() => {
-      if (!selectedGrp.value || !codeGroups.value?.length) return false;
-      const grp = codeGroups.value.find(g => g.codeGrp === selectedGrp.value);
+      if (!selectedGrp.value || !codeGroups?.length) return false;
+      const grp = codeGroups.find(g => g.codeGrp === selectedGrp.value);
       return grp?.type === '트리';
     });
 

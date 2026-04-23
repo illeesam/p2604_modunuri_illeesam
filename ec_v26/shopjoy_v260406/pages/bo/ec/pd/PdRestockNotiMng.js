@@ -55,7 +55,7 @@ window.PdRestockNotiMng = {
     const checkedCount  = computed(() => checkedIds.size);
 
     const sendNoti = async () => {
-      const targets = (restockNotis.value||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
+      const targets = (restockNotis||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
       if (!targets.length) { props.showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
       const ok = await props.showConfirm('알림발송', `선택한 ${targets.length}건에 재입고 알림을 발송하시겠습니까?`);
       if (!ok) return;

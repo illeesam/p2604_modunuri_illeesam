@@ -686,20 +686,27 @@
       const currentUser = ref(_restoreBoUser());
       const activeRoleId = ref(null);
       const isLoggedIn = computed(() => window.isLogin?.() ?? false);
-      const currentUserRoles = computed(() => {
+      const currentUserRoles = reactive([]);
+      const updateCurrentUserRoles = () => {
         try {
-          if (!window.boDataProvider) return [];
+          if (!window.boDataProvider) {
+            currentUserRoles.splice(0, currentUserRoles.length);
+            return;
+          }
           const user = currentUser.value || { boUserId: 0 };
-          const userRoles = window.boDataProvider?.getBoUserRolesByUserId(user.boUserId) || [];
+          const userRoles = window.boDataProvider?.getUserRolesByUserId(user.boUserId) || [];
           const roles = window.boDataProvider?.getRoles() || [];
           const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
           const result = (userRoles || []).map(ur => roleMap[ur?.roleId]).filter(Boolean);
-          return result && result.length ? result : [];
+          const finalResult = result && result.length ? result : [];
+          currentUserRoles.splice(0, currentUserRoles.length, ...finalResult);
         } catch (e) {
           console.error('currentUserRoles error:', e);
-          return [];
+          currentUserRoles.splice(0, currentUserRoles.length);
         }
-      });
+      };
+      updateCurrentUserRoles();
+      watch(currentUser, updateCurrentUserRoles);
       const rolePath = (r, uid) => {
         try {
           if (!r || !window.boDataProvider) return '';
@@ -778,7 +785,7 @@
       watch(currentUser, (u) => {
         try {
           if (u && u.boUserId) {
-            const roles = currentUserRoles.value || [];
+            const roles = currentUserRoles || [];
             if (!roles.find(r => r?.roleId === activeRoleId.value)) {
               activeRoleId.value = (roles && roles.length) ? roles[0]?.roleId : null;
             }

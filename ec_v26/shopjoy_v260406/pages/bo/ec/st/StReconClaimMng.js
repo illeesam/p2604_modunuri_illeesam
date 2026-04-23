@@ -15,12 +15,12 @@ window.StReconClaimMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const claims  = computed(() => claims.value  || []);
+    const claimsList = reactive((window.boData?.claims || []));
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 
     const rows = computed(() => {
-      return window.safeArrayUtils.safeFilter(claims, c => {
+      return window.safeArrayUtils.safeFilter(claimsList, c => {
         if (dateStart.value && c.requestDate.slice(0,10) < dateStart.value) return false;
         if (dateEnd.value   && c.requestDate.slice(0,10) > dateEnd.value)   return false;
         return true;

@@ -13,12 +13,15 @@ window.SyPathMng = {
     const bizFlt   = ref('');
 
     /* ── biz_cd 옵션 (공통코드 등록 항목) ── */
-    const BIZ_OPTIONS = computed(() => {
+    const BIZ_OPTIONS = reactive([]);
+    (() => {
       const opts = ad.bizCdCodes || [];
-      return Array.isArray(opts) ? opts : [];
-    });
+      if (Array.isArray(opts)) {
+        BIZ_OPTIONS.splice(0, BIZ_OPTIONS.length, ...opts);
+      }
+    })();
     const bizLabel = (cd) => {
-      const opts = BIZ_OPTIONS.value || [];
+      const opts = BIZ_OPTIONS || [];
       return (Array.isArray(opts) && opts.find(b => b.codeValue === cd) || {}).codeLabel || cd;
     };
 

@@ -15,7 +15,7 @@ window.SyBbmMng = {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        bbms = res.data?.data?.list || [];
+        bbms.splice(0, bbms.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;

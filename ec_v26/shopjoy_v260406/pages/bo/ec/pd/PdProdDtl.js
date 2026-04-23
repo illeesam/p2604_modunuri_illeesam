@@ -6,6 +6,10 @@ window.PdProdDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const products = reactive([]);
+    const boUsers = reactive((window.boData?.boUsers || []));
+    const categories = reactive((window.boData?.categories || []));
+    const categoryProds = reactive((window.boData?.categoryProds || []));
+    const codes = reactive((window.boData?.codes || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -66,16 +70,16 @@ window.PdProdDtl = {
     // ── 옵션 공통코드 ([] 기반 — OPT_TYPE 2레벨 트리)
     const prodOptCategoryTypeCd = ref(''); // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
     const optTypeLevel1Codes = computed(() =>
-      (codes.value||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && !c.parentCodeValue && c.codeValue!=='NONE')
+      (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && !c.parentCodeValue && c.codeValue!=='NONE')
         .sort((a,b) => a.sortOrd - b.sortOrd)
     );
     const optTypeCodes = computed(() => {
       if (!prodOptCategoryTypeCd.value) return [];
-      return (codes.value||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===prodOptCategoryTypeCd.value)
+      return (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===prodOptCategoryTypeCd.value)
         .sort((a,b) => a.sortOrd - b.sortOrd);
     });
-    const optInputTypeCodes = computed(() => (codes.value||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
-    const getOptValCodes    = (typeCd) => (codes.value||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
+    const optInputTypeCodes = computed(() => (codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
+    const getOptValCodes    = (typeCd) => (codes||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
 
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; prodOptCategoryTypeCd.value = ''; };
 
@@ -313,7 +317,7 @@ window.PdProdDtl = {
     const catPickerList = computed(() => {
       const q = catPickerSearch.value.trim().toLowerCase();
       const already = new Set(prodCategories.map(c => String(c.categoryId)));
-      return (categories.value||[])
+      return (categories||[])
         .filter(c => {
           if (already.has(String(c.categoryId||c.id))) return false;
           if (!q) return true;
@@ -322,11 +326,11 @@ window.PdProdDtl = {
         .sort((a,b) => (a.depth||a.level||1) - (b.depth||b.level||1));
     });
     const getCategoryNm = (id) => {
-      const c = (categories.value||[]).find(x => String(x.categoryId||x.id) === String(id));
+      const c = (categories||[]).find(x => String(x.categoryId||x.id) === String(id));
       return c ? (c.categoryNm||c.nm||String(id)) : String(id);
     };
     const getCategoryDepth = (id) => {
-      const c = (categories.value||[]).find(x => String(x.categoryId||x.id) === String(id));
+      const c = (categories||[]).find(x => String(x.categoryId||x.id) === String(id));
       return c ? (c.depth||c.level||1) : 1;
     };
     const addCategory = (cat) => {
@@ -361,7 +365,7 @@ window.PdProdDtl = {
     // ── 담당MD 모달
     const mdModalOpen = ref(false);
     const mdSearch    = ref('');
-    const mdUserList  = computed(() => (boUsers.value||[]).filter(u => u.status==='활성'));
+    const mdUserList  = computed(() => (boUsers||[]).filter(u => u.status==='활성'));
     const mdUserListFiltered = computed(() => {
       const q = mdSearch.value.trim().toLowerCase();
       if (!q) return mdUserList.value;
@@ -431,7 +435,7 @@ window.PdProdDtl = {
             relProds.splice(0, relProds.length, ...p.relProds.map(r => ({ ...r, _id: _relSeq++ })));
           } else if (p.relatedProductIds) {
             relProds.splice(0, relProds.length, ...p.relatedProductIds.split(',').map(s => s.trim()).filter(Boolean).map(id => {
-              const found = (products.value||[]).find(x => String(x.productId) === String(id));
+              const found = (products||[]).find(x => String(x.productId) === String(id));
               return found ? { _id: _relSeq++, productId: found.productId, prodNm: found.prodNm, category: found.category||'', price: found.price||0, stock: found.stock||0, status: found.status||'' }
                            : { _id: _relSeq++, productId: Number(id), prodNm: '(ID:'+id+')', category: '', price: 0, stock: 0, status: '' };
             }));
@@ -439,7 +443,7 @@ window.PdProdDtl = {
           if (p.codeProds?.length) codeProds.splice(0, codeProds.length, ...p.codeProds.map(r => ({ ...r, _id: _relSeq++ })));
           // 카테고리 N개 로드 (pd_category_prod)
           const pid = String(p.productId || p.prodId);
-          const linked = (categoryProds.value||[])
+          const linked = (categoryProds||[])
             .filter(cp => String(cp.prodId) === pid)
             .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
           prodCategories.splice(0, prodCategories.length, ...linked.map(cp => ({
