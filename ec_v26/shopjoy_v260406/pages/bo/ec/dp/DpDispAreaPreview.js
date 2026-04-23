@@ -139,7 +139,7 @@ window.DpDispAreaPreview = {
   name: 'DpDispAreaPreview',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, watchEffect } = Vue;
+    const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
     const codes = reactive((window.boData?.codes || []));
     const widgetLibs = reactive((window.boData?.widgetLibs || []));
 
@@ -285,8 +285,10 @@ window.DpDispAreaPreview = {
     };
     watchEffect(() => {
       if (!openNodes.has('__root__')) openNodes.add('__root__');
-      if (tree.value.length && openNodes.size === 1) {
-        openNodes.add(tree.window.safeArrayUtils.safeGet(value, 0).label);
+      const treeArr = Array.isArray(tree.value) ? tree.value : [];
+      if (treeArr.length && openNodes.size === 1) {
+        const firstNode = treeArr[0];
+        if (firstNode && firstNode.label) openNodes.add(firstNode.label);
       }
     });
     const expandAll = () => { window.safeArrayUtils.safeForEach(tree, n => openNodes.add(n.label)); openNodes.add('__root__'); };

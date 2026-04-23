@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 고객종합정보 (고객센터 상담용 통합 조회) */
 (function () {
-  const { ref, reactive, computed, watch } = Vue;
+  const { ref, reactive, computed, watch, onMounted } = Vue;
 
   const SEARCH_MODES = [
     { id: 'member', label: '고객 검색' },

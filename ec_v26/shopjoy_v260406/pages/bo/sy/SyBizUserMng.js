@@ -277,15 +277,16 @@ window.SyBizUserMng = {
       while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
       return seg.join(' > ');
     };
+
+    /* 인라인 폼 */
+    const formMode = ref('');
+    const formData = reactive({});
+
     watch(() => formData.bizId, () => {
       roleTreeExpanded.clear();
       const root = (ad.roles || []).find(r => r.roleCode === formAllowedRootCode.value);
       if (root) roleTreeExpanded.add(root.roleId);
     });
-
-    /* 인라인 폼 */
-    const formMode = ref('');
-    const formData = reactive({});
     const blank = () => ({ bizUserId: null, bizId: null, userId: null, memberNm: '',
       positionCd: '', roleCd: 'STAFF', deptNm: '', phone: '', mobile: '', email: '', birthDate: '',
       isMain: 'N', authYn: 'N', joinDate: '', leaveDate: '', statusCd: 'ACTIVE', remark: '' });

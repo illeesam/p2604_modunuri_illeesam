@@ -11,18 +11,15 @@ window.PdCategoryMng = {
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
     onMounted(() => {
-      expandedSet = new Set(
-        (categories || []).filter(c => c.depth === 1).map(c => c.categoryId)
-      );
+      expandedSet.clear();
+      (categories || []).filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
     });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
-      const s = new Set(expandedSet);
-      if (s.has(id)) s.delete(id); else s.add(id);
-      expandedSet = s;
+      if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
     };
-    const expandAll  = () => { expandedSet = new Set(categories.map(c => c.categoryId)); };
-    const collapseAll = () => { expandedSet = new Set(); };
+    const expandAll  = () => { expandedSet.clear(); categories.forEach(c => expandedSet.add(c.categoryId)); };
+    const collapseAll = () => { expandedSet.clear(); };
 
     /* ── 선택된 카테고리 (좌측 트리 클릭) ── */
     const selectedCatId = ref(null);

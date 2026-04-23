@@ -141,6 +141,10 @@ window.DpDispPanelPreview = {
   name: 'DpDispPanelPreview',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
+    const codes = reactive((window.boData?.codes || []));
+    const widgetLibs = reactive((window.boData?.widgetLibs || []));
+    const displays = reactive((window.boData?.displays || []));
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
@@ -278,7 +282,7 @@ window.DpDispPanelPreview = {
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
-      node.cwindow.safeArrayUtils.safeForEach(hildren, sub => {
+      window.safeArrayUtils.safeForEach(node.children, sub => {
         const key = node.label + '_' + sub.label;
         if (open) openNodes.add(key);
         else openNodes.delete(key);
@@ -287,8 +291,10 @@ window.DpDispPanelPreview = {
     };
     watchEffect(() => {
       if (!openNodes.has('__root__')) openNodes.add('__root__');
-      if (tree.value.length && openNodes.size === 1) {
-        openNodes.add(tree.window.safeArrayUtils.safeGet(value, 0).label);
+      const treeArr = Array.isArray(tree.value) ? tree.value : [];
+      if (treeArr.length && openNodes.size === 1) {
+        const firstNode = treeArr[0];
+        if (firstNode && firstNode.label) openNodes.add(firstNode.label);
       }
     });
     const expandAll = () => { window.safeArrayUtils.safeForEach(tree, n => openNodes.add(n.label)); openNodes.add('__root__'); };

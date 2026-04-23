@@ -4,7 +4,7 @@ window.SyPathMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
 
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, watch } = Vue;
     const ad = window.boData || { bizCdCodes: [], paths: [] };
 
     /* ── 검색 상태 ── */

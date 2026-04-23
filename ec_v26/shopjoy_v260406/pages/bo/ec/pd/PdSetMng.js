@@ -3,9 +3,10 @@ window.PdSetMng = {
   name: 'PdSetMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const categories = reactive(window.boDataProvider?.getCategories?.() || []);
     const products = reactive(window.boDataProvider?.getProducts?.() || []);
-    const setItems = ref((window.boData?.setItems || []));
+    const setItems = reactive((window.boData?.setItems || []));
     const brands = reactive(window.boDataProvider?.getBrands?.() || []);
     const categoryProds = reactive((window.boData?.categoryProds) || []);
     const sets = reactive([]);
@@ -125,10 +126,10 @@ window.PdSetMng = {
     /* ── 세트상품 목록 ── */
     const setList = computed(() => {
       const kw = applied.nm.toLowerCase();
-      const ids = [...new Set((setItems).map(s => s.setProdId))];
+      const ids = [...new Set((setItems || []).map(s => s.setProdId))];
       return ids
         .map(id => {
-          const items = (setItems)
+          const items = (setItems || [])
             .filter(s => s.setProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod = getProd(id);

@@ -3,7 +3,7 @@ window.PdBundleMng = {
   name: 'PdBundleMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const categories = reactive(window.boDataProvider?.getCategories?.() || []);
     const products = reactive(window.boDataProvider?.getProducts?.() || []);
     const brands = reactive(window.boDataProvider?.getBrands?.() || []);
@@ -309,7 +309,7 @@ window.PdBundleMng = {
       }
       /* bundles 데이터 반영 */
       const others = (bundles).filter(b => b.bundleProdId !== bundleProdId);
-      bundles = [
+      const newBundles = [
         ...others,
         ...dtlItems.map((d, i) => ({
           bundleItemId: d.bundleItemId || `B_${bundleProdId}_${i + 1}`,
@@ -319,12 +319,16 @@ window.PdBundleMng = {
           sortOrd: d.sortOrd, useYn: d.useYn,
         })),
       ];
+      bundles.splice(0, bundles.length, ...newBundles);
       /* categoryProds 동기화 */
-      if (!categoryProds) categoryProds = [];
-      categoryProds = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(bundleProdId));
+      const filteredProds = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(bundleProdId));
+      const newCategoryProds = [
+        ...filteredProds,
+      ];
       window.safeArrayUtils.safeForEach(dtlCategories, (cat, i) => {
-        categoryProds.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
+        newCategoryProds.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
       });
+      categoryProds.splice(0, categoryProds.length, ...newCategoryProds);
       if (isNew) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
       try {
         const res = await (isNew ? window.boApi.post('/bo/ec/pd/prod-bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }));
