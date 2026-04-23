@@ -739,5 +739,13 @@
   if (window.XsLocalStorage) app.component('XsLocalStorage', window.XsLocalStorage);
 
   /* 페이지 ID 헬퍼 — 모든 템플릿에서 'home' 등으로 접근 가능 */
+  window.perfUtil?.start('FO 앱 시작');
+  const recordVueMountFo = window.perfUtil?.recordVueMount();
   app.use(pinia).mount('#app');
+
+  /* 성능 측정 */
+  setTimeout(() => {
+    recordVueMountFo?.();
+    window.perfUtil?.end('FO 앱 시작');
+  }, 100);
 })();

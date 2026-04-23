@@ -1736,6 +1736,14 @@
   .use(Pinia.createPinia())
   .mount('#app');
 
+  /* 성능 측정 */
+  window.perfUtil?.start('BO 앱 시작');
+  const recordVueMount = window.perfUtil?.recordVueMount();
+  setTimeout(() => {
+    recordVueMount?.();
+    window.perfUtil?.end('BO 앱 시작');
+  }, 100);
+
   const loadingEl = document.getElementById('_boot_loading');
   if (loadingEl) {
     loadingEl.classList.add('done');

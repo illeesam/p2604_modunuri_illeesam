@@ -17,27 +17,44 @@
       }
     });
   </script>
+  <!-- ■ 1단계: Core Runtime ■ -->
   <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+
+  <!-- ■ 2단계: Libraries ■ -->
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
   <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
   <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
-  <link rel="stylesheet" href="assets/css/foGlobalStyle01.css">
+
+  <!-- ■ 3단계: Axios & Utility Wrappers ■ -->
   <script src="utils/foAxios.js"></script>
   <script src="utils/foCmUtil.js"></script>
+
+  <!-- ■ 4단계: Base Components ■ -->
   <script src="components/comp/BaseComp.js"></script>
+
+  <!-- ■ 5단계: Error Handler ■ -->
   <script src="pages/base/foError404.js"></script>
-  <script src="components/disp/DispX04Widget.js"></script>
-  <script src="components/disp/DispX03Panel.js"></script>
-  <script src="components/disp/DispX02Area.js"></script>
+
+  <!-- ■ 6단계: Display Components Hierarchy ■ -->
   <script src="components/disp/DispX01Ui.js"></script>
-  <script src="pages/fo/xd/DispUiPage.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <!-- ■ 7단계: Display Pages (가나다순) ■ -->
   <script src="pages/fo/xd/DispUi01.js"></script>
   <script src="pages/fo/xd/DispUi02.js"></script>
   <script src="pages/fo/xd/DispUi03.js"></script>
   <script src="pages/fo/xd/DispUi04.js"></script>
   <script src="pages/fo/xd/DispUi05.js"></script>
   <script src="pages/fo/xd/DispUi06.js"></script>
+
+  <!-- ■ 8단계: Display UI Page ■ -->
+  <script src="pages/fo/xd/DispUiPage.js"></script>
+
+  <!-- ■ CSS (최상단) ■ -->
+  <link rel="stylesheet" href="assets/css/foGlobalStyle01.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }

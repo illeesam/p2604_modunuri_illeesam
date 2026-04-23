@@ -80,31 +80,47 @@
     <div class="txt">로딩 중…</div>
   </div>
   <div id="app"></div>
+  <!-- ■ 1단계: 성능모니터링 & 안전유틸 ■ -->
+  <script src="utils/perfUtil.js"></script>
   <script src="utils/safeUtil.js"></script>
+
+  <!-- ■ 2단계: Core Runtime Libraries ■ -->
   <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
   <script src="assets/cdn/pkg/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+
+  <!-- ■ 3단계: Axios & Utility Wrappers ■ -->
   <script src="utils/foAxios.js"></script>
   <script src="utils/foCmUtil.js"></script>
+
+  <!-- ■ 4단계: Config & Auth ■ -->
   <script src="base/foConfig.js"></script>
   <script src="js/index.js"></script>
-  <script src="base/stores/fo/foAuthStore.js"></script>
-  <script src="base/stores/fo/foRoleStore.js"></script>
-  <script src="base/stores/fo/foMenuStore.js"></script>
-  <script src="base/stores/fo/foCodeStore.js"></script>
-  <script src="base/stores/fo/foPropStore.js"></script>
-  <script src="base/stores/fo/foDispStore.js"></script>
-  <script src="base/stores/fo/foAppStore.js"></script>
-  <script src="base/stores/fo/foAppInitStore.js"></script>
-  <script src="base/stores/fo/foMyStore.js"></script>
   <script src="base/foAuth.js"></script>
+
+  <!-- ■ 5단계: Pinia Stores ■ -->
+  <script src="base/stores/fo/foAppInitStore.js"></script>
+  <script src="base/stores/fo/foAppStore.js"></script>
+  <script src="base/stores/fo/foAuthStore.js"></script>
+  <script src="base/stores/fo/foCodeStore.js"></script>
+  <script src="base/stores/fo/foDispStore.js"></script>
+  <script src="base/stores/fo/foMenuStore.js"></script>
+  <script src="base/stores/fo/foMyStore.js"></script>
+  <script src="base/stores/fo/foPropStore.js"></script>
+  <script src="base/stores/fo/foRoleStore.js"></script>
+
+  <!-- ■ 6단계: Layout Components ■ -->
+  <script src="layout/foAppFooter.js"></script>
   <script src="layout/foAppHeader.js"></script>
   <script src="layout/foAppSidebar.js"></script>
-  <script src="layout/foAppFooter.js"></script>
   <script src="layout/foMyLayout.js"></script>
-  <script src="pages/base/foError404.js"></script>
+
+  <!-- ■ 7단계: Base Pages (Error Handlers) ■ -->
   <script src="pages/base/foError401.js"></script>
+  <script src="pages/base/foError404.js"></script>
   <script src="pages/base/foError500.js"></script>
+
+  <!-- ■ 8단계: Dynamic Site Pages (Site NO별) ■ -->
   <script>
     /* FO_SITE_NO 기준 동적 페이지 스크립트 로드 */
     (function(){
@@ -114,39 +130,49 @@
       });
     })();
   </script>
+
+  <!-- ■ 9단계: Main Page Components (가나다순) ■ -->
+  <script src="pages/fo/About.js"></script>
+  <script src="pages/fo/Blog.js"></script>
+  <script src="pages/fo/BlogEdit.js"></script>
+  <script src="pages/fo/BlogView.js"></script>
   <script src="pages/fo/Cart.js"></script>
-  <script src="pages/fo/Order.js"></script>
   <script src="pages/fo/Contact.js"></script>
-  <script src="pages/fo/Faq.js"></script>
-  <script src="pages/fo/Login.js"></script>
-  <script src="components/modals/BaseModal.js"></script>
-  <script src="components/comp/BaseComp.js"></script>
-  <script src="pages/fo/my/MyOrder.js"></script>
-  <script src="pages/fo/my/MyClaim.js"></script>
-  <script src="pages/fo/my/MyCoupon.js"></script>
-  <script src="pages/fo/my/MyCache.js"></script>
-  <script src="pages/fo/my/MyContact.js"></script>
-  <script src="pages/fo/my/MyChatt.js"></script>
-  <script src="pages/fo/Like.js"></script>
   <script src="pages/fo/Event.js"></script>
   <script src="pages/fo/EventView.js"></script>
-  <script src="pages/fo/Blog.js"></script>
-  <script src="pages/fo/BlogView.js"></script>
-  <script src="pages/fo/BlogEdit.js"></script>
+  <script src="pages/fo/Faq.js"></script>
+  <script src="pages/fo/Like.js"></script>
   <script src="pages/fo/Location.js"></script>
-  <script src="pages/fo/About.js"></script>
-  <script src="components/disp/DispX04Widget.js"></script>
-  <script src="components/disp/DispX03Panel.js"></script>
-  <script src="components/disp/DispX02Area.js"></script>
+  <script src="pages/fo/Login.js"></script>
+  <script src="pages/fo/Order.js"></script>
+
+  <!-- ■ 10단계: My Pages (마이페이지 - 가나다순) ■ -->
+  <script src="pages/fo/my/MyCache.js"></script>
+  <script src="pages/fo/my/MyClaim.js"></script>
+  <script src="pages/fo/my/MyContact.js"></script>
+  <script src="pages/fo/my/MyChatt.js"></script>
+  <script src="pages/fo/my/MyCoupon.js"></script>
+  <script src="pages/fo/my/MyOrder.js"></script>
+
+  <!-- ■ 11단계: Base Components ■ -->
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/modals/BaseModal.js"></script>
+
+  <!-- ■ 12단계: Display Hierarchy Components ■ -->
   <script src="components/disp/DispX01Ui.js"></script>
-  <!-- ■■■ 전시관련 페이지 주석해도 에러 없이 동작 ■■■ -->
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <!-- ■ 13단계: Display UI Pages (가나다순) ■ -->
   <script src="pages/fo/xd/DispUi01.js"></script>
   <script src="pages/fo/xd/DispUi02.js"></script>
   <script src="pages/fo/xd/DispUi03.js"></script>
   <script src="pages/fo/xd/DispUi04.js"></script>
   <script src="pages/fo/xd/DispUi05.js"></script>
   <script src="pages/fo/xd/DispUi06.js"></script>
-  <!-- ■■■ 샘플 페이지 주석해도 에러 없이 동작 ■■■ -->
+
+  <!-- ■ 14단계: Sample Pages (샘플 - 가나다순) ■ -->
   <script src="pages/fo/xs/Sample01.js"></script>
   <script src="pages/fo/xs/Sample02.js"></script>
   <script src="pages/fo/xs/Sample03.js"></script>
@@ -164,9 +190,12 @@
   <script src="pages/fo/xs/Sample21.js"></script>
   <script src="pages/fo/xs/Sample22.js"></script>
   <script src="pages/fo/xs/Sample23.js"></script>
-  <!-- ■■■ 개발도구 페이지 ■■■ -->
-  <script src="pages/fo/xs/XsStore.js"></script>
+
+  <!-- ■ 15단계: Developer Tools ■ -->
   <script src="pages/fo/xs/XsLocalStorage.js"></script>
+  <script src="pages/fo/xs/XsStore.js"></script>
+
+  <!-- ■ 16단계: Main App Bootstrap ■ -->
   <script src="base/foApp.js"></script>
 </body>
 </html>
