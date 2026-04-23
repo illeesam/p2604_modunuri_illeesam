@@ -39,15 +39,16 @@ public class CmBoAppStoreDataController {
     /**
      * BO 애플리케이션 초기화 데이터 조회 (통합)
      *
-     * @param req 요청 정보 (siteId, userId, roleId 필수, names 선택)
+     * @param req 요청 정보 (names: "ALL" 또는 "aaa^bbb^ccc" 형식)
      * @return 토큰, 사용자, 권한, 메뉴, 코드, 속성, 앱 정보 포함
      */
 
     @PostMapping("/getInitData")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
+        String names = req != null ? (String) req.get("names") : "";
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
-        boolean requestAll = requestedItems.isEmpty();
+        boolean requestAll = "ALL".equalsIgnoreCase(names) || requestedItems.isEmpty();
 
         Map<String, Object> resultMap = new HashMap<>();
 

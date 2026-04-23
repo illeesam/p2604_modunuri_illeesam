@@ -38,12 +38,17 @@
 
   var inst = global.axios.create({ timeout: TIMEOUT });
 
-  /* ── Request: 토큰 주입 + 로그 ── */
+  /* ── Request: 토큰 주입 + 기본 헤더 설정 + 로그 ── */
   inst.interceptors.request.use(function (cfg) {
     try {
+      cfg.headers = cfg.headers || {};
+      /* Content-Type 기본값 설정 (이미 설정되어 있으면 유지) */
+      if (!cfg.headers['Content-Type']) {
+        cfg.headers['Content-Type'] = 'application/json';
+      }
+      /* Bearer 토큰 주입 */
       var t = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (t) {
-        cfg.headers = cfg.headers || {};
         cfg.headers.Authorization = 'Bearer ' + t;
       }
     } catch (_) {}

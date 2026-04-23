@@ -23,17 +23,17 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
   actions: {
     /**
      * FO 초기화 데이터 조회 (모든 항목)
-     * @param {string} names - 조회할 항목 ('^' 구분자, 예: "auth^member^role^menu^code^props^disp^app")
-     *                        빈 값이면 모든 항목 조회
+     * @param {string} names - 조회할 항목 ('^' 구분자, 예: "auth^roles^menus^codes^props^dpDisp^app")
+     *                        "ALL" 또는 빈 값이면 모든 항목 조회
      */
-    async fetchFoAppInitData(names = '') {
+    async fetchFoAppInitData(names = 'ALL') {
       if (this.isLoading) return;
 
       this.isLoading = true;
       this.error = null;
 
       try {
-        const res = await window.foApi.post('/co/cm/fo-app-store/getInitData', names || '');
+        const res = await window.foApi.post('/co/cm/fo-app-store/getInitData', { names: names || 'ALL' });
 
         if (res?.data?.data) {
           const data = res.data.data;

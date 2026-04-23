@@ -1513,7 +1513,7 @@
           </div>
 
           <!-- 요청/응답 데이터 -->
-          <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 0.5fr 1fr 2fr; gap: 8px; padding: 8px; background: white;">
+          <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 0.65fr 1fr 2fr; gap: 8px; padding: 8px; background: white;">
             <!-- Headers -->
             <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
               <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📋 Headers</div>

@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
@@ -43,24 +42,21 @@ public class CmFoAppStoreDataController {
      * FO 애플리케이션 초기화 데이터 조회 (통합) - POST 요청
      * 누구나 접근 가능 (공개 설정)
      *
-     * @param names 조회할 항목 ('^' 구분자, 선택)
-     * @return 토큰, 사용자, 권한, 메뉴, 코드, 속성, 전시 구조, 전시 데이터, 앱 정보 포함
+     * @param req 요청 정보 (names: "ALL" 또는 "aaa^bbb^ccc" 형식)
+     * @return 토큰, 회원, 권한, 메뉴, 코드, 속성, 전시 정보, 앱 정보 포함
      */
     @PostMapping("/getInitData")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 데이터만 반환)
-        List<String> requestedItems = CmUtil.parseNames(names);
-        boolean requestAll = requestedItems.isEmpty();
+        String names = req != null ? (String) req.get("names") : "";
+        java.util.List<String> requestedItems = CmUtil.parseNames(names);
+        boolean requestAll = "ALL".equalsIgnoreCase(names) || requestedItems.isEmpty();
 
         Map<String, Object> resultMap = new HashMap<>();
 
         if (requestAll || requestedItems.contains(CmStoreConst.SY_AUTH)) {
             resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getAuth(authUser));
         }
-//        if (requestAll || requestedItems.contains(CmStoreConst.MB_MEMBER)) {
-//            resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(authUser));
-//        }
         if (requestAll || requestedItems.contains(CmStoreConst.SY_ROLES)) {
             resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getRoles(authUser));
         }

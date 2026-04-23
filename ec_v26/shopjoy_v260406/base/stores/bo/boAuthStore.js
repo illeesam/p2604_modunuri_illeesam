@@ -38,11 +38,12 @@
             authMethod,
           });
 
-          this.user = res.data || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
-          this.accessToken = res.data?.accessToken || '';
-          this.refreshToken = res.data?.refreshToken || '';
-          this.accessExpiresIn = res.data?.accessExpiresIn || 0;
-          this.refreshExpiresIn = res.data?.refreshExpiresIn || 0;
+          const loginData = res.data?.data || res.data || {};
+          this.user = loginData.user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+          this.accessToken = loginData.accessToken || '';
+          this.refreshToken = loginData.refreshToken || '';
+          this.accessExpiresIn = loginData.accessExpiresIn || 0;
+          this.refreshExpiresIn = loginData.refreshExpiresIn || 0;
 
           // localStorage 저장
           try {
@@ -55,7 +56,7 @@
 
           /* 로그인 후 초기 데이터 조회 */
           try {
-            const initRes = await window.boApi.post('/co/cm/bo-app-store/getInitData', '');
+            const initRes = await window.boApi.post('/co/cm/bo-app-store/getInitData', { names: 'ALL' });
             if (initRes?.data?.data) {
               const userStore = window.useUserStore?.();
               if (initRes.data.data.user) {
