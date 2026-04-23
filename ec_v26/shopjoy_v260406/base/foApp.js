@@ -77,7 +77,7 @@
     /* ── 바로구매 즉시주문 상태 (장바구니와 독립) ── */
     const instantOrder = ref(null);
     /* ── 장바구니 선택 주문 (cartIds) ── */
-    const cartIds = ref(null);
+    const cartIds = reactive([]);
     /* ── 서브페이지 editId (이벤트상세, 블로그상세/수정 등) ── */
     const viewEditId = ref(null);
 
@@ -109,8 +109,11 @@
       if (opts && opts.replace) replaceNextHash = true;
       if (opts && opts.instantOrder !== undefined) instantOrder.value = opts.instantOrder;
       else if (id !== 'order') instantOrder.value = null;
-      if (opts && opts.cartIds !== undefined) cartIds.value = opts.cartIds;
-      else if (id !== 'order') cartIds.value = null;
+      if (opts && opts.cartIds !== undefined) {
+        cartIds.splice(0, cartIds.length, ...(Array.isArray(opts.cartIds) ? opts.cartIds : []));
+      } else if (id !== 'order') {
+        cartIds.splice(0, cartIds.length);
+      }
       if (opts && opts.editId !== undefined) viewEditId.value = opts.editId;
       else if (opts && opts.eventId !== undefined) viewEditId.value = opts.eventId;
       else viewEditId.value = null;
@@ -317,7 +320,7 @@
       if (page.value === 'order' && hasPageParam) {
         instantOrder.value = _instantOrderFromParams(params);
         const cids = params.get('cartIds');
-        if (cids) cartIds.value = cids.split(',').filter(Boolean);
+        if (cids) cartIds.splice(0, cartIds.length, ...cids.split(',').filter(Boolean));
       }
       /* 이벤트/블로그 상세 ID 복원 */
       if (hasPageParam) {
@@ -348,10 +351,10 @@
         if (hPage === 'order') {
           instantOrder.value = _instantOrderFromParams(params);
           const cids = params.get('cartIds');
-          cartIds.value = cids ? cids.split(',').filter(Boolean) : null;
+          cartIds.splice(0, cartIds.length, ...(cids ? cids.split(',').filter(Boolean) : []));
         } else if (hPage && hPage !== 'order') {
           instantOrder.value = null;
-          cartIds.value = null;
+          cartIds.splice(0, cartIds.length);
         }
         const hpid = params.get('pid');
         const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
@@ -379,8 +382,8 @@
         const io = _instantOrderToParams(instantOrder.value);
         Object.entries(io).forEach(([k, v]) => params.set(k, v));
       }
-      if (id === 'order' && cartIds.value != null && cartIds.value.length) {
-        params.set('cartIds', Array.isArray(cartIds.value) ? cartIds.value.join(',') : cartIds.value);
+      if (id === 'order' && cartIds.length) {
+        params.set('cartIds', cartIds.join(','));
       }
       if (id === 'eventView' && viewEditId.value != null) {
         params.set('eventId', viewEditId.value);
