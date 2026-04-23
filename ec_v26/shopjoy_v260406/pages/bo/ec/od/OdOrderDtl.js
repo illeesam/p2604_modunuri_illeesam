@@ -6,6 +6,10 @@ window.OdOrderDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const orders = reactive([]);
+    const vendors = reactive((window.boData?.vendors || []));
+    const deliveries = reactive((window.boData?.deliveries || []));
+    const claims = reactive((window.boData?.claims || []));
+    const codes = reactive((window.boData?.codes || []));
     const loading = ref(false);
     const error = ref(null);
 
@@ -148,20 +152,20 @@ window.OdOrderDtl = {
 
     /* 판매업체 */
     const relatedVendor = computed(() => {
-      const o = (orders.value || []).find(x => x.orderId === props.editId);
+      const o = (orders).find(x => x.orderId === props.editId);
       if (!o || !o.vendorId) return null;
-      return (vendors.value || []).find(v => v.vendorId === o.vendorId) || null;
+      return (vendors).find(v => v.vendorId === o.vendorId) || null;
     });
 
     /* 배송 정보 (이 주문의 택배사 등) */
     const relatedDelivery = computed(() =>
-      (deliveries.value || []).find(d => d.orderId === props.editId)
+      (deliveries).find(d => d.orderId === props.editId)
     );
     /* 클레임 정보 (이 주문에 연결된 클레임) */
     const relatedClaim = computed(() =>
-      (claims.value || []).find(c => c.orderId === props.editId)
+      (claims).find(c => c.orderId === props.editId)
     );
-    const _claimStatusCodes = (codes.value || [])
+    const _claimStatusCodes = (codes)
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const _TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };

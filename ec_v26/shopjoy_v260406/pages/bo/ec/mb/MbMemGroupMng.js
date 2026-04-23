@@ -32,7 +32,8 @@ window.MbMemGroupMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (memGroups.value || []).filter(g => {
+      if (!Array.isArray(groups)) return [];
+      return groups.filter(g => {
         if (kw && !g.groupNm.toLowerCase().includes(kw)) return false;
         if (applied.use && g.useYn !== applied.use) return false;
         return true;
@@ -56,8 +57,8 @@ window.MbMemGroupMng = {
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await props.showConfirm('삭제', `[${row.groupNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = memGroups.value.findIndex(g => g.groupId === row.groupId);
-      if (si !== -1) memGroups.value.splice(si, 1);
+      const si = groups.findIndex(g => g.groupId === row.groupId);
+      if (si !== -1) groups.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
         const res = await window.boApi.delete(`/bo/ec/mb/member-group/${row.groupId}`);
@@ -77,7 +78,7 @@ window.MbMemGroupMng = {
         const ok = await props.showConfirm('저장', '저장하시겠습니까?');
         if (!ok) return;
         const isNewRow = row._row_status === 'N';
-        const src = memGroups.value;
+        const src = groups;
         if (isNewRow) src.push({ ...row });
         else { const si = src.findIndex(g => g.groupId === row.groupId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;

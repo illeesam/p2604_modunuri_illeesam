@@ -34,7 +34,8 @@ window.MbMemGradeMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (memGrades.value || []).filter(g => {
+      if (!Array.isArray(grades)) return [];
+      return grades.filter(g => {
         if (kw && !g.gradeNm.toLowerCase().includes(kw) && !g.gradeCd.toLowerCase().includes(kw)) return false;
         if (applied.use && g.useYn !== applied.use) return false;
         return true;
@@ -65,7 +66,7 @@ window.MbMemGradeMng = {
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await props.showConfirm('삭제', `[${row.gradeNm}] 등급을 삭제하시겠습니까?`);
       if (!ok) return;
-      const src = memGrades.value;
+      const src = grades;
       const si = src.findIndex(g => g.gradeId === row.gradeId);
       if (si !== -1) src.splice(si, 1);
       gridRows.splice(idx, 1);
@@ -87,7 +88,7 @@ window.MbMemGradeMng = {
         const ok = await props.showConfirm('저장', '변경 내용을 저장하시겠습니까?');
         if (!ok) return;
         const isNewRow = row._row_status === 'N';
-        const src = memGrades.value;
+        const src = grades;
         if (isNewRow) { row.gradeId = 'G' + String(Date.now()).slice(-6); src.push({ ...row }); }
         else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;

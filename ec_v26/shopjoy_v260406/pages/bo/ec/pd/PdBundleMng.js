@@ -116,7 +116,7 @@ window.PdBundleMng = {
 
     /* ── 안분율 합계 ── */
     const rateSum = bundleProdId =>
-      (bundles.value || [])
+      (bundles)
         .filter(b => b.bundleProdId === bundleProdId)
         .reduce((s, b) => s + (b.priceRate || 0), 0);
     const rateSumBadge = id => Math.abs(rateSum(id) - 100) < 0.01 ? 'badge-green' : 'badge-red';
@@ -125,7 +125,7 @@ window.PdBundleMng = {
     const bundleList = computed(() => {
       try {
         const kw = (applied?.nm || '').toLowerCase();
-        const bundleArray = bundles.value || [];
+        const bundleArray = bundles;
         if (!Array.isArray(bundleArray) || bundleArray.length === 0) return [];
         const ids = [...new Set(bundleArray.map(b => b?.bundleProdId).filter(Boolean))];
         return ids
@@ -191,7 +191,7 @@ window.PdBundleMng = {
     const openDtl = bundleProdId => {
       dtlMode.value = 'edit';
       editBundleId.value = bundleProdId;
-      const src = (bundles.value || [])
+      const src = (bundles)
         .filter(b => b.bundleProdId === bundleProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       dtlItems.splice(0, dtlItems.length, ...src.map((b, i) => ({
@@ -300,7 +300,7 @@ window.PdBundleMng = {
         });
       }
       /* bundles 데이터 반영 */
-      const others = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
+      const others = (bundles).filter(b => b.bundleProdId !== bundleProdId);
       bundles = [
         ...others,
         ...dtlItems.map((d, i) => ({
@@ -333,7 +333,7 @@ window.PdBundleMng = {
     const deleteProd = async bundleProdId => {
       const ok = await props.showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
-      bundles = (bundles.value || []).filter(b => b.bundleProdId !== bundleProdId);
+      bundles = (bundles).filter(b => b.bundleProdId !== bundleProdId);
       if (editBundleId.value === bundleProdId) closeDtl();
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`);

@@ -6,9 +6,10 @@ window.StSettleCloseMng = {
     const { ref, reactive, computed } = Vue;
     const descOpen = ref(false);
 
-    const orders  = computed(() => orders.value  || []);
-    const claims  = computed(() => claims.value  || []);
-    const vendors = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
+    const orders  = reactive((window.boData?.orders || []));
+    const claims  = reactive((window.boData?.claims || []));
+    const vendorList = reactive((window.boData?.vendors || []));
+    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const closeList = reactive([
       { closeId: 'CLS-2026-03', closeMon: '2026-03', sales: 556600, refund: 174000, net: 382600, comm: 38260, promo: 11478, settle: 332862, status: '마감완료', closeDate: '2026-04-10', regUserNm: '이관리자' },

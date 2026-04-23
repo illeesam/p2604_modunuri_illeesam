@@ -55,7 +55,7 @@ window.PmDiscntMng = {
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => discntList.value || []);
+    const list = computed(() => discounts || []);
     const filtered = computed(() => window.safeArrayUtils.safeFilter(list, d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(d.discntNm || '').toLowerCase().includes(kw) && !String(d.discntId || '').includes(kw)) return false;
@@ -94,8 +94,8 @@ window.PmDiscntMng = {
     const doDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.discntNm}] 할인을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (discntList.value || []).findIndex(x => x.discntId === d.discntId);
-      if (idx !== -1) discntList.value.splice(idx, 1);
+      const idx = (discounts || []).findIndex(x => x.discntId === d.discntId);
+      if (idx !== -1) discounts.splice(idx, 1);
       if (selectedId.value === d.discntId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/pm/discnt/${d.discntId}`);
