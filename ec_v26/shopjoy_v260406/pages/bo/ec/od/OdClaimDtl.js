@@ -8,7 +8,7 @@ window.OdClaimDtl = {
     const claims = reactive([]);
     const orders = reactive([]);
     const loading = ref(false);
-    const codes = ref((window.boData?.codes || []));
+    const codes = reactive((window.boData?.codes || []));
     const error = ref(null);
 
     // onMounted에서 API 로드

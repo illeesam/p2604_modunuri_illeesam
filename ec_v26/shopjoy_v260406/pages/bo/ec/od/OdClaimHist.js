@@ -8,7 +8,7 @@ window.OdClaimHist = {
     const botTab = ref(window._odClaimHistState.tab || 'items');
     watch(botTab, v => { window._odClaimHistState.tab = v; });
     const viewMode2 = ref('tab');
-    const codes = ref((window.boData?.codes || []));
+    const codes = reactive((window.boData?.codes || []));
     
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 

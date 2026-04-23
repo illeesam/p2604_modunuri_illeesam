@@ -8,7 +8,7 @@ window.OdClaimMng = {
     const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const codes = ref((window.boData?.codes || []));
+    const codes = reactive((window.boData?.codes || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
