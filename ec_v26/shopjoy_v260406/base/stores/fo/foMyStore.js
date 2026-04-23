@@ -34,44 +34,45 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   }[s] || '#9ca3af');
 
   /* ── 주문 ── */
-  const orders = ref([]);
+  const orders = reactive([]);
   const loadOrders = async () => {
-    if (orders.value.length) return;
-    try { const res = await window.foApi.get('/fo/my/order/list'); orders.value = res.data?.data || []; }
-    catch (e) { orders.value = []; }
+    if (orders.length) return;
+    try { const res = await window.foApi.get('/fo/my/order/list'); orders.splice(0, orders.length, ...(res.data?.data || [])); }
+    catch (e) { orders.splice(0, orders.length); }
   };
   const setOrderStatus = (orderId, status) => {
-    const o = orders.value.find(x => x.orderId === orderId);
+    const o = orders.find(x => x.orderId === orderId);
     if (o) o.status = status;
   };
 
   /* ── 클레임 ── */
-  const claims = ref([]);
+  const claims = reactive([]);
   const claimFilter = ref('전체');
   const loadClaims = async () => {
-    if (claims.value.length) return;
-    try { const res = await window.foApi.get('/fo/my/claim/list'); claims.value = res.data?.data || []; }
-    catch (e) { claims.value = []; }
+    if (claims.length) return;
+    try { const res = await window.foApi.get('/fo/my/claim/list'); claims.splice(0, claims.length, ...(res.data?.data || [])); }
+    catch (e) { claims.splice(0, claims.length); }
   };
   const filteredClaims = computed(() =>
-    claimFilter.value === '전체' ? claims.value : claims.value.filter(c => c.type === claimFilter.value)
+    claimFilter.value === '전체' ? claims : claims.filter(c => c.type === claimFilter.value)
   );
   const claimsByOrderId = computed(() => {
     const map = {};
-    claims.value.forEach(c => { map[c.orderId] = c; });
+    claims.forEach(c => { map[c.orderId] = c; });
     return map;
   });
   const removeClaim = (claimId) => {
-    claims.value = claims.value.filter(c => c.claimId !== claimId);
+    const idx = claims.findIndex(c => c.claimId === claimId);
+    if (idx !== -1) claims.splice(idx, 1);
   };
 
   /* ── 쿠폰 ── */
-  const coupons = ref([]);
+  const coupons = reactive([]);
   const couponCode = ref('');
   const loadCoupons = async () => {
-    if (coupons.value.length) return;
-    try { const res = await window.foApi.get('/fo/my/coupon/list'); coupons.value = res.data?.data || []; }
-    catch (e) { coupons.value = []; }
+    if (coupons.length) return;
+    try { const res = await window.foApi.get('/fo/my/coupon/list'); coupons.splice(0, coupons.length, ...(res.data?.data || [])); }
+    catch (e) { coupons.splice(0, coupons.length); }
   };
   const discountLabel = c => c.discountType === 'rate' ? c.discountValue + '% 할인'
     : c.discountType === 'shipping' ? '무료배송'
@@ -79,34 +80,34 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
 
   /* ── 캐쉬 ── */
   const cashBalance = ref(0);
-  const cashHistory = ref([]);
+  const cashHistory = reactive([]);
   const chargeAmount = ref('');
   const loadCash = async () => {
-    if (cashHistory.value.length) return;
+    if (cashHistory.length) return;
     try {
       const res = await window.foApi.get('/fo/my/cash/info');
       cashBalance.value = res.data?.data?.balance || 0;
-      cashHistory.value = res.data?.data?.history || [];
+      cashHistory.splice(0, cashHistory.length, ...(res.data?.data?.history || []));
     } catch (e) {}
   };
 
   /* ── 문의 ── */
-  const inquiries = ref([]);
+  const inquiries = reactive([]);
   const expandedInquiry = ref(null);
   const loadInquiries = async () => {
-    if (inquiries.value.length) return;
-    try { const res = await window.foApi.get('/fo/my/inquiry/list'); inquiries.value = res.data?.data || []; }
-    catch (e) { inquiries.value = []; }
+    if (inquiries.length) return;
+    try { const res = await window.foApi.get('/fo/my/inquiry/list'); inquiries.splice(0, inquiries.length, ...(res.data?.data || [])); }
+    catch (e) { inquiries.splice(0, inquiries.length); }
   };
   const inquiryStatusColor = s => ({ '요청':'#3b82f6','처리중':'#f97316','답변완료':'#22c55e','취소됨':'#9ca3af' }[s] || '#9ca3af');
 
   /* ── 채팅 ── */
-  const chats = ref([]);
+  const chats = reactive([]);
   const expandedChat = ref(null);
   const loadChats = async () => {
-    if (chats.value.length) return;
-    try { const res = await window.foApi.get('/fo/my/chat/list'); chats.value = res.data?.data || []; }
-    catch (e) { chats.value = []; }
+    if (chats.length) return;
+    try { const res = await window.foApi.get('/fo/my/chat/list'); chats.splice(0, chats.length, ...(res.data?.data || [])); }
+    catch (e) { chats.splice(0, chats.length); }
   };
   const openChat = chat => {
     chat.unread = 0;
@@ -137,19 +138,19 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   };
   const getCouponUsedOrderItems = c => {
     if (!c.used || !c.usedOrderId) return null;
-    const o = orders.value.find(x => x.orderId === c.usedOrderId);
+    const o = orders.find(x => x.orderId === c.usedOrderId);
     return o ? o.items : null;
   };
 
   /* ── 탭 카운트 (cartCount는 외부 주입) ── */
   const getTabCounts = (cartCount) => ({
-    myOrder:   orders.value.length,
-    myClaim:   claims.value.filter(c => !CLAIM_DONE.includes(c.status)).length,
+    myOrder:   orders.length,
+    myClaim:   claims.filter(c => !CLAIM_DONE.includes(c.status)).length,
     myCart:    cartCount || 0,
-    myCoupon:  coupons.value.filter(c => !c.used).length,
+    myCoupon:  coupons.filter(c => !c.used).length,
     myCache:   null,
-    myContact: inquiries.value.filter(q => q.status === '요청' || q.status === '처리중').length,
-    myChatt:   chats.value.reduce((s, c) => s + (c.unread || 0), 0),
+    myContact: inquiries.filter(q => q.status === '요청' || q.status === '처리중').length,
+    myChatt:   chats.reduce((s, c) => s + (c.unread || 0), 0),
   });
 
   return {

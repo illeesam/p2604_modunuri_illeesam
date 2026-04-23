@@ -5,29 +5,29 @@ window.CountdownWidget = {
     widget: { type: Object, required: true },
   },
   setup(props) {
-    const { ref, computed, onMounted, onUnmounted, watch } = Vue;
+    const { reactive, computed, onMounted, onUnmounted, watch } = Vue;
 
-    const remaining = ref({ d: 0, h: 0, m: 0, s: 0, expired: false, invalid: false });
+    const remaining = reactive({ d: 0, h: 0, m: 0, s: 0, expired: false, invalid: false });
     let timer = null;
 
     const pad = (n) => String(n).padStart(2, '0');
 
     const calc = () => {
       const raw = (props.widget.countdownTarget || '').trim();
-      if (!raw) { remaining.value = { d: 0, h: 0, m: 0, s: 0, expired: false, invalid: true }; return; }
+      if (!raw) { Object.assign(remaining, { d: 0, h: 0, m: 0, s: 0, expired: false, invalid: true }); return; }
       const target = new Date(raw.replace(' ', 'T'));
-      if (isNaN(target.getTime())) { remaining.value = { d: 0, h: 0, m: 0, s: 0, expired: false, invalid: true }; return; }
+      if (isNaN(target.getTime())) { Object.assign(remaining, { d: 0, h: 0, m: 0, s: 0, expired: false, invalid: true }); return; }
       const diff = target - Date.now();
-      if (diff <= 0) { remaining.value = { d: 0, h: 0, m: 0, s: 0, expired: true, invalid: false }; return; }
+      if (diff <= 0) { Object.assign(remaining, { d: 0, h: 0, m: 0, s: 0, expired: true, invalid: false }); return; }
       const total = Math.floor(diff / 1000);
-      remaining.value = {
+      Object.assign(remaining, {
         d: Math.floor(total / 86400),
         h: Math.floor((total % 86400) / 3600),
         m: Math.floor((total % 3600) / 60),
         s: total % 60,
         expired: false,
         invalid: false,
-      };
+      });
     };
 
     const start = () => {
