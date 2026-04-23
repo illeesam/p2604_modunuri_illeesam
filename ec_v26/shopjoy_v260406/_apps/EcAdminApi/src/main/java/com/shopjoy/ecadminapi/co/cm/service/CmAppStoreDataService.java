@@ -101,32 +101,42 @@ public class CmAppStoreDataService {
         Map<String, Object> resultMap = new java.util.HashMap<>();
 
         if (requestedItems.contains(CmStoreConst.SY_AUTH)) {
-            resultMap.put(CmStoreConst.SY_AUTH, getAuth(authUser));
+            StoreAuth auth = getAuth(authUser);
+            resultMap.put(CmStoreConst.SY_AUTH, auth != null ? auth : StoreAuth.builder().build());
         }
         if (requestedItems.contains(CmStoreConst.SY_USER)) {
-            resultMap.put(CmStoreConst.SY_USER, "BO".equals(authUser != null ? authUser.userTypeCd() : null) ? getBoUser(authUser) : getFoUser(authUser));
+            Object userData = "BO".equals(authUser != null ? authUser.userTypeCd() : null) ? getBoUser(authUser) : getFoUser(authUser);
+            resultMap.put(CmStoreConst.SY_USER, userData != null ? userData : new java.util.HashMap<>());
         }
         if (requestedItems.contains(CmStoreConst.SY_ROLES)) {
-            resultMap.put(CmStoreConst.SY_ROLES, getRoles(authUser));
+            List<StoreRole> roles = getRoles(authUser);
+            resultMap.put(CmStoreConst.SY_ROLES, roles != null ? roles : java.util.Collections.emptyList());
         }
         if (requestedItems.contains(CmStoreConst.SY_MENUS)) {
-            resultMap.put(CmStoreConst.SY_MENUS, getMenus(authUser));
+            List<StoreMenu> menus = getMenus(authUser);
+            resultMap.put(CmStoreConst.SY_MENUS, menus != null ? menus : java.util.Collections.emptyList());
         }
         if (requestedItems.contains(CmStoreConst.SY_CODES)) {
-            resultMap.put(CmStoreConst.SY_CODES, getCodes(authUser));
+            StoreCode codes = getCodes(authUser);
+            resultMap.put(CmStoreConst.SY_CODES, codes != null ? codes : StoreCode.builder().codes(java.util.Collections.emptyList()).build());
         }
         if (requestedItems.contains(CmStoreConst.SY_PROPS)) {
-            resultMap.put(CmStoreConst.SY_PROPS, getProps(authUser));
+            StoreProp props = getProps(authUser);
+            resultMap.put(CmStoreConst.SY_PROPS, props != null ? props : StoreProp.builder().propsByKey(new java.util.HashMap<>()).build());
         }
         if (requestedItems.contains(CmStoreConst.DP_DISP)) {
             Map<String, Object> dispMap = new java.util.HashMap<>();
-            dispMap.put(CmStoreConst.DP_DISP_STRUCTS, getDispStruc(authUser));
-            dispMap.put(CmStoreConst.DP_DISP_DATAS, getDispData(authUser));
-            dispMap.put(CmStoreConst.DP_DISP_WIDGETS, getDispWidgets(authUser));
+            StoreDispStruct dispStruc = getDispStruc(authUser);
+            StoreDispData dispData = getDispData(authUser);
+            StoreDispWidgets dispWidgets = getDispWidgets(authUser);
+            dispMap.put(CmStoreConst.DP_DISP_STRUCTS, dispStruc != null ? dispStruc : StoreDispStruct.builder().uis(java.util.Collections.emptyList()).build());
+            dispMap.put(CmStoreConst.DP_DISP_DATAS, dispData != null ? dispData : StoreDispData.builder().dataByArea(new java.util.HashMap<>()).build());
+            dispMap.put(CmStoreConst.DP_DISP_WIDGETS, dispWidgets != null ? dispWidgets : StoreDispWidgets.builder().widgets(java.util.Collections.emptyList()).build());
             resultMap.put(CmStoreConst.DP_DISP, dispMap);
         }
         if (requestedItems.contains(CmStoreConst.SY_APP)) {
-            resultMap.put(CmStoreConst.SY_APP, getApp(authUser));
+            StoreApp app = getApp(authUser);
+            resultMap.put(CmStoreConst.SY_APP, app != null ? app : StoreApp.builder().build());
         }
 
         return resultMap;

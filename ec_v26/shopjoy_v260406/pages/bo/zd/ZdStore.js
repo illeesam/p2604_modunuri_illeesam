@@ -125,7 +125,7 @@ window.ZdStore = {
           props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }
-        const res = await api.post(`/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`, {});
+        const res = await api.get(`/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`);
         if (res?.data?.data) {
           const storeFunc = window[storeName];
           if (storeFunc) {

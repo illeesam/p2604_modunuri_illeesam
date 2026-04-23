@@ -117,7 +117,7 @@ window.XsStore = {
           props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }
-        const res = await api.post(`/co/cm/fo-app-store/${store.api}`, {});
+        const res = await api.get(`/co/cm/fo-app-store/${store.api}`);
         if (res?.data?.data) {
           const storeFunc = window[storeName];
           if (storeFunc) {

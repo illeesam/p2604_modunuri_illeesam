@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
 import com.shopjoy.ecadminapi.co.cm.service.CmAppStoreDataService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 
 /**
  * FO (Front Office - 사용자) 애플리케이션 Store 데이터 API
@@ -35,22 +36,24 @@ public class CmFoAppStoreDataController {
     private final CmAppStoreDataService storeDataService;
 
     /**
-     * FO 애플리케이션 초기화 데이터 조회 (통합) - POST 요청
+     * FO 애플리케이션 초기화 데이터 조회 (통합)
      * 누구나 접근 가능 (공개 설정)
      *
-     * @param req 요청 정보 (names: "ALL" 또는 "syAuth^syRoles^syMenus^syCodes^syProps^dpDisp^syApp" 형식)
+     * @param names 조회할 데이터 ("ALL" 또는 "syAuth^syRoles^syMenus^syCodes^syProps^dpDisp^syApp" 형식)
      * @return 요청된 초기화 데이터
      */
-    @PostMapping("/getInitData")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) Map<String, Object> req) {
-        String names = req != null ? (String) req.get("names") : "";
+    @GetMapping("/getInitData")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestParam(required = false) String names) {
+        if (names == null || names.trim().isEmpty()) {
+            throw new CmBizException("names 파라미터는 필수입니다. 예: ?names=ALL");
+        }
 
         if ("ALL".equalsIgnoreCase(names)) {
             names = CmStoreConst.SY_AUTH;
             names += "^" + CmStoreConst.SY_ROLES;
             names += "^" + CmStoreConst.SY_MENUS;
             names += "^" + CmStoreConst.SY_CODES;
-//            names += "^" + CmStoreConst.SY_PROPS;
+            names += "^" + CmStoreConst.SY_PROPS;
             names += "^" + CmStoreConst.DP_DISP;
             names += "^" + CmStoreConst.SY_APP;
         }
@@ -58,12 +61,12 @@ public class CmFoAppStoreDataController {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(names)));
     }
 
-    @PostMapping("/getAuth")
+    @GetMapping("/getAuth")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_AUTH)));
     }
 
-    @PostMapping("/getUser")
+    @GetMapping("/getUser")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getUser() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_USER)));
     }
@@ -73,22 +76,22 @@ public class CmFoAppStoreDataController {
 //        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.MB_MEMBER)));
 //    }
 
-    @PostMapping("/getRoles")
+    @GetMapping("/getRoles")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_ROLES)));
     }
 
-    @PostMapping("/getMenus")
+    @GetMapping("/getMenus")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_MENUS)));
     }
 
-    @PostMapping("/getCodes")
+    @GetMapping("/getCodes")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_CODES)));
     }
 
-    @PostMapping("/getProps")
+    @GetMapping("/getProps")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getProps() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_PROPS)));
     }
@@ -98,7 +101,7 @@ public class CmFoAppStoreDataController {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.DP_DISP)));
     }
 
-    @PostMapping("/getApp")
+    @GetMapping("/getApp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getApp() {
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_APP)));
     }

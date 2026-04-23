@@ -56,7 +56,7 @@
 
           /* 로그인 후 초기 데이터 조회 */
           try {
-            const initRes = await window.boApi.post('/co/cm/bo-app-store/getInitData', { names: 'ALL' });
+            const initRes = await window.boApi.get('/co/cm/bo-app-store/getInitData?names=ALL');
             if (initRes?.data?.data) {
               const data = initRes.data.data;
 
