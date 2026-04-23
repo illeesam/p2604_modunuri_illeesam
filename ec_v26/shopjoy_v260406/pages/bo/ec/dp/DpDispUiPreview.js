@@ -6,6 +6,8 @@ const _WP_DispUiPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed, watchEffect } = Vue;
+    const codes = reactive((window.boData?.codes || []));
+    const widgetLibs = reactive((window.boData?.widgetLibs || []));
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;
@@ -219,7 +221,7 @@ window.DpDispUiPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (widgetLibs.value || []).filter(lib => {
+      return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
@@ -238,7 +240,7 @@ window.DpDispUiPreview = {
     /* ── UI 트리: uiType > codeLabel > (codeValue codeLabel) ── */
     const tree = computed(() => {
       const map = {};
-      (codes.value || [])
+      (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_UI')
         .forEach(u => {
           const top = u.uiType || '(미분류)';

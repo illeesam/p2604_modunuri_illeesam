@@ -12,6 +12,7 @@ window.DpDispWidgetLibDtl = {
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
+    const widgetLibs = reactive((window.boData?.widgetLibs || []));
     const isNew = computed(() => !props.editId);
 
     const WIDGET_TYPES = [
@@ -107,7 +108,7 @@ window.DpDispWidgetLibDtl = {
     /* ── 기존 데이터 로드 ── */
     onMounted(async () => {
       if (!isNew.value) {
-        const src = (widgetLibs.value || []).find(d => d.libId == props.editId);
+        const src = (Array.isArray(widgetLibs) ? widgetLibs : []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
       } else {
         /* 신규: Lib코드 자동 생성 DL_YYMMDD_HHMMSS */

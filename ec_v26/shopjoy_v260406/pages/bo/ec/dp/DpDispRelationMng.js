@@ -4,6 +4,8 @@ window.DpDispRelationMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const codes = reactive((window.boData?.codes || []));
+    const displays = reactive((window.boData?.displays || []));
 
     /* 검색 */
     const searchDateStart = ref('');
@@ -20,18 +22,18 @@ window.DpDispRelationMng = {
 
     /* 트리 데이터 구성 */
     const treeData = computed(() => {
-      const uiCodes = (codes.value || [])
+      const uiCodes = (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_UI')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 
-      const areaCodes = (codes.value || [])
+      const areaCodes = (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_AREA')
         .reduce((map, a) => {
           map[a.codeValue] = a;
           return map;
         }, {});
 
-      const panels = (displays.value || [])
+      const panels = (Array.isArray(displays) ? displays : [])
         .reduce((map, p) => {
           if (!map[p.area]) map[p.area] = [];
           map[p.area].push(p);

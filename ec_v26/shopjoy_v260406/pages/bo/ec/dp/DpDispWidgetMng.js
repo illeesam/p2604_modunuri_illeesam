@@ -4,6 +4,7 @@ window.DpDispWidgetMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
+    const widgetLibs = reactive((window.boData?.widgetLibs || []));
     const widgets = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -93,7 +94,7 @@ window.DpDispWidgetMng = {
 
     /* 검색 필터만 적용한 리스트 (트리 그룹화용) */
     const searchedLibs = computed(() =>
-      (widgetLibs.value || []).filter(d => {
+      (Array.isArray(widgetLibs) ? widgetLibs : []).filter(d => {
         if (applied.kw && !d.name.toLowerCase().includes(applied.kw) && !(d.desc||'').toLowerCase().includes(applied.kw) && !(d.tags||'').toLowerCase().includes(applied.kw)) return false;
         if (applied.type   && d.widgetType !== applied.type)   return false;
         if (applied.status && d.status     !== applied.status) return false;

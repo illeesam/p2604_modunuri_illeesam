@@ -139,6 +139,10 @@ window.DpDispAreaPreview = {
   name: 'DpDispAreaPreview',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const { ref, reactive, computed, watchEffect } = Vue;
+    const codes = reactive((window.boData?.codes || []));
+    const widgetLibs = reactive((window.boData?.widgetLibs || []));
+
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
@@ -219,7 +223,7 @@ window.DpDispAreaPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (widgetLibs.value || []).filter(lib => {
+      return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
@@ -238,7 +242,7 @@ window.DpDispAreaPreview = {
     /* ── 영역 트리: prefix > codeLabel > (codeValue codeLabel) ── */
     const tree = computed(() => {
       const map = {};
-      (codes.value || [])
+      (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_AREA')
         .forEach(a => {
           const top = (a.codeValue || '').split('_')[0] || '(기타)';

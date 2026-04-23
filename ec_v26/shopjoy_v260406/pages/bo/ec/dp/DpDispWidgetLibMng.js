@@ -92,14 +92,15 @@ window.DpDispWidgetLibMng = {
     };
 
     /* 검색 필터만 적용한 리스트 (트리 그룹화용) */
-    const searchedLibs = computed(() =>
-      (widgetLibs.value || []).filter(d => {
+    const searchedLibs = computed(() => {
+      if (!Array.isArray(widgetLibs)) return [];
+      return widgetLibs.filter(d => {
         if (applied.kw && !d.name.toLowerCase().includes(applied.kw) && !(d.desc||'').toLowerCase().includes(applied.kw) && !(d.tags||'').toLowerCase().includes(applied.kw)) return false;
         if (applied.type   && d.widgetType !== applied.type)   return false;
         if (applied.status && d.status     !== applied.status) return false;
         return true;
-      })
-    );
+      });
+    });
 
     /* ── 표시경로 ── */
     const selectedTreeKey = ref('');   /* '' = 전체, 'top' or 'top>sub' */

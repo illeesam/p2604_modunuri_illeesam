@@ -34,7 +34,8 @@ window.CmBlogMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (bltnPosts.value || []).filter(p => {
+      if (!Array.isArray(blogs)) return [];
+      return blogs.filter(p => {
         if (kw && !p.blogTitle.toLowerCase().includes(kw) && !(p.blogAuthor||'').toLowerCase().includes(kw)) return false;
         if (applied.use && p.useYn !== applied.use) return false;
         if (applied.notice && p.isNotice !== applied.notice) return false;
@@ -46,7 +47,10 @@ window.CmBlogMng = {
     const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (bltnPosts.value||[]).find(p => p.blogId === selectedId.value) || null);
+    const selectedRow = computed(() => {
+      if (!Array.isArray(blogs)) return null;
+      return blogs.find(p => p.blogId === selectedId.value) || null;
+    });
     const form = reactive({});
     const isNew = ref(false);
 
@@ -65,7 +69,7 @@ window.CmBlogMng = {
       const isNewPost = isNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const src = bltnPosts.value;
+      const src = blogs;
       if (isNewPost) { form.blogId = 'BL' + String(Date.now()).slice(-6); form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...form }); selectedId.value = form.blogId; isNew.value = false; }
       else { const si = src.findIndex(p => p.blogId === form.blogId); if (si !== -1) Object.assign(src[si], form); }
       try {

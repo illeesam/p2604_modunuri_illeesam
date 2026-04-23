@@ -4,6 +4,10 @@ window.DpDispUiSimul = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;
+    const codes = reactive((window.boData?.codes || []));
+    const displays = reactive((window.boData?.displays || []));
+    const sites = reactive((window.boData?.sites || []));
+    const members = reactive((window.boData?.members || []));
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     /* ── 오늘 날짜 ── */
@@ -57,7 +61,7 @@ window.DpDispUiSimul = {
 
     /* ── 화면영역 코드 ── */
     const allAreaListRaw = computed(() =>
-      (codes.value || [])
+      (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -103,12 +107,12 @@ window.DpDispUiSimul = {
 
     /* ── Tab1: 영역별 필터 패널 ── */
     const panelsForArea = (areaCode) =>
-      (displays.value || [])
+      (Array.isArray(displays) ? displays : [])
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
     const totalPanels = computed(() =>
-      (displays.value || []).filter(p => panelFilter(p)).length
+      (Array.isArray(displays) ? displays : []).filter(p => panelFilter(p)).length
     );
     const resetDate = () => {
       previewDate.value = today;
@@ -129,7 +133,7 @@ window.DpDispUiSimul = {
     /* 영역별 유효 패널 목록 (날짜·영역 필터 적용) */
     const structAreaList = computed(() =>
       allAreaListRaw.value.map(area => {
-        const panels = (displays.value || [])
+        const panels = (Array.isArray(displays) ? displays : [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         return { ...area, panels };
@@ -281,7 +285,7 @@ window.DpDispUiSimul = {
       lines.push({ type:'blank' });
       lines.push({ type:'ui-open', level:0 });
       window.safeArrayUtils.safeForEach(areas, (area, ai) => {
-        const panels = (displays.value || [])
+        const panels = (Array.isArray(displays) ? displays : [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         if (ai > 0) lines.push({ type:'blank' });
@@ -566,7 +570,7 @@ window.DpDispUiSimul = {
     const dispUiSiteSearch    = ref('');
     const dispUiSiteList = computed(() => {
       const kw = dispUiSiteSearch.value.trim().toLowerCase();
-      return (sites.value || []).filter(s =>
+      return (Array.isArray(sites) ? sites : []).filter(s =>
         !kw || s.siteNm.toLowerCase().includes(kw) || (s.domain||'').toLowerCase().includes(kw)
       );
     });
@@ -581,7 +585,7 @@ window.DpDispUiSimul = {
     const dispUiMemberSearch    = ref('');
     const dispUiMemberList = computed(() => {
       const kw = dispUiMemberSearch.value.trim().toLowerCase();
-      return (members.value || []).filter(m =>
+      return (Array.isArray(members) ? members : []).filter(m =>
         !kw || (m.memberNm||'').toLowerCase().includes(kw) || (m.email||'').toLowerCase().includes(kw)
       ).slice(0, 30);
     });
@@ -636,7 +640,7 @@ window.DpDispUiSimul = {
         dispUiForm.status       = searchStatus.value;
         dispUiForm.visibility   = searchVisibility.value;
         const cf   = window.boCommonFilter || {};
-        const site = (sites.value || []).find(s => s.siteId === cf.siteId);
+        const site = (Array.isArray(sites) ? sites : []).find(s => s.siteId === cf.siteId);
         dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
         dispUiForm.siteNm   = site?.siteNm || '';
         dispUiForm.memberId = '';
@@ -693,7 +697,7 @@ window.DpDispUiSimul = {
     }));
     const dispOpt = computed(() => ({ layout: viewMode.value, showBadges: true, mode: viewMode.value, showDesc: showDesc.value }));
     const areaInfo = (code) =>
-      (codes.value || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+      (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
     const DISP_UI_OTHER_PAGES = [
       '/index.html#page=dispUiPage',

@@ -7,6 +7,9 @@ window.DpDispPanelDtl = {
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
+    const codes = reactive((window.boData?.codes || []));
+    const displays = reactive((window.boData?.displays || []));
+    const events = reactive((window.boData?.events || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -202,7 +205,7 @@ window.DpDispPanelDtl = {
     ];
 
     const AREAS = computed(() =>
-      (codes.value || [])
+      (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -373,7 +376,7 @@ window.DpDispPanelDtl = {
     const relatedEvent = computed(() => {
       const eid = activeRow.value?.eventId;
       if (!eid) return null;
-      return (events.value || []).find(e => String(e.eventId) === String(eid)) || null;
+      return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null;
     });
 
     /* ── Quill 에디터 ── */
@@ -543,7 +546,7 @@ window.DpDispPanelDtl = {
     const openCardPreview = () => { cardPreview.show = true; };
     const closeCardPreview = () => { cardPreview.show = false; };
     const currentAreaLabel = computed(() => {
-      const found = (codes.value || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
+      const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
     const wLabel = (t) => window.safeArrayUtils.safeFind(WIDGET_TYPES, w => w.value === t)?.label || t || '-';
@@ -580,7 +583,7 @@ window.DpDispPanelDtl = {
       if (wt === 'widget_embed')   return [{ key:'embedCode', label:'임베드 코드', type:'code', ph:'<iframe ...></iframe>' }];
       return [];
     };
-    const getRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (events.value || []).find(e => String(e.eventId) === String(eid)) || null; };
+    const getRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null; };
     const getFileListItems = (r) => { try { return JSON.parse(r?.fileListJson || '[]'); } catch { return []; } };
     const addFileItemAt    = (r) => { r.fileListJson = JSON.stringify([...getFileListItems(r), { name: '', url: '' }]); };
     const removeFileItemAt = (r, idx) => { r.fileListJson = JSON.stringify(getFileListItems(r).filter((_, i) => i !== idx)); };

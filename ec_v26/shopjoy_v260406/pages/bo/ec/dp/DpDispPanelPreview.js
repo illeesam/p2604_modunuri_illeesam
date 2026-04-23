@@ -7,6 +7,8 @@ const _WP_DispPanelPreview = {
   setup(props) {
     const { ref, reactive, computed, watchEffect } = Vue;
     const codes = reactive((window.boData?.codes || []));
+    const widgetLibs = reactive((window.boData?.widgetLibs || []));
+    const codes = reactive((window.boData?.codes || []));
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;
@@ -220,7 +222,7 @@ window.DpDispPanelPreview = {
 
     const filteredLibs = computed(() => {
       const kw = applied.kw;
-      return (widgetLibs.value || []).filter(lib => {
+      return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
         if (applied.status && lib.status     !== applied.status) return false;
         if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) return false;
