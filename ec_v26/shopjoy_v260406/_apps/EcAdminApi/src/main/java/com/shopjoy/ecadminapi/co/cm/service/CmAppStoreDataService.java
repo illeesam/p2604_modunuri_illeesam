@@ -390,7 +390,8 @@ public class CmAppStoreDataService {
                                 .propVal(CmUtil.nvl(prop.getPropValue()))
                                 .propNm(CmUtil.nvl(prop.getPropLabel()))
                                 .propRemark(CmUtil.nvl(prop.getPropRemark()))
-                                .build()
+                                .build(),
+                        (old, neu) -> neu
                 ));
         return StoreProp.builder().propsByKey(propsByKey).build();
     }

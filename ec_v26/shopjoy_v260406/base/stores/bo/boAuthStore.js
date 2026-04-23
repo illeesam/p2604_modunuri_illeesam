@@ -58,10 +58,49 @@
           try {
             const initRes = await window.boApi.post('/co/cm/bo-app-store/getInitData', { names: 'ALL' });
             if (initRes?.data?.data) {
-              const userStore = window.useUserStore?.();
-              if (initRes.data.data.user) {
-                userStore?.setUser(initRes.data.data.user);
+              const data = initRes.data.data;
+
+              // syAuth (토큰 + 사용자)
+              if (data.syAuth) {
+                this.setAuth(data.syAuth);
               }
+
+              // syUser (관리자 정보)
+              const userStore = window.useUserStore?.();
+              if (data.syUser) {
+                userStore?.setUser(data.syUser);
+              }
+
+              // syRoles (권한)
+              const roleStore = window.useBoRoleStore?.();
+              if (data.syRoles) {
+                roleStore?.setRoles(data.syRoles);
+              }
+
+              // syMenus (메뉴)
+              const menuStore = window.useBoMenuStore?.();
+              if (data.syMenus) {
+                menuStore?.setMenus(data.syMenus);
+              }
+
+              // syCodes (공통 코드)
+              const codeStore = window.useBoCodeStore?.();
+              if (data.syCodes && data.syCodes.codes) {
+                codeStore?.setCodes(data.syCodes.codes);
+              }
+
+              // syProps (시스템 속성)
+              const propStore = window.useBoPropStore?.();
+              if (data.syProps) {
+                propStore?.setProps(data.syProps);
+              }
+
+              // syApp (앱 정보)
+              const appStore = window.useBoAppStore?.();
+              if (data.syApp) {
+                appStore?.setApp(data.syApp);
+              }
+
               console.log('[boAuthStore.login] admin init data loaded from getInitData');
             }
           } catch (e) {

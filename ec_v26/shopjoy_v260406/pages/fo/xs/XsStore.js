@@ -117,7 +117,7 @@ window.XsStore = {
           props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }
-        const res = await api.post(`/co/cm/fo-app-store/${store.api}`, '');
+        const res = await api.post(`/co/cm/fo-app-store/${store.api}`, {});
         if (res?.data?.data) {
           const storeFunc = window[storeName];
           if (storeFunc) {
@@ -275,8 +275,8 @@ window.XsStore = {
   <div :style="{
     display: 'grid',
     gridTemplateColumns: viewMode === 'col1' ? '1fr' : viewMode === 'col2' ? 'repeat(2, 1fr)' : viewMode === 'col3' ? 'repeat(3, 1fr)' : viewMode === 'col4' ? 'repeat(4, 1fr)' : viewMode === 'col5' ? 'repeat(5, 1fr)' : '1fr',
-    gap: '8px',
-    padding: '2px 1px',
+    gap: '4px',
+    padding: '0',
     marginTop: '0'
   }">
 
@@ -284,20 +284,20 @@ window.XsStore = {
       v-show="viewMode === 'tab' ? selectedStore === store.name : true"
       style="display: flex; flex-direction: column; height: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
 
-      <div v-if="viewMode !== 'tab'" style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: #fafafa; font-weight: 600; font-size: 13px; color: #333;">{{ store.label }}</div>
+      <div v-if="viewMode !== 'tab'" style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; background: #fafafa; font-weight: 600; font-size: 12px; color: #333;">{{ store.label }}</div>
 
       <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 320px;">
-        <label style="display: block; padding: 12px 16px 8px; font-weight: 600; font-size: 12px; color: #666;">Store State (JSON)</label>
+        <label style="display: block; padding: 8px 12px 4px; font-weight: 600; font-size: 11px; color: #666;">Store State (JSON)</label>
         <textarea
           :value="editedStoreInfo[store.name] || ''"
           @input="editedStoreInfo[store.name] = $event.target.value"
-          style="flex: 1; margin: 0 12px 12px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 11px; background: #f9f9f9; resize: none; color: #333; line-height: 1.6;">
+          style="flex: 1; margin: 0 8px 8px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 10px; background: #f9f9f9; resize: none; color: #333; line-height: 1.6;">
         </textarea>
       </div>
 
-      <div style="display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fafafa;">
-        <button v-if="store.api" @click="refreshStoreData(store.name)" style="flex: 1; padding: 8px 12px; font-size: 12px; border: 1px solid #d0e8f2; background: #f0f8fc; color: #0369a1; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">조회</button>
-        <button @click="selectedStore = store.name; saveStore()" style="flex: 1; padding: 8px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">저장</button>
+      <div style="display: flex; gap: 4px; padding: 8px 12px; border-top: 1px solid #e5e7eb; background: #fafafa;">
+        <button v-if="store.api" @click="refreshStoreData(store.name)" style="flex: 1; padding: 6px 10px; font-size: 11px; border: 1px solid #d0e8f2; background: #f0f8fc; color: #0369a1; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">조회</button>
+        <button @click="selectedStore = store.name; saveStore()" style="flex: 1; padding: 6px 10px; font-size: 11px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">저장</button>
       </div>
     </div>
   </div>

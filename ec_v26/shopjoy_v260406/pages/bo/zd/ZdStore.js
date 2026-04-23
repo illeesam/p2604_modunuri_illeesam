@@ -125,7 +125,7 @@ window.ZdStore = {
           props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }
-        const res = await api.post(`/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`, '');
+        const res = await api.post(`/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`, {});
         if (res?.data?.data) {
           const storeFunc = window[storeName];
           if (storeFunc) {
@@ -212,26 +212,26 @@ window.ZdStore = {
 
   <!-- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) -->
   <div :class="['dtl-tab-grid', 'cols-' + (viewMode === 'col1' ? '1' : viewMode === 'col2' ? '2' : viewMode === 'col3' ? '3' : viewMode === 'col4' ? '4' : viewMode === 'col5' ? '5' : 'tab')]"
-    style="display: grid; gap: 8px; padding: 2px 1px; auto-flow: row;">
+    style="display: grid; gap: 4px; padding: 0; auto-flow: row;">
 
     <div v-for="store in storeList" :key="store.name"
       v-show="viewMode === 'tab' ? selectedStore === store.name : true"
-      class="card" style="display: flex; flex-direction: column; height: 100%;">
+      class="card" style="display: flex; flex-direction: column; height: 100%; padding: 8px;">
 
-      <div v-if="viewMode !== 'tab'" class="dtl-tab-card-title" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 13px;">{{ store.label }}</div>
+      <div v-if="viewMode !== 'tab'" class="dtl-tab-card-title" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 12px;">{{ store.label }}</div>
 
-      <div style="flex: 1; margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 12px;">Store State (JSON)</label>
+      <div style="flex: 1; margin-bottom: 8px;">
+        <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 11px;">Store State (JSON)</label>
         <textarea
           :value="editedStoreInfo[store.name] || ''"
           @input="editedStoreInfo[store.name] = $event.target.value"
-          style="width: 100%; height: 300px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 11px; background: #f5f5f5; resize: vertical;">
+          style="width: 100%; height: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 10px; background: #f5f5f5; resize: vertical;">
         </textarea>
       </div>
 
-      <div style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-        <button v-if="store.api" @click="refreshStoreData(store.name)" class="btn btn-blue" style="padding: 6px 12px; font-size: 12px;">조회</button>
-        <button @click="selectedStore = store.name; saveStore()" class="btn btn-primary" style="padding: 6px 16px; font-size: 12px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">저장</button>
+      <div style="display: flex; gap: 4px; justify-content: flex-end; padding-top: 6px; border-top: 1px solid #e5e7eb;">
+        <button v-if="store.api" @click="refreshStoreData(store.name)" class="btn btn-blue" style="padding: 4px 10px; font-size: 11px;">조회</button>
+        <button @click="selectedStore = store.name; saveStore()" class="btn btn-primary" style="padding: 4px 12px; font-size: 11px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">저장</button>
       </div>
     </div>
   </div>

@@ -43,13 +43,7 @@ public class CmBoAppStoreDataController {
         String names = req != null ? (String) req.get("names") : "";
 
         if ("ALL".equalsIgnoreCase(names)) {
-            names = CmStoreConst.SY_AUTH;
-            names += "^" + CmStoreConst.SY_USER;
-            names += "^" + CmStoreConst.SY_ROLES;
-            names += "^" + CmStoreConst.SY_MENUS;
-            names += "^" + CmStoreConst.SY_CODES;
-            names += "^" + CmStoreConst.SY_PROPS;
-            names += "^" + CmStoreConst.SY_APP;
+            names = "syAuth^syUser^syRoles^syMenus^syCodes^syProps^syApp";
         }
 
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(names)));
