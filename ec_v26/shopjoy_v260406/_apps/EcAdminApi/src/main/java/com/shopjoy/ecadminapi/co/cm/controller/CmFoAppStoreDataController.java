@@ -58,17 +58,17 @@ public class CmFoAppStoreDataController {
             names += "^" + CmStoreConst.SY_APP;
         }
 
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(names)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(names, CmStoreConst.FO)));
     }
 
     @GetMapping("/getAuth")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_AUTH)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_AUTH, CmStoreConst.FO)));
     }
 
     @GetMapping("/getUser")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getUser() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_USER)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_USER, CmStoreConst.FO)));
     }
 
 //    @PostMapping("/getMember")
@@ -78,32 +78,32 @@ public class CmFoAppStoreDataController {
 
     @GetMapping("/getRoles")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_ROLES)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_ROLES, CmStoreConst.FO)));
     }
 
     @GetMapping("/getMenus")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_MENUS)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_MENUS, CmStoreConst.FO)));
     }
 
     @GetMapping("/getCodes")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_CODES)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_CODES, CmStoreConst.FO)));
     }
 
     @GetMapping("/getProps")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getProps() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_PROPS)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_PROPS, CmStoreConst.FO)));
     }
 
     @PostMapping("/getDisp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.DP_DISP)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.DP_DISP, CmStoreConst.FO)));
     }
 
     @GetMapping("/getApp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getApp() {
-        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_APP)));
+        return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(CmStoreConst.SY_APP, CmStoreConst.FO)));
     }
 
 }
