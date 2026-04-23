@@ -32,31 +32,31 @@ public class BoAuthController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<LoginRes>> getCurrentUser() {
-        LoginRes result = authService.getCurrentUserInfo();
+        LoginRes result = authService.getCurrentUserInfo("BO");
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginRes>> login(@RequestBody @Valid LoginReq request) {
-        LoginRes result = authService.login(request);
+        LoginRes result = authService.login(request, "BO");
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/join")
     public ResponseEntity<ApiResponse<BoJoinRes>> join(@RequestBody SyUser body) {
-        BoJoinRes result = authService.join(body);
+        BoJoinRes result = authService.join(body, "BO");
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenPair>> refresh(@RequestBody @Valid RefreshReq request) {
-        TokenPair result = authService.refresh(request.getRefreshToken());
+        TokenPair result = authService.refresh(request.getRefreshToken(), "BO");
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@RequestBody RefreshReq request) {
-        authService.logout(request.getRefreshToken());
+        authService.logout(request.getRefreshToken(), "BO");
         return ResponseEntity.ok(ApiResponse.ok(null, "로그아웃 되었습니다."));
     }
 }

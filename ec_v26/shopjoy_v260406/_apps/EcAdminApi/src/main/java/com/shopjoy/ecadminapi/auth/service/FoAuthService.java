@@ -36,7 +36,7 @@ public class FoAuthService {
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
     @Transactional
-    public LoginRes login(LoginReq request) {
+    public LoginRes login(LoginReq request, String userTypeCd) {
         MbMember member = memberRepository.findByLoginId(request.getLoginId())
                 .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다."));
 
@@ -57,7 +57,7 @@ public class FoAuthService {
                 .userId(member.getMemberId())
                 .loginId(member.getLoginId())
                 .roles(List.of("ROLE_MEMBER"))
-                .userType(AuthPrincipal.FO)
+                .userTypeCd(userTypeCd)
                 .roleId(null)
                 .vendorId(null)
                 .siteId(CmUtil.nvl(member.getSiteId()))
@@ -67,19 +67,21 @@ public class FoAuthService {
                 .isAdminYn("N")
                 .build()
         );
-        String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), AuthPrincipal.FO);
+        String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), userTypeCd);
 
         return LoginRes.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .userId(member.getMemberId())
                 .siteId(CmUtil.nvl(member.getSiteId()))
-                .userTypeCd(AuthPrincipal.FO)
+                .userTypeCd(userTypeCd)
+                .roleId("")
+                .deptId("")
                 .build();
     }
 
     @Transactional
-    public FoJoinRes join(MbMember body) {
+    public FoJoinRes join(MbMember body, String userTypeCd) {
         if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
             throw new CmBizException("이미 사용 중인 로그인 ID입니다.");
         }
@@ -100,14 +102,14 @@ public class FoAuthService {
     }
 
     @Transactional(readOnly = true)
-    public TokenPair refresh(String refreshToken) {
+    public TokenPair refresh(String refreshToken, String userTypeCd) {
         if (revokedTokens.contains(refreshToken))
             throw new CmBizException("이미 무효화된 토큰입니다.");
         if (!jwtProvider.validate(refreshToken))
             throw new CmBizException("유효하지 않거나 만료된 refreshToken입니다.");
         if (!"refresh".equals(jwtProvider.getTokenType(refreshToken)))
             throw new CmBizException("refreshToken이 아닙니다.");
-        if (!AuthPrincipal.FO.equals(jwtProvider.getUserType(refreshToken)))
+        if (!userTypeCd.equals(jwtProvider.getUserTypeCd(refreshToken)))
             throw new CmBizException("회원 토큰이 아닙니다.");
 
         String memberId = jwtProvider.getUserId(refreshToken);
@@ -121,7 +123,7 @@ public class FoAuthService {
                 .userId(memberId)
                 .loginId(member.getLoginId())
                 .roles(List.of("ROLE_MEMBER"))
-                .userType(AuthPrincipal.FO)
+                .userTypeCd(userTypeCd)
                 .roleId(null)
                 .vendorId(null)
                 .siteId(CmUtil.nvl(member.getSiteId()))
@@ -131,20 +133,20 @@ public class FoAuthService {
                 .isAdminYn("N")
                 .build()
         );
-        String newRefresh = jwtProvider.createRefreshToken(memberId, AuthPrincipal.FO);
+        String newRefresh = jwtProvider.createRefreshToken(memberId, userTypeCd);
 
         return new TokenPair(newAccess, newRefresh,
                 LocalDateTime.now(), jwtProvider.getAccessExpiryMinutes(), jwtProvider.getRefreshExpiryMinutes());
     }
 
-    public void logout(String refreshToken) {
+    public void logout(String refreshToken, String userTypeCd) {
         if (refreshToken != null && !refreshToken.isBlank()) {
             revokedTokens.add(refreshToken);
         }
     }
 
     @Transactional(readOnly = true)
-    public LoginRes getCurrentUserInfo() {
+    public LoginRes getCurrentUserInfo(String userTypeCd) {
         String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
@@ -152,7 +154,9 @@ public class FoAuthService {
         return LoginRes.builder()
                 .userId(member.getMemberId())
                 .siteId(CmUtil.nvl(member.getSiteId()))
-                .userTypeCd(AuthPrincipal.FO)
+                .userTypeCd(userTypeCd)
+                .roleId("")
+                .deptId("")
                 .build();
     }
 }

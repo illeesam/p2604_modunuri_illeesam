@@ -11,6 +11,7 @@ public class LoginRes {
     private String userId;
     private String siteId;
     private String roleId;
+    private String deptId;
     private String userTypeCd;
     private String vendorId;
 }

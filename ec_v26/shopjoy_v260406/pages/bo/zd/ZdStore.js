@@ -129,22 +129,26 @@ window.ZdStore = {
         const url = store.api === 'getInitData' ? `${endpoint}?names=ALL` : endpoint;
         const res = await api.get(url);
         if (res?.data?.data) {
-          const storeFunc = window[storeName];
-          if (storeFunc) {
-            const storeInst = storeFunc();
-            const responseData = res.data.data;
-            if (responseData) {
+          const responseData = res.data.data;
+          if (responseData) {
+            // 항상 응답 데이터 그대로 textarea에 표시
+            const jsonStr = JSON.stringify(responseData, null, 2);
+            editedStoreInfo[storeName] = jsonStr;
+            selectedStore.value = storeName;
+            storeInfo.value = jsonStr;
+
+            // 스토어도 동시에 업데이트
+            const storeFunc = window[storeName];
+            if (storeFunc) {
+              const storeInst = storeFunc();
               if (store.api === 'getInitData') {
                 Object.assign(storeInst.$state, responseData);
               } else {
                 Object.assign(storeInst.$state, Object.values(responseData)[0]);
               }
-              const jsonStr = JSON.stringify(storeInst.$state, null, 2);
-              editedStoreInfo[storeName] = jsonStr;
-              selectedStore.value = storeName;
-              storeInfo.value = jsonStr;
-              props.showToast('조회되었습니다.', 'success');
             }
+
+            props.showToast('조회되었습니다.', 'success');
           }
         }
       } catch (e) {

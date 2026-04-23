@@ -98,19 +98,33 @@ public class CmAppStoreDataService {
      * 통합 인증/앱 초기화 데이터 조회 - CmStoreConst 상수값으로 선택적 반환
      *
      * @param names CmStoreConst 상수값 ('^' 구분자로 선택, 예: "syAuth^syRoles^syMenus")
+     * @param userTypeCd 사용자 타입 (BO: 관리자, FO: 회원)
      * @return 요청된 데이터만 포함된 Map
      */
-    public Map<String, Object> getAuthData(String names) {
+    public Map<String, Object> getAuthData(String names, String userTypeCd) {
         AuthPrincipal authUser = com.shopjoy.ecadminapi.common.util.SecurityUtil.getAuthUser();
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
         Map<String, Object> resultMap = new java.util.HashMap<>();
+
+        Map<String, Object> infoMap = new java.util.HashMap<>();
+        infoMap.put("userTypeCd", userTypeCd);
+        infoMap.put("authUser-userTypeCd", authUser.userTypeCd());
+        infoMap.put("authUser-userId", authUser.userId());
+        infoMap.put("authUser-roleId", authUser.roleId());
+        infoMap.put("authUser-siteId", authUser.siteId());
+        resultMap.put("infoMap", infoMap);
 
         if (requestedItems.contains(CmStoreConst.SY_AUTH)) {
             StoreAuth auth = getAuth(authUser);
             resultMap.put(CmStoreConst.SY_AUTH, auth != null ? auth : StoreAuth.builder().build());
         }
         if (requestedItems.contains(CmStoreConst.SY_USER)) {
-            Object userData = "BO".equals(authUser != null ? authUser.userTypeCd() : null) ? getBoUser(authUser) : getFoUser(authUser);
+            Object userData = null;
+            if(userTypeCd.equals(CmStoreConst.BO)){
+                userData = getBoUser(authUser);
+            }else if(userTypeCd.equals(CmStoreConst.FO)){
+                userData = getFoUser(authUser);
+            }
             resultMap.put(CmStoreConst.SY_USER, userData != null ? userData : new java.util.HashMap<>());
         }
         if (requestedItems.contains(CmStoreConst.SY_ROLES)) {

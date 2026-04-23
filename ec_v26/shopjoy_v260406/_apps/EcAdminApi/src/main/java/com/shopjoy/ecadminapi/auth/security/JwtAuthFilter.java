@@ -120,7 +120,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         MDC.put("vendorId", CmUtil.nvl(vendorId, "-"));
                         // request attribute — AccessLogFilter 가 체인 종료 후 읽음 (MDC는 finally 에서 clear)
                         request.setAttribute(AccessLogFilter.ATTR_USER_ID,   userId);
-                        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE, CmUtil.nvl(userTypeCd, "-"));
+                        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE_CD, CmUtil.nvl(userTypeCd, "-"));
                         request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   CmUtil.nvl(roleId, "-"));
                         request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   deptId);
                         request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, vendorId);
@@ -162,7 +162,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         MDC.put("deptId",   "-");
         MDC.put("vendorId", "-");
         request.setAttribute(AccessLogFilter.ATTR_USER_ID,   "-");
-        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE, "-");
+        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE_CD, "-");
         request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   "-");
         request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   null);
         request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, null);

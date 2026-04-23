@@ -39,7 +39,7 @@ public class BoAuthService {
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
 
     @Transactional
-    public BoJoinRes join(SyUser body) {
+    public BoJoinRes join(SyUser body, String userTypeCd) {
         boolean exists = em.createQuery(
                 "SELECT COUNT(u) FROM SyUser u WHERE u.loginId = :loginId", Long.class)
             .setParameter("loginId", body.getLoginId())
@@ -56,7 +56,7 @@ public class BoAuthService {
     }
 
     @Transactional
-    public LoginRes login(LoginReq request) {
+    public LoginRes login(LoginReq request, String userTypeCd) {
         SyUser user;
         try {
             user = em.createQuery(
@@ -87,7 +87,7 @@ public class BoAuthService {
                 .userId(user.getUserId())
                 .loginId(user.getLoginId())
                 .roles(roles)
-                .userType(AuthPrincipal.BO)
+                .userTypeCd(userTypeCd)
                 .roleId(user.getRoleId())
                 .vendorId(null)
                 .siteId(user.getSiteId())
@@ -97,7 +97,7 @@ public class BoAuthService {
                 .isAdminYn("N")
                 .build()
         );
-        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), AuthPrincipal.BO);
+        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), userTypeCd);
 
         return LoginRes.builder()
             .accessToken(accessToken)
@@ -105,12 +105,14 @@ public class BoAuthService {
             .userId(user.getUserId())
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
-            .userTypeCd(AuthPrincipal.BO)
+            .userTypeCd(userTypeCd)
+            .roleId("")
+            .deptId("")
             .build();
     }
 
     @Transactional(readOnly = true)
-    public TokenPair refresh(String refreshToken) {
+    public TokenPair refresh(String refreshToken, String userTypeCd) {
         if (revokedTokens.contains(refreshToken)) {
             throw new CmBizException("이미 무효화된 토큰입니다.");
         }
@@ -125,7 +127,7 @@ public class BoAuthService {
         }
 
         String userId   = jwtProvider.getUserId(refreshToken);
-        String userType = jwtProvider.getUserType(refreshToken);
+        String _userTypeCd = jwtProvider.getUserTypeCd(refreshToken);
         SyUser user = em.find(SyUser.class, userId);
         if (user == null) {
             throw new CmBizException("사용자를 찾을 수 없습니다.");
@@ -139,7 +141,7 @@ public class BoAuthService {
                 .userId(userId)
                 .loginId(user.getLoginId())
                 .roles(roles)
-                .userType(userType)
+                .userTypeCd(userTypeCd)
                 .roleId(user.getRoleId())
                 .vendorId(null)
                 .siteId(user.getSiteId())
@@ -149,20 +151,20 @@ public class BoAuthService {
                 .isAdminYn("Y")
                 .build()
         );
-        String newRefreshToken = jwtProvider.createRefreshToken(userId, userType);
+        String newRefreshToken = jwtProvider.createRefreshToken(userId, userTypeCd);
 
         return new TokenPair(newAccessToken, newRefreshToken,
                 LocalDateTime.now(), jwtProvider.getAccessExpiryMinutes(), jwtProvider.getRefreshExpiryMinutes());
     }
 
-    public void logout(String refreshToken) {
+    public void logout(String refreshToken, String userTypeCd) {
         if (refreshToken != null && !refreshToken.isBlank()) {
             revokedTokens.add(refreshToken);
         }
     }
 
     @Transactional(readOnly = true)
-    public LoginRes getCurrentUserInfo() {
+    public LoginRes getCurrentUserInfo(String userTypeCd) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         SyUser user = em.find(SyUser.class, userId);
         if (user == null) {
@@ -173,7 +175,9 @@ public class BoAuthService {
             .userId(user.getUserId())
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
-            .userTypeCd(AuthPrincipal.BO)
+            .userTypeCd(userTypeCd)
+            .roleId("")
+            .deptId("")
             .build();
     }
 

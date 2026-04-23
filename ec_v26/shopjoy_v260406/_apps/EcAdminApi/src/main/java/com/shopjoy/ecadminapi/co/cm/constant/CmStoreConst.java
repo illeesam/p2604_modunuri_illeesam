@@ -6,6 +6,8 @@ package com.shopjoy.ecadminapi.co.cm.constant;
  */
 public class CmStoreConst {
 
+    public static final String BO = "BO"; // 사용자유형
+    public static final String FO = "FO"; // 사용자유형
     // Store Item Keys (Response Map)
     public static final String SY_AUTH = "syAuth"; // 인증 정보
     public static final String SY_USER = "syUser"; // 관리자 사용자

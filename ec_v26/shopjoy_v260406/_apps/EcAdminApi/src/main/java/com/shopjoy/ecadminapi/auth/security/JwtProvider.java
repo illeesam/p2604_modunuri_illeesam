@@ -43,7 +43,7 @@ public class JwtProvider {
             .claim("loginId", claims.getLoginId())
             .claim("roles", claims.getRoles())
             .claim("type", "access")
-            .claim("userType", claims.getUserType())
+            .claim("userTypeCd", claims.getUserTypeCd())
             .claim("roleId", claims.getRoleId())
             .claim("vendorId", claims.getVendorId())
             .claim("siteId", claims.getSiteId())
@@ -63,14 +63,14 @@ public class JwtProvider {
      * userType을 포함시켜 재발급 시 원래 사용자 타입을 유지한다.
      * 재발급 엔드포인트에서 DB로 userType을 재조회하지 않아도 되도록 설계.
      */
-    public String createRefreshToken(String userId, String userType) {
+    public String createRefreshToken(String userId, String userTypeCd) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + refreshExpiry);
 
         return Jwts.builder()
             .subject(userId)
             .claim("type", "refresh")
-            .claim("userType", userType)
+            .claim("userTypeCd", userTypeCd)
             .issuedAt(now)
             .expiration(expiry)
             .signWith(secretKey)
@@ -113,8 +113,8 @@ public class JwtProvider {
         return getClaims(token).get("type", String.class);
     }
 
-    public String getUserType(String token) {
-        return getClaims(token).get("userType", String.class);
+    public String getUserTypeCd(String token) {
+        return getClaims(token).get("userTypeCd", String.class);
     }
 
     public String getRoleId(String token) {

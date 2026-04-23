@@ -16,7 +16,7 @@ public class AccessTokenClaims {
     private String userId;              // 사용자 ID (subject)
     private String loginId;             // 로그인 ID
     private List<String> roles;         // 권한 목록
-    private String userType;            // 사용자 유형 (BO/FO/SO)
+    private String userTypeCd;          // 사용자 유형 (BO/FO/SO)
     private String roleId;              // 역할 ID
     private String vendorId;            // 업체 ID
     private String siteId;              // 사이트 ID

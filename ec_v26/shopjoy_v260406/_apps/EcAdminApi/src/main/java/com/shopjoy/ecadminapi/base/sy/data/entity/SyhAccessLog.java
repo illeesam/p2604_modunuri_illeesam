@@ -39,7 +39,7 @@ public class SyhAccessLog {
 
     // ── 인증 정보 ────────────────────────────────────────
     @Column(name = "user_type", length = 20)
-    private String userType;
+    private String userTypeCd;
 
     @Column(name = "user_id", length = 50)
     private String userId;
