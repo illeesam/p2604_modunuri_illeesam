@@ -15,7 +15,7 @@ window.SyContactMng = {
         const res = await window.boApi.get('/bo/sy/contact/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        contacts.value = res.data?.data?.list || [];
+        contacts = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -55,7 +55,7 @@ window.SyContactMng = {
 
     const applied = Vue.reactive({ kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => contacts.value.filter(c => {
+    const filtered = computed(() => contacts.filter(c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.title.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw)) return false;
       if (applied.category && c.categoryCd !== applied.category) return false;
@@ -98,8 +98,8 @@ window.SyContactMng = {
     const doDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = contacts.value.findIndex(x => x.inquiryId === c.inquiryId);
-      if (idx !== -1) contacts.value.splice(idx, 1);
+      const idx = contacts.findIndex(x => x.inquiryId === c.inquiryId);
+      if (idx !== -1) contacts.splice(idx, 1);
       if (selectedId.value === c.inquiryId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/contact/${c.inquiryId}`);

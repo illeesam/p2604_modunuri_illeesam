@@ -13,7 +13,7 @@ window.SyTemplateDtl = {
         const res = await window.boApi.get('/bo/sy/template/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        templates.value = res.data?.data?.list || [];
+        templates = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -67,7 +67,7 @@ window.SyTemplateDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const t = templates.value.find(x => x.templateId === props.editId);
+        const t = templates.find(x => x.templateId === props.editId);
         if (t) Object.assign(form, { sampleParams: '{}', ...t });
       }
       if (useHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
@@ -97,10 +97,10 @@ window.SyTemplateDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        templates.value.push({ ...form, templateId: nextId.value(templates.value, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
+        templates.push({ ...form, templateId: nextId.value(templates, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = templates.value.findIndex(x => x.templateId === props.editId);
-        if (idx !== -1) Object.assign(templates.value[idx], { ...form });
+        const idx = templates.findIndex(x => x.templateId === props.editId);
+        if (idx !== -1) Object.assign(templates[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/template`, { ...form }) : window.boApi.put(`/bo/sy/template/${form.templateId}`, { ...form }));

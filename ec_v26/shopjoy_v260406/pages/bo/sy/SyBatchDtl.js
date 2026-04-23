@@ -13,7 +13,7 @@ window.SyBatchDtl = {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        batches.value = res.data?.data?.list || [];
+        batches = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -38,7 +38,7 @@ window.SyBatchDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const b = batches.value.find(x => x.batchId === props.editId);
+        const b = batches.find(x => x.batchId === props.editId);
         if (b) Object.assign(form, { batchNm: b.batchNm, batchCode: b.batchCode, description: b.description, cron: b.cron, statusCd: b.statusCd });
       }
     });
@@ -65,10 +65,10 @@ window.SyBatchDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        batches.value.push({ ...form, batchId: nextId.value(batches.value, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
+        batches.push({ ...form, batchId: nextId.value(batches, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = batches.value.findIndex(x => x.batchId === props.editId);
-        if (idx !== -1) Object.assign(batches.value[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
+        const idx = batches.findIndex(x => x.batchId === props.editId);
+        if (idx !== -1) Object.assign(batches[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }) : window.boApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }));

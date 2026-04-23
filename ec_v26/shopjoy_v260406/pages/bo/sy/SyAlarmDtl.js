@@ -13,7 +13,7 @@ window.SyAlarmDtl = {
         const res = await window.boApi.get('/bo/sy/alarm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        alarms.value = res.data?.data?.list || [];
+        alarms = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -38,7 +38,7 @@ window.SyAlarmDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const a = alarms.value.find(x => x.alarmId === props.editId);
+        const a = alarms.find(x => x.alarmId === props.editId);
         if (a) Object.assign(form, { ...a });
       }
     });
@@ -55,10 +55,10 @@ window.SyAlarmDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        alarms.value.unshift({ ...form, alarmId: nextId.value(alarms.value, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
+        alarms.unshift({ ...form, alarmId: nextId.value(alarms, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = alarms.value.findIndex(x => x.alarmId === props.editId);
-        if (idx !== -1) Object.assign(alarms.value[idx], { ...form });
+        const idx = alarms.findIndex(x => x.alarmId === props.editId);
+        if (idx !== -1) Object.assign(alarms[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/alarm/${form.alarmId}`, { ...form }) : window.boApi.put(`/bo/sy/alarm/${form.alarmId}`, { ...form }));

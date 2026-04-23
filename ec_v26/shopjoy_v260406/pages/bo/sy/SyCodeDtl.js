@@ -13,7 +13,7 @@ window.SyCodeDtl = {
         const res = await window.boApi.get('/bo/sy/code/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        codes.value = res.data?.data?.list || [];
+        codes = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -38,7 +38,7 @@ window.SyCodeDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const c = codes.value.find(x => x.codeId === props.editId);
+        const c = codes.find(x => x.codeId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
@@ -55,10 +55,10 @@ window.SyCodeDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        codes.value.push({ ...form, codeId: nextId.value(codes.value, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
+        codes.push({ ...form, codeId: nextId.value(codes, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
       } else {
-        const idx = codes.value.findIndex(x => x.codeId === props.editId);
-        if (idx !== -1) Object.assign(codes.value[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
+        const idx = codes.findIndex(x => x.codeId === props.editId);
+        if (idx !== -1) Object.assign(codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/code/${form.codeId}`, { ...form }) : window.boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }));

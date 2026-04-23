@@ -128,11 +128,11 @@ window.SyAttachMng = {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { props.showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       const grp = (Array.isArray(attachGrps) ? attachGrps : []).find(g => g.attachGrpId === fileForm.attachGrpId);
       if (fileEditId.value === null) {
-        attaches.push({ ...fileForm, attachId: nextId.value(attaches.value, 'attachId'), attachGrpNm: grp?.grpNm || '', regDate: new Date().toISOString().slice(0, 10) });
+        attaches.push({ ...fileForm, attachId: nextId.value(attaches, 'attachId'), attachGrpNm: grp?.grpNm || '', regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('파일이 등록되었습니다.');
       } else {
         const idx = (Array.isArray(attaches) ? attaches : []).findIndex(x => x.attachId === fileEditId.value);
-        if (idx !== -1) Object.assign(attaches.value[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
+        if (idx !== -1) Object.assign(attaches[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
         props.showToast('저장되었습니다.');
       }
       fileEditMode.value = false;

@@ -13,7 +13,7 @@ window.SyRoleMng = {
         const res = await window.boApi.get('/bo/sy/role/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        roles.value = res.data?.data?.list || [];
+        roles = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -43,7 +43,7 @@ window.SyRoleMng = {
     const selectNode = (path) => { selectedPath.value = path; };
     const tree = Vue.computed(() => {
       const t = window.boCmUtil.buildRoleTree();
-      const rolesById = Object.fromEntries((roles.value || []).map(r => [r.roleId, r]));
+      const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
       const ROOT_BY_CAT = { ADMIN:'SUPER_ADMIN', SITE:'SITE_GROUP', SALES:'SITE_MGR_ROOT', DLIV:'DLIV_ROOT' };
@@ -67,7 +67,7 @@ window.SyRoleMng = {
     /* 선택 권한 + 자손 roleId Set */
     const allowedRoleIds = Vue.computed(() => {
       if (selectedPath.value == null) return null;
-      return window.boCmUtil.collectDescendantIds(roles.value, 'roleId', 'parentId', selectedPath.value);
+      return window.boCmUtil.collectDescendantIds(roles, 'roleId', 'parentId', selectedPath.value);
     });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -87,7 +87,7 @@ window.SyRoleMng = {
     /* 루트 역할코드 → 자동 카테고리 매핑 */
     const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
     const deriveRoleCat = (role) => {
-      const rolesData = roles.value || [];
+      const rolesData = roles || [];
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
       let cur = role;
       while (cur && cur.parentId) cur = m[cur.parentId];
@@ -101,7 +101,7 @@ window.SyRoleMng = {
       onCellChange(row);
     };
     window.boCmUtil.__roleCatOf = (roleId) => {
-      const rolesData = roles.value || [];
+      const rolesData = roles || [];
       const r = roles.find(x => x.roleId === roleId);
       if (!r) return [];
       if (r.roleCat && r.roleCat.length) return r.roleCat;
@@ -172,7 +172,7 @@ window.SyRoleMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      const filtered = roles.value.filter(r => {
+      const filtered = roles.filter(r => {
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && r.roleType !== applied.type)  return false;
@@ -297,14 +297,14 @@ window.SyRoleMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => {
-        const i = roles.value.findIndex(x => x.roleId === r.roleId);
-        if (i !== -1) roles.value.splice(i, 1);
+        const i = roles.findIndex(x => x.roleId === r.roleId);
+        if (i !== -1) roles.splice(i, 1);
         roleMenus.value = roleMenus.value.filter(x => x.roleId !== r.roleId);
         roleUsers.value = roleUsers.value.filter(x => x.roleId !== r.roleId);
       });
-      uRows.forEach(r => { const i = roles.value.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(roles.value[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark }); });
-      let nextId = Math.max(...roles.value.map(r => r.roleId), 0);
-      iRows.forEach(r => { roles.value.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      uRows.forEach(r => { const i = roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(roles[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark }); });
+      let nextId = Math.max(...roles.map(r => r.roleId), 0);
+      iRows.forEach(r => { roles.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
@@ -319,7 +319,7 @@ window.SyRoleMng = {
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
-      const p = roles.value.find(r => r.roleId === parentId);
+      const p = roles.find(r => r.roleId === parentId);
       return p ? p.roleNm : `ID:${parentId}`;
     };
 
@@ -416,7 +416,7 @@ window.SyRoleMng = {
 
     const selectedRoleNm = computed(() => {
       if (!selectedRoleId.value) return '';
-      const r = roles.value.find(x => x.roleId === selectedRoleId.value);
+      const r = roles.find(x => x.roleId === selectedRoleId.value);
       return r ? r.roleNm : '';
     });
 

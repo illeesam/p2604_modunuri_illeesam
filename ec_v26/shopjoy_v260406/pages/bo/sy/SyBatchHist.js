@@ -15,7 +15,7 @@ window.SyBatchHist = {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        batches.value = res.data?.data?.list || [];
+        batches = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -31,7 +31,7 @@ window.SyBatchHist = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const batchOptions = computed(() =>
-      batches.value.map(b => ({ batchId: b.batchId, label: b.batchNm }))
+      batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
     const filtered = computed(() => {

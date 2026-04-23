@@ -15,7 +15,7 @@ window.SyBbsMng = {
         const res = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        bbss.value = res.data?.data?.list || [];
+        bbss = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -81,7 +81,7 @@ window.SyBbsMng = {
     const bbmNm = (bbmId) => { const b = bbms.value.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
 
     const applied = reactive({ kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' });
-    const filtered = computed(() => bbss.value.filter(b => {
+    const filtered = computed(() => bbss.filter(b => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !b.title.toLowerCase().includes(kw) && !String(b.authorNm || '').toLowerCase().includes(kw)) return false;
       if (applied.bbmId && b.bbmId !== Number(applied.bbmId)) return false;
@@ -107,8 +107,8 @@ window.SyBbsMng = {
     const doDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = bbss.value.findIndex(x => x.bbsId === b.bbsId);
-      if (idx !== -1) bbss.value.splice(idx, 1);
+      const idx = bbss.findIndex(x => x.bbsId === b.bbsId);
+      if (idx !== -1) bbss.splice(idx, 1);
       if (selectedId.value === b.bbsId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`);

@@ -15,7 +15,7 @@ window.SyAlarmMng = {
         const res = await window.boApi.get('/bo/sy/alarm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        alarms.value = res.data?.data?.list || [];
+        alarms = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -78,7 +78,7 @@ window.SyAlarmMng = {
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-    const filtered = computed(() => alarms.value.filter(a => {
+    const filtered = computed(() => alarms.filter(a => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !a.title.toLowerCase().includes(kw) && !a.message.toLowerCase().includes(kw)) return false;
       if (applied.type && a.alarmTypeCd !== applied.type) return false;
@@ -106,8 +106,8 @@ window.SyAlarmMng = {
     const doDelete = async (a) => {
       const ok = await props.showConfirm('삭제', `[${a.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = alarms.value.findIndex(x => x.alarmId === a.alarmId);
-      if (idx !== -1) alarms.value.splice(idx, 1);
+      const idx = alarms.findIndex(x => x.alarmId === a.alarmId);
+      if (idx !== -1) alarms.splice(idx, 1);
       if (selectedId.value === a.alarmId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/alarm/${a.alarmId}`);

@@ -15,7 +15,7 @@ window.SyVendorMng = {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        vendors.value = res.data?.data?.list || [];
+        vendors = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -82,7 +82,7 @@ window.SyVendorMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => vendors.value.filter(v => {
+    const filtered = computed(() => vendors.filter(v => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !v.vendorNm.toLowerCase().includes(kw) && !v.bizNo.includes(kw)) return false;
       if (applied.type && v.vendorType !== applied.type) return false;
@@ -127,8 +127,8 @@ window.SyVendorMng = {
     const doDelete = async (v) => {
       const ok = await props.showConfirm('삭제', `[${v.vendorNm}] 업체를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = vendors.value.findIndex(x => x.vendorId === v.vendorId);
-      if (idx !== -1) vendors.value.splice(idx, 1);
+      const idx = vendors.findIndex(x => x.vendorId === v.vendorId);
+      if (idx !== -1) vendors.splice(idx, 1);
       if (selectedId.value === v.vendorId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/vendor/${v.vendorId}`);

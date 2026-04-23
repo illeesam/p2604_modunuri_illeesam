@@ -13,7 +13,7 @@ window.SyBbsDtl = {
         const res = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        bbss.value = res.data?.data?.list || [];
+        bbss = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -77,7 +77,7 @@ window.SyBbsDtl = {
     /* ── 초기화 ── */
     onMounted(() => {
       if (!isNew.value) {
-        const b = bbss.value.find(x => x.bbsId === props.editId);
+        const b = bbss.find(x => x.bbsId === props.editId);
         if (b) {
           Object.assign(form, { ...b });
           selectedBbm.value = bbms.value.find(m => m.bbmId === b.bbmId) || null;
@@ -120,10 +120,10 @@ window.SyBbsDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        bbss.value.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: nextId.value(bbss.value, 'bbsId'), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
+        bbss.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: nextId.value(bbss, 'bbsId'), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = bbss.value.findIndex(x => x.bbsId === props.editId);
-        if (idx !== -1) Object.assign(bbss.value[idx], { ...form, bbmId: Number(form.bbmId) });
+        const idx = bbss.findIndex(x => x.bbsId === props.editId);
+        if (idx !== -1) Object.assign(bbss[idx], { ...form, bbmId: Number(form.bbmId) });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }) : window.boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }));

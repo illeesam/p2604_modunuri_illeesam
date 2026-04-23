@@ -15,7 +15,7 @@ window.SyCodeMng = {
         const res = await window.boApi.get('/bo/sy/code/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        codes.value = res.data?.data?.list || [];
+        codes = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -41,7 +41,7 @@ window.SyCodeMng = {
     };
     const searchGrp   = ref('');
     const searchUseYn = ref('');
-    const grpOptions  = computed(() => [...new Set(codes.value.map(c => c.codeGrp))].sort());
+    const grpOptions  = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort());
     const applied     = Vue.reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
 
     /* ── CRUD 그리드 데이터 ── */
@@ -66,7 +66,7 @@ window.SyCodeMng = {
     // 코드그룹 (codes에서 그룹 고유값 추출)
     const codeGroups = computed(() => {
       const grps = new Map();
-      codes.value.forEach(c => {
+      codes.forEach(c => {
         if (c.codeGrp && !grps.has(c.codeGrp)) {
           grps.set(c.codeGrp, {
             codeGrp: c.codeGrp,
@@ -188,7 +188,7 @@ window.SyCodeMng = {
             .filter(g => (g.dispPath || '').startsWith(grpSelectedPath.value))
             .map(g => g.codeGrp))
         : null;
-      codes.value
+      codes
         .filter(c => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !c.codeGrp.toLowerCase().includes(kw)
@@ -384,18 +384,18 @@ window.SyCodeMng = {
       if (!ok) return;
 
       dRows.forEach(r => {
-        const idx = codes.value.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) codes.value.splice(idx, 1);
+        const idx = codes.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) codes.splice(idx, 1);
       });
       uRows.forEach(r => {
-        const idx = codes.value.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) Object.assign(codes.value[idx],
+        const idx = codes.findIndex(c => c.codeId === r.codeId);
+        if (idx !== -1) Object.assign(codes[idx],
           { codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
             sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null });
       });
-      let nextId = Math.max(...codes.value.map(c => c.codeId), 0);
+      let nextId = Math.max(...codes.map(c => c.codeId), 0);
       iRows.forEach(r => {
-        codes.value.push({
+        codes.push({
           codeId: ++nextId, codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
           sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null,
           regDate: new Date().toISOString().slice(0, 10),

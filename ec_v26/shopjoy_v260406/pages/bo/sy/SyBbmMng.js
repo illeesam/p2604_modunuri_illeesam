@@ -15,7 +15,7 @@ window.SyBbmMng = {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        bbms.value = res.data?.data?.list || [];
+        bbms = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -62,7 +62,7 @@ window.SyBbmMng = {
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', useYn: '' });
-    const filtered = computed(() => bbms.value.filter(b => {
+    const filtered = computed(() => bbms.filter(b => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !b.bbmNm.toLowerCase().includes(kw) && !b.bbmCode.toLowerCase().includes(kw)) return false;
       if (applied.type && b.bbmType !== applied.type) return false;
@@ -94,8 +94,8 @@ window.SyBbmMng = {
     const doDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.bbmNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = bbms.value.findIndex(x => x.bbmId === b.bbmId);
-      if (idx !== -1) bbms.value.splice(idx, 1);
+      const idx = bbms.findIndex(x => x.bbmId === b.bbmId);
+      if (idx !== -1) bbms.splice(idx, 1);
       if (selectedId.value === b.bbmId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/bbm/${b.bbmId}`);

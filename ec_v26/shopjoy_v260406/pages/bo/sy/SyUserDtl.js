@@ -13,7 +13,7 @@ window.SyUserDtl = {
         const res = await window.boApi.get('/bo/sy/user/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        users.value = res.data?.data?.list || [];
+        users = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;

@@ -13,7 +13,7 @@ window.SySiteDtl = {
         const res = await window.boApi.get('/bo/sy/site/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        sites.value = res.data?.data?.list || [];
+        sites = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -45,10 +45,10 @@ window.SySiteDtl = {
 
     onMounted(() => {
       if (!isNew.value) {
-        const s = sites.value.find(x => x.siteId === props.editId);
+        const s = sites.find(x => x.siteId === props.editId);
         if (s) Object.assign(form, { ...s });
       } else {
-        const nextNum = nextId.value(sites.value, 'siteId');
+        const nextNum = nextId.value(sites, 'siteId');
         form.siteCode = 'ST' + String(nextNum).padStart(4, '0');
       }
     });
@@ -83,10 +83,10 @@ window.SySiteDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        sites.value.push({ ...form, siteId: nextId.value(sites.value, 'siteId'), regDate: new Date().toISOString().slice(0, 10) });
+        sites.push({ ...form, siteId: nextId.value(sites, 'siteId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = sites.value.findIndex(x => x.siteId === props.editId);
-        if (idx !== -1) Object.assign(sites.value[idx], { ...form });
+        const idx = sites.findIndex(x => x.siteId === props.editId);
+        if (idx !== -1) Object.assign(sites[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/site`, { ...form }) : window.boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }));

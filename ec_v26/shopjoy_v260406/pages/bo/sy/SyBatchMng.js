@@ -15,7 +15,7 @@ window.SyBatchMng = {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        batches.value = res.data?.data?.list || [];
+        batches = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -82,7 +82,7 @@ window.SyBatchMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      batches.value
+      batches
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
           if (kw && !b.batchNm.toLowerCase().includes(kw) && !b.batchCode.toLowerCase().includes(kw)) return false;
@@ -185,10 +185,10 @@ window.SyBatchMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
 
-      dRows.forEach(r => { const i = batches.value.findIndex(b => b.batchId === r.batchId); if (i !== -1) batches.value.splice(i, 1); });
-      uRows.forEach(r => { const i = batches.value.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(batches.value[i], { batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
-      let nextId = Math.max(...batches.value.map(b => b.batchId), 0);
-      iRows.forEach(r => { batches.value.push({ batchId: ++nextId, batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
+      dRows.forEach(r => { const i = batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) batches.splice(i, 1); });
+      uRows.forEach(r => { const i = batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(batches[i], { batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
+      let nextId = Math.max(...batches.map(b => b.batchId), 0);
+      iRows.forEach(r => { batches.push({ batchId: ++nextId, batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
 
       const parts = [];
       if (iRows.length) parts.push(`등록 ${iRows.length}건`);
@@ -202,7 +202,7 @@ window.SyBatchMng = {
     const runNow = async (row) => {
       const ok = await props.showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
       if (!ok) return;
-      const src = batches.value.find(x => x.batchId === row.batchId);
+      const src = batches.find(x => x.batchId === row.batchId);
       row.runStatus = '실행중';
       if (src) src.runStatus = '실행중';
       props.showToast('배치 실행을 시작했습니다.');

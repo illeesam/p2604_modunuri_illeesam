@@ -13,7 +13,7 @@ window.SyVendorDtl = {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        vendors.value = res.data?.data?.list || [];
+        vendors = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -44,7 +44,7 @@ window.SyVendorDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const v = vendors.value.find(x => x.vendorId === props.editId);
+        const v = vendors.find(x => x.vendorId === props.editId);
         if (v) Object.assign(form, { ...v });
       }
       await nextTick();
@@ -91,10 +91,10 @@ window.SyVendorDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        vendors.value.push({ ...form, vendorId: nextId.value(vendors.value, 'vendorId') });
+        vendors.push({ ...form, vendorId: nextId.value(vendors, 'vendorId') });
       } else {
-        const idx = vendors.value.findIndex(x => x.vendorId === props.editId);
-        if (idx !== -1) Object.assign(vendors.value[idx], { ...form });
+        const idx = vendors.findIndex(x => x.vendorId === props.editId);
+        if (idx !== -1) Object.assign(vendors[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/vendor`, { ...form }) : window.boApi.put(`/bo/sy/vendor/${form.vendorId}`, { ...form }));

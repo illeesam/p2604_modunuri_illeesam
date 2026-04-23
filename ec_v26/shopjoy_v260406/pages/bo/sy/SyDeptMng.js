@@ -15,7 +15,7 @@ window.SyDeptMng = {
         const res = await window.boApi.get('/bo/sy/dept/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        depts.value = res.data?.data?.list || [];
+        depts = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -38,7 +38,7 @@ window.SyDeptMng = {
     });
     const allowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
-      return window.boCmUtil.collectDescendantIds(depts.value, 'deptId', 'parentId', selectedTreeId.value);
+      return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', selectedTreeId.value);
     });
     watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
@@ -47,7 +47,7 @@ window.SyDeptMng = {
     const searchKw    = ref('');
     const searchType  = ref('');
     const searchUseYn = ref('');
-    const typeOptions = computed(() => [...new Set(depts.value.map(d => d.deptTypeCd))].sort());
+    const typeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
     const applied = Vue.reactive({ kw: '', type: '', useYn: '' });
 
     /* ── CRUD 그리드 ── */
@@ -94,7 +94,7 @@ window.SyDeptMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      const filtered = depts.value.filter(d => {
+      const filtered = depts.filter(d => {
         if (allowedTreeIds.value && !allowedTreeIds.value.has(d.deptId)) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !d.deptCode.toLowerCase().includes(kw) && !d.deptNm.toLowerCase().includes(kw)) return false;
@@ -197,10 +197,10 @@ window.SyDeptMng = {
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      dRows.forEach(r => { const i = depts.value.findIndex(d => d.deptId === r.deptId); if (i !== -1) depts.value.splice(i, 1); });
-      uRows.forEach(r => { const i = depts.value.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(depts.value[i], { deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
-      let nextId = Math.max(...depts.value.map(d => d.deptId), 0);
-      iRows.forEach(r => { depts.value.push({ deptId: ++nextId, deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      dRows.forEach(r => { const i = depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) depts.splice(i, 1); });
+      uRows.forEach(r => { const i = depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(depts[i], { deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
+      let nextId = Math.max(...depts.map(d => d.deptId), 0);
+      iRows.forEach(r => { depts.push({ deptId: ++nextId, deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -214,7 +214,7 @@ window.SyDeptMng = {
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
-      const p = depts.value.find(d => d.deptId === parentId);
+      const p = depts.find(d => d.deptId === parentId);
       return p ? p.deptNm : `ID:${parentId}`;
     };
 

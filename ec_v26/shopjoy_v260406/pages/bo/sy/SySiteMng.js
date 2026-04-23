@@ -15,7 +15,7 @@ window.SySiteMng = {
         const res = await window.boApi.get('/bo/sy/site/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        sites.value = res.data?.data?.list || [];
+        sites = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -78,11 +78,11 @@ window.SySiteMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const typeOptions = computed(() => [...new Set(sites.value.map(s => s.siteType))].sort());
+    const typeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
 
     const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => sites.value.filter(s => {
+    const filtered = computed(() => sites.filter(s => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !s.siteNm.toLowerCase().includes(kw) && !s.domain.toLowerCase().includes(kw) && !s.siteCode.toLowerCase().includes(kw)) return false;
       if (applied.type   && s.siteType  !== applied.type)   return false;
@@ -133,8 +133,8 @@ window.SySiteMng = {
     const doDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = sites.value.findIndex(x => x.siteId === s.siteId);
-      if (idx !== -1) sites.value.splice(idx, 1);
+      const idx = sites.findIndex(x => x.siteId === s.siteId);
+      if (idx !== -1) sites.splice(idx, 1);
       if (selectedId.value === s.siteId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/site/${s.siteId}`);

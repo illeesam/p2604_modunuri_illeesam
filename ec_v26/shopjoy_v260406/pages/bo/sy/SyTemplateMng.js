@@ -15,7 +15,7 @@ window.SyTemplateMng = {
         const res = await window.boApi.get('/bo/sy/template/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        templates.value = res.data?.data?.list || [];
+        templates = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -94,7 +94,7 @@ window.SyTemplateMng = {
 
     const applied = Vue.reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => templates.value.filter(t => {
+    const filtered = computed(() => templates.filter(t => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !t.templateNm.toLowerCase().includes(kw) && !t.subject.toLowerCase().includes(kw)) return false;
       if (applied.type && t.templateTypeCd !== applied.type) return false;
@@ -144,8 +144,8 @@ window.SyTemplateMng = {
     const doDelete = async (t) => {
       const ok = await props.showConfirm('삭제', `[${t.templateNm}] 템플릿을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = templates.value.findIndex(x => x.templateId === t.templateId);
-      if (idx !== -1) templates.value.splice(idx, 1);
+      const idx = templates.findIndex(x => x.templateId === t.templateId);
+      if (idx !== -1) templates.splice(idx, 1);
       if (selectedId.value === t.templateId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/template/${t.templateId}`);

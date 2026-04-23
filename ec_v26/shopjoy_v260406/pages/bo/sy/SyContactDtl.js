@@ -14,7 +14,7 @@ window.SyContactDtl = {
         const res = await window.boApi.get('/bo/sy/contact/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        contacts.value = res.data?.data?.list || [];
+        contacts = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -50,7 +50,7 @@ window.SyContactDtl = {
 
     onMounted(async () => {
       if (!isNew.value) {
-        const c = contacts.value.find(x => x.inquiryId === props.editId);
+        const c = contacts.find(x => x.inquiryId === props.editId);
         if (c) Object.assign(form, { ...c });
         // 답변 있으면 답변 탭 기본 선택
         if (form.answer) tab.value = 'answer';
@@ -89,7 +89,7 @@ window.SyContactDtl = {
 
     /* 같은 회원의 다른 문의 */
     const memberContacts = computed(() =>
-      contacts.value.filter(c => String(c.userId) === String(form.userId) && c.inquiryId !== props.editId)
+      contacts.filter(c => String(c.userId) === String(form.userId) && c.inquiryId !== props.editId)
     );
 
     const statusBadge = s => ({
@@ -108,10 +108,10 @@ window.SyContactDtl = {
       const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNew.value) {
-        contacts.value.push({ ...form, inquiryId: nextId.value(contacts.value, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
+        contacts.push({ ...form, inquiryId: nextId.value(contacts, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
       } else {
-        const idx = contacts.value.findIndex(x => x.inquiryId === props.editId);
-        if (idx !== -1) Object.assign(contacts.value[idx], { ...form });
+        const idx = contacts.findIndex(x => x.inquiryId === props.editId);
+        if (idx !== -1) Object.assign(contacts[idx], { ...form });
       }
       try {
         const res = await (isNew.value ? window.boApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }) : window.boApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }));
@@ -127,10 +127,10 @@ window.SyContactDtl = {
 
     const saveAnswer = () => {
       if (!isNew.value) {
-        const idx = contacts.value.findIndex(x => x.inquiryId === props.editId);
+        const idx = contacts.findIndex(x => x.inquiryId === props.editId);
         if (idx !== -1) {
-          contacts.value[idx].answer = form.answer;
-          if (form.answer) contacts.value[idx].statusCd = '답변완료';
+          contacts[idx].answer = form.answer;
+          if (form.answer) contacts[idx].statusCd = '답변완료';
         }
       }
       props.showToast('답변이 저장되었습니다.');

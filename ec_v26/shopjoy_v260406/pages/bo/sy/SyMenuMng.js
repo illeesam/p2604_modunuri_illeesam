@@ -15,7 +15,7 @@ window.SyMenuMng = {
         const res = await window.boApi.get('/bo/sy/menu/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        menus.value = res.data?.data?.list || [];
+        menus = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -38,7 +38,7 @@ window.SyMenuMng = {
     });
     const allowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
-      return window.boCmUtil.collectDescendantIds(menus.value, 'menuId', 'parentId', selectedTreeId.value);
+      return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', selectedTreeId.value);
     });
     watch(selectedTreeId, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
@@ -88,7 +88,7 @@ window.SyMenuMng = {
 
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      const filtered = menus.value.filter(m => {
+      const filtered = menus.filter(m => {
         if (allowedTreeIds.value && !allowedTreeIds.value.has(m.menuId)) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuNm.toLowerCase().includes(kw)) return false;
@@ -197,10 +197,10 @@ window.SyMenuMng = {
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      dRows.forEach(r => { const i = menus.value.findIndex(m => m.menuId === r.menuId); if (i !== -1) menus.value.splice(i, 1); });
-      uRows.forEach(r => { const i = menus.value.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(menus.value[i], { menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
-      let nextId = Math.max(...menus.value.map(m => m.menuId), 0);
-      iRows.forEach(r => { menus.value.push({ menuId: ++nextId, menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      dRows.forEach(r => { const i = menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) menus.splice(i, 1); });
+      uRows.forEach(r => { const i = menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(menus[i], { menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
+      let nextId = Math.max(...menus.map(m => m.menuId), 0);
+      iRows.forEach(r => { menus.push({ menuId: ++nextId, menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -214,7 +214,7 @@ window.SyMenuMng = {
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
-      const p = menus.value.find(m => m.menuId === parentId);
+      const p = menus.find(m => m.menuId === parentId);
       return p ? p.menuNm : `ID:${parentId}`;
     };
 
