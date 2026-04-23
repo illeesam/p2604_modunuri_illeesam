@@ -3,7 +3,7 @@ window.Prod02List = {
   name: "Prod02List",
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   setup(props) {
-    const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
+    const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
     /* ── 상품 이미지 자동 할당 ── */
     const IMG_BASE = 'assets/cdn/prod/img/shop/product';
@@ -95,9 +95,9 @@ window.Prod02List = {
     };
 
     /* ── 토글 함수 ── */
-    const toggleColor = name => { const s = new Set(selColors); s.has(name) ? s.delete(name) : s.add(name); selColors = s; };
-    const toggleSize  = sz   => { const s = new Set(selSizes);  s.has(sz)   ? s.delete(sz)   : s.add(sz);   selSizes  = s; };
-    const toggleCat   = id   => { const s = new Set(selCats);   s.has(id)   ? s.delete(id)   : s.add(id);   selCats   = s; };
+    const toggleColor = name => { if (selColors.has(name)) selColors.delete(name); else selColors.add(name); };
+    const toggleSize  = sz   => { if (selSizes.has(sz)) selSizes.delete(sz); else selSizes.add(sz); };
+    const toggleCat   = id   => { if (selCats.has(id)) selCats.delete(id); else selCats.add(id); };
 
     const hasFilter = computed(() =>
       searchText.value || priceMin.value || priceMax.value ||
@@ -105,7 +105,7 @@ window.Prod02List = {
     );
     const clearFilters = () => {
       searchText.value = ''; priceMin.value = ''; priceMax.value = '';
-      selColors = new Set(); selSizes = new Set(); selCats = new Set();
+      selColors.clear(); selSizes.clear(); selCats.clear();
     };
 
     /* ── 필터링 ── */
@@ -224,7 +224,7 @@ window.Prod02List = {
   <!-- ── 카테고리 탭 (최상위 독립 배치) ── -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
     <button
-      @click="selCats=new Set()"
+      @click="selCats.clear()"
       style="padding:7px 18px;border-radius:24px;cursor:pointer;font-size:0.85rem;font-weight:700;transition:all 0.18s;"
       :style="selCats.size===0
         ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'

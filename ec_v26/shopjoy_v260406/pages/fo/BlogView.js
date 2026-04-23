@@ -3,7 +3,7 @@ window.BlogView = {
   name: 'BlogView',
   props: ['navigate', 'config', 'editId'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, reactive, computed } = Vue;
 
     const posts = [
       { id: 1, title: 'Anteposuerit litterarum formas.', category: 'Fashion', author: '김민지', date: '2026.04.10', readTime: '5분',
@@ -39,7 +39,10 @@ window.BlogView = {
     ];
 
     const postId = computed(() => Number(props.editId) || 1);
-    const post   = computed(() => posts.find(p => p.id === postId.value) || posts[0]);
+    const post   = computed(() => {
+      const found = posts.find(p => p.id === postId.value);
+      return found || (posts.length > 0 ? posts[0] : { id: 0, title: '', category: '', author: '', date: '', readTime: '', tags: [], viewCount: 0, img: '', imgMid: '', body: '', comments: [] });
+    });
 
     /* 본문 단락 분리 */
     const bodyParagraphs = computed(() => (post.value.body || '').split('\n\n').filter(Boolean));

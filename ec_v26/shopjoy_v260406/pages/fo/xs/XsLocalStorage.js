@@ -5,7 +5,7 @@ window.XsLocalStorage = {
   name: 'XsLocalStorage',
   props: ['navigate', 'showToast'],
   setup(props) {
-    const { ref, computed, onMounted, onUnmounted } = Vue;
+    const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
 
     const storageData = reactive([]);
     const filterKey = ref('');
@@ -23,12 +23,14 @@ window.XsLocalStorage = {
         const value = localStorage.getItem(key);
         data.push({ key, value });
       }
-      storageData = data.sort((a, b) => a.key.localeCompare(b.key));
+      data.sort((a, b) => a.key.localeCompare(b.key));
+      storageData.splice(0, storageData.length, ...data);
     };
 
     const filteredData = computed(() => {
-      if (!filterKey.value) return storageData;
-      return storageData.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
+      const data = Array.isArray(storageData) ? storageData : [];
+      if (!filterKey.value) return data;
+      return data.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
     });
 
     const copyValue = (value) => {

@@ -145,11 +145,11 @@ window.perfUtil = {
   },
 };
 
-// 페이지 로드 완료 후 자동 분석 (개발 환경)
-if (window.location.hostname === 'localhost' || window.location.hostname.startsWith('127')) {
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      window.perfUtil.generateReport();
-    }, 1000);
-  });
-}
+// 페이지 로드 완료 후 자동 분석 (개발 환경) - 비활성화됨
+// if (window.location.hostname === 'localhost' || window.location.hostname.startsWith('127')) {
+//   window.addEventListener('load', () => {
+//     setTimeout(() => {
+//       window.perfUtil.generateReport();
+//     }, 1000);
+//   });
+// }
