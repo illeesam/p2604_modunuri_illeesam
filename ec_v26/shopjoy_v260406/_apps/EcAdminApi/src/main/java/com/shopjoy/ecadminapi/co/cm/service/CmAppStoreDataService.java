@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.co.cm.service;
 
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreAuth;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreCode;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreMenu;
@@ -83,6 +84,54 @@ public class CmAppStoreDataService {
     private final DpPanelItemRepository dpPanelItemRepository;
     private final DpWidgetRepository dpWidgetRepository;
     private final DpWidgetLibRepository dpWidgetLibRepository;
+
+    // ════════════════════════════════════════════════════════════════════
+    // 통합 메서드
+    // ════════════════════════════════════════════════════════════════════
+
+    /**
+     * 통합 인증/앱 초기화 데이터 조회 - CmStoreConst 상수값으로 선택적 반환
+     *
+     * @param names CmStoreConst 상수값 ('^' 구분자로 선택, 예: "syAuth^syRoles^syMenus")
+     * @param authUser 인증된 사용자 정보
+     * @return 요청된 데이터만 포함된 Map
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getAuthData(String names, AuthPrincipal authUser) {
+        java.util.List<String> requestedItems = CmUtil.parseNames(names);
+        Map<String, Object> resultMap = new java.util.HashMap<>();
+
+        if (requestedItems.contains(CmStoreConst.SY_AUTH)) {
+            resultMap.put(CmStoreConst.SY_AUTH, getAuth(authUser));
+        }
+        if (requestedItems.contains(CmStoreConst.SY_USER)) {
+            resultMap.put(CmStoreConst.SY_USER, "BO".equals(authUser != null ? authUser.userTypeCd() : null) ? getBoUser(authUser) : getFoUser(authUser));
+        }
+        if (requestedItems.contains(CmStoreConst.SY_ROLES)) {
+            resultMap.put(CmStoreConst.SY_ROLES, getRoles(authUser));
+        }
+        if (requestedItems.contains(CmStoreConst.SY_MENUS)) {
+            resultMap.put(CmStoreConst.SY_MENUS, getMenus(authUser));
+        }
+        if (requestedItems.contains(CmStoreConst.SY_CODES)) {
+            resultMap.put(CmStoreConst.SY_CODES, getCodes(authUser));
+        }
+        if (requestedItems.contains(CmStoreConst.SY_PROPS)) {
+            resultMap.put(CmStoreConst.SY_PROPS, getProps(authUser));
+        }
+        if (requestedItems.contains(CmStoreConst.DP_DISP)) {
+            Map<String, Object> dispMap = new java.util.HashMap<>();
+            dispMap.put(CmStoreConst.DP_DISP_STRUCTS, getDispStruc(authUser));
+            dispMap.put(CmStoreConst.DP_DISP_DATAS, getDispData(authUser));
+            dispMap.put(CmStoreConst.DP_DISP_WIDGETS, getDispWidgets(authUser));
+            resultMap.put(CmStoreConst.DP_DISP, dispMap);
+        }
+        if (requestedItems.contains(CmStoreConst.SY_APP)) {
+            resultMap.put(CmStoreConst.SY_APP, getApp(authUser));
+        }
+
+        return resultMap;
+    }
 
     // ════════════════════════════════════════════════════════════════════
     // BO (Back Office) Methods
@@ -544,5 +593,6 @@ public class CmAppStoreDataService {
 
         return StoreDispWidgets.builder().widgets(widgetInfos).build();
     }
+
 
 }

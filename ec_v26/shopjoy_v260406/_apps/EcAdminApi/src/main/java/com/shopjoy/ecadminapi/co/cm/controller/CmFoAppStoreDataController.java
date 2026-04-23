@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
 import com.shopjoy.ecadminapi.co.cm.service.CmAppStoreDataService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 
 /**
@@ -42,127 +40,98 @@ public class CmFoAppStoreDataController {
      * FO 애플리케이션 초기화 데이터 조회 (통합) - POST 요청
      * 누구나 접근 가능 (공개 설정)
      *
-     * @param req 요청 정보 (names: "ALL" 또는 "aaa^bbb^ccc" 형식)
-     * @return 토큰, 회원, 권한, 메뉴, 코드, 속성, 전시 정보, 앱 정보 포함
+     * @param req 요청 정보 (names: "ALL" 또는 "syAuth^syRoles^syMenus^syCodes^syProps^dpDisp^syApp" 형식)
+     * @return 요청된 초기화 데이터
      */
     @PostMapping("/getInitData")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         String names = req != null ? (String) req.get("names") : "";
-        java.util.List<String> requestedItems = CmUtil.parseNames(names);
-        boolean requestAll = "ALL".equalsIgnoreCase(names) || requestedItems.isEmpty();
 
-        Map<String, Object> resultMap = new HashMap<>();
-
-        if (requestAll || requestedItems.contains(CmStoreConst.SY_AUTH)) {
-            resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getAuth(authUser));
-        }
-        if (requestAll || requestedItems.contains(CmStoreConst.SY_ROLES)) {
-            resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getRoles(authUser));
-        }
-        if (requestAll || requestedItems.contains(CmStoreConst.SY_MENUS)) {
-            resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getMenus(authUser));
-        }
-        if (requestAll || requestedItems.contains(CmStoreConst.SY_CODES)) {
-            resultMap.put(CmStoreConst.SY_CODES, storeDataService.getCodes(authUser));
-        }
-        if (requestAll || requestedItems.contains(CmStoreConst.SY_PROPS)) {
-            resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getProps(authUser));
-        }
-        if (requestAll || requestedItems.contains(CmStoreConst.DP_DISP)) {
-            Map<String, Object> dispMap = new HashMap<>();
-            dispMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getDispStruc(authUser));
-            dispMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getDispData(authUser));
-            dispMap.put(CmStoreConst.DP_DISP_WIDGETS, storeDataService.getDispWidgets(authUser));
-            resultMap.put(CmStoreConst.DP_DISP, dispMap);
-        }
-        if (requestAll || requestedItems.contains(CmStoreConst.SY_APP)) {
-            resultMap.put(CmStoreConst.SY_APP, storeDataService.getApp(authUser));
+        // "ALL"인 경우 FO에서 필요한 모든 항목 설정
+        if ("ALL".equalsIgnoreCase(names)) {
+            names = CmStoreConst.SY_AUTH;
+            names += "^" + CmStoreConst.SY_ROLES;
+            names += "^" + CmStoreConst.SY_MENUS;
+            names += "^" + CmStoreConst.SY_CODES;
+            names += "^" + CmStoreConst.SY_PROPS;
+            names += "^" + CmStoreConst.DP_DISP;
+            names += "^" + CmStoreConst.SY_APP;
         }
 
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getAuth")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody(required = false) String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuth(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.SY_AUTH, storeDataService.getAuth(authUser));
+        String names = CmStoreConst.SY_AUTH;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getUser")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUser(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(authUser));
+        String names = CmStoreConst.SY_USER;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
 //    @PostMapping("/getMember")
-//    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember() {
+//    public ResponseEntity<ApiResponse<Map<String, Object>>> getMember(@RequestBody(required = false) Map<String, Object> req) {
 //        AuthPrincipal authUser = SecurityUtil.getAuthUser();
-//        // authUser가 null이면 비인증 사용자 (공개 설정)
-//        Map<String, Object> resultMap = new HashMap<>();
-//        resultMap.put(CmStoreConst.MB_MEMBER, storeDataService.getFoUser(authUser));
+//        String names = CmStoreConst.MB_MEMBER;
+//        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
 //        return ResponseEntity.ok(ApiResponse.ok(resultMap));
 //    }
 
     @PostMapping("/getRoles")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRoles(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.SY_ROLES, storeDataService.getRoles(authUser));
+        String names = CmStoreConst.SY_ROLES;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getMenus")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMenus(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.SY_MENUS, storeDataService.getMenus(authUser));
+        String names = CmStoreConst.SY_MENUS;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getCodes")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCodes(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.SY_CODES, storeDataService.getCodes(authUser));
+        String names = CmStoreConst.SY_CODES;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getProps")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getProps(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.SY_PROPS, storeDataService.getProps(authUser));
+        String names = CmStoreConst.SY_PROPS;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getDisp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDisp(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.DP_DISP_STRUCTS, storeDataService.getDispStruc(authUser));
-        resultMap.put(CmStoreConst.DP_DISP_DATAS, storeDataService.getDispData(authUser));
-        resultMap.put(CmStoreConst.DP_DISP_WIDGETS, storeDataService.getDispWidgets(authUser));
+        String names = CmStoreConst.DP_DISP;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
     @PostMapping("/getApp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getApp(@RequestBody(required = false) Map<String, Object> req) {
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
-        // authUser가 null이면 비인증 사용자 (공개 설정)
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(CmStoreConst.SY_APP, storeDataService.getApp(authUser));
+        String names = CmStoreConst.SY_APP;
+        Map<String, Object> resultMap = storeDataService.getAuthData(names, authUser);
         return ResponseEntity.ok(ApiResponse.ok(resultMap));
     }
 
