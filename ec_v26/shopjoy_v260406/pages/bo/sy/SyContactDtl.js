@@ -27,9 +27,9 @@ window.SyContactDtl = {
     const isNew = computed(() => !props.editId);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const tab = ref(window._syContactDtlState.tab || 'content');
-    Vue.watch(tab, v => { window._syContactDtlState.tab = v; });
+    watch(tab, v => { window._syContactDtlState.tab = v; });
     const viewMode2 = ref(window._syContactDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._syContactDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._syContactDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({

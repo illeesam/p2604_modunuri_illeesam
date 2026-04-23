@@ -326,7 +326,7 @@ window.SyRoleMng = {
       return p ? p.roleNm : `ID:${parentId}`;
     };
 
-    const roleTreeModal = Vue.reactive({ show: false, targetRow: null });
+    const roleTreeModal = reactive({ show: false, targetRow: null });
     const openParentModal = (row) => { roleTreeModal.targetRow = row; roleTreeModal.show = true; };
     const onParentSelect  = (role) => {
       if (roleTreeModal.targetRow) { roleTreeModal.targetRow.parentId = role.roleId; roleTreeModal.targetRow._depth = 0; onCellChange(roleTreeModal.targetRow); }

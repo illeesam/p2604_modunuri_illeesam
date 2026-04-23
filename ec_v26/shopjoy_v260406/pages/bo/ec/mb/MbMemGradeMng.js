@@ -53,7 +53,7 @@ window.MbMemGradeMng = {
     const loadGrid = () => {
       gridRows.splice(0, gridRows.length, ...pageList.value.map(g => ({ ...g, _row_status: null })));
     };
-    Vue.watch([() => pager.page, () => pager.size, applied], loadGrid, { immediate: true });
+    watch([() => pager.page, () => pager.size, applied], loadGrid, { immediate: true });
 
     const addRow = () => {
       gridRows.unshift({ gradeId: _tempId--, siteId: 1, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1, minPurchaseAmt: 0, saveRate: 1.00, useYn: 'Y', _row_status: 'N' });

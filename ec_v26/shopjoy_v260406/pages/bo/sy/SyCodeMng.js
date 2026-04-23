@@ -42,7 +42,7 @@ window.SyCodeMng = {
     const searchGrp   = ref('');
     const searchUseYn = ref('');
     const grpOptions  = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort());
-    const applied     = Vue.reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
+    const applied     = reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
 
     /* ── CRUD 그리드 데이터 ── */
     const gridRows   = reactive([]);
@@ -142,7 +142,7 @@ window.SyCodeMng = {
     const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(grpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
     /* _expand3_grp: 그룹 트리 3레벨 펼침 */
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.boCmUtil.collectExpandedToDepth(grpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     });
@@ -161,11 +161,11 @@ window.SyCodeMng = {
     const setGrpPage = n => { if (n >= 1 && n <= grpTotalPages.value) grpPager.page = n; };
     const onGrpSizeChange = () => { grpPager.page = 1; };
     const grpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return filteredGrpRows.value.slice(s, s + grpPager.size); });
-    Vue.watch(() => filteredGrpRows.value.length, () => { if (grpPager.page > grpTotalPages.value) grpPager.page = Math.max(1, grpTotalPages.value); });
+    watch(() => filteredGrpRows.value.length, () => { if (grpPager.page > grpTotalPages.value) grpPager.page = Math.max(1, grpTotalPages.value); });
     /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
-    Vue.watch(grpSelectedPath, () => { grpPager.page = 1; selectedGrp.value = ''; loadGrid(); });
+    watch(grpSelectedPath, () => { grpPager.page = 1; selectedGrp.value = ''; loadGrid(); });
     /* selectedGrp 변경 시 코드목록 재조회 */
-    Vue.watch(selectedGrp, () => loadGrid());
+    watch(selectedGrp, () => loadGrid());
 
     /* 그룹 행 클릭 → 코드목록 필터 (토글) */
     const onGrpRowClick = (g) => {

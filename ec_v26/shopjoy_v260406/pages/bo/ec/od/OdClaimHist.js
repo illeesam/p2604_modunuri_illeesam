@@ -6,7 +6,7 @@ window.OdClaimHist = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const botTab = ref(window._odClaimHistState.tab || 'items');
-    Vue.watch(botTab, v => { window._odClaimHistState.tab = v; });
+    watch(botTab, v => { window._odClaimHistState.tab = v; });
     const viewMode2 = ref('tab');
     
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;

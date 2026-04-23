@@ -93,9 +93,9 @@ window.SyPathMng = {
     const setPage = n => { if (n>=1 && n<=totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const pagedRows = computed(() => { const s = (pager.page-1)*pager.size; return gridRows.value.slice(s, s+pager.size); });
-    Vue.watch(() => gridRows.value.length, () => { if (pager.page > totalPages.value) pager.page = Math.max(1, totalPages.value); });
-    Vue.watch(selectedBiz, () => { selectedPathId.value = null; pager.page = 1; });
-    Vue.watch(selectedPathId, () => { pager.page = 1; });
+    watch(() => gridRows.value.length, () => { if (pager.page > totalPages.value) pager.page = Math.max(1, totalPages.value); });
+    watch(selectedBiz, () => { selectedPathId.value = null; pager.page = 1; });
+    watch(selectedPathId, () => { pager.page = 1; });
 
     /* ── CRUD ── */
     const onChange = (row, field, val) => {

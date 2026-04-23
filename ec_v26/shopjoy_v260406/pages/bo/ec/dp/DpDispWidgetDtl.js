@@ -5,7 +5,7 @@ window.DpDispWidgetDtl = {
   emits: ['close'],
   setup(props, { emit }) {
     /* ── 표시경로 선택 모달 (sy_path, 다중) ── */
-    const pathPickModal = Vue.reactive({ show: false });
+    const pathPickModal = reactive({ show: false });
     const openPathPick = () => { pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { form.pathId = pathId; };
@@ -306,7 +306,7 @@ window.DpDispWidgetDtl = {
       return (m?.width || 420) + 'px';
     });
     const previewPaneWidth = ref(460);
-    Vue.watch(previewMode, (m) => {
+    watch(previewMode, (m) => {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       previewPaneWidth.value = (info?.width || 420) + 40;
     });

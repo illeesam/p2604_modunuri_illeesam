@@ -28,9 +28,9 @@ window.PmEventDtl = {
     });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._ecEventDtlState.tab || 'info');
-    Vue.watch(tab, v => { window._ecEventDtlState.tab = v; });
+    watch(tab, v => { window._ecEventDtlState.tab = v; });
     const viewMode2 = ref(window._ecEventDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._ecEventDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._ecEventDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const _today = new Date();

@@ -27,9 +27,9 @@ window.CmChattDtl = {
     });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._cmChattDtlState.tab || 'chat');
-    Vue.watch(tab, v => { window._cmChattDtlState.tab = v; });
+    watch(tab, v => { window._cmChattDtlState.tab = v; });
     const viewMode2 = ref(window._cmChattDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._cmChattDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._cmChattDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const chat = ref(null);

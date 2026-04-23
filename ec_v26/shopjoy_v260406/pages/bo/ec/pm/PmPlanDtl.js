@@ -28,9 +28,9 @@ window.PmPlanDtl = {
     });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._ecPlanDtlState.tab || 'info');
-    Vue.watch(tab, v => { window._ecPlanDtlState.tab = v; });
+    watch(tab, v => { window._ecPlanDtlState.tab = v; });
     const viewMode2 = ref(window._ecPlanDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._ecPlanDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._ecPlanDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const _today = new Date();

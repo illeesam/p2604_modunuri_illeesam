@@ -59,7 +59,7 @@ window.SyBizUserMng = {
     });
     const expandAll = () => { expanded.add(null); (ad.roles || []).forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    Vue.onMounted(() => { expandAll(); });
+    onMounted(() => { expandAll(); });
     /* 사업자 표시경로 트리 필터는 사용 안 함 — 검색 사업자가 우선 */
     const allowedBizIds = computed(() => null);
 
@@ -198,7 +198,7 @@ window.SyBizUserMng = {
     const setPage = n => { if(n>=1 && n<=totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const pagedRows = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    Vue.watch(selectedPath, () => pager.page = 1);
+    watch(selectedPath, () => pager.page = 1);
 
     const roleBadge = (r) => ({ REP:'badge-pink', MGT:'badge-purple', SITE_ADMIN:'badge-blue', SITE_OPER:'badge-teal', STAFF:'badge-gray' }[r] || 'badge-gray');
     const roleLabel = (r) => ({ REP:'대표자', MGT:'경영담당자', SITE_ADMIN:'사이트관리자', SITE_OPER:'사이트운영자', STAFF:'일반' }[r] || r);
@@ -277,7 +277,7 @@ window.SyBizUserMng = {
       while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
       return seg.join(' > ');
     };
-    Vue.watch(() => formData.bizId, () => {
+    watch(() => formData.bizId, () => {
       roleTreeExpanded.clear();
       const root = (ad.roles || []).find(r => r.roleCode === formAllowedRootCode.value);
       if (root) roleTreeExpanded.add(root.roleId);

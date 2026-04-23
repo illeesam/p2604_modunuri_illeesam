@@ -89,7 +89,7 @@ window.SyAttachMng = {
     const fileEditId = ref(null);
     const fileEditMode = ref(false);
 
-    const applied = Vue.reactive({ kw: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', dateStart: '', dateEnd: '' });
 
     const filteredFiles = computed(() => {
       const items = attaches || [];

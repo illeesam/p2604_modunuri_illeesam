@@ -362,7 +362,7 @@ window.SyBatchMng = {
       '배치목록.csv'
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { batches, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

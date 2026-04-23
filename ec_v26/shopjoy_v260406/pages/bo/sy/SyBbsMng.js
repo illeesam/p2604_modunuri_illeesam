@@ -122,7 +122,7 @@ window.SyBbsMng = {
     };
     const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { bbss, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

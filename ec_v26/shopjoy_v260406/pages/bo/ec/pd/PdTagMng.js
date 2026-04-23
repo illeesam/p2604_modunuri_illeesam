@@ -47,7 +47,7 @@ window.PdTagMng = {
     let   _tempId    = -1;
 
     const loadGrid = () => { gridRows.splice(0, gridRows.length, ...pageList.value.map(t => ({ ...t, _row_status: null }))); };
-    Vue.watch([() => pager.page, applied], loadGrid, { immediate: true });
+    watch([() => pager.page, applied], loadGrid, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };

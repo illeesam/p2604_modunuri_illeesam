@@ -53,7 +53,7 @@ window.PdProdMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = Vue.reactive({ kw: '', cate: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', cate: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => window.safeArrayUtils.safeFilter(products, p => {
       const kw = applied.kw.trim().toLowerCase();
@@ -77,7 +77,7 @@ window.PdProdMng = {
     const categories = computed(() => window.safeArrayUtils.safeFilter(categories, c => c.status === '활성').map(c => c.categoryNm));
 
     /* ── 카테고리 선택 모달 ── */
-    const catModal = Vue.reactive({ show: false });
+    const catModal = reactive({ show: false });
     const openCatModal = () => { catModal.show = true; };
     const onCatSelect = (cat) => {
       searchCate.value = cat.categoryNm || '';

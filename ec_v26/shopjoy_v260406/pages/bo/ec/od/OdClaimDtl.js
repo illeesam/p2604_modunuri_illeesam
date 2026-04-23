@@ -99,9 +99,9 @@ window.OdClaimDtl = {
     };
 
     const activeTab = ref(window._odClaimDtlState.activeTab || 'info');
-    Vue.watch(activeTab, v => { window._odClaimDtlState.activeTab = v; });
+    watch(activeTab, v => { window._odClaimDtlState.activeTab = v; });
     const viewMode2 = ref(window._odClaimDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._odClaimDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._odClaimDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || activeTab.value === id;
     const claimItems = reactive([]);
     const sampleClaimItems = () => {
@@ -135,7 +135,7 @@ window.OdClaimDtl = {
       if (allExpanded.value) expandedItems = new Set();
       else expandedItems = new Set(claimItems.map((_,i) => i));
     };
-    Vue.watch(claimItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
+    watch(claimItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
     const getExchangedItem = (it) => {
       if (form.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };

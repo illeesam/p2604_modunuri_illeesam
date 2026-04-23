@@ -80,7 +80,7 @@ window.SyVendorMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => vendors.filter(v => {
       const kw = applied.kw.trim().toLowerCase();
@@ -143,7 +143,7 @@ window.SyVendorMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { vendors, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

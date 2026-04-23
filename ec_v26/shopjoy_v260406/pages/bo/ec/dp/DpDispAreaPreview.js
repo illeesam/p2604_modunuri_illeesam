@@ -5,7 +5,7 @@ const _WP_DispAreaPreview2 = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, watchEffect } = Vue;
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;
@@ -279,7 +279,7 @@ window.DpDispAreaPreview = {
       });
       if (open) openNodes.add(node.label);
     };
-    Vue.watchEffect(() => {
+    watchEffect(() => {
       if (!openNodes.has('__root__')) openNodes.add('__root__');
       if (tree.value.length && openNodes.size === 1) {
         openNodes.add(tree.window.safeArrayUtils.safeGet(value, 0).label);

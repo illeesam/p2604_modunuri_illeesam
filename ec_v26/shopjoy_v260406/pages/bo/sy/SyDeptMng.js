@@ -48,7 +48,7 @@ window.SyDeptMng = {
     const searchType  = ref('');
     const searchUseYn = ref('');
     const typeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
-    const applied = Vue.reactive({ kw: '', type: '', useYn: '' });
+    const applied = reactive({ kw: '', type: '', useYn: '' });
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -218,7 +218,7 @@ window.SyDeptMng = {
       return p ? p.deptNm : `ID:${parentId}`;
     };
 
-    const deptTreeModal = Vue.reactive({ show: false, targetRow: null });
+    const deptTreeModal = reactive({ show: false, targetRow: null });
     const openParentModal = (row) => { deptTreeModal.targetRow = row; deptTreeModal.show = true; };
     const onParentSelect  = (dept) => {
       if (deptTreeModal.targetRow) { deptTreeModal.targetRow.parentId = dept.deptId; deptTreeModal.targetRow._depth = 0; onCellChange(deptTreeModal.targetRow); }

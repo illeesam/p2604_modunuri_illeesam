@@ -27,9 +27,9 @@ window.PmVoucherDtl = {
     });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmVoucherDtlState.tab || 'info');
-    Vue.watch(tab, v => { window._pmVoucherDtlState.tab = v; });
+    watch(tab, v => { window._pmVoucherDtlState.tab = v; });
     const viewMode2 = ref(window._pmVoucherDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({

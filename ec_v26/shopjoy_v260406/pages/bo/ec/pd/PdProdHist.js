@@ -26,9 +26,9 @@ window.PdProdHist = {
       }
     });
     const botTab = ref(window._ecProdHistState.tab || 'orders');
-    Vue.watch(botTab, v => { window._ecProdHistState.tab = v; });
+    watch(botTab, v => { window._ecProdHistState.tab = v; });
     const viewMode2 = ref(window._ecProdHistState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._ecProdHistState.viewMode = v; });
+    watch(viewMode2, v => { window._ecProdHistState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
     const stockHistory  = reactive([]);

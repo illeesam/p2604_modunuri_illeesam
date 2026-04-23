@@ -119,7 +119,7 @@ window.OdOrderDtl = {
     };
 
     const activeTab = ref(window._odOrderDtlState.activeTab || 'info');
-    Vue.watch(activeTab, v => { window._odOrderDtlState.activeTab = v; });
+    watch(activeTab, v => { window._odOrderDtlState.activeTab = v; });
     /* 주문 항목 (샘플 데이터) */
     const orderItems = reactive([]);
     const sampleOrderItems = () => {
@@ -206,7 +206,7 @@ window.OdOrderDtl = {
       return rows;
     });
     const viewMode2 = ref(window._odOrderDtlState.viewMode || 'tab'); // 'tab' | '2col' | '1col'
-    Vue.watch(viewMode2, v => { window._odOrderDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._odOrderDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || activeTab.value === id;
     const expandedItems = reactive(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
@@ -216,7 +216,7 @@ window.OdOrderDtl = {
       if (allExpanded.value) expandedItems = new Set();
       else expandedItems = new Set(orderItems.map((_,i) => i));
     };
-    Vue.watch(orderItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
+    watch(orderItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
     const getExchangedItem = (it) => {
       if (!relatedClaim.value || relatedClaim.value.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리' };

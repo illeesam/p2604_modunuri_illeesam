@@ -25,7 +25,7 @@ window.DpDispPanelDtl = {
       }
     });
     /* ── 표시경로 선택 모달 (sy_path) ── */
-    const pathPickModal = Vue.reactive({ show: false, target: null });
+    const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
@@ -47,7 +47,7 @@ window.DpDispPanelDtl = {
     });
     /* 패널 폭(스플리터 드래그 반영). 모드 변경 시 자동 갱신 */
     const previewPaneWidth = ref(520);
-    Vue.watch(previewMode, (m) => {
+    watch(previewMode, (m) => {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       previewPaneWidth.value = (info?.width || 480) + 40;
     });

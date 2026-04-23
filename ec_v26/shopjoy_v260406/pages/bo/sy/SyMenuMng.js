@@ -48,7 +48,7 @@ window.SyMenuMng = {
     const searchType   = ref('');
     const searchUseYn  = ref('');
     const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
-    const applied = Vue.reactive({ kw: '', type: '', useYn: '' });
+    const applied = reactive({ kw: '', type: '', useYn: '' });
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -218,7 +218,7 @@ window.SyMenuMng = {
       return p ? p.menuNm : `ID:${parentId}`;
     };
 
-    const menuTreeModal = Vue.reactive({ show: false, targetRow: null });
+    const menuTreeModal = reactive({ show: false, targetRow: null });
     const openParentModal = (row) => { menuTreeModal.targetRow = row; menuTreeModal.show = true; };
     const onParentSelect  = (menu) => {
       if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }

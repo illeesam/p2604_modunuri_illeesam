@@ -53,7 +53,7 @@ window.PmVoucherMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => (voucherList.value || []).filter(v => {
       const kw = applied.kw.trim().toLowerCase();

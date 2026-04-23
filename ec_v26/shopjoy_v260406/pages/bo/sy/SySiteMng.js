@@ -80,7 +80,7 @@ window.SySiteMng = {
 
     const typeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
 
-    const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => sites.filter(s => {
       const kw = applied.kw.trim().toLowerCase();
@@ -149,7 +149,7 @@ window.SySiteMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { sites, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

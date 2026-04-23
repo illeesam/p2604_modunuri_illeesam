@@ -121,7 +121,7 @@ window.SyAlarmMng = {
     };
     const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'내용',key:'content'},{label:'상태',key:'statusCd'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { alarms, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

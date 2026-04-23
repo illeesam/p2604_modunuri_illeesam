@@ -36,7 +36,7 @@ window.SyBizMng = {
     const tree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
@@ -71,7 +71,7 @@ window.SyBizMng = {
     const setPage = n => { if(n>=1 && n<=totalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const pagedRows = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    Vue.watch(selectedPath, () => pager.page = 1);
+    watch(selectedPath, () => pager.page = 1);
 
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
     const vendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];

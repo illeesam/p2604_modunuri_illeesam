@@ -53,7 +53,7 @@ window.PmSaveMng = {
     const isViewMode   = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = Vue.reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
     const list = computed(() => saveList.value || []);
     const filtered = computed(() => window.safeArrayUtils.safeFilter(list, s => {

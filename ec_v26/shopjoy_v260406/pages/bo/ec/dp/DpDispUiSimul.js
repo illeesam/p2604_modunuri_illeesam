@@ -3,7 +3,7 @@ window.DpDispUiSimul = {
   name: 'DpDispUiSimul',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, watch } = Vue;
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     /* ── 오늘 날짜 ── */
@@ -552,14 +552,14 @@ window.DpDispUiSimul = {
     const dispUiAreaErr   = ref(false);
 
     /* 독립적인 조회 폼 (메인 필터와 별개) */
-    const dispUiForm = Vue.reactive({
+    const dispUiForm = reactive({
       areas: [], date: '', time: '', status: '',
       condition: '', authRequired: '', authGrade: '',
       siteId: '', siteNm: '', memberId: '', memberNm: '',
     });
 
     /* 보기옵션 (기본 전체 체크) */
-    const dispUiViewOpts = Vue.reactive({ content: true, struct: true, source: true });
+    const dispUiViewOpts = reactive({ content: true, struct: true, source: true });
 
     /* 사이트 모달 */
     const dispUiSiteModalOpen = ref(false);

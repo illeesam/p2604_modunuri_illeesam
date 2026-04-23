@@ -3,7 +3,7 @@ window.CmChattMng = {
   name: 'CmChattMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -54,7 +54,7 @@ window.CmChattMng = {
 
     const sorted = computed(() => [...chats.value].sort((a, b) => b.date.localeCompare(a.date)));
 
-    const applied = Vue.reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => window.safeArrayUtils.safeFilter(sorted, c => {
       const kw = applied.kw.trim().toLowerCase();

@@ -81,18 +81,18 @@ window.SyTemplateMng = {
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     /* 미리보기 모달 */
-    const previewModal = Vue.reactive({ show: false, template: null });
+    const previewModal = reactive({ show: false, template: null });
     const showPreview = (t) => { previewModal.template = t; previewModal.show = true; };
     const closePreview = () => { previewModal.show = false; };
 
     /* 발송하기 모달 */
-    const sendModal = Vue.reactive({ show: false, template: null });
+    const sendModal = reactive({ show: false, template: null });
     const openSend  = (t) => { sendModal.template = t; sendModal.show = true; };
     const closeSend = () => { sendModal.show = false; };
 
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
 
-    const applied = Vue.reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => templates.filter(t => {
       const kw = applied.kw.trim().toLowerCase();
@@ -160,7 +160,7 @@ window.SyTemplateMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateNm'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    Vue.watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { templates, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

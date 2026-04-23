@@ -3,7 +3,7 @@ window.PmCacheMng = {
   name: 'PmCacheMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const caches = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -53,7 +53,7 @@ window.PmCacheMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = Vue.reactive({ kw: '', type: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', type: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => window.safeArrayUtils.safeFilter((caches || []), c => {
       const kw = applied.kw.trim().toLowerCase();

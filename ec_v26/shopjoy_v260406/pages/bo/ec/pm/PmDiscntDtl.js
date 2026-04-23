@@ -27,9 +27,9 @@ window.PmDiscntDtl = {
     });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmDiscntDtlState.tab || 'info');
-    Vue.watch(tab, v => { window._pmDiscntDtlState.tab = v; });
+    watch(tab, v => { window._pmDiscntDtlState.tab = v; });
     const viewMode2 = ref(window._pmDiscntDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._pmDiscntDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._pmDiscntDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const _today = new Date();

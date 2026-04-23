@@ -47,7 +47,7 @@ window.MbMemGroupMng = {
     let   _tempId    = -1;
 
     const loadGrid = () => { gridRows.splice(0, gridRows.length, ...pageList.value.map(g => ({ ...g, _row_status: null }))); };
-    Vue.watch([() => pager.page, applied], loadGrid, { immediate: true });
+    watch([() => pager.page, applied], loadGrid, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ groupId: 'G' + (_tempId--), siteId: 1, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y', _row_status: 'N' }); };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };

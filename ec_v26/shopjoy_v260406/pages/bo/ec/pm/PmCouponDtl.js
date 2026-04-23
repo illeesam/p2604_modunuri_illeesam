@@ -27,9 +27,9 @@ window.PmCouponDtl = {
     });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmCouponDtlState.tab || 'info');
-    Vue.watch(tab, v => { window._pmCouponDtlState.tab = v; });
+    watch(tab, v => { window._pmCouponDtlState.tab = v; });
     const viewMode2 = ref(window._pmCouponDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const COUPON_TYPES = ['배송비할인쿠폰', '회원가입축하쿠폰', '상품할인쿠폰', '주문할인쿠폰', '클레임관리자지급쿠폰', 'VIP쿠폰'];

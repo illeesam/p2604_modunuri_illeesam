@@ -3,7 +3,7 @@ window.DpDispPanelMng = {
   name: 'DpDispPanelMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -109,7 +109,7 @@ window.DpDispPanelMng = {
       return '-';
     };
 
-    const applied = Vue.reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
+    const applied = reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
 
     const filtered = computed(() => window.safeArrayUtils.safeFilter(displays, d => {
       const kw = applied.kw.trim().toLowerCase();

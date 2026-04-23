@@ -274,15 +274,15 @@ window.SyBrandMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = Vue.computed(() => window.boCmUtil.buildPathTree('sy_brand'));
+    const tree = computed(() => window.boCmUtil.buildPathTree('sy_brand'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
-    Vue.onMounted(() => {
+    onMounted(() => {
       const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    Vue.watch(selectedPath, () => loadGrid());
+    watch(selectedPath, () => loadGrid());
 
     return { brands, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,

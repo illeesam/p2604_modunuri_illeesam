@@ -28,7 +28,7 @@ window.OdOrderHist = {
       }
     });
     const botTab = ref(window._ecOrderHistState.tab || 'products');
-    Vue.watch(botTab, v => { window._ecOrderHistState.tab = v; });
+    watch(botTab, v => { window._ecOrderHistState.tab = v; });
     const viewMode2 = ref('tab');
     
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;

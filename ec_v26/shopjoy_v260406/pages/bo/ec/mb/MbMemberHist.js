@@ -26,9 +26,9 @@ window.MbMemberHist = {
       }
     });
     const tab = ref(window._ecMemberHistState.tab || 'orders');
-    Vue.watch(tab, v => { window._ecMemberHistState.tab = v; });
+    watch(tab, v => { window._ecMemberHistState.tab = v; });
     const viewMode2 = ref(window._ecMemberHistState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._ecMemberHistState.viewMode = v; });
+    watch(viewMode2, v => { window._ecMemberHistState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const memberOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.userId === props.memberId));

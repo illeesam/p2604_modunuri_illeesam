@@ -28,9 +28,9 @@ window.OdDlivDtl = {
     });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._odDlivDtlState.tab || 'info');
-    Vue.watch(tab, v => { window._odDlivDtlState.tab = v; });
+    watch(tab, v => { window._odDlivDtlState.tab = v; });
     const viewMode2 = ref(window._odDlivDtlState.viewMode || 'tab');
-    Vue.watch(viewMode2, v => { window._odDlivDtlState.viewMode = v; });
+    watch(viewMode2, v => { window._odDlivDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
 
     const form = reactive({

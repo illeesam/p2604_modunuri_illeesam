@@ -72,7 +72,7 @@ window.SyUserMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = Vue.reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => boUsers.value.filter(u => {
       if (allowedDeptNms.value && !allowedDeptNms.value.has(u.dept)) return false;

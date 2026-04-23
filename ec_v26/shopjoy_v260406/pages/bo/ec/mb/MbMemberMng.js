@@ -53,7 +53,7 @@ window.MbMemberMng = {
     const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = Vue.reactive({ kw: '', grade: '', status: '', dateStart: '', dateEnd: '' });
+    const applied = reactive({ kw: '', grade: '', status: '', dateStart: '', dateEnd: '' });
 
     const filtered = computed(() => {
       if (!Array.isArray(members) || members.length === 0) return [];
