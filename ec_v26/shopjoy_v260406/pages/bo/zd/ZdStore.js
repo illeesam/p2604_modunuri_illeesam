@@ -158,8 +158,8 @@ window.ZdStore = {
 
     onMounted(() => {
       loadAllStoreData();
-      if (storeList.value.length > 0 && !selectedStore.value) {
-        selectStore(storeList.value[0].name);
+      if (storeList.length > 0 && !selectedStore.value) {
+        selectStore(storeList[0].name);
       }
     });
 
