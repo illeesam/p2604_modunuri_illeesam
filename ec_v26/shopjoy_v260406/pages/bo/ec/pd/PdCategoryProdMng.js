@@ -4,8 +4,8 @@ window.PdCategoryProdMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const products = ref(window.boDataProvider?.getProducts?.() || []);
-    const categoryProds = ref((window.boData?.categoryProds) || []);
+    const products = reactive(window.boDataProvider?.getProducts?.() || []);
+    const categoryProds = reactive((window.boData?.categoryProds) || []);
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
@@ -54,7 +54,7 @@ window.PdCategoryProdMng = {
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
     onMounted(() => {
       expandedSet.value = new Set(
-        (categories.value || []).filter(c => c.depth === 1).map(c => c.categoryId)
+        (categories || []).filter(c => c.depth === 1).map(c => c.categoryId)
       );
     });
     const isExpanded  = id => expandedSet.value.has(id);
@@ -63,12 +63,12 @@ window.PdCategoryProdMng = {
       if (s.has(id)) s.delete(id); else s.add(id);
       expandedSet.value = s;
     };
-    const expandAll   = () => { expandedSet.value = new Set((categories.value || []).map(c => c.categoryId)); };
+    const expandAll   = () => { expandedSet.value = new Set((categories || []).map(c => c.categoryId)); };
     const collapseAll = () => { expandedSet.value = new Set(); };
 
     /* 카테고리 경로 (재귀) */
     const getCatPath = (categoryId) => {
-      const cats = categories.value || [];
+      const cats = categories || [];
       const cat = window.safeArrayUtils.safeFind(cats, c => c.categoryId === categoryId);
       if (!cat) return '';
       if (!cat.parentId) return cat.categoryNm;
@@ -79,7 +79,7 @@ window.PdCategoryProdMng = {
     /* 모든 하위 ID (자신 포함) */
     const allDescendantIds = (categoryId) => {
       const result = [categoryId];
-      (categories.value || [])
+      (categories || [])
         .filter(c => c.parentId === categoryId)
         .forEach(c => result.push(...allDescendantIds(c.categoryId)));
       return result;
@@ -88,7 +88,7 @@ window.PdCategoryProdMng = {
     /* 트리 뱃지 수 */
     const totalProdCount = id => {
       const ids = allDescendantIds(id);
-      return (categoryProds.value || []).filter(cp => ids.includes(cp.categoryId)).length;
+      return (categoryProds || []).filter(cp => ids.includes(cp.categoryId)).length;
     };
 
     /* 탭별 수 (선택 카테고리 + 하위 합산) */
@@ -96,7 +96,7 @@ window.PdCategoryProdMng = {
       const map = {};
       if (!selectedCatId.value) return map;
       const ids = allDescendantIds(selectedCatId.value);
-      (categoryProds.value || [])
+      (categoryProds || [])
         .filter(cp => ids.includes(cp.categoryId))
         .forEach(cp => {
           const t = cp.categoryProdTypeCd || 'NORMAL';
@@ -108,7 +108,7 @@ window.PdCategoryProdMng = {
     /* 트리 플랫 */
     const catTreeFlat = computed(() => {
       const _ = expandedSet.value;
-      const cats = categories.value || [];
+      const cats = categories || [];
       const map = {};
       window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
       window.safeArrayUtils.safeForEach(cats, c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
@@ -125,10 +125,10 @@ window.PdCategoryProdMng = {
 
     /* 선택된 카테고리 */
     const selectedCatId = ref(null);
-    const selectedCat   = computed(() => (categories.value || []).find(c => c.categoryId === selectedCatId.value));
+    const selectedCat   = computed(() => (categories || []).find(c => c.categoryId === selectedCatId.value));
     const isLeafCat     = computed(() => {
       if (!selectedCatId.value) return false;
-      return !(categories.value || []).some(c => c.parentId === selectedCatId.value);
+      return !(categories || []).some(c => c.parentId === selectedCatId.value);
     });
     const selectNode = id => { selectedCatId.value = (selectedCatId.value === id) ? null : id; };
 
@@ -136,13 +136,13 @@ window.PdCategoryProdMng = {
     const allRows = reactive([]);
     let _seq = 1;
 
-    const getProd   = id => (products.value || []).find(p => p.productId === id);
+    const getProd   = id => (products || []).find(p => p.productId === id);
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '') : ''; };
 
     const loadAllRows = () => {
       if (!selectedCatId.value) { allRows.length = 0; return; }
       const ids = allDescendantIds(selectedCatId.value);
-      const links = (categoryProds.value || [])
+      const links = (categoryProds || [])
         .filter(cp => ids.includes(cp.categoryId))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       allRows.splice(0, allRows.length, ...links.map((cp, i) => ({
@@ -198,7 +198,7 @@ window.PdCategoryProdMng = {
     const pickerList   = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
       const used = new Set(tabRows.value.map(r => r.prodId));
-      return (products.value || []).filter(p => {
+      return (products || []).filter(p => {
         if (used.has(p.productId)) return false;
         if (!q) return true;
         return String(p.productId).includes(q) || (p.prodNm || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q);
@@ -230,12 +230,12 @@ window.PdCategoryProdMng = {
       const ids = allDescendantIds(selectedCatId.value);
       const ok = await props.showConfirm('저장', `[${selectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`);
       if (!ok) return;
-      if (!categoryProds.value) categoryProds.value = [];
+      if (!categoryProds) categoryProds = [];
       const others = window.safeArrayUtils.safeFilter(categoryProds, 
         cp => !(ids.includes(cp.categoryId) && (cp.categoryProdTypeCd || 'NORMAL') === activeTypeCd.value)
       );
       let seq2 = 0;
-      categoryProds.value = [
+      categoryProds = [
         ...others,
         ...tabRows.value.map(r => ({
           categoryProdId:     r.categoryProdId || `CP_${r.categoryId}_${activeTypeCd.value}_${seq2++}`,

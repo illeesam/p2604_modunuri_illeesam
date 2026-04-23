@@ -4,7 +4,7 @@ window.DpDispAreaMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const codes = ref((window.boData?.codes || []));
+    const codes = reactive((window.boData?.codes || []));
     const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -84,7 +84,7 @@ window.DpDispAreaMng = {
 
     const areaTree = computed(() => {
       const group = {};
-      (codes.value || [])
+      (codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA')
         .forEach(a => {
           const top = (a.codeValue || '').split('_')[0] || '(기타)';
@@ -107,7 +107,7 @@ window.DpDispAreaMng = {
 
     /* ── 영역 목록 (codes에서 DISP_AREA 필터) ── */
     const allAreas = computed(() =>
-      (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA')
+      (codes || []).filter(c => c.codeGrp === 'DISP_AREA')
     );
     const filtered = computed(() => {
       const kw = applied.kw.trim().toLowerCase();
@@ -166,7 +166,7 @@ window.DpDispAreaMng = {
     const doDelete = async (a) => {
       const ok = await props.showConfirm('삭제', `[${a.codeLabel}] 영역을 삭제하시겠습니까?`);
       if (!ok) return;
-      const codesData = codes.value;
+      const codesData = codes;
       const idx = codes.findIndex(x => x.codeId === a.codeId);
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === a.codeId) selectedId.value = null;
@@ -218,7 +218,7 @@ window.DpDispAreaMng = {
       const srcId = pageList.value[src]?.codeId;
       const tgtId = pageList.value[pageIdx]?.codeId;
       if (!srcId || !tgtId) { dragSrc.value = null; return; }
-      const codesData = codes.value;
+      const codesData = codes;
       const si = codes.findIndex(x => x.codeId === srcId);
       const ti = codes.findIndex(x => x.codeId === tgtId);
       if (si === -1 || ti === -1) { dragSrc.value = null; return; }
@@ -236,7 +236,7 @@ window.DpDispAreaMng = {
 
     /* 영역 하위 패널 목록 */
     const panelsOfArea = (areaCode) =>
-      (displays.value || [])
+      (displays || [])
         .filter(p => p.area === areaCode)
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 

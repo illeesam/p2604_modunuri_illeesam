@@ -4,7 +4,7 @@ window.PdCategoryMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const categories = ref(window.boDataProvider?.getCategories?.() || []);
+    const categories = reactive(window.boDataProvider?.getCategories?.() || []);
 
     /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
     const expandedSet = ref(new Set());
@@ -12,7 +12,7 @@ window.PdCategoryMng = {
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
     onMounted(() => {
       expandedSet.value = new Set(
-        (categories.value || []).filter(c => c.depth === 1).map(c => c.categoryId)
+        (categories || []).filter(c => c.depth === 1).map(c => c.categoryId)
       );
     });
     const isExpanded  = id => expandedSet.value.has(id);
@@ -21,7 +21,7 @@ window.PdCategoryMng = {
       if (s.has(id)) s.delete(id); else s.add(id);
       expandedSet.value = s;
     };
-    const expandAll  = () => { expandedSet.value = new Set(categories.value.map(c => c.categoryId)); };
+    const expandAll  = () => { expandedSet.value = new Set(categories.map(c => c.categoryId)); };
     const collapseAll = () => { expandedSet.value = new Set(); };
 
     /* ── 선택된 카테고리 (좌측 트리 클릭) ── */
@@ -34,7 +34,7 @@ window.PdCategoryMng = {
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
     const catTreeFlat = computed(() => {
       const _ = expandedSet.value; // reactive dependency
-      const cats = categories.value;
+      const cats = categories;
       const map = {};
       window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
       window.safeArrayUtils.safeForEach(cats, c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
@@ -232,20 +232,20 @@ window.PdCategoryMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       window.safeArrayUtils.safeForEach(dRows, r => {
-        const i = categories.value.findIndex(c => c.categoryId === r.categoryId);
-        if (i !== -1) categories.value.splice(i, 1);
+        const i = categories.findIndex(c => c.categoryId === r.categoryId);
+        if (i !== -1) categories.splice(i, 1);
       });
       window.safeArrayUtils.safeForEach(uRows, r => {
-        const i = categories.value.findIndex(c => c.categoryId === r.categoryId);
-        if (i !== -1) Object.assign(categories.value[i], {
+        const i = categories.findIndex(c => c.categoryId === r.categoryId);
+        if (i !== -1) Object.assign(categories[i], {
           categoryNm: r.categoryNm, parentId: r.parentId || null,
           depth: calcDepth(r.parentId), sortOrd: Number(r.sortOrd) || 1,
           description: r.description, status: r.status,
         });
       });
-      let nextId = Math.max(0, ...categories.value.map(c => c.categoryId));
+      let nextId = Math.max(0, ...categories.map(c => c.categoryId));
       window.safeArrayUtils.safeForEach(iRows, r => {
-        categories.value.push({
+        categories.push({
           categoryId: ++nextId, categoryNm: r.categoryNm,
           parentId: r.parentId || null, depth: calcDepth(r.parentId),
           sortOrd: Number(r.sortOrd) || 1, description: r.description,

@@ -6,7 +6,7 @@ window.DpDispUiMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const codes = ref((window.boData?.codes || []));
+    const codes = reactive((window.boData?.codes || []));
     const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -70,7 +70,7 @@ window.DpDispUiMng = {
 
     /* UI 목록 (codes DISP_UI) */
     const allUis = computed(() =>
-      (codes.value || []).filter(c => c.codeGrp === 'DISP_UI')
+      (codes || []).filter(c => c.codeGrp === 'DISP_UI')
     );
     /* 표시경로 (uiType 그룹 > 실제 UI 아이템) */
     const selectedTreeKey = ref('');
@@ -141,7 +141,7 @@ window.DpDispUiMng = {
     const doDelete = async (u) => {
       const ok = await props.showConfirm('삭제', `[${u.codeLabel}] UI를 삭제하시겠습니까?`);
       if (!ok) return;
-      const codesData = codes.value;
+      const codesData = codes;
       const idx = codes.findIndex(x => x.codeId === u.codeId);
       if (idx !== -1) codes.splice(idx, 1);
       if (selectedId.value === u.codeId) selectedId.value = null;
@@ -172,11 +172,11 @@ window.DpDispUiMng = {
 
     /* UI 하위 영역 개수 (영역의 uiCode 필드 기준) */
     const areaCountFor = (uiCode) =>
-      (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === uiCode).length;
+      (codes || []).filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === uiCode).length;
 
     /* UI 하위 영역 목록 */
     const areasOfUi = (uiCode) =>
-      (codes.value || [])
+      (codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === uiCode)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 

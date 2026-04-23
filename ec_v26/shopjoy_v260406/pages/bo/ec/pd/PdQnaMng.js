@@ -4,8 +4,8 @@ window.PdQnaMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = ref(window.boDataProvider?.getProducts?.() || []);
-    const members = ref(window.boDataProvider?.getMembers?.() || []);
+    const products = reactive(window.boDataProvider?.getProducts?.() || []);
+    const members = reactive(window.boDataProvider?.getMembers?.() || []);
     const qnas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -37,8 +37,8 @@ window.PdQnaMng = {
     const TYPE_LABELS = { SIZE:'사이즈', QUALITY:'소재/품질', DLIV:'배송', ETC:'기타' };
     const typeBadge   = t => ({ SIZE:'badge-blue', QUALITY:'badge-green', DLIV:'badge-orange', ETC:'badge-gray' }[t] || 'badge-gray');
 
-    const getProdNm = id => { const p = (products.value||[]).find(p => p.productId === id); return p ? p.productName : id; };
-    const getMemNm  = id => { const m = (members.value||[]).find(m => m.userId === id); return m ? m.name : id; };
+    const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : id; };
+    const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();

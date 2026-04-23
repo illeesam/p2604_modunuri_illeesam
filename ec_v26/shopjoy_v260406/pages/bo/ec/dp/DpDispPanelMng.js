@@ -7,8 +7,8 @@ window.DpDispPanelMng = {
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const displays = ref((window.boData?.displays || []));
-    const codes = ref((window.boData?.codes || []));
+    const displays = reactive((window.boData?.displays || []));
+    const codes = reactive((window.boData?.codes || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -135,7 +135,7 @@ window.DpDispPanelMng = {
           if (d.dispId !== k.slice(6)) return false;
         } else {
           // top-level prefix or sub-group
-          const codesData = codes.value || [];
+          const codesData = codes || [];
           const areaNm = (code) => {
             const c = window.safeArrayUtils.safeFind(codesData, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
             return c ? c.codeLabel : code;
@@ -166,7 +166,7 @@ window.DpDispPanelMng = {
       return true;
     }));
     const areas = computed(() =>
-      (codes.value || [])
+      (codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -239,8 +239,8 @@ window.DpDispPanelMng = {
     const doDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = displays.value.findIndex(x => x.dispId === d.dispId);
-      if (idx !== -1) displays.value.splice(idx, 1);
+      const idx = displays.findIndex(x => x.dispId === d.dispId);
+      if (idx !== -1) displays.splice(idx, 1);
       if (selectedId.value === d.dispId) selectedId.value = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/dp/panel/${d.dispId}`);
@@ -257,7 +257,7 @@ window.DpDispPanelMng = {
 
     /* 영역 레이블 조회 */
     const areaLabel = (code) => {
-      const found = (codes.value || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+      const found = (codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
       return found ? found.codeLabel : code;
     };
 
@@ -308,7 +308,7 @@ window.DpDispPanelMng = {
       const srcId = pageList.value[src]?.dispId;
       const tgtId = pageList.value[pageIdx]?.dispId;
       if (!srcId || !tgtId) { panelDragSrc.value = null; return; }
-      const arr = displays.value;
+      const arr = displays;
       const si = arr.findIndex(x => x.dispId === srcId);
       const ti = arr.findIndex(x => x.dispId === tgtId);
       if (si === -1 || ti === -1) { panelDragSrc.value = null; return; }
@@ -341,7 +341,7 @@ window.DpDispPanelMng = {
       if (widgetDragPanel.value !== dispId) return;
       const src = widgetDragSrcWi.value;
       if (src === null || src === wi) { widgetDragPanel.value = null; widgetDragSrcWi.value = null; return; }
-      const panel = window.safeArrayUtils.safeFind(displays.value, x => x.dispId === dispId);
+      const panel = window.safeArrayUtils.safeFind(displays, x => x.dispId === dispId);
       if (!panel?.rows) return;
       const moved = panel.rows.splice(src, 1)[0];
       panel.rows.splice(wi, 0, moved);
@@ -367,13 +367,13 @@ window.DpDispPanelMng = {
 
     /* 패널 목록 (영역별 그룹) */
     const panelTree = computed(() => {
-      const codesData = codes.value || [];
+      const codesData = codes || [];
       const areaNm = (code) => {
         const c = window.safeArrayUtils.safeFind(codesData, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;
       };
       const map = {};
-      (displays.value || []).forEach(p => {
+      (displays || []).forEach(p => {
         const area = p.area || '(미등록)';
         const top = area.split('_')[0] || '(기타)';
         const subKey = areaNm(area);

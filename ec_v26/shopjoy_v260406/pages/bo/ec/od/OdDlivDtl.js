@@ -8,7 +8,7 @@ window.OdDlivDtl = {
     const deliveries = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const claims = ref((window.boData?.claims || []));
+    const claims = reactive((window.boData?.claims || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -72,7 +72,7 @@ window.OdDlivDtl = {
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const relatedOrder  = computed(() => window.safeArrayUtils.safeFind((window.boData?.orders || []), o => o.orderId === form.orderId) || null);
-    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims.value || [], c => c.orderId === form.orderId));
+    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === form.orderId));
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
     const firstClaim = computed(() => window.safeArrayUtils.safeGet(relatedClaims.value || [], 0) || null);
 
@@ -89,10 +89,10 @@ window.OdDlivDtl = {
       const ok = await props.showConfirm(isNewDliv ? '등록' : '저장', isNewDliv ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewDliv) {
-        deliveries.value.push({ ...form });
+        deliveries.push({ ...form });
       } else {
-        const idx = deliveries.value.findIndex(x => x.dlivId === props.editId);
-        if (idx !== -1) Object.assign(deliveries.value[idx], { ...form });
+        const idx = deliveries.findIndex(x => x.dlivId === props.editId);
+        if (idx !== -1) Object.assign(deliveries[idx], { ...form });
       }
       try {
         const res = await (isNewDliv ? window.boApi.post(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }) : window.boApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }));

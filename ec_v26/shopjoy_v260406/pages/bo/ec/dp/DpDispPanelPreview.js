@@ -6,7 +6,7 @@ const _WP_DispPanelPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const codes = ref((window.boData?.codes || []));
+    const codes = reactive((window.boData?.codes || []));
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;
@@ -238,13 +238,13 @@ window.DpDispPanelPreview = {
     /* ── 트리 상태 ── */
     /* ── 패널 트리: prefix > 영역명 > 패널명 ── */
     const tree = computed(() => {
-      const codesData = codes.value || [];
+      const codesData = codes || [];
       const areaNm = (code) => {
         const c = window.safeArrayUtils.safeFind(codes, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
         return c ? c.codeLabel : code;
       };
       const map = {};
-      (displays.value || []).forEach(p => {
+      (displays || []).forEach(p => {
         const area = p.area || '(미등록)';
         const top  = area.split('_')[0] || '(기타)';
         const subKey = areaNm(area);

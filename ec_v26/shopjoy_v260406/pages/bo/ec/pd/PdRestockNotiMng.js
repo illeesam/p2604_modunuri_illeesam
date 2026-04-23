@@ -4,8 +4,8 @@ window.PdRestockNotiMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = ref(window.boDataProvider?.getProducts?.() || []);
-    const members = ref(window.boDataProvider?.getMembers?.() || []);
+    const products = reactive(window.boDataProvider?.getProducts?.() || []);
+    const members = reactive(window.boDataProvider?.getMembers?.() || []);
     const restockNotis = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -33,8 +33,8 @@ window.PdRestockNotiMng = {
     const pager      = reactive({ page: 1, size: 20 });
     const checkedIds = reactive(new Set());
 
-    const getProdNm = id => { const p = (products.value||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
-    const getMemNm  = id => { const m = (members.value||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
+    const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
+    const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
 
     const filtered = computed(() => {
       const kw = applied.prod.toLowerCase();

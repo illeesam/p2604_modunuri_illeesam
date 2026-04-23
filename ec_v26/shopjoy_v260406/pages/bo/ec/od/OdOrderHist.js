@@ -8,8 +8,8 @@ window.OdOrderHist = {
     const orders = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const claims = ref((window.boData?.claims || []));
-    const deliveries = ref((window.boData?.deliveries || []));
+    const claims = reactive((window.boData?.claims || []));
+    const deliveries = reactive((window.boData?.deliveries || []));
 
     // onMounted에서 API 로드
     onMounted(async () => {
@@ -43,8 +43,8 @@ window.OdOrderHist = {
       }
     });
 
-    const relatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries.value || [], d => d.orderId === props.orderId) || null);
-    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims.value || [], c => c.orderId === props.orderId));
+    const relatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
+    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === props.orderId));
     const dlivHistory   = computed(() => {
       if (!relatedDliv.value) return [];
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);

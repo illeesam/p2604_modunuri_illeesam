@@ -4,7 +4,7 @@ window.DpDispAreaDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const codes = ref((window.boData?.codes || []));
+    const codes = reactive((window.boData?.codes || []));
     const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
@@ -77,7 +77,7 @@ window.DpDispAreaDtl = {
     /* ── 로드 ── */
     onMounted(async () => {
       if (!isNew.value) {
-        const a = (codes.value || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
+        const a = (codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
         if (a) {
           Object.assign(form, {
             codeId: a.codeId, codeGrp: a.codeGrp,
@@ -95,7 +95,7 @@ window.DpDispAreaDtl = {
           });
         }
       } else {
-        const areas = (codes.value || []).filter(c => c.codeGrp === 'DISP_AREA');
+        const areas = (codes || []).filter(c => c.codeGrp === 'DISP_AREA');
         form.sortOrd = areas.length ? Math.max(...areas.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -109,7 +109,7 @@ window.DpDispAreaDtl = {
 
     /* ── 연결된 패널 ── */
     const relatedPanels = computed(() =>
-      (displays.value || [])
+      (displays || [])
         .filter(p => p.area === form.codeValue)
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     );
@@ -119,7 +119,7 @@ window.DpDispAreaDtl = {
     const pickKw   = ref('');
     const pickSel  = ref(new Set());
     const availablePanels = computed(() => {
-      const all = (displays.value || []);
+      const all = (displays || []);
       const kw  = pickKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, p => {
         if (p.area === form.codeValue) return false; /* 이미 포함된 것 제외 */
@@ -139,7 +139,7 @@ window.DpDispAreaDtl = {
     const onPanelPicked = (p) => {
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       p.area = form.codeValue;
-      const list = (displays.value || []).filter(x => x.area === form.codeValue);
+      const list = (displays || []).filter(x => x.area === form.codeValue);
       window.safeArrayUtils.safeForEach(list, (x, i) => { x.sortOrder = i + 1; });
       props.showToast && props.showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
       pickOpen.value = false;
@@ -154,7 +154,7 @@ window.DpDispAreaDtl = {
       const ids = Array.from(pickSel.value);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
-      const list = displays.value || [];
+      const list = displays || [];
       window.safeArrayUtils.safeForEach(ids, id => {
         const p = window.safeArrayUtils.safeFind(list, x => x.dispId === id);
         if (p) p.area = form.codeValue;
@@ -235,7 +235,7 @@ window.DpDispAreaDtl = {
       const isNewArea = isNew.value;
       const ok = await props.showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
       if (!ok) return;
-      const codesData = codes.value;
+      const codesData = codes;
       if (isNewArea) {
         const newId = window.boCmUtil.nextId(codesData, 'codeId');
         codesData.push({ ...form, codeId: newId });

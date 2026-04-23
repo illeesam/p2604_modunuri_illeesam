@@ -5,7 +5,7 @@ window.PmEventDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const products = ref(window.boDataProvider?.getProducts?.() || []);
+    const products = reactive(window.boDataProvider?.getProducts?.() || []);
     const events = reactive([]);
     const loading = ref(false);
     const error = ref(null);
