@@ -11,7 +11,7 @@ window.useBoRoleStore = Pinia.defineStore('boRole', {
   },
 
   getters: {
-    isEmpty: (s) => s.roles.length === 0,
+    isEmpty: (s) => !Array.isArray(s.roles) || s.roles.length === 0,
   },
 
   actions: {

@@ -10,7 +10,7 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
   },
 
   getters: {
-    isEmpty: (s) => s.codes.length === 0,
+    isEmpty: (s) => !Array.isArray(s.codes) || s.codes.length === 0,
     // 코드 그룹별 조회
     getCodesByGroup: (s) => (grpVal) => {
       return s.codes.filter(c => c.codeGrp === grpVal);

@@ -379,7 +379,7 @@
         const io = _instantOrderToParams(instantOrder.value);
         Object.entries(io).forEach(([k, v]) => params.set(k, v));
       }
-      if (id === 'order' && cartIds.value?.length) {
+      if (id === 'order' && Array.isArray(cartIds.value) && cartIds.value.length) {
         params.set('cartIds', cartIds.value.join(','));
       }
       if (id === 'eventView' && viewEditId.value != null) {

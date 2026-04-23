@@ -11,7 +11,7 @@ window.useBoMenuStore = Pinia.defineStore('boMenu', {
   },
 
   getters: {
-    isEmpty: (s) => s.menus.length === 0,
+    isEmpty: (s) => !Array.isArray(s.menus) || s.menus.length === 0,
     getMenuById: (s) => (menuId) => s.menus.find(m => m.id === menuId),
   },
 

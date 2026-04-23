@@ -11,17 +11,20 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
   },
 
   getters: {
-    isEmpty: (s) => s.codes.length === 0,
+    isEmpty: (s) => !Array.isArray(s.codes) || s.codes.length === 0,
     // 코드 그룹별 조회
     getCodesByGroup: (s) => (grpVal) => {
+      if (!Array.isArray(s.codes)) return [];
       return s.codes.filter(c => c.codeGrp === grpVal);
     },
     // 특정 코드 값 조회
     getCodeByVal: (s) => (grpVal, codeVal) => {
+      if (!Array.isArray(s.codes)) return null;
       return s.codes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
     },
     // 특정 코드명 조회
     getCodeNmByVal: (s) => (grpVal, codeVal) => {
+      if (!Array.isArray(s.codes)) return codeVal;
       const code = s.codes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
       return code?.codeNm || codeVal;
     },
