@@ -112,6 +112,9 @@ public class CmAppStoreDataService {
         infoMap.put("authUser-userId", authUser.userId());
         infoMap.put("authUser-roleId", authUser.roleId());
         infoMap.put("authUser-siteId", authUser.siteId());
+        infoMap.put("authUser-memberId", authUser.memberId());
+        infoMap.put("authUser-vendorId", authUser.vendorId());
+        infoMap.put("authUser-roles", authUser.roles());
         resultMap.put("infoMap", infoMap);
 
         if (requestedItems.contains(CmStoreConst.SY_AUTH)) {

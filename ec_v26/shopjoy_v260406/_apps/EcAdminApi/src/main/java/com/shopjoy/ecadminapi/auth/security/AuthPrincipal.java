@@ -29,6 +29,7 @@ public record AuthPrincipal(
         String accessToken,         // ★ 액세스 토큰
         String refreshToken,        // ★ 리프레시 토큰
         String siteId,              // ★ 사이트 아이디
+        String deptId,              // ★ 부서 아이디 (sy_user.dept_id, BO 전용)
         List<String> roles,         // ★ 권한 목록 (ROLE_*)
         String memberId,            // 회원 아이디 (ec_member.member_id, FO 전용)
         String vendorId,            // 업체 아이디
@@ -53,6 +54,7 @@ public record AuthPrincipal(
                 "",                     // accessToken
                 "",                     // refreshToken
                 "",                     // siteId
+                "",                     // deptId
                 List.of(),              // roles
                 "",                     // memberId
                 "",                     // vendorId

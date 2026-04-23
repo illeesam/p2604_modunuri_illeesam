@@ -95,6 +95,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 CmUtil.nvl(accessToken),                // accessToken
                                 CmUtil.nvl(refreshToken),               // refreshToken
                                 CmUtil.nvl(siteId),                     // siteId
+                                CmUtil.nvl(deptId),                     // deptId
                                 CmUtil.nvlList(roles),                  // roles
                                 CmUtil.nvl(memberId),                   // memberId
                                 CmUtil.nvl(vendorId),                   // vendorId

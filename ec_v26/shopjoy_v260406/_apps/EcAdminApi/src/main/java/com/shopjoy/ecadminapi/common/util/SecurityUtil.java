@@ -41,7 +41,7 @@ public final class SecurityUtil {
         AuthPrincipal p = currentPrincipal();
         if (p != null) return p;
         return new AuthPrincipal(
-            "", "", null, "", "", "", "", "", List.of(), "", "", "", "", ""
+            "", "", null, "", "", "", "", "", "", List.of(), "", "", "", "", ""
         );
     }
 
