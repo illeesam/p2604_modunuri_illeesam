@@ -131,18 +131,19 @@ window.PmVoucherDtl = {
     };
 
     /* SNS 전송 */
-    const snsModal = ref({ show: false, channel: 'kakao' });
+    const snsModal = reactive({ show: false, channel: 'kakao' });
     const snsMsg = ref('');
     const openSnsModal = (ch) => {
       snsMsg.value = `${form.voucherNm}\n액면가: ${(form.voucherAmt||0).toLocaleString()}원\n판매가: ${(form.salePrice||0).toLocaleString()}원`;
-      snsModal.value = { show: true, channel: ch };
+      snsModal.show = true;
+      snsModal.channel = ch;
     };
     const sendSns = async () => {
-      const ok = await props.showConfirm('SNS전송', `${form.voucherNm}을 ${snsModal.value.channel}로 전송하시겠습니까?`);
+      const ok = await props.showConfirm('SNS전송', `${form.voucherNm}을 ${snsModal.channel}로 전송하시겠습니까?`);
       if (!ok) return;
-      snsModal.value.show = false;
+      snsModal.show = false;
       try {
-        const res = await window.boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.value.channel, message: snsMsg.value });
+        const res = await window.boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.channel, message: snsMsg.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('SNS전송되었습니다.', 'success');
       } catch (err) {

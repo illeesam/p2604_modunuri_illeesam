@@ -3,10 +3,10 @@ window.BlogEdit = {
   name: 'BlogEdit',
   props: ['navigate', 'config', 'editId', 'showToast'],
   setup(props) {
-    const { ref, computed, onMounted } = Vue;
+    const { ref, computed, reactive, onMounted } = Vue;
 
     const isEdit = computed(() => !!props.editId);
-    const form = ref({
+    const form = reactive({
       title: '',
       category: 'fashion',
       excerpt: '',
@@ -25,19 +25,19 @@ window.BlogEdit = {
     onMounted(() => {
       if (isEdit.value) {
         // 목업: editId에 따른 데이터 로드
-        form.value = {
+        Object.assign(form, {
           title: '2026 봄 트렌드 컬러 가이드',
           category: 'trend',
           excerpt: '올 봄 주목해야 할 트렌드 컬러와 컬러 매칭 방법을 알아봅니다.',
           body: '올 봄 주목해야 할 트렌드 컬러는 파스텔 라벤더, 소프트 민트, 코랄 핑크입니다.\n\n파스텔 컬러는 부드러운 분위기를 연출하면서도 세련된 느낌을 줍니다.',
           tags: '트렌드, 컬러, 2026SS',
-        };
+        });
       }
     });
 
     const save = () => {
-      if (!form.value.title.trim()) { props.showToast?.('제목을 입력해주세요.', 'error'); return; }
-      if (!form.value.body.trim()) { props.showToast?.('본문을 입력해주세요.', 'error'); return; }
+      if (!form.title.trim()) { props.showToast?.('제목을 입력해주세요.', 'error'); return; }
+      if (!form.body.trim()) { props.showToast?.('본문을 입력해주세요.', 'error'); return; }
       props.showToast?.(isEdit.value ? '수정되었습니다.' : '등록되었습니다.', 'success');
       props.navigate('blog');
     };
