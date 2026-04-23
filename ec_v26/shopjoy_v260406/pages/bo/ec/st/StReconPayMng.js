@@ -15,7 +15,8 @@ window.StReconPayMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const orders = computed(() => orders.value || []);
+    const orderList = reactive((window.boData?.orders || []));
+    const orders = computed(() => orderList);
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 

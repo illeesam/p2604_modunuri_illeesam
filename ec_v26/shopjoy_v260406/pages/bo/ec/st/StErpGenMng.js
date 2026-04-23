@@ -9,8 +9,10 @@ window.StErpGenMng = {
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
 
-    const orders  = computed(() => orders.value  || []);
-    const vendors = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
+    const orderList = reactive((window.boData?.orders || []));
+    const vendorList = reactive((window.boData?.vendors || []));
+    const orders  = computed(() => orderList);
+    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const previewRows = computed(() => {
       return vendors.value.map(v => {

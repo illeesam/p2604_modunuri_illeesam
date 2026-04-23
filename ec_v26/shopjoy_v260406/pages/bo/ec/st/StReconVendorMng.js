@@ -15,8 +15,10 @@ window.StReconVendorMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const orders  = computed(() => orders.value  || []);
-    const vendors = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
+    const orderList = reactive((window.boData?.orders || []));
+    const vendorList = reactive((window.boData?.vendors || []));
+    const orders  = computed(() => orderList);
+    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 

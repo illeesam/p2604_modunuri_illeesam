@@ -16,7 +16,8 @@ window.StSettleEtcAdjMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const vendors = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
+    const vendorList = reactive((window.boData?.vendors || []));
+    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const etcAdjList = reactive([
       { adjId: 'ETCADJ-001', adjDate: '2026-04-12', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '위약금', adjAmt: -50000, reason: '납품 지연 위약금', aprvStatus: '승인', regUserNm: '이관리자' },

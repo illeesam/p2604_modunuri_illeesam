@@ -23,7 +23,8 @@ window.SyMemberLoginHist = {
     const searchTokenAction = ref('');
     const pager = reactive({ page: 1, size: 20 });
 
-    const members = computed(() => members.value || []);
+    const memberList = reactive((window.boData?.members || []));
+    const members = computed(() => memberList);
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17','Android 14'];
     const BROWSER_LIST = ['Chrome 123','Safari 17','Edge 122','Firefox 124','Samsung Browser 24'];

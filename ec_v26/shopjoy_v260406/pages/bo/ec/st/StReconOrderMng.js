@@ -15,8 +15,10 @@ window.StReconOrderMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const orders  = computed(() => orders.value  || []);
-    const vendors = computed(() => vendors.value || []);
+    const orderList = reactive((window.boData?.orders || []));
+    const vendorList = reactive((window.boData?.vendors || []));
+    const orders  = computed(() => orderList);
+    const vendors = computed(() => vendorList);
 
     const searchKw   = ref('');
     const searchDiff = ref('');

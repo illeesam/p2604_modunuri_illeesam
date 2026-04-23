@@ -33,11 +33,16 @@ window.StStatusMng = {
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     /* ── 원본 데이터 ── */
-    const orders   = computed(() => orders.value   || []);
-    const claims   = computed(() => claims.value   || []);
-    const vendors  = computed(() => (vendors.value || []).filter(v => v.vendorType === '판매업체'));
-    const coupons  = computed(() => coupons.value  || []);
-    const cacheList= computed(() => cacheList.value || []);
+    const orderList = reactive((window.boData?.orders || []));
+    const claimList = reactive((window.boData?.claims || []));
+    const vendorList = reactive((window.boData?.vendors || []));
+    const couponList = reactive((window.boData?.coupons || []));
+    const cacheDataList = reactive((window.boData?.caches || []));
+    const orders   = computed(() => orderList);
+    const claims   = computed(() => claimList);
+    const vendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const coupons  = computed(() => couponList);
+    const cacheList= computed(() => cacheDataList);
 
     const COMM_RATE = 0.10; // 수수료율 10%
 

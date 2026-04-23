@@ -23,7 +23,8 @@ window.SyUserLoginHist = {
     const searchTokenAction = ref('');
     const pager = reactive({ page: 1, size: 20 });
 
-    const boUsers = computed(() => boUsers.value || []);
+    const boUserList = reactive((window.boData?.boUsers || []));
+    const boUsers = computed(() => boUserList);
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17'];
     const BROWSER_LIST = ['Chrome 123','Edge 122','Safari 17','Firefox 124','Chrome 122'];
