@@ -10,7 +10,6 @@ CREATE TABLE sy_vendor_user (
     site_id         VARCHAR(21),                            -- sy_site.site_id
     vendor_id       VARCHAR(21)     NOT NULL,               -- sy_vendor.vendor_id
     user_id         VARCHAR(21),                            -- sy_user.user_id (NULL = 비로그인 단순 담당자)
-    role_id         VARCHAR(21),                            -- sy_role.role_id (판매업체/배송업체 역할)
     member_nm       VARCHAR(50)     NOT NULL,               -- 이름
     position_cd     VARCHAR(20),                            -- 코드: POSITION (대표/이사/팀장/사원 등)
     vendor_user_dept_nm VARCHAR(100),                           -- 부서/팀명
@@ -37,7 +36,6 @@ COMMENT ON COLUMN sy_vendor_user.vendor_user_id IS '판매/배송업체사용자
 COMMENT ON COLUMN sy_vendor_user.site_id        IS '사이트ID';
 COMMENT ON COLUMN sy_vendor_user.vendor_id      IS '판매/배송업체ID (sy_vendor.vendor_id)';
 COMMENT ON COLUMN sy_vendor_user.user_id        IS '사용자ID (sy_user.user_id, NULL=비로그인)';
-COMMENT ON COLUMN sy_vendor_user.role_id        IS '역할ID (sy_role.role_id) - 판매업체/배송업체 역할 트리에서 선택';
 COMMENT ON COLUMN sy_vendor_user.member_nm      IS '이름';
 COMMENT ON COLUMN sy_vendor_user.position_cd    IS '직위/직책 (코드: POSITION)';
 COMMENT ON COLUMN sy_vendor_user.vendor_user_dept_nm IS '부서/팀명';
@@ -58,7 +56,6 @@ COMMENT ON COLUMN sy_vendor_user.upd_date       IS '수정일';
 
 CREATE INDEX idx_sy_vendor_user_vendor ON sy_vendor_user (vendor_id);
 CREATE INDEX idx_sy_vendor_user_user   ON sy_vendor_user (user_id);
-CREATE INDEX idx_sy_vendor_user_role   ON sy_vendor_user (role_id);
 CREATE INDEX idx_sy_vendor_user_status ON sy_vendor_user (vendor_user_status_cd);
 
 -- ============================================================
@@ -66,3 +63,4 @@ CREATE INDEX idx_sy_vendor_user_status ON sy_vendor_user (vendor_user_status_cd)
 -- ============================================================
 -- [CODES] sy_vendor_user.position_cd (직위/직책) : POSITION { CEO:대표, DIRECTOR:이사, MANAGER:담당자, EMPLOYEE:직원 }
 -- [CODES] sy_vendor_user.vendor_user_status_cd (상태) : VENDOR_USER_STATUS { ACTIVE:재직, LEFT:퇴직, SUSPENDED:정지 }
+-- [REF]   역할 배정은 sy_vendor_user_role 테이블 참조

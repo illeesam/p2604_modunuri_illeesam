@@ -22,7 +22,8 @@
 - `sy_brand.sql` — 브랜드 (brand_remark)
 - `sy_vendor.sql` — 업체 마스터
 - `sy_vendor_content.sql` — 업체 소개 내용
-- `sy_vendor_user.sql` — 업체 담당자
+- `sy_vendor_user.sql` — 업체 담당자 (role_id 제거됨)
+- `sy_vendor_user_role.sql` — 업체 담당자-역할 연결 (M:N)
 - `sy_vendor_brand.sql` — 업체-브랜드 연결
 
 ### 사용자/조직/권한

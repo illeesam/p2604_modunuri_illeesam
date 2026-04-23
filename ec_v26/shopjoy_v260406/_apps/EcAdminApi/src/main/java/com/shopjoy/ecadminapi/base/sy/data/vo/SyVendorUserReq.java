@@ -18,7 +18,6 @@ public class SyVendorUserReq {
     private String siteId;
     private String vendorId;
     private String userId;
-    private String roleId;
     private String memberNm;
     private String positionCd;
     private String vendorUserDeptNm;
@@ -43,7 +42,6 @@ public class SyVendorUserReq {
                 .siteId(siteId)
                 .vendorId(vendorId)
                 .userId(userId)
-                .roleId(roleId)
                 .memberNm(memberNm)
                 .positionCd(positionCd)
                 .vendorUserDeptNm(vendorUserDeptNm)

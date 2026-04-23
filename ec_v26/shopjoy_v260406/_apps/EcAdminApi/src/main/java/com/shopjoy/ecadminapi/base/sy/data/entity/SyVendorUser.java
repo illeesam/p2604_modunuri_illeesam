@@ -29,9 +29,6 @@ public class SyVendorUser {
     @Column(name = "user_id", length = 21)
     private String userId;
 
-    @Column(name = "role_id", length = 21)
-    private String roleId;
-
     @Column(name = "member_nm", length = 50, nullable = false)
     private String memberNm;
 

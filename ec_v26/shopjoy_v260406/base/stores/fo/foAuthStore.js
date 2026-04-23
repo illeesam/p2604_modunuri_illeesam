@@ -52,6 +52,9 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
           if (this.user) {
             localStorage.setItem('modu-fo-user', JSON.stringify(this.user));
           }
+          if (this.tempAuthInfo) {
+            localStorage.setItem('modu-fo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
+          }
         } catch (e) {
           console.error('[foAuthStore] setAuth localStorage error:', e);
         }
@@ -118,6 +121,7 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
         localStorage.removeItem('modu-fo-access_token');
         localStorage.removeItem('modu-fo-refresh_token');
         localStorage.removeItem('modu-fo-user');
+        localStorage.removeItem('modu-fo-tempAuthInfo');
       } catch (e) {
         console.error('[foAuthStore] clearSession localStorage error:', e);
       }
@@ -128,10 +132,12 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
       this.refreshToken = '';
       this.accessExpiresIn = 0;
       this.refreshExpiresIn = 0;
+      this.tempAuthInfo = null;
 
       try {
         localStorage.removeItem('modu-fo-access_token');
         localStorage.removeItem('modu-fo-refresh_token');
+        localStorage.removeItem('modu-fo-tempAuthInfo');
       } catch (e) {
         console.error('[foAuthStore] clear localStorage error:', e);
       }

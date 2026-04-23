@@ -202,6 +202,7 @@
           localStorage.removeItem('modu-bo-access_token');
           localStorage.removeItem('modu-bo-refresh_token');
           localStorage.removeItem('modu-bo-user');
+          localStorage.removeItem('modu-bo-tempAuthInfo');
         } catch (_) {}
       },
 
@@ -236,6 +237,7 @@
             if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
             if (this.accessExpiresIn) localStorage.setItem('modu-bo-access_expires_in', this.accessExpiresIn.toString());
             if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refresh_expires_in', this.refreshExpiresIn.toString());
+            if (this.tempAuthInfo) localStorage.setItem('modu-bo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
           } catch (_) {}
         }
       },

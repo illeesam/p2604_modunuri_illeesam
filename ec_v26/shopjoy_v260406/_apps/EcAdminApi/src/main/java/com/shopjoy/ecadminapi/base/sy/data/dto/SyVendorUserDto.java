@@ -14,7 +14,6 @@ public class SyVendorUserDto {
     private String siteId;
     private String vendorId;
     private String userId;
-    private String roleId;
     private String memberNm;
     private String positionCd;
     private String vendorUserDeptNm;

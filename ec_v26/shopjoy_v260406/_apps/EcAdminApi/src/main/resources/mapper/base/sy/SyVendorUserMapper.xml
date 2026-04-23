@@ -24,14 +24,12 @@
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
             , usr.user_nm AS user_nm
-            , rol.role_nm AS role_nm
             , cd_p.code_label AS position_cd_nm
             , cd_vms.code_label AS vendor_user_status_cd_nm
         FROM sy_vendor_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
             LEFT JOIN sy_user usr ON usr.user_id = u.user_id
-            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
             LEFT JOIN sy_code cd_p ON cd_p.code_grp = 'POSITION' AND cd_p.code_value = u.position_cd
             LEFT JOIN sy_code cd_vms ON cd_vms.code_grp = 'VENDOR_MEMBER_STATUS' AND cd_vms.code_value = u.vendor_user_status_cd
         WHERE u.vendor_user_id = #{id}
@@ -43,14 +41,12 @@
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
             , usr.user_nm AS user_nm
-            , rol.role_nm AS role_nm
             , cd_p.code_label AS position_cd_nm
             , cd_vms.code_label AS vendor_user_status_cd_nm
         FROM sy_vendor_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
             LEFT JOIN sy_user usr ON usr.user_id = u.user_id
-            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
             LEFT JOIN sy_code cd_p ON cd_p.code_grp = 'POSITION' AND cd_p.code_value = u.position_cd
             LEFT JOIN sy_code cd_vms ON cd_vms.code_grp = 'VENDOR_MEMBER_STATUS' AND cd_vms.code_value = u.vendor_user_status_cd
             <include refid="syVendorUserCond"/>
@@ -72,14 +68,12 @@
             , ste.site_nm AS site_nm
             , vnd.vendor_nm AS vendor_nm
             , usr.user_nm AS user_nm
-            , rol.role_nm AS role_nm
             , cd_p.code_label AS position_cd_nm
             , cd_vms.code_label AS vendor_user_status_cd_nm
         FROM sy_vendor_user u
             LEFT JOIN sy_site ste ON ste.site_id = u.site_id
             LEFT JOIN sy_vendor vnd ON vnd.vendor_id = u.vendor_id
             LEFT JOIN sy_user usr ON usr.user_id = u.user_id
-            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
             LEFT JOIN sy_code cd_p ON cd_p.code_grp = 'POSITION' AND cd_p.code_value = u.position_cd
             LEFT JOIN sy_code cd_vms ON cd_vms.code_grp = 'VENDOR_MEMBER_STATUS' AND cd_vms.code_value = u.vendor_user_status_cd
             <include refid="syVendorUserCond"/>
@@ -107,7 +101,6 @@
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="vendorId != null">vendor_id = #{vendorId},</if>
             <if test="userId != null">user_id = #{userId},</if>
-            <if test="roleId != null">role_id = #{roleId},</if>
             <if test="memberNm != null">member_nm = #{memberNm},</if>
             <if test="positionCd != null">position_cd = #{positionCd},</if>
             <if test="vendorUserDeptNm != null">vendor_user_dept_nm = #{vendorUserDeptNm},</if>

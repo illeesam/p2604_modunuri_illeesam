@@ -191,6 +191,10 @@ public class CmAppStoreDataService {
         tempAuthInfo.put("authUser-loginTime", authUser.loginTime());
         tempAuthInfo.put("authUser-deptId", authUser.deptId());
         tempAuthInfo.put("authUser-memberGrade", authUser.memberGrade());
+        String at = authUser.accessToken();
+        String rt = authUser.refreshToken();
+        tempAuthInfo.put("authUser-accessToken-tail", "..." + at.substring(Math.max(0, at.length() - 10)) + " (" + at.length() + ")");
+        tempAuthInfo.put("authUser-refreshToken-tail", "..." + rt.substring(Math.max(0, rt.length() - 10)) + " (" + rt.length() + ")");
 
         return StoreAuth.builder()
                 .accessToken(CmUtil.nvl(authUser.accessToken())) // 액세스 토큰
