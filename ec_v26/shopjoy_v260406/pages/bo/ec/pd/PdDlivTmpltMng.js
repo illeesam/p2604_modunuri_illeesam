@@ -4,6 +4,7 @@ window.PdDlivTmpltMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const dlivTmplts = ref((window.boData?.dlivTmplts || []));
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchMethod = ref('');
