@@ -4,6 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DispUi 미리보기 (관리자)</title>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       📌 리소스 로드 우선순위 정렬 기준
+       ═══════════════════════════════════════════════════════════════════════════
+       ■ HEAD 섹션 (CDN 및 초기 리소스)
+         H1.1: CDN Core Runtime (Vue)
+         H1.2: CDN Libraries (marked, axios, yup)
+         H1.3: Fonts & CSS (Google Fonts, boGlobalStyle)
+
+       ■ BODY 섹션 - B2.x: 공통부 (필수 기초)
+         B2.1: Axios & 유틸 래퍼
+
+       ■ BODY 섹션 - B3.x: 컴포넌트부 (UI 기반)
+         B3.1: Base 컴포넌트 & 에러 핸들러
+         B3.2: 전시 컴포넌트 계층 (DispX01~X04)
+
+       ■ BODY 섹션 - B4.x: Display UI Pages
+         B4.1: 전시 UI 페이지 (DispUi01~06)
+         B4.2: Display UI Page (DispUiPage)
+
+       ■ BODY 섹션 - B99: 메인 앱 부트스트랩 (반드시 마지막)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- ■ H1.1: CDN Core Runtime ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+
+  <!-- ■ H1.2: CDN Libraries ■ -->
+  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+
+  <!-- ■ H1.3: Fonts & CSS ■ -->
+  <link rel="stylesheet" href="assets/css/boGlobalStyle01.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+
+  <!-- ■ H2.1: Site Config & Init Scripts ■ -->
   <script>
     /* ═══════════════════════════════════════════════════════════════════
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
@@ -17,44 +53,8 @@
       }
     });
   </script>
-  <!-- ■ 1단계: Core Runtime ■ -->
-  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
 
-  <!-- ■ 2단계: Libraries ■ -->
-  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
-  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
-  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
-
-  <!-- ■ 3단계: Axios & Utility Wrappers ■ -->
-  <script src="utils/boAxios.js"></script>
-  <script src="utils/boCmUtil.js"></script>
-
-  <!-- ■ 4단계: Base Components ■ -->
-  <script src="components/comp/BaseComp.js"></script>
-
-  <!-- ■ 5단계: Error Handler ■ -->
-  <script src="pages/base/boError404.js"></script>
-
-  <!-- ■ 6단계: Display Components Hierarchy ■ -->
-  <script src="components/disp/DispX01Ui.js"></script>
-  <script src="components/disp/DispX02Area.js"></script>
-  <script src="components/disp/DispX03Panel.js"></script>
-  <script src="components/disp/DispX04Widget.js"></script>
-
-  <!-- ■ 7단계: Display Pages (가나다순) ■ -->
-  <script src="pages/fo/xd/DispUi01.js"></script>
-  <script src="pages/fo/xd/DispUi02.js"></script>
-  <script src="pages/fo/xd/DispUi03.js"></script>
-  <script src="pages/fo/xd/DispUi04.js"></script>
-  <script src="pages/fo/xd/DispUi05.js"></script>
-  <script src="pages/fo/xd/DispUi06.js"></script>
-
-  <!-- ■ 8단계: Display UI Page ■ -->
-  <script src="pages/fo/xd/DispUiPage.js"></script>
-
-  <!-- ■ CSS (최상단) ■ -->
-  <link rel="stylesheet" href="assets/css/boGlobalStyle01.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <!-- ■ H3.1: Loading Indicator Styles ■ -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
@@ -75,6 +75,33 @@
     <div class="txt">로딩 중…</div>
   </div>
   <div id="app"></div>
+
+  <!-- ■ B2.1: Axios & Utility Wrappers ■ -->
+  <script src="utils/boAxios.js"></script>
+  <script src="utils/boCmUtil.js"></script>
+
+  <!-- ■ B3.1: Base Components & Error Handlers ■ -->
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="pages/base/boError404.js"></script>
+
+  <!-- ■ B3.2: Display Hierarchy Components ■ -->
+  <script src="components/disp/DispX01Ui.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <!-- ■ B4.1: Display UI Pages (가나다순) ■ -->
+  <script src="pages/fo/xd/DispUi01.js"></script>
+  <script src="pages/fo/xd/DispUi02.js"></script>
+  <script src="pages/fo/xd/DispUi03.js"></script>
+  <script src="pages/fo/xd/DispUi04.js"></script>
+  <script src="pages/fo/xd/DispUi05.js"></script>
+  <script src="pages/fo/xd/DispUi06.js"></script>
+
+  <!-- ■ B4.2: Display UI Page ■ -->
+  <script src="pages/fo/xd/DispUiPage.js"></script>
+
+  <!-- ■ B99: Main App Bootstrap ■ -->
   <script>
     const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 

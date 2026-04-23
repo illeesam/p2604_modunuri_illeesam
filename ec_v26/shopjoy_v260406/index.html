@@ -5,12 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShopJoy - 쇼핑의 즐거움</title>
   <meta name="description" content="트렌디한 의류를 합리적인 가격으로. ShopJoy에서 나만의 스타일을 완성하세요.">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       📌 리소스 로드 우선순위 정렬 기준 (가나다순 보조)
+       ═══════════════════════════════════════════════════════════════════════════
+       ■ HEAD 섹션 (CDN 및 초기 리소스)
+         H1.1: CDN Core Runtime (Vue, Pinia 등 기본 런타임)
+         H1.2: CDN Libraries (marked, crypto-js, axios 등)
+         H1.3: Fonts & CSS (Google Fonts, 동적 CSS 로드)
+
+       ■ BODY 섹션 - B2.x: 공통부 (필수 기초)
+         B2.1: 성능모니터링 & 안전유틸 (perfUtil, safeUtil)
+         B2.2: Axios & 유틸 래퍼 (foAxios, foCmUtil)
+         B2.3: 설정 & 인증 (foConfig, foAuth)
+
+       ■ BODY 섹션 - B3.x: 컴포넌트부 (UI 기반)
+         B3.1: Pinia 스토어 & 상태관리 (가나다순)
+         B3.2: Layout 컴포넌트 (Header, Sidebar, Footer)
+         B3.3: Base 컴포넌트 & 모달 (BaseComp, BaseModal)
+         B3.4: 전시 컴포넌트 계층 (DispX01~X04)
+
+       ■ BODY 섹션 - B4.x: Page 관리 (비즈니스 로직)
+         B4.1: 에러 핸들러 (401, 404, 500)
+         B4.2: 동적 사이트 페이지 (by FO_SITE_NO)
+         B4.3: 메인 페이지 (가나다순)
+         B4.4: 마이페이지 (가나다순)
+
+       ■ BODY 섹션 - B5.x: 샘플 & 도구
+         B5.1: 전시 UI 페이지 (DispUi01~06)
+         B5.2: 샘플 페이지 (Sample01~23)
+         B5.3: 개발자 도구 (XsLocalStorage, XsStore)
+
+       ■ BODY 섹션 - B99: 메인 앱 부트스트랩 (반드시 마지막)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- ■ H1.1: CDN Core Runtime ■ -->
   <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
   <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
   <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+
+  <!-- ■ H1.2: CDN Libraries ■ -->
   <script src="assets/cdn/pkg/postcode/2/postcode.v2.js"></script>
+  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
+  <script src="assets/cdn/pkg/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+
+  <!-- ■ H1.3: Fonts & CSS ■ -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+
+  <!-- ■ H2.1: Site Config & Init Scripts ■ -->
   <script>
     /* ═══════════════════════════════════════════════════════════════════
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
@@ -61,7 +105,8 @@
       }
     });
   </script>
-  <!-- 초기 로딩 인디케이터: 외부 리소스 없이 즉시 표시 -->
+
+  <!-- ■ H3.1: Loading Indicator Styles ■ -->
   <style>
     #_boot_loading { position:fixed; inset:0; z-index:99999;
       display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
@@ -80,25 +125,21 @@
     <div class="txt">로딩 중…</div>
   </div>
   <div id="app"></div>
-  <!-- ■ 1단계: 성능모니터링 & 안전유틸 ■ -->
+
+  <!-- ■ B2.1: Performance & Safety Utils ■ -->
   <script src="utils/perfUtil.js"></script>
   <script src="utils/safeUtil.js"></script>
 
-  <!-- ■ 2단계: Core Runtime Libraries ■ -->
-  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
-  <script src="assets/cdn/pkg/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
-
-  <!-- ■ 3단계: Axios & Utility Wrappers ■ -->
+  <!-- ■ B2.2: Axios & Utility Wrappers ■ -->
   <script src="utils/foAxios.js"></script>
   <script src="utils/foCmUtil.js"></script>
 
-  <!-- ■ 4단계: Config & Auth ■ -->
+  <!-- ■ B2.3: Config & Auth ■ -->
   <script src="base/foConfig.js"></script>
   <script src="js/index.js"></script>
   <script src="base/foAuth.js"></script>
 
-  <!-- ■ 5단계: Pinia Stores ■ -->
+  <!-- ■ B3.1: Pinia Stores (State Management) ■ -->
   <script src="base/stores/fo/foAppInitStore.js"></script>
   <script src="base/stores/fo/foAppStore.js"></script>
   <script src="base/stores/fo/foAuthStore.js"></script>
@@ -109,18 +150,28 @@
   <script src="base/stores/fo/foPropStore.js"></script>
   <script src="base/stores/fo/foRoleStore.js"></script>
 
-  <!-- ■ 6단계: Layout Components ■ -->
+  <!-- ■ B3.2: Layout Components ■ -->
   <script src="layout/foAppFooter.js"></script>
   <script src="layout/foAppHeader.js"></script>
   <script src="layout/foAppSidebar.js"></script>
   <script src="layout/foMyLayout.js"></script>
 
-  <!-- ■ 7단계: Base Pages (Error Handlers) ■ -->
+  <!-- ■ B3.3: Base Components & Modals ■ -->
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/modals/BaseModal.js"></script>
+
+  <!-- ■ B3.4: Display Hierarchy Components ■ -->
+  <script src="components/disp/DispX01Ui.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <!-- ■ B4.1: Error Handler Pages ■ -->
   <script src="pages/base/foError401.js"></script>
   <script src="pages/base/foError404.js"></script>
   <script src="pages/base/foError500.js"></script>
 
-  <!-- ■ 8단계: Dynamic Site Pages (Site NO별) ■ -->
+  <!-- ■ B4.2: Dynamic Site Pages (by FO_SITE_NO) ■ -->
   <script>
     /* FO_SITE_NO 기준 동적 페이지 스크립트 로드 */
     (function(){
@@ -131,7 +182,7 @@
     })();
   </script>
 
-  <!-- ■ 9단계: Main Page Components (가나다순) ■ -->
+  <!-- ■ B4.3: Main Pages (가나다순) ■ -->
   <script src="pages/fo/About.js"></script>
   <script src="pages/fo/Blog.js"></script>
   <script src="pages/fo/BlogEdit.js"></script>
@@ -146,7 +197,7 @@
   <script src="pages/fo/Login.js"></script>
   <script src="pages/fo/Order.js"></script>
 
-  <!-- ■ 10단계: My Pages (마이페이지 - 가나다순) ■ -->
+  <!-- ■ B4.4: My Pages (마이페이지 - 가나다순) ■ -->
   <script src="pages/fo/my/MyCache.js"></script>
   <script src="pages/fo/my/MyClaim.js"></script>
   <script src="pages/fo/my/MyContact.js"></script>
@@ -154,17 +205,7 @@
   <script src="pages/fo/my/MyCoupon.js"></script>
   <script src="pages/fo/my/MyOrder.js"></script>
 
-  <!-- ■ 11단계: Base Components ■ -->
-  <script src="components/comp/BaseComp.js"></script>
-  <script src="components/modals/BaseModal.js"></script>
-
-  <!-- ■ 12단계: Display Hierarchy Components ■ -->
-  <script src="components/disp/DispX01Ui.js"></script>
-  <script src="components/disp/DispX02Area.js"></script>
-  <script src="components/disp/DispX03Panel.js"></script>
-  <script src="components/disp/DispX04Widget.js"></script>
-
-  <!-- ■ 13단계: Display UI Pages (가나다순) ■ -->
+  <!-- ■ B5.1: Display UI Pages (가나다순) ■ -->
   <script src="pages/fo/xd/DispUi01.js"></script>
   <script src="pages/fo/xd/DispUi02.js"></script>
   <script src="pages/fo/xd/DispUi03.js"></script>
@@ -172,7 +213,7 @@
   <script src="pages/fo/xd/DispUi05.js"></script>
   <script src="pages/fo/xd/DispUi06.js"></script>
 
-  <!-- ■ 14단계: Sample Pages (샘플 - 가나다순) ■ -->
+  <!-- ■ B5.2: Sample Pages (가나다순) ■ -->
   <script src="pages/fo/xs/Sample01.js"></script>
   <script src="pages/fo/xs/Sample02.js"></script>
   <script src="pages/fo/xs/Sample03.js"></script>
@@ -191,11 +232,11 @@
   <script src="pages/fo/xs/Sample22.js"></script>
   <script src="pages/fo/xs/Sample23.js"></script>
 
-  <!-- ■ 15단계: Developer Tools ■ -->
+  <!-- ■ B5.3: Developer Tools ■ -->
   <script src="pages/fo/xs/XsLocalStorage.js"></script>
   <script src="pages/fo/xs/XsStore.js"></script>
 
-  <!-- ■ 16단계: Main App Bootstrap ■ -->
+  <!-- ■ B99: Main App Bootstrap (must be last) ■ -->
   <script src="base/foApp.js"></script>
 </body>
 </html>
