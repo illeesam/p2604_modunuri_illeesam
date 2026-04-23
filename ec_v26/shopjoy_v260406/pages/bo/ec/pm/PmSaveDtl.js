@@ -6,6 +6,7 @@ window.PmSaveDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const saves = reactive([]);
+    const saveList = ref((window.boData?.saves || []));
     const loading = ref(false);
     const error = ref(null);
 

@@ -65,7 +65,7 @@ window.PmPlanMng = {
 
     const applied = reactive({ kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => (plans.value || []).filter(p => {
+    const filtered = computed(() => (plans || []).filter(p => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !p.planNm.toLowerCase().includes(kw) && !(p.theme||'').toLowerCase().includes(kw)) return false;
       if (applied.category && p.category !== applied.category) return false;

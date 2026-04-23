@@ -5,6 +5,8 @@ window.SyUserMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const users = reactive([]);
+    const depts = ref((window.boData?.depts || []));
+    const boUsers = ref((window.boData?.boUsers || []));
     const loading = ref(false);
     const error = ref(null);
 

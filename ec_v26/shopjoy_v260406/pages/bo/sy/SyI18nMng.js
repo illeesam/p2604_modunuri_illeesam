@@ -4,6 +4,8 @@ window.SyI18nMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
+    const i18nKeys = ref((window.boData?.i18nKeys || []));
+    const i18nMsgs = ref((window.boData?.i18nMsgs || []));
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw    = ref('');
     const searchScope = ref('');

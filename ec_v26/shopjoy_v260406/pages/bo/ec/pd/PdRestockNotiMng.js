@@ -38,7 +38,7 @@ window.PdRestockNotiMng = {
 
     const filtered = computed(() => {
       const kw = applied.prod.toLowerCase();
-      return (restockNotis.value || []).filter(r => {
+      return (restockNotis || []).filter(r => {
         if (kw && !getProdNm(r.prodId).toLowerCase().includes(kw)) return false;
         if (applied.noti && r.notiYn !== applied.noti) return false;
         return true;

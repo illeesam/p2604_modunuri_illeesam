@@ -5,6 +5,7 @@ window.SyBatchHist = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const batches = reactive([]);
+    const batchLogs = ref((window.boData?.batchLogs || []));
     const loading = ref(false);
     const error = ref(null);
 

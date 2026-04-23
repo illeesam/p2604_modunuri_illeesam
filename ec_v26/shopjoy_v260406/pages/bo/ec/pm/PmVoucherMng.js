@@ -5,6 +5,7 @@ window.PmVoucherMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const vouchers = reactive([]);
+    const voucherList = ref((window.boData?.vouchers || []));
     const loading = ref(false);
     const error = ref(null);
 

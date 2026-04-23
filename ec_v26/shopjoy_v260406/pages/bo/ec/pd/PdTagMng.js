@@ -32,7 +32,7 @@ window.PdTagMng = {
 
     const filtered = computed(() => {
       const kw = applied.kw.toLowerCase();
-      return (tags.value || []).filter(t => {
+      return (tags || []).filter(t => {
         if (kw && !t.tagNm.toLowerCase().includes(kw)) return false;
         if (applied.use && t.useYn !== applied.use) return false;
         return true;
