@@ -3,23 +3,12 @@
  * - 앱 버전, 사이트 번호, 업데이트 정보 관리
  */
 window.useBoAppStore = Pinia.defineStore('boApp', {
-  state: () => {
-    // 현재 환경 판단 (호스트명 기반)
-    const host = typeof window !== 'undefined' ? window.location.hostname : '';
-    let active = 'prod';
-    if (host.includes('localhost') || host.includes('127.0.0.1')) {
-      active = 'local';
-    } else if (host.includes('dev') || host.includes('development')) {
-      active = 'dev';
-    }
-
-    return {
-      boSiteNo: '01',
-      appVersion: '2.6.0',
-      lastUpdateDate: '',
-      active: active,
-    };
-  },
+  state: () => ({
+    boSiteNo: '01',
+    appVersion: '2.6.0',
+    lastUpdateDate: '',
+    active: '-',
+  }),
 
   getters: {
     getAppVersion: (s) => s.appVersion, // 앱 버전
@@ -37,6 +26,7 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
         this.boSiteNo = appData.boSiteNo || '01';
         this.appVersion = appData.appVersion || '2.6.0';
         this.lastUpdateDate = appData.lastUpdateDate || '';
+        this.active = appData.active || '-';
       }
     },
 
@@ -74,6 +64,7 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
       this.boSiteNo = '01';
       this.appVersion = '2.6.0';
       this.lastUpdateDate = '';
+      this.active = '-';
     },
   },
 });
@@ -81,19 +72,11 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
 // 함수형 유틸리티 제공
 window.getBoAppStore = () => {
   try {
-    const host = typeof window !== 'undefined' ? window.location.hostname : '';
-    let active = 'prod';
-    if (host.includes('localhost') || host.includes('127.0.0.1')) {
-      active = 'local';
-    } else if (host.includes('dev') || host.includes('development')) {
-      active = 'dev';
-    }
-
     return window.useBoAppStore?.() || {
       boSiteNo: '01',
       appVersion: '2.6.0',
       lastUpdateDate: '',
-      active: active,
+      active: '-',
     };
   } catch (e) {
     console.error('[getBoAppStore] error:', e);
@@ -101,7 +84,7 @@ window.getBoAppStore = () => {
       boSiteNo: '01',
       appVersion: '2.6.0',
       lastUpdateDate: '',
-      active: 'prod',
+      active: '-',
     };
   }
 };
