@@ -63,11 +63,13 @@ window.SyAttachMng = {
     const saveGrp = () => {
       if (!grpForm.grpNm || !grpForm.grpCode) { props.showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       if (grpEditId.value === null) {
-        attachGrps.push({ ...grpForm, attachGrpId: nextId.value(attachGrps.value, 'attachGrpId'), regDate: new Date().toISOString().slice(0, 10) });
+        if (!Array.isArray(attachGrps)) return;
+        attachGrps.push({ ...grpForm, attachGrpId: nextId.value(attachGrps, 'attachGrpId'), regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('그룹이 등록되었습니다.');
       } else {
+        if (!Array.isArray(attachGrps)) return;
         const idx = attachGrps.findIndex(x => x.attachGrpId === grpEditId.value);
-        if (idx !== -1) Object.assign(attachGrps.value[idx], grpForm);
+        if (idx !== -1) Object.assign(attachGrps[idx], grpForm);
         props.showToast('저장되었습니다.');
       }
       grpEditMode.value = false;
@@ -153,7 +155,8 @@ window.SyAttachMng = {
     };
     const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
-    return { attachs, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
+    return { attaches, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
+      attachGrps, grpForm,
       selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, saveGrp, deleteGrp,
       searchKw, fileForm, fileEditId, fileEditMode, applied, filteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
       fmtSize, statusBadge,
