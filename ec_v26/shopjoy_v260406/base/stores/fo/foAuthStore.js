@@ -20,10 +20,18 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
   actions: {
     setAuth(authData) {
       if (authData) {
-        this.accessToken = authData.accessToken || '';
-        this.refreshToken = authData.refreshToken || '';
-        this.accessExpiresIn = authData.accessExpiresIn || 0;
-        this.refreshExpiresIn = authData.refreshExpiresIn || 0;
+        if (authData.accessToken) {
+          this.accessToken = authData.accessToken;
+        }
+        if (authData.refreshToken) {
+          this.refreshToken = authData.refreshToken;
+        }
+        if (authData.accessExpiresIn) {
+          this.accessExpiresIn = authData.accessExpiresIn;
+        }
+        if (authData.refreshExpiresIn) {
+          this.refreshExpiresIn = authData.refreshExpiresIn;
+        }
 
         if (authData.user) {
           this.user = authData.user;

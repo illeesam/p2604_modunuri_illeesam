@@ -54,7 +54,7 @@ public class CmFoAppStoreDataController {
             names += "^" + CmStoreConst.SY_MENUS;
             names += "^" + CmStoreConst.SY_CODES;
             names += "^" + CmStoreConst.SY_PROPS;
-            names += "^" + CmStoreConst.DP_DISP;
+            //names += "^" + CmStoreConst.DP_DISP;
             names += "^" + CmStoreConst.SY_APP;
         }
 

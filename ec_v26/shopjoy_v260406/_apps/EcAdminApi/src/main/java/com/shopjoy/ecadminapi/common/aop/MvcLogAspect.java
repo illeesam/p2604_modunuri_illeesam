@@ -5,6 +5,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -14,9 +16,11 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class MvcLogAspect {
     private static final Logger logger = LoggerFactory.getLogger(MvcLogAspect.class);
-    private static final String BASE_PKG = "com.shopjoy";
     private static final int OUTPUT_MAX_LEN = 300;
     private static final int OUTPUT_TRUNCATE_THRESHOLD = 400;
+
+    @Autowired
+    private Environment environment;
 
     enum ComponentType {
         CONTROLLER("■■ ▶", "■■ ◀"),
@@ -53,23 +57,28 @@ public class MvcLogAspect {
         }
     }
 
-    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Controller.*(..))")
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Controller.*(..))")
     private void controllerLayer() {}
 
-    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Client.*(..))")
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Client.*(..))")
     private void clientLayer() {}
 
-    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Service*.*(..))")
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Service*.*(..))")
     private void serviceLayer() {}
 
-    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Repository.*(..))")
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Repository.*(..))")
     private void repositoryLayer() {}
 
-    @org.aspectj.lang.annotation.Pointcut("execution(* " + BASE_PKG + "..*Mapper.*(..))")
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Mapper.*(..))")
     private void mapperLayer() {}
 
     @Around("controllerLayer() || clientLayer() || serviceLayer() || repositoryLayer() || mapperLayer()")
     public Object logging(ProceedingJoinPoint pjp) throws Throwable {
+        // local/dev profile일 때만 로깅
+        if (!isLoggingEnabled()) {
+            return pjp.proceed();
+        }
+
         String simpleName = getComponentName(pjp);
         String methodName = pjp.getSignature().getName();
         ComponentType type = ComponentType.fromClassName(simpleName);
@@ -86,7 +95,7 @@ public class MvcLogAspect {
         try {
             result = pjp.proceed();
         } catch (Throwable ex) {
-            logger.error("Exception in AOP around [" + simpleName + "] " + methodName, ex);
+            logMethodError(type, simpleName, methodName, ex, reqInfo);
             throw ex;
         }
 
@@ -100,6 +109,18 @@ public class MvcLogAspect {
         logMethodOut(type, simpleName, methodName, outObjName, strOutParams, reqInfo);
 
         return result;
+    }
+
+    /**
+     * 로깅 활성화 여부 확인 (local/dev profile일 때만)
+     */
+    private boolean isLoggingEnabled() {
+        String[] activeProfiles = environment.getActiveProfiles();
+        if (activeProfiles.length == 0) {
+            return false;
+        }
+        String activeProfile = activeProfiles[0];
+        return "local".equalsIgnoreCase(activeProfile) || "dev".equalsIgnoreCase(activeProfile);
     }
 
     private String getComponentName(ProceedingJoinPoint pjp) {
@@ -200,5 +221,38 @@ public class MvcLogAspect {
         return output.length() > OUTPUT_TRUNCATE_THRESHOLD
                 ? output.substring(0, OUTPUT_MAX_LEN)
                 : output;
+    }
+
+    private void logMethodError(ComponentType type, String className, String methodName,
+                                Throwable ex, String reqInfo) {
+        if (className.toUpperCase().contains("TOKENSERVICE")) {
+            return;
+        }
+
+        String exceptionType = ex.getClass().getSimpleName();
+        String errorMessage = ex.getMessage() != null ? ex.getMessage() : "No message";
+
+        // 스택 트레이스에서 첫 번째 애플리케이션 스택 라인 추출
+        String stackLine = "";
+        StackTraceElement[] stackTrace = ex.getStackTrace();
+        for (StackTraceElement element : stackTrace) {
+            if (element.getClassName().startsWith("com.shopjoy")) {
+                stackLine = element.getClassName() + "." + element.getMethodName() +
+                           ":" + element.getLineNumber();
+                break;
+            }
+        }
+
+        String msg = type.getOutPrefix() + " ✗ ERROR : " + className + " " + methodName + "()";
+        msg += "\n      Exception: " + exceptionType;
+        msg += "\n      Message: " + errorMessage;
+        if (!stackLine.isEmpty()) {
+            msg += "\n      At: " + stackLine;
+        }
+        if (!reqInfo.isEmpty()) {
+            msg += "\n      Request: " + reqInfo;
+        }
+
+        logger.error(msg);
     }
 }

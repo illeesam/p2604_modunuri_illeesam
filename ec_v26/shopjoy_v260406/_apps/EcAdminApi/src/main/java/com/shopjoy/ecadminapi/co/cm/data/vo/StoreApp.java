@@ -18,4 +18,5 @@ public class StoreApp {
     private String foSiteNo;          // FO 사이트 번호
     private String appVersion;        // 앱 버전
     private String lastUpdateDate;    // 마지막 업데이트 날짜
+    private String active;            // 환경 (local, dev, prod)
 }

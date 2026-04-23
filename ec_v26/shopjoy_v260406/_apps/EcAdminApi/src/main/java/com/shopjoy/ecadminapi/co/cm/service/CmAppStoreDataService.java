@@ -48,6 +48,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelItemRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +68,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CmAppStoreDataService {
+
+    @Autowired
+    private Environment environment;
 
     private final MbMemberRepository memberRepository;
     private final SyUserRepository syUserRepository;
@@ -407,21 +412,27 @@ public class CmAppStoreDataService {
     }
 
     /**
-     * 앱 정보 조회 - 버전 및 사이트정보
+     * 앱 정보 조회 - 버전, 사이트정보, 환경상태
+     * active 값: spring.profiles.active 설정값 (dev, prod 등)
      */
     private StoreApp getApp(AuthPrincipal authUser) {
+        String[] activeProfiles = environment.getActiveProfiles();
+        String active = (activeProfiles != null && activeProfiles.length > 0) ? activeProfiles[0] : "-";
+
         if (authUser != null && "BO".equals(authUser.userTypeCd())) {
             return StoreApp.builder()
                     .boSiteNo("01")
                     .foSiteNo("01")
                     .appVersion("2.6.0")
                     .lastUpdateDate(java.time.LocalDate.now().toString())
+                    .active(active)
                     .build();
         }
         return StoreApp.builder()
                 .foSiteNo(System.getProperty("fo.site.no", "01"))
                 .appVersion("2.6.0")
                 .lastUpdateDate(java.time.LocalDate.now().toString())
+                .active(active)
                 .build();
     }
 
