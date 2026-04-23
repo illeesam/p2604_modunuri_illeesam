@@ -49,22 +49,22 @@ window.PdCategoryProdMng = {
     const onReset  = () => { searchProdNm.value = ''; Object.assign(applied, { prodNm: '' }); };
 
     /* ── 카테고리 트리 ── */
-    const expandedSet = ref(new Set());
+    const expandedSet = reactive(new Set());
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
     onMounted(() => {
-      expandedSet.value = new Set(
+      expandedSet = new Set(
         (categories || []).filter(c => c.depth === 1).map(c => c.categoryId)
       );
     });
-    const isExpanded  = id => expandedSet.value.has(id);
+    const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
-      const s = new Set(expandedSet.value);
+      const s = new Set(expandedSet);
       if (s.has(id)) s.delete(id); else s.add(id);
-      expandedSet.value = s;
+      expandedSet = s;
     };
-    const expandAll   = () => { expandedSet.value = new Set((categories || []).map(c => c.categoryId)); };
-    const collapseAll = () => { expandedSet.value = new Set(); };
+    const expandAll   = () => { expandedSet = new Set((categories || []).map(c => c.categoryId)); };
+    const collapseAll = () => { expandedSet = new Set(); };
 
     /* 카테고리 경로 (재귀) */
     const getCatPath = (categoryId) => {
@@ -107,7 +107,7 @@ window.PdCategoryProdMng = {
 
     /* 트리 플랫 */
     const catTreeFlat = computed(() => {
-      const _ = expandedSet.value;
+      const _ = expandedSet;
       const cats = categories || [];
       const map = {};
       window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });

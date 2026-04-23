@@ -7,43 +7,43 @@ window.Cart = {
     const { computed, ref } = Vue;
 
     /* ── 체크박스 ── */
-    const checkedIdxs = ref(new Set());
+    const checkedIdxs = reactive(new Set());
 
-    const isChecked = (idx) => checkedIdxs.value.has(idx);
+    const isChecked = (idx) => checkedIdxs.has(idx);
 
     const toggleCheck = (idx) => {
-      const s = new Set(checkedIdxs.value);
+      const s = new Set(checkedIdxs);
       if (s.has(idx)) s.delete(idx);
       else s.add(idx);
-      checkedIdxs.value = s;
+      checkedIdxs = s;
     };
 
     const allChecked = computed(() =>
-      props.cart.length > 0 && checkedIdxs.value.size === props.cart.length
+      props.cart.length > 0 && checkedIdxs.size === props.cart.length
     );
     const someChecked = computed(() =>
-      checkedIdxs.value.size > 0 && checkedIdxs.value.size < props.cart.length
+      checkedIdxs.size > 0 && checkedIdxs.size < props.cart.length
     );
 
     const toggleAll = () => {
-      if (allChecked.value) checkedIdxs.value = new Set();
-      else checkedIdxs.value = new Set(props.cart.map((_, i) => i));
+      if (allChecked.value) checkedIdxs = new Set();
+      else checkedIdxs = new Set(props.cart.map((_, i) => i));
     };
 
     /* 체크 해제된 항목 삭제 시 인덱스 재정렬 */
     const removeItem = (idx) => {
       props.removeFromCart(idx);
       const s = new Set();
-      checkedIdxs.value.forEach(i => { if (i < idx) s.add(i); else if (i > idx) s.add(i - 1); });
-      checkedIdxs.value = s;
+      checkedIdxs.forEach(i => { if (i < idx) s.add(i); else if (i > idx) s.add(i - 1); });
+      checkedIdxs = s;
     };
 
     /* 선택 항목만 주문 (체크 없으면 전체) */
     const goOrder = () => {
-      if (checkedIdxs.value.size === 0) {
+      if (checkedIdxs.size === 0) {
         props.navigate('order');
       } else {
-        const ids = [...checkedIdxs.value].sort().map(i => props.cart[i].cartId);
+        const ids = [...checkedIdxs].sort().map(i => props.cart[i].cartId);
         props.navigate('order', { cartIds: ids });
       }
     };
@@ -63,8 +63,8 @@ window.Cart = {
 
     /* 요약 패널: 체크된 항목(없으면 전체) 기준 */
     const summaryItems = computed(() =>
-      checkedIdxs.value.size > 0
-        ? [...checkedIdxs.value].sort().map(i => props.cart[i])
+      checkedIdxs.size > 0
+        ? [...checkedIdxs].sort().map(i => props.cart[i])
         : (props.cart || [])
     );
 
@@ -77,12 +77,12 @@ window.Cart = {
     );
 
     const orderCount = computed(() =>
-      checkedIdxs.value.size > 0 ? checkedIdxs.value.size : props.cart.length
+      checkedIdxs.size > 0 ? checkedIdxs.size : props.cart.length
     );
 
     const handleClearAll = async () => {
       const ok = await props.showConfirm('장바구니 비우기', '장바구니의 모든 상품을 삭제하시겠습니까?', 'warning');
-      if (ok) { props.clearCart(); checkedIdxs.value = new Set(); }
+      if (ok) { props.clearCart(); checkedIdxs = new Set(); }
     };
 
     return {

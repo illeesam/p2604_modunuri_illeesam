@@ -61,9 +61,9 @@ window.Prod01List = {
     const filterOpen    = ref(false);
     const priceMin      = ref('');
     const priceMax      = ref('');
-    const selColors     = ref(new Set());
-    const selSizes      = ref(new Set());
-    const selCats       = ref(new Set());
+    const selColors     = reactive(new Set());
+    const selSizes      = reactive(new Set());
+    const selCats       = reactive(new Set());
 
     /* ── 필터 옵션 (로드된 상품 기반) ── */
     const allColors = computed(() => {
@@ -95,17 +95,17 @@ window.Prod01List = {
     };
 
     /* ── 토글 함수 ── */
-    const toggleColor = name => { const s = new Set(selColors.value); s.has(name) ? s.delete(name) : s.add(name); selColors.value = s; };
-    const toggleSize  = sz   => { const s = new Set(selSizes.value);  s.has(sz)   ? s.delete(sz)   : s.add(sz);   selSizes.value  = s; };
-    const toggleCat   = id   => { const s = new Set(selCats.value);   s.has(id)   ? s.delete(id)   : s.add(id);   selCats.value   = s; };
+    const toggleColor = name => { const s = new Set(selColors); s.has(name) ? s.delete(name) : s.add(name); selColors = s; };
+    const toggleSize  = sz   => { const s = new Set(selSizes);  s.has(sz)   ? s.delete(sz)   : s.add(sz);   selSizes  = s; };
+    const toggleCat   = id   => { const s = new Set(selCats);   s.has(id)   ? s.delete(id)   : s.add(id);   selCats   = s; };
 
     const hasFilter = computed(() =>
       searchText.value || priceMin.value || priceMax.value ||
-      selColors.value.size > 0 || selSizes.value.size > 0 || selCats.value.size > 0
+      selColors.size > 0 || selSizes.size > 0 || selCats.size > 0
     );
     const clearFilters = () => {
       searchText.value = ''; priceMin.value = ''; priceMax.value = '';
-      selColors.value = new Set(); selSizes.value = new Set(); selCats.value = new Set();
+      selColors = new Set(); selSizes = new Set(); selCats = new Set();
     };
 
     /* ── 필터링 ── */
@@ -117,9 +117,9 @@ window.Prod01List = {
       const pMin = priceMin.value ? parseInt(priceMin.value, 10) : 0;
       const pMax = priceMax.value ? parseInt(priceMax.value, 10) : Infinity;
       if (pMin > 0 || pMax < Infinity) list = list.filter(p => p.priceNum >= pMin && p.priceNum <= pMax);
-      if (selCats.value.size   > 0) list = list.filter(p => selCats.value.has(p.categoryId));
-      if (selColors.value.size > 0) list = list.filter(p => (p.opt1s || []).some(c => selColors.value.has(c.name)));
-      if (selSizes.value.size  > 0) list = list.filter(p => (p.opt2s || []).some(s => selSizes.value.has(s)));
+      if (selCats.size   > 0) list = list.filter(p => selCats.has(p.categoryId));
+      if (selColors.size > 0) list = list.filter(p => (p.opt1s || []).some(c => selColors.has(c.name)));
+      if (selSizes.size  > 0) list = list.filter(p => (p.opt2s || []).some(s => selSizes.has(s)));
       return list;
     });
 

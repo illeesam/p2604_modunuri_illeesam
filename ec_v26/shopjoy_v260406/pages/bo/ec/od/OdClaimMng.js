@@ -124,15 +124,15 @@ window.OdClaimMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
-    const checked = ref(new Set());
-    const toggleCheck = (id) => { const s = new Set(checked.value); if (s.has(id)) s.delete(id); else s.add(id); checked.value = s; };
-    const isChecked = (id) => checked.value.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, c => checked.value.has(c.claimId)));
+    const checked = reactive(new Set());
+    const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
+    const isChecked = (id) => checked.has(id);
+    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, c => checked.has(c.claimId)));
     const toggleCheckAll = () => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, c => s.delete(c.claimId));
       else window.safeArrayUtils.safeForEach(pageList, c => s.add(c.claimId));
-      checked.value = s;
+      checked = s;
     };
     const claimStatusCodes = (codes.value || [])
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
@@ -159,7 +159,7 @@ window.OdClaimMng = {
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
     const onReqTargetChange = () => {
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       const first = claims.window.safeArrayUtils.safeFind(value, c => ids.includes(c.claimId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')    bulkForm.reqTargetNm = first.orderId || '';
@@ -176,11 +176,11 @@ window.OdClaimMng = {
     });
     const checkedByType = computed(() => {
       const r = { '취소':[], '반품':[], '교환':[] };
-      window.safeArrayUtils.safeForEach(claims, c => { if (checked.value.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
+      window.safeArrayUtils.safeForEach(claims, c => { if (checked.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
       return r;
     });
     const openBulk = () => {
-      if (!checked.value.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
+      if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
       bulkTab.value = 'status';
       bulkForm.statusByType = { '취소':'', '반품':'', '교환':'' };
       bulkForm.type = '';
@@ -192,7 +192,7 @@ window.OdClaimMng = {
     };
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(claims, c => ids.includes(c.claimId));
       let rows = [];
       if (bulkTab.value === 'status') {
@@ -213,7 +213,7 @@ window.OdClaimMng = {
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
     const saveBulk = async () => {
-      if (!checked.value.size) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
+      if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
       if (bulkTab.value === 'status') {
         const changes = CLAIM_TYPE_OPTIONS
           .filter(t => bulkForm.statusByType[t] && checkedByType.value[t].length)
@@ -226,7 +226,7 @@ window.OdClaimMng = {
         window.safeArrayUtils.safeForEach(changes, ch => {
           window.safeArrayUtils.safeForEach(claims, c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
         });
-        checked.value = new Set();
+        checked = new Set();
         bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-status', { changes });
@@ -240,11 +240,11 @@ window.OdClaimMng = {
       } else if (bulkTab.value === 'type') {
         const val = bulkForm.type;
         if (!val) { props.showToast('변경할 클레임유형을 선택하세요.', 'error'); return; }
-        const ids = Array.from(checked.value);
+        const ids = Array.from(checked);
         const ok = await props.showConfirm('일괄 클레임유형 변경', `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) c.type = val; });
-        checked.value = new Set();
+        checked = new Set();
         bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val });
@@ -257,11 +257,11 @@ window.OdClaimMng = {
         }
       } else if (bulkTab.value === 'approval') {
         if (!bulkForm.apprAction) { props.showToast('결재처리 구분을 선택하세요.', 'error'); return; }
-        const ids = Array.from(checked.value);
+        const ids = Array.from(checked);
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
-        checked.value = new Set(); bulkOpen.value = false;
+        checked = new Set(); bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -273,7 +273,7 @@ window.OdClaimMng = {
         }
       } else if (bulkTab.value === 'approvalReq') {
         if (!bulkForm.apprToUserId) { props.showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
-        const ids = Array.from(checked.value);
+        const ids = Array.from(checked);
         const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) {
@@ -281,7 +281,7 @@ window.OdClaimMng = {
           c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
           c.reqAmount = Number(bulkForm.reqAmount||0); c.reqReason = bulkForm.reqReason;
         } });
-        checked.value = new Set(); bulkOpen.value = false;
+        checked = new Set(); bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

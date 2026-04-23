@@ -74,9 +74,9 @@ window.DpDispUiMng = {
     );
     /* 표시경로 (uiType 그룹 > 실제 UI 아이템) */
     const selectedTreeKey = ref('');
-    const treeOpen = ref(new Set(['__root__']));
-    const toggleTree = (k) => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
-    const isTreeOpen = (k) => treeOpen.value.has(k);
+    const treeOpen = reactive(new Set(['__root__']));
+    const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+    const isTreeOpen = (k) => treeOpen.has(k);
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const uiTree = computed(() => {
       const group = {};
@@ -91,8 +91,8 @@ window.DpDispUiMng = {
         items: group[t].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
       }));
     });
-    const expandAll   = () => { window.safeArrayUtils.safeForEach(uiTree, n => { treeOpen.value.add('grp_'+n.label); n.iwindow.safeArrayUtils.safeForEach(tems, u => treeOpen.value.add('ui_'+u.codeId)); }); treeOpen.value.add('__root__'); };
-    const collapseAll = () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
+    const expandAll   = () => { window.safeArrayUtils.safeForEach(uiTree, n => { treeOpen.add('grp_'+n.label); n.iwindow.safeArrayUtils.safeForEach(tems, u => treeOpen.add('ui_'+u.codeId)); }); treeOpen.add('__root__'); };
+    const collapseAll = () => { treeOpen.clear(); treeOpen.add('__root__'); };
 
     const filtered = computed(() => {
       const kw = applied.kw.trim().toLowerCase();
@@ -181,12 +181,12 @@ window.DpDispUiMng = {
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 
     /* 펼치기 기능 */
-    const expandedUIs = ref(new Set());
+    const expandedUIs = reactive(new Set());
     const toggleExpandUI = (uiId) => {
-      if (expandedUIs.value.has(uiId)) expandedUIs.value.delete(uiId);
-      else expandedUIs.value.add(uiId);
+      if (expandedUIs.has(uiId)) expandedUIs.delete(uiId);
+      else expandedUIs.add(uiId);
     };
-    const isUIExpanded = (uiId) => expandedUIs.value.has(uiId);
+    const isUIExpanded = (uiId) => expandedUIs.has(uiId);
 
     return { codes, displays, loading, error, pathLabel,
       searchKw, searchUiType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,

@@ -352,18 +352,18 @@ window.DpDispPanelMng = {
 
     /* ── 표시경로 (영역별 그룹) ── */
     const selectedTreeKey = ref('');   /* '' = 전체, '<areaCode>' = 특정 영역 */
-    const treeOpen = ref(new Set(['__root__']));
-    const toggleTree = (k) => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
-    const isTreeOpen = (k) => treeOpen.value.has(k);
+    const treeOpen = reactive(new Set(['__root__']));
+    const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+    const isTreeOpen = (k) => treeOpen.has(k);
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const expandAll  = () => {
-      treeOpen.value.add('__root__');
+      treeOpen.add('__root__');
       window.safeArrayUtils.safeForEach(panelTree.value, n => {
-        treeOpen.value.add('grp_'+n.label);
-        window.safeArrayUtils.safeForEach(n.children, c => treeOpen.value.add(n.label+'_'+c.label));
+        treeOpen.add('grp_'+n.label);
+        window.safeArrayUtils.safeForEach(n.children, c => treeOpen.add(n.label+'_'+c.label));
       });
     };
-    const collapseAll= () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
+    const collapseAll= () => { treeOpen.clear(); treeOpen.add('__root__'); };
 
     /* 패널 목록 (영역별 그룹) */
     const panelTree = computed(() => {

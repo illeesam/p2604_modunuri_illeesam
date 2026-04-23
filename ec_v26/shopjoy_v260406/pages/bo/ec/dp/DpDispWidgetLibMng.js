@@ -128,17 +128,17 @@ window.DpDispWidgetLibMng = {
         })),
       }));
     });
-    const openNodes = ref(new Set(['__root__']));
+    const openNodes = reactive(new Set(['__root__']));
     const toggleNode = (key) => {
-      if (openNodes.value.has(key)) openNodes.value.delete(key);
-      else openNodes.value.add(key);
+      if (openNodes.has(key)) openNodes.delete(key);
+      else openNodes.add(key);
     };
-    const isOpen = (key) => openNodes.value.has(key);
+    const isOpen = (key) => openNodes.has(key);
     const selectTree = (key) => { selectedTreeKey.value = selectedTreeKey.value === key ? '' : key; pager.page = 1; };
     const expandAll = () => {
-      window.safeArrayUtils.safeForEach(tree, n => { openNodes.value.add(n.label); });
+      window.safeArrayUtils.safeForEach(tree, n => { openNodes.add(n.label); });
     };
-    const collapseAll = () => { openNodes.value.clear(); };
+    const collapseAll = () => { openNodes.clear(); };
 
     /* 트리 선택까지 반영한 최종 리스트 */
     const filtered = computed(() => {

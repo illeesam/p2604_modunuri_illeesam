@@ -77,9 +77,9 @@ window.DpDispAreaMng = {
 
     /* ── 표시경로 (영역코드 prefix 그룹) ── */
     const selectedTreeKey = ref('');   /* '' = 전체, '<prefix>' */
-    const treeOpen = ref(new Set(['__root__']));
-    const toggleTree = (k) => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
-    const isTreeOpen = (k) => treeOpen.value.has(k);
+    const treeOpen = reactive(new Set(['__root__']));
+    const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+    const isTreeOpen = (k) => treeOpen.has(k);
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
 
     const areaTree = computed(() => {
@@ -102,8 +102,8 @@ window.DpDispAreaMng = {
         })),
       }));
     });
-    const expandAll   = () => { window.safeArrayUtils.safeForEach(areaTree, n => treeOpen.value.add('grp_'+n.label)); treeOpen.value.add('__root__'); };
-    const collapseAll = () => { treeOpen.value.clear(); treeOpen.value.add('__root__'); };
+    const expandAll   = () => { window.safeArrayUtils.safeForEach(areaTree, n => treeOpen.add('grp_'+n.label)); treeOpen.add('__root__'); };
+    const collapseAll = () => { treeOpen.clear(); treeOpen.add('__root__'); };
 
     /* ── 영역 목록 (codes에서 DISP_AREA 필터) ── */
     const allAreas = computed(() =>
@@ -241,12 +241,12 @@ window.DpDispAreaMng = {
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
     /* 펼치기 기능 */
-    const expandedAreas = ref(new Set());
+    const expandedAreas = reactive(new Set());
     const toggleExpandArea = (areaId) => {
-      if (expandedAreas.value.has(areaId)) expandedAreas.value.delete(areaId);
-      else expandedAreas.value.add(areaId);
+      if (expandedAreas.has(areaId)) expandedAreas.delete(areaId);
+      else expandedAreas.add(areaId);
     };
-    const isAreaExpanded = (areaId) => expandedAreas.value.has(areaId);
+    const isAreaExpanded = (areaId) => expandedAreas.has(areaId);
 
     return { codes, areas, loading, error, pathLabel,
       searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,

@@ -124,15 +124,15 @@ window.OdDlivMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
     /* 일괄선택 */
-    const checked = ref(new Set());
-    const toggleCheck = (id) => { const s = new Set(checked.value); if (s.has(id)) s.delete(id); else s.add(id); checked.value = s; };
-    const isChecked = (id) => checked.value.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, d => checked.value.has(d.dlivId)));
+    const checked = reactive(new Set());
+    const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
+    const isChecked = (id) => checked.has(id);
+    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, d => checked.has(d.dlivId)));
     const toggleCheckAll = () => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, d => s.delete(d.dlivId));
       else window.safeArrayUtils.safeForEach(pageList, d => s.add(d.dlivId));
-      checked.value = s;
+      checked = s;
     };
     const DLIV_STATUS_OPTIONS = ['준비중','출고완료','배송중','배송완료','배송실패'];
     const COURIER_OPTIONS = ['CJ대한통운','롯데택배','한진택배','우체국택배','로젠택배'];
@@ -152,7 +152,7 @@ window.OdDlivMng = {
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
     const onReqTargetChange = () => {
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       const first = deliveries.window.safeArrayUtils.safeFind(value, d => ids.includes(d.dlivId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')      bulkForm.reqTargetNm = first.orderId || '';
@@ -168,7 +168,7 @@ window.OdDlivMng = {
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
       .replace('{reason}', bulkForm.reqReason || '-'));
     const openBulk = () => {
-      if (!checked.value.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
+      if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
       bulkTab.value = 'status';
       Object.assign(bulkForm, {
         status:'', courier:'', trackingNo:'', apprAction:'', apprComment:'',
@@ -180,7 +180,7 @@ window.OdDlivMng = {
     };
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(deliveries, d => ids.includes(d.dlivId));
       let rows = [];
       if (bulkTab.value === 'status') {
@@ -205,14 +205,14 @@ window.OdDlivMng = {
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
     const saveBulk = async () => {
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
       if (bulkTab.value === 'status') {
         if (!bulkForm.status) { props.showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
-        checked.value = new Set(); bulkOpen.value = false;
+        checked = new Set(); bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-status', { ids, status: bulkForm.status });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -232,7 +232,7 @@ window.OdDlivMng = {
             if (bulkForm.trackingNo) d.trackingNo = bulkForm.trackingNo;
           }
         });
-        checked.value = new Set(); bulkOpen.value = false;
+        checked = new Set(); bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -247,7 +247,7 @@ window.OdDlivMng = {
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
-        checked.value = new Set(); bulkOpen.value = false;
+        checked = new Set(); bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -266,7 +266,7 @@ window.OdDlivMng = {
           d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
           d.reqAmount = Number(bulkForm.reqAmount||0); d.reqReason = bulkForm.reqReason;
         } });
-        checked.value = new Set(); bulkOpen.value = false;
+        checked = new Set(); bulkOpen.value = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

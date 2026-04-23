@@ -185,20 +185,20 @@
     };
 
     /* ── Likes (좋아요/위시리스트) ── */
-    const likes = ref(new Set());
+    const likes = reactive(new Set());
     try {
       const savedLikes = localStorage.getItem('shopjoy_likes');
-      if (savedLikes) likes.value = new Set(JSON.parse(savedLikes));
+      if (savedLikes) likes = new Set(JSON.parse(savedLikes));
     } catch (e) {}
-    const saveLikes = () => { try { localStorage.setItem('shopjoy_likes', JSON.stringify([...likes.value])); } catch (e) {} };
+    const saveLikes = () => { try { localStorage.setItem('shopjoy_likes', JSON.stringify([...likes])); } catch (e) {} };
     const toggleLike = (productId) => {
-      const s = new Set(likes.value);
+      const s = new Set(likes);
       if (s.has(productId)) s.delete(productId); else s.add(productId);
-      likes.value = s;
+      likes = s;
       saveLikes();
     };
-    const isLiked = (productId) => likes.value.has(productId);
-    const likeCount = computed(() => likes.value.size);
+    const isLiked = (productId) => likes.has(productId);
+    const likeCount = computed(() => likes.size);
 
     /* ── Cart ── */
     const cart = reactive([]);

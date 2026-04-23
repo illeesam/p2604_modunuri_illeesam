@@ -208,15 +208,15 @@ window.OdOrderDtl = {
     const viewMode2 = ref(window._odOrderDtlState.viewMode || 'tab'); // 'tab' | '2col' | '1col'
     Vue.watch(viewMode2, v => { window._odOrderDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || activeTab.value === id;
-    const expandedItems = ref(new Set());
-    const toggleExpand = (i) => { const s = new Set(expandedItems.value); if (s.has(i)) s.delete(i); else s.add(i); expandedItems.value = s; };
-    const isExpanded = (i) => expandedItems.value.has(i);
-    const allExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.value.has(i)));
+    const expandedItems = reactive(new Set());
+    const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
+    const isExpanded = (i) => expandedItems.has(i);
+    const allExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.has(i)));
     const toggleExpandAll = () => {
-      if (allExpanded.value) expandedItems.value = new Set();
-      else expandedItems.value = new Set(orderItems.map((_,i) => i));
+      if (allExpanded.value) expandedItems = new Set();
+      else expandedItems = new Set(orderItems.map((_,i) => i));
     };
-    Vue.watch(orderItems, (list) => { expandedItems.value = new Set(list.map((_,i) => i)); });
+    Vue.watch(orderItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
     const getExchangedItem = (it) => {
       if (!relatedClaim.value || relatedClaim.value.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리' };

@@ -2158,9 +2158,9 @@ window.RowPickModal = {
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
-    const treeOpen = ref(new Set(['__root__']));
-    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
-    const isTreeOpen = k => treeOpen.value.has(k);
+    const treeOpen = reactive(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+    const isTreeOpen = k => treeOpen.has(k);
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const areaNm = (code) => {
       const a = props.areas.find(x => x.codeValue === code);
@@ -2216,25 +2216,25 @@ window.RowPickModal = {
       return Object.keys(g).sort().map(top => ({ label: top, count: g[top] }));
     });
 
-    const checked = ref(new Set());
-    const isChecked = (id) => checked.value.has(id);
+    const checked = reactive(new Set());
+    const isChecked = (id) => checked.has(id);
     const toggleCheck = (id) => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
-      checked.value = s;
+      checked = s;
     };
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(o => checked.value.has(o.__rowId)));
+    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(o => checked.has(o.__rowId)));
     const toggleCheckAll = () => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (allChecked.value) pageList.value.forEach(o => s.delete(o.__rowId));
       else pageList.value.forEach(o => s.add(o.__rowId));
-      checked.value = s;
+      checked = s;
     };
     const pickMulti = () => {
-      const picks = allRows.value.filter(o => checked.value.has(o.__rowId));
+      const picks = allRows.value.filter(o => checked.has(o.__rowId));
       if (!picks.length) return;
       emit('pick-multi', picks.map(o => ({ ...o.row })));
-      checked.value = new Set();
+      checked = new Set();
     };
     const pickOne = (o) => emit('pick-multi', [{ ...o.row }]);
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
@@ -2376,9 +2376,9 @@ window.AreaPickModal = {
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
-    const treeOpen = ref(new Set(['__root__']));
-    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
-    const isTreeOpen = k => treeOpen.value.has(k);
+    const treeOpen = reactive(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+    const isTreeOpen = k => treeOpen.has(k);
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
 
     const filtered = computed(() => (props.areas || []).filter(a => {
@@ -2413,28 +2413,28 @@ window.AreaPickModal = {
     const onPick = (a) => emit('pick', a);
 
     /* 멀티선택 */
-    const checked = ref(new Set());
-    const isChecked = (id) => checked.value.has(id);
+    const checked = reactive(new Set());
+    const isChecked = (id) => checked.has(id);
     const toggleCheck = (id) => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
-      checked.value = s;
+      checked = s;
     };
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(a => checked.value.has(a.codeId)));
+    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(a => checked.has(a.codeId)));
     const toggleCheckAll = () => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (allChecked.value) pageList.value.forEach(a => s.delete(a.codeId));
       else pageList.value.forEach(a => s.add(a.codeId));
-      checked.value = s;
+      checked = s;
     };
     const pickMulti = () => {
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       if (!ids.length) return;
       ids.forEach(id => {
         const a = (props.areas || []).find(x => x.codeId === id);
         if (a) emit('pick', a);
       });
-      checked.value = new Set();
+      checked = new Set();
     };
 
     return {
@@ -2567,9 +2567,9 @@ window.PanelPickModal = {
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
-    const treeOpen = ref(new Set(['__root__']));
-    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
-    const isTreeOpen = k => treeOpen.value.has(k);
+    const treeOpen = reactive(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+    const isTreeOpen = k => treeOpen.has(k);
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
 
     const areaNm = (code) => {
@@ -2609,28 +2609,28 @@ window.PanelPickModal = {
     const onPick = (p) => emit('pick', p);
 
     /* 멀티선택 */
-    const checked = ref(new Set());
-    const isChecked = (id) => checked.value.has(id);
+    const checked = reactive(new Set());
+    const isChecked = (id) => checked.has(id);
     const toggleCheck = (id) => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
-      checked.value = s;
+      checked = s;
     };
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(p => checked.value.has(p.dispId)));
+    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(p => checked.has(p.dispId)));
     const toggleCheckAll = () => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (allChecked.value) pageList.value.forEach(p => s.delete(p.dispId));
       else pageList.value.forEach(p => s.add(p.dispId));
-      checked.value = s;
+      checked = s;
     };
     const pickMulti = () => {
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       if (!ids.length) return;
       ids.forEach(id => {
         const p = (props.displays || []).find(x => x.dispId === id);
         if (p) emit('pick', p);
       });
-      checked.value = new Set();
+      checked = new Set();
     };
 
     return {
@@ -2785,9 +2785,9 @@ window.WidgetLibPickModal = {
 
     /* 사용위치 트리 */
     const selectedTreeKey = ref('');
-    const treeOpen = ref(new Set(['__root__']));
-    const toggleTree = k => { if (treeOpen.value.has(k)) treeOpen.value.delete(k); else treeOpen.value.add(k); };
-    const isTreeOpen = k => treeOpen.value.has(k);
+    const treeOpen = reactive(new Set(['__root__']));
+    const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
+    const isTreeOpen = k => treeOpen.has(k);
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const tree = computed(() => {
       const map = {};

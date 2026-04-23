@@ -117,7 +117,7 @@ window.DpDispAreaDtl = {
     /* ── 패널 선택 팝업 ── */
     const pickOpen = ref(false);
     const pickKw   = ref('');
-    const pickSel  = ref(new Set());
+    const pickSel  = reactive(new Set());
     const availablePanels = computed(() => {
       const all = (displays || []);
       const kw  = pickKw.value.trim().toLowerCase();
@@ -127,7 +127,7 @@ window.DpDispAreaDtl = {
         return true;
       }).sort((a, b) => (a.name||'').localeCompare(b.name||''));
     });
-    const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel.value = new Set(); };
+    const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel = new Set(); };
     const movePanel = (idx, dir) => {
       const arr = relatedPanels.value;
       const target = idx + dir;
@@ -146,12 +146,12 @@ window.DpDispAreaDtl = {
     };
     const closePick = () => { pickOpen.value = false; };
     const togglePick = (id) => {
-      const s = new Set(pickSel.value);
+      const s = new Set(pickSel);
       if (s.has(id)) s.delete(id); else s.add(id);
-      pickSel.value = s;
+      pickSel = s;
     };
     const confirmPick = () => {
-      const ids = Array.from(pickSel.value);
+      const ids = Array.from(pickSel);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       const list = displays || [];

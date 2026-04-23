@@ -146,7 +146,7 @@ window.DpDispUiDtl = {
     /* 영역 선택 팝업 */
     const pickOpen = ref(false);
     const pickKw   = ref('');
-    const pickSel  = ref(new Set());
+    const pickSel  = reactive(new Set());
     const availableAreas = computed(() => {
       const all = (codes || []).filter(c => c.codeGrp === 'DISP_AREA');
       const kw  = pickKw.value.trim().toLowerCase();
@@ -156,7 +156,7 @@ window.DpDispUiDtl = {
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
-    const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel.value = new Set(); };
+    const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel = new Set(); };
     const onAreaPicked = (a) => {
       if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;
@@ -165,12 +165,12 @@ window.DpDispUiDtl = {
     };
     const closePick = () => { pickOpen.value = false; };
     const togglePick = (id) => {
-      const s = new Set(pickSel.value);
+      const s = new Set(pickSel);
       if (s.has(id)) s.delete(id); else s.add(id);
-      pickSel.value = s;
+      pickSel = s;
     };
     const confirmPick = () => {
-      const ids = Array.from(pickSel.value);
+      const ids = Array.from(pickSel);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       const codesData = codes || [];

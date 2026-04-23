@@ -261,32 +261,32 @@ window.DpDispUiPreview = {
         })),
       }));
     });
-    const openNodes = ref(new Set());
+    const openNodes = reactive(new Set());
     const toggleNode = (key) => {
-      if (openNodes.value.has(key)) openNodes.value.delete(key);
-      else openNodes.value.add(key);
+      if (openNodes.has(key)) openNodes.delete(key);
+      else openNodes.add(key);
     };
-    const isOpen = (key) => openNodes.value.has(key);
+    const isOpen = (key) => openNodes.has(key);
     const allChildrenOpen = (node) =>
-      node.cwindow.safeArrayUtils.safeEvery(hildren, sub => openNodes.value.has(node.label + '_' + sub.label));
+      node.cwindow.safeArrayUtils.safeEvery(hildren, sub => openNodes.has(node.label + '_' + sub.label));
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
       node.cwindow.safeArrayUtils.safeForEach(hildren, sub => {
         const key = node.label + '_' + sub.label;
-        if (open) openNodes.value.add(key);
-        else openNodes.value.delete(key);
+        if (open) openNodes.add(key);
+        else openNodes.delete(key);
       });
-      if (open) openNodes.value.add(node.label);
+      if (open) openNodes.add(node.label);
     };
     Vue.watchEffect(() => {
-      if (!openNodes.value.has('__root__')) openNodes.value.add('__root__');
-      if (tree.value.length && openNodes.value.size === 1) {
-        openNodes.value.add(tree.window.safeArrayUtils.safeGet(value, 0).label);
+      if (!openNodes.has('__root__')) openNodes.add('__root__');
+      if (tree.value.length && openNodes.size === 1) {
+        openNodes.add(tree.window.safeArrayUtils.safeGet(value, 0).label);
       }
     });
-    const expandAll = () => { window.safeArrayUtils.safeForEach(tree, n => openNodes.value.add(n.label)); openNodes.value.add('__root__'); };
-    const collapseAll = () => { openNodes.value.clear(); openNodes.value.add('__root__'); };
+    const expandAll = () => { window.safeArrayUtils.safeForEach(tree, n => openNodes.add(n.label)); openNodes.add('__root__'); };
+    const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
       window._dragWidgetLibs = null;

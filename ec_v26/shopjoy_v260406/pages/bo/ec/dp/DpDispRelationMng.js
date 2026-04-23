@@ -11,12 +11,12 @@ window.DpDispRelationMng = {
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
 
     /* 트리 상태 */
-    const expandedNodes = ref(new Set());
+    const expandedNodes = reactive(new Set());
     const toggleNode = (key) => {
-      if (expandedNodes.value.has(key)) expandedNodes.value.delete(key);
-      else expandedNodes.value.add(key);
+      if (expandedNodes.has(key)) expandedNodes.delete(key);
+      else expandedNodes.add(key);
     };
-    const isNodeExpanded = (key) => expandedNodes.value.has(key);
+    const isNodeExpanded = (key) => expandedNodes.has(key);
 
     /* 트리 데이터 구성 */
     const treeData = computed(() => {

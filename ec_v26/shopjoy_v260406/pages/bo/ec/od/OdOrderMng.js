@@ -132,19 +132,19 @@ window.OdOrderMng = {
     };
 
     /* 일괄선택 */
-    const checked = ref(new Set());
+    const checked = reactive(new Set());
     const toggleCheck = (id) => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
-      checked.value = s;
+      checked = s;
     };
-    const isChecked = (id) => checked.value.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, o => checked.value.has(o.orderId)));
+    const isChecked = (id) => checked.has(id);
+    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, o => checked.has(o.orderId)));
     const toggleCheckAll = () => {
-      const s = new Set(checked.value);
+      const s = new Set(checked);
       if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, o => s.delete(o.orderId));
       else window.safeArrayUtils.safeForEach(pageList, o => s.add(o.orderId));
-      checked.value = s;
+      checked = s;
     };
     const ORDER_STATUS_OPTIONS = ['입금대기','결제완료','상품준비중','배송중','배송완료','구매확정','취소','자동취소'];
     const PAY_METHOD_OPTIONS = ['무통장입금','가상계좌','토스페이먼츠','카카오페이','네이버페이','핸드폰결제','적립금결제','0원결제'];
@@ -165,7 +165,7 @@ window.OdOrderMng = {
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
     const onReqTargetChange = () => {
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       const first = orders.window.safeArrayUtils.safeFind(value, o => ids.includes(o.orderId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
       if (bulkForm.reqTarget === '주문')      bulkForm.reqTargetNm = first.orderId || '';
@@ -181,7 +181,7 @@ window.OdOrderMng = {
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
       .replace('{reason}', bulkForm.reqReason || '-'));
     const openBulk = () => {
-      if (!checked.value.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
+      if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
       bulkTab.value = 'status';
       Object.assign(bulkForm, {
         status:'', payMethod:'', apprAction:'', apprComment:'',
@@ -193,7 +193,7 @@ window.OdOrderMng = {
     };
     const bulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(orders, o => ids.includes(o.orderId));
       let rows = [];
       if (bulkTab.value === 'status') {
@@ -213,7 +213,7 @@ window.OdOrderMng = {
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
     const saveBulk = async () => {
-      const ids = Array.from(checked.value);
+      const ids = Array.from(checked);
       if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
       const cfg = {
         status:     { field:'status',       label:'주문상태',     path:'orders/bulk-status' },
@@ -233,7 +233,7 @@ window.OdOrderMng = {
         o.reqTarget = bulkForm.reqTarget; o.reqTargetNm = bulkForm.reqTargetNm;
         o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;
       } });
-      checked.value = new Set();
+      checked = new Set();
       bulkOpen.value = false;
       try {
         const res = await window.boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
