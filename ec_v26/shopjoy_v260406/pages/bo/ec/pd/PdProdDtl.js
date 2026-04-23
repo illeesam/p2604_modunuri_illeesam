@@ -267,7 +267,7 @@ window.PdProdDtl = {
     const prodPickerSearch = ref('');
     const prodPickerList   = computed(() => {
       const q    = prodPickerSearch.value.trim().toLowerCase();
-      const all  = products.value || [];
+      const all  = products;
       const used = (prodPickerOpen.value === 'rel' ? relProds : codeProds).map(r => r.productId);
       return window.safeArrayUtils.safeFilter(all, p => {
         if (used.includes(p.productId)) return false;
