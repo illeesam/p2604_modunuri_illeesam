@@ -83,6 +83,7 @@
         // 상세 오류 정보 수집
         if (res && res.data) {
           var details = [];
+          if (res.data.descErrStack) details.push(res.data.descErrStack);
           if (res.data.stackTrace) details.push('Stack Trace:\n' + res.data.stackTrace);
           if (res.data.details) details.push('Details:\n' + JSON.stringify(res.data.details, null, 2));
           if (res.data.errors) details.push('Errors:\n' + JSON.stringify(res.data.errors, null, 2));
@@ -173,7 +174,17 @@
 
   /* ── path → apiUrl 변환 래퍼 ── */
   global.boApi = {
-    get:    function (path, cfg)       { return inst.get(apiUrl(path), cfg); },
+    get:    function (path, cfg) {
+      // getInitData에서 names 파라미터가 없으면 ALL로 기본값 설정
+      if (path.includes('getInitData')) {
+        var sep = path.includes('?') ? '&' : '?';
+        if (!path.includes('names=') || path.match(/names=([&]|$)/)) {
+          path = path.replace(/names=([&]|$)/, '').replace(/[&]$/, '');
+          path += (path.includes('?') ? '&' : '?') + 'names=ALL';
+        }
+      }
+      return inst.get(apiUrl(path), cfg);
+    },
     delete: function (path, cfg)       { return inst.delete(apiUrl(path), cfg); },
     post:   function (path, data, cfg) { return inst.post(apiUrl(path), data, cfg); },
     put:    function (path, data, cfg) { return inst.put(apiUrl(path), data, cfg); },

@@ -110,11 +110,20 @@ public class GlobalExceptionHandler {
 
     // ── Private helpers ──────────────────────────────────────────
 
-    /** 예외 스택 추적 문자열 생성 (전체 스택) */
+    /** 예외 스택 추적 문자열 생성 (app 패키지만 필터링) */
     private String buildStack(Exception ex) {
         StringWriter sw = new StringWriter();
         ex.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
+        String fullStack = sw.toString();
+
+        StringBuilder filtered = new StringBuilder();
+        for (String line : fullStack.split("\n")) {
+            if (!line.contains("org.apache") && !line.contains("org.springframework") &&
+                !line.contains("jakarta.servlet") && !line.contains("java.base/")) {
+                filtered.append(line).append("\n");
+            }
+        }
+        return filtered.toString();
     }
 
     /**
