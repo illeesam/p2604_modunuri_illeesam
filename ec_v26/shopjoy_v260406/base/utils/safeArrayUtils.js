@@ -81,10 +81,22 @@ window.safeArrayUtils = {
     }
   },
 
-  // Array 길이 체크
+  // Array 길이 체크 (null/undefined 안전)
   safeLength: (arr) => {
-    if (!Array.isArray(arr)) return 0;
+    if (!Array.isArray(arr) || arr === null || arr === undefined) return 0;
     return arr.length;
+  },
+
+  // Array 존재 여부 체크
+  hasItems: (arr) => {
+    if (!Array.isArray(arr) || arr === null || arr === undefined) return false;
+    return arr.length > 0;
+  },
+
+  // Array 비어있는지 체크
+  isEmpty: (arr) => {
+    if (!Array.isArray(arr) || arr === null || arr === undefined) return true;
+    return arr.length === 0;
   },
 
   // Object 안전 접근
