@@ -503,6 +503,7 @@
       /* ── API 로그 (최대 10건, localStorage 저장) ── */
       const apiLogs = reactive([]);
       const apiLogHoverDetail = ref(null);
+      const apiLogLockedDetail = ref(null);
 
       const _loadApiLogsFromStorage = () => {
         try {
@@ -523,7 +524,11 @@
       };
 
       const addApiLog = (method, url, status, duration, hasError = false, reqData = null, resData = null) => {
-        const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const time = `${hh}:${mm}:${ss}s`;
         let reqStr = '', resStr = '';
         try {
           if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
@@ -541,6 +546,29 @@
         apiLogs.length = 0;
         try { localStorage.removeItem('modu-bo-api_log'); } catch (_) {}
         showToast('API 로그가 초기화되었습니다.', 'success');
+      };
+
+      const toggleApiLogLock = (log) => {
+        if (apiLogLockedDetail.value === log) {
+          apiLogLockedDetail.value = null;
+        } else {
+          apiLogLockedDetail.value = log;
+        }
+      };
+
+      const formatJsonData = (data) => {
+        try {
+          if (!data) return 'N/A';
+          if (typeof data === 'string') {
+            const parsed = JSON.parse(data);
+            return JSON.stringify(parsed, null, 2);
+          } else if (typeof data === 'object') {
+            return JSON.stringify(data, null, 2);
+          }
+          return String(data);
+        } catch (e) {
+          return String(data);
+        }
       };
 
       const getApiStatusColor = (status) => {
@@ -943,7 +971,7 @@
         confirmState, showConfirm, closeConfirm,
         refModal, showRefModal, closeRefModal,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
-        apiLogs, apiLogHoverDetail, clearApiLogs, getApiStatusColor,
+        apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData,
         tabBarRef, scrollTabs,
         currentUser, currentUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, userMenuShow,
@@ -1388,37 +1416,67 @@
             <button v-if="apiLogs.length" @click="clearApiLogs" style="font-size: 10px; padding: 2px 6px; background: #ef4444; color: white; border: none; border-radius: 2px; cursor: pointer; font-weight: 600;">Clear</button>
           </div>
           <div v-if="apiLogs.length === 0" style="font-size: 11px; color: #9ca3af; padding: 8px; text-align: center;">로그 없음</div>
-          <div v-else style="max-height: 250px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 3px; background: white;">
+          <div v-else style="max-height: 350px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 3px; background: white;">
             <div v-for="(log, idx) in apiLogs" :key="idx"
               @mouseenter="apiLogHoverDetail = log"
-              @mouseleave="apiLogHoverDetail = null"
+              @mouseleave="apiLogLockedDetail !== log ? (apiLogHoverDetail = null) : null"
               style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
-              :style="{ background: apiLogHoverDetail === log ? '#f9fafb' : 'white' }">
-              <div style="display: grid; grid-template-columns: 45px 35px 1fr 40px; gap: 4px; align-items: center;">
+              :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
+              <div style="display: grid; grid-template-columns: 18px 42px 32px 1fr 28px 18px; gap: 2px; align-items: center;">
+                <div style="color: #9ca3af; text-align: center; font-size: 9px; font-weight: 600;">{{ apiLogs.length - idx }}</div>
                 <div style="color: #6b7280; white-space: nowrap;">{{ log.time }}</div>
                 <div :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight: '600', textAlign: 'center' }">{{ log.method }}</div>
                 <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: log.hasError ? '#ef4444' : '#374151';">{{ log.url }}</div>
-                <div :style="{ background: getApiStatusColor(log.status) + '20', color: getApiStatusColor(log.status), padding: '2px 4px', borderRadius: '2px', fontWeight: '600', textAlign: 'center', fontSize: '9px' }">{{ log.status }}</div>
+                <div :style="{ color: getApiStatusColor(log.status), fontWeight: '600', textAlign: 'center', fontSize: '10px' }">{{ log.status }}</div>
+                <div @click.stop="toggleApiLogLock(log)" style="text-align: center; cursor: pointer; font-size: 12px; color: #6b7280; user-select: none; padding: 2px;">{{ apiLogLockedDetail === log ? '🔒' : '🔓' }}</div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- API 로그 호버 상세 레이어 -->
-        <div v-if="apiLogHoverDetail" style="position: fixed; top: 300px; right: 20px; width: 400px; max-height: 350px; background: white; border: 1px solid #d1d5db; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: auto;">
-          <div style="padding: 8px; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151;">
-            {{ apiLogHoverDetail.method }} {{ apiLogHoverDetail.url }}
-            <span style="float: right; color: #6b7280;">{{ apiLogHoverDetail.time }}</span>
+        <div v-if="apiLogHoverDetail || apiLogLockedDetail" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 550px; background: white; border: 1px solid #d1d5db; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
+          <!-- 헤더 -->
+          <div style="padding: 12px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-bottom: 1px solid #d1d5db; flex-shrink: 0;">
+            <div style="font-weight: 700; color: #374151; font-size: 12px; margin-bottom: 6px;">📡 API 요청/응답 상세 <span style="color: #ef4444; margin-left: 4px;">#{{ apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) >= 0 ? apiLogs.length - apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) : '-' }}</span></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div style="flex: 1; overflow: hidden;">
+                <span style="color: #6b7280; font-size: 10px;">{{ (apiLogLockedDetail || apiLogHoverDetail).method }}</span>
+                <span style="color: #374151; font-size: 10px; word-break: break-all;">{{ (apiLogLockedDetail || apiLogHoverDetail).url }}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                <span style="color: #6b7280; font-size: 10px; white-space: nowrap;">{{ (apiLogLockedDetail || apiLogHoverDetail).time }}</span>
+                <button v-if="apiLogLockedDetail" @click="toggleApiLogLock(apiLogLockedDetail)" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #6b7280; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">✕</button>
+              </div>
+            </div>
           </div>
-          <div style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
-            <div style="color: #6b7280; font-weight: 600; margin-bottom: 4px;">📤 Request</div>
-            <div style="background: #fafbfc; padding: 6px; border-radius: 2px; border: 1px solid #e5e7eb; max-height: 80px; overflow-y: auto; word-break: break-all; line-height: 1.4; color: #374151;">{{ apiLogHoverDetail.reqData || 'N/A' }}</div>
+
+          <!-- 상태 정보 -->
+          <div style="padding: 8px 12px; background: #fafbfc; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 16px; flex-shrink: 0;">
+            <div>
+              <span style="color: #6b7280; font-size: 10px; font-weight: 600;">상태:</span>
+              <div :style="{ display: 'inline-block', background: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#ecfdf5' : '#fef2f2', color: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444', padding: '4px 8px', borderRadius: '2px', fontWeight: '700', border: '1px solid ' + (((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444'), fontSize: '11px', marginLeft: '4px' }">{{ (apiLogLockedDetail || apiLogHoverDetail).status }}</div>
+            </div>
+            <div>
+              <span style="color: #6b7280; font-size: 10px; font-weight: 600;">소요시간:</span>
+              <span style="color: #374151; font-size: 10px; margin-left: 4px;">{{ (apiLogLockedDetail || apiLogHoverDetail).duration }}ms</span>
+            </div>
           </div>
-          <div style="padding: 8px;">
-            <div style="color: #6b7280; font-weight: 600; margin-bottom: 4px;">📥 Response</div>
-            <div style="background: #fafbfc; padding: 6px; border-radius: 2px; border: 1px solid #e5e7eb; max-height: 80px; overflow-y: auto; word-break: break-all; line-height: 1.4; color: #374151;">{{ apiLogHoverDetail.resData || 'N/A' }}</div>
+
+          <!-- 요청/응답 데이터 -->
+          <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 0.4fr 1fr; gap: 8px; padding: 8px; background: white;">
+            <!-- Request -->
+            <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
+              <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📤 Request</div>
+              <div style="flex: 1; overflow-y: auto; padding: 6px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.4; font-size: 10px;">{{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).reqData) }}</div>
+            </div>
+
+            <!-- Response -->
+            <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
+              <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📥 Response</div>
+              <div style="flex: 1; overflow-y: auto; padding: 6px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.4; font-size: 10px;">{{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).resData) }}</div>
+            </div>
           </div>
-          <div style="padding: 6px 8px; background: #f9fafb; border-top: 1px solid #e5e7eb; color: #6b7280; text-align: right;">⏱ {{ apiLogHoverDetail.duration }}ms</div>
         </div>
       </div>
     </div>
