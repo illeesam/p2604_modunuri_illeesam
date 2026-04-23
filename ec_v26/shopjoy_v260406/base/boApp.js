@@ -504,6 +504,7 @@
       const apiLogs = reactive([]);
       const apiLogHoverDetail = ref(null);
       const apiLogLockedDetail = ref(null);
+      const maxApiLogs = 15;
 
       const _loadApiLogsFromStorage = () => {
         try {
@@ -523,22 +524,29 @@
         } catch (_) {}
       };
 
-      const addApiLog = (method, url, status, duration, hasError = false, reqData = null, resData = null) => {
+      const addApiLog = (method, url, status, duration, hasError = false, reqData = null, resData = null, reqHeaders = null) => {
         const now = new Date();
         const hh = String(now.getHours()).padStart(2, '0');
         const mm = String(now.getMinutes()).padStart(2, '0');
         const ss = String(now.getSeconds()).padStart(2, '0');
         const time = `${hh}:${mm}:${ss}s`;
-        let reqStr = '', resStr = '';
+        let reqStr = '', resStr = '', headerStr = '';
         try {
           if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
           if (resData) resStr = JSON.stringify(typeof resData === 'string' ? JSON.parse(resData) : resData, null, 2);
+          if (reqHeaders) {
+            const headers = {
+              'Content-Type': reqHeaders['Content-Type'] || '',
+              'Authorization': reqHeaders['Authorization'] || ''
+            };
+            headerStr = JSON.stringify(headers, null, 2);
+          }
         } catch (_) {
           reqStr = String(reqData || '');
           resStr = String(resData || '');
         }
-        apiLogs.unshift({ method, url, status, duration, time, hasError, reqData: reqStr, resData: resStr });
-        if (apiLogs.length > 10) apiLogs.pop();
+        apiLogs.unshift({ method, url, status, duration, time, hasError, reqData: reqStr, resData: resStr, headers: headerStr });
+        if (apiLogs.length > maxApiLogs) apiLogs.pop();
         _saveApiLogsToStorage();
       };
 
@@ -571,6 +579,44 @@
         }
       };
 
+      const isWithin60Seconds = (timeStr) => {
+        try {
+          const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
+          const logTime = hh * 3600 + mm * 60 + ss;
+          const now = new Date();
+          const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+          const diff = Math.abs(currentTime - logTime);
+          return diff <= 60 || (diff > 86400 - 60 && diff < 86400);
+        } catch (_) {
+          return false;
+        }
+      };
+
+      const getRelativeTime = (timeStr) => {
+        try {
+          const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
+          const logTime = hh * 3600 + mm * 60 + ss;
+          const now = new Date();
+          const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+          let diff = currentTime - logTime;
+
+          if (diff < 0) {
+            diff += 86400;
+          }
+
+          if (diff < 60) {
+            return `${diff}초전`;
+          } else if (diff < 3600) {
+            const minutes = Math.floor(diff / 60);
+            const seconds = diff % 60;
+            return `${minutes}분${seconds}초전`;
+          }
+          return timeStr;
+        } catch (_) {
+          return timeStr;
+        }
+      };
+
       const getApiStatusColor = (status) => {
         if (status >= 200 && status < 300) return '#10b981';
         if (status >= 300 && status < 400) return '#3b82f6';
@@ -587,26 +633,28 @@
             const inst = window.boApi.raw;
             const startTime = {};
             const reqData = {};
+            const reqHeaders = {};
             inst.interceptors.request.use((cfg) => {
               const key = cfg.url + cfg.method;
               startTime[key] = Date.now();
               reqData[key] = cfg.data || cfg.params || null;
+              reqHeaders[key] = cfg.headers || {};
               return cfg;
             });
             inst.interceptors.response.use(
               (res) => {
                 const key = res.config.url + res.config.method;
                 const duration = Date.now() - (startTime[key] || 0);
-                addApiLog(res.config.method.toUpperCase(), res.config.url, res.status, duration, false, reqData[key], res.data);
-                delete startTime[key]; delete reqData[key];
+                addApiLog(res.config.method.toUpperCase(), res.config.url, res.status, duration, false, reqData[key], res.data, reqHeaders[key]);
+                delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
                 return res;
               },
               (err) => {
                 const cfg = err.config || {};
                 const key = cfg.url + cfg.method;
                 const duration = Date.now() - (startTime[key] || 0);
-                addApiLog(cfg.method.toUpperCase(), cfg.url, err.response?.status || 0, duration, true, reqData[key], err.response?.data);
-                delete startTime[key]; delete reqData[key];
+                addApiLog(cfg.method.toUpperCase(), cfg.url, err.response?.status || 0, duration, true, reqData[key], err.response?.data, reqHeaders[key]);
+                delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
                 return Promise.reject(err);
               }
             );
@@ -823,8 +871,6 @@
             ? user
             : { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
 
-          await configStore.loadCodes();
-          await configStore.loadUserInfo();
           openTabs.splice(0);
           loginForm.loginId = ''; loginForm.loginPwd = '';
           closeLogin();
@@ -971,7 +1017,7 @@
         confirmState, showConfirm, closeConfirm,
         refModal, showRefModal, closeRefModal,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
-        apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData,
+        apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
         tabBarRef, scrollTabs,
         currentUser, currentUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, userMenuShow,
@@ -1416,15 +1462,15 @@
             <button v-if="apiLogs.length" @click="clearApiLogs" style="font-size: 10px; padding: 2px 6px; background: #ef4444; color: white; border: none; border-radius: 2px; cursor: pointer; font-weight: 600;">Clear</button>
           </div>
           <div v-if="apiLogs.length === 0" style="font-size: 11px; color: #9ca3af; padding: 8px; text-align: center;">로그 없음</div>
-          <div v-else style="max-height: 350px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 3px; background: white;">
+          <div v-else style="max-height: 525px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 3px; background: white;">
             <div v-for="(log, idx) in apiLogs" :key="idx"
               @mouseenter="apiLogHoverDetail = log"
               @mouseleave="apiLogLockedDetail !== log ? (apiLogHoverDetail = null) : null"
               style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
               :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
-              <div style="display: grid; grid-template-columns: 18px 42px 32px 1fr 28px 18px; gap: 2px; align-items: center;">
-                <div style="color: #9ca3af; text-align: center; font-size: 9px; font-weight: 600;">{{ apiLogs.length - idx }}</div>
-                <div style="color: #6b7280; white-space: nowrap;">{{ log.time }}</div>
+              <div style="display: grid; grid-template-columns: 18px 50px 32px 1fr 28px 18px; gap: 2px; align-items: center;">
+                <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', textAlign: 'center', fontSize: '9px', fontWeight: isWithin60Seconds(log.time) ? '700' : '400' }">{{ apiLogs.length - idx }}</div>
+                <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', whiteSpace: 'nowrap', fontWeight: isWithin60Seconds(log.time) ? '700' : '400', fontSize: '9px' }">{{ getRelativeTime(log.time) }}</div>
                 <div :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight: '600', textAlign: 'center' }">{{ log.method }}</div>
                 <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: log.hasError ? '#ef4444' : '#374151';">{{ log.url }}</div>
                 <div :style="{ color: getApiStatusColor(log.status), fontWeight: '600', textAlign: 'center', fontSize: '10px' }">{{ log.status }}</div>
@@ -1435,14 +1481,17 @@
         </div>
 
         <!-- API 로그 호버 상세 레이어 -->
-        <div v-if="apiLogHoverDetail || apiLogLockedDetail" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 550px; background: white; border: 1px solid #d1d5db; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
+        <div v-if="apiLogHoverDetail || apiLogLockedDetail" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 660px; background: white; border: 2px solid #8b5cf6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
           <!-- 헤더 -->
           <div style="padding: 12px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-bottom: 1px solid #d1d5db; flex-shrink: 0;">
             <div style="font-weight: 700; color: #374151; font-size: 12px; margin-bottom: 6px;">📡 API 요청/응답 상세 <span style="color: #ef4444; margin-left: 4px;">#{{ apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) >= 0 ? apiLogs.length - apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) : '-' }}</span></div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
               <div style="flex: 1; overflow: hidden;">
-                <span style="color: #6b7280; font-size: 10px;">{{ (apiLogLockedDetail || apiLogHoverDetail).method }}</span>
-                <span style="color: #374151; font-size: 10px; word-break: break-all;">{{ (apiLogLockedDetail || apiLogHoverDetail).url }}</span>
+                <div style="color: #374151; font-size: 11px; word-break: break-all; line-height: 1.5;">
+                  <span style="color: #6b7280; font-weight: 600;">{{ (apiLogLockedDetail || apiLogHoverDetail).method }}</span>
+                  <span style="color: #6b7280; margin: 0 4px;">:</span>
+                  <span style="color: #374151;">{{ (apiLogLockedDetail || apiLogHoverDetail).url }}</span>
+                </div>
               </div>
               <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                 <span style="color: #6b7280; font-size: 10px; white-space: nowrap;">{{ (apiLogLockedDetail || apiLogHoverDetail).time }}</span>
@@ -1464,7 +1513,13 @@
           </div>
 
           <!-- 요청/응답 데이터 -->
-          <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 0.4fr 1fr; gap: 8px; padding: 8px; background: white;">
+          <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 0.5fr 1fr 2fr; gap: 8px; padding: 8px; background: white;">
+            <!-- Headers -->
+            <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
+              <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📋 Headers</div>
+              <div style="flex: 1; overflow-y: auto; padding: 6px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.4; font-size: 10px;">{{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).headers) || '{}' }}</div>
+            </div>
+
             <!-- Request -->
             <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
               <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📤 Request</div>

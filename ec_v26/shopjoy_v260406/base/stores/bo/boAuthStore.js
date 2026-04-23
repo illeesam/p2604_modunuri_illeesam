@@ -53,16 +53,18 @@
             if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refresh_expires_in', this.refreshExpiresIn.toString());
           } catch (_) {}
 
-          /* 로그인 후 추가 관리자 정보 조회 */
+          /* 로그인 후 초기 데이터 조회 */
           try {
-            const userRes = await window.boApi.post('/co/cm/bo-app-store/getUser', '');
-            if (userRes?.data?.data?.user) {
+            const initRes = await window.boApi.post('/co/cm/bo-app-store/getInitData', '');
+            if (initRes?.data?.data) {
               const userStore = window.useUserStore?.();
-              userStore?.setUser(userRes.data.data.user);
-              console.log('[boAuthStore.login] admin user info updated from getUser');
+              if (initRes.data.data.user) {
+                userStore?.setUser(initRes.data.data.user);
+              }
+              console.log('[boAuthStore.login] admin init data loaded from getInitData');
             }
           } catch (e) {
-            console.warn('[boAuthStore.login] getUser fetch failed:', e);
+            console.warn('[boAuthStore.login] getInitData fetch failed:', e);
           }
 
           return this.user || {};
