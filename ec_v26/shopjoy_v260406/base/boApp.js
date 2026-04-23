@@ -177,17 +177,21 @@
 
   const app = createApp({
     setup() {
-      /* ── App Init Data Store 초기화 ── */
-      const boAppInitStore = window.useBoAppInitStore?.();
-      if (boAppInitStore) {
-        try {
-          boAppInitStore.restoreFromStorage();
-          console.log('[boApp] Fetching BO init data (공개 + 인증 데이터)...');
-          boAppInitStore.fetchBoAppInitData().catch(e => console.warn('[boApp] fetchBoAppInitData error:', e));
-        } catch (e) {
-          console.warn('[boApp] App init store restore error:', e);
-        }
-      }
+      /* ── App Init Data Store 초기화 (Pinia 초기화 후 약간 지연) ── */
+      onMounted(() => {
+        setTimeout(() => {
+          const boAppInitStore = window.useBoAppInitStore?.();
+          if (boAppInitStore) {
+            try {
+              boAppInitStore.restoreFromStorage();
+              console.log('[boApp] Fetching BO init data (공개 + 인증 데이터)...');
+              boAppInitStore.fetchBoAppInitData().catch(e => console.warn('[boApp] fetchBoAppInitData error:', e));
+            } catch (e) {
+              console.warn('[boApp] App init store restore error:', e);
+            }
+          }
+        }, 0);
+      });
 
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
@@ -196,8 +200,11 @@
       /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
       window.addEventListener('api-validation-error', (ev) => {
         const d = ev.detail || {};
-        const msg = d.message || '오류가 발생했습니다.';
-        showToast(msg, 'error', 0);
+        let msg = d.message || '오류가 발생했습니다.';
+        if (d.method && d.url && d.status) {
+          msg = `${d.method} ${d.url} ${d.status}\n${msg}`;
+        }
+        showToast(msg, 'error', 0, d.errorDetails || '');
       });
 
       /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
@@ -411,9 +418,19 @@
       const toasts  = reactive([]);
       let _toastId  = 0;
       const TOAST_DURATION = 3500;
-      const showToast = (msg, type = 'success', duration = TOAST_DURATION) => {
+      const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
         const id = ++_toastId;
-        toasts.push({ id, msg, type, persistent: duration === 0 });
+        let msgTitle = msg;
+        let msgDetail = '';
+
+        // 에러 메시지에서 METHOD URL STATUS를 분리
+        if (type === 'error' && msg.includes('\n')) {
+          const parts = msg.split('\n');
+          msgDetail = parts[0]; // METHOD URL STATUS
+          msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
+        }
+
+        toasts.push({ id, msgTitle, msgDetail, msg, type, persistent: duration === 0, errorDetails, expanded: false });
         if (duration !== 0) {
           setTimeout(() => {
             const idx = toasts.findIndex(t => t.id === id);
@@ -851,6 +868,7 @@
         onRootClick,
         relatedSiteOpen, toggleRelatedSite, openRelatedLink,
         goFoSite, goBoSite, currentFoSiteNo, currentBoSiteNo, SITE_PAIR_MENU, DISP_LINKS,
+        safe: window.safeUtil,
       };
     },
 
@@ -1312,11 +1330,24 @@
   <!-- Toast 누적 스택 -->
   <div class="toast-container">
     <div v-for="t in toasts" :key="t.id"
-      class="toast-item" :class="'toast-'+t.type"
-      @click="closeToast(t.id)">
-      <span class="toast-icon">{{ t.type==='error' ? '✕' : t.type==='warning' ? '⚠' : t.type==='info' ? 'ℹ' : '✓' }}</span>
-      <span class="toast-msg">{{ t.msg }}</span>
-      <span class="toast-close-x">✕</span>
+      class="toast-item" :class="['toast-'+t.type, { 'toast-expanded': t.expanded }]">
+      <span class="toast-close-x" @click.stop="closeToast(t.id)">✕</span>
+      <div class="toast-msg-wrapper">
+        <div class="toast-msg">
+          <div class="toast-msg-title">{{ t.msgTitle || t.msg }}</div>
+          <div v-if="t.msgDetail" class="toast-msg-detail">{{ t.msgDetail }}</div>
+          <!-- 오류 상세 첫 줄 항상 표시 -->
+          <div v-if="t.errorDetails && t.type === 'error'" class="toast-error-preview">
+            <pre class="toast-error-preview-content">{{ t.errorDetails.split(String.fromCharCode(10))[0] }}</pre>
+          </div>
+        </div>
+        <!-- 오류 상세 더보기 아이콘 (우측, 내용이 있을 때만) -->
+        <span v-if="t.errorDetails && t.type === 'error' && t.errorDetails.includes(String.fromCharCode(10))" @click="t.expanded = !t.expanded" class="toast-expand-icon" :title="t.expanded ? '접기' : '더보기'">{{ t.expanded ? '▲' : '▼' }}</span>
+      </div>
+      <!-- 오류 상세 전체 내용 (펼쳐진 상태) -->
+      <div v-if="t.expanded && t.errorDetails" class="toast-error-details">
+        <pre class="toast-error-content">{{ t.errorDetails }}</pre>
+      </div>
       <div v-if="!t.persistent" class="toast-progress"></div>
     </div>
   </div>

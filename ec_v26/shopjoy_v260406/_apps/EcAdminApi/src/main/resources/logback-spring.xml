@@ -44,7 +44,7 @@
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
                 <layout class="ch.qos.logback.classic.PatternLayout">
-                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{siteId}:%X{userTypeCd}:%X{userId}]){magenta} %logger{39} : %msg%n</pattern>
+                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{siteId}:%X{userTypeCd}:%X{userId}]){magenta} %logger{39} : %msg%n%clr(%wex){red}</pattern>
                 </layout>
             </encoder>
         </appender>

@@ -73,9 +73,29 @@
     if ((status && (status < 200 || status >= 300)) || !status) {
       cfg._notified = true;
       var errMsg = (res && res.data && res.data.message) || err.message || '오류가 발생했습니다.';
+      var errorDetails = '';
       try {
+        // 상세 오류 정보 수집
+        if (res && res.data) {
+          var details = [];
+          if (res.data.stackTrace) details.push('Stack Trace:\n' + res.data.stackTrace);
+          if (res.data.details) details.push('Details:\n' + JSON.stringify(res.data.details, null, 2));
+          if (res.data.errors) details.push('Errors:\n' + JSON.stringify(res.data.errors, null, 2));
+          errorDetails = details.join('\n\n');
+        }
+        if (!errorDetails && err.message) errorDetails = err.message;
+      } catch (_) {}
+      try {
+        // URL 정리 (localhost/127로 시작하면 :port부터만 표시)
+        var displayUrl = cfg.url;
+        if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
+          var portMatch = displayUrl.match(/:(\d+)(\/|$)/);
+          if (portMatch) {
+            displayUrl = ':' + portMatch[1] + displayUrl.substring(displayUrl.indexOf(portMatch[0]) + portMatch[0].length);
+          }
+        }
         global.dispatchEvent(new CustomEvent('api-validation-error', {
-          detail: { scope: 'bo', status: status || 0, url: cfg.url, message: errMsg },
+          detail: { scope: 'bo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, errorDetails: errorDetails },
         }));
       } catch (_) {}
     }

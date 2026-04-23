@@ -3,28 +3,31 @@
    ============================================ */
 (async function () {
   await window.__SITE_CONFIG_READY__;
-  const { createApp, ref, reactive, computed, watch, onBeforeUnmount } = Vue;
+  const { createApp, ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
   /* ── Pinia 생성 및 Auth 초기화 ── */
   const pinia = Pinia.createPinia();
   window.foAuth.init(pinia);
 
-  /* ── Init Data Store 초기화 ── */
-  const foAppInitStore = window.useFoAppInitStore?.();
-  if (foAppInitStore) {
-    try {
-      foAppInitStore.restoreFromStorage();
-      const authStore = window.useFoAuthStore?.();
-      const hasToken = !!(authStore?.accessToken || localStorage.getItem('modu-fo-access_token'));
-      console.log('[foApp] Fetching FO init data (공개 + 인증 데이터)...');
-      foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
-    } catch (e) {
-      console.warn('[foApp] Init store restore error:', e);
-    }
-  }
-
   const app = createApp({
   setup() {
+    /* ── Init Data Store 초기화 (Pinia 초기화 후) ── */
+    onMounted(() => {
+      setTimeout(() => {
+        const foAppInitStore = window.useFoAppInitStore?.();
+        if (foAppInitStore) {
+          try {
+            foAppInitStore.restoreFromStorage();
+            const authStore = window.useFoAuthStore?.();
+            const hasToken = !!(authStore?.accessToken || localStorage.getItem('modu-fo-access_token'));
+            console.log('[foApp] Fetching FO init data (공개 + 인증 데이터)...');
+            foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
+          } catch (e) {
+            console.warn('[foApp] Init store restore error:', e);
+          }
+        }
+      }, 0);
+    });
     /* ── Theme ── */
     const theme = ref(localStorage.getItem('modu-fo-theme') || 'light');
     const applyTheme = t => {
@@ -41,8 +44,11 @@
     /* API Validation 에러 → toast 출력 (foAxios 에서 window.dispatchEvent('api-validation-error')) */
     window.addEventListener('api-validation-error', (ev) => {
       const d = ev.detail || {};
-      const msg = d.message || '오류가 발생했습니다.';
-      showToast(msg, 'error');
+      let msg = d.message || '오류가 발생했습니다.';
+      if (d.method && d.url && d.status) {
+        msg = `${d.method} ${d.url} ${d.status}\n${msg}`;
+      }
+      showToast(msg, 'error', d.errorDetails || '');
     });
 
     /* API 에러 → 오류 페이지 이동 (baseAxios 계열에서 window dispatchEvent 호출) */
@@ -116,11 +122,21 @@
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) mobileOpen.value = false; });
 
     /* ── Toast ── */
-    const toast = reactive({ show: false, msg: '', type: 'success' });
+    const toast = reactive({ show: false, msg: '', msgTitle: '', msgDetail: '', type: 'success' });
     let toastTimer = null;
-    const showToast = (msg, type = 'success') => {
+    const showToast = (msg, type = 'success', errorDetails = '') => {
       if (toastTimer) clearTimeout(toastTimer);
-      Object.assign(toast, { show: true, msg, type });
+
+      let msgTitle = msg;
+      let msgDetail = '';
+      // 에러 메시지에서 METHOD URL STATUS를 분리
+      if (type === 'error' && msg.includes('\n')) {
+        const parts = msg.split('\n');
+        msgDetail = parts[0]; // METHOD URL STATUS
+        msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
+      }
+
+      Object.assign(toast, { show: true, msg, msgTitle, msgDetail, type, errorDetails, expanded: false });
       toastTimer = setTimeout(() => { toast.show = false; }, 3000);
     };
 
@@ -427,6 +443,7 @@
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
       }),
       errorMessage,
+      safe: window.safeUtil,
     };
   },
 
@@ -592,9 +609,26 @@
   <login v-if="showLogin" :show-toast="showToast" @close="showLogin=false" />
 
   <!-- TOAST -->
-  <div v-if="toast.show" class="toast-wrap" :class="'toast-'+toast.type">
-    <span class="toast-icon">{{ toast.type==='success'?'✅':toast.type==='error'?'❌':toast.type==='warning'?'⚠️':'ℹ️' }}</span>
-    <span class="toast-msg">{{ toast.msg }}</span>
+  <div v-if="toast.show" class="toast-wrap" :class="['toast-'+toast.type, { 'toast-expanded': toast.expanded }]">
+    <div class="toast-content">
+      <span class="toast-icon">{{ toast.type==='success'?'✅':toast.type==='error'?'❌':toast.type==='warning'?'⚠️':'ℹ️' }}</span>
+      <div class="toast-msg-wrapper">
+        <div class="toast-msg">
+          <div class="toast-msg-title">{{ toast.msgTitle || toast.msg }}</div>
+          <div v-if="toast.msgDetail" class="toast-msg-detail">{{ toast.msgDetail }}</div>
+          <!-- 오류 상세 첫 줄 항상 표시 -->
+          <div v-if="toast.errorDetails && toast.type === 'error'" class="toast-error-preview">
+            <pre class="toast-error-preview-content">{{ toast.errorDetails.split(String.fromCharCode(10))[0] }}</pre>
+          </div>
+        </div>
+        <!-- 오류 상세 더보기 아이콘 (우측, 내용이 있을 때만) -->
+        <span v-if="toast.errorDetails && toast.type === 'error' && toast.errorDetails.includes(String.fromCharCode(10))" @click="toast.expanded = !toast.expanded" class="toast-expand-icon" :title="toast.expanded ? '접기' : '더보기'">{{ toast.expanded ? '▲' : '▼' }}</span>
+      </div>
+    </div>
+    <!-- 오류 상세 전체 내용 (펼쳐진 상태) -->
+    <div v-if="toast.expanded && toast.errorDetails" class="toast-error-details">
+      <pre class="toast-error-content">{{ toast.errorDetails }}</pre>
+    </div>
   </div>
 
   <!-- ALERT MODAL -->

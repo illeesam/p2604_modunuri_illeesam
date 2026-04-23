@@ -15,8 +15,10 @@
   window.useAuthStore = defineStore('auth', {
     state: () => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
+      accessToken: '',
+      refreshToken: '',
+      accessExpiresIn: 0,
+      refreshExpiresIn: 0,
     }),
 
     getters: {
@@ -39,12 +41,16 @@
           this.user = res.data || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
           this.accessToken = res.data?.accessToken || '';
           this.refreshToken = res.data?.refreshToken || '';
+          this.accessExpiresIn = res.data?.accessExpiresIn || 0;
+          this.refreshExpiresIn = res.data?.refreshExpiresIn || 0;
 
           // localStorage 저장
           try {
             if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
             if (this.refreshToken) localStorage.setItem('modu-bo-refresh_token', this.refreshToken);
             if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
+            if (this.accessExpiresIn) localStorage.setItem('modu-bo-access_expires_in', this.accessExpiresIn.toString());
+            if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refresh_expires_in', this.refreshExpiresIn.toString());
           } catch (_) {}
 
           /* 로그인 후 추가 관리자 정보 조회 */
@@ -80,6 +86,8 @@
 
           this.accessToken = res.data?.accessToken || '';
           this.refreshToken = res.data?.refreshToken || '';
+          this.accessExpiresIn = res.data?.accessExpiresIn || 0;
+          this.refreshExpiresIn = res.data?.refreshExpiresIn || 0;
 
           try {
             if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
@@ -118,17 +126,53 @@
         } catch (_) {}
       },
 
+      // 인증 정보 설정 (토큰 + 사용자 정보)
+      setAuth(authData) {
+        if (authData) {
+          this.accessToken = authData.accessToken || '';
+          this.refreshToken = authData.refreshToken || '';
+          this.accessExpiresIn = authData.accessExpiresIn || 0;
+          this.refreshExpiresIn = authData.refreshExpiresIn || 0;
+
+          if (authData.user) {
+            this.user = authData.user;
+          }
+
+          try {
+            if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
+            if (this.refreshToken) localStorage.setItem('modu-bo-refresh_token', this.refreshToken);
+            if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
+            if (this.accessExpiresIn) localStorage.setItem('modu-bo-access_expires_in', this.accessExpiresIn.toString());
+            if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refresh_expires_in', this.refreshExpiresIn.toString());
+          } catch (_) {}
+        }
+      },
+
+      // 사용자 정보 설정 (init store에서 호출)
+      setUser(userData) {
+        if (userData) {
+          this.user = userData;
+          try {
+            if (userData) localStorage.setItem('modu-bo-user', JSON.stringify(userData));
+          } catch (_) {}
+        }
+      },
+
       // localStorage에서 복원
       restoreFromStorage() {
         try {
           const accessToken = localStorage.getItem('modu-bo-access_token');
           const refreshToken = localStorage.getItem('modu-bo-refresh_token');
           const userJson = localStorage.getItem('modu-bo-user');
+          const accessExpiresIn = localStorage.getItem('modu-bo-access_expires_in');
+          const refreshExpiresIn = localStorage.getItem('modu-bo-refresh_expires_in');
 
           if (accessToken && userJson) {
             this.accessToken = accessToken || '';
             this.refreshToken = refreshToken || '';
             this.user = JSON.parse(userJson) || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+            this.accessExpiresIn = accessExpiresIn ? parseInt(accessExpiresIn) : 0;
+            this.refreshExpiresIn = refreshExpiresIn ? parseInt(refreshExpiresIn) : 0;
             return true;
           }
         } catch (_) {}
@@ -165,6 +209,8 @@
         accessToken: null,
         refreshToken: null,
         isLoggedIn: false,
+        accessExpiresIn: 0,
+        refreshExpiresIn: 0,
         currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
         authHeader: {},
       };
@@ -174,6 +220,9 @@
         user: null,
         accessToken: null,
         refreshToken: null,
+        accessExpiresIn: 0,
+        refreshExpiresIn: 0,
+
         isLoggedIn: false,
         currentUser: { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' },
         authHeader: {},

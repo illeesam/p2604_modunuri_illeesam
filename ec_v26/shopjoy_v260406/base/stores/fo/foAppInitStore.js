@@ -15,8 +15,8 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
 
   getters: {
     isInitialized: (s) => {
-      const memberStore = window.useFoMemberStore?.();
-      return !!(memberStore && memberStore.member && memberStore.member.memberId);
+      const authStore = window.useFoAuthStore?.();
+      return !!(authStore && authStore.getAuth && authStore.getAuth().user && authStore.getAuth().user.memberId);
     },
   },
 
@@ -38,15 +38,10 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
         if (res?.data?.data) {
           const data = res.data.data;
 
-          // 각 항목을 해당 store에 분산 저장 (백엔드 응답 키: syAuth, mbMember, syRoles, syMenus, syCodes, syProps, dpDisp, syApp)
+          // 각 항목을 해당 store에 분산 저장 (백엔드 응답 키: syAuth[토큰+회원], syRoles, syMenus, syCodes, syProps, dpDisp, syApp)
           if (data.syAuth) {
             const authStore = window.useFoAuthStore?.();
             authStore?.setAuth(data.syAuth);
-          }
-
-          if (data.mbMember) {
-            const memberStore = window.useFoMemberStore?.();
-            memberStore?.setMember(data.mbMember);
           }
 
           if (data.syRoles) {
@@ -106,7 +101,6 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
      */
     clearAll() {
       const authStore = window.useFoAuthStore?.();
-      const memberStore = window.useFoMemberStore?.();
       const roleStore = window.useFoRoleStore?.();
       const menuStore = window.useFoMenuStore?.();
       const codeStore = window.useFoCodeStore?.();
@@ -115,7 +109,6 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
       const appStore = window.useFoAppStore?.();
 
       authStore?.clear();
-      memberStore?.clear();
       roleStore?.clear();
       menuStore?.clear();
       codeStore?.clear();
@@ -132,8 +125,8 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
      * localStorage에서 복원
      */
     restoreFromStorage() {
-      const memberStore = window.useFoMemberStore?.();
-      return memberStore?.restoreFromStorage() || false;
+      const authStore = window.useFoAuthStore?.();
+      return authStore?.restoreFromStorage() || false;
     },
   },
 });

@@ -89,67 +89,85 @@ public class CmAppStoreDataService {
     // ════════════════════════════════════════════════════════════════════
 
     /**
-     * 인증 정보 조회 - AuthPrincipal의 토큰 정보 반환
+     * 인증 정보 조회 - 토큰 정보 + 사용자 정보 반환
+     * BO: StoreUser (관리자), FO: StoreMember (회원)
      */
     @Transactional(readOnly = true)
     public StoreAuth getAuth(AuthPrincipal authUser) {
         if (authUser == null) {
             return StoreAuth.builder().build();
         }
+
+        Object userInfo = null;
+        if ("BO".equals(authUser.userTypeCd())) {
+            userInfo = getBoUser(authUser);
+        } else {
+            userInfo = getFoUser(authUser);
+        }
+
         return StoreAuth.builder()
                 .accessToken(CmUtil.nvl(authUser.accessToken())) // 액세스 토큰
                 .refreshToken(CmUtil.nvl(authUser.refreshToken())) // 리프레시 토큰
                 .accessExpiresIn(3600L) // 액세스 토큰 만료시간(초)
                 .refreshExpiresIn(604800L) // 리프레시 토큰 만료시간(초, 7일)
+                .user(userInfo) // 사용자 정보
                 .build();
     }
 
     /**
-     * 사용자 정보 조회 - BO: sy_user(관리자), FO: ec_member(회원)
+     * 관리자 정보 조회 - BO: sy_user(관리자)
      */
     @Transactional(readOnly = true)
-    public Object getBoUser(AuthPrincipal authUser) {
+    public StoreUser getBoUser(AuthPrincipal authUser) {
         if (authUser == null || authUser.userId() == null) {
-            return authUser != null && "BO".equals(authUser.userTypeCd()) ? StoreUser.builder().build() : StoreMember.builder().build();
+            return StoreUser.builder().build();
         }
 
-        if ("BO".equals(authUser.userTypeCd())) {
-            SyUser user = syUserRepository.findById(authUser.userId()).orElse(null);
-            if (user == null) {
-                return StoreUser.builder().build();
-            }
+        SyUser user = syUserRepository.findById(authUser.userId()).orElse(null);
+        if (user == null) {
+            return StoreUser.builder().build();
+        }
 
-            String deptNm = "";
-            if (user.getDeptId() != null) {
-                SyDept dept = syDeptRepository.findById(user.getDeptId()).orElse(null);
-                if (dept != null) {
-                    deptNm = dept.getDeptNm();
-                }
+        String deptNm = "";
+        if (user.getDeptId() != null) {
+            SyDept dept = syDeptRepository.findById(user.getDeptId()).orElse(null);
+            if (dept != null) {
+                deptNm = dept.getDeptNm();
             }
+        }
 
-            String roleNm = "";
-            if (user.getRoleId() != null) {
-                SyRole role = syRoleRepository.findById(user.getRoleId()).orElse(null);
-                if (role != null) {
-                    roleNm = role.getRoleNm();
-                }
+        String roleNm = "";
+        if (user.getRoleId() != null) {
+            SyRole role = syRoleRepository.findById(user.getRoleId()).orElse(null);
+            if (role != null) {
+                roleNm = role.getRoleNm();
             }
+        }
 
-            return StoreUser.builder()
-                    .userId(user.getUserId()) // 사용자ID
-                    .userName(CmUtil.nvl(user.getUserNm())) // 사용자명
-                    .userEmail(CmUtil.nvl(user.getUserEmail())) // 이메일
-                    .userHpNo(CmUtil.nvl(user.getUserPhone())) // 휴대폰
-                    .deptId(CmUtil.nvl(user.getDeptId())) // 부서ID
-                    .deptNm(deptNm) // 부서명
-                    .roleId(CmUtil.nvl(user.getRoleId())) // 역할ID
-                    .roleNm(roleNm) // 역할명
-                    .userStatusCd(CmUtil.nvl(user.getUserStatusCd(), "ACTIVE")) // 상태
-                    .isAdminYn("N") // 관리자여부
-                    .companyId("") // 회사ID
-                    .companyNm("") // 회사명
-                    .boBookmarks("") // 즐겨찾기
-                    .build();
+        return StoreUser.builder()
+                .userId(user.getUserId()) // 사용자ID
+                .userName(CmUtil.nvl(user.getUserNm())) // 사용자명
+                .userEmail(CmUtil.nvl(user.getUserEmail())) // 이메일
+                .userHpNo(CmUtil.nvl(user.getUserPhone())) // 휴대폰
+                .deptId(CmUtil.nvl(user.getDeptId())) // 부서ID
+                .deptNm(deptNm) // 부서명
+                .roleId(CmUtil.nvl(user.getRoleId())) // 역할ID
+                .roleNm(roleNm) // 역할명
+                .userStatusCd(CmUtil.nvl(user.getUserStatusCd(), "ACTIVE")) // 상태
+                .isAdminYn("N") // 관리자여부
+                .companyId("") // 회사ID
+                .companyNm("") // 회사명
+                .boBookmarks("") // 즐겨찾기
+                .build();
+    }
+
+    /**
+     * 회원 정보 조회 - FO: ec_member(회원)
+     */
+    @Transactional(readOnly = true)
+    public StoreMember getFoUser(AuthPrincipal authUser) {
+        if (authUser == null || authUser.userId() == null) {
+            return StoreMember.builder().build();
         }
 
         MbMember member = memberRepository.findById(authUser.userId()).orElse(null);
@@ -356,35 +374,6 @@ public class CmAppStoreDataService {
                 .build();
     }
 
-    /**
-     * FO 회원 정보 조회 - ec_member (회원정보)
-     */
-    @Transactional(readOnly = true)
-    public StoreMember getFoUser(AuthPrincipal authUser) {
-        if (authUser == null || authUser.userId() == null) {
-            return StoreMember.builder().build();
-        }
-
-        MbMember member = memberRepository.findById(authUser.userId()).orElse(null);
-        if (member == null) {
-            return StoreMember.builder().build();
-        }
-
-        return StoreMember.builder()
-                .memberId(member.getMemberId()) // 회원ID
-                .memberEmail(member.getLoginId()) // 이메일(로그인ID)
-                .memberNm(member.getMemberNm()) // 회원명
-                .siteId(CmUtil.nvl(member.getSiteId())) // 사이트ID
-                .memberTypeCd("") // 회원유형
-                .memberHpNo(CmUtil.nvl(member.getMemberPhone())) // 휴대폰
-                .memberGrade(CmUtil.nvl(member.getGradeCd())) // 회원등급
-                .memberStaffYn("N") // 직원여부
-                .memberBirthDt(CmUtil.nvl(member.getBirthDate() != null ? member.getBirthDate().toString() : null)) // 생년월일
-                .memberStatusCd(CmUtil.nvl(member.getMemberStatusCd())) // 상태
-                .cartCount(0L) // 장바구니수
-                .likeCount(0L) // 찜한상품수
-                .build();
-    }
 
     /**
      * 전시 구조 조회 - dp_ui, dp_area, dp_panel, dp_panel_item (content 제외)

@@ -420,17 +420,18 @@ body {
   bottom: 28px;
   right: 28px;
   z-index: 1000;
-  min-width: 260px;
-  max-width: 360px;
+  min-width: 320px;
+  max-width: 550px;
   border-radius: 16px;
-  padding: 14px 20px;
+  padding: 14px 40px 14px 20px;
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   animation: toastIn 0.3s ease;
   font-size: 0.875rem;
   font-weight: 500;
+  position: relative;
 }
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(16px) scale(0.96); }
@@ -446,8 +447,24 @@ body {
 [data-theme="dark"] .toast-warning { background: #1a1a1a; border-color: #f6ad55; color: #f6ad55; }
 [data-theme="dark"] .toast-info    { background: #1a1a1a; border-color: #e0e0e0; color: #e0e0e0; }
 
+.toast-content { display: flex; align-items: flex-start; gap: 12px; }
 .toast-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
 .toast-msg  { flex: 1; line-height: 1.5; }
+.toast-msg-title { font-size: 0.875rem; font-weight: 500; }
+.toast-msg-detail { font-size: 0.75rem; color: #999; font-weight: 400; margin-top: 2px; }
+.toast-msg-wrapper { display: flex; align-items: flex-start; gap: 8px; flex: 1; }
+.toast-expand-icon { font-size: 0.65rem; color: #bbb; flex-shrink: 0; transition: color .12s; cursor: pointer; padding: 2px 4px; line-height: 1; user-select: none; margin-top: 2px; }
+.toast-wrap:hover .toast-expand-icon { color: #8b5cf6; }
+.toast-error-preview { margin-top: 4px; }
+.toast-error-preview-content { margin: 0; padding: 0; font-size: 0.75rem; color: #666; font-family: 'Courier New', monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; }
+.toast-error-details { margin-top: 6px; padding: 8px 10px; background: rgba(0,0,0,.04); border-radius: 4px; max-height: 200px; overflow-y: auto; }
+.toast-error-content { margin: 0; padding: 0; font-size: 0.75rem; color: #666; font-family: 'Courier New', monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; }
+.toast-wrap.toast-expanded { max-width: 700px; }
+[data-theme="dark"] .toast-expand-icon { color: #666; }
+[data-theme="dark"] .toast-wrap:hover .toast-expand-icon { color: #a78bfa; }
+[data-theme="dark"] .toast-error-details { background: rgba(255,255,255,.06); }
+[data-theme="dark"] .toast-error-content { color: #ccc; }
+[data-theme="dark"] .toast-error-preview-content { color: #ccc; }
 
 /* ── Modal ── */
 .modal-overlay {

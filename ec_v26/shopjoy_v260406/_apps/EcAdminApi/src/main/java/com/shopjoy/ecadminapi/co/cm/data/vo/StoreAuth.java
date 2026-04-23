@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * 인증 정보 VO
- * - JWT 토큰 정보
+ * - JWT 토큰 정보 + 사용자 정보
  */
 @Getter
 @Builder
@@ -18,4 +18,5 @@ public class StoreAuth {
     private String refreshToken;
     private Long accessExpiresIn;      // 초 단위
     private Long refreshExpiresIn;     // 초 단위
+    private Object user;               // BO: StoreUser, FO: StoreMember
 }

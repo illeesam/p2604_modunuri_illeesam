@@ -15,8 +15,8 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
 
   getters: {
     isInitialized: (s) => {
-      const userStore = window.useBoUserStore?.();
-      return !!(userStore && userStore.user && userStore.user.userId);
+      const authStore = window.useBoAuthStore?.();
+      return !!(authStore && authStore.getAuth && authStore.getAuth().user && authStore.getAuth().user.userId);
     },
   },
 
@@ -34,47 +34,52 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
 
       try {
         const res = await window.boApi.post('/co/cm/bo-app-store/getInitData', names || '');
+        console.log('[boAppInitStore] API response:', res);
 
         if (res?.data?.data) {
           const data = res.data.data;
+          console.log('[boAppInitStore] Init data:', data);
 
-          // 각 항목을 해당 store에 분산 저장 (백엔드 응답 키: syAuth, syUser, syRoles, syMenus, syCodes, syProps, syApp)
-          if (data.syAuth) {
-            const authStore = window.useBoAuthStore?.();
-            authStore?.setAuth(data.syAuth);
+          // 각 항목을 해당 store에 분산 저장 (백엔드 응답 키: syAuth[토큰+사용자], syRoles, syMenus, syCodes, syProps, syApp)
+          try {
+            if (data.syAuth) {
+              const authStore = window.useBoAuthStore?.();
+              authStore?.setAuth(data.syAuth);
+            }
+
+            if (data.syRoles) {
+              const roleStore = window.useBoRoleStore?.();
+              roleStore?.setRoles(data.syRoles);
+            }
+
+            if (data.syMenus) {
+              const menuStore = window.useBoMenuStore?.();
+              menuStore?.setMenus(data.syMenus);
+            }
+
+            if (data.syCodes) {
+              const codeStore = window.useBoCodeStore?.();
+              codeStore?.setCodes(data.syCodes?.codes);
+            }
+
+            if (data.syProps) {
+              const propStore = window.useBoPropStore?.();
+              propStore?.setProps(data.syProps);
+            }
+
+            if (data.syApp) {
+              const appStore = window.useBoAppStore?.();
+              appStore?.setApp(data.syApp);
+            }
+
+            this.lastFetchTime = new Date().getTime();
+            console.log('[boAppInitStore] All data stored successfully');
+          } catch (storeErr) {
+            console.error('[boAppInitStore] Store operation error:', storeErr);
+            throw storeErr;
           }
-
-          if (data.syUser) {
-            const userStore = window.useBoUserStore?.();
-            userStore?.setUser(data.syUser);
-          }
-
-          if (data.syRoles) {
-            const roleStore = window.useBoRoleStore?.();
-            roleStore?.setRoles(data.syRoles);
-          }
-
-          if (data.syMenus) {
-            const menuStore = window.useBoMenuStore?.();
-            menuStore?.setMenus(data.syMenus);
-          }
-
-          if (data.syCodes) {
-            const codeStore = window.useBoCodeStore?.();
-            codeStore?.setCodes(data.syCodes?.codes);
-          }
-
-          if (data.syProps) {
-            const propStore = window.useBoPropStore?.();
-            propStore?.setProps(data.syProps);
-          }
-
-          if (data.syApp) {
-            const appStore = window.useBoAppStore?.();
-            appStore?.setApp(data.syApp);
-          }
-
-          this.lastFetchTime = new Date().getTime();
+        } else {
+          console.warn('[boAppInitStore] No data in response:', res);
         }
       } catch (err) {
         console.error('[boAppInitStore] fetchBoAppInitData error:', err);
@@ -96,14 +101,14 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
      * 전체 초기화 (로그아웃 시)
      */
     clearAll() {
-      const userStore = window.useBoUserStore?.();
+      const authStore = window.useBoAuthStore?.();
       const roleStore = window.useBoRoleStore?.();
       const menuStore = window.useBoMenuStore?.();
       const codeStore = window.useBoCodeStore?.();
       const propStore = window.useBoPropStore?.();
       const appStore = window.useBoAppStore?.();
 
-      userStore?.clear();
+      authStore?.clear();
       roleStore?.clear();
       menuStore?.clear();
       codeStore?.clear();
