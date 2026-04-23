@@ -3,10 +3,9 @@ window.SyVendorDtl = {
   name: 'SyVendorDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted, ref } = Vue;
+    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const vendors = reactive([]);
-    const { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } = Vue;
     const loading = ref(false);
     const error = ref(null);
 

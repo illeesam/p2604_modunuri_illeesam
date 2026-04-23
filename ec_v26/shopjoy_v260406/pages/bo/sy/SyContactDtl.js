@@ -4,10 +4,9 @@ window.SyContactDtl = {
   name: 'SyContactDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted, ref } = Vue;
+    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const contacts = reactive([]);
-    const { reactive, computed, ref, onMounted, onBeforeUnmount, nextTick } = Vue;
     const loading = ref(false);
     const error = ref(null);
 

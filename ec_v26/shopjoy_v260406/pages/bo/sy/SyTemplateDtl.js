@@ -3,10 +3,9 @@ window.SyTemplateDtl = {
   name: 'SyTemplateDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted, ref } = Vue;
+    const { reactive, computed, onMounted, ref, onBeforeUnmount, watch, nextTick } = Vue;
 
     const templates = reactive([]);
-    const { reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick } = Vue;
     const loading = ref(false);
     const error = ref(null);
 

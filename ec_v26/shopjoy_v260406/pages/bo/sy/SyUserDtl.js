@@ -6,7 +6,6 @@ window.SyUserDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const users = reactive([]);
-    const { reactive, computed, onMounted, ref } = Vue;
     const loading = ref(false);
     const error = ref(null);
 

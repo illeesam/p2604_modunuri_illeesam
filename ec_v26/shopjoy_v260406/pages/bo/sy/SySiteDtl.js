@@ -6,7 +6,6 @@ window.SySiteDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const sites = reactive([]);
-    const { reactive, computed, onMounted, ref } = Vue;
     const loading = ref(false);
     const error = ref(null);
 

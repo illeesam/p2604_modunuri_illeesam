@@ -3,10 +3,9 @@ window.SyBbsDtl = {
   name: 'SyBbsDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted, ref } = Vue;
+    const { reactive, computed, onMounted, ref, onBeforeUnmount } = Vue;
 
     const bbss = reactive([]);
-    const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
     const loading = ref(false);
     const error = ref(null);
 
