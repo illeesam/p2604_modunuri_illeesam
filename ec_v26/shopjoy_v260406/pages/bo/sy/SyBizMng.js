@@ -8,23 +8,25 @@ window.SyBizMng = {
     const loading = ref(false);
     const error = ref(null);
 
-    // onMounted에서 API 로드
+    // adminData 참조
+    const ad = window.boData || { bizs: [] };
+
+    // onMounted에서 API 로드 (필요시)
     onMounted(async () => {
-      loading.value = true;
-      try {
-        const res = await window.boApi.get('/bo/sy/biz/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        bizs.value = res.data?.data?.list || [];
-        error.value = null;
-      } catch (err) {
-        error.value = err.message;
-        if (props.showToast) props.showToast('SyBiz 로드 실패', 'error');
-      } finally {
-        loading.value = false;
-      }
+      // Currently using adminData directly, API loading commented out
+      // loading.value = true;
+      // try {
+      //   const res = await window.boApi.get('/bo/sy/biz/page', {
+      //     params: { pageNo: 1, pageSize: 10000 }
+      //   });
+      //   window.safeArrayUtils.updateArray(bizs, res.data?.data?.list || []);
+      // } catch (err) {
+      //   error.value = err.message;
+      //   if (props.showToast) props.showToast('SyBiz 로드 실패', 'error');
+      // } finally {
+      //   loading.value = false;
+      // }
     });
-    const ad = null;
 
     /* 좌측 표시경로 트리 */
     const selectedPath = ref(null);
@@ -48,14 +50,18 @@ window.SyBizMng = {
     const STATUS = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
     const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
 
-    const filtered = computed(() => (ad.bizs || []).filter(b => {
-      const k = kw.value.trim().toLowerCase();
-      if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
-      if (statusFlt.value && b.statusCd !== statusFlt.value) return false;
-      if (vendorTypeFlt.value && b.vendorTypeCd !== vendorTypeFlt.value) return false;
-      if (allowedPathIds.value && !allowedPathIds.value.has(b.pathId)) return false;
-      return true;
-    }));
+    const filtered = computed(() => {
+      const items = ad.bizs || [];
+      if (!Array.isArray(items)) return [];
+      return items.filter(b => {
+        const k = kw.value.trim().toLowerCase();
+        if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
+        if (statusFlt.value && b.statusCd !== statusFlt.value) return false;
+        if (vendorTypeFlt.value && b.vendorTypeCd !== vendorTypeFlt.value) return false;
+        if (allowedPathIds.value && !allowedPathIds.value.has(b.pathId)) return false;
+        return true;
+      });
+    });
 
     /* 페이징 */
     const pager = reactive({ page: 1, size: 10 });
@@ -97,11 +103,13 @@ window.SyBizMng = {
         return;
       }
       if (formMode.value === 'new') {
-        const newId = ((ad.bizs || []).reduce((m,x) => Math.max(m, x.bizId), 0) || 0) + 1;
+        if (!Array.isArray(ad.bizs)) ad.bizs = [];
+        const newId = (ad.bizs.reduce((m,x) => Math.max(m, x.bizId || 0), 0) || 0) + 1;
         ad.bizs.push({ ...formData, bizId: newId });
         if (window.boToast) window.boToast('신규 업체가 등록되었습니다.', 'success');
       } else {
-        const idx = (ad.bizs || []).findIndex(b => b.bizId === formData.bizId);
+        if (!Array.isArray(ad.bizs)) return;
+        const idx = ad.bizs.findIndex(b => b.bizId === formData.bizId);
         if (idx >= 0) ad.bizs[idx] = { ...formData };
         if (window.boToast) window.boToast('수정 완료', 'success');
       }
@@ -158,7 +166,7 @@ window.SyBizMng = {
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ filtered.length }}건</span></span>
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ Array.isArray(filtered) ? filtered.length : 0 }}건</span></span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
           </div>
@@ -169,7 +177,7 @@ window.SyBizMng = {
             <th>업체유형</th><th>역할구분</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>구분</th><th>업태/종목</th><th>전화</th><th>상태</th><th>등록일</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="pagedRows.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-if="!Array.isArray(pagedRows) || pagedRows.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
             <tr v-for="b in pagedRows" :key="b.bizId">
               <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
               <td><span class="badge" :class="vendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(b.vendorTypeCd) }}</span></td>
