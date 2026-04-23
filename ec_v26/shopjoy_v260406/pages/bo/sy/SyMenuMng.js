@@ -3,7 +3,7 @@ window.SyMenuMng = {
   name: 'SyMenuMng',
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const menus = reactive([]);
     const loading = ref(false);
     const error = ref(null);

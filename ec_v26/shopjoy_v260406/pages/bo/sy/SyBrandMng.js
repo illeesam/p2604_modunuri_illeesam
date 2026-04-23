@@ -3,7 +3,7 @@ window.SyBrandMng = {
   name: 'SyBrandMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const brands = reactive([]);
     const loading = ref(false);
     const error = ref(null);

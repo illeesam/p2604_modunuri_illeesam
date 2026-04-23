@@ -4,7 +4,7 @@ window.OdOrderHist = {
   name: 'OdOrderHist',
   props: ['navigate', 'showRefModal', 'showToast', 'orderId'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const orders = reactive([]);
     const loading = ref(false);
     const error = ref(null);

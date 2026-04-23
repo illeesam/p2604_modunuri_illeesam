@@ -4,7 +4,7 @@ window.OdClaimHist = {
   name: 'OdClaimHist',
   props: ['navigate', 'showRefModal', 'showToast', 'claimId'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const botTab = ref(window._odClaimHistState.tab || 'items');
     watch(botTab, v => { window._odClaimHistState.tab = v; });
     const viewMode2 = ref('tab');
