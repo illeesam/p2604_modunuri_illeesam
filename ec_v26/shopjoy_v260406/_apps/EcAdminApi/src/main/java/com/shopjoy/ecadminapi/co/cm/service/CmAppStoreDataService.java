@@ -106,16 +106,10 @@ public class CmAppStoreDataService {
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
         Map<String, Object> resultMap = new java.util.HashMap<>();
 
-        Map<String, Object> infoMap = new java.util.HashMap<>();
-        infoMap.put("userTypeCd", userTypeCd);
-        infoMap.put("authUser-userTypeCd", authUser.userTypeCd());
-        infoMap.put("authUser-userId", authUser.userId());
-        infoMap.put("authUser-roleId", authUser.roleId());
-        infoMap.put("authUser-siteId", authUser.siteId());
-        infoMap.put("authUser-memberId", authUser.memberId());
-        infoMap.put("authUser-vendorId", authUser.vendorId());
-        infoMap.put("authUser-roles", authUser.roles());
-        resultMap.put("infoMap", infoMap);
+        Map<String, Object> reqParam = new java.util.HashMap<>();
+        reqParam.put("names", names);
+        reqParam.put("userTypeCd", userTypeCd);
+        resultMap.put("reqParam", reqParam);
 
         if (requestedItems.contains(CmStoreConst.SY_AUTH)) {
             StoreAuth auth = getAuth(authUser);
@@ -184,12 +178,27 @@ public class CmAppStoreDataService {
             userInfo = getFoUser(authUser);
         }
 
+        Map<String, Object> tempAuthInfo = new java.util.HashMap<>();
+        tempAuthInfo.put("authUser-userTypeCd", authUser.userTypeCd());
+        tempAuthInfo.put("authUser-userId", authUser.userId());
+        tempAuthInfo.put("authUser-roleId", authUser.roleId());
+        tempAuthInfo.put("authUser-siteId", authUser.siteId());
+        tempAuthInfo.put("authUser-memberId", authUser.memberId());
+        tempAuthInfo.put("authUser-vendorId", authUser.vendorId());
+        tempAuthInfo.put("authUser-roles", authUser.roles());
+        tempAuthInfo.put("authUser-isStaffYn", authUser.isStaffYn());
+        tempAuthInfo.put("authUser-isAdminYn", authUser.isAdminYn());
+        tempAuthInfo.put("authUser-loginTime", authUser.loginTime());
+        tempAuthInfo.put("authUser-deptId", authUser.deptId());
+        tempAuthInfo.put("authUser-memberGrade", authUser.memberGrade());
+
         return StoreAuth.builder()
                 .accessToken(CmUtil.nvl(authUser.accessToken())) // 액세스 토큰
                 .refreshToken(CmUtil.nvl(authUser.refreshToken())) // 리프레시 토큰
                 .accessExpiresIn(3600L) // 액세스 토큰 만료시간(초)
                 .refreshExpiresIn(604800L) // 리프레시 토큰 만료시간(초, 7일)
                 .user(userInfo) // 사용자 정보
+                .tempAuthInfo(tempAuthInfo) // 사용자 정보
                 .build();
     }
 

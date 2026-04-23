@@ -19,6 +19,7 @@
       refreshToken: '',
       accessExpiresIn: 0,
       refreshExpiresIn: 0,
+      tempAuthInfo: null,
       get accessTokenInfo() {
         return this.accessToken ? `(${this.accessToken.length} bytes)` : '(empty)';
       },
@@ -195,6 +196,7 @@
         this.user = null;
         this.accessToken = null;
         this.refreshToken = null;
+        this.tempAuthInfo = null;
 
         try {
           localStorage.removeItem('modu-bo-access_token');
@@ -222,6 +224,10 @@
 
           if (authData.user) {
             this.user = authData.user;
+          }
+
+          if (authData.tempAuthInfo !== undefined) {
+            this.tempAuthInfo = authData.tempAuthInfo;
           }
 
           try {

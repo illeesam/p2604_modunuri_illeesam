@@ -10,6 +10,7 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
       refreshToken: '',
       accessExpiresIn: 0,
       refreshExpiresIn: 0,
+      tempAuthInfo: null,
     };
   },
 
@@ -35,6 +36,10 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
 
         if (authData.user) {
           this.user = authData.user;
+        }
+
+        if (authData.tempAuthInfo !== undefined) {
+          this.tempAuthInfo = authData.tempAuthInfo;
         }
 
         try {
@@ -107,6 +112,7 @@ window.useFoAuthStore = Pinia.defineStore('foAuth', {
       this.refreshToken = '';
       this.accessExpiresIn = 0;
       this.refreshExpiresIn = 0;
+      this.tempAuthInfo = null;
 
       try {
         localStorage.removeItem('modu-fo-access_token');

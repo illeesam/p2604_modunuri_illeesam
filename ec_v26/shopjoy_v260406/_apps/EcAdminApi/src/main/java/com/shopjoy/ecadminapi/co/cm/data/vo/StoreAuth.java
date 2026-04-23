@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 /**
  * 인증 정보 VO
  * - JWT 토큰 정보 + 사용자 정보
@@ -19,4 +21,5 @@ public class StoreAuth {
     private Long accessExpiresIn;      // 초 단위
     private Long refreshExpiresIn;     // 초 단위
     private Object user;               // BO: StoreUser, FO: StoreMember
+    private Map<String, Object> tempAuthInfo;  // BO: StoreUser, FO: StoreMember
 }
