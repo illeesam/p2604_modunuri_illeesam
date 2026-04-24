@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.PmPlanRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class PmPlanService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final PmPlanMapper mapper;
     private final PmPlanRepository repository;
@@ -58,7 +57,7 @@ public class PmPlanService {
 
     @Transactional
     public PmPlan create(PmPlan entity) {
-        entity.setPlanId(generateId());
+        entity.setPlanId(CmUtil.generateId("pm_plan"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         PmPlan result = repository.save(entity);
@@ -82,10 +81,4 @@ public class PmPlanService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=PL (pm_plan) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "PL" + ts + rand;
-    }
 }

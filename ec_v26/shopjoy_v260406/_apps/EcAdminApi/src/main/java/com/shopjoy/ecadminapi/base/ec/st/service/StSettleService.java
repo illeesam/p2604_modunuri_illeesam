@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class StSettleService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final StSettleMapper mapper;
     private final StSettleRepository repository;
@@ -58,7 +57,7 @@ public class StSettleService {
 
     @Transactional
     public StSettle create(StSettle entity) {
-        entity.setSettleId(generateId());
+        entity.setSettleId(CmUtil.generateId("st_settle"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StSettle result = repository.save(entity);
@@ -82,10 +81,4 @@ public class StSettleService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=SE (st_settle) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "SE" + ts + rand;
-    }
 }

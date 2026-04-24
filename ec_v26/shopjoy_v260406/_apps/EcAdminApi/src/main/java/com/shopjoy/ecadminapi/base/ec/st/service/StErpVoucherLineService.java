@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherLineRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class StErpVoucherLineService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final StErpVoucherLineMapper mapper;
     private final StErpVoucherLineRepository repository;
@@ -58,7 +57,7 @@ public class StErpVoucherLineService {
 
     @Transactional
     public StErpVoucherLine create(StErpVoucherLine entity) {
-        entity.setErpVoucherLineId(generateId());
+        entity.setErpVoucherLineId(CmUtil.generateId("st_erp_voucher_line"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StErpVoucherLine result = repository.save(entity);
@@ -82,10 +81,4 @@ public class StErpVoucherLineService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=ERVL (st_erp_voucher_line) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "ERVL" + ts + rand;
-    }
 }

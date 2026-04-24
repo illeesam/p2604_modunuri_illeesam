@@ -69,11 +69,11 @@ public final class SecurityUtil {
         return p != null && "SO".equals(p.userTypeCd());
     }
 
-    /** ROLE_ADMIN 권한 보유 여부 (isBo()와 별개로 권한 기반 체크) */
+    /** BO_GUEST 권한 보유 여부 (isBo()와 별개로 권한 기반 체크) */
     public static boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return false;
         return auth.getAuthorities().stream()
-            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+            .anyMatch(a -> "BO_GUEST".equals(a.getAuthority()));
     }
 }

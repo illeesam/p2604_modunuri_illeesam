@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +21,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class PdProdSkuService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final PdProdSkuMapper mapper;
     private final PdProdSkuRepository repository;
@@ -62,7 +60,7 @@ public class PdProdSkuService {
 
     @Transactional
     public PdProdSku create(PdProdSku entity) {
-        entity.setSkuId(generateId());
+        entity.setSkuId(CmUtil.generateId("pd_prod_sku"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_prod_sku :: insert or update :: [orm:jpa]
@@ -87,12 +85,5 @@ public class PdProdSkuService {
             throw new CmBizException("존재하지 않는 PdProdSku입니다: " + id);
         // pd_prod_sku :: delete :: id [orm:jpa]
         repository.deleteById(id);
-    }
-
-    /** ID 생성: prefix=PRS (pd_prod_sku) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "PRS" + ts + rand;
     }
 }

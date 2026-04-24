@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGradeRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +21,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class MbMemberGradeService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final MbMemberGradeMapper mapper;
     private final MbMemberGradeRepository repository;
@@ -58,7 +56,7 @@ public class MbMemberGradeService {
 
     @Transactional
     public MbMemberGrade create(MbMemberGrade entity) {
-        entity.setMemberGradeId(generateId());
+        entity.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberGrade result = repository.save(entity);
@@ -82,10 +80,4 @@ public class MbMemberGradeService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=MEG (mb_member_grade) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "MEG" + ts + rand;
-    }
 }

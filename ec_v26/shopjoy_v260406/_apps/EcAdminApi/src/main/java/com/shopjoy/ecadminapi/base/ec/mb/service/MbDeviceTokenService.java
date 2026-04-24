@@ -13,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +23,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class MbDeviceTokenService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final MbDeviceTokenMapper mapper;
     private final MbDeviceTokenRepository repository;
@@ -61,7 +59,7 @@ public class MbDeviceTokenService {
 
     @Transactional
     public MbDeviceToken create(MbDeviceToken entity) {
-        entity.setDeviceTokenId(generateId());
+        entity.setDeviceTokenId(CmUtil.generateId("mb_device_token"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // mb_device_token :: insert or update :: [orm:jpa]
@@ -117,10 +115,4 @@ public class MbDeviceTokenService {
         };
     }
 
-    /** ID 생성: prefix=DVT (mb_device_token: DV(device)+T(token)) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "DVT" + ts + rand;
-    }
 }

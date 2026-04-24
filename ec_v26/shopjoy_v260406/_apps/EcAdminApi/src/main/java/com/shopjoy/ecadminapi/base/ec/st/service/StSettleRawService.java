@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleRawRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class StSettleRawService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final StSettleRawMapper mapper;
     private final StSettleRawRepository repository;
@@ -58,7 +57,7 @@ public class StSettleRawService {
 
     @Transactional
     public StSettleRaw create(StSettleRaw entity) {
-        entity.setSettleRawId(generateId());
+        entity.setSettleRawId(CmUtil.generateId("st_settle_raw"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StSettleRaw result = repository.save(entity);
@@ -82,10 +81,4 @@ public class StSettleRawService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=SER (st_settle_raw) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "SER" + ts + rand;
-    }
 }

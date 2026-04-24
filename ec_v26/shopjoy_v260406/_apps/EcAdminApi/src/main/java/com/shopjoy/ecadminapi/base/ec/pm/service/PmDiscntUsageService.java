@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.PmDiscntUsageRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class PmDiscntUsageService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final PmDiscntUsageMapper mapper;
     private final PmDiscntUsageRepository repository;
@@ -62,7 +61,7 @@ public class PmDiscntUsageService {
 
     @Transactional
     public PmDiscntUsage create(PmDiscntUsage entity) {
-        entity.setDiscntUsageId(generateId());
+        entity.setDiscntUsageId(CmUtil.generateId("pm_discnt_usage"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pm_discnt_usage :: insert or update :: [orm:jpa]
@@ -89,10 +88,4 @@ public class PmDiscntUsageService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=DIU (pm_discnt_usage) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "DIU" + ts + rand;
-    }
 }

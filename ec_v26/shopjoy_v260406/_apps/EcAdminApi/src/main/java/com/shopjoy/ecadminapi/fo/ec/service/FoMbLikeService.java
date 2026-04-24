@@ -4,13 +4,13 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbLikeMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbLikeRepository;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +26,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class FoMbLikeService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final MbLikeMapper     mapper;
     private final MbLikeRepository repository;
@@ -53,7 +52,7 @@ public class FoMbLikeService {
             return false;
         } else {
             MbLike like = new MbLike();
-            like.setLikeId(generateId());
+            like.setLikeId(CmUtil.generateId("mb_like"));
             like.setSiteId((String) p.get("siteId"));
             like.setMemberId(authId);
             like.setTargetTypeCd(targetTypeCd);
@@ -76,9 +75,4 @@ public class FoMbLikeService {
             .ifPresent(repository::delete);
     }
 
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "LK" + ts + rand;
-    }
 }

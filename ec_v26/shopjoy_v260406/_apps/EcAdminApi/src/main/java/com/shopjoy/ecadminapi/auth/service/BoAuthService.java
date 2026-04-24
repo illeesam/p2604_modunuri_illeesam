@@ -82,7 +82,7 @@ public class BoAuthService {
         user.setLastLoginDate(loginAt);
 
         String authId = user.getUserId();   // BO: authId = sy_user.user_id
-        List<String> roles = List.of("ROLE_ADMIN");
+        List<String> roles = List.of("BO_GUEST");
         String accessToken = jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
                 .authId(authId)
@@ -139,7 +139,7 @@ public class BoAuthService {
 
         revokedTokens.add(refreshToken);
 
-        List<String> roles = List.of("ROLE_ADMIN");
+        List<String> roles = List.of("BO_GUEST");
         String newAccessToken = jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
                 .authId(authId)

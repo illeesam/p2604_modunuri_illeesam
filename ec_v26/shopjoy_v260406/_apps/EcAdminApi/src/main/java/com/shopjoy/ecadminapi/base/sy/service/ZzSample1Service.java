@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.sy.repository.ZzSample1Repository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class ZzSample1Service {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final ZzSample1Mapper mapper;
     private final ZzSample1Repository repository;
@@ -56,7 +55,7 @@ public class ZzSample1Service {
 
     @Transactional
     public ZzSample1 create(ZzSample1 entity) {
-        entity.setSample1Id(generateId());
+        entity.setSample1Id(CmUtil.generateId("zz_sample1"));
         entity.setRgtr(SecurityUtil.getAuthUser().authId());
         entity.setRegDt(LocalDate.now());
         // zz_sample1 :: insert or update :: [orm:jpa]
@@ -81,7 +80,4 @@ public class ZzSample1Service {
         repository.deleteById(id);
     }
 
-    private String generateId() {
-        return "ZS1" + LocalDate.now().format(ID_FMT) + (int)(Math.random() * 9000 + 1000);
-    }
 }

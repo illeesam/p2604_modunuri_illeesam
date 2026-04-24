@@ -2,13 +2,13 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class FoCmContactService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private static final String CONTACT_CATE = "CONTACT";
 
     private final CmBlogRepository repository;
@@ -30,7 +29,7 @@ public class FoCmContactService {
     @Transactional
     public CmBlog submit(Map<String, Object> body) {
         CmBlog entity = new CmBlog();
-        entity.setBlogId(generateId());
+        entity.setBlogId(CmUtil.generateId("fo_contact"));
         entity.setSiteId((String) body.get("siteId"));
         entity.setBlogCateId(CONTACT_CATE);
         entity.setBlogTitle("[문의] " + body.getOrDefault("inquiryType", "일반"));
@@ -56,9 +55,4 @@ public class FoCmContactService {
         );
     }
 
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "CT" + ts + rand;
-    }
 }

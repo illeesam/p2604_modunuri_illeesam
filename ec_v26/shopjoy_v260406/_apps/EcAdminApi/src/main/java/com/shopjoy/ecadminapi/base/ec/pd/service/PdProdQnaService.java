@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdQnaRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +21,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class PdProdQnaService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final PdProdQnaMapper mapper;
     private final PdProdQnaRepository repository;
@@ -62,7 +60,7 @@ public class PdProdQnaService {
 
     @Transactional
     public PdProdQna create(PdProdQna entity) {
-        entity.setQnaId(generateId());
+        entity.setQnaId(CmUtil.generateId("pd_prod_qna"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_prod_qna :: insert or update :: [orm:jpa]
@@ -87,12 +85,5 @@ public class PdProdQnaService {
             throw new CmBizException("존재하지 않는 PdProdQna입니다: " + id);
         // pd_prod_qna :: delete :: id [orm:jpa]
         repository.deleteById(id);
-    }
-
-    /** ID 생성: prefix=PRQ (pd_prod_qna) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "PRQ" + ts + rand;
     }
 }

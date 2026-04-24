@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdBundleItemRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +21,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class PdProdBundleItemService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final PdProdBundleItemMapper mapper;
     private final PdProdBundleItemRepository repository;
@@ -62,7 +60,7 @@ public class PdProdBundleItemService {
 
     @Transactional
     public PdProdBundleItem create(PdProdBundleItem entity) {
-        entity.setBundleItemId(generateId());
+        entity.setBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_prod_bundle_item :: insert or update :: [orm:jpa]
@@ -87,12 +85,5 @@ public class PdProdBundleItemService {
             throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + id);
         // pd_prod_bundle_item :: delete :: id [orm:jpa]
         repository.deleteById(id);
-    }
-
-    /** ID 생성: prefix=PRBI (pd_prod_bundle_item) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "PRBI" + ts + rand;
     }
 }

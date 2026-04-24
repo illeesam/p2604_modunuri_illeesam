@@ -50,7 +50,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         List<SimpleGrantedAuthority> authorities = List.of(
-            new SimpleGrantedAuthority("ROLE_ADMIN")
+            new SimpleGrantedAuthority("BO_GUEST")
         );
 
         return new User(syUser.getUserId(), syUser.getLoginPwdHash(), authorities);

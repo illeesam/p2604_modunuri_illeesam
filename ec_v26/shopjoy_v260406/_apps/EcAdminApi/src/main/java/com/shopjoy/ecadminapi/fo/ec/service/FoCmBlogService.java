@@ -7,13 +7,13 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class FoCmBlogService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final CmBlogMapper     mapper;
     private final CmBlogRepository repository;
@@ -58,7 +57,7 @@ public class FoCmBlogService {
 
     @Transactional
     public CmBlog create(CmBlog entity) {
-        entity.setBlogId(generateId());
+        entity.setBlogId(CmUtil.generateId("cm_blog"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         if (entity.getUseYn() == null) entity.setUseYn("Y");
@@ -89,9 +88,4 @@ public class FoCmBlogService {
         repository.deleteById(blogId);
     }
 
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "BL" + ts + rand;
-    }
 }

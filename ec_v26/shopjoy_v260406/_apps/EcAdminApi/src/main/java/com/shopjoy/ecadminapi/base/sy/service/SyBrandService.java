@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.sy.repository.SyBrandRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class SyBrandService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final SyBrandMapper mapper;
     private final SyBrandRepository repository;
@@ -62,7 +61,7 @@ public class SyBrandService {
 
     @Transactional
     public SyBrand create(SyBrand entity) {
-        entity.setBrandId(generateId());
+        entity.setBrandId(CmUtil.generateId("sy_brand"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_brand :: insert or update :: [orm:jpa]
@@ -89,10 +88,4 @@ public class SyBrandService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=BR (sy_brand) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "BR" + ts + rand;
-    }
 }

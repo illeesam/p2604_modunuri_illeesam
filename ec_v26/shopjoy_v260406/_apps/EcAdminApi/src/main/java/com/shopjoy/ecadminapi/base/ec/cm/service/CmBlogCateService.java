@@ -8,13 +8,13 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogCateRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +23,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class CmBlogCateService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final CmBlogCateMapper mapper;
     private final CmBlogCateRepository repository;
@@ -64,7 +62,7 @@ public class CmBlogCateService {
 
     @Transactional
     public CmBlogCate create(CmBlogCate entity) {
-        entity.setBlogCateId(generateId());
+        entity.setBlogCateId(CmUtil.generateId("cm_blog_cate"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // cm_blog_cate :: insert or update :: [orm:jpa]
@@ -130,23 +128,4 @@ public class CmBlogCateService {
         };
     }
 
-    /**
-     * ID 생성 규칙: {테이블prefix}{yyMMddHHmmss}{rand4}
-     *
-     * 테이블 prefix 산출 방법 (도메인 세그먼트 제외, 대문자):
-     *   1. 첫 번째 세그먼트(도메인: cm/od/sy 등) 제외
-     *   2. 두 번째 세그먼트(엔티티명) 앞 2자
-     *   3. 세 번째 이후 세그먼트의 첫 글자
-     *
-     * 예시:
-     *   cm_blog_cate       → BL(blog) + C(cate)            = BLC
-     *   cm_order_item_hist → OR(order) + I(item) + H(hist)  = ORIH
-     *   od_order           → OR(order)                      = OR
-     *   od_order_item      → OR(order) + I(item)            = ORI
-     */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "BLC" + ts + rand;
-    }
 }

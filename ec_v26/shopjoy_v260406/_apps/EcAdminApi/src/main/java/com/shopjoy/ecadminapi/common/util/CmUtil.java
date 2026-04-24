@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.common.util;
 
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -138,6 +140,35 @@ public class CmUtil {
 
     public static <K, V> Map<K, V> nvlMap(Map<K, V> value) {
         return nvlMap(value, new HashMap<>());
+    }
+
+    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
+
+    /** 
+     * 테이블명 기반 ID 생성: prefix + yyMMddHHmmss(12) + rand4(4) 최대 21자
+     * prefix _ 을 split 후 1번인덱스 2글자, 3~5번 인덱스 1글자씩 조합 최대 5글자 대문자
+     * 예: "syh_user_login_hist" → "USLH" + "240610153045" + "1234" → "USLH2406101530451234"
+     */
+    public static String generateId(String tableNm) {
+        String prefix = extractPrefix(tableNm);
+        if (prefix == null || prefix.isBlank()) prefix = "XX";
+        if (prefix.length() > 5) prefix = prefix.substring(0, 5);
+        String ts   = LocalDateTime.now().format(ID_FMT);
+        String rand = String.format("%04d", (int)(Math.random() * 10000));
+        return prefix + ts + rand;
+    }
+
+    // 0번 인덱스(도메인) 제외, 1번=첫2자, 2~4번=첫1자, 최대5자 대문자
+    private static String extractPrefix(String tableNm) {
+        if (tableNm == null || tableNm.isBlank()) return "XX";
+        String[] parts = tableNm.toUpperCase().split("_");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < parts.length && sb.length() < 5; i++) {
+            if (parts[i].isEmpty()) continue;
+            sb.append(i == 1 ? parts[i].substring(0, Math.min(2, parts[i].length()))
+                             : parts[i].substring(0, 1));
+        }
+        return sb.toString();
     }
 
 }

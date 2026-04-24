@@ -5,13 +5,13 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdCartMapper;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdCartRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
@@ -24,7 +24,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class FoOdCartService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final OdCartMapper     mapper;
     private final OdCartRepository repository;
@@ -37,7 +36,7 @@ public class FoOdCartService {
 
     @Transactional
     public OdCart addToCart(OdCart entity) {
-        entity.setCartId(generateId());
+        entity.setCartId(CmUtil.generateId("od_cart"));
         entity.setMemberId(SecurityUtil.getAuthUser().authId());
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
@@ -65,9 +64,4 @@ public class FoOdCartService {
         repository.deleteById(cartId);
     }
 
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "CT" + ts + rand;
-    }
 }

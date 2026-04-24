@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +21,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class DpWidgetService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final DpWidgetMapper mapper;
     private final DpWidgetRepository repository;
@@ -62,7 +60,7 @@ public class DpWidgetService {
 
     @Transactional
     public DpWidget create(DpWidget entity) {
-        entity.setWidgetId(generateId());
+        entity.setWidgetId(CmUtil.generateId("dp_widget"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // dp_widget :: insert or update :: [orm:jpa]
@@ -89,10 +87,4 @@ public class DpWidgetService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=WI (dp_widget) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "WI" + ts + rand;
-    }
 }

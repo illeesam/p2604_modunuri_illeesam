@@ -8,13 +8,13 @@ import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class SyAlarmService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final SyAlarmMapper mapper;
     private final SyAlarmRepository repository;
@@ -64,7 +63,7 @@ public class SyAlarmService {
 
     @Transactional
     public SyAlarm create(SyAlarm entity) {
-        entity.setAlarmId(generateId());
+        entity.setAlarmId(CmUtil.generateId("sy_alarm"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_alarm :: insert or update :: [orm:jpa]
@@ -141,9 +140,4 @@ public class SyAlarmService {
      * 예시:
      *   sy_alarm → AL(alarm) = AL
      */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "AL" + ts + rand;
-    }
 }

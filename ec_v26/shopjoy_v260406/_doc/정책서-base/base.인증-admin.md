@@ -142,7 +142,7 @@ window.addEventListener('storage', e => {
 |---|---|---|---|
 | `sub` | String | `"usr_240101..."` | 사용자 ID (userId) |
 | `loginId` | String | `"admin01"` | 로그인 아이디 (access token만) |
-| `roles` | List\<String\> | `["ROLE_ADMIN"]` | 권한 목록 (access token만) |
+| `roles` | List\<String\> | `["BO_GUEST"]` | 권한 목록 (access token만) |
 | `type` | String | `"access"` \| `"refresh"` | 토큰 종류 구분 |
 | `userType` | String | `"USER"` \| `"MEMBER"` | 사용자 테이블 구분 |
 

@@ -8,9 +8,9 @@ import com.shopjoy.ecadminapi.cache.redisstore.SyRoleMenuRedisStore;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class SyRoleMenuService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final SyRoleMenuMapper      mapper;
     private final SyRoleMenuRepository  repository;
@@ -65,7 +64,7 @@ public class SyRoleMenuService {
 
     @Transactional
     public SyRoleMenu create(SyRoleMenu entity) {
-        entity.setRoleMenuId(generateId());
+        entity.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_role_menu :: insert or update :: [orm:jpa]
@@ -95,10 +94,4 @@ public class SyRoleMenuService {
         roleMenuCache.evictAll();  // roleId 조회 없이 전체 무효화
     }
 
-    /** ID 생성: prefix=ROM (sy_role_menu) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "ROM" + ts + rand;
-    }
 }

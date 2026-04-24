@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.OdPayRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +21,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class OdPayService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final OdPayMapper mapper;
     private final OdPayRepository repository;
@@ -58,7 +56,7 @@ public class OdPayService {
 
     @Transactional
     public OdPay create(OdPay entity) {
-        entity.setPayId(generateId());
+        entity.setPayId(CmUtil.generateId("od_pay"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         OdPay result = repository.save(entity);
@@ -80,12 +78,5 @@ public class OdPayService {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 OdPay입니다: " + id);
         repository.deleteById(id);
-    }
-
-    /** ID 생성: prefix=PA (od_pay) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "PA" + ts + rand;
     }
 }

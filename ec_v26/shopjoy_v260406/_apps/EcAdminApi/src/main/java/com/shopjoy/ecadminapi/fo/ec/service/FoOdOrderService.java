@@ -7,13 +7,13 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +27,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class FoOdOrderService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final OdOrderMapper     mapper;
     private final OdOrderRepository repository;
@@ -56,7 +55,7 @@ public class FoOdOrderService {
 
     @Transactional
     public OdOrder placeOrder(OdOrder entity) {
-        entity.setOrderId(generateId());
+        entity.setOrderId(CmUtil.generateId("od_order"));
         entity.setMemberId(SecurityUtil.getAuthUser().authId());
         entity.setOrderStatusCd("PENDING");
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
@@ -64,9 +63,4 @@ public class FoOdOrderService {
         return repository.save(entity);
     }
 
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "OD" + ts + rand;
-    }
 }

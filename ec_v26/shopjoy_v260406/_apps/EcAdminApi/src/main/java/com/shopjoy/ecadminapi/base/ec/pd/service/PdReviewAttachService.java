@@ -7,9 +7,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewAttachRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class PdReviewAttachService {
 
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final PdReviewAttachMapper mapper;
     private final PdReviewAttachRepository repository;
@@ -62,7 +61,7 @@ public class PdReviewAttachService {
 
     @Transactional
     public PdReviewAttach create(PdReviewAttach entity) {
-        entity.setReviewAttachId(generateId());
+        entity.setReviewAttachId(CmUtil.generateId("pd_review_attach"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_review_attach :: insert or update :: [orm:jpa]
@@ -89,10 +88,4 @@ public class PdReviewAttachService {
         repository.deleteById(id);
     }
 
-    /** ID 생성: prefix=REA (pd_review_attach) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int)(Math.random() * 10000));
-        return "REA" + ts + rand;
-    }
 }

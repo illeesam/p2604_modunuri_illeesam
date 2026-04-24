@@ -8,13 +8,13 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogFileRepository;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +23,6 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @Service
 @RequiredArgsConstructor
 public class CmBlogFileService {
-
-    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     private final CmBlogFileMapper mapper;
     private final CmBlogFileRepository repository;
@@ -61,7 +59,7 @@ public class CmBlogFileService {
 
     @Transactional
     public CmBlogFile create(CmBlogFile entity) {
-        entity.setBlogImgId(generateId());
+        entity.setBlogImgId(CmUtil.generateId("cm_blog_file"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // cm_blog_file :: insert or update :: [orm:jpa]
@@ -118,10 +116,4 @@ public class CmBlogFileService {
         };
     }
 
-    /** ID 생성: prefix=BLF (cm_blog_file: BL(blog) + F(file)) */
-    private String generateId() {
-        String ts   = LocalDateTime.now().format(ID_FMT);
-        String rand = String.format("%04d", (int) (Math.random() * 10000));
-        return "BLF" + ts + rand;
-    }
 }
