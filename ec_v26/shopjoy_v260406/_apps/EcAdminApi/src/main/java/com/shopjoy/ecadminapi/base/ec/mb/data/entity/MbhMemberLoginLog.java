@@ -22,6 +22,9 @@ public class MbhMemberLoginLog {
     @Column(name = "site_id", length = 21)
     private String siteId;
 
+    @Column(name = "auth_id", length = 21)
+    private String authId;
+
     @Column(name = "member_id", length = 21)
     private String memberId;
 

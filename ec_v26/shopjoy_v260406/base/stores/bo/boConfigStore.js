@@ -79,26 +79,6 @@
         }
       },
 
-      // 사용자 정보 로드
-      async loadUserInfo() {
-        this.loading = true;
-        try {
-          const res = await window.boApi.get('/auth/bo/auth/me');
-          const user = res?.data?.data || {};
-
-          this.userInfo = user || { boUserId: 0, name: '', email: '' };
-          this.menus = (user?.menus || []);
-
-          this.error = null;
-        } catch (err) {
-          this.error = err?.message || '사용자 정보 로드 실패';
-          console.error('[BoConfigStore] loadUserInfo error:', err);
-          this.userInfo = { boUserId: 0, name: '', email: '' };
-          this.menus = [];
-        } finally {
-          this.loading = false;
-        }
-      },
 
       // 초기화
       reset() {

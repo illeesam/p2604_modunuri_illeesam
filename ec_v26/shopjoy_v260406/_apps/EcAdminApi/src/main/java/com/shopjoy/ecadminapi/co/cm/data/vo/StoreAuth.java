@@ -20,6 +20,6 @@ public class StoreAuth {
     private String refreshToken;
     private Long accessExpiresIn;      // 초 단위
     private Long refreshExpiresIn;     // 초 단위
-    private Object user;               // BO: StoreUser, FO: StoreMember
+    private Object authUser;           // BO: StoreUser, FO: StoreMember
     private Map<String, Object> tempAuthInfo;  // BO: StoreUser, FO: StoreMember
 }

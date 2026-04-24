@@ -8,8 +8,9 @@
 - `base.기술-admin.md` — 관리자 페이스 기술 스택 및 아키텍처 기준 (Vue 프론트엔드)
 - `base.기술-front.md` — 사용자 페이스 기술 스택 및 아키텍처 기준 (Vue 프론트엔드)
 - `base.기술-api.md` — 백엔드 API 기술 스택 및 패키지 구조 기준 (Spring Boot EcAdminApi)
-- `base.인증-admin.md` — 관리자 로그인/세션/토큰 인증 정책
-- `base.인증-front.md` — 사용자 로그인/세션/토큰 인증 정책
+- `base.인증-admin.md` — 관리자 로그인/세션/토큰 인증 정책 (1세션, DB-stored refreshToken, 2시간 Sliding)
+- `base.인증-front.md` — 사용자 로그인/세션/토큰 인증 정책 (멀티디바이스, DB-stored refreshToken, 15일 Sliding)
+- `base.인증-authId.md` — 통합 인증 식별자(authId) 설계 정책 (BO=user_id, FO=member_id)
 
 ## 목적
 전 도메인에 걸쳐 공통으로 적용되는 기반 정책을 정의.

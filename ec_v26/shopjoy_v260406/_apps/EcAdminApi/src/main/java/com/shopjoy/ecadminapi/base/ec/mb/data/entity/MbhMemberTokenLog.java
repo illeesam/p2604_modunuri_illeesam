@@ -12,7 +12,6 @@ import lombok.Setter;
 @Table(name = "mbh_member_token_log", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-// 회원 토큰 로그 엔티티
 public class MbhMemberTokenLog {
 
     @Id
@@ -21,6 +20,9 @@ public class MbhMemberTokenLog {
 
     @Column(name = "site_id", length = 21)
     private String siteId;
+
+    @Column(name = "auth_id", length = 21)
+    private String authId;
 
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
@@ -34,8 +36,8 @@ public class MbhMemberTokenLog {
     @Column(name = "token_type_cd", length = 20, nullable = false)
     private String tokenTypeCd;
 
-    @Column(name = "token", length = 512, nullable = false)
-    private String token;
+    @Column(name = "access_token", length = 512, nullable = false)
+    private String accessToken;
 
     @Column(name = "token_exp")
     private LocalDateTime tokenExp;
@@ -43,11 +45,14 @@ public class MbhMemberTokenLog {
     @Column(name = "prev_token", length = 512)
     private String prevToken;
 
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
+
     @Column(name = "ip", length = 50)
     private String ip;
 
-    @Column(name = "device", length = 200)
-    private String device;
+    @Column(name = "device_info", length = 200)
+    private String deviceInfo;
 
     @Column(name = "revoke_reason", length = 200)
     private String revokeReason;

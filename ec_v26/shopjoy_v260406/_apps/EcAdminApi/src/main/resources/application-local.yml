@@ -39,8 +39,9 @@ server:
 
 jwt:
   secret: c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt
-  access-expiry: 900000
-  refresh-expiry: 604800000
+  access-expiry: 900000          # 15분 (BO/FO 공통)
+  bo-refresh-expiry: 7200000     # BO 관리자 refreshToken: 2시간 (Sliding)
+  fo-refresh-expiry: 1296000000  # FO 회원 refreshToken: 15일 (Sliding)
 
 
 management:

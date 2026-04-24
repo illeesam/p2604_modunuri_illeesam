@@ -32,7 +32,6 @@
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[bo]';
   var ACCESS_TOKEN_KEY = 'modu-bo-accessToken';
-  var REFRESH_TOKEN_KEY = 'modu-bo-refreshToken';
   var REFRESH_URL      = 'auth/bo/refresh';
   var TIMEOUT          = 15000;
 
@@ -136,16 +135,16 @@
         });
       }
       isRefreshing = true;
-      var refresh = null;
-      try { refresh = localStorage.getItem(REFRESH_TOKEN_KEY); } catch (_) {}
-      return global.axios.post(apiUrl(REFRESH_URL), { refresh: refresh })
+      var expiredToken = null;
+      try { expiredToken = localStorage.getItem(ACCESS_TOKEN_KEY); } catch (_) {}
+      return global.axios.post(apiUrl(REFRESH_URL), null, {
+          headers: { Authorization: expiredToken ? 'Bearer ' + expiredToken : '' }
+        })
         .then(function (r) {
-          var newTok = r && r.data && (r.data.accessToken || r.data.token);
+          var d = r && r.data && r.data.data || r && r.data;
+          var newTok = d && (d.accessToken || d.token);
           if (!newTok) throw new Error('no token in refresh response');
           try { localStorage.setItem(ACCESS_TOKEN_KEY, newTok); } catch (_) {}
-          var newRefresh = r.data.refreshToken || r.data.refresh;
-          if (newRefresh) { try { localStorage.setItem(REFRESH_TOKEN_KEY, newRefresh); } catch (_) {} }
-          console.log(TAG + ' ↻ accessToken refreshed');
           flush(newTok);
           isRefreshing = false;
           cfg.headers = cfg.headers || {};
@@ -153,13 +152,11 @@
           return inst(cfg);
         })
         .catch(function (e) {
-          console.error(TAG + ' ✗ token refresh failed', e && e.message);
           flush(null);
           isRefreshing = false;
           try {
             localStorage.removeItem(ACCESS_TOKEN_KEY);
-            localStorage.removeItem(REFRESH_TOKEN_KEY);
-            localStorage.removeItem('modu-bo-user');
+            localStorage.removeItem('modu-bo-authUser');
           } catch (_) {}
           try {
             global.dispatchEvent(new CustomEvent('api-error', {

@@ -23,6 +23,7 @@
 | `sy.11.VOC.md` | 고객의소리(VOC) 분류 코드 관리 (sy_voc) |
 | `sy.12.다국어.md` | 다국어(i18n) 키·번역 관리 (sy_i18n, sy_i18n_msg) |
 | `sy.13.에러로그.md` | HTTP 요청 에러 로그 수집 (syh_access_error_log, 비동기 큐) |
+| `sy.14.파일첨부.md` | 파일 업로드/저장/썸네일/스트리밍 정책 (sy_attach, sy_attach_grp) |
 | `sy.51.프로그램설계정책.md` | 프론트/어드민 컴포넌트 설계 기준 |
 | `sy.52.ddl단어사전규칙.md` | DDL 컬럼명 표준, 도메인 프리픽스, 코드 그룹 목록 |
 

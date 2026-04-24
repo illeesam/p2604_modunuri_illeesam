@@ -16,7 +16,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
   getters: {
     isInitialized: (s) => {
       const authStore = window.useBoAuthStore?.();
-      return !!(authStore && authStore.user && authStore.user.userId);
+      return !!(authStore && authStore.authUser && authStore.authUser.authId);
     },
   },
 

@@ -14,18 +14,8 @@
     /* ── Init Data Store 초기화 (Pinia 초기화 후) ── */
     onMounted(() => {
       setTimeout(() => {
-        const foAppInitStore = window.useFoAppInitStore?.();
-        if (foAppInitStore) {
-          try {
-            foAppInitStore.restoreFromStorage();
-            const authStore = window.useFoAuthStore?.();
-            const hasToken = !!(authStore?.accessToken || localStorage.getItem('modu-fo-accessToken'));
-            console.log('[foApp] Fetching FO init data (공개 + 인증 데이터)...');
-            foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
-          } catch (e) {
-            console.warn('[foApp] Init store restore error:', e);
-          }
-        }
+        // fetchFoAppInitData는 foAuth.js init()에서 토큰 유무에 따라 호출
+        window.useFoAppInitStore?.()?.restoreFromStorage?.();
       }, 0);
     });
     /* ── Theme ── */

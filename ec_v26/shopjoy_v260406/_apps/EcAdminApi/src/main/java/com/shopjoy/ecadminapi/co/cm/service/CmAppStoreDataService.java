@@ -170,11 +170,11 @@ public class CmAppStoreDataService {
             return StoreAuth.builder().build();
         }
 
-        Object userInfo = null;
+        Object authUserInfo = null;
         if (AuthPrincipal.BO.equals(userTypeCd)) {
-            userInfo = getBoUser(authUser);
+            authUserInfo = getBoUser(authUser);
         } else {
-            userInfo = getFoUser(authUser);
+            authUserInfo = getFoUser(authUser);
         }
 
         // BO 전용: sy_user 기반 역할 목록 (FO는 빈 리스트)
@@ -204,7 +204,7 @@ public class CmAppStoreDataService {
                 .refreshToken(CmUtil.nvl(authUser.refreshToken())) // 리프레시 토큰
                 .accessExpiresIn(3600L) // 액세스 토큰 만료시간(초)
                 .refreshExpiresIn(604800L) // 리프레시 토큰 만료시간(초, 7일)
-                .user(userInfo) // 사용자 정보
+                .authUser(authUserInfo) // 사용자 정보
                 .tempAuthInfo(tempAuthInfo) // 사용자 정보
                 .build();
     }

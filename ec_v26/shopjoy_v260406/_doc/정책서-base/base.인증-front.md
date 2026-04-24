@@ -2,7 +2,7 @@
 정책명: 사용자(Front Office) 인증 정책
 정책번호: base-인증-front
 관리자: 개발팀
-최종수정: 2026-04-19
+최종수정: 2026-04-24
 ---
 
 # 사용자(Front Office) 인증 정책
@@ -10,88 +10,124 @@
 ## 1. 인증 개요
 
 쇼핑몰 회원(`ec_member`) 인증 체계.  
-이메일/비밀번호 + 소셜 로그인(카카오·네이버·구글) 지원.  
-Pinia(`frontAuthStore`) + `window.frontAuth` 레거시 reactive 이중 구조로 상태를 동기화한다.
+이메일/비밀번호 로그인 지원 (소셜 로그인은 별도 OAuth 연동으로 확장).  
+Pinia(`frontAuthStore`) + `window.frontAuth` 레거시 reactive 이중 구조로 상태를 동기화한다.  
+**refreshToken은 서버 DB(`mbh_member_token_log`)에만 저장하며 클라이언트에 전달하지 않는다.**
 
 ---
 
 ## 2. 토큰 구조
 
-| 토큰 | localStorage 키 | 용도 |
-|---|---|---|
-| accessToken | `modu-front-token` | API 요청 인증. `frontApi` 헤더에 자동 주입 |
-| 사용자 정보 | `modu-front-user` | 로그인한 회원 기본 정보 (JSON) |
+| 토큰 | 저장 위치 | 용도 | 만료 |
+|---|---|---|---|
+| accessToken | 클라이언트 localStorage (`modu-fo-accessToken`) | API 요청마다 `Authorization: Bearer {token}` 헤더 자동 주입 | 15분 |
+| refreshToken | 서버 DB (`mbh_member_token_log.refresh_token`) | accessToken 재발급 용도. 클라이언트 미전달 | 15일 (Sliding) |
+| 사용자 정보 | 클라이언트 localStorage (`modu-fo-authUser`) | 로그인한 회원 기본 정보 (JSON) | accessToken과 연동 |
 
-> **현재 구현**: 단순 토큰 1개 방식. 실 서비스 연동 시 refreshToken(`modu-front-refresh`) 추가하여  
-> `utils/frontAxios.js` interceptor에서 adminAxios와 동일한 silent refresh 패턴 적용 권장.
-
-### 실 서비스 확장 시 토큰 구조
-
-| 토큰 | localStorage 키 | 만료 |
-|---|---|---|
-| accessToken | `modu-front-token` | 15분~1시간 |
-| refreshToken | `modu-front-refresh` | 7~30일 |
-| 사용자 정보 | `modu-front-user` | accessToken과 연동 |
+> refreshToken을 클라이언트에 노출하지 않으므로 localStorage 탈취 시에도 세션 연장 불가.
 
 ---
 
-## 3. 로그인 방식
+## 3. 세션 정책
 
-### 3.1 이메일/비밀번호 로그인
-
-```
-1. 로그인 폼 입력 (email + password)
-2. frontAuth.login(email, password)
-3. GET api/base/users.json (목업) → email/password 매칭
-4. 성공: token 생성 → frontAuthStore.setSession(user, token)
-          → localStorage 저장 (modu-front-token, modu-front-user)
-          → frontAuth.state.user 동기화
-5. 실패: { ok: false, msg: '이메일 또는 비밀번호를 확인하세요.' }
-```
-
-### 3.2 소셜 로그인
-
-| 제공사 | 방식 |
+| 항목 | 정책 |
 |---|---|
-| 카카오 | Kakao OAuth 2.0 연동 |
-| 네이버 | Naver OAuth 2.0 연동 |
-| 구글 | Google OAuth 2.0 연동 |
+| 동시 세션 | **멀티디바이스 허용**. 로그인마다 `mbh_member_token_log`에 행 추가 (기존 행 유지) |
+| refreshToken 갱신 방식 | **Sliding**: 갱신 시마다 15일 연장 |
+| refreshToken 만료 시 | 해당 디바이스 세션 종료. 재로그인 필요 |
+| 로그아웃 | 해당 디바이스의 `mbh_member_token_log` 행만 삭제 (다른 디바이스 세션 유지) |
+
+---
+
+## 4. 로그인 흐름
+
+```
+1. 로그인 폼 입력 (loginId + password)
+2. POST /api/auth/fo/auth/login  { loginId, loginPwd }
+3. 서버 처리:
+     a. ec_member 조회 → 비밀번호 검증
+     b. accessToken(15분) + refreshToken(15일) 신규 발급
+     c. mbh_member_token_log에 INSERT (access_token, refresh_token 저장)
+        (멀티디바이스: 기존 행 삭제 없음)
+     d. 응답: { accessToken, refreshToken: null, authId, userNm, ... }
+4. 클라이언트 저장:
+     modu-fo-accessToken = accessToken
+     modu-fo-authUser    = JSON.stringify(authUser)
+     (refreshToken은 응답에 없음 → 저장 안 함)
+5. foApiAxios 인터셉터가 이후 모든 요청에 Bearer 헤더 자동 주입
+```
+
+---
+
+## 5. 토큰 자동 갱신 (Silent Refresh)
+
+`utils/foApiAxios.js` interceptors.response 에서 처리.
+
+```
+API 요청
+  → 401 응답 수신 (accessToken 만료)
+  → cfg._retry 플래그로 무한 루프 방지
+  → POST /api/auth/fo/auth/refresh
+       Authorization: Bearer {만료된_accessToken}  ← body 없음
+  → 서버 처리:
+       a. 만료 토큰에서 authId(=memberId) 추출 (getClaimsAllowExpired)
+       b. mbh_member_token_log에서 access_token이 일치하는 행의 refresh_token 조회
+          (멀티디바이스: accessToken으로 해당 디바이스 행 특정)
+       c. refreshToken 유효성 검증
+       d. 신규 accessToken + refreshToken 발급
+       e. mbh_member_token_log 해당 행 갱신 (토큰 로테이션)
+       f. 응답: { accessToken, refreshToken: null }
+  → 성공: 신규 accessToken → localStorage modu-fo-accessToken 갱신
+          → 실패했던 원 요청 자동 재시도
+  → 실패: modu-fo-accessToken / modu-fo-authUser 삭제
+          → foAuth.logout() 호출
+          → CustomEvent('api-error', { scope:'fo', status:401 }) 발행
+          → UI에서 로그인 화면으로 리다이렉트
+```
+
+동시 다발 401 처리 (큐잉 패턴):
 
 ```js
-// base/frontAuth.js
-frontAuth.loginSocial('kakao');
-frontAuth.loginSocial('naver');
-frontAuth.loginSocial('google');
-// → provider별 데모 계정으로 즉시 세션 생성 (목업)
-// → 실 서비스: OAuth redirect 후 콜백에서 setSession 호출
+var isRefreshing = false;
+var pending = [];  // subscribe/flush 패턴으로 중복 refresh 방지
 ```
 
 ---
 
-## 4. 세션 복원
+## 6. 로그아웃
 
-페이지 로드 시 localStorage에서 토큰/사용자 정보 자동 복원:
+```
+POST /api/auth/fo/auth/logout
+  Authorization: Bearer {accessToken}
+서버: accessToken에서 authId 추출 → mbh_member_token_log에서 해당 행 DELETE
+      (같은 memberId의 다른 디바이스 행은 유지)
+
+클라이언트:
+  localStorage.removeItem('modu-fo-accessToken')
+  localStorage.removeItem('modu-fo-authUser')
+  → frontAuthStore 상태 초기화
+  → 홈 또는 로그인 화면 이동
+```
+
+---
+
+## 7. 세션 복원 (페이지 로드)
 
 ```js
 // base/stores/frontAuthStore.js — Pinia state 초기화
 state: () => {
-  const token = localStorage.getItem('modu-front-token') || null;
-  let user = null;
+  const token = localStorage.getItem('modu-fo-accessToken') || null;
+  let authUser = null;
   if (token) {
-    user = JSON.parse(localStorage.getItem('modu-front-user') || 'null');
+    authUser = JSON.parse(localStorage.getItem('modu-fo-authUser') || 'null');
   }
-  return { token, user };
+  return { accessToken: token, authUser };
 }
-
-// isLoggedIn getter
-isLoggedIn: s => !!(s.token && s.user)
 ```
 
 ---
 
-## 5. 실시간 동기화
-
-### 5.1 DevTools / 다른 탭 감지
+## 8. 실시간 동기화
 
 ```js
 // base/frontAuth.js init() 내부
@@ -100,51 +136,27 @@ setInterval(() => {
 }, 1000);
 
 window.addEventListener('storage', e => {
-  if (e.key === 'modu-front-token' || e.key === 'modu-front-user') {
+  if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-authUser') {
     store.syncFromStorage();  // 다른 탭 로그인/로그아웃 즉시 반영
   }
 });
 ```
 
-### 5.2 syncFromStorage 로직
-
-```
-localStorage에 토큰 없음 + store에 토큰 있음 → 강제 로그아웃 (외부 삭제 감지)
-localStorage 토큰이 store와 다름 → 재동기화 (다른 탭 로그인 감지)
-```
-
 ---
 
-## 6. 로그아웃
+## 9. 접근 제어
+
+### 9.1 로그인 필요 페이지
 
 ```js
-frontAuth.logout()
-  → frontAuthStore.clearSession()
-  → localStorage.removeItem('modu-front-token')
-  → localStorage.removeItem('modu-front-user')
-  → frontAuth.state.user = null
-```
-
----
-
-## 7. 접근 제어
-
-### 7.1 로그인 필요 페이지
-
-```js
-// base/frontApp.js 라우터
 const AUTH_REQUIRED_PAGES = [
   'myOrder', 'myClaim', 'myCoupon', 'myCache',
   'myContact', 'myChatt', 'order', 'blogEdit'
 ];
-
-if (AUTH_REQUIRED_PAGES.includes(page.value) && !frontAuth.state.user) {
-  navigate('error401');
-  return;
-}
+// 비로그인 접근 시 → error401 리다이렉트
 ```
 
-### 7.2 기능별 로그인 요구
+### 9.2 기능별 로그인 요구
 
 | 기능 | 미로그인 처리 |
 |---|---|
@@ -156,40 +168,34 @@ if (AUTH_REQUIRED_PAGES.includes(page.value) && !frontAuth.state.user) {
 
 ---
 
-## 8. 회원가입
-
-```js
-frontAuth.signup(memberNm, email, phone, extra)
-  → user 객체 생성 (userId: 'u_' + Date.now())
-  → frontAuthStore.setSession(user, token)
-  → 즉시 로그인 상태
-```
-
-실 서비스 연동 시: POST `api/member/signup` → 이메일 인증 → 활성화 후 로그인.
-
----
-
-## 9. 보안 정책
+## 10. 보안 정책
 
 | 항목 | 정책 |
 |---|---|
-| 비밀번호 복잡도 | 8자 이상 (실 서비스 영문+숫자+특수문자 권장) |
-| 소셜 로그인 | OAuth 2.0 표준. 비밀번호 미저장 |
-| 토큰 저장 | localStorage (실 서비스에서 HttpOnly 쿠키 이관 검토) |
-| HTTPS | 실 서비스에서 필수 |
-| 세션 유지 | localStorage 영속. 명시적 로그아웃 또는 토큰 만료 시 해제 |
+| refreshToken 노출 | 클라이언트 미전달. 서버 DB에만 저장 |
+| 비밀번호 복잡도 | 8자 이상 (영문+숫자+특수문자 권장) |
+| 소셜 로그인 | OAuth 2.0 표준 (카카오·네이버·구글 확장 예정) |
+| 토큰 전송 방식 | Authorization: Bearer 헤더 (HTTPS only 권장) |
+| 멀티디바이스 세션 | 각 디바이스별 독립 세션. 한 디바이스 로그아웃이 타 디바이스에 영향 없음 |
 
 ---
 
-## 10. 목업 환경 (현재 구현)
+## 11. mbh_member_token_log 테이블 구조
 
-- `api/base/users.json` — 테스트 계정 목록 (email, password, userId, memberNm, phone)
-- 토큰: `'sjt_' + Date.now().toString(36) + '_' + random` 형식 로컬 생성
-- refreshToken 없음 (목업 단계에서는 토큰 만료 없음)
+| 컬럼 | 설명 |
+|---|---|
+| `log_id` | PK (TLyyMMddHHmmss + rand4) |
+| `member_id` | ec_member.member_id |
+| `access_token` | 현재 유효 accessToken (디바이스 식별 키) |
+| `refresh_token` | 서버 보관 refreshToken |
+| `token_exp` | refreshToken 만료 시각 |
+| `prev_token` | 갱신 전 이전 accessToken |
+| `action_cd` | LOGIN / REFRESH / LOGOUT |
+| `token_type_cd` | FO |
 
 ---
 
 ## 관련 정책
 - `base.권한-front.md` — 회원 등급·상태 기반 접근 제어
 - `base.UX-front.md` — 로그인 UI, 헤더 로그인 상태 표시
-- `ec.mb.*` — 회원 상태·등급 관련 정책
+- `ec.mb.02.회원.md` — 회원 상태·등급 관련 정책

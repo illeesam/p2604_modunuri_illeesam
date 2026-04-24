@@ -32,7 +32,6 @@
 - `sy_role.sql` — 역할 (role_remark)
 - `sy_user_role.sql` — 사용자-역할 연결
 - `sy_role_menu.sql` — 역할-메뉴 권한
-- `syh_user_login_hist.sql` — 로그인 이력
 - `syh_user_login_log.sql` — 로그인 로그 *(log 예외)*
 - `syh_user_token_log.sql` — 토큰 로그 *(log 예외)*
 

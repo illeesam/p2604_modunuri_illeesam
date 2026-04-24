@@ -7,7 +7,9 @@
     <sql id="syhUserTokenLogCond">
         <where>
             <if test="p.siteId != null and p.siteId != ''">AND l.site_id = #{p.siteId}</if>
-            <if test="p.typeCd != null and p.typeCd != ''">AND l.token_type_cd = #{p.typeCd}</if>
+            <if test="p.userId != null and p.userId != ''">AND l.user_id = #{p.userId}</if>
+            <if test="p.actionCd != null and p.actionCd != ''">AND l.action_cd = #{p.actionCd}</if>
+            <if test="p.tokenTypeCd != null and p.tokenTypeCd != ''">AND l.token_type_cd = #{p.tokenTypeCd}</if>
             <if test="p.dateStart != null and p.dateStart != ''">AND l.reg_date &gt;= #{p.dateStart}::DATE</if>
             <if test="p.dateEnd   != null and p.dateEnd   != ''">AND l.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
@@ -16,31 +18,31 @@
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto">
         SELECT  /* base.sy :: SyhUserTokenLog :: selectById */
               l.*
-            , ste.site_nm AS site_nm
-            , usr.user_nm AS user_nm
-            , cd_ta.code_label AS action_cd_nm
-            , cd_tt.code_label AS token_type_cd_nm
+            , ste.site_nm       AS site_nm
+            , usr.user_nm       AS user_nm
+            , cd_ta.code_label  AS action_cd_nm
+            , cd_tt.code_label  AS token_type_cd_nm
         FROM syh_user_token_log l
-            LEFT JOIN sy_site ste ON ste.site_id = l.site_id
-            LEFT JOIN sy_user usr ON usr.user_id = l.user_id
+            LEFT JOIN sy_site ste  ON ste.site_id    = l.site_id
+            LEFT JOIN sy_user usr  ON usr.user_id    = l.user_id
             LEFT JOIN sy_code cd_ta ON cd_ta.code_grp = 'TOKEN_ACTION' AND cd_ta.code_value = l.action_cd
-            LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE' AND cd_tt.code_value = l.token_type_cd
+            LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE'   AND cd_tt.code_value = l.token_type_cd
         WHERE l.log_id = #{id}
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto">
         SELECT  /* base.sy :: SyhUserTokenLog :: selectList */
               l.*
-            , ste.site_nm AS site_nm
-            , usr.user_nm AS user_nm
-            , cd_ta.code_label AS action_cd_nm
-            , cd_tt.code_label AS token_type_cd_nm
+            , ste.site_nm       AS site_nm
+            , usr.user_nm       AS user_nm
+            , cd_ta.code_label  AS action_cd_nm
+            , cd_tt.code_label  AS token_type_cd_nm
         FROM syh_user_token_log l
-            LEFT JOIN sy_site ste ON ste.site_id = l.site_id
-            LEFT JOIN sy_user usr ON usr.user_id = l.user_id
+            LEFT JOIN sy_site ste  ON ste.site_id    = l.site_id
+            LEFT JOIN sy_user usr  ON usr.user_id    = l.user_id
             LEFT JOIN sy_code cd_ta ON cd_ta.code_grp = 'TOKEN_ACTION' AND cd_ta.code_value = l.action_cd
-            LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE' AND cd_tt.code_value = l.token_type_cd
-            <include refid="syhUserTokenLogCond"/>
+            LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE'   AND cd_tt.code_value = l.token_type_cd
+        <include refid="syhUserTokenLogCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY l.log_id ASC</when>
             <when test="p.sort == 'id_desc'">ORDER BY l.log_id DESC</when>
@@ -54,16 +56,16 @@
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto">
         SELECT  /* base.sy :: SyhUserTokenLog :: selectPageList */
               l.*
-            , ste.site_nm AS site_nm
-            , usr.user_nm AS user_nm
-            , cd_ta.code_label AS action_cd_nm
-            , cd_tt.code_label AS token_type_cd_nm
+            , ste.site_nm       AS site_nm
+            , usr.user_nm       AS user_nm
+            , cd_ta.code_label  AS action_cd_nm
+            , cd_tt.code_label  AS token_type_cd_nm
         FROM syh_user_token_log l
-            LEFT JOIN sy_site ste ON ste.site_id = l.site_id
-            LEFT JOIN sy_user usr ON usr.user_id = l.user_id
+            LEFT JOIN sy_site ste  ON ste.site_id    = l.site_id
+            LEFT JOIN sy_user usr  ON usr.user_id    = l.user_id
             LEFT JOIN sy_code cd_ta ON cd_ta.code_grp = 'TOKEN_ACTION' AND cd_ta.code_value = l.action_cd
-            LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE' AND cd_tt.code_value = l.token_type_cd
-            <include refid="syhUserTokenLogCond"/>
+            LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TOKEN_TYPE'   AND cd_tt.code_value = l.token_type_cd
+        <include refid="syhUserTokenLogCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY l.log_id ASC</when>
             <when test="p.sort == 'id_desc'">ORDER BY l.log_id DESC</when>
@@ -77,7 +79,7 @@
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(*)  /* base.sy :: SyhUserTokenLog :: selectPageCount */
         FROM syh_user_token_log l
-            <include refid="syhUserTokenLogCond"/>
+        <include refid="syhUserTokenLogCond"/>
     </select>
 
 </mapper>

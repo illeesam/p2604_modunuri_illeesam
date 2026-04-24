@@ -4,7 +4,7 @@
  * - 로그인 사용자 정보
  * - 로그인/로그아웃
  *
- * user 객체 필드 규칙:
+ * authUser 객체 필드 규칙:
  *   authId      : 인증 식별자 (BO = sy_user.user_id), JWT subject와 동일
  *   userId      : sy_user.user_id (authId와 동일값, 명시적 접근용)
  *   memberId    : null (FO 전용)
@@ -18,7 +18,7 @@
 
   const { defineStore } = Pinia;
 
-  const _defaultUser = () => ({
+  const _defaultAuthUser = () => ({
     authId: '',       // 인증 식별자 (sy_user.user_id)
     authNm: '',       // 인증 사용자명 (sy_user.user_nm)
     userId: '',       // BO 전용: sy_user.user_id
@@ -35,7 +35,7 @@
 
   window.useBoAuthStore = defineStore('boAuth', {
     state: () => ({
-      user: _defaultUser(),
+      authUser: _defaultAuthUser(),
       accessToken: '',
       refreshToken: '',
       accessExpiresIn: 0,
@@ -44,8 +44,8 @@
     }),
 
     getters: {
-      isLoggedIn: (state) => !!(state.user?.userId) && !!state.accessToken,
-      currentUser: (state) => state.user || _defaultUser(),
+      isLoggedIn: (state) => !!(state.authUser?.authId) && !!state.accessToken,
+      currentUser: (state) => state.authUser || _defaultAuthUser(),
       authHeader: (state) => (state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : {}),
     },
 
@@ -61,7 +61,6 @@
           });
 
           const loginData = res.data?.data || {};
-          console.log('[boAuthStore.login] loginData:', JSON.stringify(loginData, null, 2));
 
           if (loginData.accessToken) {
             this.accessToken = loginData.accessToken;
@@ -72,7 +71,7 @@
 
           // authId: BO = sy_user.user_id (backend LoginRes.authId)
           const authId = loginData.authId || loginData.userId || '';
-          this.user = {
+          this.authUser = {
             authId,
             userId: authId,       // BO 전용
             memberId: null,       // FO 전용: BO는 null
@@ -89,12 +88,11 @@
           this.accessExpiresIn = loginData.accessExpiresIn || 3600;
           this.refreshExpiresIn = loginData.refreshExpiresIn || 604800;
 
-          console.log('[boAuthStore.login] user:', this.user);
 
           try {
             if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
             if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
-            if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
+            if (this.authUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.authUser));
             if (this.accessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.accessExpiresIn.toString());
             if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.refreshExpiresIn.toString());
           } catch (_) {}
@@ -106,7 +104,7 @@
               const data = initRes.data.data;
 
               if (data.syAuth) this.setAuth(data.syAuth);
-              if (data.syUser) this.setUser(data.syUser);
+              if (data.syUser) this.setAuthUser(data.syUser);
 
               const roleStore = window.useBoRoleStore?.();
               if (data.syRoles) roleStore?.setRoles(data.syRoles);
@@ -123,13 +121,12 @@
               const appStore = window.useBoAppStore?.();
               if (data.syApp) appStore?.setApp(data.syApp);
 
-              console.log('[boAuthStore.login] init data loaded');
             }
           } catch (e) {
             console.warn('[boAuthStore.login] getInitData failed:', e);
           }
 
-          return this.user || {};
+          return this.authUser || {};
         } catch (err) {
           this.reset();
           throw err;
@@ -170,14 +167,14 @@
 
       // 초기화
       reset() {
-        this.user = _defaultUser();
+        this.authUser = _defaultAuthUser();
         this.accessToken = '';
         this.refreshToken = '';
         this.tempAuthInfo = null;
         try {
           localStorage.removeItem('modu-bo-accessToken');
           localStorage.removeItem('modu-bo-refreshToken');
-          localStorage.removeItem('modu-bo-user');
+          localStorage.removeItem('modu-bo-authUser');
           localStorage.removeItem('modu-bo-tempAuthInfo');
         } catch (_) {}
       },
@@ -189,56 +186,88 @@
         if (authData.refreshToken) this.refreshToken = authData.refreshToken;
         if (authData.accessExpiresIn) this.accessExpiresIn = authData.accessExpiresIn;
         if (authData.refreshExpiresIn) this.refreshExpiresIn = authData.refreshExpiresIn;
-        if (authData.user) this.user = authData.user;
+        if (authData.authUser) this.authUser = authData.authUser;
+        else if (authData.user) this.setAuthUser(authData.user); // StoreAuth.user 필드 호환
         if (authData.tempAuthInfo !== undefined) this.tempAuthInfo = authData.tempAuthInfo;
         try {
           if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
           if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
-          if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
+          if (this.authUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.authUser));
           if (this.accessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.accessExpiresIn.toString());
           if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.refreshExpiresIn.toString());
           if (this.tempAuthInfo) localStorage.setItem('modu-bo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
         } catch (_) {}
       },
 
-      // 사용자 정보 설정 (StoreUser → 프론트 user 형식으로 정규화)
-      setUser(userData) {
-        if (!userData) return;
-        const authId = userData.authId || userData.userId || '';
-        this.user = {
-          ...userData,
+      // 사용자 정보 설정 (StoreUser → 프론트 authUser 형식으로 정규화)
+      setAuthUser(authUserData) {
+        if (!authUserData) return;
+        const authId = authUserData.authId || authUserData.userId || '';
+        this.authUser = {
+          ...authUserData,
           authId,
           userId: authId,
-          name:   userData.name || userData.userNm || '',
-          email:  userData.email || userData.userEmail || '',
-          phone:  userData.phone || userData.userHpNo || userData.userPhone || '',
-          dept:   userData.dept || userData.deptNm || '',
-          role:   userData.role || userData.roleId || '',
+          name:   authUserData.name || authUserData.userNm || '',
+          email:  authUserData.email || authUserData.userEmail || '',
+          phone:  authUserData.phone || authUserData.userHpNo || authUserData.userPhone || '',
+          dept:   authUserData.dept || authUserData.deptNm || '',
+          role:   authUserData.role || authUserData.roleId || '',
         };
         try {
-          localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
+          localStorage.setItem('modu-bo-authUser', JSON.stringify(this.authUser));
         } catch (_) {}
       },
 
       // localStorage에서 복원
       restoreFromStorage() {
         try {
-          const accessToken  = localStorage.getItem('modu-bo-accessToken');
-          const refreshToken = localStorage.getItem('modu-bo-refreshToken');
-          const userJson     = localStorage.getItem('modu-bo-user');
+          // 구 key 마이그레이션: modu-bo-user → modu-bo-authUser
+          const _oldUser = localStorage.getItem('modu-bo-user');
+          if (_oldUser && !localStorage.getItem('modu-bo-authUser')) {
+            localStorage.setItem('modu-bo-authUser', _oldUser);
+          }
+          if (_oldUser) localStorage.removeItem('modu-bo-user');
+        } catch (_) {}
+        try {
+          const accessToken      = localStorage.getItem('modu-bo-accessToken');
+          const refreshToken     = localStorage.getItem('modu-bo-refreshToken');
+          const authUserJson     = localStorage.getItem('modu-bo-authUser');
           const accessExpiresIn  = localStorage.getItem('modu-bo-accessExpiresIn');
           const refreshExpiresIn = localStorage.getItem('modu-bo-refreshExpiresIn');
 
-          if (accessToken && userJson) {
+          if (accessToken && authUserJson) {
             this.accessToken = accessToken;
             this.refreshToken = refreshToken || '';
-            this.user = Object.assign(_defaultUser(), JSON.parse(userJson) || {});
+            this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
             this.accessExpiresIn = accessExpiresIn ? parseInt(accessExpiresIn) : 0;
             this.refreshExpiresIn = refreshExpiresIn ? parseInt(refreshExpiresIn) : 0;
             return true;
           }
         } catch (_) {}
         return false;
+      },
+
+      // FO syncFromStorage와 동일: 토큰 없으면 리셋, 있으면 복원
+      syncFromStorage() {
+        try {
+          const token        = localStorage.getItem('modu-bo-accessToken');
+          const refreshToken = localStorage.getItem('modu-bo-refreshToken');
+          const authUserJson = localStorage.getItem('modu-bo-authUser');
+          if (token) {
+            this.accessToken = token;
+            if (refreshToken) this.refreshToken = refreshToken;
+            if (authUserJson) this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
+            else this.authUser = _defaultAuthUser();
+          } else {
+            this.accessToken = '';
+            this.refreshToken = '';
+            this.authUser = _defaultAuthUser();
+          }
+          return !!token;
+        } catch (e) {
+          console.error('[boAuthStore] syncFromStorage error:', e);
+          return false;
+        }
       },
 
       // clear (ZdStore에서 호출)
@@ -249,13 +278,9 @@
   // localStorage 변화 감지
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', (e) => {
-      if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-user' || e.key === 'modu-bo-refreshToken') {
+      if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser' || e.key === 'modu-bo-refreshToken') {
         const store = window.useBoAuthStore?.();
-        if (store) {
-          const accessToken = localStorage.getItem('modu-bo-accessToken');
-          if (!accessToken) store.reset();
-          else store.restoreFromStorage();
-        }
+        if (store) store.syncFromStorage();
       }
     });
   }
@@ -264,16 +289,16 @@
   window.getBoAuthStore = () => {
     try {
       return window.useBoAuthStore?.() || {
-        user: _defaultUser(), accessToken: '', refreshToken: '',
+        authUser: _defaultAuthUser(), accessToken: '', refreshToken: '',
         isLoggedIn: false, accessExpiresIn: 0, refreshExpiresIn: 0,
-        currentUser: _defaultUser(), authHeader: {},
+        currentUser: _defaultAuthUser(), authHeader: {},
       };
     } catch (e) {
       console.error('getBoAuthStore error:', e);
       return {
-        user: _defaultUser(), accessToken: '', refreshToken: '',
+        authUser: _defaultAuthUser(), accessToken: '', refreshToken: '',
         accessExpiresIn: 0, refreshExpiresIn: 0, isLoggedIn: false,
-        currentUser: _defaultUser(), authHeader: {},
+        currentUser: _defaultAuthUser(), authHeader: {},
       };
     }
   };
@@ -281,8 +306,8 @@
   window.getBoAuthUser = () => {
     try {
       const store = window.useBoAuthStore?.();
-      return (store?.user?.userId) ? store.user : _defaultUser();
-    } catch (e) { return _defaultUser(); }
+      return (store?.authUser?.authId) ? store.authUser : _defaultAuthUser();
+    } catch (e) { return _defaultAuthUser(); }
   };
 
   window.getBoAuthToken = () => {
@@ -293,15 +318,15 @@
   window.isBoAuthLoggedIn = () => {
     try {
       const store = window.useBoAuthStore?.();
-      return !!(store?.user?.userId && store?.accessToken);
+      return !!(store?.authUser?.authId && store?.accessToken);
     } catch (e) { return false; }
   };
 
   window.isBoLogin = () => {
     try {
       const store = window.useBoAuthStore?.();
-      if (!store?.user) return false;
-      return !!(store.user.userId && store.accessToken);
+      if (!store?.authUser) return false;
+      return !!(store.authUser.authId && store.accessToken);
     } catch (e) { return false; }
   };
 })();

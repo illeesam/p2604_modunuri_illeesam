@@ -18,19 +18,22 @@ public class JwtProvider {
 
     private final SecretKey secretKey;
     private final long accessExpiry;
-    private final long refreshExpiry;
+    private final long boRefreshExpiry;   // BO 관리자: 2시간
+    private final long foRefreshExpiry;   // FO 회원: 15일
 
     public JwtProvider(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.access-expiry}") long accessExpiry,
-            @Value("${jwt.refresh-expiry}") long refreshExpiry) {
+            @Value("${jwt.bo-refresh-expiry}") long boRefreshExpiry,
+            @Value("${jwt.fo-refresh-expiry}") long foRefreshExpiry) {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.accessExpiry = accessExpiry;
-        this.refreshExpiry = refreshExpiry;
+        this.boRefreshExpiry = boRefreshExpiry;
+        this.foRefreshExpiry = foRefreshExpiry;
     }
 
     /**
-     * Access Token 생성 (DTO 사용).
+     * Access Token 생성.
      * JWT 클레임에 AuthPrincipal 구성에 필요한 모든 정보를 포함시켜
      * JwtAuthFilter에서 DB 없이 AuthPrincipal을 완벽하게 복원할 수 있게 한다.
      */
@@ -39,7 +42,7 @@ public class JwtProvider {
         Date expiry = new Date(now.getTime() + accessExpiry);
 
         return Jwts.builder()
-            .subject(claims.getAuthId())            // authId = JWT subject (BO=user_id, FO=member_id)
+            .subject(claims.getAuthId())
             .claim("loginId", claims.getLoginId())
             .claim("roles", claims.getRoles())
             .claim("type", "access")
@@ -47,8 +50,8 @@ public class JwtProvider {
             .claim("roleId", claims.getRoleId())
             .claim("vendorId", claims.getVendorId())
             .claim("siteId", claims.getSiteId())
-            .claim("userId", claims.getUserId())     // BO 전용: sy_user.user_id
-            .claim("memberId", claims.getMemberId()) // FO 전용: ec_member.member_id
+            .claim("userId", claims.getUserId())
+            .claim("memberId", claims.getMemberId())
             .claim("memberGrade", claims.getMemberGrade())
             .claim("isStaffYn", claims.getIsStaffYn())
             .claim("isAdminYn", claims.getIsAdminYn())
@@ -58,28 +61,41 @@ public class JwtProvider {
             .compact();
     }
 
-
     /**
-     * Refresh Token 생성.
-     * userType을 포함시켜 재발급 시 원래 사용자 타입을 유지한다.
-     * 재발급 엔드포인트에서 DB로 userType을 재조회하지 않아도 되도록 설계.
+     * Refresh Token 생성 — userTypeCd에 따라 만료시간 분리.
+     * "BO": 2시간 (1세션, Sliding), "FO": 15일 (멀티디바이스, Sliding)
      */
     public String createRefreshToken(String authId, String userTypeCd) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + refreshExpiry);
+        long expiry = "BO".equals(userTypeCd) ? boRefreshExpiry : foRefreshExpiry;
+        Date expiryDate = new Date(now.getTime() + expiry);
 
         return Jwts.builder()
-            .subject(authId)                        // authId = JWT subject
+            .subject(authId)
             .claim("type", "refresh")
             .claim("userTypeCd", userTypeCd)
             .issuedAt(now)
-            .expiration(expiry)
+            .expiration(expiryDate)
             .signWith(secretKey)
             .compact();
     }
 
-    public long getAccessExpiryMinutes()  { return accessExpiry  / 60_000; }
-    public long getRefreshExpiryMinutes() { return refreshExpiry / 60_000; }
+    public long getAccessExpiryMinutes() { return accessExpiry / 60_000; }
+    public long getBoRefreshExpiryMinutes() { return boRefreshExpiry / 60_000; }
+    public long getFoRefreshExpiryMinutes() { return foRefreshExpiry / 60_000; }
+
+    /** 만료된 토큰 포함하여 클레임 파싱 (refresh 엔드포인트용) */
+    public Claims getClaimsAllowExpired(String token) {
+        try {
+            return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
+    }
 
     public boolean validate(String token) {
         try {
@@ -106,7 +122,6 @@ public class JwtProvider {
             .getPayload();
     }
 
-    /** JWT subject에서 authId 추출 (BO=user_id, FO=member_id) */
     public String getAuthId(String token) {
         return getClaims(token).getSubject();
     }

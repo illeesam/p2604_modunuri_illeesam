@@ -2,7 +2,7 @@
  * FO (Front Office) 인증 정보 Pinia 스토어
  * - 토큰, 만료시간 관리
  *
- * user 객체 필드 규칙:
+ * authUser 객체 필드 규칙:
  *   authId      : 인증 식별자 (FO = ec_member.member_id), JWT subject와 동일
  *   memberId    : ec_member.member_id (authId와 동일값, 명시적 접근용)
  *   userId      : null (BO 전용)
@@ -14,7 +14,7 @@
     return;
   }
 
-  const _defaultUser = () => ({
+  const _defaultAuthUser = () => ({
     authId: '',         // 인증 식별자 (ec_member.member_id)
     authNm: '',         // 인증 사용자명 (ec_member.member_nm)
     memberId: '',       // FO 전용: ec_member.member_id
@@ -28,7 +28,7 @@
   window.useFoAuthStore = Pinia.defineStore('foAuth', {
     state: () => {
       return {
-        user: _defaultUser(),
+        authUser: _defaultAuthUser(),
         accessToken: '',
         refreshToken: '',
         accessExpiresIn: 0,
@@ -38,7 +38,7 @@
     },
 
     getters: {
-      isLoggedIn: (s) => !!(s.user?.authId) && !!s.accessToken,
+      isLoggedIn: (s) => !!(s.authUser?.authId) && !!s.accessToken,
       isTokenValid: (s) => !!(s.accessToken),
     },
 
@@ -49,12 +49,13 @@
         if (authData.refreshToken) this.refreshToken = authData.refreshToken;
         if (authData.accessExpiresIn) this.accessExpiresIn = authData.accessExpiresIn;
         if (authData.refreshExpiresIn) this.refreshExpiresIn = authData.refreshExpiresIn;
-        if (authData.user) this.user = authData.user;
+        if (authData.authUser) this.authUser = authData.authUser;
+        else if (authData.user) this.setAuthUser(authData.user); // StoreAuth.user 필드 호환
         if (authData.tempAuthInfo !== undefined) this.tempAuthInfo = authData.tempAuthInfo;
         try {
           if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
           if (this.refreshToken) localStorage.setItem('modu-fo-refreshToken', this.refreshToken);
-          if (this.user) localStorage.setItem('modu-fo-user', JSON.stringify(this.user));
+          if (this.authUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(this.authUser));
           if (this.tempAuthInfo) localStorage.setItem('modu-fo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
         } catch (e) {
           console.error('[foAuthStore] setAuth localStorage error:', e);
@@ -75,29 +76,29 @@
         }
       },
 
-      setUser(userData) {
-        if (!userData) return;
-        this.user = userData;
+      setAuthUser(authUserData) {
+        if (!authUserData) return;
+        this.authUser = authUserData;
         try {
-          localStorage.setItem('modu-fo-user', JSON.stringify(userData));
+          localStorage.setItem('modu-fo-authUser', JSON.stringify(authUserData));
         } catch (e) {
-          console.error('[foAuthStore] setUser localStorage error:', e);
+          console.error('[foAuthStore] setAuthUser localStorage error:', e);
         }
       },
 
-      setSession(user, accessToken) {
-        this.user = user || _defaultUser();
+      setSession(authUser, accessToken) {
+        this.authUser = authUser || _defaultAuthUser();
         this.accessToken = accessToken || '';
         try {
           if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
-          if (user) localStorage.setItem('modu-fo-user', JSON.stringify(user));
+          if (authUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(authUser));
         } catch (e) {
           console.error('[foAuthStore] setSession localStorage error:', e);
         }
       },
 
       clearSession() {
-        this.user = _defaultUser();
+        this.authUser = _defaultAuthUser();
         this.accessToken = '';
         this.refreshToken = '';
         this.accessExpiresIn = 0;
@@ -106,7 +107,7 @@
         try {
           localStorage.removeItem('modu-fo-accessToken');
           localStorage.removeItem('modu-fo-refreshToken');
-          localStorage.removeItem('modu-fo-user');
+          localStorage.removeItem('modu-fo-authUser');
           localStorage.removeItem('modu-fo-tempAuthInfo');
         } catch (e) {
           console.error('[foAuthStore] clearSession localStorage error:', e);
@@ -114,7 +115,7 @@
       },
 
       clear() {
-        this.user = _defaultUser();
+        this.authUser = _defaultAuthUser();
         this.accessToken = '';
         this.refreshToken = '';
         this.accessExpiresIn = 0;
@@ -131,11 +132,19 @@
 
       syncFromStorage() {
         try {
-          const token = localStorage.getItem('modu-fo-accessToken');
+          const token        = localStorage.getItem('modu-fo-accessToken');
           const refreshToken = localStorage.getItem('modu-fo-refreshToken');
-          if (token) this.accessToken = token;
-          else { this.accessToken = ''; this.refreshToken = ''; }
-          if (refreshToken) this.refreshToken = refreshToken;
+          const authUserJson = localStorage.getItem('modu-fo-authUser');
+          if (token) {
+            this.accessToken = token;
+            if (refreshToken) this.refreshToken = refreshToken;
+            if (authUserJson) this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
+            else this.authUser = _defaultAuthUser();
+          } else {
+            this.accessToken = '';
+            this.refreshToken = '';
+            this.authUser = _defaultAuthUser();
+          }
           return !!token;
         } catch (e) {
           console.error('[foAuthStore] syncFromStorage error:', e);
@@ -145,13 +154,13 @@
 
       restoreFromStorage() {
         try {
-          const token = localStorage.getItem('modu-fo-accessToken');
-          const refreshToken = localStorage.getItem('modu-fo-refreshToken');
-          const userJson = localStorage.getItem('modu-fo-user');
+          const token         = localStorage.getItem('modu-fo-accessToken');
+          const refreshToken  = localStorage.getItem('modu-fo-refreshToken');
+          const authUserJson  = localStorage.getItem('modu-fo-authUser');
           if (token) {
             this.accessToken = token;
             if (refreshToken) this.refreshToken = refreshToken;
-            if (userJson) this.user = Object.assign(_defaultUser(), JSON.parse(userJson) || {});
+            if (authUserJson) this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
           }
           return !!(token && refreshToken);
         } catch (e) {
@@ -164,21 +173,21 @@
 
   // 함수형 유틸리티
   window.getFoAuthStore = () => {
-    try { return window.useFoAuthStore?.() || { user: _defaultUser(), accessToken: '', isLoggedIn: false }; }
-    catch (e) { return { user: _defaultUser(), accessToken: '', isLoggedIn: false }; }
+    try { return window.useFoAuthStore?.() || { authUser: _defaultAuthUser(), accessToken: '', isLoggedIn: false }; }
+    catch (e) { return { authUser: _defaultAuthUser(), accessToken: '', isLoggedIn: false }; }
   };
 
   window.getFoAuthUser = () => {
     try {
       const store = window.useFoAuthStore?.();
-      return (store?.user?.memberId) ? store.user : _defaultUser();
-    } catch (e) { return _defaultUser(); }
+      return (store?.authUser?.authId) ? store.authUser : _defaultAuthUser();
+    } catch (e) { return _defaultAuthUser(); }
   };
 
   window.isFoLogin = () => {
     try {
       const store = window.useFoAuthStore?.();
-      return !!(store?.user?.memberId && store?.accessToken);
+      return !!(store?.authUser?.authId && store?.accessToken);
     } catch (e) { return false; }
   };
 

@@ -15,16 +15,21 @@ public class MbhMemberTokenLogDto {
     private String loginLogId;
     private String actionCd;
     private String tokenTypeCd;
-    private String token;
+    private String accessToken;
     private LocalDateTime tokenExp;
     private String prevToken;
+    private String refreshToken;
     private String ip;
-    private String device;
+    private String deviceInfo;
     private String revokeReason;
     private String regBy;
     private LocalDateTime regDate;
     private String updBy;
     private LocalDateTime updDate;
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    // ── JOIN ─────────────────────────────────────────────────────────
+    private String siteNm;
+    private String memberNm;
+    private String actionCdNm;
+    private String tokenTypeCdNm;
 }

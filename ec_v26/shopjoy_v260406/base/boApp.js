@@ -177,19 +177,10 @@
 
   const app = createApp({
     setup() {
-      /* ── App Init Data Store 초기화 (Pinia 초기화 후 약간 지연) ── */
+      /* ── App Init Data Store 초기화 ── */
       onMounted(() => {
         setTimeout(() => {
-          const boAppInitStore = window.useBoAppInitStore?.();
-          if (boAppInitStore) {
-            try {
-              boAppInitStore.restoreFromStorage();
-              console.log('[boApp] Fetching BO init data (공개 + 인증 데이터)...');
-              boAppInitStore.fetchBoAppInitData().catch(e => console.warn('[boApp] fetchBoAppInitData error:', e));
-            } catch (e) {
-              console.warn('[boApp] App init store restore error:', e);
-            }
-          }
+          window.useBoAppInitStore?.()?.restoreFromStorage?.();
         }, 0);
       });
 
@@ -679,39 +670,72 @@
         try {
           const tok = localStorage.getItem('modu-bo-accessToken');
           if (!tok) return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
-          const user = JSON.parse(localStorage.getItem('modu-bo-user') || 'null');
-          return user || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
+          const authUser = JSON.parse(localStorage.getItem('modu-bo-authUser') || 'null');
+          return authUser || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
         } catch(_) { return { userId: '', name: '', email: '', role: '', phone: '', dept: '' }; }
       };
-      // 구조체 미리 선언 → store 준비 후 값만 채움
-      const currentUser = reactive({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', userTypeCd: '', roleId: '', siteId: '' });
-      const _syncCurrentUser = () => { const u = window.useBoAuthStore?.()?.user; if (u) Object.assign(currentUser, u); };
-      // Pinia store 복원 후 즉시 sync
-      try { window.useBoAuthStore?.()?.restoreFromStorage?.(); _syncCurrentUser(); } catch(_) {}
-      watch(() => window.useBoAuthStore?.()?.user, _syncCurrentUser, { deep: true });
+      /* ── FO의 foAuth.state 패턴과 동일: Vue.reactive state + _sync() ── */
+      const _defaultBoAuthUser = () => ({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', userTypeCd: '', roleId: '', siteId: '' });
+      const currentAuthUser = reactive(_defaultBoAuthUser());
+      // store 인스턴스를 setup() 안에서 한 번만 가져와서 고정 — Pinia 컨텍스트 보장
+      const _boAuthStore = window.useBoAuthStore?.();
+      const _syncCurrentAuthUser = () => {
+        try {
+          const u = _boAuthStore?.authUser;
+          if (u && u.authId) Object.assign(currentAuthUser, u);
+          else Object.assign(currentAuthUser, _defaultBoAuthUser());
+        } catch(e) {}
+      };
+
+      // 초기 복원 — 토큰 없으면 reset, 있으면 syncFromStorage (FO foAuth.init() 동일 패턴)
+      try {
+        const _initToken = localStorage.getItem('modu-bo-accessToken');
+        if (!_initToken) _boAuthStore?.reset?.();
+        else _boAuthStore?.syncFromStorage?.();
+      } catch(_) {}
+      _syncCurrentAuthUser();
+
+      // F5 새로고침 시 토큰 유효성 검증 (FO: foAuth.init() 내 fetchFoAppInitData())
+      (async () => {
+        const store = _boAuthStore;
+        if (store?.accessToken) {
+          try {
+            await window.useBoAppInitStore?.()?.fetchBoAppInitData?.();
+            _syncCurrentAuthUser();
+          } catch (e) {
+            if (e?.response?.status === 401) {
+              console.warn('[boApp] token invalid (401), reset session');
+              store.reset();
+              _syncCurrentAuthUser();
+            } else {
+              console.warn('[boApp] fetchBoAppInitData error:', e?.response?.status || e.message);
+            }
+          }
+        }
+      })();
       const activeRoleId = ref(null);
-      const isLoggedIn = computed(() => !!(currentUser?.authId));
-      const currentUserRoles = reactive([]);
+      const isLoggedIn = computed(() => !!(currentAuthUser?.authId));
+      const currentAuthUserRoles = reactive([]);
       const updateCurrentUserRoles = () => {
         try {
           if (!window.boDataProvider) {
-            currentUserRoles.splice(0, currentUserRoles.length);
+            currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
             return;
           }
-          const user = currentUser || { userId: '' };
+          const user = currentAuthUser || { userId: '' };
           const userRoles = window.boDataProvider?.getUserRolesByUserId(user.userId) || [];
           const roles = window.boDataProvider?.getRoles() || [];
           const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
           const result = (userRoles || []).map(ur => roleMap[ur?.roleId]).filter(Boolean);
           const finalResult = result && result.length ? result : [];
-          currentUserRoles.splice(0, currentUserRoles.length, ...finalResult);
+          currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...finalResult);
         } catch (e) {
-          console.error('currentUserRoles error:', e);
-          currentUserRoles.splice(0, currentUserRoles.length);
+          console.error('currentAuthUserRoles error:', e);
+          currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
         }
       };
       updateCurrentUserRoles();
-      watch(currentUser, updateCurrentUserRoles);
+      watch(currentAuthUser, updateCurrentUserRoles);
       const rolePath = (r, uid) => {
         try {
           if (!r || !window.boDataProvider) return '';
@@ -728,7 +752,7 @@
                          : (root?.roleCode === 'DLIV_ROOT')     ? 'DELIVERY' : null;
           if (wantType) {
             const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
-            const targetUid = uid != null ? uid : (currentUser?.userId || '');
+            const targetUid = uid != null ? uid : (currentAuthUser?.userId || '');
             let names = [];
             if (targetUid != null && targetUid > 0) {
               const userBizs = (window.boData?.userBizs || []);
@@ -787,10 +811,10 @@
           return [];
         }
       });
-      watch(currentUser, (u) => {
+      watch(currentAuthUser, (u) => {
         try {
           if (u && u.userId) {
-            const roles = currentUserRoles || [];
+            const roles = currentAuthUserRoles || [];
             if (!roles.find(r => r?.roleId === activeRoleId.value)) {
               activeRoleId.value = (roles && roles.length) ? roles[0]?.roleId : null;
             }
@@ -798,7 +822,7 @@
             activeRoleId.value = null;
           }
         } catch (e) {
-          console.error('watch currentUser error:', e);
+          console.error('watch currentAuthUser error:', e);
           activeRoleId.value = null;
         }
       }, { immediate: true });
@@ -812,23 +836,23 @@
       const profileModal = reactive({ show: false });
       const profileForm  = reactive({ name: '', phone: '', dept: '', email: '' });
       const openProfile  = () => {
-        if (!currentUser || !currentUser.userId) return;
+        if (!currentAuthUser || !currentAuthUser.userId) return;
         Object.assign(profileForm, {
-          name: currentUser.name || '',
-          phone: currentUser.phone || '',
-          dept: currentUser.dept || '',
-          email: currentUser.email || ''
+          name: currentAuthUser.name || '',
+          phone: currentAuthUser.phone || '',
+          dept: currentAuthUser.dept || '',
+          email: currentAuthUser.email || ''
         });
         profileModal.show = true; userMenuShow.value = false;
       };
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
-        if (!currentUser) {
-          Object.assign(currentUser, _defaultBoUser());
+        if (!currentAuthUser) {
+          Object.assign(currentAuthUser, _defaultBoUser());
         }
-        currentUser.name  = profileForm.name || '';
-        currentUser.phone = profileForm.phone || '';
-        currentUser.dept  = profileForm.dept || '';
+        currentAuthUser.name  = profileForm.name || '';
+        currentAuthUser.phone = profileForm.phone || '';
+        currentAuthUser.dept  = profileForm.dept || '';
         profileModal.show = false;
         showToast('프로필이 저장되었습니다.');
       };
@@ -844,13 +868,13 @@
       const savePwChange = () => {
         pwError.value = '';
         if (!pwForm.current || !pwForm.next || !pwForm.confirm) { pwError.value = '모든 항목을 입력하세요.'; return; }
-        if (!currentUser) {
+        if (!currentAuthUser) {
           pwError.value = '사용자 정보가 없습니다.'; return;
         }
-        if ((currentUser.password || '') !== pwForm.current) { pwError.value = '현재 비밀번호가 올바르지 않습니다.'; return; }
+        if ((currentAuthUser.password || '') !== pwForm.current) { pwError.value = '현재 비밀번호가 올바르지 않습니다.'; return; }
         if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
         if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
-        currentUser.password = pwForm.next || '';
+        currentAuthUser.password = pwForm.next || '';
         pwModal.show = false;
         showToast('비밀번호가 변경되었습니다.');
       };
@@ -870,16 +894,16 @@
         loginError.value = '';
         if (!loginForm.loginId || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
         try {
-          const authStore = window.useBoAuthStore?.();
-          if (!authStore) { loginError.value = '스토어 초기화 실패'; return; }
+          if (!_boAuthStore) { loginError.value = '스토어 초기화 실패'; return; }
 
-          await authStore.login(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
+          await _boAuthStore.login(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
+          _syncCurrentAuthUser();
 
           openTabs.splice(0);
           loginForm.loginId = ''; loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
-          showToast(`${(currentUser?.authNm || currentUser?.name || '사용자')}님 환영합니다.`);
+          showToast(`${(currentAuthUser?.authNm || currentAuthUser?.name || '사용자')}님 환영합니다.`);
         } catch (err) {
           loginError.value = err?.response?.data?.message || err?.message || '로그인 실패';
         }
@@ -906,12 +930,18 @@
           userMenuShow.value = false;
         }
       };
-      /* 다른 탭에서 로그인/로그아웃 동기화 */
+      /* 다른 탭 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
-        if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-user') {
-          window.useBoAuthStore?.()?.restoreFromStorage?.();
+        if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
+          _boAuthStore?.syncFromStorage?.();
+          _syncCurrentAuthUser();
         }
       });
+      /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 */
+      setInterval(() => {
+        _boAuthStore?.syncFromStorage?.();
+        _syncCurrentAuthUser();
+      }, 1000);
 
       const doRegister = async () => {
         loginError.value = '';
@@ -1013,7 +1043,7 @@
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
         apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
         tabBarRef, scrollTabs,
-        currentUser, currentUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
+        isLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, userMenuShow,
         openLogin, closeLogin, doLogin, quickLogin, doLogout, doRegister,
         profileModal, profileForm, openProfile, saveProfile,
@@ -1052,25 +1082,25 @@
     <!-- 로그인/유저 영역 -->
     <div class="top-nav-user" @click.stop>
       <template v-if="isLoggedIn">
-        <select v-if="currentUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
-          :title="'역할 ' + currentUserRoles.length + '개 보유'"
+        <select v-if="currentAuthUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
+          :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
           style="margin-right:4px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:480px;min-width:320px;">
-          <option v-for="r in currentUserRoles" :key="r.roleId" :value="r.roleId">{{ rolePath(r) }}</option>
+          <option v-for="r in currentAuthUserRoles" :key="r.roleId" :value="r.roleId">{{ rolePath(r) }}</option>
         </select>
-        <span v-if="currentUserRoles.length >= 2"
-          :title="'역할 ' + currentUserRoles.length + '개 보유'"
-          style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentUserRoles.length }}</span>
-        <span v-else-if="currentUserRoles.length === 1" class="user-role-label"
-          style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentUserRoles[0]) }}</span>
-        <span class="user-name-label">{{ currentUser?.authNm || currentUser?.name || '' }}</span>
-        <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentUser?.email || ''">
-          {{ ((currentUser?.authNm || currentUser?.name || '').charAt(0)) || '?' }}
+        <span v-if="currentAuthUserRoles.length >= 2"
+          :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
+          style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentAuthUserRoles.length }}</span>
+        <span v-else-if="currentAuthUserRoles.length === 1" class="user-role-label"
+          style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentAuthUserRoles[0]) }}</span>
+        <span class="user-name-label">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</span>
+        <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentAuthUser?.email || ''">
+          {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
         </button>
         <div v-if="userMenuShow" class="user-dropdown">
           <div class="user-dropdown-header">
-            <div class="user-dropdown-name">{{ currentUser?.authNm || currentUser?.name || '' }}</div>
-            <div class="user-dropdown-role">{{ currentUser?.role || '' }}</div>
-            <div class="user-dropdown-email">{{ currentUser?.email || '' }}</div>
+            <div class="user-dropdown-name">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
+            <div class="user-dropdown-role">{{ currentAuthUser?.role || '' }}</div>
+            <div class="user-dropdown-email">{{ currentAuthUser?.email || '' }}</div>
           </div>
           <div class="user-dropdown-sep"></div>
           <div class="user-dropdown-item" @click="openProfile">🙍 프로필</div>
@@ -1627,11 +1657,11 @@
         <span class="modal-close" @click="profileModal.show=false">✕</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
-        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ ((currentUser?.authNm || currentUser?.name || '').charAt(0)) || '?' }}</div>
+        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}</div>
         <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentUser?.authNm || currentUser?.name || '' }}</div>
-          <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentUser?.role || '' }}</div>
-          <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentUser?.regDate || '' }}</div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
+          <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentAuthUser?.role || '' }}</div>
+          <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentAuthUser?.regDate || '' }}</div>
         </div>
       </div>
       <div class="form-row">

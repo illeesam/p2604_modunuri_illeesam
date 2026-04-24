@@ -1,14 +1,23 @@
 /* ShopJoy - FO Auth Module (Pinia + localStorage token 연계) */
 (function () {
+  /* ── 구 key 마이그레이션: modu-fo-user → modu-fo-authUser ── */
+  try {
+    const _oldUser = localStorage.getItem('modu-fo-user');
+    if (_oldUser && !localStorage.getItem('modu-fo-authUser')) {
+      localStorage.setItem('modu-fo-authUser', _oldUser);
+    }
+    localStorage.removeItem('modu-fo-user');
+  } catch (e) {}
+
   /* ── 초기 상태: 토큰 + 유저 모두 있을 때만 로그인으로 처리 ── */
   const _initToken = localStorage.getItem('modu-fo-accessToken');
   let _initUser = null;
   if (_initToken) {
-    try { _initUser = JSON.parse(localStorage.getItem('modu-fo-user') || 'null'); } catch (e) {}
+    try { _initUser = JSON.parse(localStorage.getItem('modu-fo-authUser') || 'null'); } catch (e) {}
   }
   if (!_initToken) {
     /* 토큰 없으면 유저 정보도 정리 */
-    localStorage.removeItem('modu-fo-user');
+    localStorage.removeItem('modu-fo-authUser');
   }
 
   console.log('[foAuth] init _initToken:', !!_initToken);
@@ -26,7 +35,7 @@
   /* ── store → state 동기화 ── */
   const _sync = () => {
     if (_store) {
-      state.user = _store.user ? { ...(_store.user) } : null;
+      state.user = _store.authUser ? { ...(_store.authUser) } : null;
       console.log('[foAuth._sync] state.user updated:', state.user);
     }
   };
@@ -35,17 +44,37 @@
   const init = pinia => {
     _store = window.useFoAuthStore(pinia);
 
-    /* 초기 사용자 정보 로드 */
+    /* 초기 사용자 정보 로드 (서버 검증 전 임시 표시) */
     if (_initUser && _initToken) {
-      _store.user = _initUser;
+      _store.authUser = _initUser;
       _store.accessToken = _initToken;
-      console.log('[foAuth.init] restored user from localStorage:', _initUser);
+      console.log('[foAuth.init] restored authUser from localStorage:', _initUser);
     }
 
     /* 초기 동기화 */
     _sync();
 
-    /* 1초마다 localStorage 폴링 → DevTools에서 shopjoy_token 삭제 시 즉시 로그아웃 */
+    /* ── F5 새로고침 시 init data 재조회 (토큰 유효성 검증 포함) ── */
+    if (_initToken) {
+      (async () => {
+        try {
+          const initStore = window.useFoAppInitStore?.();
+          if (initStore) await initStore.fetchFoAppInitData();
+          _sync();
+          console.log('[foAuth.init] init data loaded OK');
+        } catch (e) {
+          if (e?.response?.status === 401) {
+            console.warn('[foAuth.init] token invalid (401), clearing session');
+            _store.clearSession();
+            _sync();
+          } else {
+            console.warn('[foAuth.init] fetchFoAppInitData error:', e?.response?.status || e.message);
+          }
+        }
+      })();
+    }
+
+    /* 1초마다 localStorage 폴링 → DevTools에서 토큰 삭제 시 즉시 로그아웃 */
     setInterval(() => {
       _store.syncFromStorage();
       _sync();
@@ -53,7 +82,7 @@
 
     /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
     window.addEventListener('storage', e => {
-      if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-user') {
+      if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-authUser') {
         _store.syncFromStorage();
         _sync();
       }
@@ -96,7 +125,7 @@
           const userRes = await window.foApi.post('/co/cm/fo-app-store/getUser', '');
           if (userRes?.data?.data?.member) {
             const authStore = window.useFoAuthStore?.();
-            authStore?.setUser(userRes.data.data.member);
+            authStore?.setAuthUser(userRes.data.data.member);
             console.log('[foAuth.login] user info updated from getUser');
           }
         } catch (e) {

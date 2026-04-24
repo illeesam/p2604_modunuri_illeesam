@@ -39,8 +39,8 @@ window.foAppHeader = {
         /* Pinia store 에도 반영 */
         try {
           const store = window.useFoAuthStore(Pinia.getActivePinia());
-          store.user = { ...u };
-          localStorage.setItem('modu-fo-user', JSON.stringify(store.user));
+          store.authUser = { ...u };
+          localStorage.setItem('modu-fo-authUser', JSON.stringify(store.authUser));
         } catch (e) {}
       }
       profileOpen.value = false;
@@ -82,7 +82,7 @@ window.foAppHeader = {
     /* ── 안전한 사용자 정보 접근 ── */
     const authUser = computed(() => props?.auth?.user || { authNm: '', memberNm: '', email: '' });
     const userFirstChar = computed(() => ((authUser.value?.authNm || authUser.value?.memberNm || '').charAt(0)) || '?');
-    const isLogin = computed(() => !!(props?.auth?.user || props?.auth?.accessToken));
+    const isLogin = computed(() => !!(props?.auth?.user?.authId));
 
     /* ── 공통 인풋 스타일 ── */
     const IS = 'width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;';
