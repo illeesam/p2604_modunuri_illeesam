@@ -49,6 +49,24 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
+    // P6Spy (local/dev SQL logging)
+    implementation("p6spy:p6spy:3.9.1")
+
+    // Jasypt (설정값 암호화)
+    implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5")
+
+    // Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // Swagger/OpenAPI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
+
+    // DevTools (핫 리로드)
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // 이미지 처리 (썸네일 생성)
+    implementation("net.coobird:thumbnailator:0.4.20")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

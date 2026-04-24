@@ -35,7 +35,6 @@ public class CmDownloadController {
     ///   Content-Type: application/octet-stream
     ///   Content-Length: 2097152
     ///   Content-Disposition: attachment; filename="%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg"
-    ///   [파일 바이너리 데이터]
     ///
     /// 클라이언트 사용 예:
     ///   - 브라우저: <a href="/api/cm/download/...">다운로드</a>
@@ -114,7 +113,6 @@ public class CmDownloadController {
     ///   Content-Type: application/octet-stream
     ///   Content-Length: 2097152
     ///   Content-Disposition: attachment; filename="%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg"
-    ///   [파일 바이너리 데이터]
     ///
     /// 에러 응답 예제 (404 Not Found):
     ///   HTTP/1.1 404 Not Found
