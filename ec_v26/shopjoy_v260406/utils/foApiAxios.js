@@ -1,6 +1,6 @@
 /**
  * FO axios 클라이언트 (window.foApi)
- * - Bearer 토큰 자동 주입 (modu-fo-access_token)
+ * - Bearer 토큰 자동 주입 (modu-fo-accessToken)
  * - 401 → /auth/fo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
@@ -31,8 +31,8 @@
 
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[fo]';
-  var ACCESS_TOKEN_KEY = 'modu-fo-access_token';
-  var REFRESH_TOKEN_KEY = 'modu-fo-refresh_token';
+  var ACCESS_TOKEN_KEY = 'modu-fo-accessToken';
+  var REFRESH_TOKEN_KEY = 'modu-fo-refreshToken';
   var REFRESH_URL      = 'auth/fo/refresh';
   var TIMEOUT          = 15000;
 

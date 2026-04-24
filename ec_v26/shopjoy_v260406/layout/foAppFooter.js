@@ -24,7 +24,7 @@ window.foAppFooter = {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'foOnly') {
         /* target = FO 번호만, index.html 이동 */
-        try { localStorage.setItem('modu-fo-site_no', target); } catch(_){}
+        try { localStorage.setItem('modu-fo-siteNo', target); } catch(_){}
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'boOnly') {
         /* target = BO 번호만, bo.html 새창 오픈 — URL 파라미터로 전달, FO localStorage 접근 금지 */

@@ -508,7 +508,7 @@
 
       const _loadApiLogsFromStorage = () => {
         try {
-          const stored = localStorage.getItem('modu-bo-api_log');
+          const stored = localStorage.getItem('modu-bo-apiLog');
           if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
@@ -520,7 +520,7 @@
 
       const _saveApiLogsToStorage = () => {
         try {
-          localStorage.setItem('modu-bo-api_log', JSON.stringify(apiLogs.slice(0, 10)));
+          localStorage.setItem('modu-bo-apiLog', JSON.stringify(apiLogs.slice(0, 10)));
         } catch (_) {}
       };
 
@@ -552,7 +552,7 @@
 
       const clearApiLogs = () => {
         apiLogs.length = 0;
-        try { localStorage.removeItem('modu-bo-api_log'); } catch (_) {}
+        try { localStorage.removeItem('modu-bo-apiLog'); } catch (_) {}
         showToast('API 로그가 초기화되었습니다.', 'success');
       };
 
@@ -677,22 +677,20 @@
       const _mkBoToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
       const _restoreBoUser = () => {
         try {
-          const tok = localStorage.getItem('modu-bo-access_token');
+          const tok = localStorage.getItem('modu-bo-accessToken');
           if (!tok) return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
           const user = JSON.parse(localStorage.getItem('modu-bo-user') || 'null');
           return user || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
         } catch(_) { return { userId: '', name: '', email: '', role: '', phone: '', dept: '' }; }
       };
-      // Pinia store를 localStorage 값으로 복원 (페이지 리로드 후 isLoggedIn 유지)
-      try { window.useBoAuthStore?.()?.restoreFromStorage?.(); } catch(_) {}
-      const _defaultBoUser = () => ({ userId: '', authId: '', name: '', email: '', role: '', phone: '', dept: '' });
-      const _boAuthStore = () => window.useBoAuthStore?.();
-      const currentUser = reactive(_defaultBoUser());
-      const _syncCurrentUser = () => { Object.assign(currentUser, _defaultBoUser(), _boAuthStore()?.user || {}); };
-      _syncCurrentUser();
-      watch(() => _boAuthStore()?.user, _syncCurrentUser, { deep: true });
+      // 구조체 미리 선언 → store 준비 후 값만 채움
+      const currentUser = reactive({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', userTypeCd: '', roleId: '', siteId: '' });
+      const _syncCurrentUser = () => { const u = window.useBoAuthStore?.()?.user; if (u) Object.assign(currentUser, u); };
+      // Pinia store 복원 후 즉시 sync
+      try { window.useBoAuthStore?.()?.restoreFromStorage?.(); _syncCurrentUser(); } catch(_) {}
+      watch(() => window.useBoAuthStore?.()?.user, _syncCurrentUser, { deep: true });
       const activeRoleId = ref(null);
-      const isLoggedIn = computed(() => !!(currentUser?.userId || currentUser?.authId));
+      const isLoggedIn = computed(() => !!(currentUser?.authId));
       const currentUserRoles = reactive([]);
       const updateCurrentUserRoles = () => {
         try {
@@ -881,7 +879,7 @@
           loginForm.loginId = ''; loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
-          showToast(`${(currentUser?.name || '사용자')}님 환영합니다.`);
+          showToast(`${(currentUser?.authNm || currentUser?.name || '사용자')}님 환영합니다.`);
         } catch (err) {
           loginError.value = err?.response?.data?.message || err?.message || '로그인 실패';
         }
@@ -910,7 +908,7 @@
       };
       /* 다른 탭에서 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
-        if (e.key === 'modu-bo-access_token' || e.key === 'modu-bo-user') {
+        if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-user') {
           window.useBoAuthStore?.()?.restoreFromStorage?.();
         }
       });
@@ -944,16 +942,16 @@
         relatedSiteOpen.value = false;
       };
       const goFoSite = (no) => {
-        try { localStorage.setItem('modu-fo-site_no', no); } catch(_){}
+        try { localStorage.setItem('modu-fo-siteNo', no); } catch(_){}
         window.open('index.html?SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
       const goBoSite = (no) => {
-        try { localStorage.setItem('modu-bo-site_no', no); } catch(_){}
+        try { localStorage.setItem('modu-bo-siteNo', no); } catch(_){}
         window.open('bo.html?SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
-      const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-site_no')) || '01';
+      const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-siteNo')) || '01';
       const currentBoSiteNo = window.BO_SITE_NO || '01';
       const SITE_PAIR_MENU = [
         { fo:'01',   bo:'01' },
@@ -1064,13 +1062,13 @@
           style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentUserRoles.length }}</span>
         <span v-else-if="currentUserRoles.length === 1" class="user-role-label"
           style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentUserRoles[0]) }}</span>
-        <span class="user-name-label">{{ currentUser?.name || '' }}</span>
+        <span class="user-name-label">{{ currentUser?.authNm || currentUser?.name || '' }}</span>
         <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentUser?.email || ''">
-          {{ ((currentUser?.name || '').charAt(0)) || '?' }}
+          {{ ((currentUser?.authNm || currentUser?.name || '').charAt(0)) || '?' }}
         </button>
         <div v-if="userMenuShow" class="user-dropdown">
           <div class="user-dropdown-header">
-            <div class="user-dropdown-name">{{ currentUser?.name || '' }}</div>
+            <div class="user-dropdown-name">{{ currentUser?.authNm || currentUser?.name || '' }}</div>
             <div class="user-dropdown-role">{{ currentUser?.role || '' }}</div>
             <div class="user-dropdown-email">{{ currentUser?.email || '' }}</div>
           </div>
@@ -1629,9 +1627,9 @@
         <span class="modal-close" @click="profileModal.show=false">✕</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
-        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ ((currentUser?.name || '').charAt(0)) || '?' }}</div>
+        <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ ((currentUser?.authNm || currentUser?.name || '').charAt(0)) || '?' }}</div>
         <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentUser?.name || '' }}</div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentUser?.authNm || currentUser?.name || '' }}</div>
           <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentUser?.role || '' }}</div>
           <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentUser?.regDate || '' }}</div>
         </div>

@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StoreMember {
     private String authId;             // 인증 식별자 (FO = ec_member.member_id)
+    private String authNm;             // 인증 사용자명 (ec_member.member_nm)
     private String memberId;
     private String memberEmail;
     private String memberNm;

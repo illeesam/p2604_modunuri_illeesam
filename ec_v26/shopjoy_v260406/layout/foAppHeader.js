@@ -80,8 +80,8 @@ window.foAppHeader = {
     };
 
     /* ── 안전한 사용자 정보 접근 ── */
-    const authUser = computed(() => props?.auth?.user || { userId: 0, memberNm: '', email: '' });
-    const userFirstChar = computed(() => ((authUser.value?.memberNm || '').charAt(0)) || '?');
+    const authUser = computed(() => props?.auth?.user || { authNm: '', memberNm: '', email: '' });
+    const userFirstChar = computed(() => ((authUser.value?.authNm || authUser.value?.memberNm || '').charAt(0)) || '?');
     const isLogin = computed(() => !!(props?.auth?.user || props?.auth?.accessToken));
 
     /* ── 공통 인풋 스타일 ── */
@@ -224,7 +224,7 @@ window.foAppHeader = {
         <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">
           {{ userFirstChar }}
         </span>
-        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.memberNm }}</span>
+        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.authNm || authUser.memberNm }}</span>
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
           :style="userMenuOpen?'transform:rotate(180deg);transition:0.2s;':'transition:0.2s;'"><path d="M6 9l6 6 6-6"/></svg>
       </button>
@@ -239,7 +239,7 @@ window.foAppHeader = {
               {{ userFirstChar }}
             </span>
             <div style="min-width:0;">
-              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.memberNm }}</div>
+              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.authNm || authUser.memberNm }}</div>
               <div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.email }}</div>
             </div>
           </div>

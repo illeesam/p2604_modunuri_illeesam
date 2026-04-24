@@ -28,7 +28,7 @@ window.XsSample13 = {
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
     const isLoggedIn = auth ? auth.isLoggedIn : false;
     const userGrade  = (auth && auth.user) ? (auth.user.grade  || '일반') : '';
-    const userName   = (auth && auth.user) ? (auth.user.userName || auth.user.email || '') : '';
+    const userNm     = (auth && auth.user) ? (auth.user.authNm || auth.user.memberNm || auth.user.email || '') : '';
 
     /* 검색 필터 */
     const searchStatus       = ref('활성');
@@ -188,7 +188,7 @@ window.XsSample13 = {
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
       searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
       CONDITION_OPTS, AUTH_GRADE_OPTS,
-      isLoggedIn, userGrade, userName, accessibleConds,
+      isLoggedIn, userGrade, userNm, accessibleConds,
       showCatModal, selectedCatIds, catBtnLabel, onCatApply, selectedCatNames,
       panelsByArea, panelSource, panelSourceHtml, copied, copiedPanel, copySource, copyPanel,
       wLabel, wIcon,
@@ -305,7 +305,7 @@ window.XsSample13 = {
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
       <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">로그인</span>
       <span v-else style="font-size:11px;background:#f5f5f5;color:#999;border-radius:6px;padding:1px 7px;">비로그인</span>
-      <span v-if="userName" style="font-size:11px;color:#555;">{{ userName }}</span>
+      <span v-if="userNm" style="font-size:11px;color:#555;">{{ userNm }}</span>
       <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">등급: {{ userGrade }}</span>
       <span style="font-size:11px;color:#aaa;">접근 가능 조건:</span>
       <span v-for="c in accessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>

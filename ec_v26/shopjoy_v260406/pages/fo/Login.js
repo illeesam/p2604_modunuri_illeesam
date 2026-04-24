@@ -19,8 +19,8 @@ window.Login = {
       if (!form.email || !form.password) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
       const r = await window.foAuth.login(form.email, form.password);
       if (r.ok) {
-        const userName = window.foAuth.state.user?.memberNm || '사용자';
-        props.showToast(userName + '님, 환영합니다!', 'success');
+        const userNm = window.foAuth.state.user?.authNm || window.foAuth.state.user?.memberNm || '사용자';
+        props.showToast(userNm + '님, 환영합니다!', 'success');
 
         /* 로그인 후 초기화 데이터 조회 */
         try {

@@ -19,7 +19,7 @@
           try {
             foAppInitStore.restoreFromStorage();
             const authStore = window.useFoAuthStore?.();
-            const hasToken = !!(authStore?.accessToken || localStorage.getItem('modu-fo-access_token'));
+            const hasToken = !!(authStore?.accessToken || localStorage.getItem('modu-fo-accessToken'));
             console.log('[foApp] Fetching FO init data (공개 + 인증 데이터)...');
             foAppInitStore.fetchFoAppInitData().catch(e => console.warn('[foApp] fetchFoAppInitData error:', e));
           } catch (e) {
@@ -288,7 +288,7 @@
       showToast('로그아웃되었습니다.', 'info');
       if (MY_PAGES.includes(page.value)) page.value = 'home';
     };
-    /* modu-fo-access_token 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
+    /* modu-fo-accessToken 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
     watch(() => auth.user, u => {
       if (!u && MY_PAGES.includes(page.value)) page.value = 'home';
     });
@@ -310,7 +310,7 @@
       const hasPageParam = rawHash.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawHash) : null;
       const isMyPage = p => ['myOrder','myClaim','myCoupon','myCache','myContact','myChatt'].includes(p);
-      const isLoggedIn = !!(localStorage.getItem('modu-fo-access_token'));
+      const isLoggedIn = !!(localStorage.getItem('modu-fo-accessToken'));
       if (hasPageParam) {
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;

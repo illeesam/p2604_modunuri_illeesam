@@ -16,6 +16,7 @@
 
   const _defaultUser = () => ({
     authId: '',         // 인증 식별자 (ec_member.member_id)
+    authNm: '',         // 인증 사용자명 (ec_member.member_nm)
     memberId: '',       // FO 전용: ec_member.member_id
     userId: null,       // BO 전용: FO는 null
     userTypeCd: 'FO',
@@ -37,7 +38,7 @@
     },
 
     getters: {
-      isLoggedIn: (s) => !!(s.user?.memberId) && !!s.accessToken,
+      isLoggedIn: (s) => !!(s.user?.authId) && !!s.accessToken,
       isTokenValid: (s) => !!(s.accessToken),
     },
 
@@ -51,8 +52,8 @@
         if (authData.user) this.user = authData.user;
         if (authData.tempAuthInfo !== undefined) this.tempAuthInfo = authData.tempAuthInfo;
         try {
-          if (this.accessToken) localStorage.setItem('modu-fo-access_token', this.accessToken);
-          if (this.refreshToken) localStorage.setItem('modu-fo-refresh_token', this.refreshToken);
+          if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
+          if (this.refreshToken) localStorage.setItem('modu-fo-refreshToken', this.refreshToken);
           if (this.user) localStorage.setItem('modu-fo-user', JSON.stringify(this.user));
           if (this.tempAuthInfo) localStorage.setItem('modu-fo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
         } catch (e) {
@@ -67,8 +68,8 @@
         this.accessExpiresIn = authData.accessExpiresIn || this.accessExpiresIn;
         this.refreshExpiresIn = authData.refreshExpiresIn || this.refreshExpiresIn;
         try {
-          if (this.accessToken) localStorage.setItem('modu-fo-access_token', this.accessToken);
-          if (this.refreshToken) localStorage.setItem('modu-fo-refresh_token', this.refreshToken);
+          if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
+          if (this.refreshToken) localStorage.setItem('modu-fo-refreshToken', this.refreshToken);
         } catch (e) {
           console.error('[foAuthStore] updateAuth localStorage error:', e);
         }
@@ -88,7 +89,7 @@
         this.user = user || _defaultUser();
         this.accessToken = accessToken || '';
         try {
-          if (this.accessToken) localStorage.setItem('modu-fo-access_token', this.accessToken);
+          if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
           if (user) localStorage.setItem('modu-fo-user', JSON.stringify(user));
         } catch (e) {
           console.error('[foAuthStore] setSession localStorage error:', e);
@@ -103,8 +104,8 @@
         this.refreshExpiresIn = 0;
         this.tempAuthInfo = null;
         try {
-          localStorage.removeItem('modu-fo-access_token');
-          localStorage.removeItem('modu-fo-refresh_token');
+          localStorage.removeItem('modu-fo-accessToken');
+          localStorage.removeItem('modu-fo-refreshToken');
           localStorage.removeItem('modu-fo-user');
           localStorage.removeItem('modu-fo-tempAuthInfo');
         } catch (e) {
@@ -120,8 +121,8 @@
         this.refreshExpiresIn = 0;
         this.tempAuthInfo = null;
         try {
-          localStorage.removeItem('modu-fo-access_token');
-          localStorage.removeItem('modu-fo-refresh_token');
+          localStorage.removeItem('modu-fo-accessToken');
+          localStorage.removeItem('modu-fo-refreshToken');
           localStorage.removeItem('modu-fo-tempAuthInfo');
         } catch (e) {
           console.error('[foAuthStore] clear localStorage error:', e);
@@ -130,8 +131,8 @@
 
       syncFromStorage() {
         try {
-          const token = localStorage.getItem('modu-fo-access_token');
-          const refreshToken = localStorage.getItem('modu-fo-refresh_token');
+          const token = localStorage.getItem('modu-fo-accessToken');
+          const refreshToken = localStorage.getItem('modu-fo-refreshToken');
           if (token) this.accessToken = token;
           else { this.accessToken = ''; this.refreshToken = ''; }
           if (refreshToken) this.refreshToken = refreshToken;
@@ -144,8 +145,8 @@
 
       restoreFromStorage() {
         try {
-          const token = localStorage.getItem('modu-fo-access_token');
-          const refreshToken = localStorage.getItem('modu-fo-refresh_token');
+          const token = localStorage.getItem('modu-fo-accessToken');
+          const refreshToken = localStorage.getItem('modu-fo-refreshToken');
           const userJson = localStorage.getItem('modu-fo-user');
           if (token) {
             this.accessToken = token;

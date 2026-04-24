@@ -1,6 +1,6 @@
 /**
  * BO axios 클라이언트 (window.boApi)
- * - Bearer 토큰 자동 주입 (modu-bo-access_token)
+ * - Bearer 토큰 자동 주입 (modu-bo-accessToken)
  * - 401 → /auth/bo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
@@ -31,8 +31,8 @@
 
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[bo]';
-  var ACCESS_TOKEN_KEY = 'modu-bo-access_token';
-  var REFRESH_TOKEN_KEY = 'modu-bo-refresh_token';
+  var ACCESS_TOKEN_KEY = 'modu-bo-accessToken';
+  var REFRESH_TOKEN_KEY = 'modu-bo-refreshToken';
   var REFRESH_URL      = 'auth/bo/refresh';
   var TIMEOUT          = 15000;
 

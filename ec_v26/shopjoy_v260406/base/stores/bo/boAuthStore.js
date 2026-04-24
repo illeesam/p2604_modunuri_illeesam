@@ -20,6 +20,7 @@
 
   const _defaultUser = () => ({
     authId: '',       // 인증 식별자 (sy_user.user_id)
+    authNm: '',       // 인증 사용자명 (sy_user.user_nm)
     userId: '',       // BO 전용: sy_user.user_id
     memberId: null,   // FO 전용: BO는 null
     userTypeCd: 'BO',
@@ -76,7 +77,7 @@
             userId: authId,       // BO 전용
             memberId: null,       // FO 전용: BO는 null
             userTypeCd: loginData.userTypeCd || 'BO',
-            name: loginData.userNm || loginData.userName || '',
+            name: loginData.userNm || '',
             email: loginData.userEmail || '',
             role: loginData.roleId || '',
             phone: loginData.userPhone || '',
@@ -91,11 +92,11 @@
           console.log('[boAuthStore.login] user:', this.user);
 
           try {
-            if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
-            if (this.refreshToken) localStorage.setItem('modu-bo-refresh_token', this.refreshToken);
+            if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
+            if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
             if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
-            if (this.accessExpiresIn) localStorage.setItem('modu-bo-access_expires_in', this.accessExpiresIn.toString());
-            if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refresh_expires_in', this.refreshExpiresIn.toString());
+            if (this.accessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.accessExpiresIn.toString());
+            if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.refreshExpiresIn.toString());
           } catch (_) {}
 
           /* 로그인 후 초기 데이터 조회 */
@@ -147,8 +148,8 @@
           this.accessExpiresIn = res.data?.accessExpiresIn || 0;
           this.refreshExpiresIn = res.data?.refreshExpiresIn || 0;
           try {
-            if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
-            if (this.refreshToken) localStorage.setItem('modu-bo-refresh_token', this.refreshToken);
+            if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
+            if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
           } catch (_) {}
           return true;
         } catch (err) {
@@ -174,8 +175,8 @@
         this.refreshToken = '';
         this.tempAuthInfo = null;
         try {
-          localStorage.removeItem('modu-bo-access_token');
-          localStorage.removeItem('modu-bo-refresh_token');
+          localStorage.removeItem('modu-bo-accessToken');
+          localStorage.removeItem('modu-bo-refreshToken');
           localStorage.removeItem('modu-bo-user');
           localStorage.removeItem('modu-bo-tempAuthInfo');
         } catch (_) {}
@@ -191,11 +192,11 @@
         if (authData.user) this.user = authData.user;
         if (authData.tempAuthInfo !== undefined) this.tempAuthInfo = authData.tempAuthInfo;
         try {
-          if (this.accessToken) localStorage.setItem('modu-bo-access_token', this.accessToken);
-          if (this.refreshToken) localStorage.setItem('modu-bo-refresh_token', this.refreshToken);
+          if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
+          if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
           if (this.user) localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
-          if (this.accessExpiresIn) localStorage.setItem('modu-bo-access_expires_in', this.accessExpiresIn.toString());
-          if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refresh_expires_in', this.refreshExpiresIn.toString());
+          if (this.accessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.accessExpiresIn.toString());
+          if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.refreshExpiresIn.toString());
           if (this.tempAuthInfo) localStorage.setItem('modu-bo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
         } catch (_) {}
       },
@@ -208,7 +209,7 @@
           ...userData,
           authId,
           userId: authId,
-          name:   userData.name || userData.userName || userData.userNm || '',
+          name:   userData.name || userData.userNm || '',
           email:  userData.email || userData.userEmail || '',
           phone:  userData.phone || userData.userHpNo || userData.userPhone || '',
           dept:   userData.dept || userData.deptNm || '',
@@ -222,11 +223,11 @@
       // localStorage에서 복원
       restoreFromStorage() {
         try {
-          const accessToken  = localStorage.getItem('modu-bo-access_token');
-          const refreshToken = localStorage.getItem('modu-bo-refresh_token');
+          const accessToken  = localStorage.getItem('modu-bo-accessToken');
+          const refreshToken = localStorage.getItem('modu-bo-refreshToken');
           const userJson     = localStorage.getItem('modu-bo-user');
-          const accessExpiresIn  = localStorage.getItem('modu-bo-access_expires_in');
-          const refreshExpiresIn = localStorage.getItem('modu-bo-refresh_expires_in');
+          const accessExpiresIn  = localStorage.getItem('modu-bo-accessExpiresIn');
+          const refreshExpiresIn = localStorage.getItem('modu-bo-refreshExpiresIn');
 
           if (accessToken && userJson) {
             this.accessToken = accessToken;
@@ -248,10 +249,10 @@
   // localStorage 변화 감지
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', (e) => {
-      if (e.key === 'modu-bo-access_token' || e.key === 'modu-bo-user' || e.key === 'modu-bo-refresh_token') {
+      if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-user' || e.key === 'modu-bo-refreshToken') {
         const store = window.useBoAuthStore?.();
         if (store) {
-          const accessToken = localStorage.getItem('modu-bo-access_token');
+          const accessToken = localStorage.getItem('modu-bo-accessToken');
           if (!accessToken) store.reset();
           else store.restoreFromStorage();
         }

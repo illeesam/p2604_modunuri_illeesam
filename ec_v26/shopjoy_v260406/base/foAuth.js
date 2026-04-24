@@ -1,7 +1,7 @@
 /* ShopJoy - FO Auth Module (Pinia + localStorage token 연계) */
 (function () {
   /* ── 초기 상태: 토큰 + 유저 모두 있을 때만 로그인으로 처리 ── */
-  const _initToken = localStorage.getItem('modu-fo-access_token');
+  const _initToken = localStorage.getItem('modu-fo-accessToken');
   let _initUser = null;
   if (_initToken) {
     try { _initUser = JSON.parse(localStorage.getItem('modu-fo-user') || 'null'); } catch (e) {}
@@ -53,7 +53,7 @@
 
     /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
     window.addEventListener('storage', e => {
-      if (e.key === 'modu-fo-access_token' || e.key === 'modu-fo-user') {
+      if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-user') {
         _store.syncFromStorage();
         _sync();
       }
@@ -166,7 +166,7 @@
   };
 
   /* ── 로그인 상태 체크 ── */
-  const isFoLogin = () => !!(state.user?.memberId) && !!localStorage.getItem('modu-fo-access_token');
+  const isFoLogin = () => !!(state.user?.authId) && !!localStorage.getItem('modu-fo-accessToken');
 
   window.foAuth = { state, init, login, loginSocial, signup, logout, isFoLogin };
   window.isFoLogin = isFoLogin;
