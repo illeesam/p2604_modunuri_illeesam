@@ -12,7 +12,7 @@ window.MbMemGroupMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/mb/mem-group/page', {
+        const res = await window.boApi.get('/bo/ec/mb/member-group/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         groups.splice(0, groups.length, ...(res.data?.data?.list || []));

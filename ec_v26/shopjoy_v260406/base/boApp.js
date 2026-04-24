@@ -435,6 +435,7 @@
         const idx = toasts.findIndex(t => t.id === id);
         if (idx !== -1) toasts.splice(idx, 1);
       };
+      const closeAllToasts = () => { toasts.splice(0, toasts.length); };
 
       /* ── API 응답 패널 ── */
       const apiResPanel = reactive({ show: false, res: null });
@@ -1037,7 +1038,7 @@
         ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseOthers, ctxCloseAll, ctxNewWindow, ctxRefresh,
         openNewWindow, openTabsWithGroup,
         activeTop, leftMenuOpen, setTopMenu,
-        toasts, showToast, closeToast,
+        toasts, showToast, closeToast, closeAllToasts,
         confirmState, showConfirm, closeConfirm,
         refModal, showRefModal, closeRefModal,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
@@ -1593,6 +1594,9 @@
 
   <!-- Toast 누적 스택 -->
   <div class="toast-container">
+    <div v-if="toasts.length > 1" class="toast-close-all" @click="closeAllToasts" title="전체 닫기">
+      <span>✕ 전체 닫기 ({{ toasts.length }})</span>
+    </div>
     <div v-for="t in toasts" :key="t.id"
       class="toast-item" :class="['toast-'+t.type, { 'toast-expanded': t.expanded }]">
       <span class="toast-close-x" @click.stop="closeToast(t.id)">✕</span>
