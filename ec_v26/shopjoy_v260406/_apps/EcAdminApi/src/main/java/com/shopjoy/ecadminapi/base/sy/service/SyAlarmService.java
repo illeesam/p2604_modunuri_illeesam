@@ -65,7 +65,7 @@ public class SyAlarmService {
     @Transactional
     public SyAlarm create(SyAlarm entity) {
         entity.setAlarmId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_alarm :: insert or update :: [orm:jpa]
         SyAlarm result = repository.save(entity);
@@ -77,7 +77,7 @@ public class SyAlarmService {
         if (!repository.existsById(entity.getAlarmId())) {
             throw new CmBizException("존재하지 않는 알람입니다: " + entity.getAlarmId());
         }
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_alarm :: insert or update :: [orm:jpa]
         SyAlarm result = repository.save(entity);

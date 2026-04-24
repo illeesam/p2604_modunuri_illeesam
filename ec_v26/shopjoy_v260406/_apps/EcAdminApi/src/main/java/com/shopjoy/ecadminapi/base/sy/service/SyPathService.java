@@ -63,7 +63,7 @@ public class SyPathService {
     @Transactional
     public SyPath create(SyPath entity) {
         entity.setBizCd(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_path :: insert or update :: [orm:jpa]
         SyPath result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyPathService {
     public SyPath save(SyPath entity) {
         if (!repository.existsById(entity.getBizCd()))
             throw new CmBizException("존재하지 않는 SyPath입니다: " + entity.getBizCd());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_path :: insert or update :: [orm:jpa]
         SyPath result = repository.save(entity);

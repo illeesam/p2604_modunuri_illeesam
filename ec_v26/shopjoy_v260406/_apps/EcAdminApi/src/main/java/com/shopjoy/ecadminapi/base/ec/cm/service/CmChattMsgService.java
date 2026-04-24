@@ -63,7 +63,7 @@ public class CmChattMsgService {
     @Transactional
     public CmChattMsg create(CmChattMsg entity) {
         entity.setChattMsgId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // cm_chatt_msg :: insert or update :: [orm:jpa]
         CmChattMsg result = repository.save(entity);
@@ -74,7 +74,7 @@ public class CmChattMsgService {
     public CmChattMsg save(CmChattMsg entity) {
         if (!repository.existsById(entity.getChattMsgId()))
             throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_chatt_msg :: insert or update :: [orm:jpa]
         CmChattMsg result = repository.save(entity);

@@ -59,7 +59,7 @@ public class MbMemberAddrService {
     @Transactional
     public MbMemberAddr create(MbMemberAddr entity) {
         entity.setMemberAddrId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberAddr result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class MbMemberAddrService {
     public MbMemberAddr save(MbMemberAddr entity) {
         if (!repository.existsById(entity.getMemberAddrId()))
             throw new CmBizException("존재하지 않는 MbMemberAddr입니다: " + entity.getMemberAddrId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberAddr result = repository.save(entity);
         return result;

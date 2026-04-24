@@ -63,7 +63,7 @@ public class PdRestockNotiService {
     @Transactional
     public PdRestockNoti create(PdRestockNoti entity) {
         entity.setRestockNotiId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_restock_noti :: insert or update :: [orm:jpa]
         PdRestockNoti result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdRestockNotiService {
     public PdRestockNoti save(PdRestockNoti entity) {
         if (!repository.existsById(entity.getRestockNotiId()))
             throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_restock_noti :: insert or update :: [orm:jpa]
         PdRestockNoti result = repository.save(entity);

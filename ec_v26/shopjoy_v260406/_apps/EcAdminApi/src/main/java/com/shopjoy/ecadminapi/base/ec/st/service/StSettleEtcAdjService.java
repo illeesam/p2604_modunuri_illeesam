@@ -59,7 +59,7 @@ public class StSettleEtcAdjService {
     @Transactional
     public StSettleEtcAdj create(StSettleEtcAdj entity) {
         entity.setSettleEtcAdjId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StSettleEtcAdj result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class StSettleEtcAdjService {
     public StSettleEtcAdj save(StSettleEtcAdj entity) {
         if (!repository.existsById(entity.getSettleEtcAdjId()))
             throw new CmBizException("존재하지 않는 StSettleEtcAdj입니다: " + entity.getSettleEtcAdjId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleEtcAdj result = repository.save(entity);
         return result;

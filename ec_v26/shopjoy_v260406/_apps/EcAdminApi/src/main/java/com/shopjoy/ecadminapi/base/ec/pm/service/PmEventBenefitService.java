@@ -63,7 +63,7 @@ public class PmEventBenefitService {
     @Transactional
     public PmEventBenefit create(PmEventBenefit entity) {
         entity.setBenefitId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pm_event_benefit :: insert or update :: [orm:jpa]
         PmEventBenefit result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PmEventBenefitService {
     public PmEventBenefit save(PmEventBenefit entity) {
         if (!repository.existsById(entity.getBenefitId()))
             throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + entity.getBenefitId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_event_benefit :: insert or update :: [orm:jpa]
         PmEventBenefit result = repository.save(entity);

@@ -63,7 +63,7 @@ public class SyBbsService {
     @Transactional
     public SyBbs create(SyBbs entity) {
         entity.setBbsId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_bbs :: insert or update :: [orm:jpa]
         SyBbs result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyBbsService {
     public SyBbs save(SyBbs entity) {
         if (!repository.existsById(entity.getBbsId()))
             throw new CmBizException("존재하지 않는 SyBbs입니다: " + entity.getBbsId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_bbs :: insert or update :: [orm:jpa]
         SyBbs result = repository.save(entity);

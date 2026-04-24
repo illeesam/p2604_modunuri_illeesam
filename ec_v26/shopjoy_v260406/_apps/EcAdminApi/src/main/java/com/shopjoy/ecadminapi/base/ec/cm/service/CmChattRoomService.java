@@ -63,7 +63,7 @@ public class CmChattRoomService {
     @Transactional
     public CmChattRoom create(CmChattRoom entity) {
         entity.setChattRoomId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // cm_chatt_room :: insert or update :: [orm:jpa]
         CmChattRoom result = repository.save(entity);
@@ -74,7 +74,7 @@ public class CmChattRoomService {
     public CmChattRoom save(CmChattRoom entity) {
         if (!repository.existsById(entity.getChattRoomId()))
             throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + entity.getChattRoomId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_chatt_room :: insert or update :: [orm:jpa]
         CmChattRoom result = repository.save(entity);

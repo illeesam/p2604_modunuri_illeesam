@@ -57,7 +57,7 @@ public class ZzSample0Service {
     @Transactional
     public ZzSample0 create(ZzSample0 entity) {
         entity.setSample0Id(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // zz_sample0 :: insert or update :: [orm:jpa]
         return repository.save(entity);
@@ -67,7 +67,7 @@ public class ZzSample0Service {
     public ZzSample0 save(ZzSample0 entity) {
         if (!repository.existsById(entity.getSample0Id()))
             throw new CmBizException("존재하지 않는 ZzSample0입니다: " + entity.getSample0Id());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // zz_sample0 :: insert or update :: [orm:jpa]
         return repository.save(entity);

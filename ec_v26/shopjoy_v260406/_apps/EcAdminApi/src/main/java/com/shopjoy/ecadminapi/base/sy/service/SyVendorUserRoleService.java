@@ -58,12 +58,12 @@ public class SyVendorUserRoleService {
 
     @Transactional
     public SyVendorUserRole create(SyVendorUserRole entity) {
-        String currentUserId = SecurityUtil.getAuthUser().userId();
+        String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
         entity.setVendorUserRoleId(generateId());
-        entity.setGrantUserId(currentUserId);
+        entity.setGrantUserId(authId);
         entity.setGrantDate(now);
-        entity.setRegBy(currentUserId);
+        entity.setRegBy(authId);
         entity.setRegDate(now);
         // sy_vendor_user_role :: insert or update :: [orm:jpa]
         return repository.save(entity);
@@ -73,7 +73,7 @@ public class SyVendorUserRoleService {
     public SyVendorUserRole save(SyVendorUserRole entity) {
         if (!repository.existsById(entity.getVendorUserRoleId()))
             throw new CmBizException("존재하지 않는 SyVendorUserRole입니다: " + entity.getVendorUserRoleId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId()); // nullable — intentional
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId()); // nullable — intentional
         entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_user_role :: insert or update :: [orm:jpa]
         return repository.save(entity);

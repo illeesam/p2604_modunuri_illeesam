@@ -59,7 +59,7 @@ public class MbMemberGroupService {
     @Transactional
     public MbMemberGroup create(MbMemberGroup entity) {
         entity.setMemberGroupId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         MbMemberGroup result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class MbMemberGroupService {
     public MbMemberGroup save(MbMemberGroup entity) {
         if (!repository.existsById(entity.getMemberGroupId()))
             throw new CmBizException("존재하지 않는 MbMemberGroup입니다: " + entity.getMemberGroupId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGroup result = repository.save(entity);
         return result;

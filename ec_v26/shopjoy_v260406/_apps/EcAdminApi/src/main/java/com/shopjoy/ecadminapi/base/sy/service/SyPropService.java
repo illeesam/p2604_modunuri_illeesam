@@ -63,7 +63,7 @@ public class SyPropService {
     @Transactional
     public SyProp create(SyProp entity) {
         entity.setSiteId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_prop :: insert or update :: [orm:jpa]
         SyProp result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyPropService {
     public SyProp save(SyProp entity) {
         if (!repository.existsById(entity.getSiteId()))
             throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getSiteId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_prop :: insert or update :: [orm:jpa]
         SyProp result = repository.save(entity);

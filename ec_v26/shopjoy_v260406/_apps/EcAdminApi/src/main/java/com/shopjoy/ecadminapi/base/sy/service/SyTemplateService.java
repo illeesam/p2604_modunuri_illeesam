@@ -63,7 +63,7 @@ public class SyTemplateService {
     @Transactional
     public SyTemplate create(SyTemplate entity) {
         entity.setTemplateId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_template :: insert or update :: [orm:jpa]
         SyTemplate result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyTemplateService {
     public SyTemplate save(SyTemplate entity) {
         if (!repository.existsById(entity.getTemplateId()))
             throw new CmBizException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_template :: insert or update :: [orm:jpa]
         SyTemplate result = repository.save(entity);

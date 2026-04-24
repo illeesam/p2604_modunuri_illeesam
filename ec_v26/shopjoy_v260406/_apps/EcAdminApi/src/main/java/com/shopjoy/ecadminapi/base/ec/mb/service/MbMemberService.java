@@ -59,7 +59,7 @@ public class MbMemberService {
     @Transactional
     public MbMember create(MbMember entity) {
         entity.setMemberId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         MbMember result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class MbMemberService {
     public MbMember save(MbMember entity) {
         if (!repository.existsById(entity.getMemberId()))
             throw new CmBizException("존재하지 않는 MbMember입니다: " + entity.getMemberId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMember result = repository.save(entity);
         return result;

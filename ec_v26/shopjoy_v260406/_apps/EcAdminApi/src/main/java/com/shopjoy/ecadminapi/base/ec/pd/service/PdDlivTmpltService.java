@@ -63,7 +63,7 @@ public class PdDlivTmpltService {
     @Transactional
     public PdDlivTmplt create(PdDlivTmplt entity) {
         entity.setDlivTmpltId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_dliv_tmplt :: insert or update :: [orm:jpa]
         PdDlivTmplt result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdDlivTmpltService {
     public PdDlivTmplt save(PdDlivTmplt entity) {
         if (!repository.existsById(entity.getDlivTmpltId()))
             throw new CmBizException("존재하지 않는 PdDlivTmplt입니다: " + entity.getDlivTmpltId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_dliv_tmplt :: insert or update :: [orm:jpa]
         PdDlivTmplt result = repository.save(entity);

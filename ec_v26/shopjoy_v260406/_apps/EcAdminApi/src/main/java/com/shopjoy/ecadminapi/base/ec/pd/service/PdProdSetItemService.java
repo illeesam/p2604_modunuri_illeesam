@@ -63,7 +63,7 @@ public class PdProdSetItemService {
     @Transactional
     public PdProdSetItem create(PdProdSetItem entity) {
         entity.setSetItemId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_prod_set_item :: insert or update :: [orm:jpa]
         PdProdSetItem result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdProdSetItemService {
     public PdProdSetItem save(PdProdSetItem entity) {
         if (!repository.existsById(entity.getSetItemId()))
             throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getSetItemId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod_set_item :: insert or update :: [orm:jpa]
         PdProdSetItem result = repository.save(entity);

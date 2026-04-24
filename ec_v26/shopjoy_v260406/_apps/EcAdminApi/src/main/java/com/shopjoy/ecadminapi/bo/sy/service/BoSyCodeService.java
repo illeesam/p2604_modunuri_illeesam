@@ -49,7 +49,7 @@ public class BoSyCodeService {
     @Transactional
     public SyCode create(SyCode body) {
         body.setCodeId("CD" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().userId());
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         SyCode saved = repository.save(body);
         codeCache.evictAll();
@@ -59,7 +59,7 @@ public class BoSyCodeService {
     @Transactional
     public SyCodeDto update(String id, SyCode body) {
         SyCode entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         codeCache.evictAll();

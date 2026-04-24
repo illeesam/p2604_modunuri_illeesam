@@ -24,7 +24,7 @@ public class FoPmCacheService {
     /** 현재 회원의 최신 잔액 (balance_amt 기준) */
     @Transactional(readOnly = true)
     public long getBalance(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().userId());
+        p.put("memberId", SecurityUtil.getAuthUser().authId());
         List<PmCacheDto> list = mapper.selectList(p);
         return list.isEmpty() ? 0L : (list.get(0).getBalanceAmt() != null ? list.get(0).getBalanceAmt() : 0L);
     }

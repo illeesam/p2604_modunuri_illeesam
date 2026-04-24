@@ -59,7 +59,7 @@ public class StErpVoucherLineService {
     @Transactional
     public StErpVoucherLine create(StErpVoucherLine entity) {
         entity.setErpVoucherLineId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StErpVoucherLine result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class StErpVoucherLineService {
     public StErpVoucherLine save(StErpVoucherLine entity) {
         if (!repository.existsById(entity.getErpVoucherLineId()))
             throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StErpVoucherLine result = repository.save(entity);
         return result;

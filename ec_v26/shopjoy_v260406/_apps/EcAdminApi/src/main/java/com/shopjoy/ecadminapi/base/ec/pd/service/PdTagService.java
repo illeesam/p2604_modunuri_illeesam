@@ -63,7 +63,7 @@ public class PdTagService {
     @Transactional
     public PdTag create(PdTag entity) {
         entity.setTagId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_tag :: insert or update :: [orm:jpa]
         PdTag result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdTagService {
     public PdTag save(PdTag entity) {
         if (!repository.existsById(entity.getTagId()))
             throw new CmBizException("존재하지 않는 PdTag입니다: " + entity.getTagId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_tag :: insert or update :: [orm:jpa]
         PdTag result = repository.save(entity);

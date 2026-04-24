@@ -63,7 +63,7 @@ public class PdProdImgService {
     @Transactional
     public PdProdImg create(PdProdImg entity) {
         entity.setProdImgId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_prod_img :: insert or update :: [orm:jpa]
         PdProdImg result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdProdImgService {
     public PdProdImg save(PdProdImg entity) {
         if (!repository.existsById(entity.getProdImgId()))
             throw new CmBizException("존재하지 않는 PdProdImg입니다: " + entity.getProdImgId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod_img :: insert or update :: [orm:jpa]
         PdProdImg result = repository.save(entity);

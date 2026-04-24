@@ -51,7 +51,7 @@ public class BoSyRoleService {
     @Transactional
     public SyRole create(SyRole body) {
         body.setRoleId("RL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().userId());
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         SyRole saved = repository.save(body);
         roleCache.evictAll();
@@ -61,7 +61,7 @@ public class BoSyRoleService {
     @Transactional
     public SyRoleDto update(String id, SyRole body) {
         SyRole entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         roleCache.evictAll();

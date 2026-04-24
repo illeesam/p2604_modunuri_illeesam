@@ -59,7 +59,7 @@ public class OdPayMethodService {
     @Transactional
     public OdPayMethod create(OdPayMethod entity) {
         entity.setPayMethodId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         OdPayMethod result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class OdPayMethodService {
     public OdPayMethod save(OdPayMethod entity) {
         if (!repository.existsById(entity.getPayMethodId()))
             throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + entity.getPayMethodId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdPayMethod result = repository.save(entity);
         return result;

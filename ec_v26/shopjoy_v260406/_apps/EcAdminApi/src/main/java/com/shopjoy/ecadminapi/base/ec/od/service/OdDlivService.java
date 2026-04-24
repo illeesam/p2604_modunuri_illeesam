@@ -59,7 +59,7 @@ public class OdDlivService {
     @Transactional
     public OdDliv create(OdDliv entity) {
         entity.setDlivId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         OdDliv result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class OdDlivService {
     public OdDliv save(OdDliv entity) {
         if (!repository.existsById(entity.getDlivId()))
             throw new CmBizException("존재하지 않는 OdDliv입니다: " + entity.getDlivId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdDliv result = repository.save(entity);
         return result;

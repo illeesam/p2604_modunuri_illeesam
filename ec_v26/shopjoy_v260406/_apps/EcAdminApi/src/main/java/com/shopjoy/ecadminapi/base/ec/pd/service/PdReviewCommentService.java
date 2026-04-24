@@ -63,7 +63,7 @@ public class PdReviewCommentService {
     @Transactional
     public PdReviewComment create(PdReviewComment entity) {
         entity.setReviewCommentId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_review_comment :: insert or update :: [orm:jpa]
         PdReviewComment result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdReviewCommentService {
     public PdReviewComment save(PdReviewComment entity) {
         if (!repository.existsById(entity.getReviewCommentId()))
             throw new CmBizException("존재하지 않는 PdReviewComment입니다: " + entity.getReviewCommentId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_review_comment :: insert or update :: [orm:jpa]
         PdReviewComment result = repository.save(entity);

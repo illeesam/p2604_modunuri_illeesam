@@ -63,7 +63,7 @@ public class SyCodeGrpService {
     @Transactional
     public SyCodeGrp create(SyCodeGrp entity) {
         entity.setCodeGrpId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_code_grp :: insert or update :: [orm:jpa]
         SyCodeGrp result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyCodeGrpService {
     public SyCodeGrp save(SyCodeGrp entity) {
         if (!repository.existsById(entity.getCodeGrpId()))
             throw new CmBizException("존재하지 않는 SyCodeGrp입니다: " + entity.getCodeGrpId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_code_grp :: insert or update :: [orm:jpa]
         SyCodeGrp result = repository.save(entity);

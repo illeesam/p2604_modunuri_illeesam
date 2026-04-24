@@ -59,7 +59,7 @@ public class StSettleItemService {
     @Transactional
     public StSettleItem create(StSettleItem entity) {
         entity.setSettleItemId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StSettleItem result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class StSettleItemService {
     public StSettleItem save(StSettleItem entity) {
         if (!repository.existsById(entity.getSettleItemId()))
             throw new CmBizException("존재하지 않는 StSettleItem입니다: " + entity.getSettleItemId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleItem result = repository.save(entity);
         return result;

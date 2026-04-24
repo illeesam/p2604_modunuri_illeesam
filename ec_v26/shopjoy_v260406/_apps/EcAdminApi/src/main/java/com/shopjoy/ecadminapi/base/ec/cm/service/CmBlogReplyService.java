@@ -63,7 +63,7 @@ public class CmBlogReplyService {
     @Transactional
     public CmBlogReply create(CmBlogReply entity) {
         entity.setCommentId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // cm_blog_reply :: insert or update :: [orm:jpa]
         CmBlogReply result = repository.save(entity);
@@ -74,7 +74,7 @@ public class CmBlogReplyService {
     public CmBlogReply save(CmBlogReply entity) {
         if (!repository.existsById(entity.getCommentId()))
             throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getCommentId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // cm_blog_reply :: insert or update :: [orm:jpa]
         CmBlogReply result = repository.save(entity);

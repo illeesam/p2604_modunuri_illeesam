@@ -15,7 +15,7 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
  * GET /api/fo/ec/cm/dashboard/my — 내 활동 요약
  *
  * 인가: FO_ONLY (로그인 회원)
- * TODO: 더미 데이터 → 실 서비스(SecurityUtil.getAuthUser().userId() 기반) 연결 필요
+ * TODO: 더미 데이터 → 실 서비스(SecurityUtil.getAuthUser().authId() 기반) 연결 필요
  */
 @RestController
 @RequestMapping("/api/fo/ec/cm/dashboard")

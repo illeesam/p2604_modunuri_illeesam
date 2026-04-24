@@ -63,7 +63,7 @@ public class PdProdOptService {
     @Transactional
     public PdProdOpt create(PdProdOpt entity) {
         entity.setOptId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_prod_opt :: insert or update :: [orm:jpa]
         PdProdOpt result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdProdOptService {
     public PdProdOpt save(PdProdOpt entity) {
         if (!repository.existsById(entity.getOptId()))
             throw new CmBizException("존재하지 않는 PdProdOpt입니다: " + entity.getOptId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod_opt :: insert or update :: [orm:jpa]
         PdProdOpt result = repository.save(entity);

@@ -59,7 +59,7 @@ public class PmVoucherService {
     @Transactional
     public PmVoucher create(PmVoucher entity) {
         entity.setVoucherId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         PmVoucher result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class PmVoucherService {
     public PmVoucher save(PmVoucher entity) {
         if (!repository.existsById(entity.getVoucherId()))
             throw new CmBizException("존재하지 않는 PmVoucher입니다: " + entity.getVoucherId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmVoucher result = repository.save(entity);
         return result;

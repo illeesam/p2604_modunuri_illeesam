@@ -63,7 +63,7 @@ public class PdCategoryService {
     @Transactional
     public PdCategory create(PdCategory entity) {
         entity.setCategoryId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_category :: insert or update :: [orm:jpa]
         PdCategory result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdCategoryService {
     public PdCategory save(PdCategory entity) {
         if (!repository.existsById(entity.getCategoryId()))
             throw new CmBizException("존재하지 않는 PdCategory입니다: " + entity.getCategoryId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_category :: insert or update :: [orm:jpa]
         PdCategory result = repository.save(entity);

@@ -59,7 +59,7 @@ public class OdOrderItemDiscntService {
     @Transactional
     public OdOrderItemDiscnt create(OdOrderItemDiscnt entity) {
         entity.setItemDiscntId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         OdOrderItemDiscnt result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class OdOrderItemDiscntService {
     public OdOrderItemDiscnt save(OdOrderItemDiscnt entity) {
         if (!repository.existsById(entity.getItemDiscntId()))
             throw new CmBizException("존재하지 않는 OdOrderItemDiscnt입니다: " + entity.getItemDiscntId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrderItemDiscnt result = repository.save(entity);
         return result;

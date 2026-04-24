@@ -33,16 +33,16 @@ public class FoMbLikeService {
 
     @Transactional(readOnly = true)
     public List<MbLikeDto> getMyLikes(Map<String, Object> p) {
-        p.put("memberId", SecurityUtil.getAuthUser().userId());
+        p.put("memberId", SecurityUtil.getAuthUser().authId());
         return mapper.selectList(p);
     }
 
     /** 찜 토글: 없으면 추가, 있으면 삭제 → true=추가됨 false=취소됨 */
     @Transactional
     public boolean toggle(String targetTypeCd, String targetId, Map<String, Object> p) {
-        String memberId = SecurityUtil.getAuthUser().userId();
+        String authId = SecurityUtil.getAuthUser().authId();
         Optional<MbLike> existing = repository.findAll().stream()
-            .filter(l -> memberId.equals(l.getMemberId())
+            .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
                       && targetTypeCd.equals(l.getTargetTypeCd())
                       && (p.get("siteId") == null || p.get("siteId").equals(l.getSiteId())))
@@ -55,10 +55,10 @@ public class FoMbLikeService {
             MbLike like = new MbLike();
             like.setLikeId(generateId());
             like.setSiteId((String) p.get("siteId"));
-            like.setMemberId(memberId);
+            like.setMemberId(authId);
             like.setTargetTypeCd(targetTypeCd);
             like.setTargetId(targetId);
-            like.setRegBy(memberId);
+            like.setRegBy(authId);
             like.setRegDate(LocalDateTime.now());
             repository.save(like);
             return true;
@@ -67,9 +67,9 @@ public class FoMbLikeService {
 
     @Transactional
     public void unlike(String targetTypeCd, String targetId, Map<String, Object> p) {
-        String memberId = SecurityUtil.getAuthUser().userId();
+        String authId = SecurityUtil.getAuthUser().authId();
         repository.findAll().stream()
-            .filter(l -> memberId.equals(l.getMemberId())
+            .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
                       && targetTypeCd.equals(l.getTargetTypeCd()))
             .findFirst()

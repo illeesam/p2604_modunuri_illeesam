@@ -63,7 +63,7 @@ public class PdProdService {
     @Transactional
     public PdProd create(PdProd entity) {
         entity.setProdId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_prod :: insert or update :: [orm:jpa]
         PdProd result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdProdService {
     public PdProd save(PdProd entity) {
         if (!repository.existsById(entity.getProdId()))
             throw new CmBizException("존재하지 않는 PdProd입니다: " + entity.getProdId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_prod :: insert or update :: [orm:jpa]
         PdProd result = repository.save(entity);

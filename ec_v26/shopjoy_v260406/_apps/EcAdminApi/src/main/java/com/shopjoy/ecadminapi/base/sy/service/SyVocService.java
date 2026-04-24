@@ -63,7 +63,7 @@ public class SyVocService {
     @Transactional
     public SyVoc create(SyVoc entity) {
         entity.setVocId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_voc :: insert or update :: [orm:jpa]
         SyVoc result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyVocService {
     public SyVoc save(SyVoc entity) {
         if (!repository.existsById(entity.getVocId()))
             throw new CmBizException("존재하지 않는 SyVoc입니다: " + entity.getVocId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_voc :: insert or update :: [orm:jpa]
         SyVoc result = repository.save(entity);

@@ -59,7 +59,7 @@ public class OdRefundMethodService {
     @Transactional
     public OdRefundMethod create(OdRefundMethod entity) {
         entity.setRefundMethodId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         OdRefundMethod result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class OdRefundMethodService {
     public OdRefundMethod save(OdRefundMethod entity) {
         if (!repository.existsById(entity.getRefundMethodId()))
             throw new CmBizException("존재하지 않는 OdRefundMethod입니다: " + entity.getRefundMethodId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdRefundMethod result = repository.save(entity);
         return result;

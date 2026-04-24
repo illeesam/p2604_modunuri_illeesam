@@ -63,7 +63,7 @@ public class DpWidgetService {
     @Transactional
     public DpWidget create(DpWidget entity) {
         entity.setWidgetId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // dp_widget :: insert or update :: [orm:jpa]
         DpWidget result = repository.save(entity);
@@ -74,7 +74,7 @@ public class DpWidgetService {
     public DpWidget save(DpWidget entity) {
         if (!repository.existsById(entity.getWidgetId()))
             throw new CmBizException("존재하지 않는 DpWidget입니다: " + entity.getWidgetId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_widget :: insert or update :: [orm:jpa]
         DpWidget result = repository.save(entity);

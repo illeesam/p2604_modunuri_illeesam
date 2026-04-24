@@ -47,7 +47,7 @@ public class BoOdOrderService {
     @Transactional
     public OdOrder create(OdOrder body) {
         body.setOrderId("OD" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-        body.setRegBy(SecurityUtil.getAuthUser().userId());
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
@@ -55,7 +55,7 @@ public class BoOdOrderService {
     @Transactional
     public OdOrderDto update(String id, OdOrder body) {
         OdOrder entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);
@@ -72,7 +72,7 @@ public class BoOdOrderService {
         OdOrder entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
         entity.setOrderStatusCdBefore(entity.getOrderStatusCd());
         entity.setOrderStatusCd(statusCd);
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
         return getById(id);

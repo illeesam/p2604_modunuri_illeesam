@@ -59,7 +59,7 @@ public class StSettlePayService {
     @Transactional
     public StSettlePay create(StSettlePay entity) {
         entity.setSettlePayId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StSettlePay result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class StSettlePayService {
     public StSettlePay save(StSettlePay entity) {
         if (!repository.existsById(entity.getSettlePayId()))
             throw new CmBizException("존재하지 않는 StSettlePay입니다: " + entity.getSettlePayId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettlePay result = repository.save(entity);
         return result;

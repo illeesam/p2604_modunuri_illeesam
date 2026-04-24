@@ -59,7 +59,7 @@ public class OdPayService {
     @Transactional
     public OdPay create(OdPay entity) {
         entity.setPayId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         OdPay result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class OdPayService {
     public OdPay save(OdPay entity) {
         if (!repository.existsById(entity.getPayId()))
             throw new CmBizException("존재하지 않는 OdPay입니다: " + entity.getPayId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdPay result = repository.save(entity);
         return result;

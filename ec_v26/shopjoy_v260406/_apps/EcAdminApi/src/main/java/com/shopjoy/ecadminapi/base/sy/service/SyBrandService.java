@@ -63,7 +63,7 @@ public class SyBrandService {
     @Transactional
     public SyBrand create(SyBrand entity) {
         entity.setBrandId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_brand :: insert or update :: [orm:jpa]
         SyBrand result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyBrandService {
     public SyBrand save(SyBrand entity) {
         if (!repository.existsById(entity.getBrandId()))
             throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_brand :: insert or update :: [orm:jpa]
         SyBrand result = repository.save(entity);

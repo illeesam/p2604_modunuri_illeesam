@@ -63,7 +63,7 @@ public class SyDeptService {
     @Transactional
     public SyDept create(SyDept entity) {
         entity.setDeptId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_dept :: insert or update :: [orm:jpa]
         SyDept result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyDeptService {
     public SyDept save(SyDept entity) {
         if (!repository.existsById(entity.getDeptId()))
             throw new CmBizException("존재하지 않는 SyDept입니다: " + entity.getDeptId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_dept :: insert or update :: [orm:jpa]
         SyDept result = repository.save(entity);

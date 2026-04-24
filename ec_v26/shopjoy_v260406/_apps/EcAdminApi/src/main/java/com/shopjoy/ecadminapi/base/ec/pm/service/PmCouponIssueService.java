@@ -63,7 +63,7 @@ public class PmCouponIssueService {
     @Transactional
     public PmCouponIssue create(PmCouponIssue entity) {
         entity.setIssueId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pm_coupon_issue :: insert or update :: [orm:jpa]
         PmCouponIssue result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PmCouponIssueService {
     public PmCouponIssue save(PmCouponIssue entity) {
         if (!repository.existsById(entity.getIssueId()))
             throw new CmBizException("존재하지 않는 PmCouponIssue입니다: " + entity.getIssueId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pm_coupon_issue :: insert or update :: [orm:jpa]
         PmCouponIssue result = repository.save(entity);

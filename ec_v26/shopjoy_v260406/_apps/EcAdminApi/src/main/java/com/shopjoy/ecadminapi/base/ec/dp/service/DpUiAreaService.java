@@ -63,7 +63,7 @@ public class DpUiAreaService {
     @Transactional
     public DpUiArea create(DpUiArea entity) {
         entity.setUiAreaId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // dp_ui_area :: insert or update :: [orm:jpa]
         DpUiArea result = repository.save(entity);
@@ -74,7 +74,7 @@ public class DpUiAreaService {
     public DpUiArea save(DpUiArea entity) {
         if (!repository.existsById(entity.getUiAreaId()))
             throw new CmBizException("존재하지 않는 DpUiArea입니다: " + entity.getUiAreaId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // dp_ui_area :: insert or update :: [orm:jpa]
         DpUiArea result = repository.save(entity);

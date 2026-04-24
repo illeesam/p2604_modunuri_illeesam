@@ -63,7 +63,7 @@ public class PdReviewService {
     @Transactional
     public PdReview create(PdReview entity) {
         entity.setReviewId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // pd_review :: insert or update :: [orm:jpa]
         PdReview result = repository.save(entity);
@@ -74,7 +74,7 @@ public class PdReviewService {
     public PdReview save(PdReview entity) {
         if (!repository.existsById(entity.getReviewId()))
             throw new CmBizException("존재하지 않는 PdReview입니다: " + entity.getReviewId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // pd_review :: insert or update :: [orm:jpa]
         PdReview result = repository.save(entity);

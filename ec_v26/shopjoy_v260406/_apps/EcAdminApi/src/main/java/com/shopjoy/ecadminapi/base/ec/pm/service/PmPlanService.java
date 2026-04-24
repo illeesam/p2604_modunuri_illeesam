@@ -59,7 +59,7 @@ public class PmPlanService {
     @Transactional
     public PmPlan create(PmPlan entity) {
         entity.setPlanId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         PmPlan result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class PmPlanService {
     public PmPlan save(PmPlan entity) {
         if (!repository.existsById(entity.getPlanId()))
             throw new CmBizException("존재하지 않는 PmPlan입니다: " + entity.getPlanId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmPlan result = repository.save(entity);
         return result;

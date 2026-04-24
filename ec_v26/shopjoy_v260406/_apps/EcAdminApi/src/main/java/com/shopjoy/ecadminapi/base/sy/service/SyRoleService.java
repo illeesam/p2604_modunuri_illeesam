@@ -63,7 +63,7 @@ public class SyRoleService {
     @Transactional
     public SyRole create(SyRole entity) {
         entity.setRoleId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_role :: insert or update :: [orm:jpa]
         SyRole result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyRoleService {
     public SyRole save(SyRole entity) {
         if (!repository.existsById(entity.getRoleId()))
             throw new CmBizException("존재하지 않는 SyRole입니다: " + entity.getRoleId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_role :: insert or update :: [orm:jpa]
         SyRole result = repository.save(entity);

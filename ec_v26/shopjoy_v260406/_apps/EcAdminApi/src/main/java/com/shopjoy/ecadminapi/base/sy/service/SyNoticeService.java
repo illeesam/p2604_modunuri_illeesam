@@ -63,7 +63,7 @@ public class SyNoticeService {
     @Transactional
     public SyNotice create(SyNotice entity) {
         entity.setNoticeId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_notice :: insert or update :: [orm:jpa]
         SyNotice result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyNoticeService {
     public SyNotice save(SyNotice entity) {
         if (!repository.existsById(entity.getNoticeId()))
             throw new CmBizException("존재하지 않는 SyNotice입니다: " + entity.getNoticeId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_notice :: insert or update :: [orm:jpa]
         SyNotice result = repository.save(entity);

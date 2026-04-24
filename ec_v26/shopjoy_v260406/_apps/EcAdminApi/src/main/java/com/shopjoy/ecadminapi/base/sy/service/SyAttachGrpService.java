@@ -63,7 +63,7 @@ public class SyAttachGrpService {
     @Transactional
     public SyAttachGrp create(SyAttachGrp entity) {
         entity.setAttachGrpId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         // sy_attach_grp :: insert or update :: [orm:jpa]
         SyAttachGrp result = repository.save(entity);
@@ -74,7 +74,7 @@ public class SyAttachGrpService {
     public SyAttachGrp save(SyAttachGrp entity) {
         if (!repository.existsById(entity.getAttachGrpId()))
             throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         // sy_attach_grp :: insert or update :: [orm:jpa]
         SyAttachGrp result = repository.save(entity);

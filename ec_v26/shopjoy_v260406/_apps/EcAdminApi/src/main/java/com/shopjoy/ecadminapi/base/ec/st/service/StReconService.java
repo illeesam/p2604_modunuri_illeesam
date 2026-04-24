@@ -59,7 +59,7 @@ public class StReconService {
     @Transactional
     public StRecon create(StRecon entity) {
         entity.setReconId(generateId());
-        entity.setRegBy(SecurityUtil.getAuthUser().userId());
+        entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         StRecon result = repository.save(entity);
         return result;
@@ -69,7 +69,7 @@ public class StReconService {
     public StRecon save(StRecon entity) {
         if (!repository.existsById(entity.getReconId()))
             throw new CmBizException("존재하지 않는 StRecon입니다: " + entity.getReconId());
-        entity.setUpdBy(SecurityUtil.getAuthUser().userId());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StRecon result = repository.save(entity);
         return result;
