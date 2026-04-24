@@ -71,4 +71,16 @@ public class BoPdQnaService {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
+
+    @Transactional
+    public PdProdQnaDto saveAnswer(String id, Map<String, Object> body) {
+        PdProdQna entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setAnswContent((String) body.get("answContent"));
+        entity.setAnswDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        repository.save(entity);
+        em.flush();
+        return getById(id);
+    }
 }

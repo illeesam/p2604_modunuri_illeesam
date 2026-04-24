@@ -2,7 +2,9 @@ package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
 import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdCategoryMapper;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
@@ -26,6 +28,7 @@ public class BoPdCategoryService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final PdCategoryMapper mapper;
     private final PdCategoryRepository repository;
+    private final PdCategoryProdRepository categoryProdRepository;
     @PersistenceContext
     private EntityManager em;
 
@@ -70,5 +73,34 @@ public class BoPdCategoryService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+    }
+
+    @Transactional
+    public void updateProds(String categoryId, String activeTypeCd, Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> prods = (List<Map<String, Object>>) body.get("prods");
+        if (prods == null) return;
+        String updBy = SecurityUtil.getAuthUser().authId();
+        categoryProdRepository.deleteByCategoryIdAndCategoryProdTypeCd(categoryId, activeTypeCd);
+        em.flush();
+        int seq = 1;
+        for (Map<String, Object> row : prods) {
+            PdCategoryProd cp = new PdCategoryProd();
+            String cpId = (String) row.get("categoryProdId");
+            if (cpId == null || cpId.startsWith("CP_")) {
+                cpId = "CP" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000));
+            }
+            cp.setCategoryProdId(cpId);
+            cp.setCategoryId(categoryId);
+            cp.setProdId((String) row.get("prodId"));
+            cp.setCategoryProdTypeCd(activeTypeCd);
+            Object sortOrdObj = row.get("sortOrd");
+            cp.setSortOrd(sortOrdObj != null ? ((Number) sortOrdObj).intValue() : seq);
+            cp.setDispYn(row.get("dispYn") != null ? (String) row.get("dispYn") : "Y");
+            cp.setRegBy(updBy);
+            cp.setRegDate(LocalDateTime.now());
+            categoryProdRepository.save(cp);
+            seq++;
+        }
     }
 }

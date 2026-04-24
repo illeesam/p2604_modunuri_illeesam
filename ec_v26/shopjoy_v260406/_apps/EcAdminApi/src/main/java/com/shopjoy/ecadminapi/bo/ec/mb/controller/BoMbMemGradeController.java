@@ -16,17 +16,17 @@ import java.util.Map;
 
 /**
  * BO 회원등급 API
- * GET    /api/bo/ec/mb/mem-grade       — 목록
- * GET    /api/bo/ec/mb/mem-grade/page  — 페이징
- * GET    /api/bo/ec/mb/mem-grade/{id}  — 단건
- * POST   /api/bo/ec/mb/mem-grade       — 등록
- * PUT    /api/bo/ec/mb/mem-grade/{id}  — 수정
- * DELETE /api/bo/ec/mb/mem-grade/{id}  — 삭제
+ * GET    /api/bo/ec/mb/member-grade       — 목록
+ * GET    /api/bo/ec/mb/member-grade/page  — 페이징
+ * GET    /api/bo/ec/mb/member-grade/{id}  — 단건
+ * POST   /api/bo/ec/mb/member-grade       — 등록
+ * PUT    /api/bo/ec/mb/member-grade/{id}  — 수정
+ * DELETE /api/bo/ec/mb/member-grade/{id}  — 삭제
  *
  * 인가: BO_ONLY (관리자)
  */
 @RestController
-@RequestMapping("/api/bo/ec/mb/mem-grade")
+@RequestMapping("/api/bo/ec/mb/member-grade")
 @RequiredArgsConstructor
 @BoOnly
 public class BoMbMemGradeController {

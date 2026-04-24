@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.pm.service;
+package com.shopjoy.ecadminapi.bo.ec.st.service;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmVoucherMapper;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmVoucherRepository;
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto;
+import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
+import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettlePayMapper;
+import com.shopjoy.ecadminapi.base.ec.st.repository.StSettlePayRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -18,48 +18,46 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-public class BoPmVoucherService {
+public class BoStSettlePayService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmVoucherMapper mapper;
-    private final PmVoucherRepository repository;
+    private final StSettlePayMapper mapper;
+    private final StSettlePayRepository repository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
-    public List<PmVoucherDto> getList(Map<String, Object> p) {
+    public List<StSettlePayDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PmVoucherDto> getPageData(Map<String, Object> p) {
+    public PageResult<StSettlePayDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
-    public PmVoucherDto getById(String id) {
-        PmVoucherDto dto = mapper.selectById(id);
+    public StSettlePayDto getById(String id) {
+        StSettlePayDto dto = mapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
     @Transactional
-    public PmVoucher create(PmVoucher body) {
-        body.setVoucherId("VR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+    public StSettlePay create(StSettlePay body) {
+        body.setSettlePayId("SP" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
 
     @Transactional
-    public PmVoucherDto update(String id, PmVoucher body) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    public StSettlePayDto update(String id, StSettlePay body) {
+        StSettlePay entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -73,16 +71,12 @@ public class BoPmVoucherService {
         repository.deleteById(id);
     }
 
-    public void sendSns(String id, Map<String, Object> body) {
-        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        log.info("SNS 발송 요청 - voucherId={}, channel={}", id, body.get("channel"));
-    }
-
     @Transactional
-    public PmVoucherDto changeStatus(String id, String statusCd) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
-        entity.setVoucherStatusCdBefore(entity.getVoucherStatusCd());
-        entity.setVoucherStatusCd(statusCd);
+    public StSettlePayDto pay(String id) {
+        StSettlePay entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setPayStatusCdBefore(entity.getPayStatusCd());
+        entity.setPayStatusCd("PAID");
+        entity.setPayDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);

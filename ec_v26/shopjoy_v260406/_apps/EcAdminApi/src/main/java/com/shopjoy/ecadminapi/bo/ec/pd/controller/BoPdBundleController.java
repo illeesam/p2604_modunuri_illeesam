@@ -1,0 +1,50 @@
+package com.shopjoy.ecadminapi.bo.ec.pd.controller;
+
+import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
+import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdService;
+import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecadminapi.common.response.PageResult;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * BO 묶음상품 API
+ * GET  /api/bo/ec/pd/bundle/page — 페이징 목록
+ * POST /api/bo/ec/pd/prod-bundle — 등록
+ * PUT  /api/bo/ec/pd/prod-bundle/{id}/items — 구성품목 수정
+ * DELETE /api/bo/ec/pd/prod-bundle/{id} — 삭제
+ */
+@RestController
+@RequiredArgsConstructor
+@BoOnly
+public class BoPdBundleController {
+    private final BoPdProdService service;
+
+    @GetMapping("/api/bo/ec/pd/bundle/page")
+    public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(@RequestParam Map<String, Object> p) {
+        p.put("prodTypeCd", "BUNDLE");
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+
+    @PostMapping("/api/bo/ec/pd/prod-bundle")
+    public ResponseEntity<ApiResponse<PdProd>> create(@RequestBody Map<String, Object> body) {
+        return ResponseEntity.status(201).body(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    @PutMapping("/api/bo/ec/pd/prod-bundle/{id}/items")
+    public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable String id, @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    @DeleteMapping("/api/bo/ec/pd/prod-bundle/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+}

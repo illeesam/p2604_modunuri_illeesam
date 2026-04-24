@@ -49,4 +49,7 @@ public class StSettleAdj {
     @Column(name = "upd_date")
     private LocalDateTime updDate;
 
+    @Column(name = "aprv_status", length = 20)
+    private String aprvStatus;
+
 }

@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.pm.service;
+package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmVoucherMapper;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmVoucherRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
+import com.shopjoy.ecadminapi.base.ec.pd.mapper.PdRestockNotiMapper;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdRestockNotiRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -18,48 +18,49 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BoPmVoucherService {
+public class BoPdRestockNotiService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmVoucherMapper mapper;
-    private final PmVoucherRepository repository;
+    private final PdRestockNotiMapper mapper;
+    private final PdRestockNotiRepository repository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
-    public List<PmVoucherDto> getList(Map<String, Object> p) {
+    public List<PdRestockNotiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PmVoucherDto> getPageData(Map<String, Object> p) {
+    public PageResult<PdRestockNotiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
-    public PmVoucherDto getById(String id) {
-        PmVoucherDto dto = mapper.selectById(id);
+    public PdRestockNotiDto getById(String id) {
+        PdRestockNotiDto dto = mapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
     @Transactional
-    public PmVoucher create(PmVoucher body) {
-        body.setVoucherId("VR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+    public PdRestockNoti create(PdRestockNoti body) {
+        body.setRestockNotiId("RN" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
 
     @Transactional
-    public PmVoucherDto update(String id, PmVoucher body) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    public PdRestockNotiDto update(String id, PdRestockNoti body) {
+        PdRestockNoti entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -73,20 +74,10 @@ public class BoPmVoucherService {
         repository.deleteById(id);
     }
 
-    public void sendSns(String id, Map<String, Object> body) {
-        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        log.info("SNS 발송 요청 - voucherId={}, channel={}", id, body.get("channel"));
-    }
-
-    @Transactional
-    public PmVoucherDto changeStatus(String id, String statusCd) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
-        entity.setVoucherStatusCdBefore(entity.getVoucherStatusCd());
-        entity.setVoucherStatusCd(statusCd);
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
-        em.flush();
-        return getById(id);
+    public void send(Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<String> ids = (List<String>) body.get("ids");
+        if (ids == null || ids.isEmpty()) return;
+        log.info("재입고알림 발송 요청 - ids={}", ids);
     }
 }

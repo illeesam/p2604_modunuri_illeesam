@@ -65,4 +65,10 @@ public class BoPdQnaController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+
+    @PutMapping("/{id}/answer")
+    public ResponseEntity<ApiResponse<PdProdQnaDto>> answer(
+            @PathVariable String id, @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.saveAnswer(id, body)));
+    }
 }

@@ -65,4 +65,11 @@ public class BoPmVoucherController {
         PmVoucherDto result = service.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
+
+    @PostMapping("/{id}/send-sns")
+    public ResponseEntity<ApiResponse<Void>> sendSns(
+            @PathVariable String id, @RequestBody Map<String, Object> body) {
+        service.sendSns(id, body);
+        return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
+    }
 }

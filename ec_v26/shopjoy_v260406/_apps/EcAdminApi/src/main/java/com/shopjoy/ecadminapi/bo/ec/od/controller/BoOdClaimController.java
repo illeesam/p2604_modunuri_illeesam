@@ -73,4 +73,28 @@ public class BoOdClaimController {
         OdClaimDto result = service.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
+
+    @PutMapping("/bulk-status")
+    public ResponseEntity<ApiResponse<Void>> bulkStatus(@RequestBody Map<String, Object> body) {
+        service.bulkStatus(body);
+        return ResponseEntity.ok(ApiResponse.ok(null, "상태가 변경되었습니다."));
+    }
+
+    @PutMapping("/bulk-type")
+    public ResponseEntity<ApiResponse<Void>> bulkType(@RequestBody Map<String, Object> body) {
+        service.bulkType(body);
+        return ResponseEntity.ok(ApiResponse.ok(null, "유형이 변경되었습니다."));
+    }
+
+    @PutMapping("/bulk-approval")
+    public ResponseEntity<ApiResponse<Void>> bulkApproval(@RequestBody Map<String, Object> body) {
+        service.bulkApproval(body);
+        return ResponseEntity.ok(ApiResponse.ok(null, "결재 처리되었습니다."));
+    }
+
+    @PutMapping("/bulk-approvalReq")
+    public ResponseEntity<ApiResponse<Void>> bulkApprovalReq(@RequestBody Map<String, Object> body) {
+        service.bulkApprovalReq(body);
+        return ResponseEntity.ok(ApiResponse.ok(null, "추가결재가 요청되었습니다."));
+    }
 }

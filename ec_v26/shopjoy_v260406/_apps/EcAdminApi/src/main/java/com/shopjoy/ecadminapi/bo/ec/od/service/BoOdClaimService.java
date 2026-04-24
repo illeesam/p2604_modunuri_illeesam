@@ -83,4 +83,70 @@ public class BoOdClaimService {
         em.flush();
         return getById(id);
     }
+
+    @Transactional
+    public void bulkStatus(Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> changes = (List<Map<String, Object>>) body.get("changes");
+        if (changes == null) return;
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (Map<String, Object> c : changes) {
+            String id = (String) c.get("id");
+            String statusCd = (String) c.get("statusCd");
+            repository.findById(id).ifPresent(e -> {
+                e.setClaimStatusCdBefore(e.getClaimStatusCd());
+                e.setClaimStatusCd(statusCd);
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                repository.save(e);
+            });
+        }
+    }
+
+    @Transactional
+    public void bulkType(Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<String> ids = (List<String>) body.get("ids");
+        String type = (String) body.get("type");
+        if (ids == null || type == null) return;
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (String id : ids) {
+            repository.findById(id).ifPresent(e -> {
+                e.setClaimTypeCd(type);
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                repository.save(e);
+            });
+        }
+    }
+
+    @Transactional
+    public void bulkApproval(Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<String> ids = (List<String>) body.get("ids");
+        if (ids == null) return;
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (String id : ids) {
+            repository.findById(id).ifPresent(e -> {
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                repository.save(e);
+            });
+        }
+    }
+
+    @Transactional
+    public void bulkApprovalReq(Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<String> ids = (List<String>) body.get("ids");
+        if (ids == null) return;
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (String id : ids) {
+            repository.findById(id).ifPresent(e -> {
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                repository.save(e);
+            });
+        }
+    }
 }

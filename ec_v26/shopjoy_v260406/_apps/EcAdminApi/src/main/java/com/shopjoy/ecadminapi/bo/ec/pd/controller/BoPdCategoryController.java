@@ -65,4 +65,13 @@ public class BoPdCategoryController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+
+    @PutMapping("/{id}/prods/{activeTypeCd}")
+    public ResponseEntity<ApiResponse<Void>> updateProds(
+            @PathVariable String id,
+            @PathVariable String activeTypeCd,
+            @RequestBody Map<String, Object> body) {
+        service.updateProds(id, activeTypeCd, body);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

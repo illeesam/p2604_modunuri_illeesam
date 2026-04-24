@@ -16,17 +16,17 @@ import java.util.Map;
 
 /**
  * BO 회원그룹 API
- * GET    /api/bo/ec/mb/mem-group       — 목록
- * GET    /api/bo/ec/mb/mem-group/page  — 페이징
- * GET    /api/bo/ec/mb/mem-group/{id}  — 단건
- * POST   /api/bo/ec/mb/mem-group       — 등록
- * PUT    /api/bo/ec/mb/mem-group/{id}  — 수정
- * DELETE /api/bo/ec/mb/mem-group/{id}  — 삭제
+ * GET    /api/bo/ec/mb/member-group       — 목록
+ * GET    /api/bo/ec/mb/member-group/page  — 페이징
+ * GET    /api/bo/ec/mb/member-group/{id}  — 단건
+ * POST   /api/bo/ec/mb/member-group       — 등록
+ * PUT    /api/bo/ec/mb/member-group/{id}  — 수정
+ * DELETE /api/bo/ec/mb/member-group/{id}  — 삭제
  *
  * 인가: BO_ONLY (관리자)
  */
 @RestController
-@RequestMapping("/api/bo/ec/mb/mem-group")
+@RequestMapping("/api/bo/ec/mb/member-group")
 @RequiredArgsConstructor
 @BoOnly
 public class BoMbMemGroupController {

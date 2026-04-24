@@ -65,4 +65,10 @@ public class BoPdReviewController {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<PdReviewDto>> changeStatus(
+            @PathVariable String id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("reviewStatusCd"))));
+    }
 }

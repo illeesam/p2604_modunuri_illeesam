@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.pm.service;
+package com.shopjoy.ecadminapi.bo.ec.st.service;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
-import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmVoucherMapper;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmVoucherRepository;
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto;
+import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
+import com.shopjoy.ecadminapi.base.ec.st.mapper.StSettleConfigMapper;
+import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleConfigRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -18,48 +18,46 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-public class BoPmVoucherService {
+public class BoStSettleConfigService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-    private final PmVoucherMapper mapper;
-    private final PmVoucherRepository repository;
+    private final StSettleConfigMapper mapper;
+    private final StSettleConfigRepository repository;
     @PersistenceContext
     private EntityManager em;
 
     @Transactional(readOnly = true)
-    public List<PmVoucherDto> getList(Map<String, Object> p) {
+    public List<StSettleConfigDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<PmVoucherDto> getPageData(Map<String, Object> p) {
+    public PageResult<StSettleConfigDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
-    public PmVoucherDto getById(String id) {
-        PmVoucherDto dto = mapper.selectById(id);
+    public StSettleConfigDto getById(String id) {
+        StSettleConfigDto dto = mapper.selectById(id);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         return dto;
     }
 
     @Transactional
-    public PmVoucher create(PmVoucher body) {
-        body.setVoucherId("VR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+    public StSettleConfig create(StSettleConfig body) {
+        body.setSettleConfigId("SC" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         return repository.save(body);
     }
 
     @Transactional
-    public PmVoucherDto update(String id, PmVoucher body) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    public StSettleConfigDto update(String id, StSettleConfig body) {
+        StSettleConfig entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -71,22 +69,5 @@ public class BoPmVoucherService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
-    }
-
-    public void sendSns(String id, Map<String, Object> body) {
-        if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
-        log.info("SNS 발송 요청 - voucherId={}, channel={}", id, body.get("channel"));
-    }
-
-    @Transactional
-    public PmVoucherDto changeStatus(String id, String statusCd) {
-        PmVoucher entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id));
-        entity.setVoucherStatusCdBefore(entity.getVoucherStatusCd());
-        entity.setVoucherStatusCd(statusCd);
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
-        em.flush();
-        return getById(id);
     }
 }

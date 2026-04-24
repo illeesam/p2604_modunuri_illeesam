@@ -16,17 +16,17 @@ import java.util.Map;
 
 /**
  * BO 게시글(블로그/BBS) API
- * GET    /api/bo/ec/cm/bltn       — 목록
- * GET    /api/bo/ec/cm/bltn/page  — 페이징
- * GET    /api/bo/ec/cm/bltn/{id}  — 단건
- * POST   /api/bo/ec/cm/bltn       — 등록
- * PUT    /api/bo/ec/cm/bltn/{id}  — 수정
- * DELETE /api/bo/ec/cm/bltn/{id}  — 삭제
+ * GET    /api/bo/ec/cm/blog       — 목록
+ * GET    /api/bo/ec/cm/blog/page  — 페이징
+ * GET    /api/bo/ec/cm/blog/{id}  — 단건
+ * POST   /api/bo/ec/cm/blog       — 등록
+ * PUT    /api/bo/ec/cm/blog/{id}  — 수정
+ * DELETE /api/bo/ec/cm/blog/{id}  — 삭제
  *
  * 인가: BO_ONLY (관리자)
  */
 @RestController
-@RequestMapping("/api/bo/ec/cm/bltn")
+@RequestMapping("/api/bo/ec/cm/blog")
 @RequiredArgsConstructor
 @BoOnly
 public class BoCmBlogController {
