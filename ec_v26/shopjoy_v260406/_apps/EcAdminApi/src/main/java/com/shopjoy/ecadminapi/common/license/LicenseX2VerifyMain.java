@@ -31,13 +31,13 @@ import java.util.regex.Pattern;
  *   3) 전체 필드 교차 — JS 파일의 각 값 vs licenseCode payload 내부 값 (하나라도 다르면 실패)
  *   4) 만료일 확인    — 오늘 날짜 기준
  */
-public class LicenseX3VerifyMain {
+public class LicenseX2VerifyMain {
 
     /* ── secret (LicenseGenerateMain.SECRET 과 동일하게 유지) ── */
     private static final String DEFAULT_SECRET = "SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd";
 
     /* ── IntelliJ 직접 실행 시 여기서 수정 ── */
-    private static final String JS_FILE = "./license-output/licenseFo-20260424_200429-BUYER_001.js";
+    private static final String JS_FILE = "./license-output/20260424_204330-licenseBo-BUYER_001.js";
 
     public static void main(String[] args) throws Exception {
 
@@ -108,25 +108,23 @@ public class LicenseX3VerifyMain {
         }
 
         /* ── 4) 전체 필드 교차 검증 ── */
-        boolean allMatch = true;
-        allMatch &= checkField("siteType",   siteType,   payload.getSiteType());
-        allMatch &= checkField("siteId",     siteId,     payload.getSiteId());
-        allMatch &= checkField("siteNo",     siteNo,     payload.getSiteNo());
-        allMatch &= checkField("buyerId",    buyerId,    payload.getBuyerId());
-        allMatch &= checkField("expireDate", expireDate, payload.getExpireDate());
+        System.out.println("  ✅ 서명 검증: OK");
+        System.out.println();
+        System.out.printf("  %-12s %-20s %-20s %-6s %s%n", "필드", "JS파일값", "payload값", "결과", "검증항목");
+        System.out.println("  " + "─".repeat(72));
 
+        boolean allMatch = true;
+        allMatch &= printField("siteType",   siteType,   payload.getSiteType(),  false);
+        allMatch &= printField("siteId",     siteId,     payload.getSiteId(),    false);
+        allMatch &= printField("siteNo",     siteNo,     payload.getSiteNo(),    false);
+        allMatch &= printField("buyerId",    buyerId,    payload.getBuyerId(),   true);
+        allMatch &= printField("expireDate", expireDate, payload.getExpireDate(),false);
+
+        System.out.println();
         if (!allMatch) {
-            System.out.println();
             printResult(false);
             return;
         }
-
-        System.out.println("  ✅ 서명 검증: OK");
-        System.out.println("  ✅ siteType  : file=" + siteType   + "  payload=" + payload.getSiteType());
-        System.out.println("  ✅ siteId    : file=" + siteId     + "  payload=" + payload.getSiteId());
-        System.out.println("  ✅ siteNo    : file=" + siteNo     + "  payload=" + payload.getSiteNo());
-        System.out.println("  ✅ buyerId   : file=" + buyerId    + "  payload=" + payload.getBuyerId());
-        System.out.println("  ✅ expireDate: file=" + expireDate + "  payload=" + payload.getExpireDate());
 
         /* ── 5) 만료일 ── */
         try {
@@ -144,6 +142,21 @@ public class LicenseX3VerifyMain {
 
         System.out.println();
         printResult(true);
+
+        /* ── 필터 검증 방식 설명 ── */
+        System.out.println("  LicenseFilter.java 아래 3가지 검증이 일어납니다:");
+        System.out.println();
+        System.out.println("  ┌─────────────┬────────────────────────────────────────────────────────┐");
+        System.out.println("  │ 검증 항목    │ 방식                                                    │");
+        System.out.println("  ├─────────────┼────────────────────────────────────────────────────────┤");
+        System.out.println("  │ 서명         │ 헤더 X-License-Code : HMAC-SHA256 — secret 없이 위조 불가 │");
+        System.out.println("  │              │ payload 전체를 커버 → siteType/siteId/siteNo 변조 시 차단│");
+        System.out.println("  ├─────────────┼────────────────────────────────────────────────────────┤");
+        System.out.println("  │ buyerId      │ 헤더 X-Buyer-Id vs payload 내부값 직접 비교              │");
+        System.out.println("  ├─────────────┼────────────────────────────────────────────────────────┤");
+        System.out.println("  │ 만료일       │ payload 의 expireDate >= 오늘                           │");
+        System.out.println("  └─────────────┴────────────────────────────────────────────────────────┘");
+        System.out.println();
     }
 
     /* ── JS 파일에서 'key': 'value' 패턴 파싱 ── */
@@ -154,13 +167,13 @@ public class LicenseX3VerifyMain {
         return map;
     }
 
-    /** JS 파일 값 vs payload 값 비교 — 불일치 시 콘솔 출력 후 false 반환 */
-    private static boolean checkField(String name, String fileVal, String payloadVal) {
-        if (fileVal == null || !fileVal.equals(payloadVal)) {
-            System.out.println("  ✗ " + name + " 불일치: file=" + v(fileVal) + "  payload=" + v(payloadVal));
-            return false;
-        }
-        return true;
+    /** 필드명 / JS파일값 / payload값 / 결과 한 줄 출력 — 불일치 시 false 반환 */
+    private static boolean printField(String name, String fileVal, String payloadVal, boolean filterCheck) {
+        boolean ok = fileVal != null && fileVal.equals(payloadVal);
+        String tag = filterCheck ? "[필터검증]" : "";
+        System.out.printf("  %-12s %-20s %-20s %-6s %s%n",
+            name, v(fileVal), v(payloadVal), ok ? "✅" : "✗ 불일치", tag);
+        return ok;
     }
 
     private static void printResult(boolean ok) {

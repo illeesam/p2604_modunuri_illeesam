@@ -104,14 +104,14 @@ public class LicenseFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
         String licenseCode = request.getHeader("X-License-Code");
-        String siteId      = request.getHeader("X-Site-Id");
+        String buyerId     = request.getHeader("X-Buyer-Id");
 
         try {
-            LicenseUtil.verify(secret, licenseCode, siteId);
+            LicenseUtil.verify(secret, licenseCode, buyerId);
             chain.doFilter(request, response);
         } catch (LicenseException e) {
-            log.warn("[LicenseFilter] 라이선스 검증 실패: {} - {} | uri={} siteId={}",
-                e.getReason(), e.getMessage(), request.getRequestURI(), siteId);
+            log.warn("[LicenseFilter] 라이선스 검증 실패: {} - {} | uri={} buyerId={}",
+                e.getReason(), e.getMessage(), request.getRequestURI(), buyerId);
             sendError(response, e);
         }
     }

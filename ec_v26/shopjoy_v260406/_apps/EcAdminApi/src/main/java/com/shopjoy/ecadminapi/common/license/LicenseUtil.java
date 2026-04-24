@@ -20,7 +20,7 @@ import java.util.HexFormat;
  *
  * 검증:
  *   1) 서명 일치 여부
- *   2) siteId 일치 여부
+ *   2) buyerId 일치 여부
  *   3) 만료일 (expireDate >= today)
  */
 @Slf4j
@@ -49,7 +49,7 @@ public final class LicenseUtil {
     }
 
     /* ── 코드 검증 (LicenseException 발생) ───────────────────── */
-    public static LicensePayload verify(String secret, String code, String expectedSiteId) {
+    public static LicensePayload verify(String secret, String code, String expectedBuyerId) {
         if (code == null || code.isBlank()) {
             throw new LicenseException(Reason.NO_HEADER, "라이선스 코드가 없습니다.");
         }
@@ -76,11 +76,11 @@ public final class LicenseUtil {
             throw new LicenseException(Reason.INVALID_FORMAT, "라이선스 payload 파싱 실패: " + e.getMessage());
         }
 
-        /* siteId 검증 */
-        if (expectedSiteId != null && !expectedSiteId.isBlank()
-                && !expectedSiteId.equals(payload.getSiteId())) {
+        /* buyerId 검증 */
+        if (expectedBuyerId != null && !expectedBuyerId.isBlank()
+                && !expectedBuyerId.equals(payload.getBuyerId())) {
             throw new LicenseException(Reason.SITE_MISMATCH,
-                "siteId 불일치: expected=" + expectedSiteId + ", actual=" + payload.getSiteId());
+                "buyerId 불일치: expected=" + expectedBuyerId + ", actual=" + payload.getBuyerId());
         }
 
         /* 만료일 검증 */
@@ -100,9 +100,9 @@ public final class LicenseUtil {
     }
 
     /* ── 검증만 (exception 없이 boolean 반환) ────────────────── */
-    public static boolean isValid(String secret, String code, String expectedSiteId) {
+    public static boolean isValid(String secret, String code, String expectedBuyerId) {
         try {
-            verify(secret, code, expectedSiteId);
+            verify(secret, code, expectedBuyerId);
             return true;
         } catch (LicenseException e) {
             log.warn("[LicenseUtil] 검증 실패: {} - {}", e.getReason(), e.getMessage());

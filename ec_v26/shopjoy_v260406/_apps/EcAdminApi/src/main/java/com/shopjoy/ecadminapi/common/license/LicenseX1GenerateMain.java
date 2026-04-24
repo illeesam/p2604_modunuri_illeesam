@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
  *   licenseBo-{yyyyMMdd_HHmmss}-{buyerId}.js
  *   licenseFo-{yyyyMMdd_HHmmss}-{buyerId}.js
  */
-public class LicenseGenerateMain {
+public class LicenseX1GenerateMain {
 
     /* ── secret (application.yml LICENSE_SECRET 과 동일하게 유지) ── */
     private static final String SECRET = "SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd";
@@ -66,15 +66,17 @@ public class LicenseGenerateMain {
         LicenseUtil.verify(SECRET, foCode, buyerId);
 
         /* ── JS 파일 생성 ── */
-        String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        Path dir  = Paths.get(outputDir);
+        LocalDateTime now = LocalDateTime.now();
+        String ts    = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String genAt = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Path dir     = Paths.get(outputDir);
         Files.createDirectories(dir);
 
-        String boFile = "licenseBo-" + ts + "-" + buyerId + ".js";
-        String foFile = "licenseFo-" + ts + "-" + buyerId + ".js";
+        String boFile = ts + "-licenseBo-" + buyerId + ".js";
+        String foFile = ts + "-licenseFo-" + buyerId + ".js";
 
-        Files.writeString(dir.resolve(boFile), buildJs("BO", boSiteId, boSiteNo, buyerId, expireDate, boCode), StandardCharsets.UTF_8);
-        Files.writeString(dir.resolve(foFile), buildJs("FO", foSiteId, foSiteNo, buyerId, expireDate, foCode), StandardCharsets.UTF_8);
+        Files.writeString(dir.resolve(boFile), buildJs("BO", boSiteId, boSiteNo, buyerId, expireDate, boCode, genAt, boFile), StandardCharsets.UTF_8);
+        Files.writeString(dir.resolve(foFile), buildJs("FO", foSiteId, foSiteNo, buyerId, expireDate, foCode, genAt, foFile), StandardCharsets.UTF_8);
 
         /* ── 결과 출력 ── */
         System.out.println();
@@ -100,8 +102,10 @@ public class LicenseGenerateMain {
     }
 
     private static String buildJs(String siteType, String siteId, String siteNo,
-                                   String buyerId, String expireDate, String licenseCode) {
-        return "/* ShopJoy License - " + siteType + " | " + siteId + " | " + expireDate + " */\n"
+                                   String buyerId, String expireDate, String licenseCode,
+                                   String genAt, String fileName) {
+        return "/* ShopJoy License - " + siteType + " | " + siteId + " | " + expireDate
+             + " | generated: " + genAt + ", " + fileName + " */\n"
             + "(function (global) {\n"
             + "  global.SHOPJOY_LICENSE_" + siteType + " = {\n"
             + "    siteType:    '" + siteType    + "',\n"
