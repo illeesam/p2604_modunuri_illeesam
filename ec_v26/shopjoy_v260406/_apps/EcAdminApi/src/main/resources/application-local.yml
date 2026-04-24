@@ -1,8 +1,20 @@
+# ════════════════════════════════════════════════════════════════════
+# [local] 실행 방법
+#
+# 1) java -jar
+#    java -Dspring.profiles.active=local -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres -jar C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406\_apps\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
+#
+# 2) IntelliJ VM options
+#    -Dspring.profiles.active=local -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres
+# ════════════════════════════════════════════════════════════════════
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=shopjoy_2604
-    username: postgres
-    password: postgres
+    # DB_HOST=localhost | DB_PORT=5432 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
+    # DB_USERNAME=postgres | DB_PASSWORD=postgres
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:public001}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -82,10 +94,12 @@ app:
       ec-dp-disp-seconds: 3600        # 전시 정보           | 1시간
       ec-dp-disp-item-seconds: 3600   # 전시 항목 정보      | 1시간
   scheduler:
-    enabled: false          # 로컬 환경: 스케줄러 비활성
+    enabled: false          # 로컬 환경: 스케줄러 비활성 (cron 자동 실행 없음)
     jenkins:
-      enabled: false
-    allowed-ips: ""        # 빈값=전체허용 | "*"=전체허용 | "127.0.0.1^10.0.0.1"=IP지정
+      enabled: false        # Jenkins 외부 호출 모드 비활성. /api/sch/jenkins/* → 403
+      token: ""             # Jenkins 인증 토큰 (local은 jenkins.enabled=false라 미사용)
+      url: ""               # 앱→Jenkins 역방향 트리거 URL (미사용)
+    allowed-ips: ""         # 빈값=전체허용 | "*"=전체허용 | "127.0.0.1^10.0.0.1"=IP지정
   error-log:
     db-save: true             # true=DB저장 | false=파일만 기록(DB저장 생략)
     queue-size: 100           # 초과 시 즉시 드롭

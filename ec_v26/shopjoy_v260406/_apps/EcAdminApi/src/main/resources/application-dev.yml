@@ -1,8 +1,20 @@
+# ════════════════════════════════════════════════════════════════════
+# [dev] 실행 방법
+#
+# 1) java -jar
+#    java -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값) -jar C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406\_apps\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
+#
+# 2) IntelliJ VM options
+#    -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값)
+# ════════════════════════════════════════════════════════════════════
+
 spring:
   datasource:
-    url: jdbc:postgresql://illeesam.synology.me:17632/postgres?currentSchema=shopjoy_2604&tcpKeepAlives=true&connectTimeout=30
-    username: postgres
-    password: postgresilleesam
+    # DB_HOST=illeesam.synology.me | DB_PORT=17632 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
+    # DB_USERNAME=postgres | DB_PASSWORD=(환경변수 필수)
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:public001}&tcpKeepAlives=true&connectTimeout=30
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -82,10 +94,13 @@ app:
       ec-dp-disp-seconds: 3600        # 전시 정보           | 1시간
       ec-dp-disp-item-seconds: 3600   # 전시 항목 정보      | 1시간
   scheduler:
-    enabled: true           # dev: 스케줄러 활성
+    enabled: true           # 배치 스케줄러 활성 여부. false=앱 기동 시 cron 등록 생략
     jenkins:
-      enabled: false
-    allowed-ips: "*"       # "*"=전체허용 | IP지정: "127.0.0.1^10.0.0.1"
+      enabled: false        # Jenkins 외부 호출 모드. true=cron 생략, Jenkins가 직접 API 호출
+                            # POST /api/sch/jenkins/{batchCode} + Header X-Jenkins-Token
+      token: ${JENKINS_TOKEN:dev-batch-jenkins-tk-9f2a4c8e1b7d}   # 환경변수 우선, 미설정 시 기본값 사용
+      url: ""               # 앱→Jenkins 역방향 트리거 URL (미사용, 향후 연동 예정)
+    allowed-ips: "*"        # 스케줄 관리 API 허용 IP. "*"=전체허용 | "IP1^IP2"=화이트리스트
   error-log:
     db-save: true
     queue-size: 100

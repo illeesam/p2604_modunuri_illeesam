@@ -1,6 +1,21 @@
+# ════════════════════════════════════════════════════════════════════
+# [prod] 실행 방법
+#
+# 1) java -jar
+#    java -Dspring.profiles.active=prod -DDB_HOST=(서버IP또는도메인) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값) -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값) -jar /app/EcAdminApi.jar
+#
+# 2) IntelliJ VM options (운영 서버 직접 디버그 시)
+#    -Dspring.profiles.active=prod -DDB_HOST=(서버IP또는도메인) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값) -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값)
+#
+# ※ prod 환경은 환경변수 방식 권장:
+#    export DB_HOST=... && export DB_PASSWORD=... && java -jar /app/EcAdminApi.jar
+# ════════════════════════════════════════════════════════════════════
+
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/postgres?currentSchema=shopjoy_2604
+    # DB_HOST=(필수) | DB_PORT=(필수) | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
+    # DB_USERNAME=(필수) | DB_PASSWORD=(필수)
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -80,8 +95,12 @@ app:
   scheduler:
     enabled: true           # prod: 스케줄러 활성
     jenkins:
-      enabled: true
-    allowed-ips: "192.168.1.1^192.168.1.2"  # "*"=전체허용 | IP지정: "^"구분
+      enabled: true         # Jenkins 외부 호출 모드 활성. cron 자동 등록 생략
+                            # Jenkins Pipeline → POST /api/sch/jenkins/{batchCode}
+                            #   Header: X-Jenkins-Token: ${JENKINS_BATCH_TOKEN}
+      token: ${JENKINS_BATCH_TOKEN:}  # 환경변수 주입 필수. 빈값이면 토큰 검증 생략(비권장)
+      url: ${JENKINS_URL:}            # 앱→Jenkins 역방향 트리거 URL (미사용, 향후 연동)
+    allowed-ips: "192.168.1.1^192.168.1.2"  # 스케줄 관리 API 허용 IP (Jenkins 서버 IP 추가 필요)
   error-log:
     db-save: true
     queue-size: 100
