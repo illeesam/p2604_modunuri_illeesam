@@ -188,9 +188,11 @@
       const page   = ref('dashboard');
       const dashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
       const errorMessage = ref('');
-      /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
+      /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error'))
+         GET 요청 4xx는 각 페이지 onMounted catch에서 이미 처리하므로 전역 토스트 생략 */
       window.addEventListener('api-validation-error', (ev) => {
         const d = ev.detail || {};
+        if (d.method === 'GET' && d.status >= 400 && d.status < 500) return;
         let msg = d.message || '오류가 발생했습니다.';
         if (d.method && d.url && d.status) {
           msg = `${d.method} ${d.url} ${d.status}\n${msg}`;
@@ -409,6 +411,7 @@
       const toasts  = reactive([]);
       let _toastId  = 0;
       const TOAST_DURATION = 3500;
+      const MAX_TOASTS = 5;
       const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
         const id = ++_toastId;
         let msgTitle = msg;
@@ -420,6 +423,9 @@
           msgDetail = parts[0]; // METHOD URL STATUS
           msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
         }
+
+        // 최대 토스트 수 초과 시 가장 오래된 항목 제거
+        if (toasts.length >= MAX_TOASTS) toasts.splice(0, toasts.length - MAX_TOASTS + 1);
 
         toasts.push({ id, msgTitle, msgDetail, msg, type, persistent: duration === 0, errorDetails, expanded: false });
         if (duration !== 0) {
