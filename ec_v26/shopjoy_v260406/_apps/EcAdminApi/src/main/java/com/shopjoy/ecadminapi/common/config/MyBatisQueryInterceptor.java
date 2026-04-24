@@ -31,11 +31,18 @@ public class MyBatisQueryInterceptor implements Interceptor {
     private static final int PREVIEW_ROWS = 3;
 
     /** P6SpyFormatter가 읽는 현재 Mapper 정보 (스레드 로컬) */
-    private static final ThreadLocal<String> MAPPER_INFO = new ThreadLocal<>();
+    private static final ThreadLocal<String>  MAPPER_INFO    = new ThreadLocal<>();
+    /** P6SpyFormatter가 읽는 쿼리 결과 요약 (스레드 로컬) */
+    private static final ThreadLocal<String>  RESULT_SUMMARY = new ThreadLocal<>();
 
     /** P6SpyFormatter에서 호출 — 현재 실행 중인 Mapper.메서드명 반환 */
-    public static String getCurrentMapperInfo() {
-        return MAPPER_INFO.get();
+    public static String getCurrentMapperInfo() { return MAPPER_INFO.get(); }
+
+    /** P6SpyFormatter에서 호출 — 결과 요약 문자열 반환 후 즉시 제거 */
+    public static String pollResultSummary() {
+        String s = RESULT_SUMMARY.get();
+        RESULT_SUMMARY.remove();
+        return s;
     }
 
     @Override
@@ -51,26 +58,41 @@ public class MyBatisQueryInterceptor implements Interceptor {
         MAPPER_INFO.set(shortId);
         try {
             Object result = invocation.proceed();
-            logResult(result);
+            RESULT_SUMMARY.set(buildResultSummary(result));
             return result;
         } finally {
-            MAPPER_INFO.remove(); // 스레드 풀 재사용 시 이전 값 유출 방지
+            MAPPER_INFO.remove();
         }
     }
 
-    /** 결과가 List인 경우에만 건수 및 상위 N건 미리보기를 로깅한다. */
-    private void logResult(Object result) {
-        if (!(result instanceof List<?> list) || list.isEmpty()) return;
-
-        int total = list.size();
-        int preview = Math.min(PREVIEW_ROWS, total);
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("│ ↳ 결과 %d건%s\n",
-                total, total > PREVIEW_ROWS ? "  (상위 " + PREVIEW_ROWS + "건 미리보기)" : ""));
-        for (int i = 0; i < preview; i++) {
-            sb.append(String.format("│   [%d] %s\n", i + 1, list.get(i)));
+    /** 결과를 요약 문자열로 변환 — P6SpyFormatter 가 SQL 블록 안에 포함해 출력 */
+    private String buildResultSummary(Object result) {
+        if (result instanceof List<?> list) {
+            if (list.isEmpty()) return "│ ↳ 결과 0건";
+            int total   = list.size();
+            int preview = Math.min(PREVIEW_ROWS, total);
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("│ ↳ 결과 %d건%s",
+                    total, total > PREVIEW_ROWS ? "  (상위 " + PREVIEW_ROWS + "건)" : ""));
+            for (int i = 0; i < preview; i++) {
+                sb.append(String.format("\n│   [%d] %s", i + 1, formatRow(list.get(i))));
+            }
+            return sb.toString();
         }
-        log.debug("\n{}", sb.toString().stripTrailing());
+        if (result instanceof Integer || result instanceof Long) {
+            return "│ ↳ 영향 행 수: " + result;
+        }
+        if (result != null) {
+            return "│ ↳ " + formatRow(result);
+        }
+        return null;
+    }
+
+    /** 단일 행 포맷 — Map/객체 모두 toString, 길면 잘라냄 */
+    private String formatRow(Object row) {
+        if (row == null) return "null";
+        String s = row.toString();
+        return s.length() > 200 ? s.substring(0, 200) + "…" : s;
     }
 
     @Override

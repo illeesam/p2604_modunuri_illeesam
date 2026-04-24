@@ -27,7 +27,7 @@ public class MvcLogAspect {
         CLIENT("■■ ■", "■■ ◀"),
         SERVICE("■■ ▶▶", "■■ ◀◀"),
         MAPPER("■■ ▶▶▶", "■■ ◀◀◀"),
-        REPOSITORY("■■ ▶▶▶", "■■ ▶▶▶"),
+        REPOSITORY("■■ ▶▶▶", "■■ ◀◀◀"),
         DEFAULT("■■ ▶", "■■ ◀");
 
         private final String inPrefix;
@@ -125,8 +125,13 @@ public class MvcLogAspect {
 
     private String getComponentName(ProceedingJoinPoint pjp) {
         Object target = pjp.getTarget();
-        return target != null ? target.getClass().getSimpleName()
-                : pjp.getSignature().getDeclaringTypeName();
+        if (target == null) return pjp.getSignature().getDeclaringType().getSimpleName();
+        String name = target.getClass().getSimpleName();
+        /* JPA/Spring 프록시($Proxy, $$EnhancerBy 등) → 선언 인터페이스명으로 대체 */
+        if (name.contains("$") || name.contains("Enhancer")) {
+            name = pjp.getSignature().getDeclaringType().getSimpleName();
+        }
+        return name;
     }
 
     private String formatInputParams(ProceedingJoinPoint pjp) {

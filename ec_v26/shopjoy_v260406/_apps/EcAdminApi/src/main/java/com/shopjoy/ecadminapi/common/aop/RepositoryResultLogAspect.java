@@ -14,9 +14,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Repository 메서드 실행 결과를 자동으로 console에 출력하는 AOP Aspect
- * - 모든 Repository find/get 메서드 결과 로깅
- * - local/dev profile에서만 출력 (prod 제외)
+ * Repository 메서드 실행 결과를 자동으로 로깅하는 AOP Aspect.
+ * local/dev profile에서만 출력 (prod 제외).
  */
 @Aspect
 @Component
@@ -26,27 +25,20 @@ public class RepositoryResultLogAspect {
     @Autowired
     private Environment environment;
 
-    /**
-     * 모든 Repository 메서드 실행 후 결과 로깅
-     * 대상: 모든 public 메서드
-     * local/dev profile에서만 출력
-     */
     @Around("execution(public * com.shopjoy.ecadminapi.*.*.repository.*Repository.*(..))")
     public Object logRepositoryResult(ProceedingJoinPoint joinPoint) throws Throwable {
-        // local/dev profile일 때만 로깅
-        boolean isLoggingEnabled = isLoggingEnabled();
+        boolean loggingEnabled = isLoggingEnabled();
 
         String methodName = joinPoint.getSignature().getName();
-        String simpleClassName = joinPoint.getTarget().getClass().getSimpleName();
-        String fullClassName = getRepositoryClassName(joinPoint);
-        String callerInfo = isLoggingEnabled ? getCallerInfo() : null;
+        String simpleClassName = getRepositorySimpleName(joinPoint);
+        String fullClassName   = getRepositoryClassName(joinPoint);
+        String callerInfo = loggingEnabled ? getCallerInfo() : null;
         Object[] args = joinPoint.getArgs();
 
         try {
             Object result = joinPoint.proceed();
 
-            // local/dev 환경에서만 결과 로깅
-            if (isLoggingEnabled) {
+            if (loggingEnabled) {
                 if (methodName.startsWith("save") || methodName.startsWith("delete")) {
                     logSaveDeleteResult(simpleClassName, fullClassName, methodName, callerInfo, args, result);
                 } else {
@@ -61,219 +53,165 @@ public class RepositoryResultLogAspect {
         }
     }
 
-    /**
-     * 로깅 활성화 여부 확인 (local/dev profile일 때만)
-     */
     private boolean isLoggingEnabled() {
         String[] activeProfiles = environment.getActiveProfiles();
-        if (activeProfiles.length == 0) {
-            return false;
-        }
-        String activeProfile = activeProfiles[0];
-        return "local".equalsIgnoreCase(activeProfile) || "dev".equalsIgnoreCase(activeProfile);
+        if (activeProfiles.length == 0) return false;
+        String p = activeProfiles[0];
+        return "local".equalsIgnoreCase(p) || "dev".equalsIgnoreCase(p);
     }
 
-    /**
-     * Proxy 객체에서 실제 Repository 클래스명 추출
-     */
+    /** 프록시 없이 실제 인터페이스 심플명 반환 */
+    private String getRepositorySimpleName(ProceedingJoinPoint joinPoint) {
+        String name = joinPoint.getTarget().getClass().getSimpleName();
+        if (name.contains("$") || name.contains("Enhancer")) {
+            return joinPoint.getSignature().getDeclaringType().getSimpleName();
+        }
+        return name;
+    }
+
+    /** 프록시 없이 실제 인터페이스 FQCN 반환 */
     private String getRepositoryClassName(ProceedingJoinPoint joinPoint) {
         try {
             Class<?>[] interfaces = joinPoint.getTarget().getClass().getInterfaces();
-            if (interfaces.length > 0) {
-                return interfaces[0].getName();
-            }
-        } catch (Exception e) {
-            // ignore
-        }
-        return joinPoint.getTarget().getClass().getName();
+            if (interfaces.length > 0) return interfaces[0].getName();
+        } catch (Exception ignored) {}
+        return joinPoint.getSignature().getDeclaringType().getName();
     }
 
-    /**
-     * 호출자 정보 추출 (Service/Controller 클래스명 + 메서드명)
-     */
     private String getCallerInfo() {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        for (StackTraceElement element : stackTrace) {
-            String className = element.getClassName();
-            if ((className.contains("Service") || className.contains("Controller")) &&
-                className.startsWith("com.shopjoy")) {
-                return className.substring(className.lastIndexOf(".") + 1) + "." + element.getMethodName();
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            String cn = e.getClassName();
+            if (cn.startsWith("com.shopjoy") &&
+                (cn.contains("Service") || cn.contains("Controller"))) {
+                return cn.substring(cn.lastIndexOf('.') + 1) + "." + e.getMethodName();
             }
         }
         return "Unknown";
     }
 
-    /**
-     * 결과 데이터를 console에 출력 (최대 3개 행 + 총 행수)
-     */
-    private void logResult(String simpleClassName, String fullClassName, String methodName, String callerInfo, Object[] args, Object result) {
-        System.out.println("\n" + "=".repeat(70));
-        System.out.println("   Called From: " + callerInfo);
-        System.out.println("   Interface: " + fullClassName + " " + simpleClassName + "." + methodName + "()");
+    private void logResult(String simpleClassName, String fullClassName, String methodName,
+                           String callerInfo, Object[] args, Object result) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n").append("=".repeat(70)).append("\n");
+        sb.append("   Called From: ").append(callerInfo).append("\n");
+        sb.append("   Interface: ").append(fullClassName).append(" ").append(simpleClassName)
+          .append(".").append(methodName).append("()\n");
         if (args.length > 0) {
-            System.out.println("   Parameters: " + formatParameters(args));
+            sb.append("   Parameters: ").append(formatParameters(args)).append("\n");
         }
-        System.out.println("=".repeat(70));
+        sb.append("=".repeat(70)).append("\n");
 
         if (result == null) {
-            System.out.println("Result: null");
-        } else if (result instanceof java.util.Optional) {
-            java.util.Optional<?> optional = (java.util.Optional<?>) result;
-            if (optional.isPresent()) {
-                System.out.println("Result: " + formatObject(optional.get()));
-            } else {
-                System.out.println("Result: Optional.empty");
-            }
-        } else if (result instanceof List<?>) {
-            List<?> list = (List<?>) result;
-
+            sb.append("Result: null\n");
+        } else if (result instanceof java.util.Optional<?> optional) {
+            sb.append("Result: ").append(optional.isPresent() ? formatObject(optional.get()) : "Optional.empty").append("\n");
+        } else if (result instanceof List<?> list) {
             if (list.isEmpty()) {
-                System.out.println("NO DATA");
+                sb.append("NO DATA\n");
             } else {
-                int displayCount = Math.min(3, list.size());
-                for (int i = 0; i < displayCount; i++) {
-                    System.out.println("[" + (i + 1) + "] " + formatObject(list.get(i)));
+                int preview = Math.min(3, list.size());
+                for (int i = 0; i < preview; i++) {
+                    sb.append("[").append(i + 1).append("] ").append(formatObject(list.get(i))).append("\n");
                 }
-                System.out.println("-".repeat(70));
-                System.out.println("Total: " + list.size() + " rows");
+                sb.append("-".repeat(70)).append("\n");
+                sb.append("Total: ").append(list.size()).append(" rows\n");
             }
-        } else if (result instanceof Collection<?>) {
-            Collection<?> col = (Collection<?>) result;
-
+        } else if (result instanceof Collection<?> col) {
             if (col.isEmpty()) {
-                System.out.println("NO DATA");
+                sb.append("NO DATA\n");
             } else {
                 int idx = 1;
                 for (Object obj : col) {
                     if (idx > 3) break;
-                    System.out.println("[" + idx + "] " + formatObject(obj));
-                    idx++;
+                    sb.append("[").append(idx++).append("] ").append(formatObject(obj)).append("\n");
                 }
-                System.out.println("-".repeat(70));
-                System.out.println("Total: " + col.size() + " rows");
+                sb.append("-".repeat(70)).append("\n");
+                sb.append("Total: ").append(col.size()).append(" rows\n");
             }
         } else {
-            System.out.println("Result: " + formatObject(result));
+            sb.append("Result: ").append(formatObject(result)).append("\n");
         }
 
-        System.out.println("=".repeat(70) + "\n");
+        sb.append("=".repeat(70));
+        log.debug("{}", sb);
     }
 
-    /**
-     * save/delete 결과 데이터를 console에 출력
-     */
-    private void logSaveDeleteResult(String simpleClassName, String fullClassName, String methodName, String callerInfo, Object[] args, Object result) {
-        System.out.println("\n" + "=".repeat(70));
-        System.out.println("   Called From: " + callerInfo);
-        System.out.println("   Interface: " + fullClassName + " " + simpleClassName + "." + methodName + "()");
+    private void logSaveDeleteResult(String simpleClassName, String fullClassName, String methodName,
+                                     String callerInfo, Object[] args, Object result) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n").append("=".repeat(70)).append("\n");
+        sb.append("   Called From: ").append(callerInfo).append("\n");
+        sb.append("   Interface: ").append(fullClassName).append(" ").append(simpleClassName)
+          .append(".").append(methodName).append("()\n");
 
         if (args.length > 0) {
-            // save/delete의 첫 번째 파라미터는 엔티티
             if (methodName.startsWith("save")) {
-                System.out.println("   Operation: INSERT/UPDATE");
-                System.out.println("   Entity: " + formatObject(args[0]));
+                sb.append("   Operation: INSERT/UPDATE\n");
+                sb.append("   Entity: ").append(formatObject(args[0])).append("\n");
             } else if (methodName.startsWith("delete")) {
-                System.out.println("   Operation: DELETE");
-                if (args[0] instanceof java.util.Collection) {
-                    System.out.println("   Entities: " + args[0].getClass().getSimpleName() + " (count: " + ((java.util.Collection<?>) args[0]).size() + ")");
+                sb.append("   Operation: DELETE\n");
+                if (args[0] instanceof Collection<?> c) {
+                    sb.append("   Entities: ").append(args[0].getClass().getSimpleName())
+                      .append(" (count: ").append(c.size()).append(")\n");
                 } else {
-                    System.out.println("   Entity: " + formatObject(args[0]));
+                    sb.append("   Entity: ").append(formatObject(args[0])).append("\n");
                 }
             }
         }
 
-        System.out.println("-".repeat(70));
-        if (result != null) {
-            System.out.println("Result: " + formatObject(result));
-        } else {
-            System.out.println("Result: null");
-        }
-        System.out.println("=".repeat(70) + "\n");
+        sb.append("-".repeat(70)).append("\n");
+        sb.append("Result: ").append(result != null ? formatObject(result) : "null").append("\n");
+        sb.append("=".repeat(70));
+        log.debug("{}", sb);
     }
 
-    /**
-     * 파라미터 배열을 포맷팅
-     */
     private String formatParameters(Object[] args) {
-        if (args == null || args.length == 0) {
-            return "";
-        }
-
+        if (args == null || args.length == 0) return "";
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < args.length; i++) {
             if (i > 0) sb.append(", ");
             sb.append(formatParameterValue(args[i]));
         }
-        sb.append("]");
-        return sb.toString();
+        return sb.append("]").toString();
     }
 
-    /**
-     * 파라미터 값을 포맷팅
-     */
     private String formatParameterValue(Object obj) {
-        if (obj == null) {
-            return "null";
-        } else if (obj instanceof String) {
-            return "'" + obj + "'";
-        } else if (obj instanceof Number || obj instanceof Boolean) {
-            return obj.toString();
-        } else if (obj instanceof java.util.Map) {
-            return "{...}";
-        } else if (obj instanceof java.util.Collection) {
-            java.util.Collection<?> col = (java.util.Collection<?>) obj;
-            return "[" + col.size() + " items]";
-        } else {
-            return obj.getClass().getSimpleName() + "@" + Integer.toHexString(obj.hashCode());
-        }
+        if (obj == null) return "null";
+        if (obj instanceof String) return "'" + obj + "'";
+        if (obj instanceof Number || obj instanceof Boolean) return obj.toString();
+        if (obj instanceof java.util.Map) return "{...}";
+        if (obj instanceof Collection<?> c) return "[" + c.size() + " items]";
+        return obj.getClass().getSimpleName() + "@" + Integer.toHexString(obj.hashCode());
     }
 
-    /**
-     * 객체를 문자열로 포맷팅 - Reflection으로 필드 자동 추출
-     */
     private String formatObject(Object obj) {
-        if (obj == null) {
-            return "null";
-        }
-
+        if (obj == null) return "null";
         try {
             Class<?> clazz = obj.getClass();
             StringBuilder sb = new StringBuilder(clazz.getSimpleName()).append("{");
-
-            Field[] fields = clazz.getDeclaredFields();
             boolean first = true;
-
-            for (Field field : fields) {
-                // static, transient, logger 등 제외
+            for (Field field : clazz.getDeclaredFields()) {
                 if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) ||
                     java.lang.reflect.Modifier.isTransient(field.getModifiers()) ||
-                    field.getName().contains("logger")) {
-                    continue;
-                }
+                    field.getName().contains("logger")) continue;
 
                 field.setAccessible(true);
                 Object value = field.get(obj);
-
                 if (!first) sb.append(", ");
                 sb.append(field.getName()).append("=");
-
                 if (value == null) {
                     sb.append("null");
-                } else if (value instanceof String) {
-                    sb.append("'").append(value).append("'");
-                } else if (value instanceof java.time.LocalDateTime ||
+                } else if (value instanceof String ||
+                           value instanceof java.time.LocalDateTime ||
                            value instanceof java.time.LocalDate ||
                            value instanceof java.time.LocalTime) {
                     sb.append("'").append(value).append("'");
                 } else {
                     sb.append(value);
                 }
-
                 first = false;
             }
-
-            sb.append("}");
-            return sb.toString();
+            return sb.append("}").toString();
         } catch (Exception e) {
             return obj.getClass().getSimpleName() + "@" + Integer.toHexString(obj.hashCode());
         }
