@@ -68,22 +68,22 @@ public class MyBatisQueryInterceptor implements Interceptor {
     /** 결과를 요약 문자열로 변환 — P6SpyFormatter 가 SQL 블록 안에 포함해 출력 */
     private String buildResultSummary(Object result) {
         if (result instanceof List<?> list) {
-            if (list.isEmpty()) return "│ ↳ 결과 0건";
+            if (list.isEmpty()) return " ↳ 결과 0건";
             int total   = list.size();
             int preview = Math.min(PREVIEW_ROWS, total);
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("│ ↳ 결과 %d건%s",
+            sb.append(String.format(" ↳ 결과 %d건%s",
                     total, total > PREVIEW_ROWS ? "  (상위 " + PREVIEW_ROWS + "건)" : ""));
             for (int i = 0; i < preview; i++) {
-                sb.append(String.format("\n│   [%d] %s", i + 1, formatRow(list.get(i))));
+                sb.append(String.format("\n   [%d] %s", i + 1, formatRow(list.get(i))));
             }
             return sb.toString();
         }
         if (result instanceof Integer || result instanceof Long) {
-            return "│ ↳ 영향 행 수: " + result;
+            return " ↳ 영향 행 수: " + result;
         }
         if (result != null) {
-            return "│ ↳ " + formatRow(result);
+            return " ↳ " + formatRow(result);
         }
         return null;
     }

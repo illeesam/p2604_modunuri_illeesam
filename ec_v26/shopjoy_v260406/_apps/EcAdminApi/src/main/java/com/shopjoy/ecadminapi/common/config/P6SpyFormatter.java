@@ -34,11 +34,11 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n┌─────────────────────────────────────────────────────\n");
-        sb.append("│ ").append(header).append("\n");
-        sb.append("│ SQL:\n");
+        sb.append(" ").append(header).append("\n");
+        sb.append(" SQL:\n");
         sb.append(formatSql(sql));
         if (resultSummary != null) {
-            sb.append("\n│");
+            sb.append("\n");
             sb.append("\n").append(resultSummary);
         }
         sb.append("\n└─────────────────────────────────────────────────────");
@@ -72,7 +72,7 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
 
         StringBuilder sb = new StringBuilder();
         for (String line : s.split("\n")) {
-            if (!line.isBlank()) sb.append("│   ").append(line.trim()).append("\n");
+            if (!line.isBlank()) sb.append("   ").append(line.trim()).append("\n");
         }
         return sb.toString().stripTrailing();
     }
