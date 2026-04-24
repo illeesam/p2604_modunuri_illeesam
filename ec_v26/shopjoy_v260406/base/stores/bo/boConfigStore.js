@@ -11,7 +11,7 @@
 
   const { defineStore } = Pinia;
 
-  window.useConfigStore = defineStore('config', {
+  window.useBoConfigStore = defineStore('boConfig', {
     state: () => ({
       // 공통 코드 (CODE_GRP: CODE_LIST)
       codes: {},
@@ -72,7 +72,7 @@
           this.error = null;
         } catch (err) {
           this.error = err?.message || '코드 로드 실패';
-          console.error('[ConfigStore] loadCodes error:', err);
+          console.error('[BoConfigStore] loadCodes error:', err);
           this.codes = {};
         } finally {
           this.loading = false;
@@ -112,82 +112,69 @@
   });
 
   // 함수형 유틸리티 제공
-  window.getConfigStore = () => {
+  window.getBoConfigStore = () => {
     try {
-      const store = window.useConfigStore?.();
-      return store || {
-        codes: {},
-        menus: [],
-        userInfo: null,
-        loading: false,
-        error: null,
-      };
+      const store = window.useBoConfigStore?.();
+      return store || { codes: {}, menus: [], userInfo: null, loading: false, error: null };
     } catch (e) {
-      console.error('getConfigStore error:', e);
-      return {
-        codes: {},
-        menus: [],
-        userInfo: null,
-        loading: false,
-        error: null,
-      };
+      console.error('getBoConfigStore error:', e);
+      return { codes: {}, menus: [], userInfo: null, loading: false, error: null };
     }
   };
 
-  window.getCodeLabel = (codeGrp, codeVal) => {
+  window.getBoCodeLabel = (codeGrp, codeVal) => {
     try {
-      const store = window.useConfigStore?.();
-      if (!store || !store.codes) return '';
+      const store = window.useBoConfigStore?.();
+      if (!store?.codes) return '';
       const group = store.codes[codeGrp];
       if (!group || !Array.isArray(group)) return '';
       const item = group.find((c) => c?.codeVal === codeVal);
       return item?.codeLbl || '';
     } catch (e) {
-      console.error('getCodeLabel error:', e);
+      console.error('getBoCodeLabel error:', e);
       return '';
     }
   };
 
-  window.getCodesByGroup = (codeGrp) => {
+  window.getBoCodesByGroup = (codeGrp) => {
     try {
-      const store = window.useConfigStore?.();
-      if (!store || !store.codes) return [];
+      const store = window.useBoConfigStore?.();
+      if (!store?.codes) return [];
       return store.codes[codeGrp] || [];
     } catch (e) {
-      console.error('getCodesByGroup error:', e);
+      console.error('getBoCodesByGroup error:', e);
       return [];
     }
   };
 
-  window.canAccessMenu = (menuId) => {
+  window.getBoMenus = () => {
     try {
-      const store = window.useConfigStore?.();
-      if (!store || !store.menus) return false;
-      const menus = store.menus || [];
-      return Array.isArray(menus) && menus.some((m) => m?.menuId === menuId);
+      const store = window.useBoConfigStore?.();
+      return store?.menus || [];
     } catch (e) {
-      console.error('canAccessMenu error:', e);
-      return false;
-    }
-  };
-
-  window.getMenus = () => {
-    try {
-      const store = window.useConfigStore?.();
-      return (store?.menus || []);
-    } catch (e) {
-      console.error('getMenus error:', e);
+      console.error('getBoMenus error:', e);
       return [];
     }
   };
 
-  window.getUserInfo = () => {
+  window.getBoUserInfo = () => {
     try {
-      const store = window.useConfigStore?.();
+      const store = window.useBoConfigStore?.();
       return store?.userInfo || { boUserId: 0, name: '', email: '' };
     } catch (e) {
-      console.error('getUserInfo error:', e);
+      console.error('getBoUserInfo error:', e);
       return { boUserId: 0, name: '', email: '' };
+    }
+  };
+
+  window.canBoAccessMenu = (menuId) => {
+    try {
+      const store = window.useBoConfigStore?.();
+      if (!store?.menus) return false;
+      return Array.isArray(store.menus) && store.menus.some((m) => m?.menuId === menuId);
+    } catch (e) {
+      console.error('canBoAccessMenu error:', e);
+      return false;
     }
   };
 })();

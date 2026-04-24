@@ -31,6 +31,7 @@ public class SyAttachService {
 
     @Transactional(readOnly = true)
     public SyAttachDto getById(String id) {
+        // sy_attach :: select one :: id [orm:mybatis]
         SyAttachDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyAttachService {
     @Transactional(readOnly = true)
     public List<SyAttachDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_attach :: select list :: p [orm:mybatis]
         List<SyAttachDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyAttachService {
     @Transactional(readOnly = true)
     public PageResult<SyAttachDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_attach :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyAttach entity) {
+        // sy_attach :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyAttachService {
         entity.setAttachId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_attach :: insert or update :: [orm:jpa]
         SyAttach result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyAttachService {
             throw new CmBizException("존재하지 않는 SyAttach입니다: " + entity.getAttachId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_attach :: insert or update :: [orm:jpa]
         SyAttach result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyAttachService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyAttach입니다: " + id);
+        // sy_attach :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

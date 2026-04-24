@@ -31,6 +31,7 @@ public class PdProdImgService {
 
     @Transactional(readOnly = true)
     public PdProdImgDto getById(String id) {
+        // pd_prod_img :: select one :: id [orm:mybatis]
         PdProdImgDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdProdImgService {
     @Transactional(readOnly = true)
     public List<PdProdImgDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_prod_img :: select list :: p [orm:mybatis]
         List<PdProdImgDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdProdImgService {
     @Transactional(readOnly = true)
     public PageResult<PdProdImgDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_prod_img :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdImg entity) {
+        // pd_prod_img :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdProdImgService {
         entity.setProdImgId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_prod_img :: insert or update :: [orm:jpa]
         PdProdImg result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdProdImgService {
             throw new CmBizException("존재하지 않는 PdProdImg입니다: " + entity.getProdImgId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_prod_img :: insert or update :: [orm:jpa]
         PdProdImg result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdProdImgService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdImg입니다: " + id);
+        // pd_prod_img :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

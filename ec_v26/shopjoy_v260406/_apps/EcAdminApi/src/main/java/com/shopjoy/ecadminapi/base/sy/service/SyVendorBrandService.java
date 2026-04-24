@@ -31,6 +31,7 @@ public class SyVendorBrandService {
 
     @Transactional(readOnly = true)
     public SyVendorBrandDto getById(String id) {
+        // sy_vendor_brand :: select one :: id [orm:mybatis]
         SyVendorBrandDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyVendorBrandService {
     @Transactional(readOnly = true)
     public List<SyVendorBrandDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_vendor_brand :: select list :: p [orm:mybatis]
         List<SyVendorBrandDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyVendorBrandService {
     @Transactional(readOnly = true)
     public PageResult<SyVendorBrandDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_vendor_brand :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyVendorBrand entity) {
+        // sy_vendor_brand :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyVendorBrandService {
         entity.setVendorBrandId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_vendor_brand :: insert or update :: [orm:jpa]
         SyVendorBrand result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyVendorBrandService {
             throw new CmBizException("존재하지 않는 SyVendorBrand입니다: " + entity.getVendorBrandId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_vendor_brand :: insert or update :: [orm:jpa]
         SyVendorBrand result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyVendorBrandService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyVendorBrand입니다: " + id);
+        // sy_vendor_brand :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

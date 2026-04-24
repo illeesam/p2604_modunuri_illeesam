@@ -31,6 +31,7 @@ public class SyBrandService {
 
     @Transactional(readOnly = true)
     public SyBrandDto getById(String id) {
+        // sy_brand :: select one :: id [orm:mybatis]
         SyBrandDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyBrandService {
     @Transactional(readOnly = true)
     public List<SyBrandDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_brand :: select list :: p [orm:mybatis]
         List<SyBrandDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyBrandService {
     @Transactional(readOnly = true)
     public PageResult<SyBrandDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_brand :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyBrand entity) {
+        // sy_brand :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyBrandService {
         entity.setBrandId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_brand :: insert or update :: [orm:jpa]
         SyBrand result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyBrandService {
             throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_brand :: insert or update :: [orm:jpa]
         SyBrand result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyBrandService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyBrand입니다: " + id);
+        // sy_brand :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

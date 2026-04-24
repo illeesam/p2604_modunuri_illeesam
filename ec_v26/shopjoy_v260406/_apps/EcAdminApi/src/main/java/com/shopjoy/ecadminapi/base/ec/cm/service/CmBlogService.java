@@ -31,6 +31,7 @@ public class CmBlogService {
 
     @Transactional(readOnly = true)
     public CmBlogDto getById(String id) {
+        // cm_blog :: select one :: id [orm:mybatis]
         CmBlogDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class CmBlogService {
     @Transactional(readOnly = true)
     public List<CmBlogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cm_blog :: select list :: p [orm:mybatis]
         List<CmBlogDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class CmBlogService {
     @Transactional(readOnly = true)
     public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cm_blog :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlog entity) {
+        // cm_blog :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class CmBlogService {
         entity.setBlogId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // cm_blog :: insert or update :: [orm:jpa]
         CmBlog result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class CmBlogService {
             throw new CmBizException("존재하지 않는 CmBlog입니다: " + entity.getBlogId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // cm_blog :: insert or update :: [orm:jpa]
         CmBlog result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class CmBlogService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 CmBlog입니다: " + id);
+        // cm_blog :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

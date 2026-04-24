@@ -24,6 +24,7 @@ public class SyhSendEmailLogService {
 
     @Transactional(readOnly = true)
     public SyhSendEmailLogDto getById(String id) {
+        // syh_send_email_log :: select one :: id [orm:mybatis]
         SyhSendEmailLogDto result = mapper.selectById(id);
         return result;
     }
@@ -31,6 +32,7 @@ public class SyhSendEmailLogService {
     @Transactional(readOnly = true)
     public List<SyhSendEmailLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // syh_send_email_log :: select list :: p [orm:mybatis]
         List<SyhSendEmailLogDto> result = mapper.selectList(p);
         return result;
     }
@@ -38,11 +40,13 @@ public class SyhSendEmailLogService {
     @Transactional(readOnly = true)
     public PageResult<SyhSendEmailLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // syh_send_email_log :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhSendEmailLog entity) {
+        // syh_send_email_log :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }

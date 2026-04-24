@@ -68,26 +68,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String tokenType = jwtProvider.getTokenType(token);
                 if ("access".equals(tokenType)) {
                     try {
-                        Claims claims    = jwtProvider.getClaims(token);
-                        String siteId    = claims.get("siteId",    String.class);
-                        String userId    = claims.getSubject();
-                        String userTypeCd  = claims.get("userTypeCd",  String.class);
-                        String roleId    = claims.get("roleId",    String.class);
-                        String deptId    = claims.get("deptId",    String.class);
-                        String vendorId  = claims.get("vendorId",  String.class);
-                        String userNm  = claims.get("userNm",  String.class);
-                        String accessToken = claims.get("accessToken", String.class);
+                        Claims claims     = jwtProvider.getClaims(token);
+                        String authId     = claims.getSubject();        // authId: BO=user_id, FO=member_id
+                        String userTypeCd = claims.get("userTypeCd", String.class);
+                        String siteId     = claims.get("siteId",     String.class);
+                        String roleId     = claims.get("roleId",     String.class);
+                        String deptId     = claims.get("deptId",     String.class);
+                        String vendorId   = claims.get("vendorId",   String.class);
+                        String userNm     = claims.get("userNm",     String.class);
+                        String accessToken  = claims.get("accessToken",  String.class);
                         String refreshToken = claims.get("refreshToken", String.class);
-                        String memberId  = claims.get("memberId",  String.class);
-                        String memberGrade = claims.get("memberGrade", String.class);
-                        String isAdminYn = claims.get("isAdminYn", String.class);
-                        String isStaffYn = claims.get("isStaffYn", String.class);
+                        String userId     = claims.get("userId",     String.class); // BO 전용
+                        String memberId   = claims.get("memberId",   String.class); // FO 전용
+                        String memberGrade  = claims.get("memberGrade",  String.class);
+                        String isAdminYn  = claims.get("isAdminYn",  String.class);
+                        String isStaffYn  = claims.get("isStaffYn",  String.class);
 
                         @SuppressWarnings("unchecked")
                         List<String> roles = claims.get("roles", List.class);
 
                         AuthPrincipal principal = new AuthPrincipal(
-                                userId,                                 // userId
+                                authId,                                 // authId
                                 userTypeCd,                             // userTypeCd
                                 LocalDateTime.now(),                    // loginTime
                                 CmUtil.nvl(roleId),                     // roleId
@@ -97,7 +98,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 CmUtil.nvl(siteId),                     // siteId
                                 CmUtil.nvl(deptId),                     // deptId
                                 CmUtil.nvlList(roles),                  // roles
-                                CmUtil.nvl(memberId),                   // memberId
+                                CmUtil.nvl(userId),                     // userId  (BO 전용)
+                                CmUtil.nvl(memberId),                   // memberId (FO 전용)
                                 CmUtil.nvl(vendorId),                   // vendorId
                                 CmUtil.nvl(memberGrade),                // memberGrade
                                 CmUtil.nvl(isAdminYn, "N"),             // isAdminYn
@@ -114,13 +116,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                         // MDC — 로그에 인증 사용자 정보 삽입
                         MDC.put("siteId",   CmUtil.nvl(siteId, "-"));
-                        MDC.put("userId",   userId);
+                        MDC.put("authId",   authId);
                         MDC.put("userTypeCd", CmUtil.nvl(userTypeCd, "-"));
                         MDC.put("roleId",   CmUtil.nvl(roleId, "-"));
                         MDC.put("deptId",   CmUtil.nvl(deptId, "-"));
                         MDC.put("vendorId", CmUtil.nvl(vendorId, "-"));
                         // request attribute — AccessLogFilter 가 체인 종료 후 읽음 (MDC는 finally 에서 clear)
-                        request.setAttribute(AccessLogFilter.ATTR_USER_ID,   userId);
+                        request.setAttribute(AccessLogFilter.ATTR_USER_ID,   authId);
                         request.setAttribute(AccessLogFilter.ATTR_USER_TYPE_CD, CmUtil.nvl(userTypeCd, "-"));
                         request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   CmUtil.nvl(roleId, "-"));
                         request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   deptId);
@@ -157,7 +159,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static void mdcAnonymous(HttpServletRequest request) {
         MDC.put("siteId",   "-");
-        MDC.put("userId",   "-");
+        MDC.put("authId",   "-");
         MDC.put("userTypeCd", "-");
         MDC.put("roleId",   "-");
         MDC.put("deptId",   "-");

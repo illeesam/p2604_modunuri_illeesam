@@ -31,6 +31,7 @@ public class DpWidgetLibService {
 
     @Transactional(readOnly = true)
     public DpWidgetLibDto getById(String id) {
+        // dp_widget_lib :: select one :: id [orm:mybatis]
         DpWidgetLibDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class DpWidgetLibService {
     @Transactional(readOnly = true)
     public List<DpWidgetLibDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // dp_widget_lib :: select list :: p [orm:mybatis]
         List<DpWidgetLibDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class DpWidgetLibService {
     @Transactional(readOnly = true)
     public PageResult<DpWidgetLibDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // dp_widget_lib :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpWidgetLib entity) {
+        // dp_widget_lib :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class DpWidgetLibService {
         entity.setWidgetLibId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // dp_widget_lib :: insert or update :: [orm:jpa]
         DpWidgetLib result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class DpWidgetLibService {
             throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // dp_widget_lib :: insert or update :: [orm:jpa]
         DpWidgetLib result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class DpWidgetLibService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + id);
+        // dp_widget_lib :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

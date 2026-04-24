@@ -31,6 +31,7 @@ public class SyVendorContentService {
 
     @Transactional(readOnly = true)
     public SyVendorContentDto getById(String id) {
+        // sy_vendor_content :: select one :: id [orm:mybatis]
         SyVendorContentDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyVendorContentService {
     @Transactional(readOnly = true)
     public List<SyVendorContentDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_vendor_content :: select list :: p [orm:mybatis]
         List<SyVendorContentDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyVendorContentService {
     @Transactional(readOnly = true)
     public PageResult<SyVendorContentDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_vendor_content :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyVendorContent entity) {
+        // sy_vendor_content :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyVendorContentService {
         entity.setVendorContentId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_vendor_content :: insert or update :: [orm:jpa]
         SyVendorContent result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyVendorContentService {
             throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + entity.getVendorContentId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_vendor_content :: insert or update :: [orm:jpa]
         SyVendorContent result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyVendorContentService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyVendorContent입니다: " + id);
+        // sy_vendor_content :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

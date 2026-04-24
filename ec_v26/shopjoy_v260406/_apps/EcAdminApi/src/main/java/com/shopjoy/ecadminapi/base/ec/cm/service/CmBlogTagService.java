@@ -31,6 +31,7 @@ public class CmBlogTagService {
 
     @Transactional(readOnly = true)
     public CmBlogTagDto getById(String id) {
+        // cm_blog_tag :: select one :: id [orm:mybatis]
         CmBlogTagDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class CmBlogTagService {
     @Transactional(readOnly = true)
     public List<CmBlogTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cm_blog_tag :: select list :: p [orm:mybatis]
         List<CmBlogTagDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class CmBlogTagService {
     @Transactional(readOnly = true)
     public PageResult<CmBlogTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cm_blog_tag :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogTag entity) {
+        // cm_blog_tag :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class CmBlogTagService {
         entity.setBlogTagId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // cm_blog_tag :: insert or update :: [orm:jpa]
         CmBlogTag result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class CmBlogTagService {
             throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // cm_blog_tag :: insert or update :: [orm:jpa]
         CmBlogTag result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class CmBlogTagService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + id);
+        // cm_blog_tag :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

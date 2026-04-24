@@ -17,12 +17,17 @@ import java.util.List;
  * - "FO" → ec_member (고객, Front Office)
  * - "SO" → Super Owner (판매자)
  *
- * 사용: SecurityUtil.getUserId() / getUserTypeCd() / getRoleId() / isBo() / isFo() / isSo()
+ * authId 규칙:
+ * - userTypeCd="BO" → authId = sy_user.user_id
+ * - userTypeCd="FO" → authId = ec_member.member_id
+ * - JWT subject에 저장되는 통합 인증 식별자
+ *
+ * 사용: SecurityUtil.getAuthId() / getUserId() / getMemberId() / getUserTypeCd() / isBo() / isFo()
  * ★ 는 인증되면 공통항목
  */
 public record AuthPrincipal(
-        String userId,              // ★ 사용자 아이디 (sy_user.user_id 또는 ec_member.member_id)
-        String userTypeCd,          // ★ 사용자 유형 (BO:backend사용자, FO:fronend회원, SO:판매자)
+        String authId,              // ★ 인증 식별자 (BO=sy_user.user_id, FO=ec_member.member_id), JWT subject
+        String userTypeCd,          // ★ 사용자 유형 (BO:backend사용자, FO:frontend회원, SO:판매자)
         LocalDateTime loginTime,    // ★ 로그인 시간
         String roleId,              // ★ 권한 아이디 (sy_user.role_id, BO 전용)
         String userNm,              // ★ 사용자명 (sy_user.user_nm 또는 ec_member.member_nm)
@@ -31,7 +36,8 @@ public record AuthPrincipal(
         String siteId,              // ★ 사이트 아이디
         String deptId,              // ★ 부서 아이디 (sy_user.dept_id, BO 전용)
         List<String> roles,         // ★ 권한 목록 (ROLE_*)
-        String memberId,            // 회원 아이디 (ec_member.member_id, FO 전용)
+        String userId,              // BO 전용: sy_user.user_id (authId와 동일값, 명시적 접근용)
+        String memberId,            // FO 전용: ec_member.member_id (authId와 동일값, 명시적 접근용)
         String vendorId,            // 업체 아이디
         String memberGrade,         // 회원 등급 (ec_member.grade_cd, FO 전용)
         String isAdminYn,           // 관리자 여부 (Y/N)
@@ -44,9 +50,11 @@ public record AuthPrincipal(
     public static final String EXT = "EXT";
 
     // 간단한 생성 팩토리 (최소 필드만)
-    public static AuthPrincipal of(String userId, String userTypeCd, String roleId) {
+    public static AuthPrincipal of(String authId, String userTypeCd, String roleId) {
+        String userId   = BO.equals(userTypeCd) ? authId : "";
+        String memberId = FO.equals(userTypeCd) ? authId : "";
         return new AuthPrincipal(
-                userId,                 // userId
+                authId,                 // authId
                 userTypeCd,             // userTypeCd
                 LocalDateTime.now(),    // loginTime
                 roleId,                 // roleId
@@ -56,7 +64,8 @@ public record AuthPrincipal(
                 "",                     // siteId
                 "",                     // deptId
                 List.of(),              // roles
-                "",                     // memberId
+                userId,                 // userId  (BO 전용)
+                memberId,               // memberId (FO 전용)
                 "",                     // vendorId
                 "",                     // memberGrade
                 "N",                    // isAdminYn

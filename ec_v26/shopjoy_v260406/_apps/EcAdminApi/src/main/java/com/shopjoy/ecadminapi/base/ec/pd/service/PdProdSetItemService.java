@@ -31,6 +31,7 @@ public class PdProdSetItemService {
 
     @Transactional(readOnly = true)
     public PdProdSetItemDto getById(String id) {
+        // pd_prod_set_item :: select one :: id [orm:mybatis]
         PdProdSetItemDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdProdSetItemService {
     @Transactional(readOnly = true)
     public List<PdProdSetItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_prod_set_item :: select list :: p [orm:mybatis]
         List<PdProdSetItemDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdProdSetItemService {
     @Transactional(readOnly = true)
     public PageResult<PdProdSetItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_prod_set_item :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdSetItem entity) {
+        // pd_prod_set_item :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdProdSetItemService {
         entity.setSetItemId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_prod_set_item :: insert or update :: [orm:jpa]
         PdProdSetItem result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdProdSetItemService {
             throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getSetItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_prod_set_item :: insert or update :: [orm:jpa]
         PdProdSetItem result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdProdSetItemService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + id);
+        // pd_prod_set_item :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

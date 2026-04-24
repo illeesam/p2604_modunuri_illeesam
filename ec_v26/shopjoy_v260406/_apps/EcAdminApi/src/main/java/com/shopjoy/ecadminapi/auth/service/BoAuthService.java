@@ -81,32 +81,36 @@ public class BoAuthService {
         LocalDateTime loginAt = LocalDateTime.now();
         user.setLastLoginDate(loginAt);
 
+        String authId = user.getUserId();   // BO: authId = sy_user.user_id
         List<String> roles = List.of("ROLE_ADMIN");
         String accessToken = jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
-                .userId(user.getUserId())
+                .authId(authId)
                 .loginId(user.getLoginId())
                 .roles(roles)
                 .userTypeCd(userTypeCd)
                 .roleId(user.getRoleId())
                 .vendorId(null)
                 .siteId(user.getSiteId())
-                .memberId(null)
+                .userId(authId)             // BO 전용: sy_user.user_id
+                .memberId(null)             // FO 전용: BO는 null
                 .memberGrade(null)
                 .isStaffYn("N")
                 .isAdminYn("N")
                 .build()
         );
-        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), userTypeCd);
+        String refreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
 
         return LoginRes.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .userId(user.getUserId())
+            .authId(authId)
+            .userId(authId)             // BO 전용
+            .memberId(null)             // FO 전용: BO는 null
+            .userNm(user.getUserNm())
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
             .userTypeCd(userTypeCd)
-            .roleId("")
             .deptId("")
             .build();
     }
@@ -126,9 +130,9 @@ public class BoAuthService {
             throw new CmBizException("refreshToken이 아닙니다.");
         }
 
-        String userId   = jwtProvider.getUserId(refreshToken);
+        String authId      = jwtProvider.getAuthId(refreshToken);
         String _userTypeCd = jwtProvider.getUserTypeCd(refreshToken);
-        SyUser user = em.find(SyUser.class, userId);
+        SyUser user = em.find(SyUser.class, authId);
         if (user == null) {
             throw new CmBizException("사용자를 찾을 수 없습니다.");
         }
@@ -138,20 +142,21 @@ public class BoAuthService {
         List<String> roles = List.of("ROLE_ADMIN");
         String newAccessToken = jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
-                .userId(userId)
+                .authId(authId)
                 .loginId(user.getLoginId())
                 .roles(roles)
                 .userTypeCd(userTypeCd)
                 .roleId(user.getRoleId())
                 .vendorId(null)
                 .siteId(user.getSiteId())
+                .userId(authId)
                 .memberId(null)
                 .memberGrade(null)
                 .isStaffYn("N")
                 .isAdminYn("Y")
                 .build()
         );
-        String newRefreshToken = jwtProvider.createRefreshToken(userId, userTypeCd);
+        String newRefreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
 
         return new TokenPair(newAccessToken, newRefreshToken,
                 LocalDateTime.now(), jwtProvider.getAccessExpiryMinutes(), jwtProvider.getRefreshExpiryMinutes());
@@ -165,18 +170,20 @@ public class BoAuthService {
 
     @Transactional(readOnly = true)
     public LoginRes getCurrentUserInfo(String userTypeCd) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        SyUser user = em.find(SyUser.class, userId);
+        String authId = SecurityContextHolder.getContext().getAuthentication().getName();
+        SyUser user = em.find(SyUser.class, authId);
         if (user == null) {
             throw new CmBizException("사용자를 찾을 수 없습니다.");
         }
 
         return LoginRes.builder()
-            .userId(user.getUserId())
+            .authId(authId)
+            .userId(authId)
+            .memberId(null)
+            .userNm(user.getUserNm())
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
             .userTypeCd(userTypeCd)
-            .roleId("")
             .deptId("")
             .build();
     }

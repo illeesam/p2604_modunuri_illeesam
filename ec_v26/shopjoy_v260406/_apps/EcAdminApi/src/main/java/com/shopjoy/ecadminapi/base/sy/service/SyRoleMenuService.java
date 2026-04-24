@@ -33,6 +33,7 @@ public class SyRoleMenuService {
 
     @Transactional(readOnly = true)
     public SyRoleMenuDto getById(String id) {
+        // sy_role_menu :: select one :: id [orm:mybatis]
         SyRoleMenuDto result = mapper.selectById(id);
         return result;
     }
@@ -40,6 +41,7 @@ public class SyRoleMenuService {
     @Transactional(readOnly = true)
     public List<SyRoleMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_role_menu :: select list :: p [orm:mybatis]
         List<SyRoleMenuDto> result = mapper.selectList(p);
         return result;
     }
@@ -47,11 +49,13 @@ public class SyRoleMenuService {
     @Transactional(readOnly = true)
     public PageResult<SyRoleMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_role_menu :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyRoleMenu entity) {
+        // sy_role_menu :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         roleMenuCache.evict(entity.getRoleId());
         return result;
@@ -64,6 +68,7 @@ public class SyRoleMenuService {
         entity.setRoleMenuId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_role_menu :: insert or update :: [orm:jpa]
         SyRoleMenu result = repository.save(entity);
         roleMenuCache.evict(entity.getRoleId());
         return result;
@@ -75,6 +80,7 @@ public class SyRoleMenuService {
             throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + entity.getRoleMenuId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_role_menu :: insert or update :: [orm:jpa]
         SyRoleMenu result = repository.save(entity);
         roleMenuCache.evict(entity.getRoleId());
         return result;
@@ -84,6 +90,7 @@ public class SyRoleMenuService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + id);
+        // sy_role_menu :: delete :: id [orm:jpa]
         repository.deleteById(id);
         roleMenuCache.evictAll();  // roleId 조회 없이 전체 무효화
     }

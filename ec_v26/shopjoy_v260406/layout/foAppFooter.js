@@ -21,20 +21,19 @@ window.foAppFooter = {
       } else if (root === 'dispBoUi') {
         window.open((window.pageUrl ? window.pageUrl('disp-bo-ui.html') : 'disp-bo-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'foSite') {
-        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + target;
+        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'foOnly') {
         /* target = FO 번호만, index.html 이동 */
         try { localStorage.setItem('modu-fo-site_no', target); } catch(_){}
-        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + target;
+        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'boOnly') {
-        /* target = BO 번호만, bo.html 새창 오픈 */
-        try { localStorage.setItem('modu-bo-site_no', target); } catch(_){}
-        window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + '?BO_SITE_NO=' + target, '_blank');
+        /* target = BO 번호만, bo.html 새창 오픈 — URL 파라미터로 전달, FO localStorage 접근 금지 */
+        window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + '?SITE_NO=' + target, '_blank');
       }
       menuOpen.value = false;
     };
     const currentFoSiteNo  = window.FO_SITE_NO || '01';
-    const currentBoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-bo-site_no')) || '01';
+    const currentBoSiteNo = '01'; /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
 
     const FO_MENU = [
       { id:'home',       label:'홈',         icon:'🏠' },

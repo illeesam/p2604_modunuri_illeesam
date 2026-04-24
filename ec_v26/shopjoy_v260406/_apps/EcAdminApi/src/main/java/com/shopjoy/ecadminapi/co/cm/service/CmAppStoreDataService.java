@@ -111,20 +111,20 @@ public class CmAppStoreDataService {
         resultMap.put("reqParam", reqParam);
 
         if (requestedItems.contains(CmStoreConst.SY_AUTH)) {
-            StoreAuth auth = getAuth(authUser);
+            StoreAuth auth = getAuth(authUser, userTypeCd);
             resultMap.put(CmStoreConst.SY_AUTH, auth != null ? auth : StoreAuth.builder().build());
         }
         if (requestedItems.contains(CmStoreConst.SY_USER)) {
             Object userData = null;
-            if(userTypeCd.equals(CmStoreConst.BO)){
+            if (AuthPrincipal.BO.equals(userTypeCd)) {
                 userData = getBoUser(authUser);
-            }else if(userTypeCd.equals(CmStoreConst.FO)){
+            } else if (AuthPrincipal.FO.equals(userTypeCd)) {
                 userData = getFoUser(authUser);
             }
             resultMap.put(CmStoreConst.SY_USER, userData != null ? userData : new java.util.HashMap<>());
         }
         if (requestedItems.contains(CmStoreConst.SY_ROLES)) {
-            List<StoreRole> roles = getRoles(authUser);
+            List<StoreRole> roles = getRoles(authUser, userTypeCd);
             resultMap.put(CmStoreConst.SY_ROLES, roles != null ? roles : java.util.Collections.emptyList());
         }
         if (requestedItems.contains(CmStoreConst.SY_MENUS)) {
@@ -150,7 +150,7 @@ public class CmAppStoreDataService {
             resultMap.put(CmStoreConst.DP_DISP, dispMap);
         }
         if (requestedItems.contains(CmStoreConst.SY_APP)) {
-            StoreApp app = getApp(authUser);
+            StoreApp app = getApp(authUser, userTypeCd);
             resultMap.put(CmStoreConst.SY_APP, app != null ? app : StoreApp.builder().build());
         }
 
@@ -165,26 +165,30 @@ public class CmAppStoreDataService {
      * 인증 정보 조회 - 토큰 정보 + 사용자 정보 반환
      * BO: StoreUser (관리자), FO: StoreMember (회원)
      */
-    private StoreAuth getAuth(AuthPrincipal authUser) {
+    private StoreAuth getAuth(AuthPrincipal authUser, String userTypeCd) {
         if (authUser == null) {
             return StoreAuth.builder().build();
         }
 
         Object userInfo = null;
-        if ("BO".equals(authUser.userTypeCd())) {
+        if (AuthPrincipal.BO.equals(userTypeCd)) {
             userInfo = getBoUser(authUser);
         } else {
             userInfo = getFoUser(authUser);
         }
 
+        // BO 전용: sy_user 기반 역할 목록 (FO는 빈 리스트)
+        String rolesUserId = AuthPrincipal.BO.equals(userTypeCd) ? authUser.userId() : null;
+
         Map<String, Object> tempAuthInfo = new java.util.HashMap<>();
-        tempAuthInfo.put("authUser-userTypeCd", authUser.userTypeCd());
+        tempAuthInfo.put("authUser-authId", authUser.authId());
+        tempAuthInfo.put("authUser-userTypeCd", userTypeCd);
         tempAuthInfo.put("authUser-userId", authUser.userId());
         tempAuthInfo.put("authUser-roleId", authUser.roleId());
         tempAuthInfo.put("authUser-siteId", authUser.siteId());
         tempAuthInfo.put("authUser-memberId", authUser.memberId());
         tempAuthInfo.put("authUser-vendorId", authUser.vendorId());
-        tempAuthInfo.put("authUser-roles", buildAuthRoles(authUser.userId()));
+        tempAuthInfo.put("authUser-roles", buildAuthRoles(rolesUserId));
         tempAuthInfo.put("authUser-isStaffYn", authUser.isStaffYn());
         tempAuthInfo.put("authUser-isAdminYn", authUser.isAdminYn());
         tempAuthInfo.put("authUser-loginTime", authUser.loginTime());
@@ -212,11 +216,11 @@ public class CmAppStoreDataService {
     private List<Map<String, Object>> buildAuthRoles(String userId) {
         if (userId == null) return java.util.Collections.emptyList();
 
-        // role 조회용 맵 (roleId → SyRole)
+        // sy_role :: select list ::
         Map<String, SyRole> roleMap = syRoleRepository.findAll().stream()
                 .collect(Collectors.toMap(SyRole::getRoleId, r -> r, (a, b) -> a));
 
-        // vendor 조회용 맵 (vendorId → vendorNm)
+        // sy_vendor :: select list ::
         Map<String, String> vendorNmMap = syVendorRepository.findAll().stream()
                 .collect(Collectors.toMap(
                         v -> v.getVendorId(),
@@ -225,7 +229,7 @@ public class CmAppStoreDataService {
 
         List<Map<String, Object>> result = new java.util.ArrayList<>();
 
-        // 1) sy_user_role
+        // sy_user_role :: select list :: userId
         syUserRoleRepository.findByUserId(userId).forEach(ur -> {
             SyRole role = roleMap.get(ur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
@@ -239,7 +243,7 @@ public class CmAppStoreDataService {
             result.add(row);
         });
 
-        // 2) sy_vendor_user_role
+        // sy_vendor_user_role :: select list :: userId
         syVendorUserRoleRepository.findByUserId(userId).forEach(vur -> {
             SyRole role = roleMap.get(vur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
@@ -264,6 +268,7 @@ public class CmAppStoreDataService {
             return StoreUser.builder().build();
         }
 
+        // sy_user :: select one :: userId
         SyUser user = syUserRepository.findById(authUser.userId()).orElse(null);
         if (user == null) {
             return StoreUser.builder().build();
@@ -271,6 +276,7 @@ public class CmAppStoreDataService {
 
         String deptNm = "";
         if (user.getDeptId() != null) {
+            // sy_dept :: select one :: deptId
             SyDept dept = syDeptRepository.findById(user.getDeptId()).orElse(null);
             if (dept != null) {
                 deptNm = dept.getDeptNm();
@@ -279,6 +285,7 @@ public class CmAppStoreDataService {
 
         String roleNm = "";
         if (user.getRoleId() != null) {
+            // sy_role :: select one :: roleId
             SyRole role = syRoleRepository.findById(user.getRoleId()).orElse(null);
             if (role != null) {
                 roleNm = role.getRoleNm();
@@ -287,6 +294,7 @@ public class CmAppStoreDataService {
 
         String vendorNm = "";
         if (authUser.vendorId() != null) {
+            // sy_vendor :: select one :: vendorId
             SyVendor vendor = syVendorRepository.findById(authUser.vendorId()).orElse(null);
             if (vendor != null) {
                 vendorNm = CmUtil.nvl(vendor.getVendorNm());
@@ -319,11 +327,12 @@ public class CmAppStoreDataService {
      * 회원 정보 조회 - FO: ec_member(회원)
      */
     private StoreMember getFoUser(AuthPrincipal authUser) {
-        if (authUser == null || authUser.userId() == null) {
+        if (authUser == null || authUser.authId() == null) {
             return StoreMember.builder().build();
         }
 
-        MbMember member = memberRepository.findById(authUser.userId()).orElse(null);
+        // ec_member :: select one :: authId(memberId)
+        MbMember member = memberRepository.findById(authUser.authId()).orElse(null);
         if (member == null) {
             return StoreMember.builder().build();
         }
@@ -350,17 +359,19 @@ public class CmAppStoreDataService {
      * BO/SO: sy_user_role(역할ID) + sy_vendor_user(업체ID) + sy_vendor(업체명) + sy_role(역할정보)
      * FO: 빈 리스트
      */
-    private List<StoreRole> getRoles(AuthPrincipal authUser) {
+    private List<StoreRole> getRoles(AuthPrincipal authUser, String userTypeCd) {
         if (authUser == null) {
             return List.of();
         }
 
         Map<String, String> roleVendorMap = new java.util.HashMap<>();
 
-        if ("BO".equals(authUser.userTypeCd()) || "SO".equals(authUser.userTypeCd())) {
+        if (AuthPrincipal.BO.equals(userTypeCd) || AuthPrincipal.SO.equals(userTypeCd)) {
+            // sy_user_role :: select list :: userId
             syUserRoleRepository.findByUserId(authUser.userId()).forEach(ur ->
                 roleVendorMap.put(ur.getRoleId(), null));
 
+            // sy_vendor_user_role :: select list :: userId
             syVendorUserRoleRepository.findByUserId(authUser.userId()).forEach(vur ->
                 roleVendorMap.put(vur.getRoleId(), vur.getVendorId()));
         } else {
@@ -369,11 +380,13 @@ public class CmAppStoreDataService {
 
         return roleVendorMap.entrySet().stream()
                 .map(entry -> {
+                    // sy_role :: select one :: roleId
                     SyRole role = syRoleRepository.findById(entry.getKey()).orElse(null);
                     if (role == null) return null;
 
                     String vendorNm = null;
                     if (entry.getValue() != null) {
+                        // sy_vendor :: select one :: vendorId
                         SyVendor vendor = syVendorRepository.findById(entry.getValue()).orElse(null);
                         if (vendor != null) {
                             vendorNm = vendor.getVendorNm();
@@ -404,6 +417,7 @@ public class CmAppStoreDataService {
             return List.of();
         }
 
+        // sy_role_menu :: select list :: (filtered by roleId)
         List<SyRoleMenu> roleMenus = syRoleMenuRepository.findAll().stream()
                 .filter(rm -> rm.getRoleId().equals(authUser.roleId()))
                 .toList();
@@ -414,6 +428,7 @@ public class CmAppStoreDataService {
             addParentMenus(roleMenu.getMenuId(), menuIds);
         }
 
+        // sy_menu :: select one :: menuId (반복)
         return menuIds.stream()
                 .map(menuId -> syMenuRepository.findById(menuId).orElse(null))
                 .filter(menu -> menu != null)
@@ -437,6 +452,7 @@ public class CmAppStoreDataService {
     }
 
     private void addParentMenus(String menuId, java.util.Set<String> menuIds) {
+        // sy_menu :: select one :: menuId (재귀)
         SyMenu menu = syMenuRepository.findById(menuId).orElse(null);
         if (menu != null && menu.getParentMenuId() != null) {
             menuIds.add(menu.getParentMenuId());
@@ -448,6 +464,7 @@ public class CmAppStoreDataService {
         int level = 1;
         SyMenu parent = menu;
         while (parent.getParentMenuId() != null) {
+            // sy_menu :: select one :: parentMenuId (재귀)
             parent = syMenuRepository.findById(parent.getParentMenuId()).orElse(null);
             if (parent == null) break;
             level++;
@@ -461,6 +478,7 @@ public class CmAppStoreDataService {
     private StoreCode getCodes(AuthPrincipal authUser) {
         java.util.List<StoreCode.CodeInfo> codes = new java.util.ArrayList<>();
 
+        // sy_code :: select list ::
         syCodeRepository.findAll().forEach(code -> {
             StoreCode.CodeInfo codeInfo = StoreCode.CodeInfo.builder()
                     .codeGrp(code.getCodeGrp())
@@ -482,6 +500,7 @@ public class CmAppStoreDataService {
      */
     private StoreProp getProps(AuthPrincipal authUser) {
         String siteId = authUser != null ? authUser.siteId() : null;
+        // sy_prop :: select list :: (filtered by siteId)
         Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
                 .filter(prop -> siteId == null || prop.getSiteId().equals(siteId))
                 .collect(Collectors.toMap(
@@ -501,11 +520,11 @@ public class CmAppStoreDataService {
      * 앱 정보 조회 - 버전, 사이트정보, 환경상태
      * active 값: spring.profiles.active 설정값 (dev, prod 등)
      */
-    private StoreApp getApp(AuthPrincipal authUser) {
+    private StoreApp getApp(AuthPrincipal authUser, String userTypeCd) {
         String[] activeProfiles = environment.getActiveProfiles();
         String active = (activeProfiles != null && activeProfiles.length > 0) ? activeProfiles[0] : "-";
 
-        if (authUser != null && "BO".equals(authUser.userTypeCd())) {
+        if (AuthPrincipal.BO.equals(userTypeCd)) {
             return StoreApp.builder()
                     .boSiteNo("01")
                     .foSiteNo("01")
@@ -527,24 +546,28 @@ public class CmAppStoreDataService {
      * 전시 구조 조회 - dp_ui, dp_area, dp_panel, dp_panel_item (content 제외)
      */
     private StoreDispStruct getDispStruc(AuthPrincipal authUser) {
+        // dp_ui :: select list :: (filtered by siteId, useYn)
         List<DpUi> uis = dpUiRepository.findAll().stream()
                 .filter(ui -> ui.getSiteId().equals(authUser.siteId()) && "Y".equals(ui.getUseYn()))
                 .toList();
 
         List<StoreDispStruct.UiInfo> uiInfos = uis.stream()
                 .map(ui -> {
+                    // dp_area :: select list :: (filtered by uiId, useYn)
                     List<DpArea> areas = dpAreaRepository.findAll().stream()
                             .filter(area -> area.getUiId().equals(ui.getUiId()) && "Y".equals(area.getUseYn()))
                             .toList();
 
                     List<StoreDispStruct.UiInfo.AreaInfo> areaInfos = areas.stream()
                             .map(area -> {
+                                // dp_panel :: select list :: (filtered by siteId, useYn)
                                 List<DpPanel> panels = dpPanelRepository.findAll().stream()
                                         .filter(panel -> panel.getSiteId().equals(authUser.siteId()) && "Y".equals(panel.getUseYn()))
                                         .toList();
 
                                 List<StoreDispStruct.UiInfo.AreaInfo.PanelInfo> panelInfos = panels.stream()
                                         .map(panel -> {
+                                            // dp_panel_item :: select list :: (filtered by panelId)
                                             List<DpPanelItem> items = dpPanelItemRepository.findAll().stream()
                                                     .filter(item -> item.getPanelId().equals(panel.getPanelId()))
                                                     .toList();
@@ -598,23 +621,27 @@ public class CmAppStoreDataService {
     private StoreDispData getDispData(AuthPrincipal authUser) {
         Map<String, Object> dataByArea = new java.util.HashMap<>();
 
+        // dp_ui :: select list :: (filtered by siteId, useYn)
         List<DpUi> uis = dpUiRepository.findAll().stream()
                 .filter(ui -> ui.getSiteId().equals(authUser.siteId()) && "Y".equals(ui.getUseYn()))
                 .toList();
 
         for (DpUi ui : uis) {
+            // dp_area :: select list :: (filtered by uiId, useYn)
             List<DpArea> areas = dpAreaRepository.findAll().stream()
                     .filter(area -> area.getUiId().equals(ui.getUiId()) && "Y".equals(area.getUseYn()))
                     .toList();
 
             for (DpArea area : areas) {
                 Map<String, Object> areaData = new java.util.HashMap<>();
+                // dp_panel :: select list :: (filtered by siteId, useYn)
                 List<DpPanel> panels = dpPanelRepository.findAll().stream()
                         .filter(panel -> panel.getSiteId().equals(authUser.siteId()) && "Y".equals(panel.getUseYn()))
                         .toList();
 
                 List<Map<String, Object>> panelDataList = new java.util.ArrayList<>();
                 for (DpPanel panel : panels) {
+                    // dp_panel_item :: select list :: (filtered by panelId)
                     List<DpPanelItem> items = dpPanelItemRepository.findAll().stream()
                             .filter(item -> item.getPanelId().equals(panel.getPanelId()))
                             .toList();
@@ -628,6 +655,7 @@ public class CmAppStoreDataService {
 
                         String content = CmUtil.nvl(item.getWidgetContent()); // 위젯컨텐츠
                         if ("Y".equals(item.getWidgetLibRefYn()) && item.getWidgetLibId() != null) {
+                            // dp_widget_lib :: select one :: widgetLibId
                             DpWidgetLib widgetLib = dpWidgetLibRepository.findById(item.getWidgetLibId()).orElse(null);
                             if (widgetLib != null) {
                                 content = CmUtil.nvl(widgetLib.getWidgetLibDesc()); // 라이브러리참조시 라이브러리컨텐츠
@@ -658,6 +686,7 @@ public class CmAppStoreDataService {
      * 전시 위젯 목록 조회 - dp_widget (유효한 위젯 목록, 참조형식이면 dp_widget_lib content 포함)
      */
     private StoreDispWidgets getDispWidgets(AuthPrincipal authUser) {
+        // dp_widget :: select list :: (filtered by useYn)
         List<DpWidget> widgets = dpWidgetRepository.findAll().stream()
                 .filter(widget -> "Y".equals(widget.getUseYn()))
                 .toList();
@@ -667,6 +696,7 @@ public class CmAppStoreDataService {
                     String content = CmUtil.nvl(widget.getWidgetContent()); // 위젯 자체 content
                     // 참조형식(widgetLibRefYn='Y')이면 dp_widget_lib에서 content 조회
                     if ("Y".equals(widget.getWidgetLibRefYn()) && widget.getWidgetLibId() != null) {
+                        // dp_widget_lib :: select one :: widgetLibId
                         DpWidgetLib widgetLib = dpWidgetLibRepository.findById(widget.getWidgetLibId()).orElse(null);
                         if (widgetLib != null) {
                             content = CmUtil.nvl(widgetLib.getWidgetLibDesc()); // 라이브러리 content로 대체

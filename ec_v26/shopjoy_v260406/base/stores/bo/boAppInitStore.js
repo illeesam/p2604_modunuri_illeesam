@@ -16,7 +16,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
   getters: {
     isInitialized: (s) => {
       const authStore = window.useBoAuthStore?.();
-      return !!(authStore && authStore.getAuth && authStore.getAuth().user && authStore.getAuth().user.userId);
+      return !!(authStore && authStore.user && authStore.user.userId);
     },
   },
 
@@ -124,8 +124,8 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
      * localStorage에서 복원
      */
     restoreFromStorage() {
-      const userStore = window.useBoUserStore?.();
-      return userStore?.restoreFromStorage() || false;
+      const authStore = window.useBoAuthStore?.();
+      return authStore?.restoreFromStorage() || false;
     },
   },
 });

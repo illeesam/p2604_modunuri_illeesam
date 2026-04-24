@@ -24,6 +24,7 @@ public class PdhProdViewLogService {
 
     @Transactional(readOnly = true)
     public PdhProdViewLogDto getById(String id) {
+        // pdh_prod_view_log :: select one :: id [orm:mybatis]
         PdhProdViewLogDto result = mapper.selectById(id);
         return result;
     }
@@ -31,6 +32,7 @@ public class PdhProdViewLogService {
     @Transactional(readOnly = true)
     public List<PdhProdViewLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pdh_prod_view_log :: select list :: p [orm:mybatis]
         List<PdhProdViewLogDto> result = mapper.selectList(p);
         return result;
     }
@@ -38,11 +40,13 @@ public class PdhProdViewLogService {
     @Transactional(readOnly = true)
     public PageResult<PdhProdViewLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pdh_prod_view_log :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdhProdViewLog entity) {
+        // pdh_prod_view_log :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }

@@ -24,6 +24,7 @@ public class SyhApiLogService {
 
     @Transactional(readOnly = true)
     public SyhApiLogDto getById(String id) {
+        // syh_api_log :: select one :: id [orm:mybatis]
         SyhApiLogDto result = mapper.selectById(id);
         return result;
     }
@@ -31,6 +32,7 @@ public class SyhApiLogService {
     @Transactional(readOnly = true)
     public List<SyhApiLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // syh_api_log :: select list :: p [orm:mybatis]
         List<SyhApiLogDto> result = mapper.selectList(p);
         return result;
     }
@@ -38,11 +40,13 @@ public class SyhApiLogService {
     @Transactional(readOnly = true)
     public PageResult<SyhApiLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // syh_api_log :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhApiLog entity) {
+        // syh_api_log :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }

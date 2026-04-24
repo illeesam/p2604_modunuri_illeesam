@@ -678,14 +678,16 @@
       const _restoreBoUser = () => {
         try {
           const tok = localStorage.getItem('modu-bo-access_token');
-          if (!tok) return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+          if (!tok) return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
           const user = JSON.parse(localStorage.getItem('modu-bo-user') || 'null');
-          return user || { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
-        } catch(_) { return { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' }; }
+          return user || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
+        } catch(_) { return { userId: '', name: '', email: '', role: '', phone: '', dept: '' }; }
       };
+      // Pinia store를 localStorage 값으로 복원 (페이지 리로드 후 isLoggedIn 유지)
+      try { window.useBoAuthStore?.()?.restoreFromStorage?.(); } catch(_) {}
       const currentUser = ref(_restoreBoUser());
       const activeRoleId = ref(null);
-      const isLoggedIn = computed(() => window.isLogin?.() ?? false);
+      const isLoggedIn = computed(() => !!(currentUser.value?.userId));
       const currentUserRoles = reactive([]);
       const updateCurrentUserRoles = () => {
         try {
@@ -693,8 +695,8 @@
             currentUserRoles.splice(0, currentUserRoles.length);
             return;
           }
-          const user = currentUser.value || { boUserId: 0 };
-          const userRoles = window.boDataProvider?.getUserRolesByUserId(user.boUserId) || [];
+          const user = currentUser.value || { userId: '' };
+          const userRoles = window.boDataProvider?.getUserRolesByUserId(user.userId) || [];
           const roles = window.boDataProvider?.getRoles() || [];
           const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
           const result = (userRoles || []).map(ur => roleMap[ur?.roleId]).filter(Boolean);
@@ -723,7 +725,7 @@
                          : (root?.roleCode === 'DLIV_ROOT')     ? 'DELIVERY' : null;
           if (wantType) {
             const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
-            const targetUid = uid != null ? uid : (currentUser.value?.boUserId || 0);
+            const targetUid = uid != null ? uid : (currentUser.value?.userId || '');
             let names = [];
             if (targetUid != null && targetUid > 0) {
               const userBizs = (window.boData?.userBizs || []);
@@ -784,7 +786,7 @@
       });
       watch(currentUser, (u) => {
         try {
-          if (u && u.boUserId) {
+          if (u && u.userId) {
             const roles = currentUserRoles || [];
             if (!roles.find(r => r?.roleId === activeRoleId.value)) {
               activeRoleId.value = (roles && roles.length) ? roles[0]?.roleId : null;
@@ -807,7 +809,7 @@
       const profileModal = reactive({ show: false });
       const profileForm  = reactive({ name: '', phone: '', dept: '', email: '' });
       const openProfile  = () => {
-        if (!currentUser.value || !currentUser.value.boUserId) return;
+        if (!currentUser.value || !currentUser.value.userId) return;
         Object.assign(profileForm, {
           name: currentUser.value.name || '',
           phone: currentUser.value.phone || '',
@@ -819,7 +821,7 @@
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
         if (!currentUser.value) {
-          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+          currentUser.value = { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
         }
         currentUser.value.name  = profileForm.name || '';
         currentUser.value.phone = profileForm.phone || '';
@@ -865,18 +867,15 @@
         loginError.value = '';
         if (!loginForm.loginId || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
         try {
-          const authStore = window.useAuthStore?.();
-          const configStore = window.useConfigStore?.();
+          const authStore = window.useBoAuthStore?.();
+          if (!authStore) { loginError.value = '스토어 초기화 실패'; return; }
 
-          if (!authStore || !configStore) {
-            loginError.value = '스토어 초기화 실패';
-            return;
-          }
-
-          const user = await authStore.login(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
-          currentUser.value = (user && typeof user === 'object')
-            ? user
-            : { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+          await authStore.login(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
+          // 로그인 완료 후 store에서 최신 user 가져오기
+          const storeUser = authStore.user;
+          currentUser.value = (storeUser && storeUser.userId)
+            ? { ...storeUser }
+            : { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
 
           openTabs.splice(0);
           loginForm.loginId = ''; loginForm.loginPwd = '';
@@ -890,8 +889,8 @@
 
       const doLogout = async () => {
         try {
-          const authStore = window.useAuthStore?.();
-          const configStore = window.useConfigStore?.();
+          const authStore = window.useBoAuthStore?.();
+          const configStore = window.useBoConfigStore?.();
 
           if (authStore) {
             await authStore.logout();
@@ -900,14 +899,14 @@
             configStore.reset();
           }
 
-          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+          currentUser.value = { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
           userMenuShow.value = false;
           openTabs.splice(0);
           navigate('dashboard');
           showToast('로그아웃되었습니다.');
         } catch (e) {
           console.error('doLogout error:', e);
-          currentUser.value = { boUserId: 0, name: '', email: '', role: '', phone: '', dept: '' };
+          currentUser.value = { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
           userMenuShow.value = false;
         }
       };
@@ -956,12 +955,12 @@
       };
       const goFoSite = (no) => {
         try { localStorage.setItem('modu-fo-site_no', no); } catch(_){}
-        window.open('index.html?FO_SITE_NO=' + no, '_blank');
+        window.open('index.html?SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
       const goBoSite = (no) => {
         try { localStorage.setItem('modu-bo-site_no', no); } catch(_){}
-        window.open('bo.html?BO_SITE_NO=' + no, '_blank');
+        window.open('bo.html?SITE_NO=' + no, '_blank');
         relatedSiteOpen.value = false;
       };
       const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-site_no')) || '01';

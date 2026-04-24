@@ -9,16 +9,16 @@
        사이트 기본값 설정 (변경 시 이 한 줄만 수정)
        ═══════════════════════════════════════════════════════════════════ */
     const DEFAULT_BO_SITE_NO = '01';
-    /* BO_SITE_NO — URL ?BO_SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
+    /* BO_SITE_NO — URL ?SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
     (function(){
       try {
         var qs = new URLSearchParams(window.location.search);
-        var v = qs.get('BO_SITE_NO');
+        var v = qs.get('SITE_NO');
         if (v) {
           window.BO_SITE_NO = v;
           try { localStorage.setItem('modu-bo-site_no', v); } catch(_){}
           try {
-            qs.delete('BO_SITE_NO');
+            qs.delete('SITE_NO');
             var newSearch = qs.toString();
             history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
           } catch(_){}
@@ -34,7 +34,7 @@
     })();
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
-      if ((e.key === 'modu-bo-site_no' || e.key === 'modu-fo-site_no') && e.newValue !== e.oldValue) {
+      if (e.key === 'modu-bo-site_no' && e.newValue !== e.oldValue) {
         location.reload();
       }
     });

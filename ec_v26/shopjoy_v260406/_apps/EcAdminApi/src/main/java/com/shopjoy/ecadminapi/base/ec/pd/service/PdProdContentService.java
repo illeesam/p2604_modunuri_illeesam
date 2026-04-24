@@ -31,6 +31,7 @@ public class PdProdContentService {
 
     @Transactional(readOnly = true)
     public PdProdContentDto getById(String id) {
+        // pd_prod_content :: select one :: id [orm:mybatis]
         PdProdContentDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdProdContentService {
     @Transactional(readOnly = true)
     public List<PdProdContentDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_prod_content :: select list :: p [orm:mybatis]
         List<PdProdContentDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdProdContentService {
     @Transactional(readOnly = true)
     public PageResult<PdProdContentDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_prod_content :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdContent entity) {
+        // pd_prod_content :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdProdContentService {
         entity.setProdContentId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_prod_content :: insert or update :: [orm:jpa]
         PdProdContent result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdProdContentService {
             throw new CmBizException("존재하지 않는 PdProdContent입니다: " + entity.getProdContentId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_prod_content :: insert or update :: [orm:jpa]
         PdProdContent result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdProdContentService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdContent입니다: " + id);
+        // pd_prod_content :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

@@ -31,6 +31,7 @@ public class PdProdRelService {
 
     @Transactional(readOnly = true)
     public PdProdRelDto getById(String id) {
+        // pd_prod_rel :: select one :: id [orm:mybatis]
         PdProdRelDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdProdRelService {
     @Transactional(readOnly = true)
     public List<PdProdRelDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_prod_rel :: select list :: p [orm:mybatis]
         List<PdProdRelDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdProdRelService {
     @Transactional(readOnly = true)
     public PageResult<PdProdRelDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_prod_rel :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdRel entity) {
+        // pd_prod_rel :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdProdRelService {
         entity.setProdRelId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_prod_rel :: insert or update :: [orm:jpa]
         PdProdRel result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdProdRelService {
             throw new CmBizException("존재하지 않는 PdProdRel입니다: " + entity.getProdRelId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_prod_rel :: insert or update :: [orm:jpa]
         PdProdRel result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdProdRelService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdRel입니다: " + id);
+        // pd_prod_rel :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

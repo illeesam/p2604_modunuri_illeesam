@@ -73,12 +73,16 @@
       if (res.data?.data) {
         const d = res.data.data;
         console.log('[foAuth.login] data fields:', Object.keys(d));
+        // authId: FO = ec_member.member_id (backend LoginRes.authId 또는 memberId)
+        const authId = d.authId || d.memberId || d.userId || '';
         const user  = {
-          userId: d.userId,
-          loginId: d.loginId || d.userId,
-          memberNm: d.userNm || '사용자',
-          siteId: d.siteId,
-          userTypeCd: d.userTypeCd
+          authId,
+          memberId: authId,             // FO 전용: ec_member.member_id
+          userId: null,                 // BO 전용: FO는 null
+          userTypeCd: d.userTypeCd || 'FO',
+          loginId: d.loginId || '',
+          memberNm: d.userNm || d.memberNm || '사용자',
+          siteId: d.siteId || '',
         };
         const token = d.accessToken;
         console.log('[foAuth.login] user object:', user);
@@ -91,8 +95,8 @@
         try {
           const userRes = await window.foApi.post('/co/cm/fo-app-store/getUser', '');
           if (userRes?.data?.data?.member) {
-            const memberStore = window.useFoMemberStore?.();
-            memberStore?.setMember(userRes.data.data.member);
+            const authStore = window.useFoAuthStore?.();
+            authStore?.setUser(userRes.data.data.member);
             console.log('[foAuth.login] user info updated from getUser');
           }
         } catch (e) {
@@ -133,12 +137,15 @@
       console.log('[foAuth.signup] response:', res.data);
       if (res.data?.data) {
         const d = res.data.data;
+        const authId = d.authId || d.memberId || d.userId || '';
         const user = {
-          userId: d.userId,
+          authId,
+          memberId: authId,
+          userId: null,
+          userTypeCd: d.userTypeCd || 'FO',
           loginId: d.loginId || loginId,
-          memberNm: d.userNm || memberNm || '사용자',
-          siteId: d.siteId,
-          userTypeCd: d.userTypeCd
+          memberNm: d.userNm || d.memberNm || memberNm || '사용자',
+          siteId: d.siteId || '',
         };
         const token = d.accessToken;
         _store.setSession(user, token);
@@ -159,7 +166,7 @@
   };
 
   /* ── 로그인 상태 체크 ── */
-  const isFoLogin = () => !!state.user && !!localStorage.getItem('modu-fo-access_token');
+  const isFoLogin = () => !!(state.user?.memberId) && !!localStorage.getItem('modu-fo-access_token');
 
   window.foAuth = { state, init, login, loginSocial, signup, logout, isFoLogin };
   window.isFoLogin = isFoLogin;

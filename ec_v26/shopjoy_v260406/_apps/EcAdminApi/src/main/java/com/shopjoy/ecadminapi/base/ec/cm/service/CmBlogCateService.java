@@ -33,6 +33,7 @@ public class CmBlogCateService {
 
     @Transactional(readOnly = true)
     public CmBlogCateDto getById(String id) {
+        // cm_blog_cate :: select one :: id [orm:mybatis]
         CmBlogCateDto result = mapper.selectById(id);
         return result;
     }
@@ -40,6 +41,7 @@ public class CmBlogCateService {
     @Transactional(readOnly = true)
     public List<CmBlogCateDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cm_blog_cate :: select list :: p [orm:mybatis]
         List<CmBlogCateDto> result = mapper.selectList(p);
         return result;
     }
@@ -47,11 +49,13 @@ public class CmBlogCateService {
     @Transactional(readOnly = true)
     public PageResult<CmBlogCateDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cm_blog_cate :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogCate entity) {
+        // cm_blog_cate :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -63,6 +67,7 @@ public class CmBlogCateService {
         entity.setBlogCateId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // cm_blog_cate :: insert or update :: [orm:jpa]
         CmBlogCate result = repository.save(entity);
         return result;
     }
@@ -74,6 +79,7 @@ public class CmBlogCateService {
         }
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // cm_blog_cate :: insert or update :: [orm:jpa]
         CmBlogCate result = repository.save(entity);
         return result;
     }
@@ -83,6 +89,7 @@ public class CmBlogCateService {
         if (!repository.existsById(id)) {
             throw new CmBizException("존재하지 않는 카테고리입니다: " + id);
         }
+        // cm_blog_cate :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 
@@ -115,6 +122,7 @@ public class CmBlogCateService {
             case "D" -> {
                 if (!repository.existsById(req.getBlogCateId()))
                     throw new CmBizException("존재하지 않는 카테고리입니다: " + req.getBlogCateId());
+                // cm_blog_cate :: delete :: blogCateId [orm:jpa]
                 repository.deleteById(req.getBlogCateId());
                 yield null;
             }

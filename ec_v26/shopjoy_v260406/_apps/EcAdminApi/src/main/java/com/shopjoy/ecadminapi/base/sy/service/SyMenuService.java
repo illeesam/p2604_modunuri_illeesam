@@ -31,6 +31,7 @@ public class SyMenuService {
 
     @Transactional(readOnly = true)
     public SyMenuDto getById(String id) {
+        // sy_menu :: select one :: id [orm:mybatis]
         SyMenuDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyMenuService {
     @Transactional(readOnly = true)
     public List<SyMenuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_menu :: select list :: p [orm:mybatis]
         List<SyMenuDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyMenuService {
     @Transactional(readOnly = true)
     public PageResult<SyMenuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_menu :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyMenu entity) {
+        // sy_menu :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyMenuService {
         entity.setMenuId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_menu :: insert or update :: [orm:jpa]
         SyMenu result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyMenuService {
             throw new CmBizException("존재하지 않는 SyMenu입니다: " + entity.getMenuId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_menu :: insert or update :: [orm:jpa]
         SyMenu result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyMenuService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyMenu입니다: " + id);
+        // sy_menu :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

@@ -52,27 +52,32 @@ public class FoAuthService {
         LocalDateTime loginAt = LocalDateTime.now();
         member.setLastLogin(loginAt);
 
+        String authId = member.getMemberId();  // FO: authId = ec_member.member_id
         String accessToken  = jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
-                .userId(member.getMemberId())
+                .authId(authId)
                 .loginId(member.getLoginId())
                 .roles(List.of("ROLE_MEMBER"))
                 .userTypeCd(userTypeCd)
                 .roleId(null)
                 .vendorId(null)
                 .siteId(CmUtil.nvl(member.getSiteId()))
-                .memberId(member.getMemberId())
+                .userId(null)               // BO 전용: FO는 null
+                .memberId(authId)           // FO 전용: ec_member.member_id
                 .memberGrade(CmUtil.nvl(member.getGradeCd()))
                 .isStaffYn("N")
                 .isAdminYn("N")
                 .build()
         );
-        String refreshToken = jwtProvider.createRefreshToken(member.getMemberId(), userTypeCd);
+        String refreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
 
         return LoginRes.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .userId(member.getMemberId())
+                .authId(authId)
+                .userId(null)               // BO 전용: FO는 null
+                .memberId(authId)           // FO 전용
+                .userNm(member.getMemberNm())
                 .siteId(CmUtil.nvl(member.getSiteId()))
                 .userTypeCd(userTypeCd)
                 .roleId("")
@@ -112,28 +117,29 @@ public class FoAuthService {
         if (!userTypeCd.equals(jwtProvider.getUserTypeCd(refreshToken)))
             throw new CmBizException("회원 토큰이 아닙니다.");
 
-        String memberId = jwtProvider.getUserId(refreshToken);
-        MbMember member = memberRepository.findById(memberId)
+        String authId = jwtProvider.getAuthId(refreshToken);  // FO: member_id
+        MbMember member = memberRepository.findById(authId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
         revokedTokens.add(refreshToken);
 
         String newAccess  = jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
-                .userId(memberId)
+                .authId(authId)
                 .loginId(member.getLoginId())
                 .roles(List.of("ROLE_MEMBER"))
                 .userTypeCd(userTypeCd)
                 .roleId(null)
                 .vendorId(null)
                 .siteId(CmUtil.nvl(member.getSiteId()))
-                .memberId(member.getMemberId())
+                .userId(null)
+                .memberId(authId)
                 .memberGrade(CmUtil.nvl(member.getGradeCd()))
                 .isStaffYn("N")
                 .isAdminYn("N")
                 .build()
         );
-        String newRefresh = jwtProvider.createRefreshToken(memberId, userTypeCd);
+        String newRefresh = jwtProvider.createRefreshToken(authId, userTypeCd);
 
         return new TokenPair(newAccess, newRefresh,
                 LocalDateTime.now(), jwtProvider.getAccessExpiryMinutes(), jwtProvider.getRefreshExpiryMinutes());
@@ -147,12 +153,15 @@ public class FoAuthService {
 
     @Transactional(readOnly = true)
     public LoginRes getCurrentUserInfo(String userTypeCd) {
-        String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MbMember member = memberRepository.findById(memberId)
+        String authId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MbMember member = memberRepository.findById(authId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
         return LoginRes.builder()
-                .userId(member.getMemberId())
+                .authId(authId)
+                .userId(null)
+                .memberId(authId)
+                .userNm(member.getMemberNm())
                 .siteId(CmUtil.nvl(member.getSiteId()))
                 .userTypeCd(userTypeCd)
                 .roleId("")

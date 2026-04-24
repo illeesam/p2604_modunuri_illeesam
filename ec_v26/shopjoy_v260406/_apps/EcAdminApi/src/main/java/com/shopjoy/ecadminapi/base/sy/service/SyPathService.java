@@ -31,6 +31,7 @@ public class SyPathService {
 
     @Transactional(readOnly = true)
     public SyPathDto getById(String id) {
+        // sy_path :: select one :: id [orm:mybatis]
         SyPathDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyPathService {
     @Transactional(readOnly = true)
     public List<SyPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_path :: select list :: p [orm:mybatis]
         List<SyPathDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyPathService {
     @Transactional(readOnly = true)
     public PageResult<SyPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_path :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyPath entity) {
+        // sy_path :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyPathService {
         entity.setBizCd(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_path :: insert or update :: [orm:jpa]
         SyPath result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyPathService {
             throw new CmBizException("존재하지 않는 SyPath입니다: " + entity.getBizCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_path :: insert or update :: [orm:jpa]
         SyPath result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyPathService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyPath입니다: " + id);
+        // sy_path :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

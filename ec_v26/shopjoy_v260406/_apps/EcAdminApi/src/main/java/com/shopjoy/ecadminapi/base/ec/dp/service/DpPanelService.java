@@ -31,6 +31,7 @@ public class DpPanelService {
 
     @Transactional(readOnly = true)
     public DpPanelDto getById(String id) {
+        // dp_panel :: select one :: id [orm:mybatis]
         DpPanelDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class DpPanelService {
     @Transactional(readOnly = true)
     public List<DpPanelDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // dp_panel :: select list :: p [orm:mybatis]
         List<DpPanelDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class DpPanelService {
     @Transactional(readOnly = true)
     public PageResult<DpPanelDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // dp_panel :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpPanel entity) {
+        // dp_panel :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class DpPanelService {
         entity.setPanelId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // dp_panel :: insert or update :: [orm:jpa]
         DpPanel result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class DpPanelService {
             throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // dp_panel :: insert or update :: [orm:jpa]
         DpPanel result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class DpPanelService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 DpPanel입니다: " + id);
+        // dp_panel :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

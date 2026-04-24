@@ -31,6 +31,7 @@ public class PdRestockNotiService {
 
     @Transactional(readOnly = true)
     public PdRestockNotiDto getById(String id) {
+        // pd_restock_noti :: select one :: id [orm:mybatis]
         PdRestockNotiDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdRestockNotiService {
     @Transactional(readOnly = true)
     public List<PdRestockNotiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_restock_noti :: select list :: p [orm:mybatis]
         List<PdRestockNotiDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdRestockNotiService {
     @Transactional(readOnly = true)
     public PageResult<PdRestockNotiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_restock_noti :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdRestockNoti entity) {
+        // pd_restock_noti :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdRestockNotiService {
         entity.setRestockNotiId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_restock_noti :: insert or update :: [orm:jpa]
         PdRestockNoti result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdRestockNotiService {
             throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_restock_noti :: insert or update :: [orm:jpa]
         PdRestockNoti result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdRestockNotiService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + id);
+        // pd_restock_noti :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

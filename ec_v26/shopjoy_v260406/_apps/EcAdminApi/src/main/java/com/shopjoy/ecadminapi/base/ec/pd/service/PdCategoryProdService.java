@@ -31,6 +31,7 @@ public class PdCategoryProdService {
 
     @Transactional(readOnly = true)
     public PdCategoryProdDto getById(String id) {
+        // pd_category_prod :: select one :: id [orm:mybatis]
         PdCategoryProdDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdCategoryProdService {
     @Transactional(readOnly = true)
     public List<PdCategoryProdDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_category_prod :: select list :: p [orm:mybatis]
         List<PdCategoryProdDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdCategoryProdService {
     @Transactional(readOnly = true)
     public PageResult<PdCategoryProdDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_category_prod :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdCategoryProd entity) {
+        // pd_category_prod :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdCategoryProdService {
         entity.setCategoryProdId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_category_prod :: insert or update :: [orm:jpa]
         PdCategoryProd result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdCategoryProdService {
             throw new CmBizException("존재하지 않는 PdCategoryProd입니다: " + entity.getCategoryProdId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_category_prod :: insert or update :: [orm:jpa]
         PdCategoryProd result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdCategoryProdService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdCategoryProd입니다: " + id);
+        // pd_category_prod :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

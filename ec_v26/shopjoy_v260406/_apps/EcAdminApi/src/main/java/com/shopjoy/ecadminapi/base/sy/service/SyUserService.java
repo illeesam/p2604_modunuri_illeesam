@@ -31,6 +31,7 @@ public class SyUserService {
 
     @Transactional(readOnly = true)
     public SyUserDto getById(String id) {
+        // sy_user :: select one :: id [orm:mybatis]
         SyUserDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyUserService {
     @Transactional(readOnly = true)
     public List<SyUserDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_user :: select list :: p [orm:mybatis]
         List<SyUserDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyUserService {
     @Transactional(readOnly = true)
     public PageResult<SyUserDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_user :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyUser entity) {
+        // sy_user :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyUserService {
         entity.setUserId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_user :: insert or update :: [orm:jpa]
         SyUser result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyUserService {
             throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_user :: insert or update :: [orm:jpa]
         SyUser result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyUserService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyUser입니다: " + id);
+        // sy_user :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

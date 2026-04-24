@@ -31,6 +31,7 @@ public class SyVocService {
 
     @Transactional(readOnly = true)
     public SyVocDto getById(String id) {
+        // sy_voc :: select one :: id [orm:mybatis]
         SyVocDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyVocService {
     @Transactional(readOnly = true)
     public List<SyVocDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_voc :: select list :: p [orm:mybatis]
         List<SyVocDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyVocService {
     @Transactional(readOnly = true)
     public PageResult<SyVocDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_voc :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyVoc entity) {
+        // sy_voc :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyVocService {
         entity.setVocId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_voc :: insert or update :: [orm:jpa]
         SyVoc result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyVocService {
             throw new CmBizException("존재하지 않는 SyVoc입니다: " + entity.getVocId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_voc :: insert or update :: [orm:jpa]
         SyVoc result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyVocService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyVoc입니다: " + id);
+        // sy_voc :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

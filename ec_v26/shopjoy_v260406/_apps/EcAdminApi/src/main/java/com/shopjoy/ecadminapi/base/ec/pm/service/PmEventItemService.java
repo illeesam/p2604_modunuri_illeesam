@@ -31,6 +31,7 @@ public class PmEventItemService {
 
     @Transactional(readOnly = true)
     public PmEventItemDto getById(String id) {
+        // pm_event_item :: select one :: id [orm:mybatis]
         PmEventItemDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PmEventItemService {
     @Transactional(readOnly = true)
     public List<PmEventItemDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pm_event_item :: select list :: p [orm:mybatis]
         List<PmEventItemDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PmEventItemService {
     @Transactional(readOnly = true)
     public PageResult<PmEventItemDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pm_event_item :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmEventItem entity) {
+        // pm_event_item :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PmEventItemService {
         entity.setEventItemId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pm_event_item :: insert or update :: [orm:jpa]
         PmEventItem result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PmEventItemService {
             throw new CmBizException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pm_event_item :: insert or update :: [orm:jpa]
         PmEventItem result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PmEventItemService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PmEventItem입니다: " + id);
+        // pm_event_item :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

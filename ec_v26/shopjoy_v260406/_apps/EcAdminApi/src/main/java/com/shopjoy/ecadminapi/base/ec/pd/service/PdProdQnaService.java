@@ -31,6 +31,7 @@ public class PdProdQnaService {
 
     @Transactional(readOnly = true)
     public PdProdQnaDto getById(String id) {
+        // pd_prod_qna :: select one :: id [orm:mybatis]
         PdProdQnaDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdProdQnaService {
     @Transactional(readOnly = true)
     public List<PdProdQnaDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_prod_qna :: select list :: p [orm:mybatis]
         List<PdProdQnaDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdProdQnaService {
     @Transactional(readOnly = true)
     public PageResult<PdProdQnaDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_prod_qna :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdQna entity) {
+        // pd_prod_qna :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdProdQnaService {
         entity.setQnaId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_prod_qna :: insert or update :: [orm:jpa]
         PdProdQna result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdProdQnaService {
             throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getQnaId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_prod_qna :: insert or update :: [orm:jpa]
         PdProdQna result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdProdQnaService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdQna입니다: " + id);
+        // pd_prod_qna :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

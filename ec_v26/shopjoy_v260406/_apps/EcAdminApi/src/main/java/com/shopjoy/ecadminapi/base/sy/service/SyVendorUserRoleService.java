@@ -30,23 +30,27 @@ public class SyVendorUserRoleService {
 
     @Transactional(readOnly = true)
     public SyVendorUserRoleDto getById(String id) {
+        // sy_vendor_user_role :: select one :: id [orm:mybatis]
         return mapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<SyVendorUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_vendor_user_role :: select list :: p [orm:mybatis]
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyVendorUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_vendor_user_role :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyVendorUserRole entity) {
+        // sy_vendor_user_role :: update :: entity [orm:mybatis]
         return mapper.updateSelective(entity);
     }
 
@@ -61,6 +65,7 @@ public class SyVendorUserRoleService {
         entity.setGrantDate(now);
         entity.setRegBy(currentUserId);
         entity.setRegDate(now);
+        // sy_vendor_user_role :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }
 
@@ -70,6 +75,7 @@ public class SyVendorUserRoleService {
             throw new CmBizException("존재하지 않는 SyVendorUserRole입니다: " + entity.getVendorUserRoleId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId()); // nullable — intentional
         entity.setUpdDate(LocalDateTime.now());
+        // sy_vendor_user_role :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }
 
@@ -77,6 +83,7 @@ public class SyVendorUserRoleService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyVendorUserRole입니다: " + id);
+        // sy_vendor_user_role :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

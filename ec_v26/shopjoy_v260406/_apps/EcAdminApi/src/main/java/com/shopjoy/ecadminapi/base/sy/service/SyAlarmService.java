@@ -33,6 +33,7 @@ public class SyAlarmService {
 
     @Transactional(readOnly = true)
     public SyAlarmDto getById(String id) {
+        // sy_alarm :: select one :: id [orm:mybatis]
         SyAlarmDto result = mapper.selectById(id);
         return result;
     }
@@ -40,6 +41,7 @@ public class SyAlarmService {
     @Transactional(readOnly = true)
     public List<SyAlarmDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_alarm :: select list :: p [orm:mybatis]
         List<SyAlarmDto> result = mapper.selectList(p);
         return result;
     }
@@ -47,11 +49,13 @@ public class SyAlarmService {
     @Transactional(readOnly = true)
     public PageResult<SyAlarmDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_alarm :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyAlarm entity) {
+        // sy_alarm :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -63,6 +67,7 @@ public class SyAlarmService {
         entity.setAlarmId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_alarm :: insert or update :: [orm:jpa]
         SyAlarm result = repository.save(entity);
         return result;
     }
@@ -74,6 +79,7 @@ public class SyAlarmService {
         }
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_alarm :: insert or update :: [orm:jpa]
         SyAlarm result = repository.save(entity);
         return result;
     }
@@ -83,6 +89,7 @@ public class SyAlarmService {
         if (!repository.existsById(id)) {
             throw new CmBizException("존재하지 않는 알람입니다: " + id);
         }
+        // sy_alarm :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 
@@ -115,6 +122,7 @@ public class SyAlarmService {
             case "D" -> {
                 if (!repository.existsById(req.getAlarmId()))
                     throw new CmBizException("존재하지 않는 알람입니다: " + req.getAlarmId());
+                // sy_alarm :: delete :: alarmId [orm:jpa]
                 repository.deleteById(req.getAlarmId());
                 yield null;
             }

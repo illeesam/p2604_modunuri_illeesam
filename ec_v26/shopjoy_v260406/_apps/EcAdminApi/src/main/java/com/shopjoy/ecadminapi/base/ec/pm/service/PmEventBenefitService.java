@@ -31,6 +31,7 @@ public class PmEventBenefitService {
 
     @Transactional(readOnly = true)
     public PmEventBenefitDto getById(String id) {
+        // pm_event_benefit :: select one :: id [orm:mybatis]
         PmEventBenefitDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PmEventBenefitService {
     @Transactional(readOnly = true)
     public List<PmEventBenefitDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pm_event_benefit :: select list :: p [orm:mybatis]
         List<PmEventBenefitDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PmEventBenefitService {
     @Transactional(readOnly = true)
     public PageResult<PmEventBenefitDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pm_event_benefit :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmEventBenefit entity) {
+        // pm_event_benefit :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PmEventBenefitService {
         entity.setBenefitId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pm_event_benefit :: insert or update :: [orm:jpa]
         PmEventBenefit result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PmEventBenefitService {
             throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + entity.getBenefitId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pm_event_benefit :: insert or update :: [orm:jpa]
         PmEventBenefit result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PmEventBenefitService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PmEventBenefit입니다: " + id);
+        // pm_event_benefit :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

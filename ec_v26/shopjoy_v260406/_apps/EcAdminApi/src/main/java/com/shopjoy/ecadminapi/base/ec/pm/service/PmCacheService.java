@@ -31,6 +31,7 @@ public class PmCacheService {
 
     @Transactional(readOnly = true)
     public PmCacheDto getById(String id) {
+        // pm_cache :: select one :: id [orm:mybatis]
         PmCacheDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PmCacheService {
     @Transactional(readOnly = true)
     public List<PmCacheDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pm_cache :: select list :: p [orm:mybatis]
         List<PmCacheDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PmCacheService {
     @Transactional(readOnly = true)
     public PageResult<PmCacheDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pm_cache :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmCache entity) {
+        // pm_cache :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PmCacheService {
         entity.setCacheId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pm_cache :: insert or update :: [orm:jpa]
         PmCache result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PmCacheService {
             throw new CmBizException("존재하지 않는 PmCache입니다: " + entity.getCacheId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pm_cache :: insert or update :: [orm:jpa]
         PmCache result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PmCacheService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PmCache입니다: " + id);
+        // pm_cache :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

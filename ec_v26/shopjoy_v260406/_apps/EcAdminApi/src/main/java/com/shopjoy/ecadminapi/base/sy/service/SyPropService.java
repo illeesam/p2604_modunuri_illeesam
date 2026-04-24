@@ -31,6 +31,7 @@ public class SyPropService {
 
     @Transactional(readOnly = true)
     public SyPropDto getById(String id) {
+        // sy_prop :: select one :: id [orm:mybatis]
         SyPropDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyPropService {
     @Transactional(readOnly = true)
     public List<SyPropDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_prop :: select list :: p [orm:mybatis]
         List<SyPropDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyPropService {
     @Transactional(readOnly = true)
     public PageResult<SyPropDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_prop :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyProp entity) {
+        // sy_prop :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyPropService {
         entity.setSiteId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_prop :: insert or update :: [orm:jpa]
         SyProp result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyPropService {
             throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getSiteId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_prop :: insert or update :: [orm:jpa]
         SyProp result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyPropService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyProp입니다: " + id);
+        // sy_prop :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

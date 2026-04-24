@@ -31,6 +31,7 @@ public class CmChattRoomService {
 
     @Transactional(readOnly = true)
     public CmChattRoomDto getById(String id) {
+        // cm_chatt_room :: select one :: id [orm:mybatis]
         CmChattRoomDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class CmChattRoomService {
     @Transactional(readOnly = true)
     public List<CmChattRoomDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cm_chatt_room :: select list :: p [orm:mybatis]
         List<CmChattRoomDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class CmChattRoomService {
     @Transactional(readOnly = true)
     public PageResult<CmChattRoomDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cm_chatt_room :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmChattRoom entity) {
+        // cm_chatt_room :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class CmChattRoomService {
         entity.setChattRoomId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // cm_chatt_room :: insert or update :: [orm:jpa]
         CmChattRoom result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class CmChattRoomService {
             throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + entity.getChattRoomId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // cm_chatt_room :: insert or update :: [orm:jpa]
         CmChattRoom result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class CmChattRoomService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 CmChattRoom입니다: " + id);
+        // cm_chatt_room :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

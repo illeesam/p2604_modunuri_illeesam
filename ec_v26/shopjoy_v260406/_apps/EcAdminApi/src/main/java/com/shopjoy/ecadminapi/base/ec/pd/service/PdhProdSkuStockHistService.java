@@ -24,6 +24,7 @@ public class PdhProdSkuStockHistService {
 
     @Transactional(readOnly = true)
     public PdhProdSkuStockHistDto getById(String id) {
+        // pdh_prod_sku_stock_hist :: select one :: id [orm:mybatis]
         PdhProdSkuStockHistDto result = mapper.selectById(id);
         return result;
     }
@@ -31,6 +32,7 @@ public class PdhProdSkuStockHistService {
     @Transactional(readOnly = true)
     public List<PdhProdSkuStockHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pdh_prod_sku_stock_hist :: select list :: p [orm:mybatis]
         List<PdhProdSkuStockHistDto> result = mapper.selectList(p);
         return result;
     }
@@ -38,11 +40,13 @@ public class PdhProdSkuStockHistService {
     @Transactional(readOnly = true)
     public PageResult<PdhProdSkuStockHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pdh_prod_sku_stock_hist :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdhProdSkuStockHist entity) {
+        // pdh_prod_sku_stock_hist :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }

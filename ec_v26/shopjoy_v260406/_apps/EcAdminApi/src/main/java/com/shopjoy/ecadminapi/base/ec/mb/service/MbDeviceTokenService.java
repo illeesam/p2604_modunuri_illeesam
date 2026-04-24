@@ -33,23 +33,27 @@ public class MbDeviceTokenService {
 
     @Transactional(readOnly = true)
     public MbDeviceTokenDto getById(String id) {
+        // mb_device_token :: select one :: id [orm:mybatis]
         return mapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<MbDeviceTokenDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // mb_device_token :: select list :: p [orm:mybatis]
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<MbDeviceTokenDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // mb_device_token :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(MbDeviceToken entity) {
+        // mb_device_token :: update :: [orm:mybatis]
         return mapper.updateSelective(entity);
     }
 
@@ -60,17 +64,20 @@ public class MbDeviceTokenService {
         entity.setDeviceTokenId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // mb_device_token :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }
 
     @Transactional
     public MbDeviceToken save(MbDeviceToken entity) {
+        // mb_device_token :: select one :: deviceTokenId [orm:jpa]
         MbDeviceToken existing = repository.findById(entity.getDeviceTokenId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 디바이스 토큰입니다: " + entity.getDeviceTokenId()));
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // mb_device_token :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }
 
@@ -78,6 +85,7 @@ public class MbDeviceTokenService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 디바이스 토큰입니다: " + id);
+        // mb_device_token :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

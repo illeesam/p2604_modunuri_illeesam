@@ -31,6 +31,7 @@ public class DpAreaService {
 
     @Transactional(readOnly = true)
     public DpAreaDto getById(String id) {
+        // dp_area :: select one :: id [orm:mybatis]
         DpAreaDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class DpAreaService {
     @Transactional(readOnly = true)
     public List<DpAreaDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // dp_area :: select list :: p [orm:mybatis]
         List<DpAreaDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class DpAreaService {
     @Transactional(readOnly = true)
     public PageResult<DpAreaDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // dp_area :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpArea entity) {
+        // dp_area :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class DpAreaService {
         entity.setAreaId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // dp_area :: insert or update :: [orm:jpa]
         DpArea result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class DpAreaService {
             throw new CmBizException("존재하지 않는 DpArea입니다: " + entity.getAreaId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // dp_area :: insert or update :: [orm:jpa]
         DpArea result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class DpAreaService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 DpArea입니다: " + id);
+        // dp_area :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

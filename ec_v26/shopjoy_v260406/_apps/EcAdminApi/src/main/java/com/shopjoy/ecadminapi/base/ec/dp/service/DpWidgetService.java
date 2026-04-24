@@ -31,6 +31,7 @@ public class DpWidgetService {
 
     @Transactional(readOnly = true)
     public DpWidgetDto getById(String id) {
+        // dp_widget :: select one :: id [orm:mybatis]
         DpWidgetDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class DpWidgetService {
     @Transactional(readOnly = true)
     public List<DpWidgetDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // dp_widget :: select list :: p [orm:mybatis]
         List<DpWidgetDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class DpWidgetService {
     @Transactional(readOnly = true)
     public PageResult<DpWidgetDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // dp_widget :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpWidget entity) {
+        // dp_widget :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class DpWidgetService {
         entity.setWidgetId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // dp_widget :: insert or update :: [orm:jpa]
         DpWidget result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class DpWidgetService {
             throw new CmBizException("존재하지 않는 DpWidget입니다: " + entity.getWidgetId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // dp_widget :: insert or update :: [orm:jpa]
         DpWidget result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class DpWidgetService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 DpWidget입니다: " + id);
+        // dp_widget :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

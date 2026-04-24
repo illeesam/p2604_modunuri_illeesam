@@ -31,6 +31,7 @@ public class SyTemplateService {
 
     @Transactional(readOnly = true)
     public SyTemplateDto getById(String id) {
+        // sy_template :: select one :: id [orm:mybatis]
         SyTemplateDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyTemplateService {
     @Transactional(readOnly = true)
     public List<SyTemplateDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_template :: select list :: p [orm:mybatis]
         List<SyTemplateDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyTemplateService {
     @Transactional(readOnly = true)
     public PageResult<SyTemplateDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_template :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyTemplate entity) {
+        // sy_template :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyTemplateService {
         entity.setTemplateId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_template :: insert or update :: [orm:jpa]
         SyTemplate result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyTemplateService {
             throw new CmBizException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_template :: insert or update :: [orm:jpa]
         SyTemplate result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyTemplateService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyTemplate입니다: " + id);
+        // sy_template :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

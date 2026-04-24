@@ -31,6 +31,7 @@ public class CmPathService {
 
     @Transactional(readOnly = true)
     public CmPathDto getById(String id) {
+        // cm_path :: select one :: id [orm:mybatis]
         CmPathDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class CmPathService {
     @Transactional(readOnly = true)
     public List<CmPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cm_path :: select list :: p [orm:mybatis]
         List<CmPathDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class CmPathService {
     @Transactional(readOnly = true)
     public PageResult<CmPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cm_path :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmPath entity) {
+        // cm_path :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class CmPathService {
         entity.setBizCd(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // cm_path :: insert or update :: [orm:jpa]
         CmPath result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class CmPathService {
             throw new CmBizException("존재하지 않는 CmPath입니다: " + entity.getBizCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // cm_path :: insert or update :: [orm:jpa]
         CmPath result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class CmPathService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 CmPath입니다: " + id);
+        // cm_path :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

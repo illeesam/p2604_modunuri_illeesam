@@ -31,6 +31,7 @@ public class PmDiscntService {
 
     @Transactional(readOnly = true)
     public PmDiscntDto getById(String id) {
+        // pm_discnt :: select one :: id [orm:mybatis]
         PmDiscntDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PmDiscntService {
     @Transactional(readOnly = true)
     public List<PmDiscntDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pm_discnt :: select list :: p [orm:mybatis]
         List<PmDiscntDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PmDiscntService {
     @Transactional(readOnly = true)
     public PageResult<PmDiscntDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pm_discnt :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmDiscnt entity) {
+        // pm_discnt :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PmDiscntService {
         entity.setDiscntId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pm_discnt :: insert or update :: [orm:jpa]
         PmDiscnt result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PmDiscntService {
             throw new CmBizException("존재하지 않는 PmDiscnt입니다: " + entity.getDiscntId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pm_discnt :: insert or update :: [orm:jpa]
         PmDiscnt result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PmDiscntService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PmDiscnt입니다: " + id);
+        // pm_discnt :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

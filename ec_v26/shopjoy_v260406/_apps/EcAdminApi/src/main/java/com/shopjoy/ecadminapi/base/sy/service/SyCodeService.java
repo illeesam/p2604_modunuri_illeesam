@@ -31,6 +31,7 @@ public class SyCodeService {
 
     @Transactional(readOnly = true)
     public SyCodeDto getById(String id) {
+        // sy_code :: select one :: id [orm:mybatis]
         SyCodeDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyCodeService {
     @Transactional(readOnly = true)
     public List<SyCodeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_code :: select list :: p [orm:mybatis]
         List<SyCodeDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyCodeService {
     @Transactional(readOnly = true)
     public PageResult<SyCodeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_code :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyCode entity) {
+        // sy_code :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyCodeService {
         entity.setCodeId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_code :: insert or update :: [orm:jpa]
         SyCode result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyCodeService {
             throw new CmBizException("존재하지 않는 SyCode입니다: " + entity.getCodeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_code :: insert or update :: [orm:jpa]
         SyCode result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyCodeService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyCode입니다: " + id);
+        // sy_code :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

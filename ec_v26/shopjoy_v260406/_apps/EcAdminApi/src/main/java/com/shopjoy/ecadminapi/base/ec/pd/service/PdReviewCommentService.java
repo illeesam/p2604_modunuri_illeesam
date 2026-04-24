@@ -31,6 +31,7 @@ public class PdReviewCommentService {
 
     @Transactional(readOnly = true)
     public PdReviewCommentDto getById(String id) {
+        // pd_review_comment :: select one :: id [orm:mybatis]
         PdReviewCommentDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdReviewCommentService {
     @Transactional(readOnly = true)
     public List<PdReviewCommentDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_review_comment :: select list :: p [orm:mybatis]
         List<PdReviewCommentDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdReviewCommentService {
     @Transactional(readOnly = true)
     public PageResult<PdReviewCommentDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_review_comment :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdReviewComment entity) {
+        // pd_review_comment :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdReviewCommentService {
         entity.setReviewCommentId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_review_comment :: insert or update :: [orm:jpa]
         PdReviewComment result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdReviewCommentService {
             throw new CmBizException("존재하지 않는 PdReviewComment입니다: " + entity.getReviewCommentId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_review_comment :: insert or update :: [orm:jpa]
         PdReviewComment result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdReviewCommentService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdReviewComment입니다: " + id);
+        // pd_review_comment :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

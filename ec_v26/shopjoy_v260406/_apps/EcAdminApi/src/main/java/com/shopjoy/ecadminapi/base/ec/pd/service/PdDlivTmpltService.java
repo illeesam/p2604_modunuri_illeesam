@@ -31,6 +31,7 @@ public class PdDlivTmpltService {
 
     @Transactional(readOnly = true)
     public PdDlivTmpltDto getById(String id) {
+        // pd_dliv_tmplt :: select one :: id [orm:mybatis]
         PdDlivTmpltDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdDlivTmpltService {
     @Transactional(readOnly = true)
     public List<PdDlivTmpltDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_dliv_tmplt :: select list :: p [orm:mybatis]
         List<PdDlivTmpltDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdDlivTmpltService {
     @Transactional(readOnly = true)
     public PageResult<PdDlivTmpltDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_dliv_tmplt :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdDlivTmplt entity) {
+        // pd_dliv_tmplt :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdDlivTmpltService {
         entity.setDlivTmpltId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_dliv_tmplt :: insert or update :: [orm:jpa]
         PdDlivTmplt result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdDlivTmpltService {
             throw new CmBizException("존재하지 않는 PdDlivTmplt입니다: " + entity.getDlivTmpltId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_dliv_tmplt :: insert or update :: [orm:jpa]
         PdDlivTmplt result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdDlivTmpltService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdDlivTmplt입니다: " + id);
+        // pd_dliv_tmplt :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

@@ -24,6 +24,7 @@ public class SyhUserLoginLogService {
 
     @Transactional(readOnly = true)
     public SyhUserLoginLogDto getById(String id) {
+        // syh_user_login_log :: select one :: id [orm:mybatis]
         SyhUserLoginLogDto result = mapper.selectById(id);
         return result;
     }
@@ -31,6 +32,7 @@ public class SyhUserLoginLogService {
     @Transactional(readOnly = true)
     public List<SyhUserLoginLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // syh_user_login_log :: select list :: p [orm:mybatis]
         List<SyhUserLoginLogDto> result = mapper.selectList(p);
         return result;
     }
@@ -38,11 +40,13 @@ public class SyhUserLoginLogService {
     @Transactional(readOnly = true)
     public PageResult<SyhUserLoginLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // syh_user_login_log :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhUserLoginLog entity) {
+        // syh_user_login_log :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }

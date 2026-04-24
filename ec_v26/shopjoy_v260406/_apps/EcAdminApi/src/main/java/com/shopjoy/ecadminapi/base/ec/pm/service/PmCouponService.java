@@ -31,6 +31,7 @@ public class PmCouponService {
 
     @Transactional(readOnly = true)
     public PmCouponDto getById(String id) {
+        // pm_coupon :: select one :: id [orm:mybatis]
         PmCouponDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PmCouponService {
     @Transactional(readOnly = true)
     public List<PmCouponDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pm_coupon :: select list :: p [orm:mybatis]
         List<PmCouponDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PmCouponService {
     @Transactional(readOnly = true)
     public PageResult<PmCouponDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pm_coupon :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PmCoupon entity) {
+        // pm_coupon :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PmCouponService {
         entity.setCouponId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pm_coupon :: insert or update :: [orm:jpa]
         PmCoupon result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PmCouponService {
             throw new CmBizException("존재하지 않는 PmCoupon입니다: " + entity.getCouponId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pm_coupon :: insert or update :: [orm:jpa]
         PmCoupon result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PmCouponService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PmCoupon입니다: " + id);
+        // pm_coupon :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

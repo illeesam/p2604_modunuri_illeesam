@@ -16,9 +16,10 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
   getters: {
     isInitialized: (s) => {
       const authStore = window.useFoAuthStore?.();
-      return !!(authStore && authStore.getAuth && authStore.getAuth().user && authStore.getAuth().user.memberId);
+      return !!(authStore && authStore.user && authStore.user.memberId);
     },
   },
+  // FO: memberId가 authId와 동일하므로 memberId로 체크
 
   actions: {
     /**

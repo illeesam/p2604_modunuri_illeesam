@@ -31,6 +31,7 @@ public class SyAttachGrpService {
 
     @Transactional(readOnly = true)
     public SyAttachGrpDto getById(String id) {
+        // sy_attach_grp :: select one :: id [orm:mybatis]
         SyAttachGrpDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyAttachGrpService {
     @Transactional(readOnly = true)
     public List<SyAttachGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_attach_grp :: select list :: p [orm:mybatis]
         List<SyAttachGrpDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyAttachGrpService {
     @Transactional(readOnly = true)
     public PageResult<SyAttachGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_attach_grp :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyAttachGrp entity) {
+        // sy_attach_grp :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyAttachGrpService {
         entity.setAttachGrpId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_attach_grp :: insert or update :: [orm:jpa]
         SyAttachGrp result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyAttachGrpService {
             throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + entity.getAttachGrpId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_attach_grp :: insert or update :: [orm:jpa]
         SyAttachGrp result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyAttachGrpService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyAttachGrp입니다: " + id);
+        // sy_attach_grp :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

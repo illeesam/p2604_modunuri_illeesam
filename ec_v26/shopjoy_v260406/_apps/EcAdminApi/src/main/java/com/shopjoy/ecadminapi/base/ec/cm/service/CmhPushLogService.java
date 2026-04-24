@@ -24,6 +24,7 @@ public class CmhPushLogService {
 
     @Transactional(readOnly = true)
     public CmhPushLogDto getById(String id) {
+        // cmh_push_log :: select one :: id [orm:mybatis]
         CmhPushLogDto result = mapper.selectById(id);
         return result;
     }
@@ -31,6 +32,7 @@ public class CmhPushLogService {
     @Transactional(readOnly = true)
     public List<CmhPushLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cmh_push_log :: select list :: p [orm:mybatis]
         List<CmhPushLogDto> result = mapper.selectList(p);
         return result;
     }
@@ -38,11 +40,13 @@ public class CmhPushLogService {
     @Transactional(readOnly = true)
     public PageResult<CmhPushLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cmh_push_log :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmhPushLog entity) {
+        // cmh_push_log :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }

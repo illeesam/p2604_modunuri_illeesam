@@ -31,6 +31,7 @@ public class PdProdSkuService {
 
     @Transactional(readOnly = true)
     public PdProdSkuDto getById(String id) {
+        // pd_prod_sku :: select one :: id [orm:mybatis]
         PdProdSkuDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdProdSkuService {
     @Transactional(readOnly = true)
     public List<PdProdSkuDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_prod_sku :: select list :: p [orm:mybatis]
         List<PdProdSkuDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdProdSkuService {
     @Transactional(readOnly = true)
     public PageResult<PdProdSkuDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_prod_sku :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdProdSku entity) {
+        // pd_prod_sku :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdProdSkuService {
         entity.setSkuId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_prod_sku :: insert or update :: [orm:jpa]
         PdProdSku result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdProdSkuService {
             throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getSkuId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_prod_sku :: insert or update :: [orm:jpa]
         PdProdSku result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdProdSkuService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdProdSku입니다: " + id);
+        // pd_prod_sku :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

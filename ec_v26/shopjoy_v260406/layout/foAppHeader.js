@@ -125,7 +125,7 @@ window.foAppHeader = {
       pwOpen, pw, openPw, savePw, IS,
       authUser, userFirstChar, isLogin,
       foSiteNo: window.FO_SITE_NO || '01',
-      boSiteNo: (typeof localStorage !== 'undefined' && localStorage.getItem('modu-bo-site_no')) || '01',
+      boSiteNo: '01', /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
       openQuickMenu: () => window.dispatchEvent(new CustomEvent('open-quick-menu')),
     };
   },

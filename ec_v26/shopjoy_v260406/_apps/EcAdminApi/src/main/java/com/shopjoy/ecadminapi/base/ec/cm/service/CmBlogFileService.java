@@ -33,23 +33,27 @@ public class CmBlogFileService {
 
     @Transactional(readOnly = true)
     public CmBlogFileDto getById(String id) {
+        // cm_blog_file :: select one :: id [orm:mybatis]
         return mapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<CmBlogFileDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cm_blog_file :: select list :: p [orm:mybatis]
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<CmBlogFileDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cm_blog_file :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogFile entity) {
+        // cm_blog_file :: update :: [orm:mybatis]
         return mapper.updateSelective(entity);
     }
 
@@ -60,17 +64,20 @@ public class CmBlogFileService {
         entity.setBlogImgId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // cm_blog_file :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }
 
     @Transactional
     public CmBlogFile save(CmBlogFile entity) {
+        // cm_blog_file :: select one :: blogImgId [orm:jpa]
         CmBlogFile existing = repository.findById(entity.getBlogImgId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 파일입니다: " + entity.getBlogImgId()));
         entity.setRegBy(existing.getRegBy());
         entity.setRegDate(existing.getRegDate());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // cm_blog_file :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }
 
@@ -78,6 +85,7 @@ public class CmBlogFileService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 파일입니다: " + id);
+        // cm_blog_file :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

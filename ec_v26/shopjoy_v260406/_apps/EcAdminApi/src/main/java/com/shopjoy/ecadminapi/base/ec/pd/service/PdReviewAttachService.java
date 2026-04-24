@@ -31,6 +31,7 @@ public class PdReviewAttachService {
 
     @Transactional(readOnly = true)
     public PdReviewAttachDto getById(String id) {
+        // pd_review_attach :: select one :: id [orm:mybatis]
         PdReviewAttachDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdReviewAttachService {
     @Transactional(readOnly = true)
     public List<PdReviewAttachDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_review_attach :: select list :: p [orm:mybatis]
         List<PdReviewAttachDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdReviewAttachService {
     @Transactional(readOnly = true)
     public PageResult<PdReviewAttachDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_review_attach :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdReviewAttach entity) {
+        // pd_review_attach :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdReviewAttachService {
         entity.setReviewAttachId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_review_attach :: insert or update :: [orm:jpa]
         PdReviewAttach result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdReviewAttachService {
             throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_review_attach :: insert or update :: [orm:jpa]
         PdReviewAttach result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdReviewAttachService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + id);
+        // pd_review_attach :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

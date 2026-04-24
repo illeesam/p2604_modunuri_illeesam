@@ -31,6 +31,7 @@ public class DpUiService {
 
     @Transactional(readOnly = true)
     public DpUiDto getById(String id) {
+        // dp_ui :: select one :: id [orm:mybatis]
         DpUiDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class DpUiService {
     @Transactional(readOnly = true)
     public List<DpUiDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // dp_ui :: select list :: p [orm:mybatis]
         List<DpUiDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class DpUiService {
     @Transactional(readOnly = true)
     public PageResult<DpUiDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // dp_ui :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(DpUi entity) {
+        // dp_ui :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class DpUiService {
         entity.setUiId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // dp_ui :: insert or update :: [orm:jpa]
         DpUi result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class DpUiService {
             throw new CmBizException("존재하지 않는 DpUi입니다: " + entity.getUiId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // dp_ui :: insert or update :: [orm:jpa]
         DpUi result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class DpUiService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 DpUi입니다: " + id);
+        // dp_ui :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

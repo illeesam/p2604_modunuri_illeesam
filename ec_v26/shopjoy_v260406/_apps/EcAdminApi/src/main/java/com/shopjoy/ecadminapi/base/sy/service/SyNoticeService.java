@@ -31,6 +31,7 @@ public class SyNoticeService {
 
     @Transactional(readOnly = true)
     public SyNoticeDto getById(String id) {
+        // sy_notice :: select one :: id [orm:mybatis]
         SyNoticeDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyNoticeService {
     @Transactional(readOnly = true)
     public List<SyNoticeDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_notice :: select list :: p [orm:mybatis]
         List<SyNoticeDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyNoticeService {
     @Transactional(readOnly = true)
     public PageResult<SyNoticeDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_notice :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyNotice entity) {
+        // sy_notice :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyNoticeService {
         entity.setNoticeId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_notice :: insert or update :: [orm:jpa]
         SyNotice result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyNoticeService {
             throw new CmBizException("존재하지 않는 SyNotice입니다: " + entity.getNoticeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_notice :: insert or update :: [orm:jpa]
         SyNotice result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyNoticeService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyNotice입니다: " + id);
+        // sy_notice :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

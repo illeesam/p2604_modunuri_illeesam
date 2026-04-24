@@ -31,6 +31,7 @@ public class PdReviewService {
 
     @Transactional(readOnly = true)
     public PdReviewDto getById(String id) {
+        // pd_review :: select one :: id [orm:mybatis]
         PdReviewDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdReviewService {
     @Transactional(readOnly = true)
     public List<PdReviewDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_review :: select list :: p [orm:mybatis]
         List<PdReviewDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdReviewService {
     @Transactional(readOnly = true)
     public PageResult<PdReviewDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_review :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdReview entity) {
+        // pd_review :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdReviewService {
         entity.setReviewId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_review :: insert or update :: [orm:jpa]
         PdReview result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdReviewService {
             throw new CmBizException("존재하지 않는 PdReview입니다: " + entity.getReviewId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_review :: insert or update :: [orm:jpa]
         PdReview result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdReviewService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdReview입니다: " + id);
+        // pd_review :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

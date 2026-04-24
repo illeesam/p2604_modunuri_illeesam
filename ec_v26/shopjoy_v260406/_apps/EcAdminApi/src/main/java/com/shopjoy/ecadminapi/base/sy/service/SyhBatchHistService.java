@@ -24,6 +24,7 @@ public class SyhBatchHistService {
 
     @Transactional(readOnly = true)
     public SyhBatchHistDto getById(String id) {
+        // syh_batch_hist :: select one :: id [orm:mybatis]
         SyhBatchHistDto result = mapper.selectById(id);
         return result;
     }
@@ -31,6 +32,7 @@ public class SyhBatchHistService {
     @Transactional(readOnly = true)
     public List<SyhBatchHistDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // syh_batch_hist :: select list :: p [orm:mybatis]
         List<SyhBatchHistDto> result = mapper.selectList(p);
         return result;
     }
@@ -38,11 +40,13 @@ public class SyhBatchHistService {
     @Transactional(readOnly = true)
     public PageResult<SyhBatchHistDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // syh_batch_hist :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyhBatchHist entity) {
+        // syh_batch_hist :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }

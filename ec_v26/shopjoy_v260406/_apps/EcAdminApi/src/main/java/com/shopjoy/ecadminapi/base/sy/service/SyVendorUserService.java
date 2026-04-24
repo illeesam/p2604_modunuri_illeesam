@@ -31,6 +31,7 @@ public class SyVendorUserService {
 
     @Transactional(readOnly = true)
     public SyVendorUserDto getById(String id) {
+        // sy_vendor_user :: select one :: id [orm:mybatis]
         SyVendorUserDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyVendorUserService {
     @Transactional(readOnly = true)
     public List<SyVendorUserDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_vendor_user :: select list :: p [orm:mybatis]
         List<SyVendorUserDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyVendorUserService {
     @Transactional(readOnly = true)
     public PageResult<SyVendorUserDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_vendor_user :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyVendorUser entity) {
+        // sy_vendor_user :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyVendorUserService {
         entity.setVendorUserId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_vendor_user :: insert or update :: [orm:jpa]
         SyVendorUser result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyVendorUserService {
             throw new CmBizException("존재하지 않는 SyVendorUser입니다: " + entity.getVendorUserId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_vendor_user :: insert or update :: [orm:jpa]
         SyVendorUser result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyVendorUserService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyVendorUser입니다: " + id);
+        // sy_vendor_user :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

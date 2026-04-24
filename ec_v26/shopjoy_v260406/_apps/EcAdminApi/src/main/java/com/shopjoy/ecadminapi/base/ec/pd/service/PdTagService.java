@@ -31,6 +31,7 @@ public class PdTagService {
 
     @Transactional(readOnly = true)
     public PdTagDto getById(String id) {
+        // pd_tag :: select one :: id [orm:mybatis]
         PdTagDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class PdTagService {
     @Transactional(readOnly = true)
     public List<PdTagDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // pd_tag :: select list :: p [orm:mybatis]
         List<PdTagDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class PdTagService {
     @Transactional(readOnly = true)
     public PageResult<PdTagDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // pd_tag :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(PdTag entity) {
+        // pd_tag :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class PdTagService {
         entity.setTagId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // pd_tag :: insert or update :: [orm:jpa]
         PdTag result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class PdTagService {
             throw new CmBizException("존재하지 않는 PdTag입니다: " + entity.getTagId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // pd_tag :: insert or update :: [orm:jpa]
         PdTag result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class PdTagService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 PdTag입니다: " + id);
+        // pd_tag :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

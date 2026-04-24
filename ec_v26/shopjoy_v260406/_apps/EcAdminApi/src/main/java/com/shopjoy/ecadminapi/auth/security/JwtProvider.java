@@ -39,7 +39,7 @@ public class JwtProvider {
         Date expiry = new Date(now.getTime() + accessExpiry);
 
         return Jwts.builder()
-            .subject(claims.getUserId())
+            .subject(claims.getAuthId())            // authId = JWT subject (BO=user_id, FO=member_id)
             .claim("loginId", claims.getLoginId())
             .claim("roles", claims.getRoles())
             .claim("type", "access")
@@ -47,7 +47,8 @@ public class JwtProvider {
             .claim("roleId", claims.getRoleId())
             .claim("vendorId", claims.getVendorId())
             .claim("siteId", claims.getSiteId())
-            .claim("memberId", claims.getMemberId())
+            .claim("userId", claims.getUserId())     // BO 전용: sy_user.user_id
+            .claim("memberId", claims.getMemberId()) // FO 전용: ec_member.member_id
             .claim("memberGrade", claims.getMemberGrade())
             .claim("isStaffYn", claims.getIsStaffYn())
             .claim("isAdminYn", claims.getIsAdminYn())
@@ -63,12 +64,12 @@ public class JwtProvider {
      * userType을 포함시켜 재발급 시 원래 사용자 타입을 유지한다.
      * 재발급 엔드포인트에서 DB로 userType을 재조회하지 않아도 되도록 설계.
      */
-    public String createRefreshToken(String userId, String userTypeCd) {
+    public String createRefreshToken(String authId, String userTypeCd) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + refreshExpiry);
 
         return Jwts.builder()
-            .subject(userId)
+            .subject(authId)                        // authId = JWT subject
             .claim("type", "refresh")
             .claim("userTypeCd", userTypeCd)
             .issuedAt(now)
@@ -105,8 +106,15 @@ public class JwtProvider {
             .getPayload();
     }
 
-    public String getUserId(String token) {
+    /** JWT subject에서 authId 추출 (BO=user_id, FO=member_id) */
+    public String getAuthId(String token) {
         return getClaims(token).getSubject();
+    }
+
+    /** @deprecated use {@link #getAuthId(String)} */
+    @Deprecated
+    public String getUserId(String token) {
+        return getAuthId(token);
     }
 
     public String getTokenType(String token) {

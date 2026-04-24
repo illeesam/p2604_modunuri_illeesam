@@ -31,6 +31,7 @@ public class CmBlogGoodService {
 
     @Transactional(readOnly = true)
     public CmBlogGoodDto getById(String id) {
+        // cm_blog_good :: select one :: id [orm:mybatis]
         CmBlogGoodDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class CmBlogGoodService {
     @Transactional(readOnly = true)
     public List<CmBlogGoodDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // cm_blog_good :: select list :: p [orm:mybatis]
         List<CmBlogGoodDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class CmBlogGoodService {
     @Transactional(readOnly = true)
     public PageResult<CmBlogGoodDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // cm_blog_good :: select page :: [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(CmBlogGood entity) {
+        // cm_blog_good :: update :: [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class CmBlogGoodService {
         entity.setLikeId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // cm_blog_good :: insert or update :: [orm:jpa]
         CmBlogGood result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class CmBlogGoodService {
             throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getLikeId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // cm_blog_good :: insert or update :: [orm:jpa]
         CmBlogGood result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class CmBlogGoodService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + id);
+        // cm_blog_good :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

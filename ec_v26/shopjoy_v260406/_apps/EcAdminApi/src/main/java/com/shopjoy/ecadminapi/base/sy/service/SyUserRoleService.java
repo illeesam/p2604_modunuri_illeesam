@@ -31,6 +31,7 @@ public class SyUserRoleService {
 
     @Transactional(readOnly = true)
     public SyUserRoleDto getById(String id) {
+        // sy_user_role :: select one :: id [orm:mybatis]
         SyUserRoleDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyUserRoleService {
     @Transactional(readOnly = true)
     public List<SyUserRoleDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_user_role :: select list :: p [orm:mybatis]
         List<SyUserRoleDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyUserRoleService {
     @Transactional(readOnly = true)
     public PageResult<SyUserRoleDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_user_role :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyUserRole entity) {
+        // sy_user_role :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyUserRoleService {
         entity.setUserRoleId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_user_role :: insert or update :: [orm:jpa]
         SyUserRole result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyUserRoleService {
             throw new CmBizException("존재하지 않는 SyUserRole입니다: " + entity.getUserRoleId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_user_role :: insert or update :: [orm:jpa]
         SyUserRole result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyUserRoleService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyUserRole입니다: " + id);
+        // sy_user_role :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

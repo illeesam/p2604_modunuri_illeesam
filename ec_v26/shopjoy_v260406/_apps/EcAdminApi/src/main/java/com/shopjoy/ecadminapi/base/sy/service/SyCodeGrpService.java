@@ -31,6 +31,7 @@ public class SyCodeGrpService {
 
     @Transactional(readOnly = true)
     public SyCodeGrpDto getById(String id) {
+        // sy_code_grp :: select one :: id [orm:mybatis]
         SyCodeGrpDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyCodeGrpService {
     @Transactional(readOnly = true)
     public List<SyCodeGrpDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_code_grp :: select list :: p [orm:mybatis]
         List<SyCodeGrpDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyCodeGrpService {
     @Transactional(readOnly = true)
     public PageResult<SyCodeGrpDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_code_grp :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyCodeGrp entity) {
+        // sy_code_grp :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyCodeGrpService {
         entity.setCodeGrpId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_code_grp :: insert or update :: [orm:jpa]
         SyCodeGrp result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyCodeGrpService {
             throw new CmBizException("존재하지 않는 SyCodeGrp입니다: " + entity.getCodeGrpId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_code_grp :: insert or update :: [orm:jpa]
         SyCodeGrp result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyCodeGrpService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyCodeGrp입니다: " + id);
+        // sy_code_grp :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

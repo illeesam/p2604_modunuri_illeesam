@@ -31,6 +31,7 @@ public class SyContactService {
 
     @Transactional(readOnly = true)
     public SyContactDto getById(String id) {
+        // sy_contact :: select one :: id [orm:mybatis]
         SyContactDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SyContactService {
     @Transactional(readOnly = true)
     public List<SyContactDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_contact :: select list :: p [orm:mybatis]
         List<SyContactDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SyContactService {
     @Transactional(readOnly = true)
     public PageResult<SyContactDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_contact :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyContact entity) {
+        // sy_contact :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SyContactService {
         entity.setContactId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_contact :: insert or update :: [orm:jpa]
         SyContact result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SyContactService {
             throw new CmBizException("존재하지 않는 SyContact입니다: " + entity.getContactId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_contact :: insert or update :: [orm:jpa]
         SyContact result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SyContactService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyContact입니다: " + id);
+        // sy_contact :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 

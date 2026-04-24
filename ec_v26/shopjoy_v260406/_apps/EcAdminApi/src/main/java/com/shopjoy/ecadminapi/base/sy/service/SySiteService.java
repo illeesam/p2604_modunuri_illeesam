@@ -31,6 +31,7 @@ public class SySiteService {
 
     @Transactional(readOnly = true)
     public SySiteDto getById(String id) {
+        // sy_site :: select one :: id [orm:mybatis]
         SySiteDto result = mapper.selectById(id);
         return result;
     }
@@ -38,6 +39,7 @@ public class SySiteService {
     @Transactional(readOnly = true)
     public List<SySiteDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
+        // sy_site :: select list :: p [orm:mybatis]
         List<SySiteDto> result = mapper.selectList(p);
         return result;
     }
@@ -45,11 +47,13 @@ public class SySiteService {
     @Transactional(readOnly = true)
     public PageResult<SySiteDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
+        // sy_site :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SySite entity) {
+        // sy_site :: update :: entity [orm:mybatis]
         int result = mapper.updateSelective(entity);
         return result;
     }
@@ -61,6 +65,7 @@ public class SySiteService {
         entity.setSiteId(generateId());
         entity.setRegBy(SecurityUtil.getAuthUser().userId());
         entity.setRegDate(LocalDateTime.now());
+        // sy_site :: insert or update :: [orm:jpa]
         SySite result = repository.save(entity);
         return result;
     }
@@ -71,6 +76,7 @@ public class SySiteService {
             throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId());
         entity.setUpdBy(SecurityUtil.getAuthUser().userId());
         entity.setUpdDate(LocalDateTime.now());
+        // sy_site :: insert or update :: [orm:jpa]
         SySite result = repository.save(entity);
         return result;
     }
@@ -79,6 +85,7 @@ public class SySiteService {
     public void delete(String id) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SySite입니다: " + id);
+        // sy_site :: delete :: id [orm:jpa]
         repository.deleteById(id);
     }
 
