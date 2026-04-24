@@ -62,8 +62,8 @@ public class LicenseGenerateMain {
         String foCode = LicenseUtil.generateCode(SECRET, foPayload);
 
         /* ── 자체 검증 ── */
-        LicenseUtil.verify(SECRET, boCode, boSiteId);
-        LicenseUtil.verify(SECRET, foCode, foSiteId);
+        LicenseUtil.verify(SECRET, boCode, buyerId);
+        LicenseUtil.verify(SECRET, foCode, buyerId);
 
         /* ── JS 파일 생성 ── */
         String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
