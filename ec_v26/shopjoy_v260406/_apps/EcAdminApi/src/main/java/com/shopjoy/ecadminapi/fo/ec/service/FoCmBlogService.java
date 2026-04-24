@@ -9,6 +9,8 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,8 @@ public class FoCmBlogService {
 
     private final CmBlogMapper     mapper;
     private final CmBlogRepository repository;
+    @PersistenceContext
+    private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<CmBlogDto> getList(Map<String, Object> p) {
@@ -52,6 +56,7 @@ public class FoCmBlogService {
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId));
         entity.setViewCount((entity.getViewCount() != null ? entity.getViewCount() : 0) + 1);
         repository.save(entity);
+        em.flush();
         return mapper.selectById(blogId);
     }
 

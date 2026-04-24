@@ -51,6 +51,11 @@ management:
       enabled: false   # app.redis.enabled=false 시 연결 없음 → 헬스체크 제외
 
 app:
+  license:
+    secret: ${LICENSE_SECRET}       # 환경변수 필수
+    enabled: ${LICENSE_ENABLED:true}
+    output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
+
   redis:
     enabled: false            # true 로 변경 시 Redis 활성화
     primary:
@@ -111,9 +116,13 @@ app:
 
   # ── 파일 업로드 설정 (prod 프로파일) ─────────────────────────────────
   file:
-    # 스토리지 타입: AWS_S3 또는 NCP_OBS (환경변수로 선택 가능)
-    # storage-type: ${STORAGE_TYPE:AWS_S3}
-    storage-type: AWS_S3  # AWS_S3 또는 NCP_OBS로 변경 가능
+    allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
+    max-file-size: 10485760
+    max-request-size: 52428800
+    max-image-size: 5242880
+    max-document-size: 20971520
+    max-video-size: 104857600
+    storage-type: ${STORAGE_TYPE:AWS_S3}
 
     # AWS S3 설정 (운영 환경)
     aws:
@@ -131,8 +140,15 @@ app:
       secret-key: ${NCP_SECRET_KEY}
       cdn-url: ${NCP_CDN_URL:https://cdn-ncp.shopjoy.com}
 
-    # CDN 호스트 (운영 환경)
     cdn-host: ${CDN_HOST:https://cdn.shopjoy.com}
-    # 썸네일 생성 활성화
     thumbnail-enabled: true
     thumbnail-sizes: 200x200,400x400,800x800
+
+# ────────────────────────────────────────────
+# 로깅 — prod 프로파일
+#   레벨 : INFO (logback-spring.xml <springProfile name="prod"> 적용)
+#   파일 : logs/ecadminapi.log
+# ────────────────────────────────────────────
+logging:
+  file:
+    path: logs

@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.common.config;
 
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.auth.security.JwtAuthFilter;
+import com.shopjoy.ecadminapi.common.license.LicenseFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -61,7 +62,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter   jwtAuthFilter;
+    private final LicenseFilter   licenseFilter;
     private final UserDetailsService userDetailsService;
 
     /** BO만 허용 */
@@ -141,6 +143,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(licenseFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         SecurityFilterChain chain = http.build();

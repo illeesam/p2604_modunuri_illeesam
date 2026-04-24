@@ -50,6 +50,14 @@
       if (t) {
         cfg.headers.Authorization = 'Bearer ' + t;
       }
+      /* X-Site-Id + X-License-Code 헤더 주입 */
+      try {
+        var lic = global.SHOPJOY_LICENSE_FO;
+        if (lic) {
+          if (lic.siteId)      cfg.headers['X-Site-Id']      = lic.siteId;
+          if (lic.licenseCode) cfg.headers['X-License-Code'] = lic.licenseCode;
+        }
+      } catch (_) {}
     } catch (_) {}
     console.log(TAG + ' → ' + (cfg.method || 'get').toUpperCase(), cfg.url, cfg.data || cfg.params || '');
     return cfg;

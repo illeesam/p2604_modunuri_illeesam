@@ -18,6 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCacheMapper;
 import com.shopjoy.ecadminapi.base.ec.pm.mapper.PmCouponMapper;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,8 @@ public class FoMyPageService {
     private final PmCouponMapper         couponMapper;
     private final PmCacheMapper          cacheMapper;
     private final PasswordEncoder        passwordEncoder;
+    @PersistenceContext
+    private EntityManager em;
 
     @Transactional(readOnly = true)
     public MbMemberDto getMyInfo() {
@@ -69,7 +73,8 @@ public class FoMyPageService {
         if (body.getMemberAddrDetail() != null) member.setMemberAddrDetail(body.getMemberAddrDetail());
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
-
+        memberRepository.save(member);
+        em.flush();
         return memberMapper.selectById(memberId);
     }
 
@@ -85,6 +90,7 @@ public class FoMyPageService {
         member.setLoginPwdHash(passwordEncoder.encode(newPassword));
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
+        memberRepository.save(member);
     }
 
     @Transactional(readOnly = true)

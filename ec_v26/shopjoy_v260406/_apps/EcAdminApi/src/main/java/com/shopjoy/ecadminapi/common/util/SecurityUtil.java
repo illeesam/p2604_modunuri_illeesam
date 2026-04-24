@@ -69,6 +69,12 @@ public final class SecurityUtil {
         return p != null && "SO".equals(p.userTypeCd());
     }
 
+    /** 현재 인증된 사용자의 siteId 반환 (미인증 또는 미설정 시 "") */
+    public static String getSiteId() {
+        AuthPrincipal p = currentPrincipal();
+        return p != null ? p.siteId() : "";
+    }
+
     /** BO_GUEST 권한 보유 여부 (isBo()와 별개로 권한 기반 체크) */
     public static boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

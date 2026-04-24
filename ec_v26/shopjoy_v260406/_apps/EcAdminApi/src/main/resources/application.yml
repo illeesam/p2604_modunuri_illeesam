@@ -1,41 +1,117 @@
 # ════════════════════════════════════════════════════════════════════
-# 프로파일별 실행 방법
+# application.yml — 공통 설정 (최소화)
+# 실제 값은 프로파일별 파일에서 관리
+#   application-local.yml  로컬 개발
+#   application-dev.yml    개발 서버
+#   application-prod.yml   운영 서버
 # ════════════════════════════════════════════════════════════════════
 #
-# ── [local] ──────────────────────────────────────────────────────
-# java -jar
-#   java -Dspring.profiles.active=local -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres -jar C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406\_apps\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
+# ── 실행 방법 ────────────────────────────────────────────────────────
 #
-# IntelliJ VM options
-#   -Dspring.profiles.active=local -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres
+# [local]
+#   VM options: -Dspring.profiles.active=local
+#               -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres
+#               -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres
 #
-# ── [dev] ────────────────────────────────────────────────────────
-# java -jar
-#   java -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값) -jar C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406\_apps\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
+# [dev]
+#   VM options: -Dspring.profiles.active=dev
+#               -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres
+#               -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값)
 #
-# IntelliJ VM options
-#   -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값)
+# [prod]
+#   VM options: -Dspring.profiles.active=prod
+#               -DDB_HOST=(IP) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604
+#               -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값)
+#               -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값)
+#               -DLICENSE_SECRET=(실제값)
 #
-# ── [prod] ───────────────────────────────────────────────────────
-# java -jar
-#   java -Dspring.profiles.active=prod -DDB_HOST=(서버IP또는도메인) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값) -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값) -jar /app/EcAdminApi.jar
+# ════════════════════════════════════════════════════════════════════
 #
-# IntelliJ VM options
-#   -Dspring.profiles.active=prod -DDB_HOST=(서버IP또는도메인) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값) -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값)
+# ── 속성 레퍼런스 (의미·허용값·기본값) ──────────────────────────────
+#
+# [spring.profiles.active]
+#   활성 프로파일. local / dev / prod
+#
+# [spring.servlet.multipart]
+#   max-file-size    : 단일 파일 최대 크기 (50MB)
+#   max-request-size : 전체 요청 최대 크기 (100MB)
+#
+# [springdoc]
+#   swagger-ui.enabled : Swagger UI 활성 여부. prod 에서는 false 권장
+#   swagger-ui.path    : /swagger-ui.html
+#   api-docs.path      : /v3/api-docs
+#
+# [jwt]
+#   secret                : HMAC 서명 키 (Base64 인코딩값 권장, 최소 32자)
+#   bo-access-expiry      : BO accessToken 만료(ms). 기본 900000 (15분)
+#   fo-access-expiry      : FO accessToken 만료(ms). 기본 900000 (15분)
+#   bo-refresh-expiry     : BO refreshToken 만료(ms). 기본 7200000 (2시간)
+#   fo-refresh-expiry     : FO refreshToken 만료(ms). 기본 1296000000 (15일)
+#
+# [app.license]
+#   secret      : HMAC-SHA256 서명 키. 환경변수 LICENSE_SECRET 으로 주입 권장
+#   enabled     : false → 검증 비활성 (local 개발 편의)
+#   output-dir  : LicenseGenerateMain 실행 시 JS 파일 출력 경로
+#
+# [app.redis]
+#   enabled     : true → Redis 활성. false → 모든 캐시 no-op (DB 직접 조회)
+#   primary     : 주 Redis 노드 (host/port/password/database/timeout)
+#   secondary   : 보조 Redis 노드 (미설정 시 primary fallback)
+#   ttl.*       : 캐시 항목별 TTL(초)
+#     bo-auth-seconds / fo-auth-seconds / ext-auth-seconds : 세션 TTL (JWT 만료와 동일)
+#     sy-code/menu/role/role-menu/prop/i18n-seconds        : 시스템 메타 TTL (1시간)
+#     ec-pd-prod/cate/cate-prod-seconds                    : 상품·카테고리 TTL
+#     ec-pm-prom/prom-item-seconds                         : 프로모션 TTL
+#     ec-dp-disp/disp-item-seconds                         : 전시 TTL
+#
+# [app.scheduler]
+#   enabled      : 배치 스케줄러 활성 여부. false → cron 등록·수동실행 모두 불가
+#   jenkins.enabled : true → cron 생략, Jenkins 가 POST /api/sch/jenkins/{code} 직접 호출
+#   jenkins.token   : Jenkins 인증 토큰 (미설정 시 검증 생략 — prod 필수 설정)
+#   allowed-ips  : 스케줄 관리 API 허용 IP. "" 또는 "*" → 전체허용 | "IP1^IP2" → 화이트리스트
+#
+# [app.error-log]
+#   db-save    : ERROR 로그를 syh_access_error_log 테이블에 저장할지 여부
+#   queue-size : 비동기 큐 최대 크기. 초과 시 즉시 드롭 (non-blocking)
+#
+# [app.access-log]
+#   db-save      : 요청 로그를 syh_access_log 테이블에 저장할지 여부
+#   queue-size   : 비동기 큐 최대 크기
+#   filter       : 기록 대상 필터. "^" 구분 토큰
+#                  "*" → 전체 | "BO" → BO 전체 | "BO^FO" → BO+FO
+#                  "admin01" → 특정 userId | "admin01^BO" → userId+BO
+#   max-body-size: 요청/응답 바디 최대 저장 크기(bytes). 0 → 미수집
+#
+# [app.file]
+#   storage-type        : LOCAL / AWS_S3 / NCP_OBS
+#   allowed-extensions  : 허용 확장자 (쉼표 구분)
+#   max-file-size       : 파일당 최대 크기(bytes). 기본 10MB
+#   max-image-size      : 이미지 최대 크기(bytes). 기본 5MB
+#   max-document-size   : 문서 최대 크기(bytes). 기본 20MB
+#   max-video-size      : 동영상 최대 크기(bytes). 기본 100MB
+#   local.base-path     : LOCAL 저장소 기본 경로
+#   aws.*               : AWS S3 연결 정보 (bucket-name/region/access-key/secret-key/cdn-url)
+#   ncp.*               : NCP OBS 연결 정보 (bucket-name/endpoint/access-key/secret-key/cdn-url)
+#   cdn-host            : CDN 호스트 URL (sy_attach.cdn_host 저장값)
+#   thumbnail-enabled   : 썸네일 자동 생성 여부
+#   thumbnail-sizes     : 썸네일 크기 목록 (WxH 쉼표 구분)
 #
 # ════════════════════════════════════════════════════════════════════
 
 spring:
   profiles:
-    active: dev
+    active: local
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 100MB
 
-# ════════════════════════════════════════════════════════════════
-# Swagger/OpenAPI 설정
-# ════════════════════════════════════════════════════════════════
+app:
+  license:
+    secret: ${LICENSE_SECRET:SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd}
+    enabled: ${LICENSE_ENABLED:true}
+    output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
+
 springdoc:
   swagger-ui:
     enabled: true
@@ -45,219 +121,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
-# ════════════════════════════════════════════════════════════════
-# 파일 업로드 설정 (Spring MultipartFile)
-# ════════════════════════════════════════════════════════════════
-
-# ════════════════════════════════════════════════════════════════
-# 파일 업로드 정책 및 스토리지 설정
-#
-# 저장 경로 정책:
-#   /cdn/{businessCode}/YYYY/YYYYMM/YYYYMMDD/
-#
-# 파일명 정책:
-#   YYYYMMDD + "_" + hhmmss + "_" + 순서번호 + "_" + random(4) + 확장자
-#   예: 20260421_143045_01_1234.jpg
-#
-# sy_attach_grp: 파일 그룹 (다중 첨부 시 사용, sy_attach_grp_id 참조)
-# sy_attach: 실제 파일 정보 저장 (file_nm, stored_nm, attach_url, cdn_host, cdn_img_url 등)
-# ════════════════════════════════════════════════════════════════
-app:
-  file:
-    # ── 기본 검증 ──────────────────────────────────────────────
-    # 허용 확장자 (쉼표 구분)
-    allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
-    # 파일당 최대 용량 (바이트)
-    max-file-size: 10485760
-    # 요청당 최대 용량 (바이트)
-    max-request-size: 52428800
-    # 이미지 최대 용량 (바이트, 기본: 5MB)
-    max-image-size: 5242880
-    # 문서 최대 용량 (바이트, 기본: 20MB)
-    max-document-size: 20971520
-    # 동영상 최대 용량 (바이트, 기본: 100MB)
-    max-video-size: 104857600
-
-    # ── 스토리지 설정 ────────────────────────────────────────────
-    # 스토리지 타입 (LOCAL / AWS_S3 / NCP_OBS)
-    storage-type: LOCAL
-
-    # ── LOCAL 스토리지 (개발 환경용) ────────────────────────────────
-    local:
-      # 로컬 저장소 기본 경로 (상대경로)
-      base-path: static/cdn
-      # 업로드 디렉토리명
-      upload-dir: uploads
-
-    # ── AWS S3 스토리지 설정 ──────────────────────────────────────
-    aws:
-      # S3 버킷명
-      bucket-name: shopjoy-files
-      # AWS 리전 (us-east-1, ap-northeast-2 등)
-      region: ap-northeast-2
-      # Access Key ID (환경변수 권장: AWS_ACCESS_KEY_ID)
-      access-key: ${AWS_ACCESS_KEY_ID:}
-      # Secret Access Key (환경변수 권장: AWS_SECRET_ACCESS_KEY)
-      secret-key: ${AWS_SECRET_ACCESS_KEY:}
-      # S3 CDN 기본 URL (CloudFront 또는 S3 직접 접근)
-      cdn-url: https://cdn.shopjoy.com
-
-    # ── NCP (Naver Cloud Platform) OBS 스토리지 설정 ──────────────────────
-    ncp:
-      # 오브젝트 스토리지 버킷명
-      bucket-name: shopjoy-files
-      # NCP 리전 엔드포인트 (kr-standard, kr-standard-dn 등)
-      endpoint: https://obs.kr-standard.ncrdev.ncloud.com
-      # 액세스 키 ID (환경변수 권장: NCP_ACCESS_KEY)
-      access-key: ${NCP_ACCESS_KEY:}
-      # 액세스 시크릿 (환경변수 권장: NCP_SECRET_KEY)
-      secret-key: ${NCP_SECRET_KEY:}
-      # NCP CDN 기본 URL
-      cdn-url: https://cdn-ncp.shopjoy.com
-
-    # ── CDN 및 스토리지 경로 ──────────────────────────────────────
-    # CDN 호스트명 (sy_attach.cdn_host에 저장, 다중 호스트 지원)
-    cdn-host: https://cdn.shopjoy.com
-    # 썸네일 생성 여부
-    thumbnail-enabled: true
-    # 썸네일 크기 (width x height, 쉼표 구분)
-    thumbnail-sizes: 200x200,400x400,800x800
-
-# ════════════════════════════════════════════════════════════════
-# 로깅 공통 설정  (logback-spring.xml 위임)
-#
-#   프로파일별 레벨/appender 는 logback-spring.xml <springProfile> 에서 제어
-#   local / dev : DEBUG  + console(색상+IntelliJ클릭링크) + file + error-file
-#   prod        : INFO   + console(심플) + file + error-file
-#
-#   파일 위치 (logging.file.path 기준)
-#     일반 : logs/ecadminapi.log
-#     에러 : logs/ecadminapi-error.log
-#     압축 : logs/archived/ecadminapi.yyyy-MM-dd.N.log.gz
-#             logs/archived/ecadminapi-error.yyyy-MM-dd.N.log.gz
-# ════════════════════════════════════════════════════════════════
 logging:
   config: classpath:logback-spring.xml
   file:
     path: logs
-
-# ════════════════════════════════════════════════════════════════
-# 커스텀 앱 속성 레퍼런스
-#   실제 값은 각 프로파일 yml(local/dev/prod)에서 관리
-#   여기서는 모든 속성의 의미·허용값·기본값을 설명
-# ════════════════════════════════════════════════════════════════
-
-# ── app.scheduler ───────────────────────────────────────────────
-# app:
-#   scheduler:
-#     enabled: true
-#       동적 배치 스케줄러 활성 여부.
-#       false → 앱 기동 시 sy_batch 조회·등록 생략. API 수동 실행도 불가.
-#
-#     jenkins:
-#       enabled: false
-#         Jenkins 연동 스케줄러 사용 여부 (현재 미구현 예약 항목).
-#
-#     allowed-ips: ""
-#       스케줄러 API(/sch/batch/*) 를 허용할 클라이언트 IP.
-#       ""  또는 미설정 → 전체 허용
-#       "*"             → 전체 허용 (명시적)
-#       "127.0.0.1^10.0.0.1" → "^" 구분 IP 화이트리스트
-
-# ── app.redis ───────────────────────────────────────────────────
-# app:
-#   redis:
-#     enabled: false
-#       Redis 캐시 전체 활성 여부.
-#       false → RedisConfig 빈 미생성. RedisUtil 모든 연산 no-op.
-#               코드/세션/상품 캐시 모두 동작 안 함 (DB 직접 조회).
-#       true  → primary 노드에 연결. secondary 설정 시 추가 연결.
-#
-#     primary:
-#       host: localhost        Redis 주(primary) 노드 호스트. prod 는 환경변수 권장.
-#       port: 6379             기본 Redis 포트.
-#       password: ""           비밀번호 없을 때 빈 문자열.
-#       database: 0            Redis DB 인덱스 (0~15).
-#       timeout: 3000          연결/읽기 타임아웃(ms).
-#
-#     secondary:               (선택) 보조 Redis 노드. 미설정 시 primary 에 fallback.
-#       host: ""               host 가 빈 문자열이면 secondary 사용 안 함.
-#       port: 6379
-#       password: ""
-#       database: 0
-#
-#     ttl:
-#       bo-auth-seconds: 900         BO 관리자 세션 TTL.
-#       fo-auth-seconds: 900         FO 회원 세션 TTL.
-#       ext-auth-seconds: 900        EXT 외부 세션 TTL.
-#       sy-code-seconds: 3600        시스템 공통코드 TTL.
-#       sy-menu-seconds: 3600        메뉴 구조 TTL.
-#       sy-role-seconds: 3600        역할 정보 TTL.
-#       sy-role-menu-seconds: 3600   역할-메뉴 매핑 TTL.
-#       sy-prop-seconds: 3600        시스템 프로퍼티 TTL.
-#       sy-i18n-seconds: 3600        다국어 메시지 TTL.
-#       ec-pd-prod-seconds: 1800       상품 정보 TTL.
-#       ec-pd-categ-seconds: 3600      카테고리 정보 TTL.
-#       ec-pd-categ-prod-seconds: 3600 카테고리 상품 정보 TTL.
-#       ec-pm-prom-seconds: 1800     프로모션 정보 TTL.
-#       ec-pm-prom-item-seconds: 3600  프로모션 항목 정보 TTL.
-#       ec-dp-disp-seconds: 1800     전시 정보 TTL.
-#       ec-dp-disp-item-seconds: 3600  전시 항목 정보 TTL.
-#
-#   캐시 대상별 저장 위치:
-#     auth(세션/블랙리스트) → primary
-#     code(공통코드)        → primary
-#     prop(시스템프로퍼티)   → primary
-#     prod(상품정보)        → secondary (미설정 시 primary)
-#
-#   키 패턴:
-#     auth:session:{userId}      auth:blacklist:{token}
-#     code:grp:{groupCode}       code:all
-#     prop:key:{key}             prop:all
-#     prod:dtl:{prodId}          prod:list:{siteId}
-
-# ── app.error-log ────────────────────────────────────────────────
-# app:
-#   error-log:
-#     db-save: true
-#       ERROR 레벨 로그를 syh_access_error_log 테이블에 저장할지 여부.
-#       false → Logback 파일 기록은 유지, DB 저장만 건너뜀 (테스트/디버그 용)
-#
-#     queue-size: 100
-#       비동기 큐 최대 크기(건수). 초과 요청은 즉시 드롭(non-blocking).
-#       드롭 발생 시 100건마다 System.err 경고 출력.
-#       워커 스레드(err-log-worker)가 2초 poll 루프로 소비 → DB INSERT.
-#       앱 종료 시 잔여 최대 50건 flush.
-
-# ── app.access-log ───────────────────────────────────────────────
-# app:
-#   access-log:
-#     db-save: true
-#       필터 조건에 매칭된 요청을 syh_access_log 테이블에 저장할지 여부.
-#       false → 필터는 동작하지만 DB 저장 생략 (filter 설정 테스트 시 유용).
-#
-#     queue-size: 100
-#       비동기 큐 최대 크기(건수). 초과 요청은 즉시 드롭(non-blocking).
-#       워커 스레드(access-log-worker)가 2초 poll 루프로 소비 → DB INSERT.
-#       앱 종료 시 잔여 최대 50건 flush.
-#
-#     filter: "*"
-#       기록 대상 선택 필터. "^" 구분 토큰 목록.
-#       토큰 종류:
-#         userType 코드 : BO / FO / EXT / USER / MEMBER  → 해당 유형 전체 기록
-#         특정 userId   : 위 코드 이외의 값 → 해당 ID 정확 일치 시 기록
-#       예시:
-#         "*"                       → 전체 기록 (기본값, 빈값도 동일)
-#         "BO"                      → BO 관리자 전체
-#         "FO"                      → FO 회원 전체
-#         "BO^FO^EXT"               → 인증된 모든 userType
-#         "admin01"                 → userId 가 admin01 인 사용자만
-#         "admin01^member123"       → 특정 userId 두 명
-#         "admin01^BO"              → 특정 userId + BO 전체
-#         "admin01^member123^BO"    → 특정 userId 두 명 + BO 전체
-#
-#     max-body-size: 2000
-#       요청/응답 바디 최대 저장 크기(bytes).
-#       0  → 바디 미수집 (ContentCachingWrapper 자체를 생략 → 성능 최적)
-#       >0 → 해당 크기까지만 잘라 저장. 초과분 무시.
-#       prod 환경은 보안/성능 고려 0 권장.

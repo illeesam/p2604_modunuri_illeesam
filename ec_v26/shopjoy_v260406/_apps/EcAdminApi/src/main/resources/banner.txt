@@ -23,67 +23,7 @@
      (java.runtime.name) : ${java.runtime.name}
      (java.library.path) : ${java.library.path}
 
- ▶ Spring
-     (spring.profiles.active) : ${spring.profiles.active}
-
- ▶ Spring Boot
-     (spring-boot.version) : ${spring-boot.version}
-     (file.encoding) : ${file.encoding}
-     (spring.messages.basename) : ${spring.messages.basename}
-     (servlet.multipart.max-file-size) 하나의문서크기 : ${multipart.max-file-size}
-     (servlet.multipart.max-request-size) 합계업로드크기 : ${servlet.multipart.max-request-size}
-     (spring.devtools.restart.enabled) 핫배포 : ${spring.devtools.restart.enabled}
-     (swagger.enabled) : ${swagger.enabled}
-     (swagger.pathMapping) : ${swagger.pathMapping}
-     (xss.enabled) : ${xss.enabled}
-     (xss.excludes) : ${xss.excludes}
-     (xss.urlPatterns) : ${xss.urlPatterns}
-     (logging.level.com.ruoyi) : ${logging.level.com.ruoyi}
-     (logging.level.org.springframework) : ${logging.level.org.springframework}
-     (spring.redis.host) : ${spring.redis.host}
-     (spring.redis.port) : ${spring.redis.port}
-
- ▶ Application (ruoyi)
-     (ruoyi.name) : ${ruoyi.name}
-     (ruoyi.email) : ${ruoyi.email}
-     (ruoyi.phone) : ${ruoyi.phone}
-     (ruoyi.version) : ${ruoyi.version}
-     (ruoyi.copyrightYear) : ${ruoyi.copyrightYear}
-     (ruoyi.demoEnabled) : ${ruoyi.demoEnabled}
-     (ruoyi.profile) : ${ruoyi.profile}
-
- ▶ datasource
-     (spring.datasource.type) : ${spring.datasource.type}
-     (spring.datasource.driverClassName) : ${spring.datasource.driverClassName}
-     (spring.datasource.druid.master.url) : ${spring.datasource.druid.master.url}
-     (spring.datasource.druid.master.username) : ${spring.datasource.druid.master.username}
-     (spring.datasource.druid.initialSize) 초기연결개수 : ${spring.datasource.druid.initialSize}
-     (spring.datasource.druid.minIdle) 연결풀의최소수 : ${spring.datasource.druid.minIdle}
-     (spring.datasource.druid.maxActive) 최대연결풀수 : ${spring.datasource.druid.maxActive}
-     (spring.datasource.druid.statViewServlet.login-username) : ${spring.datasource.druid.statViewServlet.login-username}
-     (spring.datasource.druid.statViewServlet.login-password) : ${spring.datasource.druid.statViewServlet.login-password}
-
- ▶ mybatis
-     (mybatis.typeAliasesPackage) : ${mybatis.typeAliasesPackage}
-     (mybatis.mapperLocations) : ${mybatis.mapperLocations}
-     (mybatis.configLocation) : ${mybatis.configLocation}
-
- ▶ http server
-     (server.tomcat.uri-encoding) : ${server.tomcat.uri-encoding}
-     (server.port) : ${server.port}
-     HTTP URL : http://localhost:${server.port}
-     SWAGGER : http://localhost:${server.port}/swagger-ui/index.html
-
-     PORTAL
-     - 로그인 : http://localhost:${server.port}/viewer/login
-     - 메인 : http://localhost:${server.port}/mainFrame
-     - 메인 : http://localhost:${server.port}/view/login
-     - 메인 : http://localhost:${server.port}/view/mainFrame
-     - 화면 : http://localhost:${server.port}/viewer/index
-
  ▶ URL
-     http://localhost:${server.port}/mainframe/index.html
-     http://localhost:${server.port}/ui/skin
      http://localhost:${server.port}/swagger-ui/index.html
      http://localhost:${server.port}/cdn/prod/img/shop/banner/banner-big-1.jpg
      http://localhost:${server.port}/api/cdn/prod/img/shop/banner/banner-big-1.jpg

@@ -2,10 +2,10 @@ spring:
   datasource:
     # DB_HOST=illeesam.synology.me | DB_PORT=17632 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
     # DB_USERNAME=postgres | DB_PASSWORD=(환경변수 필수)
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:public001}&tcpKeepAlives=true&connectTimeout=30
+    url: jdbc:p6spy:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:public001}&tcpKeepAlives=true&connectTimeout=30
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
     hikari:
       maximum-pool-size: 10
       connection-timeout: 30000
@@ -55,6 +55,11 @@ management:
       enabled: false   # app.redis.enabled=false 시 연결 없음 → 헬스체크 제외
 
 app:
+  license:
+    secret: ${LICENSE_SECRET:SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd}
+    enabled: ${LICENSE_ENABLED:true}
+    output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
+
   redis:
     enabled: false            # true 로 변경 시 Redis 활성화
     primary:
@@ -114,6 +119,12 @@ app:
 
   # ── 파일 업로드 설정 (dev 프로파일) ─────────────────────────────────
   file:
+    allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
+    max-file-size: 10485760
+    max-request-size: 52428800
+    max-image-size: 5242880
+    max-document-size: 20971520
+    max-video-size: 104857600
     storage-type: ${STORAGE_TYPE:LOCAL}
     local:
       base-path: static/cdn
@@ -147,6 +158,4 @@ app:
 logging:
   file:
     path: logs
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  # level: hibernate SQL 로그 — p6spy 사용 중이므로 비활성 (중복 출력 방지)

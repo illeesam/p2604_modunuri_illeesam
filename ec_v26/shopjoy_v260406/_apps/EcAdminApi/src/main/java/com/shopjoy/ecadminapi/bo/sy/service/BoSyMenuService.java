@@ -9,6 +9,8 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,8 @@ public class BoSyMenuService {
     private final SyMenuMapper      mapper;
     private final SyMenuRepository  repository;
     private final SyMenuRedisStore  menuCache;
+    @PersistenceContext
+    private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<SyMenuDto> getList(Map<String, Object> p) {
@@ -62,6 +66,7 @@ public class BoSyMenuService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
+        em.flush();
         menuCache.evictAll();
         return getById(id);
     }
